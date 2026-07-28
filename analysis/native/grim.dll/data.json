@@ -1,5 +1,5 @@
 {
-  "audit_digest": "2cb9af6d91f9777bc995f028cf8c943ac64e063644bbb48fe52471b2021a9f43",
+  "audit_digest": "392864512111f95a772095ee07a4d758015bf2d75f5cd0a6ec2cc9875c2a8f9a",
   "entries": [
     {
       "address": 268574996,
@@ -1622,20 +1622,21 @@
     {
       "address": 268775520,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Currently bound texture handle (set by grim_bind_texture).",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_bound_texture_handle",
       "section": ".data",
       "section_offset": 96,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
@@ -1679,20 +1680,21 @@
     {
       "address": 268775536,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Texture handle for GRIM_Font2 (small font atlas).",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_font2_texture_handle",
       "section": ".data",
       "section_offset": 112,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
@@ -1756,20 +1758,22 @@
     {
       "address": 268801896,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Frame delta time (seconds) used for input decay.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 3,
+      "linker_reference_count": 0,
       "name": "grim_frame_dt",
       "section": ".data",
       "section_offset": 26472,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
@@ -1975,20 +1979,21 @@
     {
       "address": 268803520,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Backbuffer/viewport height.",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_backbuffer_height",
       "section": ".data",
       "section_offset": 28096,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
@@ -2339,39 +2344,43 @@
     {
       "address": 268803632,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Current rotation radians for draw helpers.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 3,
+      "linker_reference_count": 0,
       "name": "grim_rotation_radians",
       "section": ".data",
       "section_offset": 28208,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
       "address": 268803636,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Vertex write pointer used after Lock().",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 13,
+      "linker_reference_count": 0,
       "name": "grim_vertex_write_ptr",
       "section": ".data",
       "section_offset": 28212,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": null
     },
     {
@@ -2460,20 +2469,21 @@
     {
       "address": 268804180,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Grim2D millisecond counter.",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_time_ms",
       "section": ".data",
       "section_offset": 28756,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
@@ -2642,20 +2652,21 @@
     {
       "address": 268805256,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "D3D texture format used for CreateTexture.",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_texture_format",
       "section": ".data",
       "section_offset": 29832,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
@@ -2741,39 +2752,42 @@
     {
       "address": 268805484,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Preferred texture format if supported.",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_preferred_texture_format",
       "section": ".data",
       "section_offset": 30060,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
       "address": 268805488,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Small-font character map (char -> glyph index).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-uchar-array-00100",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 3,
+      "linker_reference_count": 0,
       "name": "grim_font2_char_map",
       "section": ".data",
       "section_offset": 30064,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 256,
+      "size_source": "tools/match/scratches/grim_draw_text_small and grim_state_init: recovered unsigned-char arrays with 256 elements",
       "type": null
     },
     {
@@ -2800,96 +2814,106 @@
     {
       "address": 268805752,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Atlas sub-rect table referenced by pointer table.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-subrect-table-00800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_subrect_table",
       "section": ".data",
       "section_offset": 30328,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 2048,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
       "type": null
     },
     {
       "address": 268807800,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Formatted text buffer used by draw_text (vsprintf).",
-      "definition_state": "unknown",
+      "definition_group": "recovered-zero-char-buffer-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_printf_buffer",
       "section": ".data",
       "section_offset": 32376,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_draw_text_mono_fmt and grim_draw_text_small_fmt: dedicated vsprintf destinations; Binary Ninja storage analysis bounds each buffer to its isolated 0x200-byte zero region",
       "type": null
     },
     {
       "address": 268808312,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Alternate formatted text buffer for draw_text.",
-      "definition_state": "unknown",
+      "definition_group": "recovered-zero-char-buffer-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_printf_buffer_alt",
       "section": ".data",
       "section_offset": 32888,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_draw_text_mono_fmt and grim_draw_text_small_fmt: dedicated vsprintf destinations; Binary Ninja storage analysis bounds each buffer to its isolated 0x200-byte zero region",
       "type": null
     },
     {
       "address": 268808824,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Cached mouse X position.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 2,
+      "linker_reference_count": 0,
       "name": "grim_mouse_x_cached",
       "section": ".data",
       "section_offset": 33400,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
       "address": 268808828,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Cached mouse Y position.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 2,
+      "linker_reference_count": 0,
       "name": "grim_mouse_y_cached",
       "section": ".data",
       "section_offset": 33404,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
@@ -2954,58 +2978,64 @@
     {
       "address": 268808848,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Current UV u0 for quad draws.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-uv-quad-00020",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 10,
+      "linker_reference_count": 0,
       "name": "grim_uv_u0",
       "section": ".data",
       "section_offset": 33424,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 32,
+      "size_source": "tools/match/scratches/grim_draw_quad and grim_state_init: GrimUV grim_uv_u0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
       "type": null
     },
     {
       "address": 268808852,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Current UV v0 for quad draws.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float-interior",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 2,
+      "linker_reference_count": 0,
       "name": "grim_uv_v0",
       "section": ".data",
       "section_offset": 33428,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered float aliases into the owning GrimUV arrays; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
       "address": 268808856,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Current UV u1 for quad draws.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-uv-point-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_uv_u1",
       "section": ".data",
       "section_offset": 33432,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "tools/match/scratches/grim_state_init: recovered GrimUV point declarations; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
       "type": null
     },
     {
@@ -3030,20 +3060,22 @@
     {
       "address": 268808864,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Current UV u2 for quad draws.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-uv-point-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_uv_u2",
       "section": ".data",
       "section_offset": 33440,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "tools/match/scratches/grim_state_init: recovered GrimUV point declarations; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
       "type": null
     },
     {
@@ -3068,20 +3100,22 @@
     {
       "address": 268808872,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Current UV u3 for quad draws.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-uv-point-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_uv_u3",
       "section": ".data",
       "section_offset": 33448,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "tools/match/scratches/grim_state_init: recovered GrimUV point declarations; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
       "type": null
     },
     {
@@ -3125,20 +3159,21 @@
     {
       "address": 268808884,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Selected D3D device type for CreateDevice (HAL/REF).",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_d3d_device_type",
       "section": ".data",
       "section_offset": 33460,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
@@ -3163,20 +3198,22 @@
     {
       "address": 268808892,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Computed frames-per-second value.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 3,
+      "linker_reference_count": 0,
       "name": "grim_fps",
       "section": ".data",
       "section_offset": 33468,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
@@ -3222,39 +3259,43 @@
     {
       "address": 268808904,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Small-font glyph U coordinates (float, indexed by glyph * 2).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-font-uv-table-00800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 3,
+      "linker_reference_count": 0,
       "name": "grim_font2_uv_u",
       "section": ".data",
       "section_offset": 33480,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 2048,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_font2_uv_u[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
       "type": null
     },
     {
       "address": 268808908,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Small-font glyph V coordinates (float, indexed by glyph * 2).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float-interior",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_font2_uv_v",
       "section": ".data",
       "section_offset": 33484,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered float aliases into the owning GrimUV arrays; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
@@ -3281,20 +3322,22 @@
     {
       "address": 268810956,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Grim2D module handle (HINSTANCE).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_module_handle",
       "section": ".data",
       "section_offset": 35532,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": null
     },
     {
@@ -3340,20 +3383,22 @@
     {
       "address": 268810968,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Small-font glyph widths (byte per glyph).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-uchar-array-00100",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_font2_glyph_widths",
       "section": ".data",
       "section_offset": 35544,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 256,
+      "size_source": "tools/match/scratches/grim_draw_text_small and grim_state_init: recovered unsigned-char arrays with 256 elements",
       "type": null
     },
     {
@@ -3380,77 +3425,85 @@
     {
       "address": 268811268,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
       "comment": "Packed RGBA color slot 0.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-color-array-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 9,
+      "linker_reference_count": 0,
       "name": "grim_color_slot0",
       "section": ".data",
       "section_offset": 35844,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "tools/match/scratches/grim_set_color: unsigned long grim_color_slot0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
       "type": null
     },
     {
       "address": 268811272,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
       "comment": "Packed RGBA color slot 1.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-color-interior-00004",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_color_slot1",
       "section": ".data",
       "section_offset": 35848,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches/grim_state_init: recovered unsigned-int color-slot aliases; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
       "type": null
     },
     {
       "address": 268811276,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
       "comment": "Packed RGBA color slot 2.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-color-interior-00004",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_color_slot2",
       "section": ".data",
       "section_offset": 35852,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches/grim_state_init: recovered unsigned-int color-slot aliases; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
       "type": null
     },
     {
       "address": 268811280,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
       "comment": "Packed RGBA color slot 3.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-color-interior-00004",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_color_slot3",
       "section": ".data",
       "section_offset": 35856,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches/grim_state_init: recovered unsigned-int color-slot aliases; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
       "type": null
     },
     {
@@ -3477,20 +3530,22 @@
     {
       "address": 268811384,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Pointer table base for atlas sub-rects.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-subrect-pointer-table-00044",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 3,
+      "linker_reference_count": 0,
       "name": "grim_subrect_ptr_table",
       "section": ".data",
       "section_offset": 35960,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 68,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV *grim_subrect_ptr_table[17]; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_table_17_is_0x44_bytes",
       "type": null
     },
     {
@@ -3591,58 +3646,63 @@
     {
       "address": 268812032,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Grim2D scratch int slot table.",
-      "definition_state": "unknown",
+      "definition_group": "recovered-zero-slot-array-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_slot_ints",
       "section": ".data",
       "section_offset": 36608,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
       "type": null
     },
     {
       "address": 268812544,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Grim2D scratch float slot table.",
-      "definition_state": "unknown",
+      "definition_group": "recovered-zero-slot-array-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_slot_floats",
       "section": ".data",
       "section_offset": 37120,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
       "type": null
     },
     {
       "address": 268813312,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
       "comment": "Backbuffer/viewport width.",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
+      "definition_group": "source-literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 4,
+      "linker_reference_count": 0,
       "name": "grim_backbuffer_width",
       "section": ".data",
       "section_offset": 37888,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
     },
     {
@@ -3726,20 +3786,22 @@
     {
       "address": 268814564,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Cosine term for rotation matrix (radians + 45deg).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 2,
+      "linker_reference_count": 0,
       "name": "grim_rotation_cos",
       "section": ".data",
       "section_offset": 39140,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
@@ -3827,39 +3889,43 @@
     {
       "address": 268814600,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Atlas sub-rect table (pointer table entry 2).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-subrect-table-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_subrect_table_2",
       "section": ".data",
       "section_offset": 39176,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_2[64]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
       "type": null
     },
     {
       "address": 268815112,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Atlas sub-rect table (pointer table entry 1).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-subrect-table-00080",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_subrect_table_1",
       "section": ".data",
       "section_offset": 39688,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 128,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_1[16]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
       "type": null
     },
     {
@@ -4320,20 +4386,22 @@
     {
       "address": 268817288,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
       "comment": "Atlas sub-rect table (pointer table entry 0).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-subrect-table-00020",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_subrect_table_0",
       "section": ".data",
       "section_offset": 41864,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 32,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
       "type": null
     },
     {
@@ -4541,20 +4609,22 @@
     {
       "address": 268817388,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Font texture (IDirect3DTexture8) used for text rendering.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_font_texture",
       "section": ".data",
       "section_offset": 41964,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": null
     },
     {
@@ -4659,20 +4729,22 @@
     {
       "address": 268817412,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-texture-slots-00400",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 8,
+      "linker_reference_count": 0,
       "name": "grim_texture_slots",
       "section": ".data",
       "section_offset": 41988,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 1024,
+      "size_source": "tools/match/include/grim_texture.h: GrimTexture *grim_texture_slots[256]; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_table_256_is_0x400_bytes",
       "type": null
     },
     {
@@ -4815,20 +4887,22 @@
     {
       "address": 268818464,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Pause flag set by grim_set_paused.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-byte",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_paused_flag",
       "section": ".data",
       "section_offset": 43040,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 1,
+      "size_source": "tools/match/scratches/grim_set_paused and grim_run_loop: recovered unsigned-char pause flag",
       "type": null
     },
     {
@@ -5148,39 +5222,43 @@
     {
       "address": 268819268,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Mouse X position (pixels).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_mouse_x",
       "section": ".data",
       "section_offset": 43844,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
       "address": 268819272,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Mouse Y position (pixels).",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_mouse_y",
       "section": ".data",
       "section_offset": 43848,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
@@ -5205,39 +5283,43 @@
     {
       "address": 268819280,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Mouse delta X (pixels) accumulated per poll.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_mouse_dx",
       "section": ".data",
       "section_offset": 43856,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
       "address": 268819284,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Mouse delta Y (pixels) accumulated per poll.",
-      "definition_state": "unknown",
+      "definition_group": "source-zero-float32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_mouse_dy",
       "section": ".data",
       "section_offset": 43860,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
       "type": null
     },
     {
@@ -5305,363 +5387,6 @@
   "overlays": [],
   "priorities": [
     {
-      "address": 268803636,
-      "definition_state": "unknown",
-      "name": "grim_vertex_write_ptr",
-      "reference_count": 13,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_vertex_write_ptr",
-          "name": "?grim_vertex_write_ptr@@3PAMA",
-          "reference_count": 4
-        },
-        {
-          "lookup_name": "grim_vertex_write_ptr",
-          "name": "?grim_vertex_write_ptr@@3PAUGrimVertex@@A",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_vertex_write_ptr",
-          "name": "?grim_vertex_write_ptr@@3PAEA",
-          "reference_count": 2
-        },
-        {
-          "lookup_name": "grim_vertex_write_ptr",
-          "name": "?grim_vertex_write_ptr@@3PAKA",
-          "reference_count": 2
-        },
-        {
-          "lookup_name": "grim_vertex_write_ptr",
-          "name": "?grim_vertex_write_ptr@@3PAUGrimCircleVertex@@A",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 268808848,
-      "definition_state": "unknown",
-      "name": "grim_uv_u0",
-      "reference_count": 10,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_uv_u0",
-          "name": "?grim_uv_u0@@3PAUGrimUV@@A",
-          "reference_count": 7
-        },
-        {
-          "lookup_name": "grim_uv_u0",
-          "name": "?grim_uv_u0@@3MA",
-          "reference_count": 2
-        },
-        {
-          "lookup_name": "grim_uv_u0",
-          "name": "?grim_uv_u0@@3UGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268811268,
-      "definition_state": "unknown",
-      "name": "grim_color_slot0",
-      "reference_count": 9,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_color_slot0",
-          "name": "?grim_color_slot0@@3KA",
-          "reference_count": 5
-        },
-        {
-          "lookup_name": "grim_color_slot0",
-          "name": "?grim_color_slot0@@3PAKA",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_color_slot0",
-          "name": "?grim_color_slot0@@3IA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268817412,
-      "definition_state": "unknown",
-      "name": "grim_texture_slots",
-      "reference_count": 8,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_texture_slots",
-          "name": "?grim_texture_slots@@3PAPAUGrimTexture@@A",
-          "reference_count": 6
-        },
-        {
-          "lookup_name": "grim_texture_slots",
-          "name": "?grim_texture_slots@@3PAPAUGrimTextureSlot@@A",
-          "reference_count": 1
-        },
-        {
-          "lookup_name": "grim_texture_slots",
-          "name": "?grim_texture_slots@@3PAXA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268803520,
-      "definition_state": "unknown",
-      "name": "grim_backbuffer_height",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_backbuffer_height",
-          "name": "?grim_backbuffer_height@@3HA",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_backbuffer_height",
-          "name": "?grim_backbuffer_height@@3IA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268804180,
-      "definition_state": "unknown",
-      "name": "grim_time_ms",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_time_ms",
-          "name": "?grim_time_ms@@3KA",
-          "reference_count": 2
-        },
-        {
-          "lookup_name": "grim_time_ms",
-          "name": "?grim_time_ms@@3HA",
-          "reference_count": 1
-        },
-        {
-          "lookup_name": "grim_time_ms",
-          "name": "_grim_time_ms",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268805256,
-      "definition_state": "unknown",
-      "name": "grim_texture_format",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_texture_format",
-          "name": "?grim_texture_format@@3HA",
-          "reference_count": 2
-        },
-        {
-          "lookup_name": "grim_texture_format",
-          "name": "?grim_texture_format@@3W4_D3DFORMAT@@A",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 268805484,
-      "definition_state": "unknown",
-      "name": "grim_preferred_texture_format",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_preferred_texture_format",
-          "name": "?grim_preferred_texture_format@@3W4_D3DFORMAT@@A",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_preferred_texture_format",
-          "name": "?grim_preferred_texture_format@@3HA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268810968,
-      "definition_state": "unknown",
-      "name": "grim_font2_glyph_widths",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_font2_glyph_widths",
-          "name": "?grim_font2_glyph_widths@@3PAEA",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 268811272,
-      "definition_state": "unknown",
-      "name": "grim_color_slot1",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_color_slot1",
-          "name": "?grim_color_slot1@@3KA",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_color_slot1",
-          "name": "?grim_color_slot1@@3IA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268811276,
-      "definition_state": "unknown",
-      "name": "grim_color_slot2",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_color_slot2",
-          "name": "?grim_color_slot2@@3KA",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_color_slot2",
-          "name": "?grim_color_slot2@@3IA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268811280,
-      "definition_state": "unknown",
-      "name": "grim_color_slot3",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_color_slot3",
-          "name": "?grim_color_slot3@@3KA",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_color_slot3",
-          "name": "?grim_color_slot3@@3IA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268813312,
-      "definition_state": "unknown",
-      "name": "grim_backbuffer_width",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_backbuffer_width",
-          "name": "?grim_backbuffer_width@@3HA",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "grim_backbuffer_width",
-          "name": "?grim_backbuffer_width@@3IA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268801896,
-      "definition_state": "unknown",
-      "name": "grim_frame_dt",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_frame_dt",
-          "name": "?grim_frame_dt@@3MA",
-          "reference_count": 2
-        },
-        {
-          "lookup_name": "grim_frame_dt",
-          "name": "_grim_frame_dt",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268803632,
-      "definition_state": "unknown",
-      "name": "grim_rotation_radians",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_rotation_radians",
-          "name": "?grim_rotation_radians@@3MA",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 268805488,
-      "definition_state": "unknown",
-      "name": "grim_font2_char_map",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_font2_char_map",
-          "name": "?grim_font2_char_map@@3PAEA",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 268808892,
-      "definition_state": "unknown",
-      "name": "grim_fps",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_fps",
-          "name": "?grim_fps@@3MA",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 268808904,
-      "definition_state": "unknown",
-      "name": "grim_font2_uv_u",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_font2_uv_u",
-          "name": "?grim_font2_uv_u@@3PAMA",
-          "reference_count": 1
-        },
-        {
-          "lookup_name": "grim_font2_uv_u",
-          "name": "?grim_font2_uv_u@@3PAUGrimMonoPoint@@A",
-          "reference_count": 1
-        },
-        {
-          "lookup_name": "grim_font2_uv_u",
-          "name": "?grim_font2_uv_u@@3PAUGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268811384,
-      "definition_state": "unknown",
-      "name": "grim_subrect_ptr_table",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_subrect_ptr_table",
-          "name": "?grim_subrect_ptr_table@@3PAPAUGrimUV@@A",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
       "address": 268775488,
       "definition_state": "unknown",
       "name": "grim_lookup_blob_magic",
@@ -5670,63 +5395,6 @@
         {
           "lookup_name": "grim_lookup_blob_magic",
           "name": "?grim_lookup_blob_magic@@3PADA",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 268808824,
-      "definition_state": "unknown",
-      "name": "grim_mouse_x_cached",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_mouse_x_cached",
-          "name": "?grim_mouse_x_cached@@3MA",
-          "reference_count": 1
-        },
-        {
-          "lookup_name": "grim_mouse_x_cached",
-          "name": "_grim_mouse_x_cached",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268808828,
-      "definition_state": "unknown",
-      "name": "grim_mouse_y_cached",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_mouse_y_cached",
-          "name": "?grim_mouse_y_cached@@3MA",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 268808852,
-      "definition_state": "unknown",
-      "name": "grim_uv_v0",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_uv_v0",
-          "name": "?grim_uv_v0@@3MA",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 268814564,
-      "definition_state": "unknown",
-      "name": "grim_rotation_cos",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_rotation_cos",
-          "name": "?grim_rotation_cos@@3MA",
           "reference_count": 2
         }
       ]
@@ -5769,292 +5437,6 @@
           "reference_count": 1
         }
       ]
-    },
-    {
-      "address": 268775520,
-      "definition_state": "unknown",
-      "name": "grim_bound_texture_handle",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_bound_texture_handle",
-          "name": "?grim_bound_texture_handle@@3HA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268775536,
-      "definition_state": "unknown",
-      "name": "grim_font2_texture_handle",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_font2_texture_handle",
-          "name": "?grim_font2_texture_handle@@3HA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268805752,
-      "definition_state": "unknown",
-      "name": "grim_subrect_table",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_subrect_table",
-          "name": "?grim_subrect_table@@3PAUGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268807800,
-      "definition_state": "unknown",
-      "name": "grim_printf_buffer",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_printf_buffer",
-          "name": "?grim_printf_buffer@@3PADA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268808312,
-      "definition_state": "unknown",
-      "name": "grim_printf_buffer_alt",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_printf_buffer_alt",
-          "name": "?grim_printf_buffer_alt@@3PADA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268808856,
-      "definition_state": "unknown",
-      "name": "grim_uv_u1",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_uv_u1",
-          "name": "?grim_uv_u1@@3UGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268808864,
-      "definition_state": "unknown",
-      "name": "grim_uv_u2",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_uv_u2",
-          "name": "?grim_uv_u2@@3UGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268808872,
-      "definition_state": "unknown",
-      "name": "grim_uv_u3",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_uv_u3",
-          "name": "?grim_uv_u3@@3UGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268808884,
-      "definition_state": "unknown",
-      "name": "grim_d3d_device_type",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_d3d_device_type",
-          "name": "?grim_d3d_device_type@@3W4_D3DDEVTYPE@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268808908,
-      "definition_state": "unknown",
-      "name": "grim_font2_uv_v",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_font2_uv_v",
-          "name": "?grim_font2_uv_v@@3PAMA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268810956,
-      "definition_state": "unknown",
-      "name": "grim_module_handle",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_module_handle",
-          "name": "?grim_module_handle@@3PAUHINSTANCE__@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268812032,
-      "definition_state": "unknown",
-      "name": "grim_slot_ints",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_slot_ints",
-          "name": "?grim_slot_ints@@3PAHA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268812544,
-      "definition_state": "unknown",
-      "name": "grim_slot_floats",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_slot_floats",
-          "name": "?grim_slot_floats@@3PAMA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268814600,
-      "definition_state": "unknown",
-      "name": "grim_subrect_table_2",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_subrect_table_2",
-          "name": "?grim_subrect_table_2@@3PAUGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268815112,
-      "definition_state": "unknown",
-      "name": "grim_subrect_table_1",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_subrect_table_1",
-          "name": "?grim_subrect_table_1@@3PAUGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268817288,
-      "definition_state": "unknown",
-      "name": "grim_subrect_table_0",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_subrect_table_0",
-          "name": "?grim_subrect_table_0@@3PAUGrimUV@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268817388,
-      "definition_state": "unknown",
-      "name": "grim_font_texture",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_font_texture",
-          "name": "?grim_font_texture@@3PAUIDirect3DBaseTexture8@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268818464,
-      "definition_state": "unknown",
-      "name": "grim_paused_flag",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_paused_flag",
-          "name": "?grim_paused_flag@@3EA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268819268,
-      "definition_state": "unknown",
-      "name": "grim_mouse_x",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_mouse_x",
-          "name": "?grim_mouse_x@@3MA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268819272,
-      "definition_state": "unknown",
-      "name": "grim_mouse_y",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_mouse_y",
-          "name": "?grim_mouse_y@@3MA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268819280,
-      "definition_state": "unknown",
-      "name": "grim_mouse_dx",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_mouse_dx",
-          "name": "?grim_mouse_dx@@3MA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268819284,
-      "definition_state": "unknown",
-      "name": "grim_mouse_dy",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_mouse_dy",
-          "name": "?grim_mouse_dy@@3MA",
-          "reference_count": 1
-        }
-      ]
     }
   ],
   "schema": 1,
@@ -6062,7 +5444,7 @@
     "data_map": "analysis/ghidra/maps/data_map.json",
     "data_map_sha256": "c09119daba3a3486c2746da74c6509654316700fcc0961e6effee6b19c189a55",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "0bde80cbd862d9e2e99818b38e9deb011900f51b176cee405eaa43351c7ff891",
+    "definitions_sha256": "7cda3ef010ba0ab627b874aa2560a1ad56df8baf83710f13d5028cef17c4e244",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -6073,20 +5455,20 @@
   "summary": {
     "alias_names": 6,
     "alias_rows": 6,
-    "definition_group_entries": 62,
-    "definition_groups": 15,
+    "definition_group_entries": 107,
+    "definition_groups": 34,
     "entry_count": 273,
-    "explicit_alignment_entries": 70,
-    "explicit_initializer_entries": 70,
-    "explicit_size_entries": 70,
+    "explicit_alignment_entries": 115,
+    "explicit_initializer_entries": 115,
+    "explicit_size_entries": 115,
     "fixed_array_types": 12,
-    "fully_specified_entries": 70,
-    "game_data_reference_count": 129,
+    "fully_specified_entries": 115,
+    "game_data_reference_count": 5,
     "incomplete_array_types": 41,
     "multidimensional_array_types": 0,
     "overlay_addresses": 0,
-    "priority_entries": 49,
-    "referenced_entries": 49,
+    "priority_entries": 4,
+    "referenced_entries": 4,
     "section_counts": {
       ".data": 196,
       ".rdata": 75,

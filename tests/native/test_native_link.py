@@ -1221,12 +1221,12 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 
     assert payload["summary"]["entry_count"] == 273
     assert payload["summary"]["typed_entries"] == 182
-    assert payload["summary"]["explicit_size_entries"] == 70
-    assert payload["summary"]["explicit_alignment_entries"] == 70
-    assert payload["summary"]["explicit_initializer_entries"] == 70
-    assert payload["summary"]["fully_specified_entries"] == 70
-    assert payload["summary"]["definition_group_entries"] == 62
-    assert payload["summary"]["definition_groups"] == 15
+    assert payload["summary"]["explicit_size_entries"] == 115
+    assert payload["summary"]["explicit_alignment_entries"] == 115
+    assert payload["summary"]["explicit_initializer_entries"] == 115
+    assert payload["summary"]["fully_specified_entries"] == 115
+    assert payload["summary"]["definition_group_entries"] == 107
+    assert payload["summary"]["definition_groups"] == 34
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
     )
@@ -1247,10 +1247,16 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_interface_instance"]["definition_group"] == (
         "zero-pointer32"
     )
+    assert defined["grim_vertex_write_ptr"]["size"] == 4
+    assert defined["grim_uv_u0"]["size"] == 4 * 8
+    assert defined["grim_font2_uv_u"]["size"] == 256 * 8
+    assert defined["grim_color_slot0"]["size"] == 4 * 4
+    assert defined["grim_slot_ints"]["size"] == 128 * 4
+    assert defined["grim_texture_slots"]["size"] == 256 * 4
     assert next(
         entry
         for entry in payload["entries"]
-        if entry["name"] == "grim_texture_slots"
+        if entry["name"] == "grim_interface_vtable"
     )["size"] is None
 
 

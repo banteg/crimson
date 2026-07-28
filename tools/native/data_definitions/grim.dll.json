@@ -345,6 +345,279 @@
       "members": [
         ["0x1005d958", "grim_keyboard_event_buffer"]
       ]
+    },
+    {
+      "name": "source-literal-int32",
+      "types": [null],
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x10053060", "grim_bound_texture_handle", "ffffffff"],
+        ["0x10053070", "grim_font2_texture_handle", "ffffffff"],
+        ["0x10059dc0", "grim_backbuffer_height", "00000000"],
+        ["0x1005a054", "grim_time_ms", "00000000"],
+        ["0x1005a488", "grim_texture_format", "00000000"],
+        ["0x1005a56c", "grim_preferred_texture_format", "00000000"],
+        ["0x1005b2b4", "grim_d3d_device_type", "00000000"],
+        ["0x1005c400", "grim_backbuffer_width", "00000000"]
+      ]
+    },
+    {
+      "name": "source-zero-float32",
+      "types": [null],
+      "size": 4,
+      "size_source": "tools/match/scratches: consistent recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
+      "members": [
+        ["0x10059768", "grim_frame_dt"],
+        ["0x10059e30", "grim_rotation_radians"],
+        ["0x1005b278", "grim_mouse_x_cached"],
+        ["0x1005b27c", "grim_mouse_y_cached"],
+        ["0x1005b2bc", "grim_fps"],
+        ["0x1005c8e4", "grim_rotation_cos"],
+        ["0x1005db44", "grim_mouse_x"],
+        ["0x1005db48", "grim_mouse_y"],
+        ["0x1005db50", "grim_mouse_dx"],
+        ["0x1005db54", "grim_mouse_dy"]
+      ]
+    },
+    {
+      "name": "source-zero-pointer32",
+      "types": [null],
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes or virtual zero-fill at each member VA",
+      "members": [
+        ["0x10059e34", "grim_vertex_write_ptr"],
+        ["0x1005bacc", "grim_module_handle"],
+        ["0x1005d3ec", "grim_font_texture"]
+      ]
+    },
+    {
+      "name": "source-zero-byte",
+      "types": [null],
+      "size": 1,
+      "size_source": "tools/match/scratches/grim_set_paused and grim_run_loop: recovered unsigned-char pause flag",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
+      "members": [
+        ["0x1005d820", "grim_paused_flag"]
+      ]
+    },
+    {
+      "name": "source-zero-uchar-array-00100",
+      "types": [null],
+      "size": 256,
+      "size_source": "tools/match/scratches/grim_draw_text_small and grim_state_init: recovered unsigned-char arrays with 256 elements",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x1005a570", "grim_font2_char_map"],
+        ["0x1005bad8", "grim_font2_glyph_widths"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-buffer-00200",
+      "types": [null],
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_draw_text_mono_fmt and grim_draw_text_small_fmt: dedicated vsprintf destinations; Binary Ninja storage analysis bounds each buffer to its isolated 0x200-byte zero region",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x1005ae78", "grim_printf_buffer"],
+        ["0x1005b078", "grim_printf_buffer_alt"]
+      ]
+    },
+    {
+      "name": "source-zero-uv-quad-00020",
+      "types": [null],
+      "size": 32,
+      "size_source": "tools/match/scratches/grim_draw_quad and grim_state_init: GrimUV grim_uv_u0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005b290", "grim_uv_u0"]
+      ]
+    },
+    {
+      "name": "source-zero-float-interior",
+      "types": [null],
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered float aliases into the owning GrimUV arrays; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
+      "members": [
+        ["0x1005b294", "grim_uv_v0"],
+        ["0x1005b2cc", "grim_font2_uv_v"]
+      ]
+    },
+    {
+      "name": "source-zero-uv-point-00008",
+      "types": [null],
+      "size": 8,
+      "size_source": "tools/match/scratches/grim_state_init: recovered GrimUV point declarations; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
+      "members": [
+        ["0x1005b298", "grim_uv_u1"],
+        ["0x1005b2a0", "grim_uv_u2"],
+        ["0x1005b2a8", "grim_uv_u3"]
+      ]
+    },
+    {
+      "name": "source-zero-font-uv-table-00800",
+      "types": [null],
+      "size": 2048,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_font2_uv_u[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005b2c8", "grim_font2_uv_u"]
+      ]
+    },
+    {
+      "name": "source-zero-subrect-table-00800",
+      "types": [null],
+      "size": 2048,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table[256]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_table_is_0x800_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005a678", "grim_subrect_table"]
+      ]
+    },
+    {
+      "name": "source-zero-subrect-table-00200",
+      "types": [null],
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_2[64]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005c908", "grim_subrect_table_2"]
+      ]
+    },
+    {
+      "name": "source-zero-subrect-table-00080",
+      "types": [null],
+      "size": 128,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_1[16]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005cb08", "grim_subrect_table_1"]
+      ]
+    },
+    {
+      "name": "source-zero-subrect-table-00020",
+      "types": [null],
+      "size": 32,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_quad_is_0x20_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_uv_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005d388", "grim_subrect_table_0"]
+      ]
+    },
+    {
+      "name": "source-zero-subrect-pointer-table-00044",
+      "types": [null],
+      "size": 68,
+      "size_source": "tools/match/scratches/grim_state_init: GrimUV *grim_subrect_ptr_table[17]; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_table_17_is_0x44_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005bc78", "grim_subrect_ptr_table"]
+      ]
+    },
+    {
+      "name": "recovered-zero-slot-array-00200",
+      "types": [null],
+      "size": 512,
+      "size_source": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x1005bf00", "grim_slot_ints"],
+        ["0x1005c100", "grim_slot_floats"]
+      ]
+    },
+    {
+      "name": "source-zero-color-array-00010",
+      "types": [null],
+      "size": 16,
+      "size_source": "tools/match/scratches/grim_set_color: unsigned long grim_color_slot0[4]; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005bc04", "grim_color_slot0"]
+      ]
+    },
+    {
+      "name": "source-zero-color-interior-00004",
+      "types": [null],
+      "size": 4,
+      "size_source": "tools/match/scratches/grim_state_init: recovered unsigned-int color-slot aliases; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each interior member VA",
+      "members": [
+        ["0x1005bc08", "grim_color_slot1"],
+        ["0x1005bc0c", "grim_color_slot2"],
+        ["0x1005bc10", "grim_color_slot3"]
+      ]
+    },
+    {
+      "name": "source-zero-texture-slots-00400",
+      "types": [null],
+      "size": 1024,
+      "size_source": "tools/match/include/grim_texture.h: GrimTexture *grim_texture_slots[256]; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_table_256_is_0x400_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
+      "members": [
+        ["0x1005d404", "grim_texture_slots"]
+      ]
     }
   ]
 }

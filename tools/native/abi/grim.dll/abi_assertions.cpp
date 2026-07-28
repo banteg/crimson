@@ -63,6 +63,16 @@ struct grim_keyboard_event_alignment_probe_t {
     grim_keyboard_event_layout_t value;
 };
 
+struct grim_uv_layout_t {
+    float u;
+    float v;
+};
+
+struct grim_uv_alignment_probe_t {
+    char prefix;
+    grim_uv_layout_t value;
+};
+
 GRIM_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 GRIM_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 GRIM_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
@@ -84,6 +94,12 @@ GRIM_ABI_ASSERT(joystick_state_is_0x110_bytes, sizeof(GrimJoystickState) == 0x11
 GRIM_ABI_ASSERT(
     keyboard_event_is_0x14_bytes,
     sizeof(grim_keyboard_event_layout_t) == 0x14);
+GRIM_ABI_ASSERT(uv_is_8_bytes, sizeof(grim_uv_layout_t) == 8);
+GRIM_ABI_ASSERT(uv_quad_is_0x20_bytes, sizeof(grim_uv_layout_t[4]) == 0x20);
+GRIM_ABI_ASSERT(uv_table_is_0x800_bytes, sizeof(grim_uv_layout_t[256]) == 0x800);
+GRIM_ABI_ASSERT(pointer_table_17_is_0x44_bytes, sizeof(void *[17]) == 0x44);
+GRIM_ABI_ASSERT(pointer_table_256_is_0x400_bytes, sizeof(void *[256]) == 0x400);
+GRIM_ABI_ASSERT(slot_table_128_is_0x200_bytes, sizeof(int[128]) == 0x200);
 GRIM_ABI_ASSERT(interface_is_one_vptr, sizeof(IGrim2D_cpp) == 4);
 GRIM_ABI_ASSERT(vtable_is_84_slots, sizeof(grim2d_vtable_layout_t) == 0x150);
 GRIM_ABI_ASSERT(
@@ -137,6 +153,9 @@ GRIM_ABI_ASSERT(
 GRIM_ABI_ASSERT(
     default_keyboard_event_alignment_is_four,
     offsetof(grim_keyboard_event_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_uv_alignment_is_four,
+    offsetof(grim_uv_alignment_probe_t, value) == 4);
 
 GRIM_ABI_ASSERT(factory_pointer_is_32_bit, sizeof(grim_get_interface_fn) == 4);
 GRIM_ABI_ASSERT(member_pointer_is_32_bit, sizeof(grim_apply_settings_fn) == 4);

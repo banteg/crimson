@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/grim.dll/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "ed958a6efaf3fbd9ed2580665dccb4265b0c8e551c5e429190a7709856c03b5c"
+        "sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13"
       },
       {
         "path": "tools/native/abi/grim.dll/scratch.conf",
@@ -56,10 +56,10 @@
     "object": "tools/native/abi/grim.dll/build/msvc6.5/528f168a972345bf/abi_assertions.obj",
     "object_sha256": "f337d520b587647e4e3e496f5176a6f7e845ff341e36a3e22c34dc741acc86fd",
     "source": "tools/native/abi/grim.dll/abi_assertions.cpp",
-    "source_sha256": "ed958a6efaf3fbd9ed2580665dccb4265b0c8e551c5e429190a7709856c03b5c",
+    "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "2cb9af6d91f9777bc995f028cf8c943ac64e063644bbb48fe52471b2021a9f43",
+  "audit_digest": "392864512111f95a772095ee07a4d758015bf2d75f5cd0a6ec2cc9875c2a8f9a",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -110,12 +110,42 @@
           ]
         },
         {
+          "address": 268775520,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_bound_texture_handle",
+          "section_number": 4,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775520,
+          "storage_name": "grim_bound_texture_handle",
+          "symbols": [
+            "?grim_bound_texture_handle@@3HA"
+          ]
+        },
+        {
+          "address": 268775536,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_font2_texture_handle",
+          "section_number": 5,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775536,
+          "storage_name": "grim_font2_texture_handle",
+          "symbols": [
+            "?grim_font2_texture_handle@@3HA"
+          ]
+        },
+        {
           "address": 268775668,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_missing_frame_error_text",
-          "section_number": 4,
+          "section_number": 6,
           "section_offset": 0,
           "size": 35,
           "storage_address": 268775668,
@@ -125,12 +155,28 @@
           ]
         },
         {
+          "address": 268801896,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_frame_dt",
+          "section_number": 7,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268801896,
+          "storage_name": "grim_frame_dt",
+          "symbols": [
+            "?grim_frame_dt@@3MA",
+            "_grim_frame_dt"
+          ]
+        },
+        {
           "address": 268801900,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_capacity",
-          "section_number": 5,
+          "section_number": 8,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801900,
@@ -145,7 +191,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_on_device_restore",
-          "section_number": 6,
+          "section_number": 9,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801904,
@@ -160,7 +206,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_window_icon_handle",
-          "section_number": 7,
+          "section_number": 10,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801912,
@@ -175,7 +221,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_frame_callback",
-          "section_number": 8,
+          "section_number": 11,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801916,
@@ -190,7 +236,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_index_buffer",
-          "section_number": 9,
+          "section_number": 12,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803000,
@@ -205,7 +251,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_d3d_device",
-          "section_number": 10,
+          "section_number": 13,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803516,
@@ -215,12 +261,28 @@
           ]
         },
         {
+          "address": 268803520,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_backbuffer_height",
+          "section_number": 14,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803520,
+          "storage_name": "grim_backbuffer_height",
+          "symbols": [
+            "?grim_backbuffer_height@@3HA",
+            "?grim_backbuffer_height@@3IA"
+          ]
+        },
+        {
           "address": 268803524,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_tick_prev_ms",
-          "section_number": 11,
+          "section_number": 15,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803524,
@@ -235,7 +297,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_buffer",
-          "section_number": 12,
+          "section_number": 16,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803628,
@@ -245,12 +307,46 @@
           ]
         },
         {
+          "address": 268803632,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_rotation_radians",
+          "section_number": 17,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803632,
+          "storage_name": "grim_rotation_radians",
+          "symbols": [
+            "?grim_rotation_radians@@3MA"
+          ]
+        },
+        {
+          "address": 268803636,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_vertex_write_ptr",
+          "section_number": 18,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803636,
+          "storage_name": "grim_vertex_write_ptr",
+          "symbols": [
+            "?grim_vertex_write_ptr@@3PAEA",
+            "?grim_vertex_write_ptr@@3PAKA",
+            "?grim_vertex_write_ptr@@3PAMA",
+            "?grim_vertex_write_ptr@@3PAUGrimCircleVertex@@A",
+            "?grim_vertex_write_ptr@@3PAUGrimVertex@@A"
+          ]
+        },
+        {
           "address": 268803644,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_working_dir",
-          "section_number": 13,
+          "section_number": 19,
           "section_offset": 0,
           "size": 260,
           "storage_address": 268803644,
@@ -265,7 +361,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_sin",
-          "section_number": 14,
+          "section_number": 20,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803904,
@@ -280,7 +376,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_repeat_first_press",
-          "section_number": 15,
+          "section_number": 21,
           "section_offset": 0,
           "size": 256,
           "storage_address": 268803908,
@@ -295,7 +391,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_button_cache",
-          "section_number": 16,
+          "section_number": 22,
           "section_offset": 0,
           "size": 16,
           "storage_address": 268804164,
@@ -306,12 +402,29 @@
           ]
         },
         {
+          "address": 268804180,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_time_ms",
+          "section_number": 23,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268804180,
+          "storage_name": "grim_time_ms",
+          "symbols": [
+            "?grim_time_ms@@3HA",
+            "?grim_time_ms@@3KA",
+            "_grim_time_ms"
+          ]
+        },
+        {
           "address": 268804184,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_repeat_timers",
-          "section_number": 17,
+          "section_number": 24,
           "section_offset": 0,
           "size": 1024,
           "storage_address": 268804184,
@@ -326,7 +439,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_lookup_blob_size",
-          "section_number": 18,
+          "section_number": 25,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805208,
@@ -341,7 +454,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m00",
-          "section_number": 19,
+          "section_number": 26,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805216,
@@ -356,7 +469,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m01",
-          "section_number": 20,
+          "section_number": 27,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805220,
@@ -371,7 +484,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m10",
-          "section_number": 21,
+          "section_number": 28,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805224,
@@ -386,7 +499,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m11",
-          "section_number": 22,
+          "section_number": 29,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805228,
@@ -401,7 +514,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_timing_frozen",
-          "section_number": 23,
+          "section_number": 30,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268805232,
@@ -416,7 +529,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_config_default",
-          "section_number": 24,
+          "section_number": 31,
           "section_offset": 0,
           "size": 16,
           "storage_address": 268805240,
@@ -426,12 +539,28 @@
           ]
         },
         {
+          "address": 268805256,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_texture_format",
+          "section_number": 32,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805256,
+          "storage_name": "grim_texture_format",
+          "symbols": [
+            "?grim_texture_format@@3HA",
+            "?grim_texture_format@@3W4_D3DFORMAT@@A"
+          ]
+        },
+        {
           "address": 268805260,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_render_target_surface",
-          "section_number": 25,
+          "section_number": 33,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805260,
@@ -441,12 +570,43 @@
           ]
         },
         {
+          "address": 268805484,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_preferred_texture_format",
+          "section_number": 34,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805484,
+          "storage_name": "grim_preferred_texture_format",
+          "symbols": [
+            "?grim_preferred_texture_format@@3HA",
+            "?grim_preferred_texture_format@@3W4_D3DFORMAT@@A"
+          ]
+        },
+        {
+          "address": 268805488,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_font2_char_map",
+          "section_number": 35,
+          "section_offset": 0,
+          "size": 256,
+          "storage_address": 268805488,
+          "storage_name": "grim_font2_char_map",
+          "symbols": [
+            "?grim_font2_char_map@@3PAEA"
+          ]
+        },
+        {
           "address": 268805744,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_lookup_blob",
-          "section_number": 26,
+          "section_number": 36,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805744,
@@ -457,12 +617,88 @@
           ]
         },
         {
+          "address": 268805752,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_subrect_table",
+          "section_number": 37,
+          "section_offset": 0,
+          "size": 2048,
+          "storage_address": 268805752,
+          "storage_name": "grim_subrect_table",
+          "symbols": [
+            "?grim_subrect_table@@3PAUGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268807800,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_printf_buffer",
+          "section_number": 38,
+          "section_offset": 0,
+          "size": 512,
+          "storage_address": 268807800,
+          "storage_name": "grim_printf_buffer",
+          "symbols": [
+            "?grim_printf_buffer@@3PADA"
+          ]
+        },
+        {
+          "address": 268808312,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_printf_buffer_alt",
+          "section_number": 39,
+          "section_offset": 0,
+          "size": 512,
+          "storage_address": 268808312,
+          "storage_name": "grim_printf_buffer_alt",
+          "symbols": [
+            "?grim_printf_buffer_alt@@3PADA"
+          ]
+        },
+        {
+          "address": 268808824,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_x_cached",
+          "section_number": 40,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268808824,
+          "storage_name": "grim_mouse_x_cached",
+          "symbols": [
+            "?grim_mouse_x_cached@@3MA",
+            "_grim_mouse_x_cached"
+          ]
+        },
+        {
+          "address": 268808828,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_y_cached",
+          "section_number": 41,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268808828,
+          "storage_name": "grim_mouse_y_cached",
+          "symbols": [
+            "?grim_mouse_y_cached@@3MA"
+          ]
+        },
+        {
           "address": 268808840,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_z",
-          "section_number": 27,
+          "section_number": 42,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808840,
@@ -479,7 +715,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_rhw",
-          "section_number": 28,
+          "section_number": 43,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808844,
@@ -489,12 +725,119 @@
           ]
         },
         {
+          "address": 268808848,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_uv_u0",
+          "section_number": 44,
+          "section_offset": 0,
+          "size": 32,
+          "storage_address": 268808848,
+          "storage_name": "grim_uv_u0",
+          "symbols": [
+            "?grim_uv_u0@@3MA",
+            "?grim_uv_u0@@3PAUGrimUV@@A",
+            "?grim_uv_u0@@3UGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268808852,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_uv_v0",
+          "section_number": 44,
+          "section_offset": 4,
+          "size": 4,
+          "storage_address": 268808852,
+          "storage_name": "grim_uv_v0",
+          "symbols": [
+            "?grim_uv_v0@@3MA"
+          ]
+        },
+        {
+          "address": 268808856,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_uv_u1",
+          "section_number": 44,
+          "section_offset": 8,
+          "size": 8,
+          "storage_address": 268808856,
+          "storage_name": "grim_uv_u1",
+          "symbols": [
+            "?grim_uv_u1@@3UGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268808864,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_uv_u2",
+          "section_number": 44,
+          "section_offset": 16,
+          "size": 8,
+          "storage_address": 268808864,
+          "storage_name": "grim_uv_u2",
+          "symbols": [
+            "?grim_uv_u2@@3UGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268808872,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_uv_u3",
+          "section_number": 44,
+          "section_offset": 24,
+          "size": 8,
+          "storage_address": 268808872,
+          "storage_name": "grim_uv_u3",
+          "symbols": [
+            "?grim_uv_u3@@3UGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268808884,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_d3d_device_type",
+          "section_number": 45,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268808884,
+          "storage_name": "grim_d3d_device_type",
+          "symbols": [
+            "?grim_d3d_device_type@@3W4_D3DDEVTYPE@@A"
+          ]
+        },
+        {
+          "address": 268808892,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_fps",
+          "section_number": 46,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268808892,
+          "storage_name": "grim_fps",
+          "symbols": [
+            "?grim_fps@@3MA"
+          ]
+        },
+        {
           "address": 268808900,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_d3d8_probe",
-          "section_number": 29,
+          "section_number": 47,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808900,
@@ -504,12 +847,44 @@
           ]
         },
         {
+          "address": 268808904,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_font2_uv_u",
+          "section_number": 48,
+          "section_offset": 0,
+          "size": 2048,
+          "storage_address": 268808904,
+          "storage_name": "grim_font2_uv_u",
+          "symbols": [
+            "?grim_font2_uv_u@@3PAMA",
+            "?grim_font2_uv_u@@3PAUGrimMonoPoint@@A",
+            "?grim_font2_uv_u@@3PAUGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268808908,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_font2_uv_v",
+          "section_number": 48,
+          "section_offset": 4,
+          "size": 4,
+          "storage_address": 268808908,
+          "storage_name": "grim_font2_uv_v",
+          "symbols": [
+            "?grim_font2_uv_v@@3PAMA"
+          ]
+        },
+        {
           "address": 268810952,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_window_title",
-          "section_number": 30,
+          "section_number": 49,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268810952,
@@ -519,12 +894,27 @@
           ]
         },
         {
+          "address": 268810956,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_module_handle",
+          "section_number": 50,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268810956,
+          "storage_name": "grim_module_handle",
+          "symbols": [
+            "?grim_module_handle@@3PAUHINSTANCE__@@A"
+          ]
+        },
+        {
           "address": 268810960,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_tick_now_ms",
-          "section_number": 31,
+          "section_number": 51,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268810960,
@@ -539,7 +929,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_timing_epoch_ms",
-          "section_number": 32,
+          "section_number": 52,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268810964,
@@ -549,12 +939,92 @@
           ]
         },
         {
+          "address": 268810968,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_font2_glyph_widths",
+          "section_number": 53,
+          "section_offset": 0,
+          "size": 256,
+          "storage_address": 268810968,
+          "storage_name": "grim_font2_glyph_widths",
+          "symbols": [
+            "?grim_font2_glyph_widths@@3PAEA"
+          ]
+        },
+        {
+          "address": 268811268,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_color_slot0",
+          "section_number": 54,
+          "section_offset": 0,
+          "size": 16,
+          "storage_address": 268811268,
+          "storage_name": "grim_color_slot0",
+          "symbols": [
+            "?grim_color_slot0@@3IA",
+            "?grim_color_slot0@@3KA",
+            "?grim_color_slot0@@3PAKA"
+          ]
+        },
+        {
+          "address": 268811272,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_color_slot1",
+          "section_number": 54,
+          "section_offset": 4,
+          "size": 4,
+          "storage_address": 268811272,
+          "storage_name": "grim_color_slot1",
+          "symbols": [
+            "?grim_color_slot1@@3IA",
+            "?grim_color_slot1@@3KA"
+          ]
+        },
+        {
+          "address": 268811276,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_color_slot2",
+          "section_number": 54,
+          "section_offset": 8,
+          "size": 4,
+          "storage_address": 268811276,
+          "storage_name": "grim_color_slot2",
+          "symbols": [
+            "?grim_color_slot2@@3IA",
+            "?grim_color_slot2@@3KA"
+          ]
+        },
+        {
+          "address": 268811280,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_color_slot3",
+          "section_number": 54,
+          "section_offset": 12,
+          "size": 4,
+          "storage_address": 268811280,
+          "storage_name": "grim_color_slot3",
+          "symbols": [
+            "?grim_color_slot3@@3IA",
+            "?grim_color_slot3@@3KA"
+          ]
+        },
+        {
           "address": 268811284,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_lookup_blob_loaded",
-          "section_number": 33,
+          "section_number": 55,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268811284,
@@ -564,12 +1034,73 @@
           ]
         },
         {
+          "address": 268811384,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_subrect_ptr_table",
+          "section_number": 56,
+          "section_offset": 0,
+          "size": 68,
+          "storage_address": 268811384,
+          "storage_name": "grim_subrect_ptr_table",
+          "symbols": [
+            "?grim_subrect_ptr_table@@3PAPAUGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268812032,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_slot_ints",
+          "section_number": 57,
+          "section_offset": 0,
+          "size": 512,
+          "storage_address": 268812032,
+          "storage_name": "grim_slot_ints",
+          "symbols": [
+            "?grim_slot_ints@@3PAHA"
+          ]
+        },
+        {
+          "address": 268812544,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_slot_floats",
+          "section_number": 58,
+          "section_offset": 0,
+          "size": 512,
+          "storage_address": 268812544,
+          "storage_name": "grim_slot_floats",
+          "symbols": [
+            "?grim_slot_floats@@3PAMA"
+          ]
+        },
+        {
+          "address": 268813312,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_backbuffer_width",
+          "section_number": 59,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268813312,
+          "storage_name": "grim_backbuffer_width",
+          "symbols": [
+            "?grim_backbuffer_width@@3HA",
+            "?grim_backbuffer_width@@3IA"
+          ]
+        },
+        {
           "address": 268813336,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_config_blob",
-          "section_number": 34,
+          "section_number": 60,
           "section_offset": 0,
           "size": 1152,
           "storage_address": 268813336,
@@ -584,7 +1115,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_device_ready",
-          "section_number": 35,
+          "section_number": 61,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268814488,
@@ -599,7 +1130,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_count",
-          "section_number": 36,
+          "section_number": 62,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814556,
@@ -609,12 +1140,27 @@
           ]
         },
         {
+          "address": 268814564,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_rotation_cos",
+          "section_number": 63,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268814564,
+          "storage_name": "grim_rotation_cos",
+          "symbols": [
+            "?grim_rotation_cos@@3MA"
+          ]
+        },
+        {
           "address": 268814568,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_button_latch",
-          "section_number": 37,
+          "section_number": 64,
           "section_offset": 0,
           "size": 16,
           "storage_address": 268814568,
@@ -630,7 +1176,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_error_text",
-          "section_number": 38,
+          "section_number": 65,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814584,
@@ -646,7 +1192,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_d3d8",
-          "section_number": 39,
+          "section_number": 66,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814588,
@@ -661,7 +1207,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_backbuffer_surface",
-          "section_number": 40,
+          "section_number": 67,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814592,
@@ -671,12 +1217,42 @@
           ]
         },
         {
+          "address": 268814600,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_subrect_table_2",
+          "section_number": 68,
+          "section_offset": 0,
+          "size": 512,
+          "storage_address": 268814600,
+          "storage_name": "grim_subrect_table_2",
+          "symbols": [
+            "?grim_subrect_table_2@@3PAUGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268815112,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_subrect_table_1",
+          "section_number": 69,
+          "section_offset": 0,
+          "size": 128,
+          "storage_address": 268815112,
+          "storage_name": "grim_subrect_table_1",
+          "symbols": [
+            "?grim_subrect_table_1@@3PAUGrimUV@@A"
+          ]
+        },
+        {
           "address": 268815240,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_config_values",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 0,
           "size": 2048,
           "storage_address": 268815240,
@@ -691,7 +1267,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_enabled",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 176,
           "size": 1,
           "storage_address": 268815416,
@@ -706,7 +1282,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_enabled",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 192,
           "size": 1,
           "storage_address": 268815432,
@@ -721,7 +1297,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "grim_input_cached",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 208,
           "size": null,
           "storage_address": 268815240,
@@ -738,7 +1314,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_enabled",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 224,
           "size": 1,
           "storage_address": 268815464,
@@ -753,7 +1329,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "grim_font_texture_bound",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 368,
           "size": null,
           "storage_address": 268815240,
@@ -768,7 +1344,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font_scale",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 384,
           "size": 4,
           "storage_address": 268815624,
@@ -783,7 +1359,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_main_window_hwnd_ref",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 1324,
           "size": 4,
           "storage_address": 268816564,
@@ -798,7 +1374,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_deadzone",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 1456,
           "size": 4,
           "storage_address": 268816696,
@@ -813,7 +1389,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_center_x",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 1472,
           "size": 4,
           "storage_address": 268816712,
@@ -828,7 +1404,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_center_y",
-          "section_number": 41,
+          "section_number": 70,
           "section_offset": 1488,
           "size": 4,
           "storage_address": 268816728,
@@ -838,12 +1414,27 @@
           ]
         },
         {
+          "address": 268817288,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_subrect_table_0",
+          "section_number": 71,
+          "section_offset": 0,
+          "size": 32,
+          "storage_address": 268817288,
+          "storage_name": "grim_subrect_table_0",
+          "symbols": [
+            "?grim_subrect_table_0@@3PAUGrimUV@@A"
+          ]
+        },
+        {
           "address": 268817320,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_on_device_lost",
-          "section_number": 42,
+          "section_number": 72,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817320,
@@ -858,7 +1449,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_reserved_d3ac",
-          "section_number": 43,
+          "section_number": 73,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268817324,
@@ -873,7 +1464,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_ms_to_seconds_scale",
-          "section_number": 44,
+          "section_number": 74,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817328,
@@ -888,7 +1479,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_input_provider",
-          "section_number": 45,
+          "section_number": 75,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817332,
@@ -903,7 +1494,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_wheel_delta_cached",
-          "section_number": 46,
+          "section_number": 76,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817336,
@@ -918,7 +1509,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_render_disabled",
-          "section_number": 47,
+          "section_number": 77,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268817341,
@@ -933,7 +1524,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_char_queue",
-          "section_number": 48,
+          "section_number": 78,
           "section_offset": 0,
           "size": 32,
           "storage_address": 268817348,
@@ -948,7 +1539,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_char_queue_count",
-          "section_number": 49,
+          "section_number": 79,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817380,
@@ -963,7 +1554,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_selected_adapter_index",
-          "section_number": 50,
+          "section_number": 80,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817384,
@@ -973,12 +1564,27 @@
           ]
         },
         {
+          "address": 268817388,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_font_texture",
+          "section_number": 81,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817388,
+          "storage_name": "grim_font_texture",
+          "symbols": [
+            "?grim_font_texture@@3PAUIDirect3DBaseTexture8@@A"
+          ]
+        },
+        {
           "address": 268817396,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_batch_active",
-          "section_number": 51,
+          "section_number": 82,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268817396,
@@ -993,7 +1599,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_main_window_hwnd",
-          "section_number": 52,
+          "section_number": 83,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817400,
@@ -1009,7 +1615,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_device_window_override",
-          "section_number": 53,
+          "section_number": 84,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817404,
@@ -1019,12 +1625,29 @@
           ]
         },
         {
+          "address": 268817412,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_texture_slots",
+          "section_number": 85,
+          "section_offset": 0,
+          "size": 1024,
+          "storage_address": 268817412,
+          "storage_name": "grim_texture_slots",
+          "symbols": [
+            "?grim_texture_slots@@3PAPAUGrimTexture@@A",
+            "?grim_texture_slots@@3PAPAUGrimTextureSlot@@A",
+            "?grim_texture_slots@@3PAXA"
+          ]
+        },
+        {
           "address": 268818452,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_fps_sample_frames",
-          "section_number": 54,
+          "section_number": 86,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818452,
@@ -1039,7 +1662,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_fps_sample_elapsed_ms",
-          "section_number": 55,
+          "section_number": 87,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818456,
@@ -1054,7 +1677,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_interface_instance",
-          "section_number": 56,
+          "section_number": 88,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818460,
@@ -1065,12 +1688,27 @@
           ]
         },
         {
+          "address": 268818464,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_paused_flag",
+          "section_number": 89,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268818464,
+          "storage_name": "grim_paused_flag",
+          "symbols": [
+            "?grim_paused_flag@@3EA"
+          ]
+        },
+        {
           "address": 268818472,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_empty_string",
-          "section_number": 57,
+          "section_number": 90,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268818472,
@@ -1085,7 +1723,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_state",
-          "section_number": 58,
+          "section_number": 91,
           "section_offset": 0,
           "size": 272,
           "storage_address": 268818480,
@@ -1100,7 +1738,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_event_buffer",
-          "section_number": 59,
+          "section_number": 92,
           "section_offset": 0,
           "size": 200,
           "storage_address": 268818776,
@@ -1115,7 +1753,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_device",
-          "section_number": 60,
+          "section_number": 93,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818980,
@@ -1130,7 +1768,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_state",
-          "section_number": 61,
+          "section_number": 94,
           "section_offset": 0,
           "size": 256,
           "storage_address": 268818984,
@@ -1140,12 +1778,72 @@
           ]
         },
         {
+          "address": 268819268,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_x",
+          "section_number": 95,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268819268,
+          "storage_name": "grim_mouse_x",
+          "symbols": [
+            "?grim_mouse_x@@3MA"
+          ]
+        },
+        {
+          "address": 268819272,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_y",
+          "section_number": 96,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268819272,
+          "storage_name": "grim_mouse_y",
+          "symbols": [
+            "?grim_mouse_y@@3MA"
+          ]
+        },
+        {
+          "address": 268819280,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_dx",
+          "section_number": 97,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268819280,
+          "storage_name": "grim_mouse_dx",
+          "symbols": [
+            "?grim_mouse_dx@@3MA"
+          ]
+        },
+        {
+          "address": 268819284,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_dy",
+          "section_number": 98,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268819284,
+          "storage_name": "grim_mouse_dy",
+          "symbols": [
+            "?grim_mouse_dy@@3MA"
+          ]
+        },
+        {
           "address": 268819288,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_wheel_delta",
-          "section_number": 62,
+          "section_number": 99,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268819288,
@@ -1158,11 +1856,11 @@
       "definitions": {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "0bde80cbd862d9e2e99818b38e9deb011900f51b176cee405eaa43351c7ff891"
+        "sha256": "7cda3ef010ba0ab627b874aa2560a1ad56df8baf83710f13d5028cef17c4e244"
       },
-      "emitted_symbol_count": 82,
+      "emitted_symbol_count": 150,
       "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-      "object_sha256": "ef0591d8b23f9dfe96b89fc58c4c3454306c796ac621422aea7f47566e0a9df9",
+      "object_sha256": "4e8e3dd6ee0225722bb38f20026a9c75f02e76129b13994a2b25d9e6bc016402",
       "regions": [
         {
           "address": 268775492,
@@ -1204,6 +1902,32 @@
           "size": 4
         },
         {
+          "address": 268775520,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775520,
+              "name": "grim_bound_texture_handle"
+            }
+          ],
+          "relocations": [],
+          "section_number": 4,
+          "size": 4
+        },
+        {
+          "address": 268775536,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775536,
+              "name": "grim_font2_texture_handle"
+            }
+          ],
+          "relocations": [],
+          "section_number": 5,
+          "size": 4
+        },
+        {
           "address": 268775668,
           "alignment": 1,
           "entries": [
@@ -1213,8 +1937,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 4,
+          "section_number": 6,
           "size": 35
+        },
+        {
+          "address": 268801896,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268801896,
+              "name": "grim_frame_dt"
+            }
+          ],
+          "relocations": [],
+          "section_number": 7,
+          "size": 4
         },
         {
           "address": 268801900,
@@ -1226,7 +1963,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 5,
+          "section_number": 8,
           "size": 4
         },
         {
@@ -1239,7 +1976,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 6,
+          "section_number": 9,
           "size": 4
         },
         {
@@ -1252,7 +1989,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 7,
+          "section_number": 10,
           "size": 4
         },
         {
@@ -1265,7 +2002,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 8,
+          "section_number": 11,
           "size": 4
         },
         {
@@ -1278,7 +2015,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 9,
+          "section_number": 12,
           "size": 4
         },
         {
@@ -1291,7 +2028,20 @@
             }
           ],
           "relocations": [],
-          "section_number": 10,
+          "section_number": 13,
+          "size": 4
+        },
+        {
+          "address": 268803520,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803520,
+              "name": "grim_backbuffer_height"
+            }
+          ],
+          "relocations": [],
+          "section_number": 14,
           "size": 4
         },
         {
@@ -1304,7 +2054,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 11,
+          "section_number": 15,
           "size": 4
         },
         {
@@ -1317,7 +2067,33 @@
             }
           ],
           "relocations": [],
-          "section_number": 12,
+          "section_number": 16,
+          "size": 4
+        },
+        {
+          "address": 268803632,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803632,
+              "name": "grim_rotation_radians"
+            }
+          ],
+          "relocations": [],
+          "section_number": 17,
+          "size": 4
+        },
+        {
+          "address": 268803636,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803636,
+              "name": "grim_vertex_write_ptr"
+            }
+          ],
+          "relocations": [],
+          "section_number": 18,
           "size": 4
         },
         {
@@ -1330,7 +2106,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 13,
+          "section_number": 19,
           "size": 260
         },
         {
@@ -1343,7 +2119,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 14,
+          "section_number": 20,
           "size": 4
         },
         {
@@ -1356,7 +2132,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 15,
+          "section_number": 21,
           "size": 256
         },
         {
@@ -1369,8 +2145,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 16,
+          "section_number": 22,
           "size": 16
+        },
+        {
+          "address": 268804180,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268804180,
+              "name": "grim_time_ms"
+            }
+          ],
+          "relocations": [],
+          "section_number": 23,
+          "size": 4
         },
         {
           "address": 268804184,
@@ -1382,7 +2171,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 17,
+          "section_number": 24,
           "size": 1024
         },
         {
@@ -1395,7 +2184,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 18,
+          "section_number": 25,
           "size": 4
         },
         {
@@ -1408,7 +2197,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 19,
+          "section_number": 26,
           "size": 4
         },
         {
@@ -1421,7 +2210,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 20,
+          "section_number": 27,
           "size": 4
         },
         {
@@ -1434,7 +2223,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 21,
+          "section_number": 28,
           "size": 4
         },
         {
@@ -1447,7 +2236,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 22,
+          "section_number": 29,
           "size": 4
         },
         {
@@ -1460,7 +2249,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 23,
+          "section_number": 30,
           "size": 1
         },
         {
@@ -1473,8 +2262,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 24,
+          "section_number": 31,
           "size": 16
+        },
+        {
+          "address": 268805256,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805256,
+              "name": "grim_texture_format"
+            }
+          ],
+          "relocations": [],
+          "section_number": 32,
+          "size": 4
         },
         {
           "address": 268805260,
@@ -1486,8 +2288,34 @@
             }
           ],
           "relocations": [],
-          "section_number": 25,
+          "section_number": 33,
           "size": 4
+        },
+        {
+          "address": 268805484,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805484,
+              "name": "grim_preferred_texture_format"
+            }
+          ],
+          "relocations": [],
+          "section_number": 34,
+          "size": 4
+        },
+        {
+          "address": 268805488,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268805488,
+              "name": "grim_font2_char_map"
+            }
+          ],
+          "relocations": [],
+          "section_number": 35,
+          "size": 256
         },
         {
           "address": 268805744,
@@ -1499,7 +2327,72 @@
             }
           ],
           "relocations": [],
-          "section_number": 26,
+          "section_number": 36,
+          "size": 4
+        },
+        {
+          "address": 268805752,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805752,
+              "name": "grim_subrect_table"
+            }
+          ],
+          "relocations": [],
+          "section_number": 37,
+          "size": 2048
+        },
+        {
+          "address": 268807800,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268807800,
+              "name": "grim_printf_buffer"
+            }
+          ],
+          "relocations": [],
+          "section_number": 38,
+          "size": 512
+        },
+        {
+          "address": 268808312,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268808312,
+              "name": "grim_printf_buffer_alt"
+            }
+          ],
+          "relocations": [],
+          "section_number": 39,
+          "size": 512
+        },
+        {
+          "address": 268808824,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808824,
+              "name": "grim_mouse_x_cached"
+            }
+          ],
+          "relocations": [],
+          "section_number": 40,
+          "size": 4
+        },
+        {
+          "address": 268808828,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808828,
+              "name": "grim_mouse_y_cached"
+            }
+          ],
+          "relocations": [],
+          "section_number": 41,
           "size": 4
         },
         {
@@ -1512,7 +2405,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 27,
+          "section_number": 42,
           "size": 4
         },
         {
@@ -1525,7 +2418,62 @@
             }
           ],
           "relocations": [],
-          "section_number": 28,
+          "section_number": 43,
+          "size": 4
+        },
+        {
+          "address": 268808848,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808848,
+              "name": "grim_uv_u0"
+            },
+            {
+              "address": 268808852,
+              "name": "grim_uv_v0"
+            },
+            {
+              "address": 268808856,
+              "name": "grim_uv_u1"
+            },
+            {
+              "address": 268808864,
+              "name": "grim_uv_u2"
+            },
+            {
+              "address": 268808872,
+              "name": "grim_uv_u3"
+            }
+          ],
+          "relocations": [],
+          "section_number": 44,
+          "size": 32
+        },
+        {
+          "address": 268808884,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808884,
+              "name": "grim_d3d_device_type"
+            }
+          ],
+          "relocations": [],
+          "section_number": 45,
+          "size": 4
+        },
+        {
+          "address": 268808892,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808892,
+              "name": "grim_fps"
+            }
+          ],
+          "relocations": [],
+          "section_number": 46,
           "size": 4
         },
         {
@@ -1538,8 +2486,25 @@
             }
           ],
           "relocations": [],
-          "section_number": 29,
+          "section_number": 47,
           "size": 4
+        },
+        {
+          "address": 268808904,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808904,
+              "name": "grim_font2_uv_u"
+            },
+            {
+              "address": 268808908,
+              "name": "grim_font2_uv_v"
+            }
+          ],
+          "relocations": [],
+          "section_number": 48,
+          "size": 2048
         },
         {
           "address": 268810952,
@@ -1551,7 +2516,20 @@
             }
           ],
           "relocations": [],
-          "section_number": 30,
+          "section_number": 49,
+          "size": 4
+        },
+        {
+          "address": 268810956,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268810956,
+              "name": "grim_module_handle"
+            }
+          ],
+          "relocations": [],
+          "section_number": 50,
           "size": 4
         },
         {
@@ -1564,7 +2542,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 31,
+          "section_number": 51,
           "size": 4
         },
         {
@@ -1577,8 +2555,46 @@
             }
           ],
           "relocations": [],
-          "section_number": 32,
+          "section_number": 52,
           "size": 4
+        },
+        {
+          "address": 268810968,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268810968,
+              "name": "grim_font2_glyph_widths"
+            }
+          ],
+          "relocations": [],
+          "section_number": 53,
+          "size": 256
+        },
+        {
+          "address": 268811268,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268811268,
+              "name": "grim_color_slot0"
+            },
+            {
+              "address": 268811272,
+              "name": "grim_color_slot1"
+            },
+            {
+              "address": 268811276,
+              "name": "grim_color_slot2"
+            },
+            {
+              "address": 268811280,
+              "name": "grim_color_slot3"
+            }
+          ],
+          "relocations": [],
+          "section_number": 54,
+          "size": 16
         },
         {
           "address": 268811284,
@@ -1590,8 +2606,60 @@
             }
           ],
           "relocations": [],
-          "section_number": 33,
+          "section_number": 55,
           "size": 1
+        },
+        {
+          "address": 268811384,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268811384,
+              "name": "grim_subrect_ptr_table"
+            }
+          ],
+          "relocations": [],
+          "section_number": 56,
+          "size": 68
+        },
+        {
+          "address": 268812032,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268812032,
+              "name": "grim_slot_ints"
+            }
+          ],
+          "relocations": [],
+          "section_number": 57,
+          "size": 512
+        },
+        {
+          "address": 268812544,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268812544,
+              "name": "grim_slot_floats"
+            }
+          ],
+          "relocations": [],
+          "section_number": 58,
+          "size": 512
+        },
+        {
+          "address": 268813312,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268813312,
+              "name": "grim_backbuffer_width"
+            }
+          ],
+          "relocations": [],
+          "section_number": 59,
+          "size": 4
         },
         {
           "address": 268813336,
@@ -1603,7 +2671,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 34,
+          "section_number": 60,
           "size": 1152
         },
         {
@@ -1616,7 +2684,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 35,
+          "section_number": 61,
           "size": 1
         },
         {
@@ -1629,7 +2697,20 @@
             }
           ],
           "relocations": [],
-          "section_number": 36,
+          "section_number": 62,
+          "size": 4
+        },
+        {
+          "address": 268814564,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268814564,
+              "name": "grim_rotation_cos"
+            }
+          ],
+          "relocations": [],
+          "section_number": 63,
           "size": 4
         },
         {
@@ -1642,7 +2723,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 37,
+          "section_number": 64,
           "size": 16
         },
         {
@@ -1655,7 +2736,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 38,
+          "section_number": 65,
           "size": 4
         },
         {
@@ -1668,7 +2749,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 39,
+          "section_number": 66,
           "size": 4
         },
         {
@@ -1681,8 +2762,34 @@
             }
           ],
           "relocations": [],
-          "section_number": 40,
+          "section_number": 67,
           "size": 4
+        },
+        {
+          "address": 268814600,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268814600,
+              "name": "grim_subrect_table_2"
+            }
+          ],
+          "relocations": [],
+          "section_number": 68,
+          "size": 512
+        },
+        {
+          "address": 268815112,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268815112,
+              "name": "grim_subrect_table_1"
+            }
+          ],
+          "relocations": [],
+          "section_number": 69,
+          "size": 128
         },
         {
           "address": 268815240,
@@ -1726,8 +2833,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 41,
+          "section_number": 70,
           "size": 2048
+        },
+        {
+          "address": 268817288,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817288,
+              "name": "grim_subrect_table_0"
+            }
+          ],
+          "relocations": [],
+          "section_number": 71,
+          "size": 32
         },
         {
           "address": 268817320,
@@ -1739,7 +2859,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 42,
+          "section_number": 72,
           "size": 4
         },
         {
@@ -1752,7 +2872,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 43,
+          "section_number": 73,
           "size": 1
         },
         {
@@ -1765,7 +2885,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 44,
+          "section_number": 74,
           "size": 4
         },
         {
@@ -1778,7 +2898,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 45,
+          "section_number": 75,
           "size": 4
         },
         {
@@ -1791,7 +2911,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 46,
+          "section_number": 76,
           "size": 4
         },
         {
@@ -1804,7 +2924,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 47,
+          "section_number": 77,
           "size": 1
         },
         {
@@ -1817,7 +2937,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 48,
+          "section_number": 78,
           "size": 32
         },
         {
@@ -1830,7 +2950,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 49,
+          "section_number": 79,
           "size": 4
         },
         {
@@ -1843,7 +2963,20 @@
             }
           ],
           "relocations": [],
-          "section_number": 50,
+          "section_number": 80,
+          "size": 4
+        },
+        {
+          "address": 268817388,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817388,
+              "name": "grim_font_texture"
+            }
+          ],
+          "relocations": [],
+          "section_number": 81,
           "size": 4
         },
         {
@@ -1856,7 +2989,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 51,
+          "section_number": 82,
           "size": 1
         },
         {
@@ -1869,7 +3002,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 52,
+          "section_number": 83,
           "size": 4
         },
         {
@@ -1882,8 +3015,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 53,
+          "section_number": 84,
           "size": 4
+        },
+        {
+          "address": 268817412,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817412,
+              "name": "grim_texture_slots"
+            }
+          ],
+          "relocations": [],
+          "section_number": 85,
+          "size": 1024
         },
         {
           "address": 268818452,
@@ -1895,7 +3041,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 54,
+          "section_number": 86,
           "size": 4
         },
         {
@@ -1908,7 +3054,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 55,
+          "section_number": 87,
           "size": 4
         },
         {
@@ -1921,8 +3067,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 56,
+          "section_number": 88,
           "size": 4
+        },
+        {
+          "address": 268818464,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268818464,
+              "name": "grim_paused_flag"
+            }
+          ],
+          "relocations": [],
+          "section_number": 89,
+          "size": 1
         },
         {
           "address": 268818472,
@@ -1934,7 +3093,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 57,
+          "section_number": 90,
           "size": 1
         },
         {
@@ -1947,7 +3106,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 58,
+          "section_number": 91,
           "size": 272
         },
         {
@@ -1960,7 +3119,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 59,
+          "section_number": 92,
           "size": 200
         },
         {
@@ -1973,7 +3132,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 60,
+          "section_number": 93,
           "size": 4
         },
         {
@@ -1986,8 +3145,60 @@
             }
           ],
           "relocations": [],
-          "section_number": 61,
+          "section_number": 94,
           "size": 256
+        },
+        {
+          "address": 268819268,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268819268,
+              "name": "grim_mouse_x"
+            }
+          ],
+          "relocations": [],
+          "section_number": 95,
+          "size": 4
+        },
+        {
+          "address": 268819272,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268819272,
+              "name": "grim_mouse_y"
+            }
+          ],
+          "relocations": [],
+          "section_number": 96,
+          "size": 4
+        },
+        {
+          "address": 268819280,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268819280,
+              "name": "grim_mouse_dx"
+            }
+          ],
+          "relocations": [],
+          "section_number": 97,
+          "size": 4
+        },
+        {
+          "address": 268819284,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268819284,
+              "name": "grim_mouse_dy"
+            }
+          ],
+          "relocations": [],
+          "section_number": 98,
+          "size": 4
         },
         {
           "address": 268819288,
@@ -1999,7 +3210,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 62,
+          "section_number": 99,
           "size": 4
         }
       ]
@@ -15192,7 +16403,7 @@
       {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "0bde80cbd862d9e2e99818b38e9deb011900f51b176cee405eaa43351c7ff891"
+        "sha256": "7cda3ef010ba0ab627b874aa2560a1ad56df8baf83710f13d5028cef17c4e244"
       }
     ],
     "toolchain": {
