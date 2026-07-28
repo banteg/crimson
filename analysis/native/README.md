@@ -57,6 +57,9 @@ exact requested symbol names. Overlapping ranges share storage, so C and C++
 decorated names and interior fields can alias the same bytes without inventing
 duplicate globals. Sparse ranges remain separate sections; the emitter does
 not fill unknown gaps or derive extents from neighboring symbols.
+Initializers may be recorded literally as `initializer_hex` or compactly as a
+single-byte `initializer_fill`; both forms are checked byte-for-byte against
+the pinned reference image before an object is emitted.
 
 The three Crimsonland metadata lifecycle clusters are the first modeled
 exception. Their natural global-array definitions emit exact

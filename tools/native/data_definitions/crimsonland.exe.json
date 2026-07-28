@@ -29,6 +29,16 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0047eec8"
     },
     {
+      "address": "0x00480348",
+      "name": "config_blob",
+      "size": 1152,
+      "size_source": "third_party/headers/crimsonland_types.h: crimson_cfg_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: config_is_0x480",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: config_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00480348..0x004807c8"
+    },
+    {
       "address": "0x0048035c",
       "name": "config_player_count",
       "size": 4,
@@ -307,6 +317,26 @@
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
       "initializer_hex": "00000000",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0048f7ec"
+    },
+    {
+      "address": "0x004908b0",
+      "name": "player_state_table",
+      "size": 1728,
+      "size_source": "third_party/headers/crimsonland_types.h: player_state_t[2]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: player_state_table_is_0x6c0",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: player_state_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004908b0..0x00490f70"
+    },
+    {
+      "address": "0x0049bf38",
+      "name": "creature_pool",
+      "size": 58368,
+      "size_source": "third_party/headers/crimsonland_types.h: creature_t[384]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe400",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0049bf38..0x004aa338"
     },
     {
       "address": "0x004aaf0c",

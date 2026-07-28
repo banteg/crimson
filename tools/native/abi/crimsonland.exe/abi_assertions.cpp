@@ -42,6 +42,21 @@ struct crimson_console_queue_alignment_probe_t {
     console_queue_t value;
 };
 
+struct crimson_config_alignment_probe_t {
+    char prefix;
+    crimson_cfg_t value;
+};
+
+struct crimson_player_state_alignment_probe_t {
+    char prefix;
+    player_state_t value;
+};
+
+struct crimson_creature_alignment_probe_t {
+    char prefix;
+    creature_t value;
+};
+
 CRIMSON_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 CRIMSON_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 CRIMSON_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
@@ -86,6 +101,17 @@ CRIMSON_ABI_ASSERT(player_input_is_0x34, sizeof(player_input_t) == 0x34);
 CRIMSON_ABI_ASSERT(
     player_input_config_is_0x40,
     sizeof(player_input_config_t) == 0x40);
+CRIMSON_ABI_ASSERT(config_is_0x480, sizeof(crimson_cfg_t) == 0x480);
+CRIMSON_ABI_ASSERT(
+    config_alignment_is_four,
+    offsetof(crimson_config_alignment_probe_t, value) == 4);
+CRIMSON_ABI_ASSERT(player_state_is_0x360, sizeof(player_state_t) == 0x360);
+CRIMSON_ABI_ASSERT(
+    player_state_table_is_0x6c0,
+    sizeof(player_state_t[2]) == 0x6c0);
+CRIMSON_ABI_ASSERT(
+    player_state_alignment_is_four,
+    offsetof(crimson_player_state_alignment_probe_t, value) == 4);
 CRIMSON_ABI_ASSERT(
     configured_aim_y_is_at_0x24,
     offsetof(player_input_config_t, axis_aim_y) == 0x24);
@@ -94,6 +120,12 @@ CRIMSON_ABI_ASSERT(
     offsetof(player_input_config_t, axis_aim_x) == 0x28);
 
 CRIMSON_ABI_ASSERT(creature_is_0x98, sizeof(creature_t) == 0x98);
+CRIMSON_ABI_ASSERT(
+    creature_pool_is_0xe400,
+    sizeof(creature_t[384]) == 0xe400);
+CRIMSON_ABI_ASSERT(
+    creature_alignment_is_four,
+    offsetof(crimson_creature_alignment_probe_t, value) == 4);
 CRIMSON_ABI_ASSERT(
     creature_lifecycle_is_at_0x10,
     offsetof(creature_t, lifecycle_stage) == 0x10);

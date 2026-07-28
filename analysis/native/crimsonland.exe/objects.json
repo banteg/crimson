@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "bc7dd63cd514f831d82cb1a87540fce222dd431a538d59ad341988723ea1d3fe"
+        "sha256": "b1d8ca12baf5725c53a373c97dfe294018d82ff35c91b6e4d7d8982030b658a8"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/eaef563a2d5aae74/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "bc7dd63cd514f831d82cb1a87540fce222dd431a538d59ad341988723ea1d3fe",
+    "source_sha256": "b1d8ca12baf5725c53a373c97dfe294018d82ff35c91b6e4d7d8982030b658a8",
     "status": "passed"
   },
-  "audit_digest": "b879a4518e568847e5188079796c2556d360f9806a2e5fe55c4a26413db8834d",
+  "audit_digest": "69138c91a697f82493248f60b85b317cdb60afa7bffae25872b5488b820f4fc2",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -84,11 +84,22 @@
           ]
         },
         {
+          "address": 4719432,
+          "alignment": 4,
+          "name": "config_blob",
+          "section_number": 2,
+          "section_offset": 0,
+          "size": 1152,
+          "symbols": [
+            "_config_blob"
+          ]
+        },
+        {
           "address": 4719452,
           "alignment": 4,
           "name": "config_player_count",
           "section_number": 2,
-          "section_offset": 0,
+          "section_offset": 20,
           "size": 4,
           "symbols": [
             "?config_player_count@@3HA",
@@ -99,8 +110,8 @@
           "address": 4719456,
           "alignment": 4,
           "name": "config_game_mode",
-          "section_number": 3,
-          "section_offset": 0,
+          "section_number": 2,
+          "section_offset": 24,
           "size": 4,
           "symbols": [
             "?config_game_mode@@3W4game_mode_id_t@@A",
@@ -111,8 +122,8 @@
           "address": 4719876,
           "alignment": 4,
           "name": "config_screen_width",
-          "section_number": 4,
-          "section_offset": 0,
+          "section_number": 2,
+          "section_offset": 444,
           "size": 4,
           "symbols": [
             "_config_screen_width"
@@ -122,8 +133,8 @@
           "address": 4720528,
           "alignment": 1,
           "name": "config_hardcore",
-          "section_number": 5,
-          "section_offset": 0,
+          "section_number": 2,
+          "section_offset": 1096,
           "size": 1,
           "symbols": [
             "?config_hardcore@@3EA",
@@ -134,7 +145,7 @@
           "address": 4720700,
           "alignment": 4,
           "name": "grim_interface_ptr",
-          "section_number": 6,
+          "section_number": 3,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -146,7 +157,7 @@
           "address": 4720704,
           "alignment": 4,
           "name": "frame_dt",
-          "section_number": 7,
+          "section_number": 4,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -157,7 +168,7 @@
           "address": 4720708,
           "alignment": 4,
           "name": "frame_dt_ms",
-          "section_number": 8,
+          "section_number": 5,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -168,7 +179,7 @@
           "address": 4720740,
           "alignment": 4,
           "name": "cv_verbose",
-          "section_number": 9,
+          "section_number": 6,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -180,7 +191,7 @@
           "address": 4739016,
           "alignment": 4,
           "name": "camera_offset_x",
-          "section_number": 10,
+          "section_number": 7,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -191,7 +202,7 @@
           "address": 4739020,
           "alignment": 4,
           "name": "camera_offset_y",
-          "section_number": 11,
+          "section_number": 8,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -202,7 +213,7 @@
           "address": 4747216,
           "alignment": 4,
           "name": "quest_spawn_timeline",
-          "section_number": 12,
+          "section_number": 9,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -213,7 +224,7 @@
           "address": 4747268,
           "alignment": 4,
           "name": "quest_stage_major",
-          "section_number": 13,
+          "section_number": 10,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -225,7 +236,7 @@
           "address": 4747272,
           "alignment": 4,
           "name": "quest_stage_minor",
-          "section_number": 14,
+          "section_number": 11,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -237,7 +248,7 @@
           "address": 4747277,
           "alignment": 1,
           "name": "demo_mode_active",
-          "section_number": 15,
+          "section_number": 12,
           "section_offset": 0,
           "size": 1,
           "symbols": [
@@ -248,7 +259,7 @@
           "address": 4747284,
           "alignment": 4,
           "name": "bonus_reflex_boost_timer",
-          "section_number": 16,
+          "section_number": 13,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -259,7 +270,7 @@
           "address": 4747288,
           "alignment": 4,
           "name": "bonus_freeze_timer",
-          "section_number": 17,
+          "section_number": 14,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -270,7 +281,7 @@
           "address": 4747308,
           "alignment": 1,
           "name": "screen_fade_ramp_flag",
-          "section_number": 18,
+          "section_number": 15,
           "section_offset": 0,
           "size": 1,
           "symbols": [
@@ -281,7 +292,7 @@
           "address": 4747324,
           "alignment": 1,
           "name": "bonus_spawn_guard",
-          "section_number": 19,
+          "section_number": 16,
           "section_offset": 0,
           "size": 1,
           "symbols": [
@@ -292,7 +303,7 @@
           "address": 4747724,
           "alignment": 1,
           "name": "ui_mouse_blocked",
-          "section_number": 20,
+          "section_number": 17,
           "section_offset": 0,
           "size": 1,
           "symbols": [
@@ -304,7 +315,7 @@
           "address": 4747756,
           "alignment": 4,
           "name": "ui_mouse_x",
-          "section_number": 21,
+          "section_number": 18,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -315,7 +326,7 @@
           "address": 4747760,
           "alignment": 4,
           "name": "ui_mouse_y",
-          "section_number": 22,
+          "section_number": 19,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -327,7 +338,7 @@
           "address": 4747840,
           "alignment": 1,
           "name": "render_pass_mode",
-          "section_number": 23,
+          "section_number": 20,
           "section_offset": 0,
           "size": 1,
           "symbols": [
@@ -338,7 +349,7 @@
           "address": 4747852,
           "alignment": 1,
           "name": "ui_transition_direction",
-          "section_number": 24,
+          "section_number": 21,
           "section_offset": 0,
           "size": 1,
           "symbols": [
@@ -349,7 +360,7 @@
           "address": 4747888,
           "alignment": 4,
           "name": "game_state_id",
-          "section_number": 25,
+          "section_number": 22,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -360,7 +371,7 @@
           "address": 4747892,
           "alignment": 4,
           "name": "game_state_pending",
-          "section_number": 26,
+          "section_number": 23,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -371,7 +382,7 @@
           "address": 4781364,
           "alignment": 4,
           "name": "terrain_texture_width",
-          "section_number": 27,
+          "section_number": 24,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -382,7 +393,7 @@
           "address": 4781368,
           "alignment": 4,
           "name": "terrain_texture_height",
-          "section_number": 28,
+          "section_number": 25,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -393,7 +404,7 @@
           "address": 4782060,
           "alignment": 4,
           "name": "particles_texture",
-          "section_number": 29,
+          "section_number": 26,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -401,10 +412,32 @@
           ]
         },
         {
+          "address": 4786352,
+          "alignment": 4,
+          "name": "player_state_table",
+          "section_number": 27,
+          "section_offset": 0,
+          "size": 1728,
+          "symbols": [
+            "_player_state_table"
+          ]
+        },
+        {
+          "address": 4833080,
+          "alignment": 4,
+          "name": "creature_pool",
+          "section_number": 28,
+          "section_offset": 0,
+          "size": 58368,
+          "symbols": [
+            "_creature_pool"
+          ]
+        },
+        {
           "address": 4894476,
           "alignment": 4,
           "name": "render_overlay_player_index",
-          "section_number": 30,
+          "section_number": 29,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -415,7 +448,7 @@
           "address": 4997172,
           "alignment": 4,
           "name": "music_track_shortie_monk_id",
-          "section_number": 31,
+          "section_number": 30,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -426,7 +459,7 @@
           "address": 4997176,
           "alignment": 4,
           "name": "music_track_crimson_theme_id",
-          "section_number": 32,
+          "section_number": 31,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -437,7 +470,7 @@
           "address": 4997180,
           "alignment": 4,
           "name": "music_track_extra_0",
-          "section_number": 33,
+          "section_number": 32,
           "section_offset": 0,
           "size": 4,
           "symbols": [
@@ -448,7 +481,7 @@
           "address": 5032150,
           "alignment": 1,
           "name": "sfx_unmuted_flag",
-          "section_number": 34,
+          "section_number": 33,
           "section_offset": 0,
           "size": 1,
           "symbols": [
@@ -459,11 +492,11 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "8674f5e1679af5a33bb9d3a30c6523962181586eb248203772c51b7e78e8daa3"
+        "sha256": "caca79c060c79d579fc87f01ad3ad34cad2ead7b8fbf7e9b4fc7c272579b5a47"
       },
-      "emitted_symbol_count": 46,
+      "emitted_symbol_count": 49,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-      "object_sha256": "9ef93473faf2eeb4c35554a397b0d7ffa7010679f2cae893888b6673de259439",
+      "object_sha256": "d67a35e6a2c176081b0b1abc39ee45bd5c39713e747687cec2c2e6bcd8e004af",
       "regions": [
         {
           "address": 4714144,
@@ -482,52 +515,32 @@
           "size": 44
         },
         {
-          "address": 4719452,
+          "address": 4719432,
           "alignment": 4,
           "entries": [
+            {
+              "address": 4719432,
+              "name": "config_blob"
+            },
             {
               "address": 4719452,
               "name": "config_player_count"
-            }
-          ],
-          "section_number": 2,
-          "size": 4
-        },
-        {
-          "address": 4719456,
-          "alignment": 4,
-          "entries": [
+            },
             {
               "address": 4719456,
               "name": "config_game_mode"
-            }
-          ],
-          "section_number": 3,
-          "size": 4
-        },
-        {
-          "address": 4719876,
-          "alignment": 4,
-          "entries": [
+            },
             {
               "address": 4719876,
               "name": "config_screen_width"
-            }
-          ],
-          "section_number": 4,
-          "size": 4
-        },
-        {
-          "address": 4720528,
-          "alignment": 1,
-          "entries": [
+            },
             {
               "address": 4720528,
               "name": "config_hardcore"
             }
           ],
-          "section_number": 5,
-          "size": 1
+          "section_number": 2,
+          "size": 1152
         },
         {
           "address": 4720700,
@@ -538,7 +551,7 @@
               "name": "grim_interface_ptr"
             }
           ],
-          "section_number": 6,
+          "section_number": 3,
           "size": 4
         },
         {
@@ -550,7 +563,7 @@
               "name": "frame_dt"
             }
           ],
-          "section_number": 7,
+          "section_number": 4,
           "size": 4
         },
         {
@@ -562,7 +575,7 @@
               "name": "frame_dt_ms"
             }
           ],
-          "section_number": 8,
+          "section_number": 5,
           "size": 4
         },
         {
@@ -574,7 +587,7 @@
               "name": "cv_verbose"
             }
           ],
-          "section_number": 9,
+          "section_number": 6,
           "size": 4
         },
         {
@@ -586,7 +599,7 @@
               "name": "camera_offset_x"
             }
           ],
-          "section_number": 10,
+          "section_number": 7,
           "size": 4
         },
         {
@@ -598,7 +611,7 @@
               "name": "camera_offset_y"
             }
           ],
-          "section_number": 11,
+          "section_number": 8,
           "size": 4
         },
         {
@@ -610,7 +623,7 @@
               "name": "quest_spawn_timeline"
             }
           ],
-          "section_number": 12,
+          "section_number": 9,
           "size": 4
         },
         {
@@ -622,7 +635,7 @@
               "name": "quest_stage_major"
             }
           ],
-          "section_number": 13,
+          "section_number": 10,
           "size": 4
         },
         {
@@ -634,7 +647,7 @@
               "name": "quest_stage_minor"
             }
           ],
-          "section_number": 14,
+          "section_number": 11,
           "size": 4
         },
         {
@@ -646,7 +659,7 @@
               "name": "demo_mode_active"
             }
           ],
-          "section_number": 15,
+          "section_number": 12,
           "size": 1
         },
         {
@@ -658,7 +671,7 @@
               "name": "bonus_reflex_boost_timer"
             }
           ],
-          "section_number": 16,
+          "section_number": 13,
           "size": 4
         },
         {
@@ -670,7 +683,7 @@
               "name": "bonus_freeze_timer"
             }
           ],
-          "section_number": 17,
+          "section_number": 14,
           "size": 4
         },
         {
@@ -682,7 +695,7 @@
               "name": "screen_fade_ramp_flag"
             }
           ],
-          "section_number": 18,
+          "section_number": 15,
           "size": 1
         },
         {
@@ -694,7 +707,7 @@
               "name": "bonus_spawn_guard"
             }
           ],
-          "section_number": 19,
+          "section_number": 16,
           "size": 1
         },
         {
@@ -706,7 +719,7 @@
               "name": "ui_mouse_blocked"
             }
           ],
-          "section_number": 20,
+          "section_number": 17,
           "size": 1
         },
         {
@@ -718,7 +731,7 @@
               "name": "ui_mouse_x"
             }
           ],
-          "section_number": 21,
+          "section_number": 18,
           "size": 4
         },
         {
@@ -730,7 +743,7 @@
               "name": "ui_mouse_y"
             }
           ],
-          "section_number": 22,
+          "section_number": 19,
           "size": 4
         },
         {
@@ -742,7 +755,7 @@
               "name": "render_pass_mode"
             }
           ],
-          "section_number": 23,
+          "section_number": 20,
           "size": 1
         },
         {
@@ -754,7 +767,7 @@
               "name": "ui_transition_direction"
             }
           ],
-          "section_number": 24,
+          "section_number": 21,
           "size": 1
         },
         {
@@ -766,7 +779,7 @@
               "name": "game_state_id"
             }
           ],
-          "section_number": 25,
+          "section_number": 22,
           "size": 4
         },
         {
@@ -778,7 +791,7 @@
               "name": "game_state_pending"
             }
           ],
-          "section_number": 26,
+          "section_number": 23,
           "size": 4
         },
         {
@@ -790,7 +803,7 @@
               "name": "terrain_texture_width"
             }
           ],
-          "section_number": 27,
+          "section_number": 24,
           "size": 4
         },
         {
@@ -802,7 +815,7 @@
               "name": "terrain_texture_height"
             }
           ],
-          "section_number": 28,
+          "section_number": 25,
           "size": 4
         },
         {
@@ -814,8 +827,32 @@
               "name": "particles_texture"
             }
           ],
-          "section_number": 29,
+          "section_number": 26,
           "size": 4
+        },
+        {
+          "address": 4786352,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4786352,
+              "name": "player_state_table"
+            }
+          ],
+          "section_number": 27,
+          "size": 1728
+        },
+        {
+          "address": 4833080,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4833080,
+              "name": "creature_pool"
+            }
+          ],
+          "section_number": 28,
+          "size": 58368
         },
         {
           "address": 4894476,
@@ -826,7 +863,7 @@
               "name": "render_overlay_player_index"
             }
           ],
-          "section_number": 30,
+          "section_number": 29,
           "size": 4
         },
         {
@@ -838,7 +875,7 @@
               "name": "music_track_shortie_monk_id"
             }
           ],
-          "section_number": 31,
+          "section_number": 30,
           "size": 4
         },
         {
@@ -850,7 +887,7 @@
               "name": "music_track_crimson_theme_id"
             }
           ],
-          "section_number": 32,
+          "section_number": 31,
           "size": 4
         },
         {
@@ -862,7 +899,7 @@
               "name": "music_track_extra_0"
             }
           ],
-          "section_number": 33,
+          "section_number": 32,
           "size": 4
         },
         {
@@ -874,7 +911,7 @@
               "name": "sfx_unmuted_flag"
             }
           ],
-          "section_number": 34,
+          "section_number": 33,
           "size": 1
         }
       ]
@@ -67384,7 +67421,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "8674f5e1679af5a33bb9d3a30c6523962181586eb248203772c51b7e78e8daa3"
+        "sha256": "caca79c060c79d579fc87f01ad3ad34cad2ead7b8fbf7e9b4fc7c272579b5a47"
       }
     ],
     "toolchain": {

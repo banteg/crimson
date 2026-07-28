@@ -1,5 +1,5 @@
 {
-  "audit_digest": "b879a4518e568847e5188079796c2556d360f9806a2e5fe55c4a26413db8834d",
+  "audit_digest": "69138c91a697f82493248f60b85b317cdb60afa7bffae25872b5488b820f4fc2",
   "entries": [
     {
       "address": 4211888,
@@ -5140,19 +5140,20 @@
     {
       "address": 4719432,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: config_alignment_is_four",
       "comment": "crimson.cfg blob (0x480 bytes)",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 63,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00480348..0x004807c8",
+      "linker_reference_count": 0,
       "name": "config_blob",
       "section": ".data",
       "section_offset": 62280,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 1152,
+      "size_source": "third_party/headers/crimsonland_types.h: crimson_cfg_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: config_is_0x480",
       "type": "crimson_cfg_t"
     },
     {
@@ -15858,19 +15859,20 @@
     {
       "address": 4786352,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: player_state_alignment_is_four",
       "comment": "Per-player state table base (2 entries, stride 0x360 bytes); offsets 0x00..0x97 share the entity-prefix layout used by creature state.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 53,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004908b0..0x00490f70",
+      "linker_reference_count": 0,
       "name": "player_state_table",
       "section": ".data",
       "section_offset": 129200,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 1728,
+      "size_source": "third_party/headers/crimsonland_types.h: player_state_t[2]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: player_state_table_is_0x6c0",
       "type": "player_state_t[2]"
     },
     {
@@ -19118,19 +19120,20 @@
     {
       "address": 4833080,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_alignment_is_four",
       "comment": "Creature pool base (0x180 entries, stride 0x98)",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 35,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0049bf38..0x004aa338",
+      "linker_reference_count": 0,
       "name": "creature_pool",
       "section": ".data",
       "section_offset": 175928,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 58368,
+      "size_source": "third_party/headers/crimsonland_types.h: creature_t[384]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_pool_is_0xe400",
       "type": "creature_t[384]"
     },
     {
@@ -27939,45 +27942,6 @@
   ],
   "priorities": [
     {
-      "address": 4719432,
-      "definition_state": "unknown",
-      "name": "config_blob",
-      "reference_count": 63,
-      "requested_symbols": [
-        {
-          "lookup_name": "config_blob",
-          "name": "_config_blob",
-          "reference_count": 63
-        }
-      ]
-    },
-    {
-      "address": 4786352,
-      "definition_state": "unknown",
-      "name": "player_state_table",
-      "reference_count": 53,
-      "requested_symbols": [
-        {
-          "lookup_name": "player_state_table",
-          "name": "_player_state_table",
-          "reference_count": 53
-        }
-      ]
-    },
-    {
-      "address": 4833080,
-      "definition_state": "unknown",
-      "name": "creature_pool",
-      "reference_count": 35,
-      "requested_symbols": [
-        {
-          "lookup_name": "creature_pool",
-          "name": "_creature_pool",
-          "reference_count": 35
-        }
-      ]
-    },
-    {
       "address": 4895164,
       "definition_state": "unknown",
       "name": "effect_template",
@@ -28627,6 +28591,50 @@
           "reference_count": 3
         }
       ]
+    },
+    {
+      "address": 4992020,
+      "definition_state": "unknown",
+      "name": "perk_id_death_clock",
+      "reference_count": 6,
+      "requested_symbols": [
+        {
+          "lookup_name": "perk_id_death_clock",
+          "name": "_perk_id_death_clock",
+          "reference_count": 6
+        }
+      ]
+    },
+    {
+      "address": 5014608,
+      "definition_state": "unknown",
+      "name": "sfx_mute_flags",
+      "reference_count": 6,
+      "requested_symbols": [
+        {
+          "lookup_name": "sfx_mute_flags",
+          "name": "_sfx_mute_flags",
+          "reference_count": 6
+        }
+      ]
+    },
+    {
+      "address": 5050864,
+      "definition_state": "unknown",
+      "name": "online_sync_status",
+      "reference_count": 6,
+      "requested_symbols": [
+        {
+          "lookup_name": "online_sync_status",
+          "name": "_online_sync_status",
+          "reference_count": 4
+        },
+        {
+          "lookup_name": "online_sync_status",
+          "name": "?online_sync_status@@3HA",
+          "reference_count": 2
+        }
+      ]
     }
   ],
   "schema": 1,
@@ -28634,7 +28642,7 @@
     "data_map": "analysis/ghidra/maps/data_map.json",
     "data_map_sha256": "0516e179e941b3830a41b5154408f0ccdfb6675f6bfd0b2423bfc47416e82494",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "8674f5e1679af5a33bb9d3a30c6523962181586eb248203772c51b7e78e8daa3",
+    "definitions_sha256": "caca79c060c79d579fc87f01ad3ad34cad2ead7b8fbf7e9b4fc7c272579b5a47",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -28646,17 +28654,17 @@
     "alias_names": 35,
     "alias_rows": 35,
     "entry_count": 1547,
-    "explicit_alignment_entries": 35,
-    "explicit_initializer_entries": 35,
-    "explicit_size_entries": 35,
+    "explicit_alignment_entries": 38,
+    "explicit_initializer_entries": 38,
+    "explicit_size_entries": 38,
     "fixed_array_types": 48,
-    "fully_specified_entries": 35,
-    "game_data_reference_count": 1908,
+    "fully_specified_entries": 38,
+    "game_data_reference_count": 1757,
     "incomplete_array_types": 2,
     "multidimensional_array_types": 3,
     "overlay_addresses": 2,
     "priority_entries": 50,
-    "referenced_entries": 764,
+    "referenced_entries": 761,
     "section_counts": {
       ".data": 1539,
       ".rdata": 4,

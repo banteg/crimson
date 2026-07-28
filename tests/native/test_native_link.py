@@ -542,6 +542,13 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
                 "name": "interior",
                 "size": 4,
             },
+            {
+                "address": 0x1010,
+                "alignment": 4,
+                "initializer_fill": "ab",
+                "name": "fill",
+                "size": 4,
+            },
         ],
     }
     closure = {
@@ -567,6 +574,13 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
                 "name": "_interior",
                 "referenced_by": [{"function": "third"}],
             },
+            {
+                "catalog": [{"address": 0x1010, "name": "fill"}],
+                "category": "game_data",
+                "lookup_name": "fill",
+                "name": "_fill",
+                "referenced_by": [{"function": "fourth"}],
+            },
         ],
     }
 
@@ -576,15 +590,18 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
     symbols = {symbol.name: symbol for symbol in coff.symbols}
 
     assert data == repeated
-    assert len(regions) == 1
+    assert len(regions) == 2
     assert regions[0].address == 0x1000
     assert regions[0].alignment == 4
     assert regions[0].data == bytes.fromhex("000102030405060708")
-    assert {binding.name for binding in bindings} == {"owner", "interior"}
+    assert regions[1].data == bytes.fromhex("abababab")
+    assert {binding.name for binding in bindings} == {"owner", "interior", "fill"}
     assert symbols["?owner@@3HA"].section_number == 1
     assert symbols["?owner@@3HA"].value == 1
     assert symbols["_owner"].value == 1
     assert symbols["_interior"].value == 4
+    assert symbols["_fill"].section_number == 2
+    assert symbols["_fill"].value == 0
 
     function = _function("first", 0x2000)
     data_path = tmp_path / "definitions.obj"
@@ -604,7 +621,7 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
                 object_symbol="_first",
                 coff=_coff(
                     definitions=(("_first", 1),),
-                    undefined=("?owner@@3HA", "_owner", "_interior"),
+                    undefined=("?owner@@3HA", "_owner", "_interior", "_fill"),
                 ),
             ),
         ),
@@ -625,6 +642,7 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
         excluded_functions={},
         data={
             "interior": ({"address": 0x1004, "name": "interior"},),
+            "fill": ({"address": 0x1010, "name": "fill"},),
             "owner": ({"address": 0x1001, "name": "owner"},),
         },
         imports={},
@@ -639,6 +657,7 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
     assert result["summary"]["unresolved_symbols"] == 0
     assert {row["name"] for row in result["resolved"]} == {
         "?owner@@3HA",
+        "_fill",
         "_interior",
         "_owner",
     }
@@ -1137,10 +1156,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 35
-    assert payload["summary"]["explicit_alignment_entries"] == 35
-    assert payload["summary"]["explicit_initializer_entries"] == 35
-    assert payload["summary"]["fully_specified_entries"] == 35
+    assert payload["summary"]["explicit_size_entries"] == 38
+    assert payload["summary"]["explicit_alignment_entries"] == 38
+    assert payload["summary"]["explicit_initializer_entries"] == 38
+    assert payload["summary"]["fully_specified_entries"] == 38
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -1149,6 +1168,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
         for entry in payload["entries"]
         if entry["definition_state"] == "fully-specified"
     }
+    assert defined["config_blob"]["size"] == 0x480
+    assert defined["config_blob"]["initializer_fill"] == "00"
+    assert defined["player_state_table"]["size"] == 0x6C0
+    assert defined["creature_pool"]["size"] == 0xE400
     assert defined["console_log_queue"]["size"] == 0x2C
     assert defined["grim_interface_ptr"]["size"] == 4
     assert defined["sfx_unmuted_flag"]["size"] == 1

@@ -2014,7 +2014,6 @@ def load_native_data_definitions(
         field_sources = {
             "size": "size_source",
             "alignment": "alignment_source",
-            "initializer_hex": "initializer_source",
         }
         for field, source_field in field_sources.items():
             value = raw_entry.get(field)
@@ -2030,6 +2029,35 @@ def load_native_data_definitions(
             explicit_fields += 1
             normalized[field] = value
             normalized[source_field] = source.strip()
+
+        initializer_hex = raw_entry.get("initializer_hex")
+        initializer_fill = raw_entry.get("initializer_fill")
+        initializer_source = raw_entry.get("initializer_source")
+        if initializer_hex is not None and initializer_fill is not None:
+            raise ValueError(
+                f"{label}: initializer_hex and initializer_fill are mutually exclusive",
+            )
+        if initializer_hex is None and initializer_fill is None:
+            if initializer_source is not None:
+                raise ValueError(
+                    f"{label}: initializer_source requires an initializer",
+                )
+            normalized["initializer_fill"] = None
+            normalized["initializer_hex"] = None
+            normalized["initializer_source"] = None
+        else:
+            if (
+                not isinstance(initializer_source, str)
+                or not initializer_source.strip()
+            ):
+                raise ValueError(
+                    f"{label}: initializer and initializer_source "
+                    "must be provided together",
+                )
+            explicit_fields += 1
+            normalized["initializer_fill"] = initializer_fill
+            normalized["initializer_hex"] = initializer_hex
+            normalized["initializer_source"] = initializer_source.strip()
         if explicit_fields == 0:
             raise ValueError(f"{label}: at least one explicit data fact is required")
 
@@ -2050,6 +2078,14 @@ def load_native_data_definitions(
             raise ValueError(
                 f"{label}.address 0x{address:08x} is not aligned to {alignment}",
             )
+        initializer_fill = normalized["initializer_fill"]
+        if initializer_fill is not None and (
+            not isinstance(initializer_fill, str)
+            or re.fullmatch(r"[0-9a-f]{2}", initializer_fill) is None
+        ):
+            raise ValueError(
+                f"{label}.initializer_fill must be one lowercase hex byte",
+            )
         initializer_hex = normalized["initializer_hex"]
         if initializer_hex is not None:
             if (
@@ -2067,19 +2103,27 @@ def load_native_data_definitions(
                     f"{label}: initializer has {len(initializer_hex) // 2} bytes, "
                     f"expected size {size}",
                 )
-            if loaded_reference_image is not None:
-                start = address - loaded_reference_image.image_base
-                end = start + size
-                if start < 0 or end > len(loaded_reference_image.mapped):
-                    raise ValueError(
-                        f"{label}: initializer range is outside the reference image",
-                    )
-                reference_hex = loaded_reference_image.mapped[start:end].hex()
-                if initializer_hex != reference_hex:
-                    raise ValueError(
-                        f"{label}: initializer {initializer_hex} does not match "
-                        f"reference image bytes {reference_hex}",
-                    )
+        if initializer_fill is not None and size is None:
+            raise ValueError(f"{label}: initializer_fill requires an explicit size")
+        initializer = (
+            bytes.fromhex(initializer_hex)
+            if initializer_hex is not None
+            else bytes.fromhex(initializer_fill) * size
+            if initializer_fill is not None and size is not None
+            else None
+        )
+        if initializer is not None and loaded_reference_image is not None:
+            start = address - loaded_reference_image.image_base
+            end = start + len(initializer)
+            if start < 0 or end > len(loaded_reference_image.mapped):
+                raise ValueError(
+                    f"{label}: initializer range is outside the reference image",
+                )
+            reference_bytes = loaded_reference_image.mapped[start:end]
+            if initializer != reference_bytes:
+                raise ValueError(
+                    f"{label}: initializer does not match reference image bytes",
+                )
         entries.append(normalized)
 
     ordered = sorted(entries, key=lambda row: (row["address"], row["name"]))
@@ -2167,8 +2211,13 @@ def _native_data_layout(
     for entry in definitions["entries"]:
         size = entry["size"]
         alignment = entry["alignment"]
-        initializer_hex = entry["initializer_hex"]
-        if size is None or alignment is None or initializer_hex is None:
+        initializer_hex = entry.get("initializer_hex")
+        initializer_fill = entry.get("initializer_fill")
+        if (
+            size is None
+            or alignment is None
+            or (initializer_hex is None and initializer_fill is None)
+        ):
             continue
         key = (int(entry["address"]), str(entry["name"]))
         symbols: list[str] = []
@@ -2189,11 +2238,16 @@ def _native_data_layout(
             symbols.append(symbol)
         if not symbols:
             continue
+        initializer = (
+            bytes.fromhex(str(initializer_hex))
+            if initializer_hex is not None
+            else bytes.fromhex(str(initializer_fill)) * int(size)
+        )
         pending.append(
             {
                 "address": key[0],
                 "alignment": int(alignment),
-                "initializer": bytes.fromhex(str(initializer_hex)),
+                "initializer": initializer,
                 "name": key[1],
                 "size": int(size),
                 "symbols": tuple(symbols),
@@ -2472,9 +2526,16 @@ def build_native_data_object(
 
 
 def _data_definition_state(entry: dict[str, Any]) -> str:
+    initializer_present = (
+        entry.get("initializer_hex") is not None
+        or entry.get("initializer_fill") is not None
+    )
     present = sum(
-        entry[field] is not None
-        for field in ("size", "alignment", "initializer_hex")
+        (
+            entry["size"] is not None,
+            entry["alignment"] is not None,
+            initializer_present,
+        ),
     )
     if present == 3:
         return "fully-specified"
@@ -2575,46 +2636,47 @@ def data_manifest_payload(
             int(symbol["reference_count"])
             for symbol in requested_symbols
         )
-        entries.append(
-            {
-                "address": address,
-                "aliases": aliases,
-                "alignment": definition["alignment"] if definition is not None else None,
-                "alignment_source": (
-                    definition["alignment_source"]
-                    if definition is not None
-                    else None
-                ),
-                "comment": str(row["comment"]),
-                "definition_state": (
-                    _data_definition_state(definition)
-                    if definition is not None
-                    else "unknown"
-                ),
-                "initializer_hex": (
-                    definition["initializer_hex"]
-                    if definition is not None
-                    else None
-                ),
-                "initializer_source": (
-                    definition["initializer_source"]
-                    if definition is not None
-                    else None
-                ),
-                "linker_reference_count": linker_reference_count,
-                "name": str(row["name"]),
-                "section": section,
-                "section_offset": address - segment[1] if segment is not None else None,
-                "section_source": _repo_relative(segments_path, repo_root=repo_root),
-                "size": definition["size"] if definition is not None else None,
-                "size_source": (
-                    definition["size_source"]
-                    if definition is not None
-                    else None
-                ),
-                "type": type_name,
-            },
-        )
+        entry = {
+            "address": address,
+            "aliases": aliases,
+            "alignment": definition["alignment"] if definition is not None else None,
+            "alignment_source": (
+                definition["alignment_source"]
+                if definition is not None
+                else None
+            ),
+            "comment": str(row["comment"]),
+            "definition_state": (
+                _data_definition_state(definition)
+                if definition is not None
+                else "unknown"
+            ),
+            "initializer_hex": (
+                definition["initializer_hex"]
+                if definition is not None
+                else None
+            ),
+            "initializer_source": (
+                definition["initializer_source"]
+                if definition is not None
+                else None
+            ),
+            "linker_reference_count": linker_reference_count,
+            "name": str(row["name"]),
+            "section": section,
+            "section_offset": address - segment[1] if segment is not None else None,
+            "section_source": _repo_relative(segments_path, repo_root=repo_root),
+            "size": definition["size"] if definition is not None else None,
+            "size_source": (
+                definition["size_source"]
+                if definition is not None
+                else None
+            ),
+            "type": type_name,
+        }
+        if definition is not None and definition["initializer_fill"] is not None:
+            entry["initializer_fill"] = definition["initializer_fill"]
+        entries.append(entry)
     unmatched_definition_keys = set(definitions_by_key) - matched_definition_keys
     if unmatched_definition_keys:
         rendered = ", ".join(
@@ -2696,6 +2758,7 @@ def data_manifest_payload(
             ),
             "explicit_initializer_entries": sum(
                 entry["initializer_hex"] is not None
+                or entry.get("initializer_fill") is not None
                 for entry in entries
             ),
             "explicit_size_entries": sum(
