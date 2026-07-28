@@ -23,6 +23,24 @@
           "symbol": "?grim_set_slot_int@IGrim2D_cpp@@UAEXHH@Z"
         }
       ]
+    },
+    {
+      "name": "grim-draw-line-island",
+      "scratch": "grim_draw_line",
+      "members": [
+        {
+          "function": "grim_draw_line",
+          "symbol": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z"
+        },
+        {
+          "function": "grim_line_vector_dtor",
+          "symbol": "_$E2"
+        },
+        {
+          "function": "grim_draw_line_quad",
+          "symbol": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z"
+        }
+      ]
     }
   ]
 }

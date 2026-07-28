@@ -21,3 +21,17 @@ void IGrim2D_cpp::grim_draw_line(float *p0, float *p1, float thickness)
     half_vector.y = half_vector.x * thickness;
     grim_draw_line_quad(p0, p1, &half_vector.x);
 }
+
+void IGrim2D_cpp::grim_draw_line_quad(
+    float *p0, float *p1, float *half_vector)
+{
+    grim_draw_quad_points(
+        p0[0] - half_vector[0],
+        p0[1] - half_vector[1],
+        p0[0] + half_vector[0],
+        p0[1] + half_vector[1],
+        p1[0] + half_vector[0],
+        p1[1] + half_vector[1],
+        p1[0] - half_vector[0],
+        p1[1] - half_vector[1]);
+}

@@ -101,9 +101,7 @@ tools/match/scratches/grim_nullsub_20/build/msvc6.5/4331ab1c7a5947b3/scratch.obj
 tools/match/scratches/grim_set_rotation/build/msvc6.5/b13b36e9f2726543/scratch.obj
 tools/match/scratches/grim_set_color/build/msvc6.5/d93fc9d31f65d1ea/scratch.obj
 tools/match/scratches/grim_set_color_ptr/build/msvc6.5/196055685e170263/scratch.obj
-tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj
-tools/match/scratches/grim_line_vector_dtor/build/msvc6.5/da93cb8a7ad0094f/scratch.obj
-tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj
+tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj
 tools/match/scratches/grim_set_color_slot/build/msvc6.5/c833c916fee0df40/scratch.obj
 tools/match/scratches/grim_set_atlas_frame/build/msvc6.5/e038d2fa73ea084e/scratch.obj
 tools/match/scratches/grim_set_sub_rect/build/msvc6.5/49c6dcc6bea797bd/scratch.obj

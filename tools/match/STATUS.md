@@ -17,7 +17,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
 | crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | no | no | 0 | 1354 | 97 |
-| grim.dll | current | 137 | 135 | 1 | passed | yes | no | no | 0 | 274 | 54 |
+| grim.dll | current | 137 | 133 | 2 | passed | yes | no | no | 0 | 274 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|

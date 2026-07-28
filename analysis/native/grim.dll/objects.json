@@ -59,7 +59,7 @@
     "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "0a2bbd11e95eb95a5133fb4a1bb9702141fcd514780e2049ebfd0fe02786f3b3",
+  "audit_digest": "283857ec92a0cdbf2d53b9689d24a6f0db08fb12f87c1b9e4fb0ac74b0f6b250",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4279,14 +4279,14 @@
   "function_count": 137,
   "image": "grim.dll",
   "kind": "crimson-native-object-manifest",
-  "object_count": 135,
+  "object_count": 133,
   "object_hash": {
     "algorithm": "sha256",
     "normalization": [
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "6ca9e0e219ec3cc7417c66161753050c5395b7fa7eca74e1c5c5412e34ccec7f",
+  "object_list_sha256": "4838bf882e1e80db6a91c31479cb88e9013678c9ec7f39a7cdc9ece98bcdc8f1",
   "object_order": "ascending-minimum-reference-address-then-generated-data",
   "objects": [
     {
@@ -10843,7 +10843,7 @@
       "target_size": 14,
       "translation_unit": {
         "config": "tools/native/translation_units/grim.dll.json",
-        "config_sha256": "65aa1871d545c5c06d6054a6cb3b534fa59584ff74deab9ecbda5a1671fcba57",
+        "config_sha256": "18739f872f0f12b2bb4f806278c735c598bdfcb18509dbb27e2cab6dbe737828",
         "kind": "cluster",
         "name": "grim-slot-state-accessors"
       }
@@ -14448,12 +14448,12 @@
         {
           "path": "tools/match/scratches/grim_draw_line/scratch.cpp",
           "repository_relative": true,
-          "sha256": "3099a9de034e79019c1db171c71eda7fafd00d560270667261172f16a6feebdf"
+          "sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978"
         },
         {
           "path": "tools/match/scratches/grim_draw_line/scratch.conf",
           "repository_relative": true,
-          "sha256": "0c4ffad84a2e1a21a203cda6beaac5f8db86c00171a18c88d0125bcd63553288"
+          "sha256": "218fecf079cdbf0c90dce61c46483555925d04ca22e3a49339b30a870a25e5d9"
         },
         {
           "path": "tools/match/cl.sh",
@@ -14473,7 +14473,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_draw_line/scratch.conf",
-      "config_sha256": "0c4ffad84a2e1a21a203cda6beaac5f8db86c00171a18c88d0125bcd63553288",
+      "config_sha256": "218fecf079cdbf0c90dce61c46483555925d04ca22e3a49339b30a870a25e5d9",
       "effective_end": 268468534,
       "end": 268468534,
       "function": "grim_draw_line",
@@ -14481,10 +14481,10 @@
         {
           "address": 268468400,
           "canonical_config": "tools/match/scratches/grim_draw_line/scratch.conf",
-          "canonical_config_sha256": "0c4ffad84a2e1a21a203cda6beaac5f8db86c00171a18c88d0125bcd63553288",
+          "canonical_config_sha256": "218fecf079cdbf0c90dce61c46483555925d04ca22e3a49339b30a870a25e5d9",
           "canonical_scratch": "tools/match/scratches/grim_draw_line",
           "canonical_source": "tools/match/scratches/grim_draw_line/scratch.cpp",
-          "canonical_source_sha256": "3099a9de034e79019c1db171c71eda7fafd00d560270667261172f16a6feebdf",
+          "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468534,
           "end": 268468534,
           "function": "grim_draw_line",
@@ -14500,76 +14500,7 @@
           },
           "object_function_symbol": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
           "target_size": 134
-        }
-      ],
-      "match": {
-        "candidate_instructions": 40,
-        "masked_mismatches": 0,
-        "masked_ok": 13,
-        "masked_unresolved": 0,
-        "prefix_instructions": 40,
-        "ratio": 1.0,
-        "state": "match",
-        "target_instructions": 40
-      },
-      "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
-      "object_function_symbol": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
-      "object_sha256": "8c26b2df39cc88c9dc59a8825313c74cabb6b740f8b422af0f17e6603f523628",
-      "scratch": "tools/match/scratches/grim_draw_line",
-      "source": "tools/match/scratches/grim_draw_line/scratch.cpp",
-      "source_sha256": "3099a9de034e79019c1db171c71eda7fafd00d560270667261172f16a6feebdf",
-      "target_size": 134,
-      "translation_unit": {
-        "kind": "isolated",
-        "name": "grim_draw_line"
-      }
-    },
-    {
-      "address": 268468544,
-      "cflags": [
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-"
-      ],
-      "compile_argv": [
-        "/nologo",
-        "/c",
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-",
-        "scratch.cpp"
-      ],
-      "compile_inputs": [
-        {
-          "path": "tools/match/scratches/grim_line_vector_dtor/scratch.cpp",
-          "repository_relative": true,
-          "sha256": "7eb97c107e200ffa8b61b6162a05935975c7b9bab2b5fa1552b64562e59a1bf9"
         },
-        {
-          "path": "tools/match/scratches/grim_line_vector_dtor/scratch.conf",
-          "repository_relative": true,
-          "sha256": "b574f6eeb898d21a2f0c7f8410929fe6389b0641e8146eb4008b2db28ae9d2f5"
-        },
-        {
-          "path": "tools/match/cl.sh",
-          "repository_relative": true,
-          "sha256": "7943cbe81195c28913bad50303b3d734f1a4d2e3e90c72ab9db1ec5ce44a7748"
-        },
-        {
-          "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
-          "repository_relative": true,
-          "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
-        }
-      ],
-      "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_line_vector_dtor/scratch.conf",
-      "config_sha256": "b574f6eeb898d21a2f0c7f8410929fe6389b0641e8146eb4008b2db28ae9d2f5",
-      "effective_end": 268468545,
-      "end": 268468545,
-      "function": "grim_line_vector_dtor",
-      "functions": [
         {
           "address": 268468544,
           "canonical_config": "tools/match/scratches/grim_line_vector_dtor/scratch.conf",
@@ -14590,83 +14521,9 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_grim_line_vector_dtor",
+          "object_function_symbol": "_$E2",
           "target_size": 1
-        }
-      ],
-      "match": {
-        "candidate_instructions": 1,
-        "masked_mismatches": 0,
-        "masked_ok": 0,
-        "masked_unresolved": 0,
-        "prefix_instructions": 1,
-        "ratio": 1.0,
-        "state": "match",
-        "target_instructions": 1
-      },
-      "object": "tools/match/scratches/grim_line_vector_dtor/build/msvc6.5/da93cb8a7ad0094f/scratch.obj",
-      "object_function_symbol": "_grim_line_vector_dtor",
-      "object_sha256": "68ee5b6255881008114cb6d05319d760dbba2c75fd6f40082b6e8f04f596f27b",
-      "scratch": "tools/match/scratches/grim_line_vector_dtor",
-      "source": "tools/match/scratches/grim_line_vector_dtor/scratch.cpp",
-      "source_sha256": "7eb97c107e200ffa8b61b6162a05935975c7b9bab2b5fa1552b64562e59a1bf9",
-      "target_size": 1,
-      "translation_unit": {
-        "kind": "isolated",
-        "name": "grim_line_vector_dtor"
-      }
-    },
-    {
-      "address": 268468560,
-      "cflags": [
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-"
-      ],
-      "compile_argv": [
-        "/nologo",
-        "/c",
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-",
-        "scratch.cpp"
-      ],
-      "compile_inputs": [
-        {
-          "path": "tools/match/scratches/grim_draw_line_quad/scratch.cpp",
-          "repository_relative": true,
-          "sha256": "79620ca1fabeba12b3cb005df90b45a760b4d09056b60b37ab0eb1053e94e1f1"
         },
-        {
-          "path": "tools/match/scratches/grim_draw_line_quad/scratch.conf",
-          "repository_relative": true,
-          "sha256": "7c318a4d242e3946a854c944784b48f2bb54beb10e56abcfffbb488705850bf1"
-        },
-        {
-          "path": "tools/match/cl.sh",
-          "repository_relative": true,
-          "sha256": "7943cbe81195c28913bad50303b3d734f1a4d2e3e90c72ab9db1ec5ce44a7748"
-        },
-        {
-          "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
-          "repository_relative": true,
-          "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
-        },
-        {
-          "path": "tools/match/include/grim2d_cpp.h",
-          "repository_relative": true,
-          "sha256": "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
-        }
-      ],
-      "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_draw_line_quad/scratch.conf",
-      "config_sha256": "7c318a4d242e3946a854c944784b48f2bb54beb10e56abcfffbb488705850bf1",
-      "effective_end": 268468659,
-      "end": 268468659,
-      "function": "grim_draw_line_quad",
-      "functions": [
         {
           "address": 268468560,
           "canonical_config": "tools/match/scratches/grim_draw_line_quad/scratch.conf",
@@ -14692,25 +14549,27 @@
         }
       ],
       "match": {
-        "candidate_instructions": 42,
+        "candidate_instructions": 40,
         "masked_mismatches": 0,
-        "masked_ok": 0,
+        "masked_ok": 13,
         "masked_unresolved": 0,
-        "prefix_instructions": 42,
+        "prefix_instructions": 40,
         "ratio": 1.0,
         "state": "match",
-        "target_instructions": 42
+        "target_instructions": 40
       },
-      "object": "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj",
-      "object_function_symbol": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z",
-      "object_sha256": "a23495b6586143075a82dde356dc0d0ac4654445069ba2f6a50bd422ee2917ab",
-      "scratch": "tools/match/scratches/grim_draw_line_quad",
-      "source": "tools/match/scratches/grim_draw_line_quad/scratch.cpp",
-      "source_sha256": "79620ca1fabeba12b3cb005df90b45a760b4d09056b60b37ab0eb1053e94e1f1",
-      "target_size": 99,
+      "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
+      "object_function_symbol": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
+      "object_sha256": "c03f35c2ce1fcd7cc385c06a1039464179a96f0fa4e14ab1bc252ca2687efed8",
+      "scratch": "tools/match/scratches/grim_draw_line",
+      "source": "tools/match/scratches/grim_draw_line/scratch.cpp",
+      "source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
+      "target_size": 134,
       "translation_unit": {
-        "kind": "isolated",
-        "name": "grim_draw_line_quad"
+        "config": "tools/native/translation_units/grim.dll.json",
+        "config_sha256": "18739f872f0f12b2bb4f806278c735c598bdfcb18509dbb27e2cab6dbe737828",
+        "kind": "cluster",
+        "name": "grim-draw-line-island"
       }
     },
     {
@@ -17458,7 +17317,7 @@
       {
         "path": "tools/native/translation_units/grim.dll.json",
         "repository_relative": true,
-        "sha256": "65aa1871d545c5c06d6054a6cb3b534fa59584ff74deab9ecbda5a1671fcba57"
+        "sha256": "18739f872f0f12b2bb4f806278c735c598bdfcb18509dbb27e2cab6dbe737828"
       },
       {
         "path": "tools/native/data_definitions/grim.dll.json",
@@ -17513,7 +17372,7 @@
     "wip": 7
   },
   "translation_units": {
-    "cluster_count": 1,
-    "isolated_count": 133
+    "cluster_count": 2,
+    "isolated_count": 130
   }
 }

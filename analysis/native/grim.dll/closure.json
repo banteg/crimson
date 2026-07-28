@@ -1,5 +1,5 @@
 {
-  "audit_digest": "0a2bbd11e95eb95a5133fb4a1bb9702141fcd514780e2049ebfd0fe02786f3b3",
+  "audit_digest": "283857ec92a0cdbf2d53b9689d24a6f0db08fb12f87c1b9e4fb0ac74b0f6b250",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -533,7 +533,7 @@
   "default_libraries": [
     {
       "name": "LIBC",
-      "object_count": 127,
+      "object_count": 125,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/c53c287184ecb2ea/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/5e91d143e1978233/scratch.obj",
@@ -550,8 +550,7 @@
         "tools/match/scratches/grim_draw_circle_outline/build/msvc6.5/75ab53dda4f00f52/scratch.obj",
         "tools/match/scratches/grim_draw_fullscreen_color/build/msvc6.5/5db2e573aa94f355/scratch.obj",
         "tools/match/scratches/grim_draw_fullscreen_quad/build/msvc6.5/13902773aafaea21/scratch.obj",
-        "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
-        "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj",
+        "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
         "tools/match/scratches/grim_draw_quad/build/msvc6.5/a0ea873bac428a3e/scratch.obj",
         "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/5439656fa4c68009/scratch.obj",
         "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/2c22f6677f07597b/scratch.obj",
@@ -608,7 +607,6 @@
         "tools/match/scratches/grim_joystick_left_active/build/msvc6.5/76cc9523156c147b/scratch.obj",
         "tools/match/scratches/grim_joystick_right_active/build/msvc6.5/a7b70c6993461473/scratch.obj",
         "tools/match/scratches/grim_joystick_up_active/build/msvc6.5/84c81401dc952864/scratch.obj",
-        "tools/match/scratches/grim_line_vector_dtor/build/msvc6.5/da93cb8a7ad0094f/scratch.obj",
         "tools/match/scratches/grim_load_texture/build/msvc6.5/06958b754a445259/scratch.obj",
         "tools/match/scratches/grim_load_texture_internal/build/msvc6.5/b75eb0c92e74f66c/scratch.obj",
         "tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/7b940d93d29042dc/scratch.obj",
@@ -679,7 +677,7 @@
     },
     {
       "name": "OLDNAMES",
-      "object_count": 134,
+      "object_count": 132,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/c53c287184ecb2ea/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/5e91d143e1978233/scratch.obj",
@@ -697,8 +695,7 @@
         "tools/match/scratches/grim_draw_circle_outline/build/msvc6.5/75ab53dda4f00f52/scratch.obj",
         "tools/match/scratches/grim_draw_fullscreen_color/build/msvc6.5/5db2e573aa94f355/scratch.obj",
         "tools/match/scratches/grim_draw_fullscreen_quad/build/msvc6.5/13902773aafaea21/scratch.obj",
-        "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
-        "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj",
+        "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
         "tools/match/scratches/grim_draw_quad/build/msvc6.5/a0ea873bac428a3e/scratch.obj",
         "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/5439656fa4c68009/scratch.obj",
         "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/2c22f6677f07597b/scratch.obj",
@@ -758,7 +755,6 @@
         "tools/match/scratches/grim_joystick_left_active/build/msvc6.5/76cc9523156c147b/scratch.obj",
         "tools/match/scratches/grim_joystick_right_active/build/msvc6.5/a7b70c6993461473/scratch.obj",
         "tools/match/scratches/grim_joystick_up_active/build/msvc6.5/84c81401dc952864/scratch.obj",
-        "tools/match/scratches/grim_line_vector_dtor/build/msvc6.5/da93cb8a7ad0094f/scratch.obj",
         "tools/match/scratches/grim_load_texture/build/msvc6.5/06958b754a445259/scratch.obj",
         "tools/match/scratches/grim_load_texture_internal/build/msvc6.5/b75eb0c92e74f66c/scratch.obj",
         "tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/7b940d93d29042dc/scratch.obj",
@@ -2104,11 +2100,17 @@
           "comdat_key": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
           "comdat_selection": 1,
           "function": "grim_draw_line",
+          "functions": [
+            "grim_draw_line",
+            "grim_line_vector_dtor",
+            "grim_draw_line_quad"
+          ],
           "kind": "section",
           "logical_section_size": 144,
-          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-draw-line-island",
           "weak": false
         }
       ],
@@ -2122,11 +2124,17 @@
           "comdat_key": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z",
           "comdat_selection": 1,
           "function": "grim_draw_line_quad",
+          "functions": [
+            "grim_draw_line",
+            "grim_line_vector_dtor",
+            "grim_draw_line_quad"
+          ],
           "kind": "section",
           "logical_section_size": 112,
-          "object": "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-draw-line-island",
           "weak": false
         }
       ],
@@ -7647,24 +7655,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_grim_line_vector_dtor",
-          "comdat_selection": 1,
-          "function": "grim_line_vector_dtor",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_line_vector_dtor/build/msvc6.5/da93cb8a7ad0094f/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_grim_line_vector_dtor"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_grim_missing_frame_callback",
           "comdat_selection": 1,
           "function": "grim_missing_frame_callback",
@@ -8327,14 +8317,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj"
+      "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj"
     },
     {
       "directives": [
@@ -8768,13 +8751,6 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/grim_joystick_up_active/build/msvc6.5/84c81401dc952864/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_line_vector_dtor/build/msvc6.5/da93cb8a7ad0094f/scratch.obj"
     },
     {
       "directives": [
@@ -11168,11 +11144,17 @@
           "comdat_key": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
           "comdat_selection": 1,
           "function": "grim_draw_line",
+          "functions": [
+            "grim_draw_line",
+            "grim_line_vector_dtor",
+            "grim_draw_line_quad"
+          ],
           "kind": "section",
           "logical_section_size": 144,
-          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-draw-line-island",
           "weak": false
         }
       ],
@@ -11193,11 +11175,17 @@
           "comdat_key": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z",
           "comdat_selection": 1,
           "function": "grim_draw_line_quad",
+          "functions": [
+            "grim_draw_line",
+            "grim_line_vector_dtor",
+            "grim_draw_line_quad"
+          ],
           "kind": "section",
           "logical_section_size": 112,
-          "object": "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-draw-line-island",
           "weak": false
         }
       ],
@@ -18596,14 +18584,14 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 12,
-    "defined_symbols": 337,
+    "defined_symbols": 336,
     "function_closure": true,
     "function_count": 137,
     "game_function_debt": {},
     "game_owned_closure": false,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 135,
+    "object_count": 133,
     "reference_exports_closed": true,
     "resolved_symbols": 274,
     "unresolved_by_category": {
@@ -19148,8 +19136,14 @@
       "name": "_D3DXVec2Normalize@8",
       "referenced_by": [
         {
-          "function": "grim_draw_line",
-          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_line",
+            "grim_line_vector_dtor",
+            "grim_draw_line_quad"
+          ],
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
+          "translation_unit": "grim-draw-line-island",
           "weak": false
         }
       ]
@@ -19286,13 +19280,14 @@
           "weak": false
         },
         {
-          "function": "grim_draw_line",
-          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "grim_draw_line_quad",
-          "object": "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_line",
+            "grim_line_vector_dtor",
+            "grim_draw_line_quad"
+          ],
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
+          "translation_unit": "grim-draw-line-island",
           "weak": false
         },
         {
@@ -19898,8 +19893,14 @@
       "name": "_atexit",
       "referenced_by": [
         {
-          "function": "grim_draw_line",
-          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_line",
+            "grim_line_vector_dtor",
+            "grim_draw_line_quad"
+          ],
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
+          "translation_unit": "grim-draw-line-island",
           "weak": false
         }
       ]

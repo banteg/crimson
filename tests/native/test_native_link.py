@@ -484,12 +484,18 @@ def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> N
 
     assert [cluster.name for cluster in config.clusters] == [
         "grim-slot-state-accessors",
+        "grim-draw-line-island",
     ]
     assert [member.function for member in config.clusters[0].members] == [
         "grim_get_slot_float",
         "grim_get_slot_int",
         "grim_set_slot_float",
         "grim_set_slot_int",
+    ]
+    assert [member.function for member in config.clusters[1].members] == [
+        "grim_draw_line",
+        "grim_line_vector_dtor",
+        "grim_draw_line_quad",
     ]
 
 
