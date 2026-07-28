@@ -26,6 +26,9 @@ NATIVE_DATA_MANIFEST_KIND = "crimson-native-data-manifest"
 NATIVE_DATA_DEFINITION_KIND = "crimson-native-data-definitions"
 
 IMAGE_SCN_LNK_COMDAT = 0x00001000
+IMAGE_SCN_CNT_INITIALIZED_DATA = 0x00000040
+IMAGE_SCN_MEM_READ = 0x40000000
+IMAGE_SCN_MEM_WRITE = 0x80000000
 IMAGE_SYM_CLASS_WEAK_EXTERNAL = 105
 IMAGE_WEAK_EXTERN_SEARCH_ALIAS = 3
 
@@ -40,6 +43,7 @@ DEFAULT_NATIVE_ANALYSIS_ROOT = matchlib.REPO_ROOT / "analysis" / "native"
 DEFAULT_DATA_DEFINITION_ROOT = (
     matchlib.REPO_ROOT / "tools" / "native" / "data_definitions"
 )
+DEFAULT_DATA_OBJECT_BUILD_ROOT = DEFAULT_DATA_DEFINITION_ROOT / "build"
 DEFAULT_ABI_CONFIGS = {
     "crimsonland.exe": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "crimsonland.exe",
     "grim.dll": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "grim.dll",
@@ -64,6 +68,10 @@ DEFAULT_TRANSLATION_UNIT_CONFIGS = {
 
 def default_native_data_definitions_path(image: str) -> Path:
     return DEFAULT_DATA_DEFINITION_ROOT / f"{image}.json"
+
+
+def default_native_data_object_path(image: str) -> Path:
+    return DEFAULT_DATA_OBJECT_BUILD_ROOT / image / "definitions.obj"
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,6 +123,38 @@ class NativeObjectRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class NativeDataBinding:
+    address: int
+    name: str
+    size: int
+    alignment: int
+    initializer: bytes
+    symbols: tuple[str, ...]
+    section_number: int
+    section_offset: int
+
+
+@dataclass(frozen=True, slots=True)
+class NativeDataRegion:
+    address: int
+    alignment: int
+    data: bytes
+    section_number: int
+    entries: tuple[tuple[int, str], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NativeDataObjectRecord:
+    object_path: Path
+    coff: matchlib.CoffObject
+    definitions_path: Path
+    definitions_sha256: str
+    object_sha256: str
+    bindings: tuple[NativeDataBinding, ...]
+    regions: tuple[NativeDataRegion, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class NativeCompilerBundleSnapshot:
     compiler: str
     root: Path
@@ -140,6 +180,7 @@ class NativeObjectSet:
     manifest: matchlib.FunctionManifest
     image_path: Path
     records: tuple[NativeObjectRecord, ...]
+    data_records: tuple[NativeDataObjectRecord, ...] = ()
     abi_object_path: Path | None = None
     abi_config: matchlib.ScratchConfig | None = None
     abi_compile_inputs: tuple[tuple[Path, str], ...] = ()
@@ -1132,6 +1173,48 @@ def object_manifest_payload(
             )
         records.append(row)
 
+    data_records = [
+        {
+            "bindings": [
+                {
+                    "address": binding.address,
+                    "alignment": binding.alignment,
+                    "name": binding.name,
+                    "section_number": binding.section_number,
+                    "section_offset": binding.section_offset,
+                    "size": binding.size,
+                    "symbols": list(binding.symbols),
+                }
+                for binding in record.bindings
+            ],
+            "definitions": _snapshotted_file_payload(
+                record.definitions_path,
+                record.definitions_sha256,
+                repo_root=repo_root,
+            ),
+            "emitted_symbol_count": sum(
+                len(binding.symbols)
+                for binding in record.bindings
+            ),
+            "object": _repo_relative(record.object_path, repo_root=repo_root),
+            "object_sha256": record.object_sha256,
+            "regions": [
+                {
+                    "address": region.address,
+                    "alignment": region.alignment,
+                    "entries": [
+                        {"address": address, "name": name}
+                        for address, name in region.entries
+                    ],
+                    "section_number": region.section_number,
+                    "size": len(region.data),
+                }
+                for region in record.regions
+            ],
+        }
+        for record in objects.data_records
+    ]
+
     abi: dict[str, Any] | None = None
     if objects.abi_object_path is not None:
         if objects.abi_config is None:
@@ -1184,29 +1267,45 @@ def object_manifest_payload(
         },
     )
     selection_input_paths.extend(translation_unit_config_paths)
+    selection_input_paths.extend(
+        sorted(
+            {
+                record.definitions_path
+                for record in objects.data_records
+            },
+        ),
+    )
     cluster_count = sum(
         record.translation_unit is not None
         for record in objects.records
     )
+    base_build_policy = (
+        "forced-explicit-translation-unit-recompile"
+        if cluster_count
+        else "forced-isolated-recompile"
+    )
+    build_policy = (
+        f"{base_build_policy}-with-generated-data-definitions"
+        if data_records
+        else base_build_policy
+    )
 
     return {
         "abi_assertions": abi,
+        "data_object_count": len(data_records),
+        "data_objects": data_records,
         "function_count": len(bindings),
         "image": objects.image,
         "kind": NATIVE_OBJECT_MANIFEST_KIND,
-        "object_count": len(records),
-        "object_order": "ascending-minimum-reference-address",
+        "object_count": len(records) + len(data_records),
+        "object_order": "ascending-minimum-reference-address-then-generated-data",
         "object_hash": {
             "algorithm": "sha256",
             "normalization": ["zero COFF TimeDateStamp bytes 4..7"],
         },
         "objects": records,
         "provenance": {
-            "build_policy": (
-                "forced-explicit-translation-unit-recompile"
-                if cluster_count
-                else "forced-isolated-recompile"
-            ),
+            "build_policy": build_policy,
             "selection_inputs": [
                 _file_payload(path, repo_root=repo_root)
                 for path in selection_input_paths
@@ -1246,6 +1345,10 @@ def render_object_list(
         _repo_relative(record.object_path, repo_root=repo_root)
         for record in objects.records
     ]
+    lines.extend(
+        _repo_relative(record.object_path, repo_root=repo_root)
+        for record in objects.data_records
+    )
     return "".join(f"{line}\n" for line in lines)
 
 
@@ -1473,6 +1576,47 @@ def _symbol_occurrence(
     return occurrence
 
 
+def _data_symbol_occurrence(
+    record: NativeDataObjectRecord,
+    symbol: matchlib.CoffSymbol,
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
+    binding = next(
+        (
+            candidate
+            for candidate in record.bindings
+            if symbol.name in candidate.symbols
+        ),
+        None,
+    )
+    if binding is None:
+        raise ValueError(
+            f"{record.object_path}: emitted data symbol {symbol.name!r} has no binding",
+        )
+    if not 0 < symbol.section_number <= len(record.coff.sections):
+        raise ValueError(
+            f"{record.object_path}: data symbol {symbol.name!r} is not section-defined",
+        )
+    section = record.coff.sections[symbol.section_number - 1]
+    return {
+        "alignment": binding.alignment,
+        "comdat": False,
+        "comdat_associative_section": None,
+        "comdat_key": None,
+        "comdat_selection": None,
+        "data_address": binding.address,
+        "data_name": binding.name,
+        "function": None,
+        "kind": "section",
+        "logical_section_size": section.logical_size,
+        "object": _repo_relative(record.object_path, repo_root=repo_root),
+        "section": section.name,
+        "size": binding.size,
+        "weak": False,
+    }
+
+
 def _coff_directives(record: NativeObjectRecord) -> tuple[str, ...]:
     directives: list[str] = []
     for section in record.coff.sections:
@@ -1535,6 +1679,25 @@ def symbol_closure_payload(
                     if symbol.weak_search == IMAGE_WEAK_EXTERN_SEARCH_ALIAS:
                         alias_fallback = fallback.name
                 pending_undefined.append((symbol.name, alias_fallback, reference))
+
+    for record in objects.data_records:
+        object_name = _repo_relative(record.object_path, repo_root=repo_root)
+        directives_by_object[object_name] = ()
+        for symbol in record.coff.symbols:
+            if symbol.storage_class != matchlib.IMAGE_SYM_CLASS_EXTERNAL:
+                continue
+            if symbol.section_number <= 0:
+                raise ValueError(
+                    f"{record.object_path}: generated data object contains "
+                    f"undefined symbol {symbol.name!r}",
+                )
+            definitions[symbol.name].append(
+                _data_symbol_occurrence(
+                    record,
+                    symbol,
+                    repo_root=repo_root,
+                ),
+            )
 
     for primary_name, alias_fallback, reference in pending_undefined:
         reference_name = primary_name
@@ -1758,7 +1921,7 @@ def symbol_closure_payload(
                 len(_record_bindings(record))
                 for record in objects.records
             ),
-            "object_count": len(objects.records),
+            "object_count": len(objects.records) + len(objects.data_records),
             "reference_exports_closed": reference_exports_closed,
             "resolved_symbols": len(resolved_rows),
             "unresolved_by_category": dict(sorted(unresolved_counts.items())),
@@ -1992,6 +2155,320 @@ def _data_closure_references(
                 references[key].append(symbol)
                 seen_keys.add(key)
     return references
+
+
+def _native_data_layout(
+    definitions: dict[str, Any],
+    symbol_closure: dict[str, Any],
+) -> tuple[tuple[NativeDataBinding, ...], tuple[NativeDataRegion, ...]]:
+    references = _data_closure_references(symbol_closure)
+    pending: list[dict[str, Any]] = []
+    symbol_owners: dict[str, tuple[int, str]] = {}
+    for entry in definitions["entries"]:
+        size = entry["size"]
+        alignment = entry["alignment"]
+        initializer_hex = entry["initializer_hex"]
+        if size is None or alignment is None or initializer_hex is None:
+            continue
+        key = (int(entry["address"]), str(entry["name"]))
+        symbols: list[str] = []
+        for reference in sorted(
+            references.get(key, []),
+            key=lambda row: str(row["name"]),
+        ):
+            symbol = str(reference["name"])
+            owner = symbol_owners.get(symbol)
+            if owner is not None:
+                if owner[0] != key[0]:
+                    raise ValueError(
+                        f"data symbol {symbol!r} maps to both "
+                        f"{owner[1]}@0x{owner[0]:08x} and {key[1]}@0x{key[0]:08x}",
+                    )
+                continue
+            symbol_owners[symbol] = key
+            symbols.append(symbol)
+        if not symbols:
+            continue
+        pending.append(
+            {
+                "address": key[0],
+                "alignment": int(alignment),
+                "initializer": bytes.fromhex(str(initializer_hex)),
+                "name": key[1],
+                "size": int(size),
+                "symbols": tuple(symbols),
+            },
+        )
+
+    if not pending:
+        return (), ()
+    pending.sort(key=lambda row: (int(row["address"]), str(row["name"])))
+
+    groups: list[list[dict[str, Any]]] = []
+    for row in pending:
+        start = int(row["address"])
+        if groups:
+            group_end = max(
+                int(candidate["address"]) + int(candidate["size"])
+                for candidate in groups[-1]
+            )
+            if start < group_end:
+                groups[-1].append(row)
+                continue
+        groups.append([row])
+
+    while True:
+        merged: list[list[dict[str, Any]]] = []
+        changed = False
+        for group in groups:
+            alignment = max(int(row["alignment"]) for row in group)
+            start = min(int(row["address"]) for row in group)
+            storage_start = start - start % alignment
+            if merged:
+                previous = merged[-1]
+                previous_end = max(
+                    int(row["address"]) + int(row["size"])
+                    for row in previous
+                )
+                if storage_start < previous_end:
+                    previous.extend(group)
+                    changed = True
+                    continue
+            merged.append(group)
+        groups = merged
+        if not changed:
+            break
+
+    bindings: list[NativeDataBinding] = []
+    regions: list[NativeDataRegion] = []
+    for section_number, group in enumerate(groups, start=1):
+        alignment = max(int(row["alignment"]) for row in group)
+        first_address = min(int(row["address"]) for row in group)
+        storage_address = first_address - first_address % alignment
+        storage_end = max(
+            int(row["address"]) + int(row["size"])
+            for row in group
+        )
+        data = bytearray(storage_end - storage_address)
+        written = bytearray(len(data))
+        for row in group:
+            offset = int(row["address"]) - storage_address
+            initializer = bytes(row["initializer"])
+            for byte_index, value in enumerate(initializer, start=offset):
+                if written[byte_index] and data[byte_index] != value:
+                    raise ValueError(
+                        f"overlapping data definitions disagree at "
+                        f"0x{storage_address + byte_index:08x}",
+                    )
+                data[byte_index] = value
+                written[byte_index] = 1
+            bindings.append(
+                NativeDataBinding(
+                    address=int(row["address"]),
+                    name=str(row["name"]),
+                    size=int(row["size"]),
+                    alignment=int(row["alignment"]),
+                    initializer=initializer,
+                    symbols=tuple(str(symbol) for symbol in row["symbols"]),
+                    section_number=section_number,
+                    section_offset=offset,
+                ),
+            )
+        regions.append(
+            NativeDataRegion(
+                address=storage_address,
+                alignment=alignment,
+                data=bytes(data),
+                section_number=section_number,
+                entries=tuple(
+                    sorted(
+                        (
+                            (int(row["address"]), str(row["name"]))
+                            for row in group
+                        ),
+                    ),
+                ),
+            ),
+        )
+    return tuple(bindings), tuple(regions)
+
+
+def _coff_alignment_characteristic(alignment: int) -> int:
+    if alignment > 8192:
+        raise ValueError(f"COFF section alignment {alignment} exceeds 8192")
+    return alignment.bit_length() << 20
+
+
+def native_data_object_bytes(
+    definitions: dict[str, Any],
+    symbol_closure: dict[str, Any],
+) -> tuple[
+    bytes,
+    tuple[NativeDataBinding, ...],
+    tuple[NativeDataRegion, ...],
+]:
+    bindings, regions = _native_data_layout(definitions, symbol_closure)
+    if not bindings:
+        return b"", (), ()
+
+    symbols: list[tuple[str, NativeDataBinding]] = sorted(
+        (
+            (symbol, binding)
+            for binding in bindings
+            for symbol in binding.symbols
+        ),
+        key=lambda item: item[0],
+    )
+    if len({symbol for symbol, _ in symbols}) != len(symbols):
+        raise ValueError("generated data object contains duplicate symbol names")
+
+    string_offsets: dict[str, int] = {}
+    string_payload = bytearray()
+    for symbol, _ in symbols:
+        encoded = symbol.encode("latin1")
+        if len(encoded) <= 8:
+            continue
+        string_offsets[symbol] = 4 + len(string_payload)
+        string_payload.extend(encoded)
+        string_payload.append(0)
+    string_table = struct.pack("<I", 4 + len(string_payload)) + string_payload
+
+    section_table_end = 20 + len(regions) * 40
+    cursor = section_table_end
+    raw_offsets: list[int] = []
+    for region in regions:
+        cursor = (cursor + 3) & ~3
+        raw_offsets.append(cursor)
+        cursor += len(region.data)
+    symbol_table_offset = (cursor + 3) & ~3
+
+    payload = bytearray(symbol_table_offset)
+    struct.pack_into(
+        "<HHIIIHH",
+        payload,
+        0,
+        matchlib.IMAGE_FILE_MACHINE_I386,
+        len(regions),
+        0,
+        symbol_table_offset,
+        len(symbols),
+        0,
+        0,
+    )
+    for index, (region, raw_offset) in enumerate(
+        zip(regions, raw_offsets, strict=True),
+    ):
+        header_offset = 20 + index * 40
+        payload[header_offset : header_offset + 8] = b".data\x00\x00\x00"
+        struct.pack_into(
+            "<IIIIIIHHI",
+            payload,
+            header_offset + 8,
+            0,
+            0,
+            len(region.data),
+            raw_offset,
+            0,
+            0,
+            0,
+            0,
+            (
+                IMAGE_SCN_CNT_INITIALIZED_DATA
+                | _coff_alignment_characteristic(region.alignment)
+                | IMAGE_SCN_MEM_READ
+                | IMAGE_SCN_MEM_WRITE
+            ),
+        )
+        payload[raw_offset : raw_offset + len(region.data)] = region.data
+
+    for symbol, binding in symbols:
+        encoded = symbol.encode("latin1")
+        if len(encoded) <= 8:
+            name_field = encoded.ljust(8, b"\x00")
+        else:
+            name_field = struct.pack("<II", 0, string_offsets[symbol])
+        payload.extend(name_field)
+        payload.extend(
+            struct.pack(
+                "<IhHBB",
+                binding.section_offset,
+                binding.section_number,
+                0,
+                matchlib.IMAGE_SYM_CLASS_EXTERNAL,
+                0,
+            ),
+        )
+    payload.extend(string_table)
+
+    object_data = bytes(payload)
+    coff = matchlib.parse_coff_object(object_data)
+    parsed_symbols = {
+        symbol.name: symbol
+        for symbol in coff.symbols
+        if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+    }
+    if set(parsed_symbols) != {symbol for symbol, _ in symbols}:
+        raise ValueError("generated data object symbol table did not round-trip")
+    for symbol, binding in symbols:
+        parsed = parsed_symbols[symbol]
+        if (
+            parsed.section_number != binding.section_number
+            or parsed.value != binding.section_offset
+        ):
+            raise ValueError(
+                f"generated data symbol {symbol!r} did not retain its section offset",
+            )
+    return object_data, bindings, regions
+
+
+def _write_bytes_atomic(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_bytes(data)
+    os.replace(temporary, path)
+
+
+def build_native_data_object(
+    image: str,
+    *,
+    symbol_closure: dict[str, Any],
+    reference_image_path: Path,
+    definitions_path: Path | None = None,
+    output_path: Path | None = None,
+) -> NativeDataObjectRecord | None:
+    resolved_definitions_path = (
+        definitions_path
+        if definitions_path is not None
+        else default_native_data_definitions_path(image)
+    )
+    definitions = load_native_data_definitions(
+        image,
+        path=resolved_definitions_path,
+        reference_image_path=reference_image_path,
+    )
+    if definitions is None:
+        return None
+    object_data, bindings, regions = native_data_object_bytes(
+        definitions,
+        symbol_closure,
+    )
+    if not bindings:
+        return None
+    resolved_output_path = (
+        output_path
+        if output_path is not None
+        else default_native_data_object_path(image)
+    )
+    _write_bytes_atomic(resolved_output_path, object_data)
+    return NativeDataObjectRecord(
+        object_path=resolved_output_path.resolve(),
+        coff=matchlib.parse_coff_object(object_data),
+        definitions_path=resolved_definitions_path.resolve(),
+        definitions_sha256=_sha256(resolved_definitions_path),
+        object_sha256=_normalized_coff_sha256(object_data),
+        bindings=bindings,
+        regions=regions,
+    )
 
 
 def _data_definition_state(entry: dict[str, Any]) -> str:
@@ -2271,6 +2748,17 @@ def build_native_audit(
         jobs=jobs,
         translation_unit_configs=translation_unit_configs,
     )
+    preliminary_symbol_closure = symbol_closure_payload(
+        objects,
+        repo_root=repo_root,
+    )
+    data_object = build_native_data_object(
+        image,
+        symbol_closure=preliminary_symbol_closure,
+        reference_image_path=objects.image_path,
+    )
+    if data_object is not None:
+        objects = replace(objects, data_records=(data_object,))
     object_manifest = object_manifest_payload(objects, repo_root=repo_root)
     symbol_closure = symbol_closure_payload(objects, repo_root=repo_root)
     data_manifest = data_manifest_payload(

@@ -10,7 +10,8 @@ just native-audit grim.dll
 Each image directory contains:
 
 - `objects.json`: the canonical function-to-translation-unit selection,
-  compiler profile, matching state, and source/config/object hashes;
+  generated data-definition objects, compiler profile, matching state, and
+  source/config/object hashes;
 - `objects.txt`: the same object files in ascending reference-address order;
 - `exports.def`: explicit reference-export name/ordinal mappings to decorated
   object symbols;
@@ -50,6 +51,13 @@ The audit is intentionally strict:
 - the reference PE export must have an unambiguous `.def` mapping;
 - no unresolved symbol is hidden behind a generated stub.
 
+Fully specified, currently referenced data definitions are emitted into one
+deterministic i386 COFF object after the function-object pass discovers their
+exact requested symbol names. Overlapping ranges share storage, so C and C++
+decorated names and interior fields can alias the same bytes without inventing
+duplicate globals. Sparse ranges remain separate sections; the emitter does
+not fill unknown gaps or derive extents from neighboring symbols.
+
 The three Crimsonland metadata lifecycle clusters are the first modeled
 exception. Their natural global-array definitions emit exact
 `$E4/$E1/$E3/$E2` initializer, constructor, registrar, and finalizer
@@ -87,6 +95,7 @@ Section membership still comes from the IDA segment export. Fields remain
 `null` when no explicit definition exists. `data.json.priorities` ranks the
 top 50 mapped data entries by unresolved COFF reference fan-in and preserves
 each requested decorated symbol, so inconsistent declaration types remain
-visible. A `fully-specified` manifest entry is ready for a later definition
-object; it does not claim linker closure until a real object emits that exact
-symbol.
+visible. A `fully-specified` manifest entry is eligible for the generated data
+object; it claims linker closure only when that object emits every requested
+exact symbol. `objects.json.data_objects` records the input manifest, emitted
+aliases, section offsets, region layout, and object hash.

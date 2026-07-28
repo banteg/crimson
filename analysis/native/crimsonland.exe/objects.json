@@ -54,19 +54,844 @@
     "source_sha256": "bc7dd63cd514f831d82cb1a87540fce222dd431a538d59ad341988723ea1d3fe",
     "status": "passed"
   },
-  "audit_digest": "fd5b94528354cc2390fba61c33ccff5d5b988337fc19c54c1b0afb2ad107b1cc",
+  "audit_digest": "b879a4518e568847e5188079796c2556d360f9806a2e5fe55c4a26413db8834d",
+  "data_object_count": 1,
+  "data_objects": [
+    {
+      "bindings": [
+        {
+          "address": 4714144,
+          "alignment": 4,
+          "name": "console_log_queue",
+          "section_number": 1,
+          "section_offset": 0,
+          "size": 44,
+          "symbols": [
+            "?console_log_queue@@3Uconsole_queue_t@@A",
+            "_console_log_queue"
+          ]
+        },
+        {
+          "address": 4714184,
+          "alignment": 1,
+          "name": "console_open_flag",
+          "section_number": 1,
+          "section_offset": 40,
+          "size": 1,
+          "symbols": [
+            "?console_open_flag@@3EA",
+            "_console_open_flag"
+          ]
+        },
+        {
+          "address": 4719452,
+          "alignment": 4,
+          "name": "config_player_count",
+          "section_number": 2,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "?config_player_count@@3HA",
+            "_config_player_count"
+          ]
+        },
+        {
+          "address": 4719456,
+          "alignment": 4,
+          "name": "config_game_mode",
+          "section_number": 3,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "?config_game_mode@@3W4game_mode_id_t@@A",
+            "_config_game_mode"
+          ]
+        },
+        {
+          "address": 4719876,
+          "alignment": 4,
+          "name": "config_screen_width",
+          "section_number": 4,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_config_screen_width"
+          ]
+        },
+        {
+          "address": 4720528,
+          "alignment": 1,
+          "name": "config_hardcore",
+          "section_number": 5,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "?config_hardcore@@3EA",
+            "_config_hardcore"
+          ]
+        },
+        {
+          "address": 4720700,
+          "alignment": 4,
+          "name": "grim_interface_ptr",
+          "section_number": 6,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "?grim_interface_ptr@@3PAVIGrim2D_cpp@@A",
+            "_grim_interface_ptr"
+          ]
+        },
+        {
+          "address": 4720704,
+          "alignment": 4,
+          "name": "frame_dt",
+          "section_number": 7,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_frame_dt"
+          ]
+        },
+        {
+          "address": 4720708,
+          "alignment": 4,
+          "name": "frame_dt_ms",
+          "section_number": 8,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_frame_dt_ms"
+          ]
+        },
+        {
+          "address": 4720740,
+          "alignment": 4,
+          "name": "cv_verbose",
+          "section_number": 9,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "?cv_verbose@@3PAUcvar_float_t@@A",
+            "_cv_verbose"
+          ]
+        },
+        {
+          "address": 4739016,
+          "alignment": 4,
+          "name": "camera_offset_x",
+          "section_number": 10,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_camera_offset_x"
+          ]
+        },
+        {
+          "address": 4739020,
+          "alignment": 4,
+          "name": "camera_offset_y",
+          "section_number": 11,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_camera_offset_y"
+          ]
+        },
+        {
+          "address": 4747216,
+          "alignment": 4,
+          "name": "quest_spawn_timeline",
+          "section_number": 12,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_quest_spawn_timeline"
+          ]
+        },
+        {
+          "address": 4747268,
+          "alignment": 4,
+          "name": "quest_stage_major",
+          "section_number": 13,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "?quest_stage_major@@3HA",
+            "_quest_stage_major"
+          ]
+        },
+        {
+          "address": 4747272,
+          "alignment": 4,
+          "name": "quest_stage_minor",
+          "section_number": 14,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "?quest_stage_minor@@3HA",
+            "_quest_stage_minor"
+          ]
+        },
+        {
+          "address": 4747277,
+          "alignment": 1,
+          "name": "demo_mode_active",
+          "section_number": 15,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "_demo_mode_active"
+          ]
+        },
+        {
+          "address": 4747284,
+          "alignment": 4,
+          "name": "bonus_reflex_boost_timer",
+          "section_number": 16,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_bonus_reflex_boost_timer"
+          ]
+        },
+        {
+          "address": 4747288,
+          "alignment": 4,
+          "name": "bonus_freeze_timer",
+          "section_number": 17,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_bonus_freeze_timer"
+          ]
+        },
+        {
+          "address": 4747308,
+          "alignment": 1,
+          "name": "screen_fade_ramp_flag",
+          "section_number": 18,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "_screen_fade_ramp_flag"
+          ]
+        },
+        {
+          "address": 4747324,
+          "alignment": 1,
+          "name": "bonus_spawn_guard",
+          "section_number": 19,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "_bonus_spawn_guard"
+          ]
+        },
+        {
+          "address": 4747724,
+          "alignment": 1,
+          "name": "ui_mouse_blocked",
+          "section_number": 20,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "?ui_mouse_blocked@@3EA",
+            "_ui_mouse_blocked"
+          ]
+        },
+        {
+          "address": 4747756,
+          "alignment": 4,
+          "name": "ui_mouse_x",
+          "section_number": 21,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_ui_mouse_x"
+          ]
+        },
+        {
+          "address": 4747760,
+          "alignment": 4,
+          "name": "ui_mouse_y",
+          "section_number": 22,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "?ui_mouse_y@@3MA",
+            "_ui_mouse_y"
+          ]
+        },
+        {
+          "address": 4747840,
+          "alignment": 1,
+          "name": "render_pass_mode",
+          "section_number": 23,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "_render_pass_mode"
+          ]
+        },
+        {
+          "address": 4747852,
+          "alignment": 1,
+          "name": "ui_transition_direction",
+          "section_number": 24,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "_ui_transition_direction"
+          ]
+        },
+        {
+          "address": 4747888,
+          "alignment": 4,
+          "name": "game_state_id",
+          "section_number": 25,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_game_state_id"
+          ]
+        },
+        {
+          "address": 4747892,
+          "alignment": 4,
+          "name": "game_state_pending",
+          "section_number": 26,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_game_state_pending"
+          ]
+        },
+        {
+          "address": 4781364,
+          "alignment": 4,
+          "name": "terrain_texture_width",
+          "section_number": 27,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_terrain_texture_width"
+          ]
+        },
+        {
+          "address": 4781368,
+          "alignment": 4,
+          "name": "terrain_texture_height",
+          "section_number": 28,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_terrain_texture_height"
+          ]
+        },
+        {
+          "address": 4782060,
+          "alignment": 4,
+          "name": "particles_texture",
+          "section_number": 29,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_particles_texture"
+          ]
+        },
+        {
+          "address": 4894476,
+          "alignment": 4,
+          "name": "render_overlay_player_index",
+          "section_number": 30,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_render_overlay_player_index"
+          ]
+        },
+        {
+          "address": 4997172,
+          "alignment": 4,
+          "name": "music_track_shortie_monk_id",
+          "section_number": 31,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_music_track_shortie_monk_id"
+          ]
+        },
+        {
+          "address": 4997176,
+          "alignment": 4,
+          "name": "music_track_crimson_theme_id",
+          "section_number": 32,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_music_track_crimson_theme_id"
+          ]
+        },
+        {
+          "address": 4997180,
+          "alignment": 4,
+          "name": "music_track_extra_0",
+          "section_number": 33,
+          "section_offset": 0,
+          "size": 4,
+          "symbols": [
+            "_music_track_extra_0"
+          ]
+        },
+        {
+          "address": 5032150,
+          "alignment": 1,
+          "name": "sfx_unmuted_flag",
+          "section_number": 34,
+          "section_offset": 0,
+          "size": 1,
+          "symbols": [
+            "_sfx_unmuted_flag"
+          ]
+        }
+      ],
+      "definitions": {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "repository_relative": true,
+        "sha256": "8674f5e1679af5a33bb9d3a30c6523962181586eb248203772c51b7e78e8daa3"
+      },
+      "emitted_symbol_count": 46,
+      "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+      "object_sha256": "9ef93473faf2eeb4c35554a397b0d7ffa7010679f2cae893888b6673de259439",
+      "regions": [
+        {
+          "address": 4714144,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4714144,
+              "name": "console_log_queue"
+            },
+            {
+              "address": 4714184,
+              "name": "console_open_flag"
+            }
+          ],
+          "section_number": 1,
+          "size": 44
+        },
+        {
+          "address": 4719452,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4719452,
+              "name": "config_player_count"
+            }
+          ],
+          "section_number": 2,
+          "size": 4
+        },
+        {
+          "address": 4719456,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4719456,
+              "name": "config_game_mode"
+            }
+          ],
+          "section_number": 3,
+          "size": 4
+        },
+        {
+          "address": 4719876,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4719876,
+              "name": "config_screen_width"
+            }
+          ],
+          "section_number": 4,
+          "size": 4
+        },
+        {
+          "address": 4720528,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4720528,
+              "name": "config_hardcore"
+            }
+          ],
+          "section_number": 5,
+          "size": 1
+        },
+        {
+          "address": 4720700,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4720700,
+              "name": "grim_interface_ptr"
+            }
+          ],
+          "section_number": 6,
+          "size": 4
+        },
+        {
+          "address": 4720704,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4720704,
+              "name": "frame_dt"
+            }
+          ],
+          "section_number": 7,
+          "size": 4
+        },
+        {
+          "address": 4720708,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4720708,
+              "name": "frame_dt_ms"
+            }
+          ],
+          "section_number": 8,
+          "size": 4
+        },
+        {
+          "address": 4720740,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4720740,
+              "name": "cv_verbose"
+            }
+          ],
+          "section_number": 9,
+          "size": 4
+        },
+        {
+          "address": 4739016,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4739016,
+              "name": "camera_offset_x"
+            }
+          ],
+          "section_number": 10,
+          "size": 4
+        },
+        {
+          "address": 4739020,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4739020,
+              "name": "camera_offset_y"
+            }
+          ],
+          "section_number": 11,
+          "size": 4
+        },
+        {
+          "address": 4747216,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747216,
+              "name": "quest_spawn_timeline"
+            }
+          ],
+          "section_number": 12,
+          "size": 4
+        },
+        {
+          "address": 4747268,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747268,
+              "name": "quest_stage_major"
+            }
+          ],
+          "section_number": 13,
+          "size": 4
+        },
+        {
+          "address": 4747272,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747272,
+              "name": "quest_stage_minor"
+            }
+          ],
+          "section_number": 14,
+          "size": 4
+        },
+        {
+          "address": 4747277,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4747277,
+              "name": "demo_mode_active"
+            }
+          ],
+          "section_number": 15,
+          "size": 1
+        },
+        {
+          "address": 4747284,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747284,
+              "name": "bonus_reflex_boost_timer"
+            }
+          ],
+          "section_number": 16,
+          "size": 4
+        },
+        {
+          "address": 4747288,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747288,
+              "name": "bonus_freeze_timer"
+            }
+          ],
+          "section_number": 17,
+          "size": 4
+        },
+        {
+          "address": 4747308,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4747308,
+              "name": "screen_fade_ramp_flag"
+            }
+          ],
+          "section_number": 18,
+          "size": 1
+        },
+        {
+          "address": 4747324,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4747324,
+              "name": "bonus_spawn_guard"
+            }
+          ],
+          "section_number": 19,
+          "size": 1
+        },
+        {
+          "address": 4747724,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4747724,
+              "name": "ui_mouse_blocked"
+            }
+          ],
+          "section_number": 20,
+          "size": 1
+        },
+        {
+          "address": 4747756,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747756,
+              "name": "ui_mouse_x"
+            }
+          ],
+          "section_number": 21,
+          "size": 4
+        },
+        {
+          "address": 4747760,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747760,
+              "name": "ui_mouse_y"
+            }
+          ],
+          "section_number": 22,
+          "size": 4
+        },
+        {
+          "address": 4747840,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4747840,
+              "name": "render_pass_mode"
+            }
+          ],
+          "section_number": 23,
+          "size": 1
+        },
+        {
+          "address": 4747852,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4747852,
+              "name": "ui_transition_direction"
+            }
+          ],
+          "section_number": 24,
+          "size": 1
+        },
+        {
+          "address": 4747888,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747888,
+              "name": "game_state_id"
+            }
+          ],
+          "section_number": 25,
+          "size": 4
+        },
+        {
+          "address": 4747892,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747892,
+              "name": "game_state_pending"
+            }
+          ],
+          "section_number": 26,
+          "size": 4
+        },
+        {
+          "address": 4781364,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4781364,
+              "name": "terrain_texture_width"
+            }
+          ],
+          "section_number": 27,
+          "size": 4
+        },
+        {
+          "address": 4781368,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4781368,
+              "name": "terrain_texture_height"
+            }
+          ],
+          "section_number": 28,
+          "size": 4
+        },
+        {
+          "address": 4782060,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4782060,
+              "name": "particles_texture"
+            }
+          ],
+          "section_number": 29,
+          "size": 4
+        },
+        {
+          "address": 4894476,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4894476,
+              "name": "render_overlay_player_index"
+            }
+          ],
+          "section_number": 30,
+          "size": 4
+        },
+        {
+          "address": 4997172,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4997172,
+              "name": "music_track_shortie_monk_id"
+            }
+          ],
+          "section_number": 31,
+          "size": 4
+        },
+        {
+          "address": 4997176,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4997176,
+              "name": "music_track_crimson_theme_id"
+            }
+          ],
+          "section_number": 32,
+          "size": 4
+        },
+        {
+          "address": 4997180,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4997180,
+              "name": "music_track_extra_0"
+            }
+          ],
+          "section_number": 33,
+          "size": 4
+        },
+        {
+          "address": 5032150,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 5032150,
+              "name": "sfx_unmuted_flag"
+            }
+          ],
+          "section_number": 34,
+          "size": 1
+        }
+      ]
+    }
+  ],
   "function_count": 671,
   "image": "crimsonland.exe",
   "kind": "crimson-native-object-manifest",
-  "object_count": 662,
+  "object_count": 663,
   "object_hash": {
     "algorithm": "sha256",
     "normalization": [
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "90bbcd271070592ef73ff923d70379d78de3e266788964bde16556105bfcbb64",
-  "object_order": "ascending-minimum-reference-address",
+  "object_list_sha256": "449c6f0cc0aac6f85be78782a8b0ff304f0cbbb6b7573a7ec572bb7177a6a39f",
+  "object_order": "ascending-minimum-reference-address-then-generated-data",
   "objects": [
     {
       "address": 4198448,
@@ -66529,7 +67354,7 @@
     }
   ],
   "provenance": {
-    "build_policy": "forced-explicit-translation-unit-recompile",
+    "build_policy": "forced-explicit-translation-unit-recompile-with-generated-data-definitions",
     "selection_inputs": [
       {
         "path": "analysis/ida/raw/crimsonland.exe/functions.json",
@@ -66555,6 +67380,11 @@
         "path": "tools/native/translation_units/crimsonland.exe.json",
         "repository_relative": true,
         "sha256": "f58cacc92fa1dfee1b4e3eb2b2d43eb5dc9ec4b1b963d7f675a6616a87fc7915"
+      },
+      {
+        "path": "tools/native/data_definitions/crimsonland.exe.json",
+        "repository_relative": true,
+        "sha256": "8674f5e1679af5a33bb9d3a30c6523962181586eb248203772c51b7e78e8daa3"
       }
     ],
     "toolchain": {

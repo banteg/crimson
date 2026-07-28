@@ -12,6 +12,7 @@ from crimson.native_link import (
     IMAGE_SCN_LNK_COMDAT,
     IMAGE_SYM_CLASS_WEAK_EXTERNAL,
     NativeCompilerBundleSnapshot,
+    NativeDataObjectRecord,
     NativeFunctionBinding,
     NativeObjectRecord,
     NativeObjectSet,
@@ -25,6 +26,7 @@ from crimson.native_link import (
     data_manifest_payload,
     load_native_data_definitions,
     load_native_translation_unit_config,
+    native_data_object_bytes,
     object_manifest_payload,
     render_export_definition,
     render_object_list,
@@ -519,6 +521,131 @@ def test_normalized_coff_hash_ignores_only_header_timestamp() -> None:
     assert _normalized_coff_sha256(bytes(first)) == _normalized_coff_sha256(bytes(second))
     second[12] = 1
     assert _normalized_coff_sha256(bytes(first)) != _normalized_coff_sha256(bytes(second))
+
+
+def test_native_data_object_emits_overlapping_exact_symbol_aliases(
+    tmp_path: Path,
+) -> None:
+    definitions = {
+        "entries": [
+            {
+                "address": 0x1001,
+                "alignment": 1,
+                "initializer_hex": "0102030405060708",
+                "name": "owner",
+                "size": 8,
+            },
+            {
+                "address": 0x1004,
+                "alignment": 4,
+                "initializer_hex": "04050607",
+                "name": "interior",
+                "size": 4,
+            },
+        ],
+    }
+    closure = {
+        "unresolved": [
+            {
+                "catalog": [{"address": 0x1001, "name": "owner"}],
+                "category": "game_data",
+                "lookup_name": "owner",
+                "name": "?owner@@3HA",
+                "referenced_by": [{"function": "first"}],
+            },
+            {
+                "catalog": [{"address": 0x1001, "name": "owner"}],
+                "category": "game_data",
+                "lookup_name": "owner",
+                "name": "_owner",
+                "referenced_by": [{"function": "second"}],
+            },
+            {
+                "catalog": [{"address": 0x1004, "name": "interior"}],
+                "category": "game_data",
+                "lookup_name": "interior",
+                "name": "_interior",
+                "referenced_by": [{"function": "third"}],
+            },
+        ],
+    }
+
+    data, bindings, regions = native_data_object_bytes(definitions, closure)
+    repeated, _, _ = native_data_object_bytes(definitions, closure)
+    coff = matchlib.parse_coff_object(data)
+    symbols = {symbol.name: symbol for symbol in coff.symbols}
+
+    assert data == repeated
+    assert len(regions) == 1
+    assert regions[0].address == 0x1000
+    assert regions[0].alignment == 4
+    assert regions[0].data == bytes.fromhex("000102030405060708")
+    assert {binding.name for binding in bindings} == {"owner", "interior"}
+    assert symbols["?owner@@3HA"].section_number == 1
+    assert symbols["?owner@@3HA"].value == 1
+    assert symbols["_owner"].value == 1
+    assert symbols["_interior"].value == 4
+
+    function = _function("first", 0x2000)
+    data_path = tmp_path / "definitions.obj"
+    definitions_path = tmp_path / "definitions.json"
+    data_path.write_bytes(data)
+    definitions_path.write_text("{}\n", encoding="utf-8")
+    objects = NativeObjectSet(
+        image="grim.dll",
+        scope="port",
+        manifest=matchlib.FunctionManifest("grim.dll", 0x1000, (function,)),
+        image_path=tmp_path / "grim.dll",
+        records=(
+            NativeObjectRecord(
+                function=function,
+                status=_status(tmp_path / "first", "first", function.address),
+                object_path=tmp_path / "first.obj",
+                object_symbol="_first",
+                coff=_coff(
+                    definitions=(("_first", 1),),
+                    undefined=("?owner@@3HA", "_owner", "_interior"),
+                ),
+            ),
+        ),
+        data_records=(
+            NativeDataObjectRecord(
+                object_path=data_path,
+                coff=coff,
+                definitions_path=definitions_path,
+                definitions_sha256="a" * 64,
+                object_sha256="b" * 64,
+                bindings=bindings,
+                regions=regions,
+            ),
+        ),
+    )
+    catalog = NativeSymbolCatalog(
+        port_functions={},
+        excluded_functions={},
+        data={
+            "interior": ({"address": 0x1004, "name": "interior"},),
+            "owner": ({"address": 0x1001, "name": "owner"},),
+        },
+        imports={},
+        exports=(),
+    )
+
+    result = symbol_closure_payload(objects, catalog=catalog, repo_root=tmp_path)
+
+    assert result["summary"]["object_count"] == 2
+    assert result["summary"]["function_count"] == 1
+    assert result["summary"]["game_owned_closure"] is True
+    assert result["summary"]["unresolved_symbols"] == 0
+    assert {row["name"] for row in result["resolved"]} == {
+        "?owner@@3HA",
+        "_interior",
+        "_owner",
+    }
+    assert render_object_list(objects, repo_root=tmp_path) == (
+        "first.obj\n"
+        "definitions.obj\n"
+    )
 
 
 def test_symbol_closure_keeps_exact_link_identity_and_classifies_debt(tmp_path: Path) -> None:

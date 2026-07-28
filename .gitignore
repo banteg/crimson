@@ -16,6 +16,7 @@
 /tools/match/scratches/*/build/
 /tools/match/.cache/
 /tools/native/abi/*/build/
+/tools/native/data_definitions/build/
 .venv/
 .venv-dev/
 __pycache__/

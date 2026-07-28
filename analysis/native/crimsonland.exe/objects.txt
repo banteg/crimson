@@ -660,3 +660,4 @@ tools/match/scratches/weapon_table_init/build/msvc6.5/a1cf5e5fd6958463/scratch.o
 tools/match/scratches/weapon_pick_random_available/build/msvc6.5/252c893a93b896f0/scratch.obj
 tools/match/scratches/weapon_assign_player/build/msvc6.5/b71dce29eb8c1e42/scratch.obj
 tools/match/scratches/weapon_refresh_available/build/msvc6.5/09f9e58c8281dd1e/scratch.obj
+tools/native/data_definitions/build/crimsonland.exe/definitions.obj
