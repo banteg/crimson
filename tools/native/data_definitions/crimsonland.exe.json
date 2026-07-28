@@ -294,6 +294,159 @@
       ]
     },
     {
+      "name": "recovered-zero-char-array-00010",
+      "types": ["char[16]", null],
+      "size": 16,
+      "size_source": "tools/match/scratches/ui_render_hud/scratch.cpp: complete quest-stage label writer; Binary Ninja data layout reserves the 16-byte buffer before ui_cursor_texture",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x0048f788", "quest_stage_label_buffer"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-array-00040",
+      "types": ["char[64]", null],
+      "size": 64,
+      "size_source": "tools/match/scratches: complete screenshot, ordinal, time, and game-mode writers; Binary Ninja data layout reserves each 64-byte buffer plus any following alignment padding",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x0047f634", "screenshot_filename_buf"],
+        ["0x004802c8", "format_ordinal_buffer"],
+        ["0x00482624", "time_format_mm_ss_buffer"],
+        ["0x004854fc", "game_mode_label_buffer"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-array-00080",
+      "types": ["char[128]", null],
+      "size": 128,
+      "size_source": "tools/match/scratches: complete bonus, highscore-card, date-label, and Typ-o input writers; Binary Ninja data layout reserves each 128-byte buffer",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x0049679c", "bonus_label_format_buffer"],
+        ["0x004d0da0", "highscore_card_text_buffer"],
+        ["0x004d0e38", "highscore_date_label_buffer"],
+        ["0x004d14a8", "typo_input_buffer"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-array-00100",
+      "types": ["char[256]", null],
+      "size": 256,
+      "size_source": "tools/match/include/crimsonland_resource.h and resource_pack_set/scratch.cpp: dedicated resource-pack path storage; Binary Ninja data layout reserves exactly 256 bytes before the entry-name buffer",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004c3968", "resource_pack_path_buf"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-array-00104",
+      "types": ["char[260]", null],
+      "size": 260,
+      "size_source": "tools/match/scratches: game path construction and crt_getcwd destination; Binary Ninja data layout confirms each MAX_PATH-sized storage range",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x0048014c", "game_path_buf"],
+        ["0x004907a8", "game_base_path"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-array-00200",
+      "types": ["char[512]", "char[]", null],
+      "size": 512,
+      "size_source": "tools/match/scratches: key-character, resource-name, and mod-format storage users; Binary Ninja data layout reserves each complete 512-byte buffer",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004aacd8", "key_char_buffer"],
+        ["0x004c3a68", "resource_pack_entry_name_buf"],
+        ["0x004d9d00", "mod_api_gfx_format_buffer"],
+        ["0x004d9f00", "mod_api_core_format_buffer"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-array-00400",
+      "types": ["char[1024]", null],
+      "size": 1024,
+      "size_source": "tools/match/scratches/console_tokenize_line/scratch.cpp: strcpy from the 1024-byte console input buffer; Binary Ninja data layout reserves exactly 1024 bytes before console_log_queue",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x0047eaa0", "console_tokenize_buf"]
+      ]
+    },
+    {
+      "name": "literal-char-array-0000e",
+      "types": ["char[14]", null],
+      "size": 14,
+      "size_source": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00472aec", "credits_name_ville_m", "56696c6c65204de46e74796ce400"]
+      ]
+    },
+    {
+      "name": "literal-char-array-00015",
+      "types": ["char[21]", null],
+      "size": 21,
+      "size_source": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00472ccc", "credits_name_valtteri_pihlajam", "56616c7474657269205069686c616a616de46b6900"]
+      ]
+    },
+    {
+      "name": "literal-char-array-0001a",
+      "types": ["char[26]", null],
+      "size": 26,
+      "size_source": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00472c58", "credits_name_petri_j", "5065747269204ae47276696c6568746f202f2052656d65647900"]
+      ]
+    },
+    {
+      "name": "literal-char-array-00002-tutorial",
+      "types": ["char[2]", null],
+      "size": 2,
+      "size_source": "tools/match/scratches/tutorial_timeline_update/scratch.cpp and pinned reference PE: complete NUL-terminated placeholder string",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00472718", "tutorial_empty_string", "a700"]
+      ]
+    },
+    {
       "name": "source-zero-float32",
       "types": [null],
       "size": 4,
@@ -563,6 +716,7 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
         ["0x0046f7ec", "GUID_NULL"],
+        ["0x004871b8", "reserved_color_4871b8"],
         ["0x004871f4", "player_aim_screen_x"],
         ["0x00490408", "unused_fx_queue_random_prefix_color"],
         ["0x00490690", "unused_fx_rotated_scale_prefix_color"],
@@ -875,7 +1029,8 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
-        ["0x004808b0", "tutorial_hint_bonus_consumed_latch"]
+        ["0x004808b0", "tutorial_hint_bonus_consumed_latch"],
+        ["0x004808b9", "mouse_button_down"]
       ]
     },
     {
@@ -1259,6 +1414,16 @@
     }
   ],
   "entries": [
+    {
+      "address": "0x004755f0",
+      "name": "effect_id_table",
+      "size": 152,
+      "size_source": "src/crimson/effects_atlas.py: 19 recovered entries; third_party/headers/crimsonland_types.h: effect_id_entry_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: effect_id_entry_is_0x08",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_hex": "8000000002000000800000000300000020000000000000002000000001000000200000000200000020000000030000002000000004000000200000000500000020000000080000002000000009000000200000000a000000200000000b0000004000000005000000400000000300000040000000040000004000000005000000400000000600000040000000070000001000000026000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004755f0..0x00475688"
+    },
     {
       "address": "0x0047eea0",
       "name": "console_log_queue",

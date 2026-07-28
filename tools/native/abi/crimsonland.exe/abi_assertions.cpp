@@ -298,6 +298,9 @@ CRIMSON_ABI_ASSERT(
 CRIMSON_ABI_ASSERT_ALIGN4(effect_template, effect_template_t);
 CRIMSON_ABI_ASSERT(effect_color_is_0x10, sizeof(effect_color_t) == 0x10);
 CRIMSON_ABI_ASSERT(
+    effect_id_entry_is_0x08,
+    sizeof(effect_id_entry_t) == 0x08);
+CRIMSON_ABI_ASSERT(
     effect_color_array_64_is_0x400,
     sizeof(effect_color_t[64]) == 0x400);
 CRIMSON_ABI_ASSERT(effect_vec2_is_0x08, sizeof(effect_vec2_t) == 0x08);

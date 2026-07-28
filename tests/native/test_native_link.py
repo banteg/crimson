@@ -1185,12 +1185,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 638
-    assert payload["summary"]["explicit_alignment_entries"] == 638
-    assert payload["summary"]["explicit_initializer_entries"] == 638
-    assert payload["summary"]["fully_specified_entries"] == 638
-    assert payload["summary"]["definition_group_entries"] == 574
-    assert payload["summary"]["definition_groups"] == 56
+    assert payload["summary"]["explicit_size_entries"] == 662
+    assert payload["summary"]["explicit_alignment_entries"] == 662
+    assert payload["summary"]["explicit_initializer_entries"] == 662
+    assert payload["summary"]["fully_specified_entries"] == 662
+    assert payload["summary"]["definition_group_entries"] == 597
+    assert payload["summary"]["definition_groups"] == 67
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -1235,6 +1235,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["console_input_buf"]["size"] == 1024
     assert defined["typo_target_name_table"]["size"] == 384 * 64
     assert defined["terrain_texture_handles"]["size"] == 8 * 4
+    assert defined["effect_id_table"]["size"] == 19 * 8
+    assert defined["console_tokenize_buf"]["size"] == 1024
+    assert defined["resource_pack_entry_name_buf"]["size"] == 512
+    assert defined["reserved_color_4871b8"]["size"] == 16
 
 
 def test_data_manifest_ranks_game_data_by_reference_fan_in() -> None:

@@ -739,7 +739,8 @@
       "address": "0x00472718",
       "comment": "Tutorial string sentinel (empty/guard string used for skipped entries).",
       "name": "tutorial_empty_string",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00472998",
@@ -751,19 +752,22 @@
       "address": "0x00472aec",
       "comment": "Credits name string \"Ville M\".",
       "name": "credits_name_ville_m",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[14]"
     },
     {
       "address": "0x00472c58",
       "comment": "Credits name string \"Petri J\".",
       "name": "credits_name_petri_j",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[26]"
     },
     {
       "address": "0x00472ccc",
       "comment": "Credits name string \"Valtteri Pihlajam\".",
       "name": "credits_name_valtteri_pihlajam",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[21]"
     },
     {
       "address": "0x00472e80",
@@ -1082,7 +1086,7 @@
       "comment": "Effect id table (stride 0x08 bytes).",
       "name": "effect_id_table",
       "program": "crimsonland.exe",
-      "type": "effect_id_entry_t"
+      "type": "effect_id_entry_t[19]"
     },
     {
       "address": "0x004755f4",
@@ -1494,7 +1498,8 @@
       "address": "0x0047eaa0",
       "comment": "Scratch line buffer copied by console_tokenize_line before strtok() token parsing.",
       "name": "console_tokenize_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[1024]"
     },
     {
       "address": "0x0047eea0",
@@ -1599,7 +1604,8 @@
       "address": "0x0047f634",
       "comment": "Screenshot filename scratch buffer used by gameplay_update_and_render (e.g., shot_00%d.bmp).",
       "name": "screenshot_filename_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[64]"
     },
     {
       "address": "0x0047f678",
@@ -1626,7 +1632,8 @@
       "address": "0x0048014c",
       "comment": "Scratch buffer used by game_build_path (base path + filename).",
       "name": "game_path_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[260]"
     },
     {
       "address": "0x00480148",
@@ -1710,7 +1717,8 @@
       "address": "0x004802c8",
       "comment": "Shared text buffer filled by format_ordinal for high-score rank labels.",
       "name": "format_ordinal_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[64]"
     },
     {
       "address": "0x00480310",
@@ -2477,7 +2485,8 @@
       "address": "0x004808b9",
       "comment": "Cached mouse button 0 state (from grim_is_mouse_button_down).",
       "name": "mouse_button_down",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "bool"
     },
     {
       "address": "0x004808bc",
@@ -2935,7 +2944,8 @@
       "address": "0x00482624",
       "comment": "Static m:ss text buffer filled by time_format_mm_ss for quest/game-over result strings.",
       "name": "time_format_mm_ss_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[64]"
     },
     {
       "address": "0x00482668",
@@ -3516,7 +3526,8 @@
       "address": "0x004854fc",
       "comment": "Scratch label buffer returned by game_mode_label().",
       "name": "game_mode_label_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[64]"
     },
     {
       "address": "0x00485540",
@@ -5161,7 +5172,8 @@
       "address": "0x0048f788",
       "comment": "Quest HUD stage label scratch buffer (formatted as major/minor, e.g. \"3-7\").",
       "name": "quest_stage_label_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[16]"
     },
     {
       "address": "0x0048f798",
@@ -5699,7 +5711,8 @@
       "address": "0x004907a8",
       "comment": "Current working directory captured on startup; base for game_build_path.",
       "name": "game_base_path",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[260]"
     },
     {
       "address": "0x004908b9",
@@ -6720,7 +6733,8 @@
       "address": "0x0049679c",
       "comment": "Scratch text buffer used by bonus_label_for_entry for formatted bonus labels.",
       "name": "bonus_label_format_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[128]"
     },
     {
       "address": "0x00496820",
@@ -7083,7 +7097,8 @@
       "address": "0x004aacd8",
       "comment": "Key char ring buffer for grim_set_key_char_buffer.",
       "name": "key_char_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[512]"
     },
     {
       "address": "0x004aaed8",
@@ -8047,13 +8062,15 @@
       "address": "0x004c3968",
       "comment": "Active resource pack path string used by resource_open_read/resource_pack_set.",
       "name": "resource_pack_path_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[256]"
     },
     {
       "address": "0x004c3a68",
       "comment": "Scratch buffer for resource pack entry names read by resource_pack_read_cstring.",
       "name": "resource_pack_entry_name_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[512]"
     },
     {
       "address": "0x004c3c68",
@@ -8925,7 +8942,8 @@
       "address": "0x004d0da0",
       "comment": "Scratch text buffer used by ui_text_input_render for highscore card numeric/rank labels.",
       "name": "highscore_card_text_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[128]"
     },
     {
       "address": "0x004d0e20",
@@ -8969,7 +8987,8 @@
       "address": "0x004d0e38",
       "comment": "Static text buffer written by highscore_format_date_label.",
       "name": "highscore_date_label_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[128]"
     },
     {
       "address": "0x004d0ed0",
@@ -9231,7 +9250,8 @@
       "address": "0x004d14a8",
       "comment": "Current Typ-o typed input buffer (NUL-terminated, max 0x11 chars).",
       "name": "typo_input_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[128]"
     },
     {
       "address": "0x004d1528",
@@ -9951,14 +9971,14 @@
       "comment": "Shared text buffer used by the native mod API GFX_Printf virtual method before drawing the small font.",
       "name": "mod_api_gfx_format_buffer",
       "program": "crimsonland.exe",
-      "type": "char[]"
+      "type": "char[512]"
     },
     {
       "address": "0x004d9f00",
       "comment": "Shared format buffer used by the native mod API CORE_Printf virtual method before debug and console emission.",
       "name": "mod_api_core_format_buffer",
       "program": "crimsonland.exe",
-      "type": "char[]"
+      "type": "char[512]"
     },
     {
       "address": "0x004da100",
