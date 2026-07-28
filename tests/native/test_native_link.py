@@ -1185,10 +1185,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 38
-    assert payload["summary"]["explicit_alignment_entries"] == 38
-    assert payload["summary"]["explicit_initializer_entries"] == 38
-    assert payload["summary"]["fully_specified_entries"] == 38
+    assert payload["summary"]["explicit_size_entries"] == 64
+    assert payload["summary"]["explicit_alignment_entries"] == 64
+    assert payload["summary"]["explicit_initializer_entries"] == 64
+    assert payload["summary"]["fully_specified_entries"] == 64
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -1201,13 +1201,19 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["config_blob"]["initializer_fill"] == "00"
     assert defined["player_state_table"]["size"] == 0x6C0
     assert defined["creature_pool"]["size"] == 0xE400
+    assert defined["highscore_table"]["size"] == 0x1C20
+    assert defined["ui_element_table_end"]["size"] == 0xA4
+    assert defined["effect_template"]["size"] == 0x3C
+    assert defined["music_entry_table"]["size"] == 0x4200
+    assert defined["weapon_table"]["size"] == 0x1F00
     assert defined["console_log_queue"]["size"] == 0x2C
     assert defined["grim_interface_ptr"]["size"] == 4
     assert defined["sfx_unmuted_flag"]["size"] == 1
+    assert defined["quest_unlock_index"]["size"] == 2
     assert next(
         entry
         for entry in payload["entries"]
-        if entry["name"] == "quest_unlock_index"
+        if entry["name"] == "demo_time_limit_ms"
     )["size"] is None
 
 

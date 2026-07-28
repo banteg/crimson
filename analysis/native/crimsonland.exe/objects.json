@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "b1d8ca12baf5725c53a373c97dfe294018d82ff35c91b6e4d7d8982030b658a8"
+        "sha256": "00caf7633f557c14aa87105642a41eb9e0e01e576d69fb41ea07bb29845bf05e"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/eaef563a2d5aae74/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "b1d8ca12baf5725c53a373c97dfe294018d82ff35c91b6e4d7d8982030b658a8",
+    "source_sha256": "00caf7633f557c14aa87105642a41eb9e0e01e576d69fb41ea07bb29845bf05e",
     "status": "passed"
   },
-  "audit_digest": "0b43abff972d9306cd96a27097e93b01b2d5414c5063b1a04a3eaadcb83822d3",
+  "audit_digest": "46c2ab68ddb2b0dbaeae3e9760c01914256d508eeec8aed09f14715e14eccf7a",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -504,11 +504,110 @@
           ]
         },
         {
+          "address": 4728616,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "creature_type_table",
+          "section_number": 7,
+          "section_offset": 0,
+          "size": 408,
+          "storage_address": 4728616,
+          "storage_name": "creature_type_table",
+          "symbols": [
+            "_creature_type_table"
+          ]
+        },
+        {
+          "address": 4729160,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "bonus_pool",
+          "section_number": 8,
+          "section_offset": 0,
+          "size": 448,
+          "storage_address": 4729160,
+          "storage_name": "bonus_pool",
+          "symbols": [
+            "_bonus_pool"
+          ]
+        },
+        {
+          "address": 4729616,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "highscore_table",
+          "section_number": 9,
+          "section_offset": 0,
+          "size": 7200,
+          "storage_address": 4729616,
+          "storage_name": "highscore_table",
+          "symbols": [
+            "?highscore_table@@3PAUhighscore_record_t@@A",
+            "_highscore_table"
+          ]
+        },
+        {
+          "address": 4736816,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "quest_selected_meta",
+          "section_number": 10,
+          "section_offset": 0,
+          "size": 2200,
+          "storage_address": 4736816,
+          "storage_name": "quest_selected_meta",
+          "symbols": [
+            "_quest_selected_meta"
+          ]
+        },
+        {
+          "address": 4737300,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "quest_meta_terrain_desc_unlock_gt_0x13",
+          "section_number": 10,
+          "section_offset": 484,
+          "size": null,
+          "storage_address": 4736816,
+          "storage_name": "quest_selected_meta",
+          "symbols": [
+            "_quest_meta_terrain_desc_unlock_gt_0x13"
+          ]
+        },
+        {
+          "address": 4737740,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "quest_meta_terrain_desc_unlock_gt_0x1d",
+          "section_number": 10,
+          "section_offset": 924,
+          "size": null,
+          "storage_address": 4736816,
+          "storage_name": "quest_selected_meta",
+          "symbols": [
+            "_quest_meta_terrain_desc_unlock_gt_0x1d"
+          ]
+        },
+        {
+          "address": 4738180,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "quest_meta_terrain_desc_unlock_gt_0x27",
+          "section_number": 10,
+          "section_offset": 1364,
+          "size": null,
+          "storage_address": 4736816,
+          "storage_name": "quest_selected_meta",
+          "symbols": [
+            "_quest_meta_terrain_desc_unlock_gt_0x27"
+          ]
+        },
+        {
           "address": 4739016,
           "alignment": 4,
           "kind": "definition",
           "name": "camera_offset_x",
-          "section_number": 7,
+          "section_number": 11,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4739016,
@@ -522,7 +621,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "camera_offset_y",
-          "section_number": 8,
+          "section_number": 12,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4739020,
@@ -532,11 +631,376 @@
           ]
         },
         {
+          "address": 4739024,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "creature_spawn_slot_table",
+          "section_number": 13,
+          "section_offset": 0,
+          "size": 768,
+          "storage_address": 4739024,
+          "storage_name": "creature_spawn_slot_table",
+          "symbols": [
+            "_creature_spawn_slot_table"
+          ]
+        },
+        {
+          "address": 4740048,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "bonus_meta_table",
+          "section_number": 14,
+          "section_offset": 0,
+          "size": 300,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_meta_table"
+          ]
+        },
+        {
+          "address": 4740068,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_points",
+          "section_number": 14,
+          "section_offset": 20,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_points"
+          ]
+        },
+        {
+          "address": 4740088,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_energizer",
+          "section_number": 14,
+          "section_offset": 40,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_energizer"
+          ]
+        },
+        {
+          "address": 4740096,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_energizer",
+          "section_number": 14,
+          "section_offset": 48,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_energizer"
+          ]
+        },
+        {
+          "address": 4740128,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_weapon_power_up",
+          "section_number": 14,
+          "section_offset": 80,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_weapon_power_up"
+          ]
+        },
+        {
+          "address": 4740136,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_weapon_power_up",
+          "section_number": 14,
+          "section_offset": 88,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_weapon_power_up"
+          ]
+        },
+        {
+          "address": 4740168,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_double_experience",
+          "section_number": 14,
+          "section_offset": 120,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_double_experience"
+          ]
+        },
+        {
+          "address": 4740176,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_double_experience",
+          "section_number": 14,
+          "section_offset": 128,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_double_experience"
+          ]
+        },
+        {
+          "address": 4740228,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_reflex_boost",
+          "section_number": 14,
+          "section_offset": 180,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_reflex_boost"
+          ]
+        },
+        {
+          "address": 4740236,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_reflex_boost",
+          "section_number": 14,
+          "section_offset": 188,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_reflex_boost"
+          ]
+        },
+        {
+          "address": 4740248,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_shield",
+          "section_number": 14,
+          "section_offset": 200,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_shield"
+          ]
+        },
+        {
+          "address": 4740256,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_shield",
+          "section_number": 14,
+          "section_offset": 208,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_shield"
+          ]
+        },
+        {
+          "address": 4740268,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_freeze",
+          "section_number": 14,
+          "section_offset": 220,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_freeze"
+          ]
+        },
+        {
+          "address": 4740276,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_freeze",
+          "section_number": 14,
+          "section_offset": 228,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_freeze"
+          ]
+        },
+        {
+          "address": 4740308,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_speed",
+          "section_number": 14,
+          "section_offset": 260,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_speed"
+          ]
+        },
+        {
+          "address": 4740316,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_speed",
+          "section_number": 14,
+          "section_offset": 268,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_speed"
+          ]
+        },
+        {
+          "address": 4740328,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_label_fire_bullets",
+          "section_number": 14,
+          "section_offset": 280,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_label_fire_bullets"
+          ]
+        },
+        {
+          "address": 4740336,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "bonus_icon_fire_bullets",
+          "section_number": 14,
+          "section_offset": 288,
+          "size": null,
+          "storage_address": 4740048,
+          "storage_name": "bonus_meta_table",
+          "symbols": [
+            "_bonus_icon_fire_bullets"
+          ]
+        },
+        {
+          "address": 4740416,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "game_status_blob",
+          "section_number": 15,
+          "section_offset": 0,
+          "size": 616,
+          "storage_address": 4740416,
+          "storage_name": "game_status_blob",
+          "symbols": [
+            "?game_status_blob@@3Ugame_status_t@@A",
+            "_game_status_blob"
+          ]
+        },
+        {
+          "address": 4740420,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "weapon_usage_counts",
+          "section_number": 15,
+          "section_offset": 4,
+          "size": null,
+          "storage_address": 4740416,
+          "storage_name": "game_status_blob",
+          "symbols": [
+            "_weapon_usage_counts"
+          ]
+        },
+        {
+          "address": 4740632,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "quest_play_counts",
+          "section_number": 15,
+          "section_offset": 216,
+          "size": null,
+          "storage_address": 4740416,
+          "storage_name": "game_status_blob",
+          "symbols": [
+            "_quest_play_counts"
+          ]
+        },
+        {
+          "address": 4740996,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "mode_play_survival",
+          "section_number": 15,
+          "section_offset": 580,
+          "size": null,
+          "storage_address": 4740416,
+          "storage_name": "game_status_blob",
+          "symbols": [
+            "_mode_play_survival"
+          ]
+        },
+        {
+          "address": 4741000,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "mode_play_rush",
+          "section_number": 15,
+          "section_offset": 584,
+          "size": null,
+          "storage_address": 4740416,
+          "storage_name": "game_status_blob",
+          "symbols": [
+            "_mode_play_rush"
+          ]
+        },
+        {
+          "address": 4741004,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "mode_play_typo",
+          "section_number": 15,
+          "section_offset": 588,
+          "size": null,
+          "storage_address": 4740416,
+          "storage_name": "game_status_blob",
+          "symbols": [
+            "_mode_play_typo"
+          ]
+        },
+        {
+          "address": 4741012,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "game_sequence_id",
+          "section_number": 15,
+          "section_offset": 596,
+          "size": null,
+          "storage_address": 4740416,
+          "storage_name": "game_status_blob",
+          "symbols": [
+            "_game_sequence_id"
+          ]
+        },
+        {
           "address": 4747216,
           "alignment": 4,
           "kind": "definition",
           "name": "quest_spawn_timeline",
-          "section_number": 9,
+          "section_number": 16,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747216,
@@ -550,7 +1014,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "quest_stage_major",
-          "section_number": 10,
+          "section_number": 17,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747268,
@@ -565,7 +1029,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "quest_stage_minor",
-          "section_number": 11,
+          "section_number": 18,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747272,
@@ -580,7 +1044,7 @@
           "alignment": 1,
           "kind": "definition",
           "name": "demo_mode_active",
-          "section_number": 12,
+          "section_number": 19,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4747277,
@@ -594,7 +1058,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "bonus_reflex_boost_timer",
-          "section_number": 13,
+          "section_number": 20,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747284,
@@ -608,7 +1072,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "bonus_freeze_timer",
-          "section_number": 14,
+          "section_number": 21,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747288,
@@ -622,7 +1086,7 @@
           "alignment": 1,
           "kind": "definition",
           "name": "screen_fade_ramp_flag",
-          "section_number": 15,
+          "section_number": 22,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4747308,
@@ -632,11 +1096,39 @@
           ]
         },
         {
+          "address": 4747316,
+          "alignment": 2,
+          "kind": "definition",
+          "name": "quest_unlock_index",
+          "section_number": 23,
+          "section_offset": 0,
+          "size": 2,
+          "storage_address": 4747316,
+          "storage_name": "quest_unlock_index",
+          "symbols": [
+            "_quest_unlock_index"
+          ]
+        },
+        {
+          "address": 4747320,
+          "alignment": 2,
+          "kind": "definition",
+          "name": "quest_unlock_index_full",
+          "section_number": 24,
+          "section_offset": 0,
+          "size": 2,
+          "storage_address": 4747320,
+          "storage_name": "quest_unlock_index_full",
+          "symbols": [
+            "_quest_unlock_index_full"
+          ]
+        },
+        {
           "address": 4747324,
           "alignment": 1,
           "kind": "definition",
           "name": "bonus_spawn_guard",
-          "section_number": 16,
+          "section_number": 25,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4747324,
@@ -646,11 +1138,96 @@
           ]
         },
         {
+          "address": 4747328,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "highscore_active_record",
+          "section_number": 26,
+          "section_offset": 0,
+          "size": 72,
+          "storage_address": 4747328,
+          "storage_name": "highscore_active_record",
+          "symbols": [
+            "?highscore_active_record@@3Uhighscore_record_t@@A",
+            "_highscore_active_record"
+          ]
+        },
+        {
+          "address": 4747360,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "survival_elapsed_ms",
+          "section_number": 26,
+          "section_offset": 32,
+          "size": null,
+          "storage_address": 4747328,
+          "storage_name": "highscore_active_record",
+          "symbols": [
+            "_survival_elapsed_ms"
+          ]
+        },
+        {
+          "address": 4747364,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "highscore_score_xp",
+          "section_number": 26,
+          "section_offset": 36,
+          "size": null,
+          "storage_address": 4747328,
+          "storage_name": "highscore_active_record",
+          "symbols": [
+            "_highscore_score_xp"
+          ]
+        },
+        {
+          "address": 4747372,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "highscore_record_shots_fired",
+          "section_number": 26,
+          "section_offset": 44,
+          "size": null,
+          "storage_address": 4747328,
+          "storage_name": "highscore_active_record",
+          "symbols": [
+            "_highscore_record_shots_fired"
+          ]
+        },
+        {
+          "address": 4747376,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "highscore_record_shots_hit",
+          "section_number": 26,
+          "section_offset": 48,
+          "size": null,
+          "storage_address": 4747328,
+          "storage_name": "highscore_active_record",
+          "symbols": [
+            "_highscore_record_shots_hit"
+          ]
+        },
+        {
+          "address": 4747380,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "creature_kill_count",
+          "section_number": 26,
+          "section_offset": 52,
+          "size": null,
+          "storage_address": 4747328,
+          "storage_name": "highscore_active_record",
+          "symbols": [
+            "_creature_kill_count"
+          ]
+        },
+        {
           "address": 4747724,
           "alignment": 1,
           "kind": "definition",
           "name": "ui_mouse_blocked",
-          "section_number": 17,
+          "section_number": 27,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4747724,
@@ -665,7 +1242,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "ui_mouse_x",
-          "section_number": 18,
+          "section_number": 28,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747756,
@@ -679,7 +1256,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "ui_mouse_y",
-          "section_number": 19,
+          "section_number": 29,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747760,
@@ -694,7 +1271,7 @@
           "alignment": 1,
           "kind": "definition",
           "name": "render_pass_mode",
-          "section_number": 20,
+          "section_number": 30,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4747840,
@@ -708,7 +1285,7 @@
           "alignment": 1,
           "kind": "definition",
           "name": "ui_transition_direction",
-          "section_number": 21,
+          "section_number": 31,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4747852,
@@ -722,7 +1299,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "game_state_id",
-          "section_number": 22,
+          "section_number": 32,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747888,
@@ -736,7 +1313,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "game_state_pending",
-          "section_number": 23,
+          "section_number": 33,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4747892,
@@ -746,11 +1323,812 @@
           ]
         },
         {
+          "address": 4747920,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "ui_sign_crimson",
+          "section_number": 34,
+          "section_offset": 0,
+          "size": 792,
+          "storage_address": 4747920,
+          "storage_name": "ui_sign_crimson",
+          "symbols": [
+            "_ui_sign_crimson"
+          ]
+        },
+        {
+          "address": 4747922,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_sign_crimson_update_disabled",
+          "section_number": 34,
+          "section_offset": 2,
+          "size": null,
+          "storage_address": 4747920,
+          "storage_name": "ui_sign_crimson",
+          "symbols": [
+            "_ui_sign_crimson_update_disabled"
+          ]
+        },
+        {
+          "address": 4759008,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "ui_element_slot_09",
+          "section_number": 35,
+          "section_offset": 0,
+          "size": 792,
+          "storage_address": 4759008,
+          "storage_name": "ui_element_slot_09",
+          "symbols": [
+            "_ui_element_slot_09"
+          ]
+        },
+        {
+          "address": 4759800,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "ui_element_slot_33",
+          "section_number": 36,
+          "section_offset": 0,
+          "size": 792,
+          "storage_address": 4759800,
+          "storage_name": "ui_element_slot_33",
+          "symbols": [
+            "_ui_element_slot_33"
+          ]
+        },
+        {
+          "address": 4774848,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "ui_element_slot_35",
+          "section_number": 37,
+          "section_offset": 0,
+          "size": 792,
+          "storage_address": 4774848,
+          "storage_name": "ui_element_slot_35",
+          "symbols": [
+            "_ui_element_slot_35"
+          ]
+        },
+        {
+          "address": 4780392,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "ui_element_table_end",
+          "section_number": 38,
+          "section_offset": 0,
+          "size": 164,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "?ui_element_table_end@@3PAUui_element_t@@A",
+            "_ui_element_table",
+            "_ui_element_table_end"
+          ]
+        },
+        {
+          "address": 4780396,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_01_main_menu_aux",
+          "section_number": 38,
+          "section_offset": 4,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_01_main_menu_aux"
+          ]
+        },
+        {
+          "address": 4780400,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_02_main_menu_primary",
+          "section_number": 38,
+          "section_offset": 8,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_02_main_menu_primary"
+          ]
+        },
+        {
+          "address": 4780404,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_03_main_menu_play_game",
+          "section_number": 38,
+          "section_offset": 12,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_03_main_menu_play_game"
+          ]
+        },
+        {
+          "address": 4780408,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_04_main_menu_options",
+          "section_number": 38,
+          "section_offset": 16,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_04_main_menu_options"
+          ]
+        },
+        {
+          "address": 4780412,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_05_main_menu_statistics",
+          "section_number": 38,
+          "section_offset": 20,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_05_main_menu_statistics"
+          ]
+        },
+        {
+          "address": 4780416,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_06_main_menu_footer_a",
+          "section_number": 38,
+          "section_offset": 24,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_06_main_menu_footer_a"
+          ]
+        },
+        {
+          "address": 4780420,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_07_main_menu_footer_b",
+          "section_number": 38,
+          "section_offset": 28,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_07_main_menu_footer_b"
+          ]
+        },
+        {
+          "address": 4780424,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_08",
+          "section_number": 38,
+          "section_offset": 32,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_08"
+          ]
+        },
+        {
+          "address": 4780428,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_09",
+          "section_number": 38,
+          "section_offset": 36,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_09"
+          ]
+        },
+        {
+          "address": 4780432,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_10",
+          "section_number": 38,
+          "section_offset": 40,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_10"
+          ]
+        },
+        {
+          "address": 4780436,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_11",
+          "section_number": 38,
+          "section_offset": 44,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_11"
+          ]
+        },
+        {
+          "address": 4780440,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_menu_layout_a",
+          "section_number": 38,
+          "section_offset": 48,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_menu_layout_a"
+          ]
+        },
+        {
+          "address": 4780444,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_13",
+          "section_number": 38,
+          "section_offset": 52,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_13"
+          ]
+        },
+        {
+          "address": 4780448,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_14",
+          "section_number": 38,
+          "section_offset": 56,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_14"
+          ]
+        },
+        {
+          "address": 4780452,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_15",
+          "section_number": 38,
+          "section_offset": 60,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_15"
+          ]
+        },
+        {
+          "address": 4780456,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_16",
+          "section_number": 38,
+          "section_offset": 64,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_16"
+          ]
+        },
+        {
+          "address": 4780460,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_17",
+          "section_number": 38,
+          "section_offset": 68,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_17"
+          ]
+        },
+        {
+          "address": 4780464,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_menu_layout_b",
+          "section_number": 38,
+          "section_offset": 72,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_menu_layout_b"
+          ]
+        },
+        {
+          "address": 4780468,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_19",
+          "section_number": 38,
+          "section_offset": 76,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_19"
+          ]
+        },
+        {
+          "address": 4780472,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_20",
+          "section_number": 38,
+          "section_offset": 80,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_20"
+          ]
+        },
+        {
+          "address": 4780476,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_21",
+          "section_number": 38,
+          "section_offset": 84,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_21"
+          ]
+        },
+        {
+          "address": 4780480,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_22",
+          "section_number": 38,
+          "section_offset": 88,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_22"
+          ]
+        },
+        {
+          "address": 4780484,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_23",
+          "section_number": 38,
+          "section_offset": 92,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_23"
+          ]
+        },
+        {
+          "address": 4780488,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_24",
+          "section_number": 38,
+          "section_offset": 96,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_24"
+          ]
+        },
+        {
+          "address": 4780492,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_25",
+          "section_number": 38,
+          "section_offset": 100,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_25"
+          ]
+        },
+        {
+          "address": 4780496,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_26",
+          "section_number": 38,
+          "section_offset": 104,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_26"
+          ]
+        },
+        {
+          "address": 4780500,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_27",
+          "section_number": 38,
+          "section_offset": 108,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_27"
+          ]
+        },
+        {
+          "address": 4780504,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_28",
+          "section_number": 38,
+          "section_offset": 112,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_28"
+          ]
+        },
+        {
+          "address": 4780508,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_29",
+          "section_number": 38,
+          "section_offset": 116,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_29"
+          ]
+        },
+        {
+          "address": 4780512,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_30",
+          "section_number": 38,
+          "section_offset": 120,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_30"
+          ]
+        },
+        {
+          "address": 4780516,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_31",
+          "section_number": 38,
+          "section_offset": 124,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_31"
+          ]
+        },
+        {
+          "address": 4780520,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_menu_layout_c",
+          "section_number": 38,
+          "section_offset": 128,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_menu_layout_c"
+          ]
+        },
+        {
+          "address": 4780524,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_33",
+          "section_number": 38,
+          "section_offset": 132,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_33"
+          ]
+        },
+        {
+          "address": 4780528,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_34",
+          "section_number": 38,
+          "section_offset": 136,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_34"
+          ]
+        },
+        {
+          "address": 4780532,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_35",
+          "section_number": 38,
+          "section_offset": 140,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_35"
+          ]
+        },
+        {
+          "address": 4780536,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_36",
+          "section_number": 38,
+          "section_offset": 144,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_36"
+          ]
+        },
+        {
+          "address": 4780540,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_37",
+          "section_number": 38,
+          "section_offset": 148,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_37"
+          ]
+        },
+        {
+          "address": 4780544,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_38",
+          "section_number": 38,
+          "section_offset": 152,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_38"
+          ]
+        },
+        {
+          "address": 4780548,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_slot_39",
+          "section_number": 38,
+          "section_offset": 156,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_slot_39"
+          ]
+        },
+        {
+          "address": 4780552,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_element_table_start",
+          "section_number": 38,
+          "section_offset": 160,
+          "size": null,
+          "storage_address": 4780392,
+          "storage_name": "ui_element_table_end",
+          "symbols": [
+            "_ui_element_table_start"
+          ]
+        },
+        {
+          "address": 4780556,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "ui_perk_prompt_element",
+          "section_number": 39,
+          "section_offset": 0,
+          "size": 792,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "?ui_perk_prompt_element@@3Uui_element_t@@A",
+            "_ui_perk_prompt_element"
+          ]
+        },
+        {
+          "address": 4780580,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_origin_x",
+          "section_number": 39,
+          "section_offset": 24,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_origin_x"
+          ]
+        },
+        {
+          "address": 4780584,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_origin_y",
+          "section_number": 39,
+          "section_offset": 28,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_origin_y"
+          ]
+        },
+        {
+          "address": 4780608,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_perk_prompt_on_activate",
+          "section_number": 39,
+          "section_offset": 52,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_ui_perk_prompt_on_activate"
+          ]
+        },
+        {
+          "address": 4780616,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_bounds_min_x",
+          "section_number": 39,
+          "section_offset": 60,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_bounds_min_x"
+          ]
+        },
+        {
+          "address": 4780620,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_bounds_min_y",
+          "section_number": 39,
+          "section_offset": 64,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_bounds_min_y"
+          ]
+        },
+        {
+          "address": 4780672,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_bounds_max_x",
+          "section_number": 39,
+          "section_offset": 116,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_bounds_max_x"
+          ]
+        },
+        {
+          "address": 4780676,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_bounds_max_y",
+          "section_number": 39,
+          "section_offset": 120,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_bounds_max_y"
+          ]
+        },
+        {
+          "address": 4780848,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "ui_perk_prompt_levelup_element",
+          "section_number": 39,
+          "section_offset": 292,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_ui_perk_prompt_levelup_element"
+          ]
+        },
+        {
+          "address": 4781312,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_hover_active",
+          "section_number": 39,
+          "section_offset": 756,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_hover_active"
+          ]
+        },
+        {
+          "address": 4781316,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "perk_prompt_pulse",
+          "section_number": 39,
+          "section_offset": 760,
+          "size": null,
+          "storage_address": 4780556,
+          "storage_name": "ui_perk_prompt_element",
+          "symbols": [
+            "_perk_prompt_pulse"
+          ]
+        },
+        {
           "address": 4781364,
           "alignment": 4,
           "kind": "definition",
           "name": "terrain_texture_width",
-          "section_number": 24,
+          "section_number": 40,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4781364,
@@ -764,7 +2142,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "terrain_texture_height",
-          "section_number": 25,
+          "section_number": 41,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4781368,
@@ -778,7 +2156,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "particles_texture",
-          "section_number": 26,
+          "section_number": 42,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4782060,
@@ -792,7 +2170,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "player_state_table",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 0,
           "size": 1728,
           "storage_address": 4786352,
@@ -806,7 +2184,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player_plaguebearer_active",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 9,
           "size": null,
           "storage_address": 4786352,
@@ -820,7 +2198,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player_health",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 36,
           "size": null,
           "storage_address": 4786352,
@@ -834,7 +2212,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player_experience",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 172,
           "size": null,
           "storage_address": 4786352,
@@ -848,7 +2226,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player2_health",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 900,
           "size": null,
           "storage_address": 4786352,
@@ -862,7 +2240,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player_alt_move_key_forward",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 1676,
           "size": null,
           "storage_address": 4786352,
@@ -876,7 +2254,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player_alt_move_key_backward",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 1680,
           "size": null,
           "storage_address": 4786352,
@@ -890,7 +2268,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player_alt_turn_key_left",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 1684,
           "size": null,
           "storage_address": 4786352,
@@ -904,7 +2282,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "player_alt_turn_key_right",
-          "section_number": 27,
+          "section_number": 43,
           "section_offset": 1688,
           "size": null,
           "storage_address": 4786352,
@@ -914,11 +2292,67 @@
           ]
         },
         {
+          "address": 4794040,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "projectile_pool",
+          "section_number": 44,
+          "section_offset": 0,
+          "size": 6144,
+          "storage_address": 4794040,
+          "storage_name": "projectile_pool",
+          "symbols": [
+            "_projectile_pool"
+          ]
+        },
+        {
+          "address": 4800184,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "particle_pool",
+          "section_number": 45,
+          "section_offset": 0,
+          "size": 7168,
+          "storage_address": 4800184,
+          "storage_name": "particle_pool",
+          "symbols": [
+            "_particle_pool"
+          ]
+        },
+        {
+          "address": 4807384,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "secondary_projectile_pool",
+          "section_number": 46,
+          "section_offset": 0,
+          "size": 2816,
+          "storage_address": 4807384,
+          "storage_name": "secondary_projectile_pool",
+          "symbols": [
+            "_secondary_projectile_pool"
+          ]
+        },
+        {
+          "address": 4810784,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "sprite_effect_pool",
+          "section_number": 47,
+          "section_offset": 0,
+          "size": 16896,
+          "storage_address": 4810784,
+          "storage_name": "sprite_effect_pool",
+          "symbols": [
+            "_sprite_effect_pool"
+          ]
+        },
+        {
           "address": 4833080,
           "alignment": 4,
           "kind": "definition",
           "name": "creature_pool",
-          "section_number": 28,
+          "section_number": 48,
           "section_offset": 0,
           "size": 58368,
           "storage_address": 4833080,
@@ -932,7 +2366,7 @@
           "alignment": null,
           "kind": "interior-alias",
           "name": "creature_max_health",
-          "section_number": 28,
+          "section_number": 48,
           "section_offset": 40,
           "size": null,
           "storage_address": 4833080,
@@ -946,7 +2380,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "render_overlay_player_index",
-          "section_number": 29,
+          "section_number": 49,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894476,
@@ -956,11 +2390,151 @@
           ]
         },
         {
+          "address": 4895164,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "effect_template",
+          "section_number": 50,
+          "section_offset": 0,
+          "size": 60,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template"
+          ]
+        },
+        {
+          "address": 4895164,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_vel_x",
+          "section_number": 50,
+          "section_offset": 0,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_vel_x"
+          ]
+        },
+        {
+          "address": 4895168,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_vel_y",
+          "section_number": 50,
+          "section_offset": 4,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_vel_y"
+          ]
+        },
+        {
+          "address": 4895172,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_rotation",
+          "section_number": 50,
+          "section_offset": 8,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_rotation"
+          ]
+        },
+        {
+          "address": 4895180,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_half_width",
+          "section_number": 50,
+          "section_offset": 16,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_half_width"
+          ]
+        },
+        {
+          "address": 4895184,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_half_height",
+          "section_number": 50,
+          "section_offset": 20,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_half_height"
+          ]
+        },
+        {
+          "address": 4895188,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_age",
+          "section_number": 50,
+          "section_offset": 24,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_age"
+          ]
+        },
+        {
+          "address": 4895192,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_lifetime",
+          "section_number": 50,
+          "section_offset": 28,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_lifetime"
+          ]
+        },
+        {
+          "address": 4895220,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "effect_template_scale_step",
+          "section_number": 50,
+          "section_offset": 56,
+          "size": null,
+          "storage_address": 4895164,
+          "storage_name": "effect_template",
+          "symbols": [
+            "_effect_template_scale_step"
+          ]
+        },
+        {
+          "address": 4992064,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "perk_meta_table",
+          "section_number": 51,
+          "section_offset": 0,
+          "size": 2560,
+          "storage_address": 4992064,
+          "storage_name": "perk_meta_table",
+          "symbols": [
+            "_perk_meta_table"
+          ]
+        },
+        {
           "address": 4997172,
           "alignment": 4,
           "kind": "definition",
           "name": "music_track_shortie_monk_id",
-          "section_number": 30,
+          "section_number": 52,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997172,
@@ -974,7 +2548,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "music_track_crimson_theme_id",
-          "section_number": 31,
+          "section_number": 53,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997176,
@@ -988,7 +2562,7 @@
           "alignment": 4,
           "kind": "definition",
           "name": "music_track_extra_0",
-          "section_number": 32,
+          "section_number": 54,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997180,
@@ -998,11 +2572,53 @@
           ]
         },
         {
+          "address": 4997712,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "music_entry_table",
+          "section_number": 55,
+          "section_offset": 0,
+          "size": 16896,
+          "storage_address": 4997712,
+          "storage_name": "music_entry_table",
+          "symbols": [
+            "?music_entry_table@@3PAUaudio_entry_t@@A"
+          ]
+        },
+        {
+          "address": 5014608,
+          "alignment": 1,
+          "kind": "definition",
+          "name": "sfx_mute_flags",
+          "section_number": 56,
+          "section_offset": 0,
+          "size": 128,
+          "storage_address": 5014608,
+          "storage_name": "sfx_mute_flags",
+          "symbols": [
+            "_sfx_mute_flags"
+          ]
+        },
+        {
+          "address": 5014736,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "sfx_entry_table",
+          "section_number": 57,
+          "section_offset": 0,
+          "size": 16896,
+          "storage_address": 5014736,
+          "storage_name": "sfx_entry_table",
+          "symbols": [
+            "?sfx_entry_table@@3PAUaudio_entry_t@@A"
+          ]
+        },
+        {
           "address": 5032150,
           "alignment": 1,
           "kind": "definition",
           "name": "sfx_unmuted_flag",
-          "section_number": 33,
+          "section_number": 58,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5032150,
@@ -1010,16 +2626,86 @@
           "symbols": [
             "_sfx_unmuted_flag"
           ]
+        },
+        {
+          "address": 5077548,
+          "alignment": 4,
+          "kind": "definition",
+          "name": "weapon_table",
+          "section_number": 59,
+          "section_offset": 0,
+          "size": 7936,
+          "storage_address": 5077548,
+          "storage_name": "weapon_table",
+          "symbols": [
+            "_weapon_table"
+          ]
+        },
+        {
+          "address": 5079000,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "fire_bullets_secondary_shot_sfx_id",
+          "section_number": 59,
+          "section_offset": 1452,
+          "size": null,
+          "storage_address": 5077548,
+          "storage_name": "weapon_table",
+          "symbols": [
+            "_fire_bullets_secondary_shot_sfx_id"
+          ]
+        },
+        {
+          "address": 5083200,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "fire_bullets_fallback_shot_cooldown",
+          "section_number": 59,
+          "section_offset": 5652,
+          "size": null,
+          "storage_address": 5077548,
+          "storage_name": "weapon_table",
+          "symbols": [
+            "_fire_bullets_fallback_shot_cooldown"
+          ]
+        },
+        {
+          "address": 5083208,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "fire_bullets_fallback_spread_heat",
+          "section_number": 59,
+          "section_offset": 5660,
+          "size": null,
+          "storage_address": 5077548,
+          "storage_name": "weapon_table",
+          "symbols": [
+            "_fire_bullets_fallback_spread_heat"
+          ]
+        },
+        {
+          "address": 5083216,
+          "alignment": null,
+          "kind": "interior-alias",
+          "name": "fire_bullets_primary_shot_sfx_id",
+          "section_number": 59,
+          "section_offset": 5668,
+          "size": null,
+          "storage_address": 5077548,
+          "storage_name": "weapon_table",
+          "symbols": [
+            "_fire_bullets_primary_shot_sfx_id"
+          ]
         }
       ],
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "caca79c060c79d579fc87f01ad3ad34cad2ead7b8fbf7e9b4fc7c272579b5a47"
+        "sha256": "96ac5497f1619514b095e4073bb495d792643cbd124f14652498fee07ea1e4bb"
       },
-      "emitted_symbol_count": 81,
+      "emitted_symbol_count": 207,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-      "object_sha256": "47bea11d3aaf6623300a72c5f30acc777d2f6f708ebf5013f82133ed0dfb2105",
+      "object_sha256": "ed45033356db92fe1b80062d1eb2b86d93758ff71d6b37df1f68af97e0293fbb",
       "regions": [
         {
           "address": 4714144,
@@ -1114,6 +2800,54 @@
           "size": 4
         },
         {
+          "address": 4728616,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4728616,
+              "name": "creature_type_table"
+            }
+          ],
+          "section_number": 7,
+          "size": 408
+        },
+        {
+          "address": 4729160,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4729160,
+              "name": "bonus_pool"
+            }
+          ],
+          "section_number": 8,
+          "size": 448
+        },
+        {
+          "address": 4729616,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4729616,
+              "name": "highscore_table"
+            }
+          ],
+          "section_number": 9,
+          "size": 7200
+        },
+        {
+          "address": 4736816,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4736816,
+              "name": "quest_selected_meta"
+            }
+          ],
+          "section_number": 10,
+          "size": 2200
+        },
+        {
           "address": 4739016,
           "alignment": 4,
           "entries": [
@@ -1122,7 +2856,7 @@
               "name": "camera_offset_x"
             }
           ],
-          "section_number": 7,
+          "section_number": 11,
           "size": 4
         },
         {
@@ -1134,8 +2868,44 @@
               "name": "camera_offset_y"
             }
           ],
-          "section_number": 8,
+          "section_number": 12,
           "size": 4
+        },
+        {
+          "address": 4739024,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4739024,
+              "name": "creature_spawn_slot_table"
+            }
+          ],
+          "section_number": 13,
+          "size": 768
+        },
+        {
+          "address": 4740048,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4740048,
+              "name": "bonus_meta_table"
+            }
+          ],
+          "section_number": 14,
+          "size": 300
+        },
+        {
+          "address": 4740416,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4740416,
+              "name": "game_status_blob"
+            }
+          ],
+          "section_number": 15,
+          "size": 616
         },
         {
           "address": 4747216,
@@ -1146,7 +2916,7 @@
               "name": "quest_spawn_timeline"
             }
           ],
-          "section_number": 9,
+          "section_number": 16,
           "size": 4
         },
         {
@@ -1158,7 +2928,7 @@
               "name": "quest_stage_major"
             }
           ],
-          "section_number": 10,
+          "section_number": 17,
           "size": 4
         },
         {
@@ -1170,7 +2940,7 @@
               "name": "quest_stage_minor"
             }
           ],
-          "section_number": 11,
+          "section_number": 18,
           "size": 4
         },
         {
@@ -1182,7 +2952,7 @@
               "name": "demo_mode_active"
             }
           ],
-          "section_number": 12,
+          "section_number": 19,
           "size": 1
         },
         {
@@ -1194,7 +2964,7 @@
               "name": "bonus_reflex_boost_timer"
             }
           ],
-          "section_number": 13,
+          "section_number": 20,
           "size": 4
         },
         {
@@ -1206,7 +2976,7 @@
               "name": "bonus_freeze_timer"
             }
           ],
-          "section_number": 14,
+          "section_number": 21,
           "size": 4
         },
         {
@@ -1218,8 +2988,32 @@
               "name": "screen_fade_ramp_flag"
             }
           ],
-          "section_number": 15,
+          "section_number": 22,
           "size": 1
+        },
+        {
+          "address": 4747316,
+          "alignment": 2,
+          "entries": [
+            {
+              "address": 4747316,
+              "name": "quest_unlock_index"
+            }
+          ],
+          "section_number": 23,
+          "size": 2
+        },
+        {
+          "address": 4747320,
+          "alignment": 2,
+          "entries": [
+            {
+              "address": 4747320,
+              "name": "quest_unlock_index_full"
+            }
+          ],
+          "section_number": 24,
+          "size": 2
         },
         {
           "address": 4747324,
@@ -1230,8 +3024,20 @@
               "name": "bonus_spawn_guard"
             }
           ],
-          "section_number": 16,
+          "section_number": 25,
           "size": 1
+        },
+        {
+          "address": 4747328,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747328,
+              "name": "highscore_active_record"
+            }
+          ],
+          "section_number": 26,
+          "size": 72
         },
         {
           "address": 4747724,
@@ -1242,7 +3048,7 @@
               "name": "ui_mouse_blocked"
             }
           ],
-          "section_number": 17,
+          "section_number": 27,
           "size": 1
         },
         {
@@ -1254,7 +3060,7 @@
               "name": "ui_mouse_x"
             }
           ],
-          "section_number": 18,
+          "section_number": 28,
           "size": 4
         },
         {
@@ -1266,7 +3072,7 @@
               "name": "ui_mouse_y"
             }
           ],
-          "section_number": 19,
+          "section_number": 29,
           "size": 4
         },
         {
@@ -1278,7 +3084,7 @@
               "name": "render_pass_mode"
             }
           ],
-          "section_number": 20,
+          "section_number": 30,
           "size": 1
         },
         {
@@ -1290,7 +3096,7 @@
               "name": "ui_transition_direction"
             }
           ],
-          "section_number": 21,
+          "section_number": 31,
           "size": 1
         },
         {
@@ -1302,7 +3108,7 @@
               "name": "game_state_id"
             }
           ],
-          "section_number": 22,
+          "section_number": 32,
           "size": 4
         },
         {
@@ -1314,8 +3120,80 @@
               "name": "game_state_pending"
             }
           ],
-          "section_number": 23,
+          "section_number": 33,
           "size": 4
+        },
+        {
+          "address": 4747920,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4747920,
+              "name": "ui_sign_crimson"
+            }
+          ],
+          "section_number": 34,
+          "size": 792
+        },
+        {
+          "address": 4759008,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4759008,
+              "name": "ui_element_slot_09"
+            }
+          ],
+          "section_number": 35,
+          "size": 792
+        },
+        {
+          "address": 4759800,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4759800,
+              "name": "ui_element_slot_33"
+            }
+          ],
+          "section_number": 36,
+          "size": 792
+        },
+        {
+          "address": 4774848,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4774848,
+              "name": "ui_element_slot_35"
+            }
+          ],
+          "section_number": 37,
+          "size": 792
+        },
+        {
+          "address": 4780392,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4780392,
+              "name": "ui_element_table_end"
+            }
+          ],
+          "section_number": 38,
+          "size": 164
+        },
+        {
+          "address": 4780556,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4780556,
+              "name": "ui_perk_prompt_element"
+            }
+          ],
+          "section_number": 39,
+          "size": 792
         },
         {
           "address": 4781364,
@@ -1326,7 +3204,7 @@
               "name": "terrain_texture_width"
             }
           ],
-          "section_number": 24,
+          "section_number": 40,
           "size": 4
         },
         {
@@ -1338,7 +3216,7 @@
               "name": "terrain_texture_height"
             }
           ],
-          "section_number": 25,
+          "section_number": 41,
           "size": 4
         },
         {
@@ -1350,7 +3228,7 @@
               "name": "particles_texture"
             }
           ],
-          "section_number": 26,
+          "section_number": 42,
           "size": 4
         },
         {
@@ -1362,8 +3240,56 @@
               "name": "player_state_table"
             }
           ],
-          "section_number": 27,
+          "section_number": 43,
           "size": 1728
+        },
+        {
+          "address": 4794040,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4794040,
+              "name": "projectile_pool"
+            }
+          ],
+          "section_number": 44,
+          "size": 6144
+        },
+        {
+          "address": 4800184,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4800184,
+              "name": "particle_pool"
+            }
+          ],
+          "section_number": 45,
+          "size": 7168
+        },
+        {
+          "address": 4807384,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4807384,
+              "name": "secondary_projectile_pool"
+            }
+          ],
+          "section_number": 46,
+          "size": 2816
+        },
+        {
+          "address": 4810784,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4810784,
+              "name": "sprite_effect_pool"
+            }
+          ],
+          "section_number": 47,
+          "size": 16896
         },
         {
           "address": 4833080,
@@ -1374,7 +3300,7 @@
               "name": "creature_pool"
             }
           ],
-          "section_number": 28,
+          "section_number": 48,
           "size": 58368
         },
         {
@@ -1386,8 +3312,32 @@
               "name": "render_overlay_player_index"
             }
           ],
-          "section_number": 29,
+          "section_number": 49,
           "size": 4
+        },
+        {
+          "address": 4895164,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4895164,
+              "name": "effect_template"
+            }
+          ],
+          "section_number": 50,
+          "size": 60
+        },
+        {
+          "address": 4992064,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4992064,
+              "name": "perk_meta_table"
+            }
+          ],
+          "section_number": 51,
+          "size": 2560
         },
         {
           "address": 4997172,
@@ -1398,7 +3348,7 @@
               "name": "music_track_shortie_monk_id"
             }
           ],
-          "section_number": 30,
+          "section_number": 52,
           "size": 4
         },
         {
@@ -1410,7 +3360,7 @@
               "name": "music_track_crimson_theme_id"
             }
           ],
-          "section_number": 31,
+          "section_number": 53,
           "size": 4
         },
         {
@@ -1422,8 +3372,44 @@
               "name": "music_track_extra_0"
             }
           ],
-          "section_number": 32,
+          "section_number": 54,
           "size": 4
+        },
+        {
+          "address": 4997712,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 4997712,
+              "name": "music_entry_table"
+            }
+          ],
+          "section_number": 55,
+          "size": 16896
+        },
+        {
+          "address": 5014608,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 5014608,
+              "name": "sfx_mute_flags"
+            }
+          ],
+          "section_number": 56,
+          "size": 128
+        },
+        {
+          "address": 5014736,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 5014736,
+              "name": "sfx_entry_table"
+            }
+          ],
+          "section_number": 57,
+          "size": 16896
         },
         {
           "address": 5032150,
@@ -1434,8 +3420,20 @@
               "name": "sfx_unmuted_flag"
             }
           ],
-          "section_number": 33,
+          "section_number": 58,
           "size": 1
+        },
+        {
+          "address": 5077548,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 5077548,
+              "name": "weapon_table"
+            }
+          ],
+          "section_number": 59,
+          "size": 7936
         }
       ]
     }
@@ -67944,7 +69942,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "caca79c060c79d579fc87f01ad3ad34cad2ead7b8fbf7e9b4fc7c272579b5a47"
+        "sha256": "96ac5497f1619514b095e4073bb495d792643cbd124f14652498fee07ea1e4bb"
       }
     ],
     "toolchain": {

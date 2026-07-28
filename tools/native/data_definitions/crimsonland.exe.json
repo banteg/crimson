@@ -119,6 +119,46 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00480864"
     },
     {
+      "address": "0x00482728",
+      "name": "creature_type_table",
+      "size": 408,
+      "size_source": "third_party/headers/crimsonland_types.h: creature_type_table_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_type_table_is_0x198",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_type_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00482728..0x004828c0"
+    },
+    {
+      "address": "0x00482948",
+      "name": "bonus_pool",
+      "size": 448,
+      "size_source": "third_party/headers/crimsonland_types.h: bonus_pool_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: bonus_pool_is_0x1c0",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: bonus_entry_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00482948..0x00482b08"
+    },
+    {
+      "address": "0x00482b10",
+      "name": "highscore_table",
+      "size": 7200,
+      "size_source": "third_party/headers/crimsonland_types.h: highscore_record_t[100]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: highscore_table_is_0x1c20",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: highscore_record_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00482b10..0x00484730"
+    },
+    {
+      "address": "0x00484730",
+      "name": "quest_selected_meta",
+      "size": 2200,
+      "size_source": "third_party/headers/crimsonland_types.h: quest_meta_t[50]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_table_is_0x898",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00484730..0x00484fc8"
+    },
+    {
       "address": "0x00484fc8",
       "name": "camera_offset_x",
       "size": 4,
@@ -137,6 +177,36 @@
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_float_alignment_is_four",
       "initializer_hex": "00000000",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00484fcc"
+    },
+    {
+      "address": "0x00484fd0",
+      "name": "creature_spawn_slot_table",
+      "size": 768,
+      "size_source": "third_party/headers/crimsonland_types.h: creature_spawn_slot_t[32]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_spawn_slot_table_is_0x300",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: creature_spawn_slot_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00484fd0..0x004852d0"
+    },
+    {
+      "address": "0x004853d0",
+      "name": "bonus_meta_table",
+      "size": 300,
+      "size_source": "third_party/headers/crimsonland_types.h: bonus_meta_t[15]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: bonus_meta_table_is_0x12c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: bonus_meta_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004853d0..0x004854fc"
+    },
+    {
+      "address": "0x00485540",
+      "name": "game_status_blob",
+      "size": 616,
+      "size_source": "third_party/headers/crimsonland_types.h: game_status_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: game_status_is_0x268",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: game_status_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00485540..0x004857a8"
     },
     {
       "address": "0x00486fd0",
@@ -209,6 +279,26 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0048702c"
     },
     {
+      "address": "0x00487034",
+      "name": "quest_unlock_index",
+      "size": 2,
+      "size_source": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
+      "alignment": 2,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_u16_alignment_is_two",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487034..0x00487036"
+    },
+    {
+      "address": "0x00487038",
+      "name": "quest_unlock_index_full",
+      "size": 2,
+      "size_source": "third_party/headers/crimsonland_types.h: u16_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: u16_is_16_bit",
+      "alignment": 2,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_u16_alignment_is_two",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487038..0x0048703a"
+    },
+    {
       "address": "0x0048703c",
       "name": "bonus_spawn_guard",
       "size": 1,
@@ -217,6 +307,16 @@
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "initializer_hex": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0048703c"
+    },
+    {
+      "address": "0x00487040",
+      "name": "highscore_active_record",
+      "size": 72,
+      "size_source": "third_party/headers/crimsonland_types.h: highscore_record_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: highscore_record_is_0x48",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: highscore_record_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487040..0x00487088"
     },
     {
       "address": "0x004871cc",
@@ -289,6 +389,66 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487274"
     },
     {
+      "address": "0x00487290",
+      "name": "ui_sign_crimson",
+      "size": 792,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00487290..0x004875a8"
+    },
+    {
+      "address": "0x00489de0",
+      "name": "ui_element_slot_09",
+      "size": 792,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00489de0..0x0048a0f8"
+    },
+    {
+      "address": "0x0048a0f8",
+      "name": "ui_element_slot_33",
+      "size": 792,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0048a0f8..0x0048a410"
+    },
+    {
+      "address": "0x0048dbc0",
+      "name": "ui_element_slot_35",
+      "size": 792,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0048dbc0..0x0048ded8"
+    },
+    {
+      "address": "0x0048f168",
+      "name": "ui_element_table_end",
+      "size": 164,
+      "size_source": "analysis/ghidra/maps/data_map.json: ui_element_t *[41]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_pointer_table_is_0xa4",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0048f168..0x0048f20c"
+    },
+    {
+      "address": "0x0048f20c",
+      "name": "ui_perk_prompt_element",
+      "size": 792,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x0048f20c..0x0048f524"
+    },
+    {
       "address": "0x0048f534",
       "name": "terrain_texture_width",
       "size": 4,
@@ -329,6 +489,46 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004908b0..0x00490f70"
     },
     {
+      "address": "0x004926b8",
+      "name": "projectile_pool",
+      "size": 6144,
+      "size_source": "third_party/headers/crimsonland_types.h: projectile_pool_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: projectile_pool_is_0x1800",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: projectile_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004926b8..0x00493eb8"
+    },
+    {
+      "address": "0x00493eb8",
+      "name": "particle_pool",
+      "size": 7168,
+      "size_source": "third_party/headers/crimsonland_types.h: particle_t[128]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: particle_pool_is_0x1c00",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: particle_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00493eb8..0x00495ab8"
+    },
+    {
+      "address": "0x00495ad8",
+      "name": "secondary_projectile_pool",
+      "size": 2816,
+      "size_source": "third_party/headers/crimsonland_types.h: secondary_projectile_pool_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: secondary_projectile_pool_is_0xb00",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: secondary_projectile_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00495ad8..0x004965d8"
+    },
+    {
+      "address": "0x00496820",
+      "name": "sprite_effect_pool",
+      "size": 16896,
+      "size_source": "third_party/headers/crimsonland_types.h: sprite_effect_t[384]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: sprite_effect_pool_is_0x4200",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: sprite_effect_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x00496820..0x0049aa20"
+    },
+    {
       "address": "0x0049bf38",
       "name": "creature_pool",
       "size": 58368,
@@ -347,6 +547,26 @@
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
       "initializer_hex": "00000000",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004aaf0c"
+    },
+    {
+      "address": "0x004ab1bc",
+      "name": "effect_template",
+      "size": 60,
+      "size_source": "third_party/headers/crimsonland_types.h: effect_template_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: effect_template_is_0x3c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: effect_template_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004ab1bc..0x004ab1f8"
+    },
+    {
+      "address": "0x004c2c40",
+      "name": "perk_meta_table",
+      "size": 2560,
+      "size_source": "third_party/headers/crimsonland_types.h: perk_meta_t[128]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: perk_meta_table_is_0xa00",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: perk_meta_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004c2c40..0x004c3640"
     },
     {
       "address": "0x004c4034",
@@ -379,6 +599,36 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004c403c"
     },
     {
+      "address": "0x004c4250",
+      "name": "music_entry_table",
+      "size": 16896,
+      "size_source": "third_party/headers/crimsonland_types.h: music_entry_t[128]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: audio_entry_table_is_0x4200",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: audio_entry_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004c4250..0x004c8450"
+    },
+    {
+      "address": "0x004c8450",
+      "name": "sfx_mute_flags",
+      "size": 128,
+      "size_source": "third_party/headers/crimsonland_types.h: sfx_mute_flags_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: sfx_mute_flags_is_0x80",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004c8450..0x004c84d0"
+    },
+    {
+      "address": "0x004c84d0",
+      "name": "sfx_entry_table",
+      "size": 16896,
+      "size_source": "third_party/headers/crimsonland_types.h: sfx_entry_t[128]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: audio_entry_table_is_0x4200",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: audio_entry_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004c84d0..0x004cc6d0"
+    },
+    {
       "address": "0x004cc8d6",
       "name": "sfx_unmuted_flag",
       "size": 1,
@@ -387,6 +637,16 @@
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "initializer_hex": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004cc8d6"
+    },
+    {
+      "address": "0x004d7a2c",
+      "name": "weapon_table",
+      "size": 7936,
+      "size_source": "third_party/headers/crimsonland_types.h: weapon_stats_t[64]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: weapon_table_is_0x1f00",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: weapon_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004d7a2c..0x004d992c"
     }
   ]
 }
