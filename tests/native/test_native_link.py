@@ -9,6 +9,7 @@ import pytest
 from crimson import match as matchlib
 from crimson.native_link import (
     DEFAULT_TRANSLATION_UNIT_CONFIGS,
+    IMAGE_REL_I386_DIR32,
     IMAGE_SCN_LNK_COMDAT,
     IMAGE_SYM_CLASS_WEAK_EXTERNAL,
     NativeCompilerBundleSnapshot,
@@ -759,6 +760,128 @@ def test_native_data_object_emits_symbolic_pointer_relocation() -> None:
     assert relocation_symbol.value == target.section_offset
 
 
+def test_native_data_object_emits_external_symbol_relocations(tmp_path: Path) -> None:
+    definitions = {
+        "entries": [
+            {
+                "address": 0x1000,
+                "alignment": 4,
+                "initializer_symbols": [
+                    {
+                        "offset": 0,
+                        "address": 0x2000,
+                        "symbol": "_first",
+                    },
+                    {
+                        "offset": 4,
+                        "address": 0x3000,
+                        "symbol": "?second@@YAXXZ",
+                    },
+                ],
+                "name": "vtable",
+                "size": 8,
+            },
+        ],
+    }
+    closure = {
+        "unresolved": [
+            {
+                "catalog": [{"address": 0x1000, "name": "vtable"}],
+                "category": "game_data",
+                "lookup_name": "vtable",
+                "name": "_vtable",
+                "referenced_by": [{"function": "factory"}],
+            },
+        ],
+    }
+
+    data, bindings, regions = native_data_object_bytes(definitions, closure)
+    coff = matchlib.parse_coff_object(data)
+    symbols = {symbol.name: symbol for symbol in coff.symbols}
+    binding = next(binding for binding in bindings if binding.name == "vtable")
+    section = coff.sections[binding.section_number - 1]
+
+    assert binding.initializer_symbols == (
+        (0, 0x2000, "_first"),
+        (4, 0x3000, "?second@@YAXXZ"),
+    )
+    assert section.data == b"\x00" * 8
+    assert [relocation.virtual_address for relocation in section.relocations] == [0, 4]
+    assert [
+        next(
+            symbol.name
+            for symbol in coff.symbols
+            if symbol.raw_index == relocation.symbol_index
+        )
+        for relocation in section.relocations
+    ] == ["_first", "?second@@YAXXZ"]
+    assert symbols["_first"].section_number == 0
+    assert symbols["?second@@YAXXZ"].section_number == 0
+    assert all(
+        relocation.relocation_type == IMAGE_REL_I386_DIR32
+        for relocation in section.relocations
+    )
+    assert regions[0].relocations[0].target_symbol == "_first"
+    assert regions[0].relocations[1].target_symbol == "?second@@YAXXZ"
+
+    function = _function("first", 0x2000)
+    data_path = tmp_path / "definitions.obj"
+    definitions_path = tmp_path / "definitions.json"
+    data_path.write_bytes(data)
+    definitions_path.write_text("{}\n", encoding="utf-8")
+    objects = NativeObjectSet(
+        image="grim.dll",
+        scope="port",
+        manifest=matchlib.FunctionManifest("grim.dll", 0x1000, (function,)),
+        image_path=tmp_path / "grim.dll",
+        records=(
+            NativeObjectRecord(
+                function=function,
+                status=_status(tmp_path / "first", "first", function.address),
+                object_path=tmp_path / "first.obj",
+                object_symbol="_first",
+                coff=_coff(definitions=(("_first", 1),)),
+            ),
+        ),
+        data_records=(
+            NativeDataObjectRecord(
+                object_path=data_path,
+                coff=coff,
+                definitions_path=definitions_path,
+                definitions_sha256="a" * 64,
+                object_sha256="b" * 64,
+                bindings=bindings,
+                regions=regions,
+            ),
+        ),
+    )
+    catalog = NativeSymbolCatalog(
+        port_functions={},
+        excluded_functions={},
+        data={},
+        imports={},
+        exports=(),
+    )
+
+    closure_result = symbol_closure_payload(
+        objects,
+        catalog=catalog,
+        repo_root=tmp_path,
+    )
+
+    assert [row["name"] for row in closure_result["resolved"]] == ["_first"]
+    assert [row["name"] for row in closure_result["unresolved"]] == [
+        "?second@@YAXXZ",
+    ]
+    assert closure_result["unresolved"][0]["referenced_by"] == [
+        {
+            "function": None,
+            "object": "definitions.obj",
+            "weak": False,
+        },
+    ]
+
+
 def test_symbol_closure_keeps_exact_link_identity_and_classifies_debt(tmp_path: Path) -> None:
     first_function = _function("first", 0x10001000)
     second_function = _function("second", 0x10001010)
@@ -1219,12 +1342,12 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["entry_count"] == 273
-    assert payload["summary"]["typed_entries"] == 182
-    assert payload["summary"]["explicit_size_entries"] == 115
-    assert payload["summary"]["explicit_alignment_entries"] == 115
-    assert payload["summary"]["explicit_initializer_entries"] == 115
-    assert payload["summary"]["fully_specified_entries"] == 115
+    assert payload["summary"]["entry_count"] == 276
+    assert payload["summary"]["typed_entries"] == 185
+    assert payload["summary"]["explicit_size_entries"] == 122
+    assert payload["summary"]["explicit_alignment_entries"] == 122
+    assert payload["summary"]["explicit_initializer_entries"] == 122
+    assert payload["summary"]["fully_specified_entries"] == 122
     assert payload["summary"]["definition_group_entries"] == 107
     assert payload["summary"]["definition_groups"] == 34
     assert payload["source"]["definitions"] == (
@@ -1253,11 +1376,23 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_color_slot0"]["size"] == 4 * 4
     assert defined["grim_slot_ints"]["size"] == 128 * 4
     assert defined["grim_texture_slots"]["size"] == 256 * 4
-    assert next(
-        entry
-        for entry in payload["entries"]
-        if entry["name"] == "grim_interface_vtable"
-    )["size"] is None
+    assert defined["grim_interface_vtable"]["size"] == 84 * 4
+    assert len(defined["grim_interface_vtable"]["initializer_symbols"]) == 84
+    assert defined["grim_lookup_blob_magic"]["initializer_target"] == {
+        "address": 0x100530F0,
+        "name": "grim_lookup_blob_magic_text",
+    }
+    assert defined["grim_key_char_buffer"]["initializer_target"] == {
+        "address": 0x10059BBC,
+        "name": "grim_key_char_default_buffer",
+    }
+    assert defined["grim_key_char_buffer_count"]["initializer_target"] == {
+        "address": 0x1005D3C0,
+        "name": "grim_key_char_default_count",
+    }
+    assert defined["grim_lookup_blob_magic_text"]["initializer_hex"] == "70617100"
+    assert defined["grim_key_char_default_buffer"]["size"] == 510
+    assert defined["grim_key_char_default_count"]["size"] == 4
 
 
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
@@ -1452,6 +1587,57 @@ def test_data_definitions_normalize_symbolic_initializer_target(
     }
 
 
+def test_data_definitions_normalize_external_symbol_initializers(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "grim.dll.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-data-definitions",
+                "image": "grim.dll",
+                "reference_image": {
+                    "path": "game_bins/grim.dll",
+                    "sha256": "0" * 64,
+                },
+                "entries": [
+                    {
+                        "address": "0x10053000",
+                        "name": "vtable",
+                        "size": 8,
+                        "size_source": "vtable layout",
+                        "alignment": 4,
+                        "alignment_source": "pointer ABI",
+                        "initializer_symbols": [
+                            [0, "0x10002000", "_first"],
+                            [4, "0x10003000", "?second@@YAXXZ"],
+                        ],
+                        "initializer_source": "reference image vtable",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    payload = load_native_data_definitions("grim.dll", path=path)
+
+    assert payload is not None
+    assert payload["entries"][0]["initializer_symbols"] == [
+        {
+            "offset": 0,
+            "address": 0x10002000,
+            "symbol": "_first",
+        },
+        {
+            "offset": 4,
+            "address": 0x10003000,
+            "symbol": "?second@@YAXXZ",
+        },
+    ]
+
+
 def test_data_definition_groups_expand_data_map_checked_members(
     tmp_path: Path,
 ) -> None:
@@ -1517,6 +1703,7 @@ def test_data_definition_groups_expand_data_map_checked_members(
             "initializer_fill": "00",
             "initializer_hex": None,
             "initializer_source": "reference image",
+            "initializer_symbols": [],
             "initializer_target": None,
             "name": "counter",
             "note": "",

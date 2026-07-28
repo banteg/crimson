@@ -1,5 +1,5 @@
 {
-  "audit_digest": "392864512111f95a772095ee07a4d758015bf2d75f5cd0a6ec2cc9875c2a8f9a",
+  "audit_digest": "0a2bbd11e95eb95a5133fb4a1bb9702141fcd514780e2049ebfd0fe02786f3b3",
   "entries": [
     {
       "address": 268574996,
@@ -42,20 +42,442 @@
     {
       "address": 268747320,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Grim2D interface vtable (used by GRIM__GetInterface).",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "analysis/ghidra/derived/grim2d_vtable_entries.json: recovered slot addresses and functions; analysis/native/grim.dll/objects.json: canonical object symbols; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at VA 0x1004c238",
+      "initializer_symbols": [
+        {
+          "address": 268459136,
+          "offset": 0,
+          "symbol": "?grim_release@IGrim2D_cpp@@UAEXXZ"
+        },
+        {
+          "address": 268459152,
+          "offset": 4,
+          "symbol": "?grim_set_paused@IGrim2D_cpp@@UAEXH@Z"
+        },
+        {
+          "address": 268459168,
+          "offset": 8,
+          "symbol": "?grim_get_version@IGrim2D_cpp@@UAEMXZ"
+        },
+        {
+          "address": 268459184,
+          "offset": 12,
+          "symbol": "?grim_save_screenshot@IGrim2D_cpp@@UAE_NPAD@Z"
+        },
+        {
+          "address": 268459328,
+          "offset": 16,
+          "symbol": "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ"
+        },
+        {
+          "address": 268459696,
+          "offset": 20,
+          "symbol": "?grim_init_system@IGrim2D_cpp@@UAE_NXZ"
+        },
+        {
+          "address": 268460016,
+          "offset": 24,
+          "symbol": "?grim_shutdown@IGrim2D_cpp@@UAEXXZ"
+        },
+        {
+          "address": 268460064,
+          "offset": 28,
+          "symbol": "?grim_apply_settings@IGrim2D_cpp@@UAE_NXZ"
+        },
+        {
+          "address": 268461440,
+          "offset": 32,
+          "symbol": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z"
+        },
+        {
+          "address": 268463152,
+          "offset": 36,
+          "symbol": "?grim_get_config_var@IGrim2D_cpp@@UAE?AUgrim_config_value_t@@H@Z"
+        },
+        {
+          "address": 268463264,
+          "offset": 40,
+          "symbol": "_grim_get_error_text"
+        },
+        {
+          "address": 268463280,
+          "offset": 44,
+          "symbol": "?grim_clear_color@IGrim2D_cpp@@UAEXMMMM@Z"
+        },
+        {
+          "address": 268463440,
+          "offset": 48,
+          "symbol": "?grim_set_render_target@IGrim2D_cpp@@UAE_NH@Z"
+        },
+        {
+          "address": 268463680,
+          "offset": 52,
+          "symbol": "_grim_get_time_ms"
+        },
+        {
+          "address": 268463696,
+          "offset": 56,
+          "symbol": "?grim_set_time_ms@IGrim2D_cpp@@UAEXH@Z"
+        },
+        {
+          "address": 268463712,
+          "offset": 60,
+          "symbol": "_grim_get_frame_dt"
+        },
+        {
+          "address": 268463760,
+          "offset": 64,
+          "symbol": "?grim_get_fps@IGrim2D_cpp@@UAEMXZ"
+        },
+        {
+          "address": 268464928,
+          "offset": 68,
+          "symbol": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z"
+        },
+        {
+          "address": 268465040,
+          "offset": 72,
+          "symbol": "?grim_was_key_pressed@IGrim2D_cpp@@UAE_NI@Z"
+        },
+        {
+          "address": 268464944,
+          "offset": 76,
+          "symbol": "?grim_flush_input@IGrim2D_cpp@@UAEXXZ"
+        },
+        {
+          "address": 268459072,
+          "offset": 80,
+          "symbol": "?grim_get_key_char@IGrim2D_cpp@@UAEHXZ"
+        },
+        {
+          "address": 268459040,
+          "offset": 84,
+          "symbol": "?grim_set_key_char_buffer@IGrim2D_cpp@@UAEXPAEPAHH@Z"
+        },
+        {
+          "address": 268465168,
+          "offset": 88,
+          "symbol": "?grim_is_mouse_button_down@IGrim2D_cpp@@UAEEH@Z"
+        },
+        {
+          "address": 268465216,
+          "offset": 92,
+          "symbol": "?grim_was_mouse_button_pressed@IGrim2D_cpp@@UAE_NH@Z"
+        },
+        {
+          "address": 268465504,
+          "offset": 96,
+          "symbol": "_grim_get_mouse_wheel_delta"
+        },
+        {
+          "address": 268465456,
+          "offset": 100,
+          "symbol": "?grim_set_mouse_pos@IGrim2D_cpp@@UAEXMM@Z"
+        },
+        {
+          "address": 268465424,
+          "offset": 104,
+          "symbol": "_grim_get_mouse_x"
+        },
+        {
+          "address": 268465440,
+          "offset": 108,
+          "symbol": "?grim_get_mouse_y@IGrim2D_cpp@@UAEMXZ"
+        },
+        {
+          "address": 268465360,
+          "offset": 112,
+          "symbol": "?grim_get_mouse_dx@IGrim2D_cpp@@UAEMXZ"
+        },
+        {
+          "address": 268465376,
+          "offset": 116,
+          "symbol": "?grim_get_mouse_dy@IGrim2D_cpp@@UAEMXZ"
+        },
+        {
+          "address": 268465392,
+          "offset": 120,
+          "symbol": "?grim_get_mouse_dx_indexed@IGrim2D_cpp@@UAEMH@Z"
+        },
+        {
+          "address": 268465408,
+          "offset": 124,
+          "symbol": "?grim_get_mouse_dy_indexed@IGrim2D_cpp@@UAEMH@Z"
+        },
+        {
+          "address": 268464096,
+          "offset": 128,
+          "symbol": "?grim_is_key_active@IGrim2D_cpp@@UAEEH@Z"
+        },
+        {
+          "address": 268464560,
+          "offset": 132,
+          "symbol": "?grim_get_config_float@IGrim2D_cpp@@UAEMH@Z"
+        },
+        {
+          "address": 268464832,
+          "offset": 136,
+          "symbol": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z"
+        },
+        {
+          "address": 268464848,
+          "offset": 140,
+          "symbol": "?grim_get_slot_int@IGrim2D_cpp@@UAEHH@Z"
+        },
+        {
+          "address": 268464864,
+          "offset": 144,
+          "symbol": "?grim_set_slot_float@IGrim2D_cpp@@UAEXHM@Z"
+        },
+        {
+          "address": 268464896,
+          "offset": 148,
+          "symbol": "?grim_set_slot_int@IGrim2D_cpp@@UAEXHH@Z"
+        },
+        {
+          "address": 268465536,
+          "offset": 152,
+          "symbol": "?grim_get_joystick_x@IGrim2D_cpp@@UAEHXZ"
+        },
+        {
+          "address": 268465552,
+          "offset": 156,
+          "symbol": "?grim_get_joystick_y@IGrim2D_cpp@@UAEHXZ"
+        },
+        {
+          "address": 268465568,
+          "offset": 160,
+          "symbol": "?grim_get_joystick_z@IGrim2D_cpp@@UAEHXZ"
+        },
+        {
+          "address": 268465584,
+          "offset": 164,
+          "symbol": "?grim_get_joystick_pov@IGrim2D_cpp@@UAEHH@Z"
+        },
+        {
+          "address": 268465600,
+          "offset": 168,
+          "symbol": "?grim_is_joystick_button_down@IGrim2D_cpp@@UAEEH@Z"
+        },
+        {
+          "address": 268465616,
+          "offset": 172,
+          "symbol": "?grim_create_texture@IGrim2D_cpp@@UAE_NPADHH@Z"
+        },
+        {
+          "address": 268466064,
+          "offset": 176,
+          "symbol": "?grim_recreate_texture@IGrim2D_cpp@@UAE_NH@Z"
+        },
+        {
+          "address": 268465888,
+          "offset": 180,
+          "symbol": "?grim_load_texture@IGrim2D_cpp@@UAE_NPAD0@Z"
+        },
+        {
+          "address": 268466000,
+          "offset": 184,
+          "symbol": "?grim_save_texture@IGrim2D_cpp@@UAE_NHPAD@Z"
+        },
+        {
+          "address": 268465920,
+          "offset": 188,
+          "symbol": "?grim_destroy_texture@IGrim2D_cpp@@UAEXH@Z"
+        },
+        {
+          "address": 268465984,
+          "offset": 192,
+          "symbol": "?grim_get_texture_handle@IGrim2D_cpp@@UAEHPAD@Z"
+        },
+        {
+          "address": 268466224,
+          "offset": 196,
+          "symbol": "?grim_bind_texture@IGrim2D_cpp@@UAEXHH@Z"
+        },
+        {
+          "address": 268466288,
+          "offset": 200,
+          "symbol": "?grim_draw_fullscreen_quad@IGrim2D_cpp@@UAEXH@Z"
+        },
+        {
+          "address": 268466608,
+          "offset": 204,
+          "symbol": "?grim_draw_fullscreen_color@IGrim2D_cpp@@UAEXMMMM@Z"
+        },
+        {
+          "address": 268466400,
+          "offset": 208,
+          "symbol": "?grim_draw_rect_filled@IGrim2D_cpp@@UAEXPAMMM0@Z"
+        },
+        {
+          "address": 268472080,
+          "offset": 212,
+          "symbol": "?grim_draw_rect_outline@IGrim2D_cpp@@UAEXPAMMM@Z"
+        },
+        {
+          "address": 268467088,
+          "offset": 216,
+          "symbol": "?grim_draw_circle_filled@IGrim2D_cpp@@UAEXMMM@Z"
+        },
+        {
+          "address": 268467520,
+          "offset": 220,
+          "symbol": "?grim_draw_circle_outline@IGrim2D_cpp@@UAEXMMM@Z"
+        },
+        {
+          "address": 268468400,
+          "offset": 224,
+          "symbol": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z"
+        },
+        {
+          "address": 268468560,
+          "offset": 228,
+          "symbol": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z"
+        },
+        {
+          "address": 268466880,
+          "offset": 232,
+          "symbol": "?grim_begin_batch@IGrim2D_cpp@@UAEXXZ"
+        },
+        {
+          "address": 268469184,
+          "offset": 236,
+          "symbol": "?grim_flush_batch@IGrim2D_cpp@@UAEXXZ"
+        },
+        {
+          "address": 268466976,
+          "offset": 240,
+          "symbol": "?grim_end_batch@IGrim2D_cpp@@UAEXXZ"
+        },
+        {
+          "address": 268471856,
+          "offset": 244,
+          "symbol": "?grim_submit_vertex_raw@IGrim2D_cpp@@UAEXPAM@Z"
+        },
+        {
+          "address": 268471984,
+          "offset": 248,
+          "symbol": "?grim_submit_quad_raw@IGrim2D_cpp@@UAEXPAM@Z"
+        },
+        {
+          "address": 268468016,
+          "offset": 252,
+          "symbol": "?grim_set_rotation@IGrim2D_cpp@@UAEXM@Z"
+        },
+        {
+          "address": 268469072,
+          "offset": 256,
+          "symbol": "?grim_set_uv@IGrim2D_cpp@@UAEXMMMM@Z"
+        },
+        {
+          "address": 268468784,
+          "offset": 260,
+          "symbol": "?grim_set_atlas_frame@IGrim2D_cpp@@UAEXHH@Z"
+        },
+        {
+          "address": 268468928,
+          "offset": 264,
+          "symbol": "?grim_set_sub_rect@IGrim2D_cpp@@UAEXHHHH@Z"
+        },
+        {
+          "address": 268469152,
+          "offset": 268,
+          "symbol": "?grim_set_uv_point@IGrim2D_cpp@@UAEXHMM@Z"
+        },
+        {
+          "address": 268468288,
+          "offset": 272,
+          "symbol": "?grim_set_color_ptr@IGrim2D_cpp@@UAEXPAM@Z"
+        },
+        {
+          "address": 268468112,
+          "offset": 276,
+          "symbol": "?grim_set_color@IGrim2D_cpp@@UAEXMMMM@Z"
+        },
+        {
+          "address": 268468672,
+          "offset": 280,
+          "symbol": "?grim_set_color_slot@IGrim2D_cpp@@UAEXHMMMM@Z"
+        },
+        {
+          "address": 268471056,
+          "offset": 284,
+          "symbol": "?grim_draw_quad@IGrim2D_cpp@@UAEXMMMM@Z"
+        },
+        {
+          "address": 268470048,
+          "offset": 288,
+          "symbol": "?grim_draw_quad_xy@IGrim2D_cpp@@UAEXPAMMM@Z"
+        },
+        {
+          "address": 268470096,
+          "offset": 292,
+          "symbol": "?grim_draw_quad_rotated_matrix@IGrim2D_cpp@@UAEXMMMM@Z"
+        },
+        {
+          "address": 268469696,
+          "offset": 296,
+          "symbol": "?grim_submit_vertices_transform@IGrim2D_cpp@@UAEXPAMH00@Z"
+        },
+        {
+          "address": 268469888,
+          "offset": 300,
+          "symbol": "?grim_submit_vertices_offset@IGrim2D_cpp@@UAEXPAMH0@Z"
+        },
+        {
+          "address": 268469296,
+          "offset": 304,
+          "symbol": "?grim_submit_vertices_offset_color@IGrim2D_cpp@@UAEXPAMH0PAK@Z"
+        },
+        {
+          "address": 268469472,
+          "offset": 308,
+          "symbol": "?grim_submit_vertices_transform_color@IGrim2D_cpp@@UAEXPAMH00PAK@Z"
+        },
+        {
+          "address": 268472448,
+          "offset": 312,
+          "symbol": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z"
+        },
+        {
+          "address": 268473008,
+          "offset": 316,
+          "symbol": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z"
+        },
+        {
+          "address": 268474688,
+          "offset": 320,
+          "symbol": "?grim_draw_text_mono_fmt@IGrim2D_cpp@@UAAXMMPADZZ"
+        },
+        {
+          "address": 268474160,
+          "offset": 324,
+          "symbol": "?grim_draw_text_small@IGrim2D_cpp@@UAEXMMPAD@Z"
+        },
+        {
+          "address": 268474752,
+          "offset": 328,
+          "symbol": "?grim_draw_text_small_fmt@IGrim2D_cpp@@UAAXMMPADZZ"
+        },
+        {
+          "address": 268474048,
+          "offset": 332,
+          "symbol": "?grim_measure_text_width@IGrim2D_cpp@@UAEHPAD@Z"
+        }
+      ],
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_interface_vtable",
       "section": ".rdata",
       "section_offset": 124,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 336,
+      "size_source": "analysis/ghidra/maps/data_map.json: IGrim2D_vtbl; analysis/ghidra/derived/grim2d_vtable_entries.json: 84 four-byte entries; tools/native/abi/grim.dll/abi_assertions.cpp: IGrim2D_vtbl_size",
       "type": "IGrim2D_vtbl"
     },
     {
@@ -1467,20 +1889,23 @@
     {
       "address": 268775488,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Pointer to the NUL-terminated paq magic string that prefixes the lookup blob.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
-      "initializer_target": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10053040",
+      "initializer_target": {
+        "address": 268775664,
+        "name": "grim_lookup_blob_magic_text"
+      },
+      "linker_reference_count": 0,
       "name": "grim_lookup_blob_magic",
       "section": ".data",
       "section_offset": 64,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -1506,39 +1931,45 @@
     {
       "address": 268775496,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Caller-owned key-character buffer installed by grim_set_key_char_buffer.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
-      "initializer_target": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10053048",
+      "initializer_target": {
+        "address": 268803004,
+        "name": "grim_key_char_default_buffer"
+      },
+      "linker_reference_count": 0,
       "name": "grim_key_char_buffer",
       "section": ".data",
       "section_offset": 72,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: unsigned char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": "unsigned char *"
     },
     {
       "address": 268775500,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Pointer to the caller-owned key-character buffer count.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
-      "initializer_target": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x1005304c",
+      "initializer_target": {
+        "address": 268817344,
+        "name": "grim_key_char_default_count"
+      },
+      "linker_reference_count": 0,
       "name": "grim_key_char_buffer_count",
       "section": ".data",
       "section_offset": 76,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: int pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": "int *"
     },
     {
@@ -1696,6 +2127,25 @@
       "size": 4,
       "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
+    },
+    {
+      "address": 268775664,
+      "aliases": [],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "NUL-terminated paq magic string referenced by grim_lookup_blob_magic.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "70617100",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x100530f0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_lookup_blob_magic_text",
+      "section": ".data",
+      "section_offset": 240,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[4] paq string extent",
+      "type": "char[4]"
     },
     {
       "address": 268775668,
@@ -1956,6 +2406,26 @@
       "size": 4,
       "size_source": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": "LPDIRECT3DINDEXBUFFER8"
+    },
+    {
+      "address": 268803004,
+      "aliases": [],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "Default key-character buffer installed before a caller supplies replacement storage.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x10059bbc",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_key_char_default_buffer",
+      "section": ".data",
+      "section_offset": 27580,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 510,
+      "size_source": "analysis/ghidra/maps/data_map.json: unsigned char[510]; grim_window_proc bounds writes by grim_key_char_buffer_size, initialized to 510",
+      "type": "unsigned char[510]"
     },
     {
       "address": 268803516,
@@ -4546,6 +5016,26 @@
       "type": null
     },
     {
+      "address": 268817344,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "Default key-character buffer count referenced before a caller supplies replacement storage.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005d3c0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_key_char_default_count",
+      "section": ".data",
+      "section_offset": 41920,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: int; tools/native/abi/grim.dll/abi_assertions.cpp: int_is_32_bit",
+      "type": "int"
+    },
+    {
       "address": 268817348,
       "aliases": [],
       "alignment": 4,
@@ -5385,66 +5875,13 @@
   "kind": "crimson-native-data-manifest",
   "notes": "Data label map for globals and tables. Keep names unique per program.",
   "overlays": [],
-  "priorities": [
-    {
-      "address": 268775488,
-      "definition_state": "unknown",
-      "name": "grim_lookup_blob_magic",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_lookup_blob_magic",
-          "name": "?grim_lookup_blob_magic@@3PADA",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 268747320,
-      "definition_state": "unknown",
-      "name": "grim_interface_vtable",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_interface_vtable",
-          "name": "?grim_interface_vtable@@3PAXA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268775496,
-      "definition_state": "unknown",
-      "name": "grim_key_char_buffer",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_key_char_buffer",
-          "name": "?grim_key_char_buffer@@3PAEA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 268775500,
-      "definition_state": "unknown",
-      "name": "grim_key_char_buffer_count",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_key_char_buffer_count",
-          "name": "?grim_key_char_buffer_count@@3PAHA",
-          "reference_count": 1
-        }
-      ]
-    }
-  ],
+  "priorities": [],
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "c09119daba3a3486c2746da74c6509654316700fcc0961e6effee6b19c189a55",
+    "data_map_sha256": "4d6064931505f58f147b625c133c6fd014fc4c0ab87a60eb3714a42bc2796438",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "7cda3ef010ba0ab627b874aa2560a1ad56df8baf83710f13d5028cef17c4e244",
+    "definitions_sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -5457,25 +5894,25 @@
     "alias_rows": 6,
     "definition_group_entries": 107,
     "definition_groups": 34,
-    "entry_count": 273,
-    "explicit_alignment_entries": 115,
-    "explicit_initializer_entries": 115,
-    "explicit_size_entries": 115,
-    "fixed_array_types": 12,
-    "fully_specified_entries": 115,
-    "game_data_reference_count": 5,
+    "entry_count": 276,
+    "explicit_alignment_entries": 122,
+    "explicit_initializer_entries": 122,
+    "explicit_size_entries": 122,
+    "fixed_array_types": 14,
+    "fully_specified_entries": 122,
+    "game_data_reference_count": 0,
     "incomplete_array_types": 41,
     "multidimensional_array_types": 0,
     "overlay_addresses": 0,
-    "priority_entries": 4,
-    "referenced_entries": 4,
+    "priority_entries": 0,
+    "referenced_entries": 0,
     "section_counts": {
-      ".data": 196,
+      ".data": 199,
       ".rdata": 75,
       ".text": 2
     },
-    "typed_entries": 182,
-    "unique_addresses": 273,
+    "typed_entries": 185,
+    "unique_addresses": 276,
     "untyped_entries": 91
   }
 }

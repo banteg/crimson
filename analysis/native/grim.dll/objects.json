@@ -59,18 +59,473 @@
     "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "392864512111f95a772095ee07a4d758015bf2d75f5cd0a6ec2cc9875c2a8f9a",
+  "audit_digest": "0a2bbd11e95eb95a5133fb4a1bb9702141fcd514780e2049ebfd0fe02786f3b3",
   "data_object_count": 1,
   "data_objects": [
     {
       "bindings": [
+        {
+          "address": 268747320,
+          "alignment": 4,
+          "initializer_symbols": [
+            {
+              "address": 268459136,
+              "offset": 0,
+              "symbol": "?grim_release@IGrim2D_cpp@@UAEXXZ"
+            },
+            {
+              "address": 268459152,
+              "offset": 4,
+              "symbol": "?grim_set_paused@IGrim2D_cpp@@UAEXH@Z"
+            },
+            {
+              "address": 268459168,
+              "offset": 8,
+              "symbol": "?grim_get_version@IGrim2D_cpp@@UAEMXZ"
+            },
+            {
+              "address": 268459184,
+              "offset": 12,
+              "symbol": "?grim_save_screenshot@IGrim2D_cpp@@UAE_NPAD@Z"
+            },
+            {
+              "address": 268459328,
+              "offset": 16,
+              "symbol": "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ"
+            },
+            {
+              "address": 268459696,
+              "offset": 20,
+              "symbol": "?grim_init_system@IGrim2D_cpp@@UAE_NXZ"
+            },
+            {
+              "address": 268460016,
+              "offset": 24,
+              "symbol": "?grim_shutdown@IGrim2D_cpp@@UAEXXZ"
+            },
+            {
+              "address": 268460064,
+              "offset": 28,
+              "symbol": "?grim_apply_settings@IGrim2D_cpp@@UAE_NXZ"
+            },
+            {
+              "address": 268461440,
+              "offset": 32,
+              "symbol": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z"
+            },
+            {
+              "address": 268463152,
+              "offset": 36,
+              "symbol": "?grim_get_config_var@IGrim2D_cpp@@UAE?AUgrim_config_value_t@@H@Z"
+            },
+            {
+              "address": 268463264,
+              "offset": 40,
+              "symbol": "_grim_get_error_text"
+            },
+            {
+              "address": 268463280,
+              "offset": 44,
+              "symbol": "?grim_clear_color@IGrim2D_cpp@@UAEXMMMM@Z"
+            },
+            {
+              "address": 268463440,
+              "offset": 48,
+              "symbol": "?grim_set_render_target@IGrim2D_cpp@@UAE_NH@Z"
+            },
+            {
+              "address": 268463680,
+              "offset": 52,
+              "symbol": "_grim_get_time_ms"
+            },
+            {
+              "address": 268463696,
+              "offset": 56,
+              "symbol": "?grim_set_time_ms@IGrim2D_cpp@@UAEXH@Z"
+            },
+            {
+              "address": 268463712,
+              "offset": 60,
+              "symbol": "_grim_get_frame_dt"
+            },
+            {
+              "address": 268463760,
+              "offset": 64,
+              "symbol": "?grim_get_fps@IGrim2D_cpp@@UAEMXZ"
+            },
+            {
+              "address": 268464928,
+              "offset": 68,
+              "symbol": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z"
+            },
+            {
+              "address": 268465040,
+              "offset": 72,
+              "symbol": "?grim_was_key_pressed@IGrim2D_cpp@@UAE_NI@Z"
+            },
+            {
+              "address": 268464944,
+              "offset": 76,
+              "symbol": "?grim_flush_input@IGrim2D_cpp@@UAEXXZ"
+            },
+            {
+              "address": 268459072,
+              "offset": 80,
+              "symbol": "?grim_get_key_char@IGrim2D_cpp@@UAEHXZ"
+            },
+            {
+              "address": 268459040,
+              "offset": 84,
+              "symbol": "?grim_set_key_char_buffer@IGrim2D_cpp@@UAEXPAEPAHH@Z"
+            },
+            {
+              "address": 268465168,
+              "offset": 88,
+              "symbol": "?grim_is_mouse_button_down@IGrim2D_cpp@@UAEEH@Z"
+            },
+            {
+              "address": 268465216,
+              "offset": 92,
+              "symbol": "?grim_was_mouse_button_pressed@IGrim2D_cpp@@UAE_NH@Z"
+            },
+            {
+              "address": 268465504,
+              "offset": 96,
+              "symbol": "_grim_get_mouse_wheel_delta"
+            },
+            {
+              "address": 268465456,
+              "offset": 100,
+              "symbol": "?grim_set_mouse_pos@IGrim2D_cpp@@UAEXMM@Z"
+            },
+            {
+              "address": 268465424,
+              "offset": 104,
+              "symbol": "_grim_get_mouse_x"
+            },
+            {
+              "address": 268465440,
+              "offset": 108,
+              "symbol": "?grim_get_mouse_y@IGrim2D_cpp@@UAEMXZ"
+            },
+            {
+              "address": 268465360,
+              "offset": 112,
+              "symbol": "?grim_get_mouse_dx@IGrim2D_cpp@@UAEMXZ"
+            },
+            {
+              "address": 268465376,
+              "offset": 116,
+              "symbol": "?grim_get_mouse_dy@IGrim2D_cpp@@UAEMXZ"
+            },
+            {
+              "address": 268465392,
+              "offset": 120,
+              "symbol": "?grim_get_mouse_dx_indexed@IGrim2D_cpp@@UAEMH@Z"
+            },
+            {
+              "address": 268465408,
+              "offset": 124,
+              "symbol": "?grim_get_mouse_dy_indexed@IGrim2D_cpp@@UAEMH@Z"
+            },
+            {
+              "address": 268464096,
+              "offset": 128,
+              "symbol": "?grim_is_key_active@IGrim2D_cpp@@UAEEH@Z"
+            },
+            {
+              "address": 268464560,
+              "offset": 132,
+              "symbol": "?grim_get_config_float@IGrim2D_cpp@@UAEMH@Z"
+            },
+            {
+              "address": 268464832,
+              "offset": 136,
+              "symbol": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z"
+            },
+            {
+              "address": 268464848,
+              "offset": 140,
+              "symbol": "?grim_get_slot_int@IGrim2D_cpp@@UAEHH@Z"
+            },
+            {
+              "address": 268464864,
+              "offset": 144,
+              "symbol": "?grim_set_slot_float@IGrim2D_cpp@@UAEXHM@Z"
+            },
+            {
+              "address": 268464896,
+              "offset": 148,
+              "symbol": "?grim_set_slot_int@IGrim2D_cpp@@UAEXHH@Z"
+            },
+            {
+              "address": 268465536,
+              "offset": 152,
+              "symbol": "?grim_get_joystick_x@IGrim2D_cpp@@UAEHXZ"
+            },
+            {
+              "address": 268465552,
+              "offset": 156,
+              "symbol": "?grim_get_joystick_y@IGrim2D_cpp@@UAEHXZ"
+            },
+            {
+              "address": 268465568,
+              "offset": 160,
+              "symbol": "?grim_get_joystick_z@IGrim2D_cpp@@UAEHXZ"
+            },
+            {
+              "address": 268465584,
+              "offset": 164,
+              "symbol": "?grim_get_joystick_pov@IGrim2D_cpp@@UAEHH@Z"
+            },
+            {
+              "address": 268465600,
+              "offset": 168,
+              "symbol": "?grim_is_joystick_button_down@IGrim2D_cpp@@UAEEH@Z"
+            },
+            {
+              "address": 268465616,
+              "offset": 172,
+              "symbol": "?grim_create_texture@IGrim2D_cpp@@UAE_NPADHH@Z"
+            },
+            {
+              "address": 268466064,
+              "offset": 176,
+              "symbol": "?grim_recreate_texture@IGrim2D_cpp@@UAE_NH@Z"
+            },
+            {
+              "address": 268465888,
+              "offset": 180,
+              "symbol": "?grim_load_texture@IGrim2D_cpp@@UAE_NPAD0@Z"
+            },
+            {
+              "address": 268466000,
+              "offset": 184,
+              "symbol": "?grim_save_texture@IGrim2D_cpp@@UAE_NHPAD@Z"
+            },
+            {
+              "address": 268465920,
+              "offset": 188,
+              "symbol": "?grim_destroy_texture@IGrim2D_cpp@@UAEXH@Z"
+            },
+            {
+              "address": 268465984,
+              "offset": 192,
+              "symbol": "?grim_get_texture_handle@IGrim2D_cpp@@UAEHPAD@Z"
+            },
+            {
+              "address": 268466224,
+              "offset": 196,
+              "symbol": "?grim_bind_texture@IGrim2D_cpp@@UAEXHH@Z"
+            },
+            {
+              "address": 268466288,
+              "offset": 200,
+              "symbol": "?grim_draw_fullscreen_quad@IGrim2D_cpp@@UAEXH@Z"
+            },
+            {
+              "address": 268466608,
+              "offset": 204,
+              "symbol": "?grim_draw_fullscreen_color@IGrim2D_cpp@@UAEXMMMM@Z"
+            },
+            {
+              "address": 268466400,
+              "offset": 208,
+              "symbol": "?grim_draw_rect_filled@IGrim2D_cpp@@UAEXPAMMM0@Z"
+            },
+            {
+              "address": 268472080,
+              "offset": 212,
+              "symbol": "?grim_draw_rect_outline@IGrim2D_cpp@@UAEXPAMMM@Z"
+            },
+            {
+              "address": 268467088,
+              "offset": 216,
+              "symbol": "?grim_draw_circle_filled@IGrim2D_cpp@@UAEXMMM@Z"
+            },
+            {
+              "address": 268467520,
+              "offset": 220,
+              "symbol": "?grim_draw_circle_outline@IGrim2D_cpp@@UAEXMMM@Z"
+            },
+            {
+              "address": 268468400,
+              "offset": 224,
+              "symbol": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z"
+            },
+            {
+              "address": 268468560,
+              "offset": 228,
+              "symbol": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z"
+            },
+            {
+              "address": 268466880,
+              "offset": 232,
+              "symbol": "?grim_begin_batch@IGrim2D_cpp@@UAEXXZ"
+            },
+            {
+              "address": 268469184,
+              "offset": 236,
+              "symbol": "?grim_flush_batch@IGrim2D_cpp@@UAEXXZ"
+            },
+            {
+              "address": 268466976,
+              "offset": 240,
+              "symbol": "?grim_end_batch@IGrim2D_cpp@@UAEXXZ"
+            },
+            {
+              "address": 268471856,
+              "offset": 244,
+              "symbol": "?grim_submit_vertex_raw@IGrim2D_cpp@@UAEXPAM@Z"
+            },
+            {
+              "address": 268471984,
+              "offset": 248,
+              "symbol": "?grim_submit_quad_raw@IGrim2D_cpp@@UAEXPAM@Z"
+            },
+            {
+              "address": 268468016,
+              "offset": 252,
+              "symbol": "?grim_set_rotation@IGrim2D_cpp@@UAEXM@Z"
+            },
+            {
+              "address": 268469072,
+              "offset": 256,
+              "symbol": "?grim_set_uv@IGrim2D_cpp@@UAEXMMMM@Z"
+            },
+            {
+              "address": 268468784,
+              "offset": 260,
+              "symbol": "?grim_set_atlas_frame@IGrim2D_cpp@@UAEXHH@Z"
+            },
+            {
+              "address": 268468928,
+              "offset": 264,
+              "symbol": "?grim_set_sub_rect@IGrim2D_cpp@@UAEXHHHH@Z"
+            },
+            {
+              "address": 268469152,
+              "offset": 268,
+              "symbol": "?grim_set_uv_point@IGrim2D_cpp@@UAEXHMM@Z"
+            },
+            {
+              "address": 268468288,
+              "offset": 272,
+              "symbol": "?grim_set_color_ptr@IGrim2D_cpp@@UAEXPAM@Z"
+            },
+            {
+              "address": 268468112,
+              "offset": 276,
+              "symbol": "?grim_set_color@IGrim2D_cpp@@UAEXMMMM@Z"
+            },
+            {
+              "address": 268468672,
+              "offset": 280,
+              "symbol": "?grim_set_color_slot@IGrim2D_cpp@@UAEXHMMMM@Z"
+            },
+            {
+              "address": 268471056,
+              "offset": 284,
+              "symbol": "?grim_draw_quad@IGrim2D_cpp@@UAEXMMMM@Z"
+            },
+            {
+              "address": 268470048,
+              "offset": 288,
+              "symbol": "?grim_draw_quad_xy@IGrim2D_cpp@@UAEXPAMMM@Z"
+            },
+            {
+              "address": 268470096,
+              "offset": 292,
+              "symbol": "?grim_draw_quad_rotated_matrix@IGrim2D_cpp@@UAEXMMMM@Z"
+            },
+            {
+              "address": 268469696,
+              "offset": 296,
+              "symbol": "?grim_submit_vertices_transform@IGrim2D_cpp@@UAEXPAMH00@Z"
+            },
+            {
+              "address": 268469888,
+              "offset": 300,
+              "symbol": "?grim_submit_vertices_offset@IGrim2D_cpp@@UAEXPAMH0@Z"
+            },
+            {
+              "address": 268469296,
+              "offset": 304,
+              "symbol": "?grim_submit_vertices_offset_color@IGrim2D_cpp@@UAEXPAMH0PAK@Z"
+            },
+            {
+              "address": 268469472,
+              "offset": 308,
+              "symbol": "?grim_submit_vertices_transform_color@IGrim2D_cpp@@UAEXPAMH00PAK@Z"
+            },
+            {
+              "address": 268472448,
+              "offset": 312,
+              "symbol": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z"
+            },
+            {
+              "address": 268473008,
+              "offset": 316,
+              "symbol": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z"
+            },
+            {
+              "address": 268474688,
+              "offset": 320,
+              "symbol": "?grim_draw_text_mono_fmt@IGrim2D_cpp@@UAAXMMPADZZ"
+            },
+            {
+              "address": 268474160,
+              "offset": 324,
+              "symbol": "?grim_draw_text_small@IGrim2D_cpp@@UAEXMMPAD@Z"
+            },
+            {
+              "address": 268474752,
+              "offset": 328,
+              "symbol": "?grim_draw_text_small_fmt@IGrim2D_cpp@@UAAXMMPADZZ"
+            },
+            {
+              "address": 268474048,
+              "offset": 332,
+              "symbol": "?grim_measure_text_width@IGrim2D_cpp@@UAEHPAD@Z"
+            }
+          ],
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_interface_vtable",
+          "section_number": 1,
+          "section_offset": 0,
+          "size": 336,
+          "storage_address": 268747320,
+          "storage_name": "grim_interface_vtable",
+          "symbols": [
+            "?grim_interface_vtable@@3PAXA"
+          ]
+        },
+        {
+          "address": 268775488,
+          "alignment": 4,
+          "initializer_target": {
+            "address": 268775664,
+            "name": "grim_lookup_blob_magic_text"
+          },
+          "kind": "definition",
+          "name": "grim_lookup_blob_magic",
+          "section_number": 2,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775488,
+          "storage_name": "grim_lookup_blob_magic",
+          "symbols": [
+            "?grim_lookup_blob_magic@@3PADA"
+          ]
+        },
         {
           "address": 268775492,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_repeat_delay",
-          "section_number": 1,
+          "section_number": 3,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268775492,
@@ -80,12 +535,48 @@
           ]
         },
         {
+          "address": 268775496,
+          "alignment": 4,
+          "initializer_target": {
+            "address": 268803004,
+            "name": "grim_key_char_default_buffer"
+          },
+          "kind": "definition",
+          "name": "grim_key_char_buffer",
+          "section_number": 4,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775496,
+          "storage_name": "grim_key_char_buffer",
+          "symbols": [
+            "?grim_key_char_buffer@@3PAEA"
+          ]
+        },
+        {
+          "address": 268775500,
+          "alignment": 4,
+          "initializer_target": {
+            "address": 268817344,
+            "name": "grim_key_char_default_count"
+          },
+          "kind": "definition",
+          "name": "grim_key_char_buffer_count",
+          "section_number": 5,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775500,
+          "storage_name": "grim_key_char_buffer_count",
+          "symbols": [
+            "?grim_key_char_buffer_count@@3PAHA"
+          ]
+        },
+        {
           "address": 268775504,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_char_buffer_size",
-          "section_number": 2,
+          "section_number": 6,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268775504,
@@ -100,7 +591,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_texture_slot_max_index",
-          "section_number": 3,
+          "section_number": 7,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268775516,
@@ -115,7 +606,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_bound_texture_handle",
-          "section_number": 4,
+          "section_number": 8,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268775520,
@@ -130,7 +621,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font2_texture_handle",
-          "section_number": 5,
+          "section_number": 9,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268775536,
@@ -140,12 +631,25 @@
           ]
         },
         {
+          "address": 268775664,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_lookup_blob_magic_text",
+          "section_number": 10,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775664,
+          "storage_name": "grim_lookup_blob_magic_text",
+          "symbols": []
+        },
+        {
           "address": 268775668,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_missing_frame_error_text",
-          "section_number": 6,
+          "section_number": 11,
           "section_offset": 0,
           "size": 35,
           "storage_address": 268775668,
@@ -160,7 +664,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_frame_dt",
-          "section_number": 7,
+          "section_number": 12,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801896,
@@ -176,7 +680,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_capacity",
-          "section_number": 8,
+          "section_number": 13,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801900,
@@ -191,7 +695,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_on_device_restore",
-          "section_number": 9,
+          "section_number": 14,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801904,
@@ -206,7 +710,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_window_icon_handle",
-          "section_number": 10,
+          "section_number": 15,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801912,
@@ -221,7 +725,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_frame_callback",
-          "section_number": 11,
+          "section_number": 16,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268801916,
@@ -236,7 +740,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_index_buffer",
-          "section_number": 12,
+          "section_number": 17,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803000,
@@ -246,12 +750,25 @@
           ]
         },
         {
+          "address": 268803004,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_char_default_buffer",
+          "section_number": 18,
+          "section_offset": 0,
+          "size": 510,
+          "storage_address": 268803004,
+          "storage_name": "grim_key_char_default_buffer",
+          "symbols": []
+        },
+        {
           "address": 268803516,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_d3d_device",
-          "section_number": 13,
+          "section_number": 19,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803516,
@@ -266,7 +783,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_backbuffer_height",
-          "section_number": 14,
+          "section_number": 20,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803520,
@@ -282,7 +799,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_tick_prev_ms",
-          "section_number": 15,
+          "section_number": 21,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803524,
@@ -297,7 +814,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_buffer",
-          "section_number": 16,
+          "section_number": 22,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803628,
@@ -312,7 +829,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_radians",
-          "section_number": 17,
+          "section_number": 23,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803632,
@@ -327,7 +844,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_write_ptr",
-          "section_number": 18,
+          "section_number": 24,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803636,
@@ -346,7 +863,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_working_dir",
-          "section_number": 19,
+          "section_number": 25,
           "section_offset": 0,
           "size": 260,
           "storage_address": 268803644,
@@ -361,7 +878,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_sin",
-          "section_number": 20,
+          "section_number": 26,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268803904,
@@ -376,7 +893,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_repeat_first_press",
-          "section_number": 21,
+          "section_number": 27,
           "section_offset": 0,
           "size": 256,
           "storage_address": 268803908,
@@ -391,7 +908,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_button_cache",
-          "section_number": 22,
+          "section_number": 28,
           "section_offset": 0,
           "size": 16,
           "storage_address": 268804164,
@@ -407,7 +924,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_time_ms",
-          "section_number": 23,
+          "section_number": 29,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268804180,
@@ -424,7 +941,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_repeat_timers",
-          "section_number": 24,
+          "section_number": 30,
           "section_offset": 0,
           "size": 1024,
           "storage_address": 268804184,
@@ -439,7 +956,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_lookup_blob_size",
-          "section_number": 25,
+          "section_number": 31,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805208,
@@ -454,7 +971,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m00",
-          "section_number": 26,
+          "section_number": 32,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805216,
@@ -469,7 +986,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m01",
-          "section_number": 27,
+          "section_number": 33,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805220,
@@ -484,7 +1001,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m10",
-          "section_number": 28,
+          "section_number": 34,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805224,
@@ -499,7 +1016,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_m11",
-          "section_number": 29,
+          "section_number": 35,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805228,
@@ -514,7 +1031,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_timing_frozen",
-          "section_number": 30,
+          "section_number": 36,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268805232,
@@ -529,7 +1046,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_config_default",
-          "section_number": 31,
+          "section_number": 37,
           "section_offset": 0,
           "size": 16,
           "storage_address": 268805240,
@@ -544,7 +1061,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_texture_format",
-          "section_number": 32,
+          "section_number": 38,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805256,
@@ -560,7 +1077,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_render_target_surface",
-          "section_number": 33,
+          "section_number": 39,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805260,
@@ -575,7 +1092,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_preferred_texture_format",
-          "section_number": 34,
+          "section_number": 40,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805484,
@@ -591,7 +1108,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font2_char_map",
-          "section_number": 35,
+          "section_number": 41,
           "section_offset": 0,
           "size": 256,
           "storage_address": 268805488,
@@ -606,7 +1123,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_lookup_blob",
-          "section_number": 36,
+          "section_number": 42,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268805744,
@@ -622,7 +1139,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_subrect_table",
-          "section_number": 37,
+          "section_number": 43,
           "section_offset": 0,
           "size": 2048,
           "storage_address": 268805752,
@@ -637,7 +1154,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_printf_buffer",
-          "section_number": 38,
+          "section_number": 44,
           "section_offset": 0,
           "size": 512,
           "storage_address": 268807800,
@@ -652,7 +1169,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_printf_buffer_alt",
-          "section_number": 39,
+          "section_number": 45,
           "section_offset": 0,
           "size": 512,
           "storage_address": 268808312,
@@ -667,7 +1184,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_x_cached",
-          "section_number": 40,
+          "section_number": 46,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808824,
@@ -683,7 +1200,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_y_cached",
-          "section_number": 41,
+          "section_number": 47,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808828,
@@ -698,7 +1215,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_z",
-          "section_number": 42,
+          "section_number": 48,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808840,
@@ -715,7 +1232,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_rhw",
-          "section_number": 43,
+          "section_number": 49,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808844,
@@ -730,7 +1247,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_uv_u0",
-          "section_number": 44,
+          "section_number": 50,
           "section_offset": 0,
           "size": 32,
           "storage_address": 268808848,
@@ -747,7 +1264,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_uv_v0",
-          "section_number": 44,
+          "section_number": 50,
           "section_offset": 4,
           "size": 4,
           "storage_address": 268808852,
@@ -762,7 +1279,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_uv_u1",
-          "section_number": 44,
+          "section_number": 50,
           "section_offset": 8,
           "size": 8,
           "storage_address": 268808856,
@@ -777,7 +1294,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_uv_u2",
-          "section_number": 44,
+          "section_number": 50,
           "section_offset": 16,
           "size": 8,
           "storage_address": 268808864,
@@ -792,7 +1309,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_uv_u3",
-          "section_number": 44,
+          "section_number": 50,
           "section_offset": 24,
           "size": 8,
           "storage_address": 268808872,
@@ -807,7 +1324,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_d3d_device_type",
-          "section_number": 45,
+          "section_number": 51,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808884,
@@ -822,7 +1339,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_fps",
-          "section_number": 46,
+          "section_number": 52,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808892,
@@ -837,7 +1354,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_d3d8_probe",
-          "section_number": 47,
+          "section_number": 53,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268808900,
@@ -852,7 +1369,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font2_uv_u",
-          "section_number": 48,
+          "section_number": 54,
           "section_offset": 0,
           "size": 2048,
           "storage_address": 268808904,
@@ -869,7 +1386,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font2_uv_v",
-          "section_number": 48,
+          "section_number": 54,
           "section_offset": 4,
           "size": 4,
           "storage_address": 268808908,
@@ -884,7 +1401,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_window_title",
-          "section_number": 49,
+          "section_number": 55,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268810952,
@@ -899,7 +1416,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_module_handle",
-          "section_number": 50,
+          "section_number": 56,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268810956,
@@ -914,7 +1431,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_tick_now_ms",
-          "section_number": 51,
+          "section_number": 57,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268810960,
@@ -929,7 +1446,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_timing_epoch_ms",
-          "section_number": 52,
+          "section_number": 58,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268810964,
@@ -944,7 +1461,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font2_glyph_widths",
-          "section_number": 53,
+          "section_number": 59,
           "section_offset": 0,
           "size": 256,
           "storage_address": 268810968,
@@ -959,7 +1476,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_color_slot0",
-          "section_number": 54,
+          "section_number": 60,
           "section_offset": 0,
           "size": 16,
           "storage_address": 268811268,
@@ -976,7 +1493,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_color_slot1",
-          "section_number": 54,
+          "section_number": 60,
           "section_offset": 4,
           "size": 4,
           "storage_address": 268811272,
@@ -992,7 +1509,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_color_slot2",
-          "section_number": 54,
+          "section_number": 60,
           "section_offset": 8,
           "size": 4,
           "storage_address": 268811276,
@@ -1008,7 +1525,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_color_slot3",
-          "section_number": 54,
+          "section_number": 60,
           "section_offset": 12,
           "size": 4,
           "storage_address": 268811280,
@@ -1024,7 +1541,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_lookup_blob_loaded",
-          "section_number": 55,
+          "section_number": 61,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268811284,
@@ -1039,7 +1556,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_subrect_ptr_table",
-          "section_number": 56,
+          "section_number": 62,
           "section_offset": 0,
           "size": 68,
           "storage_address": 268811384,
@@ -1054,7 +1571,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_slot_ints",
-          "section_number": 57,
+          "section_number": 63,
           "section_offset": 0,
           "size": 512,
           "storage_address": 268812032,
@@ -1069,7 +1586,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_slot_floats",
-          "section_number": 58,
+          "section_number": 64,
           "section_offset": 0,
           "size": 512,
           "storage_address": 268812544,
@@ -1084,7 +1601,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_backbuffer_width",
-          "section_number": 59,
+          "section_number": 65,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268813312,
@@ -1100,7 +1617,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_config_blob",
-          "section_number": 60,
+          "section_number": 66,
           "section_offset": 0,
           "size": 1152,
           "storage_address": 268813336,
@@ -1115,7 +1632,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_device_ready",
-          "section_number": 61,
+          "section_number": 67,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268814488,
@@ -1130,7 +1647,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_vertex_count",
-          "section_number": 62,
+          "section_number": 68,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814556,
@@ -1145,7 +1662,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_rotation_cos",
-          "section_number": 63,
+          "section_number": 69,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814564,
@@ -1160,7 +1677,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_button_latch",
-          "section_number": 64,
+          "section_number": 70,
           "section_offset": 0,
           "size": 16,
           "storage_address": 268814568,
@@ -1176,7 +1693,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_error_text",
-          "section_number": 65,
+          "section_number": 71,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814584,
@@ -1192,7 +1709,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_d3d8",
-          "section_number": 66,
+          "section_number": 72,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814588,
@@ -1207,7 +1724,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_backbuffer_surface",
-          "section_number": 67,
+          "section_number": 73,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268814592,
@@ -1222,7 +1739,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_subrect_table_2",
-          "section_number": 68,
+          "section_number": 74,
           "section_offset": 0,
           "size": 512,
           "storage_address": 268814600,
@@ -1237,7 +1754,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_subrect_table_1",
-          "section_number": 69,
+          "section_number": 75,
           "section_offset": 0,
           "size": 128,
           "storage_address": 268815112,
@@ -1252,7 +1769,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_config_values",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 0,
           "size": 2048,
           "storage_address": 268815240,
@@ -1267,7 +1784,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_enabled",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 176,
           "size": 1,
           "storage_address": 268815416,
@@ -1282,7 +1799,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_enabled",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 192,
           "size": 1,
           "storage_address": 268815432,
@@ -1297,7 +1814,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "grim_input_cached",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 208,
           "size": null,
           "storage_address": 268815240,
@@ -1314,7 +1831,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_enabled",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 224,
           "size": 1,
           "storage_address": 268815464,
@@ -1329,7 +1846,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "grim_font_texture_bound",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 368,
           "size": null,
           "storage_address": 268815240,
@@ -1344,7 +1861,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font_scale",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 384,
           "size": 4,
           "storage_address": 268815624,
@@ -1359,7 +1876,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_main_window_hwnd_ref",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 1324,
           "size": 4,
           "storage_address": 268816564,
@@ -1374,7 +1891,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_deadzone",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 1456,
           "size": 4,
           "storage_address": 268816696,
@@ -1389,7 +1906,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_center_x",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 1472,
           "size": 4,
           "storage_address": 268816712,
@@ -1404,7 +1921,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_center_y",
-          "section_number": 70,
+          "section_number": 76,
           "section_offset": 1488,
           "size": 4,
           "storage_address": 268816728,
@@ -1419,7 +1936,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_subrect_table_0",
-          "section_number": 71,
+          "section_number": 77,
           "section_offset": 0,
           "size": 32,
           "storage_address": 268817288,
@@ -1434,7 +1951,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_on_device_lost",
-          "section_number": 72,
+          "section_number": 78,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817320,
@@ -1449,7 +1966,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_reserved_d3ac",
-          "section_number": 73,
+          "section_number": 79,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268817324,
@@ -1464,7 +1981,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_ms_to_seconds_scale",
-          "section_number": 74,
+          "section_number": 80,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817328,
@@ -1479,7 +1996,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_input_provider",
-          "section_number": 75,
+          "section_number": 81,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817332,
@@ -1494,7 +2011,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_wheel_delta_cached",
-          "section_number": 76,
+          "section_number": 82,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817336,
@@ -1509,7 +2026,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_render_disabled",
-          "section_number": 77,
+          "section_number": 83,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268817341,
@@ -1519,12 +2036,25 @@
           ]
         },
         {
+          "address": 268817344,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_char_default_count",
+          "section_number": 84,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817344,
+          "storage_name": "grim_key_char_default_count",
+          "symbols": []
+        },
+        {
           "address": 268817348,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_char_queue",
-          "section_number": 78,
+          "section_number": 85,
           "section_offset": 0,
           "size": 32,
           "storage_address": 268817348,
@@ -1539,7 +2069,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_key_char_queue_count",
-          "section_number": 79,
+          "section_number": 86,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817380,
@@ -1554,7 +2084,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_selected_adapter_index",
-          "section_number": 80,
+          "section_number": 87,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817384,
@@ -1569,7 +2099,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_font_texture",
-          "section_number": 81,
+          "section_number": 88,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817388,
@@ -1584,7 +2114,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_batch_active",
-          "section_number": 82,
+          "section_number": 89,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268817396,
@@ -1599,7 +2129,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_main_window_hwnd",
-          "section_number": 83,
+          "section_number": 90,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817400,
@@ -1615,7 +2145,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_device_window_override",
-          "section_number": 84,
+          "section_number": 91,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268817404,
@@ -1630,7 +2160,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_texture_slots",
-          "section_number": 85,
+          "section_number": 92,
           "section_offset": 0,
           "size": 1024,
           "storage_address": 268817412,
@@ -1647,7 +2177,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_fps_sample_frames",
-          "section_number": 86,
+          "section_number": 93,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818452,
@@ -1662,7 +2192,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_fps_sample_elapsed_ms",
-          "section_number": 87,
+          "section_number": 94,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818456,
@@ -1677,7 +2207,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_interface_instance",
-          "section_number": 88,
+          "section_number": 95,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818460,
@@ -1693,7 +2223,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_paused_flag",
-          "section_number": 89,
+          "section_number": 96,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268818464,
@@ -1708,7 +2238,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_empty_string",
-          "section_number": 90,
+          "section_number": 97,
           "section_offset": 0,
           "size": 1,
           "storage_address": 268818472,
@@ -1723,7 +2253,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_joystick_state",
-          "section_number": 91,
+          "section_number": 98,
           "section_offset": 0,
           "size": 272,
           "storage_address": 268818480,
@@ -1738,7 +2268,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_event_buffer",
-          "section_number": 92,
+          "section_number": 99,
           "section_offset": 0,
           "size": 200,
           "storage_address": 268818776,
@@ -1753,7 +2283,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_device",
-          "section_number": 93,
+          "section_number": 100,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268818980,
@@ -1768,7 +2298,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_keyboard_state",
-          "section_number": 94,
+          "section_number": 101,
           "section_offset": 0,
           "size": 256,
           "storage_address": 268818984,
@@ -1783,7 +2313,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_x",
-          "section_number": 95,
+          "section_number": 102,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268819268,
@@ -1798,7 +2328,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_y",
-          "section_number": 96,
+          "section_number": 103,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268819272,
@@ -1813,7 +2343,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_dx",
-          "section_number": 97,
+          "section_number": 104,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268819280,
@@ -1828,7 +2358,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_dy",
-          "section_number": 98,
+          "section_number": 105,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268819284,
@@ -1843,7 +2373,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_mouse_wheel_delta",
-          "section_number": 99,
+          "section_number": 106,
           "section_offset": 0,
           "size": 4,
           "storage_address": 268819288,
@@ -1856,12 +2386,465 @@
       "definitions": {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "7cda3ef010ba0ab627b874aa2560a1ad56df8baf83710f13d5028cef17c4e244"
+        "sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd"
       },
-      "emitted_symbol_count": 150,
+      "emitted_symbol_count": 154,
       "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-      "object_sha256": "4e8e3dd6ee0225722bb38f20026a9c75f02e76129b13994a2b25d9e6bc016402",
+      "object_sha256": "1cf015b47c6061eeebd3e5833547da801cb4ed1b56c2b2ce0c1514c8440d1487",
       "regions": [
+        {
+          "address": 268747320,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268747320,
+              "name": "grim_interface_vtable"
+            }
+          ],
+          "relocations": [
+            {
+              "offset": 0,
+              "target_address": 268459136,
+              "target_name": null
+            },
+            {
+              "offset": 4,
+              "target_address": 268459152,
+              "target_name": null
+            },
+            {
+              "offset": 8,
+              "target_address": 268459168,
+              "target_name": null
+            },
+            {
+              "offset": 12,
+              "target_address": 268459184,
+              "target_name": null
+            },
+            {
+              "offset": 16,
+              "target_address": 268459328,
+              "target_name": null
+            },
+            {
+              "offset": 20,
+              "target_address": 268459696,
+              "target_name": null
+            },
+            {
+              "offset": 24,
+              "target_address": 268460016,
+              "target_name": null
+            },
+            {
+              "offset": 28,
+              "target_address": 268460064,
+              "target_name": null
+            },
+            {
+              "offset": 32,
+              "target_address": 268461440,
+              "target_name": null
+            },
+            {
+              "offset": 36,
+              "target_address": 268463152,
+              "target_name": null
+            },
+            {
+              "offset": 40,
+              "target_address": 268463264,
+              "target_name": null
+            },
+            {
+              "offset": 44,
+              "target_address": 268463280,
+              "target_name": null
+            },
+            {
+              "offset": 48,
+              "target_address": 268463440,
+              "target_name": null
+            },
+            {
+              "offset": 52,
+              "target_address": 268463680,
+              "target_name": null
+            },
+            {
+              "offset": 56,
+              "target_address": 268463696,
+              "target_name": null
+            },
+            {
+              "offset": 60,
+              "target_address": 268463712,
+              "target_name": null
+            },
+            {
+              "offset": 64,
+              "target_address": 268463760,
+              "target_name": null
+            },
+            {
+              "offset": 68,
+              "target_address": 268464928,
+              "target_name": null
+            },
+            {
+              "offset": 72,
+              "target_address": 268465040,
+              "target_name": null
+            },
+            {
+              "offset": 76,
+              "target_address": 268464944,
+              "target_name": null
+            },
+            {
+              "offset": 80,
+              "target_address": 268459072,
+              "target_name": null
+            },
+            {
+              "offset": 84,
+              "target_address": 268459040,
+              "target_name": null
+            },
+            {
+              "offset": 88,
+              "target_address": 268465168,
+              "target_name": null
+            },
+            {
+              "offset": 92,
+              "target_address": 268465216,
+              "target_name": null
+            },
+            {
+              "offset": 96,
+              "target_address": 268465504,
+              "target_name": null
+            },
+            {
+              "offset": 100,
+              "target_address": 268465456,
+              "target_name": null
+            },
+            {
+              "offset": 104,
+              "target_address": 268465424,
+              "target_name": null
+            },
+            {
+              "offset": 108,
+              "target_address": 268465440,
+              "target_name": null
+            },
+            {
+              "offset": 112,
+              "target_address": 268465360,
+              "target_name": null
+            },
+            {
+              "offset": 116,
+              "target_address": 268465376,
+              "target_name": null
+            },
+            {
+              "offset": 120,
+              "target_address": 268465392,
+              "target_name": null
+            },
+            {
+              "offset": 124,
+              "target_address": 268465408,
+              "target_name": null
+            },
+            {
+              "offset": 128,
+              "target_address": 268464096,
+              "target_name": null
+            },
+            {
+              "offset": 132,
+              "target_address": 268464560,
+              "target_name": null
+            },
+            {
+              "offset": 136,
+              "target_address": 268464832,
+              "target_name": null
+            },
+            {
+              "offset": 140,
+              "target_address": 268464848,
+              "target_name": null
+            },
+            {
+              "offset": 144,
+              "target_address": 268464864,
+              "target_name": null
+            },
+            {
+              "offset": 148,
+              "target_address": 268464896,
+              "target_name": null
+            },
+            {
+              "offset": 152,
+              "target_address": 268465536,
+              "target_name": null
+            },
+            {
+              "offset": 156,
+              "target_address": 268465552,
+              "target_name": null
+            },
+            {
+              "offset": 160,
+              "target_address": 268465568,
+              "target_name": null
+            },
+            {
+              "offset": 164,
+              "target_address": 268465584,
+              "target_name": null
+            },
+            {
+              "offset": 168,
+              "target_address": 268465600,
+              "target_name": null
+            },
+            {
+              "offset": 172,
+              "target_address": 268465616,
+              "target_name": null
+            },
+            {
+              "offset": 176,
+              "target_address": 268466064,
+              "target_name": null
+            },
+            {
+              "offset": 180,
+              "target_address": 268465888,
+              "target_name": null
+            },
+            {
+              "offset": 184,
+              "target_address": 268466000,
+              "target_name": null
+            },
+            {
+              "offset": 188,
+              "target_address": 268465920,
+              "target_name": null
+            },
+            {
+              "offset": 192,
+              "target_address": 268465984,
+              "target_name": null
+            },
+            {
+              "offset": 196,
+              "target_address": 268466224,
+              "target_name": null
+            },
+            {
+              "offset": 200,
+              "target_address": 268466288,
+              "target_name": null
+            },
+            {
+              "offset": 204,
+              "target_address": 268466608,
+              "target_name": null
+            },
+            {
+              "offset": 208,
+              "target_address": 268466400,
+              "target_name": null
+            },
+            {
+              "offset": 212,
+              "target_address": 268472080,
+              "target_name": null
+            },
+            {
+              "offset": 216,
+              "target_address": 268467088,
+              "target_name": null
+            },
+            {
+              "offset": 220,
+              "target_address": 268467520,
+              "target_name": null
+            },
+            {
+              "offset": 224,
+              "target_address": 268468400,
+              "target_name": null
+            },
+            {
+              "offset": 228,
+              "target_address": 268468560,
+              "target_name": null
+            },
+            {
+              "offset": 232,
+              "target_address": 268466880,
+              "target_name": null
+            },
+            {
+              "offset": 236,
+              "target_address": 268469184,
+              "target_name": null
+            },
+            {
+              "offset": 240,
+              "target_address": 268466976,
+              "target_name": null
+            },
+            {
+              "offset": 244,
+              "target_address": 268471856,
+              "target_name": null
+            },
+            {
+              "offset": 248,
+              "target_address": 268471984,
+              "target_name": null
+            },
+            {
+              "offset": 252,
+              "target_address": 268468016,
+              "target_name": null
+            },
+            {
+              "offset": 256,
+              "target_address": 268469072,
+              "target_name": null
+            },
+            {
+              "offset": 260,
+              "target_address": 268468784,
+              "target_name": null
+            },
+            {
+              "offset": 264,
+              "target_address": 268468928,
+              "target_name": null
+            },
+            {
+              "offset": 268,
+              "target_address": 268469152,
+              "target_name": null
+            },
+            {
+              "offset": 272,
+              "target_address": 268468288,
+              "target_name": null
+            },
+            {
+              "offset": 276,
+              "target_address": 268468112,
+              "target_name": null
+            },
+            {
+              "offset": 280,
+              "target_address": 268468672,
+              "target_name": null
+            },
+            {
+              "offset": 284,
+              "target_address": 268471056,
+              "target_name": null
+            },
+            {
+              "offset": 288,
+              "target_address": 268470048,
+              "target_name": null
+            },
+            {
+              "offset": 292,
+              "target_address": 268470096,
+              "target_name": null
+            },
+            {
+              "offset": 296,
+              "target_address": 268469696,
+              "target_name": null
+            },
+            {
+              "offset": 300,
+              "target_address": 268469888,
+              "target_name": null
+            },
+            {
+              "offset": 304,
+              "target_address": 268469296,
+              "target_name": null
+            },
+            {
+              "offset": 308,
+              "target_address": 268469472,
+              "target_name": null
+            },
+            {
+              "offset": 312,
+              "target_address": 268472448,
+              "target_name": null
+            },
+            {
+              "offset": 316,
+              "target_address": 268473008,
+              "target_name": null
+            },
+            {
+              "offset": 320,
+              "target_address": 268474688,
+              "target_name": null
+            },
+            {
+              "offset": 324,
+              "target_address": 268474160,
+              "target_name": null
+            },
+            {
+              "offset": 328,
+              "target_address": 268474752,
+              "target_name": null
+            },
+            {
+              "offset": 332,
+              "target_address": 268474048,
+              "target_name": null
+            }
+          ],
+          "section_number": 1,
+          "size": 336
+        },
+        {
+          "address": 268775488,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775488,
+              "name": "grim_lookup_blob_magic"
+            }
+          ],
+          "relocations": [
+            {
+              "offset": 0,
+              "target_address": 268775664,
+              "target_name": "grim_lookup_blob_magic_text"
+            }
+          ],
+          "section_number": 2,
+          "size": 4
+        },
         {
           "address": 268775492,
           "alignment": 4,
@@ -1872,7 +2855,45 @@
             }
           ],
           "relocations": [],
-          "section_number": 1,
+          "section_number": 3,
+          "size": 4
+        },
+        {
+          "address": 268775496,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775496,
+              "name": "grim_key_char_buffer"
+            }
+          ],
+          "relocations": [
+            {
+              "offset": 0,
+              "target_address": 268803004,
+              "target_name": "grim_key_char_default_buffer"
+            }
+          ],
+          "section_number": 4,
+          "size": 4
+        },
+        {
+          "address": 268775500,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775500,
+              "name": "grim_key_char_buffer_count"
+            }
+          ],
+          "relocations": [
+            {
+              "offset": 0,
+              "target_address": 268817344,
+              "target_name": "grim_key_char_default_count"
+            }
+          ],
+          "section_number": 5,
           "size": 4
         },
         {
@@ -1885,7 +2906,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 2,
+          "section_number": 6,
           "size": 4
         },
         {
@@ -1898,7 +2919,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 3,
+          "section_number": 7,
           "size": 4
         },
         {
@@ -1911,7 +2932,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 4,
+          "section_number": 8,
           "size": 4
         },
         {
@@ -1924,7 +2945,20 @@
             }
           ],
           "relocations": [],
-          "section_number": 5,
+          "section_number": 9,
+          "size": 4
+        },
+        {
+          "address": 268775664,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268775664,
+              "name": "grim_lookup_blob_magic_text"
+            }
+          ],
+          "relocations": [],
+          "section_number": 10,
           "size": 4
         },
         {
@@ -1937,7 +2971,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 6,
+          "section_number": 11,
           "size": 35
         },
         {
@@ -1950,7 +2984,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 7,
+          "section_number": 12,
           "size": 4
         },
         {
@@ -1963,7 +2997,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 8,
+          "section_number": 13,
           "size": 4
         },
         {
@@ -1976,7 +3010,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 9,
+          "section_number": 14,
           "size": 4
         },
         {
@@ -1989,7 +3023,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 10,
+          "section_number": 15,
           "size": 4
         },
         {
@@ -2002,7 +3036,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 11,
+          "section_number": 16,
           "size": 4
         },
         {
@@ -2015,8 +3049,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 12,
+          "section_number": 17,
           "size": 4
+        },
+        {
+          "address": 268803004,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268803004,
+              "name": "grim_key_char_default_buffer"
+            }
+          ],
+          "relocations": [],
+          "section_number": 18,
+          "size": 510
         },
         {
           "address": 268803516,
@@ -2028,7 +3075,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 13,
+          "section_number": 19,
           "size": 4
         },
         {
@@ -2041,7 +3088,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 14,
+          "section_number": 20,
           "size": 4
         },
         {
@@ -2054,7 +3101,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 15,
+          "section_number": 21,
           "size": 4
         },
         {
@@ -2067,7 +3114,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 16,
+          "section_number": 22,
           "size": 4
         },
         {
@@ -2080,7 +3127,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 17,
+          "section_number": 23,
           "size": 4
         },
         {
@@ -2093,7 +3140,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 18,
+          "section_number": 24,
           "size": 4
         },
         {
@@ -2106,7 +3153,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 19,
+          "section_number": 25,
           "size": 260
         },
         {
@@ -2119,7 +3166,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 20,
+          "section_number": 26,
           "size": 4
         },
         {
@@ -2132,7 +3179,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 21,
+          "section_number": 27,
           "size": 256
         },
         {
@@ -2145,7 +3192,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 22,
+          "section_number": 28,
           "size": 16
         },
         {
@@ -2158,7 +3205,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 23,
+          "section_number": 29,
           "size": 4
         },
         {
@@ -2171,7 +3218,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 24,
+          "section_number": 30,
           "size": 1024
         },
         {
@@ -2184,7 +3231,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 25,
+          "section_number": 31,
           "size": 4
         },
         {
@@ -2197,7 +3244,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 26,
+          "section_number": 32,
           "size": 4
         },
         {
@@ -2210,7 +3257,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 27,
+          "section_number": 33,
           "size": 4
         },
         {
@@ -2223,7 +3270,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 28,
+          "section_number": 34,
           "size": 4
         },
         {
@@ -2236,7 +3283,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 29,
+          "section_number": 35,
           "size": 4
         },
         {
@@ -2249,7 +3296,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 30,
+          "section_number": 36,
           "size": 1
         },
         {
@@ -2262,7 +3309,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 31,
+          "section_number": 37,
           "size": 16
         },
         {
@@ -2275,7 +3322,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 32,
+          "section_number": 38,
           "size": 4
         },
         {
@@ -2288,7 +3335,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 33,
+          "section_number": 39,
           "size": 4
         },
         {
@@ -2301,7 +3348,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 34,
+          "section_number": 40,
           "size": 4
         },
         {
@@ -2314,7 +3361,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 35,
+          "section_number": 41,
           "size": 256
         },
         {
@@ -2327,7 +3374,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 36,
+          "section_number": 42,
           "size": 4
         },
         {
@@ -2340,7 +3387,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 37,
+          "section_number": 43,
           "size": 2048
         },
         {
@@ -2353,7 +3400,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 38,
+          "section_number": 44,
           "size": 512
         },
         {
@@ -2366,7 +3413,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 39,
+          "section_number": 45,
           "size": 512
         },
         {
@@ -2379,7 +3426,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 40,
+          "section_number": 46,
           "size": 4
         },
         {
@@ -2392,7 +3439,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 41,
+          "section_number": 47,
           "size": 4
         },
         {
@@ -2405,7 +3452,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 42,
+          "section_number": 48,
           "size": 4
         },
         {
@@ -2418,7 +3465,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 43,
+          "section_number": 49,
           "size": 4
         },
         {
@@ -2447,7 +3494,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 44,
+          "section_number": 50,
           "size": 32
         },
         {
@@ -2460,7 +3507,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 45,
+          "section_number": 51,
           "size": 4
         },
         {
@@ -2473,7 +3520,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 46,
+          "section_number": 52,
           "size": 4
         },
         {
@@ -2486,7 +3533,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 47,
+          "section_number": 53,
           "size": 4
         },
         {
@@ -2503,7 +3550,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 48,
+          "section_number": 54,
           "size": 2048
         },
         {
@@ -2516,7 +3563,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 49,
+          "section_number": 55,
           "size": 4
         },
         {
@@ -2529,7 +3576,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 50,
+          "section_number": 56,
           "size": 4
         },
         {
@@ -2542,7 +3589,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 51,
+          "section_number": 57,
           "size": 4
         },
         {
@@ -2555,7 +3602,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 52,
+          "section_number": 58,
           "size": 4
         },
         {
@@ -2568,7 +3615,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 53,
+          "section_number": 59,
           "size": 256
         },
         {
@@ -2593,7 +3640,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 54,
+          "section_number": 60,
           "size": 16
         },
         {
@@ -2606,7 +3653,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 55,
+          "section_number": 61,
           "size": 1
         },
         {
@@ -2619,7 +3666,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 56,
+          "section_number": 62,
           "size": 68
         },
         {
@@ -2632,7 +3679,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 57,
+          "section_number": 63,
           "size": 512
         },
         {
@@ -2645,7 +3692,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 58,
+          "section_number": 64,
           "size": 512
         },
         {
@@ -2658,7 +3705,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 59,
+          "section_number": 65,
           "size": 4
         },
         {
@@ -2671,7 +3718,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 60,
+          "section_number": 66,
           "size": 1152
         },
         {
@@ -2684,7 +3731,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 61,
+          "section_number": 67,
           "size": 1
         },
         {
@@ -2697,7 +3744,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 62,
+          "section_number": 68,
           "size": 4
         },
         {
@@ -2710,7 +3757,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 63,
+          "section_number": 69,
           "size": 4
         },
         {
@@ -2723,7 +3770,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 64,
+          "section_number": 70,
           "size": 16
         },
         {
@@ -2736,7 +3783,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 65,
+          "section_number": 71,
           "size": 4
         },
         {
@@ -2749,7 +3796,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 66,
+          "section_number": 72,
           "size": 4
         },
         {
@@ -2762,7 +3809,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 67,
+          "section_number": 73,
           "size": 4
         },
         {
@@ -2775,7 +3822,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 68,
+          "section_number": 74,
           "size": 512
         },
         {
@@ -2788,7 +3835,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 69,
+          "section_number": 75,
           "size": 128
         },
         {
@@ -2833,7 +3880,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 70,
+          "section_number": 76,
           "size": 2048
         },
         {
@@ -2846,7 +3893,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 71,
+          "section_number": 77,
           "size": 32
         },
         {
@@ -2859,7 +3906,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 72,
+          "section_number": 78,
           "size": 4
         },
         {
@@ -2872,7 +3919,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 73,
+          "section_number": 79,
           "size": 1
         },
         {
@@ -2885,7 +3932,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 74,
+          "section_number": 80,
           "size": 4
         },
         {
@@ -2898,7 +3945,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 75,
+          "section_number": 81,
           "size": 4
         },
         {
@@ -2911,7 +3958,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 76,
+          "section_number": 82,
           "size": 4
         },
         {
@@ -2924,8 +3971,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 77,
+          "section_number": 83,
           "size": 1
+        },
+        {
+          "address": 268817344,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817344,
+              "name": "grim_key_char_default_count"
+            }
+          ],
+          "relocations": [],
+          "section_number": 84,
+          "size": 4
         },
         {
           "address": 268817348,
@@ -2937,7 +3997,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 78,
+          "section_number": 85,
           "size": 32
         },
         {
@@ -2950,7 +4010,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 79,
+          "section_number": 86,
           "size": 4
         },
         {
@@ -2963,7 +4023,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 80,
+          "section_number": 87,
           "size": 4
         },
         {
@@ -2976,7 +4036,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 81,
+          "section_number": 88,
           "size": 4
         },
         {
@@ -2989,7 +4049,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 82,
+          "section_number": 89,
           "size": 1
         },
         {
@@ -3002,7 +4062,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 83,
+          "section_number": 90,
           "size": 4
         },
         {
@@ -3015,7 +4075,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 84,
+          "section_number": 91,
           "size": 4
         },
         {
@@ -3028,7 +4088,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 85,
+          "section_number": 92,
           "size": 1024
         },
         {
@@ -3041,7 +4101,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 86,
+          "section_number": 93,
           "size": 4
         },
         {
@@ -3054,7 +4114,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 87,
+          "section_number": 94,
           "size": 4
         },
         {
@@ -3067,7 +4127,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 88,
+          "section_number": 95,
           "size": 4
         },
         {
@@ -3080,7 +4140,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 89,
+          "section_number": 96,
           "size": 1
         },
         {
@@ -3093,7 +4153,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 90,
+          "section_number": 97,
           "size": 1
         },
         {
@@ -3106,7 +4166,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 91,
+          "section_number": 98,
           "size": 272
         },
         {
@@ -3119,7 +4179,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 92,
+          "section_number": 99,
           "size": 200
         },
         {
@@ -3132,7 +4192,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 93,
+          "section_number": 100,
           "size": 4
         },
         {
@@ -3145,7 +4205,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 94,
+          "section_number": 101,
           "size": 256
         },
         {
@@ -3158,7 +4218,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 95,
+          "section_number": 102,
           "size": 4
         },
         {
@@ -3171,7 +4231,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 96,
+          "section_number": 103,
           "size": 4
         },
         {
@@ -3184,7 +4244,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 97,
+          "section_number": 104,
           "size": 4
         },
         {
@@ -3197,7 +4257,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 98,
+          "section_number": 105,
           "size": 4
         },
         {
@@ -3210,7 +4270,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 99,
+          "section_number": 106,
           "size": 4
         }
       ]
@@ -16403,7 +17463,7 @@
       {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "7cda3ef010ba0ab627b874aa2560a1ad56df8baf83710f13d5028cef17c4e244"
+        "sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd"
       }
     ],
     "toolchain": {

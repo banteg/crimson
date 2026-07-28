@@ -131,6 +131,7 @@ class NativeDataBinding:
     alignment: int | None
     initializer: bytes | None
     initializer_target: tuple[int, str] | None
+    initializer_symbols: tuple[tuple[int, int, str], ...]
     kind: str
     storage_address: int
     storage_name: str
@@ -143,7 +144,8 @@ class NativeDataBinding:
 class NativeDataRelocation:
     section_offset: int
     target_address: int
-    target_name: str
+    target_name: str | None
+    target_symbol: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -1200,6 +1202,22 @@ def object_manifest_payload(
                         if binding.initializer_target is not None
                         else None
                     ),
+                    **(
+                        {
+                            "initializer_symbols": [
+                                {
+                                    "offset": offset,
+                                    "address": address,
+                                    "symbol": symbol,
+                                }
+                                for offset, address, symbol in (
+                                    binding.initializer_symbols
+                                )
+                            ],
+                        }
+                        if binding.initializer_symbols
+                        else {}
+                    ),
                     "kind": binding.kind,
                     "name": binding.name,
                     "section_number": binding.section_number,
@@ -1721,18 +1739,28 @@ def symbol_closure_payload(
         for symbol in record.coff.symbols:
             if symbol.storage_class != matchlib.IMAGE_SYM_CLASS_EXTERNAL:
                 continue
-            if symbol.section_number <= 0:
-                raise ValueError(
-                    f"{record.object_path}: generated data object contains "
-                    f"undefined symbol {symbol.name!r}",
+            if symbol.section_number > 0 or (
+                symbol.section_number == 0 and symbol.value > 0
+            ):
+                definitions[symbol.name].append(
+                    _data_symbol_occurrence(
+                        record,
+                        symbol,
+                        repo_root=repo_root,
+                    ),
                 )
-            definitions[symbol.name].append(
-                _data_symbol_occurrence(
-                    record,
-                    symbol,
-                    repo_root=repo_root,
-                ),
-            )
+            elif symbol.section_number == 0:
+                pending_undefined.append(
+                    (
+                        symbol.name,
+                        None,
+                        {
+                            "function": None,
+                            "object": object_name,
+                            "weak": False,
+                        },
+                    ),
+                )
 
     for primary_name, alias_fallback, reference in pending_undefined:
         reference_name = primary_name
@@ -1966,6 +1994,21 @@ def symbol_closure_payload(
     }
 
 
+def _symbol_initializer_bytes(
+    size: int,
+    symbols: list[dict[str, Any]],
+) -> bytes:
+    initializer = bytearray(size)
+    for symbol in symbols:
+        struct.pack_into(
+            "<I",
+            initializer,
+            int(symbol["offset"]),
+            int(symbol["address"]),
+        )
+    return bytes(initializer)
+
+
 def load_native_data_definitions(
     image: str,
     *,
@@ -2065,6 +2108,7 @@ def load_native_data_definitions(
         "initializer_fill",
         "initializer_hex",
         "initializer_source",
+        "initializer_symbols",
         "initializer_target",
         "note",
         "size",
@@ -2232,15 +2276,21 @@ def load_native_data_definitions(
         initializer_hex = raw_entry.get("initializer_hex")
         initializer_fill = raw_entry.get("initializer_fill")
         initializer_target = raw_entry.get("initializer_target")
+        initializer_symbols = raw_entry.get("initializer_symbols")
         initializer_source = raw_entry.get("initializer_source")
         initializer_forms = sum(
             value is not None
-            for value in (initializer_hex, initializer_fill, initializer_target)
+            for value in (
+                initializer_hex,
+                initializer_fill,
+                initializer_target,
+                initializer_symbols,
+            )
         )
         if initializer_forms > 1:
             raise ValueError(
-                f"{label}: initializer_hex, initializer_fill, and "
-                "initializer_target are mutually exclusive",
+                f"{label}: initializer_hex, initializer_fill, initializer_target, "
+                "and initializer_symbols are mutually exclusive",
             )
         if initializer_forms == 0:
             if initializer_source is not None:
@@ -2250,6 +2300,7 @@ def load_native_data_definitions(
             normalized["initializer_fill"] = None
             normalized["initializer_hex"] = None
             normalized["initializer_source"] = None
+            normalized["initializer_symbols"] = []
             normalized["initializer_target"] = None
         else:
             if (
@@ -2264,6 +2315,7 @@ def load_native_data_definitions(
             normalized["initializer_fill"] = initializer_fill
             normalized["initializer_hex"] = initializer_hex
             normalized["initializer_source"] = initializer_source.strip()
+            normalized["initializer_symbols"] = []
             if initializer_target is None:
                 normalized["initializer_target"] = None
             else:
@@ -2288,6 +2340,58 @@ def load_native_data_definitions(
                     "address": target_address,
                     "name": initializer_target[1],
                 }
+            if initializer_symbols is not None:
+                if not isinstance(initializer_symbols, list) or not initializer_symbols:
+                    raise ValueError(
+                        f"{label}.initializer_symbols must be a non-empty array",
+                    )
+                normalized_symbols: list[dict[str, Any]] = []
+                for symbol_index, raw_symbol in enumerate(initializer_symbols):
+                    symbol_label = f"{label}.initializer_symbols[{symbol_index}]"
+                    if (
+                        not isinstance(raw_symbol, list)
+                        or len(raw_symbol) != 3
+                        or not isinstance(raw_symbol[0], (str, int))
+                        or not isinstance(raw_symbol[1], (str, int))
+                        or not isinstance(raw_symbol[2], str)
+                        or not raw_symbol[2]
+                    ):
+                        raise ValueError(
+                            f"{symbol_label} must be "
+                            "[offset, address, non-empty symbol]",
+                        )
+                    try:
+                        symbol_offset = matchlib.parse_int(raw_symbol[0])
+                        symbol_address = matchlib.parse_int(raw_symbol[1])
+                    except ValueError as exc:
+                        raise ValueError(
+                            f"{symbol_label} has an invalid offset or address",
+                        ) from exc
+                    normalized_symbols.append(
+                        {
+                            "offset": symbol_offset,
+                            "address": symbol_address,
+                            "symbol": raw_symbol[2],
+                        },
+                    )
+                ordered_symbols = sorted(
+                    normalized_symbols,
+                    key=lambda item: (
+                        int(item["offset"]),
+                        int(item["address"]),
+                        str(item["symbol"]),
+                    ),
+                )
+                if normalized_symbols != ordered_symbols:
+                    raise ValueError(
+                        f"{label}.initializer_symbols must be sorted by offset",
+                    )
+                offsets = [int(item["offset"]) for item in normalized_symbols]
+                if len(offsets) != len(set(offsets)):
+                    raise ValueError(
+                        f"{label}.initializer_symbols contains duplicate offsets",
+                    )
+                normalized["initializer_symbols"] = normalized_symbols
         if explicit_fields == 0:
             raise ValueError(f"{label}: at least one explicit data fact is required")
 
@@ -2338,6 +2442,21 @@ def load_native_data_definitions(
         normalized_target = normalized["initializer_target"]
         if normalized_target is not None and size != 4:
             raise ValueError(f"{label}: initializer_target requires size 4")
+        normalized_symbols = normalized["initializer_symbols"]
+        if normalized_symbols and size is None:
+            raise ValueError(f"{label}: initializer_symbols requires an explicit size")
+        for symbol in normalized_symbols:
+            symbol_offset = int(symbol["offset"])
+            if (
+                symbol_offset < 0
+                or symbol_offset % 4
+                or size is None
+                or symbol_offset + 4 > size
+            ):
+                raise ValueError(
+                    f"{label}: initializer symbol offset {symbol_offset} "
+                    "must be four-byte aligned and fit inside the entry",
+                )
         initializer = (
             bytes.fromhex(initializer_hex)
             if initializer_hex is not None
@@ -2345,6 +2464,8 @@ def load_native_data_definitions(
             if initializer_fill is not None and size is not None
             else struct.pack("<I", int(normalized_target["address"]))
             if normalized_target is not None
+            else _symbol_initializer_bytes(int(size), normalized_symbols)
+            if normalized_symbols and size is not None
             else None
         )
         if initializer is not None and loaded_reference_image is not None:
@@ -2386,6 +2507,7 @@ def load_native_data_definitions(
                 target_entry["initializer_hex"] is None
                 and target_entry["initializer_fill"] is None
                 and target_entry["initializer_target"] is None
+                and not target_entry["initializer_symbols"]
             )
         ):
             raise ValueError(
@@ -2478,6 +2600,7 @@ def _native_data_layout(
         initializer_hex = entry.get("initializer_hex")
         initializer_fill = entry.get("initializer_fill")
         initializer_target = entry.get("initializer_target")
+        initializer_symbols = entry.get("initializer_symbols", [])
         if (
             size is None
             or alignment is None
@@ -2485,6 +2608,7 @@ def _native_data_layout(
                 initializer_hex is None
                 and initializer_fill is None
                 and initializer_target is None
+                and not initializer_symbols
             )
         ):
             continue
@@ -2508,6 +2632,14 @@ def _native_data_layout(
             "address": key[0],
             "alignment": int(alignment),
             "initializer": initializer,
+            "initializer_symbols": tuple(
+                (
+                    int(symbol["offset"]),
+                    int(symbol["address"]),
+                    str(symbol["symbol"]),
+                )
+                for symbol in initializer_symbols
+            ),
             "initializer_target": target_key,
             "key": key,
             "name": key[1],
@@ -2675,6 +2807,10 @@ def _native_data_layout(
                         tuple[int, str] | None,
                         row["initializer_target"],
                     ),
+                    initializer_symbols=cast(
+                        tuple[tuple[int, int, str], ...],
+                        row["initializer_symbols"],
+                    ),
                     kind="definition",
                     storage_address=int(row["address"]),
                     storage_name=str(row["name"]),
@@ -2694,6 +2830,19 @@ def _native_data_layout(
                         section_offset=offset,
                         target_address=target_key[0],
                         target_name=target_key[1],
+                        target_symbol=None,
+                    ),
+                )
+            for symbol_offset, target_address, target_symbol in cast(
+                tuple[tuple[int, int, str], ...],
+                row["initializer_symbols"],
+            ):
+                relocations.append(
+                    NativeDataRelocation(
+                        section_offset=offset + symbol_offset,
+                        target_address=target_address,
+                        target_name=None,
+                        target_symbol=target_symbol,
                     ),
                 )
         regions.append(
@@ -2731,6 +2880,7 @@ def _native_data_layout(
                 alignment=None,
                 initializer=None,
                 initializer_target=None,
+                initializer_symbols=(),
                 kind="interior-alias",
                 storage_address=owner_key[0],
                 storage_name=owner_key[1],
@@ -2768,7 +2918,7 @@ def native_data_object_bytes(
     if not bindings:
         return b"", (), ()
 
-    external_symbols: list[tuple[str, NativeDataBinding, int]] = sorted(
+    defined_symbols: list[tuple[str, NativeDataBinding | None, int]] = sorted(
         (
             (symbol, binding, matchlib.IMAGE_SYM_CLASS_EXTERNAL)
             for binding in bindings
@@ -2782,9 +2932,10 @@ def native_data_object_bytes(
         if binding.kind == "definition"
     }
     relocation_target_keys = {
-        (relocation.target_address, relocation.target_name)
+        (relocation.target_address, str(relocation.target_name))
         for region in regions
         for relocation in region.relocations
+        if relocation.target_name is not None
     }
     local_symbol_by_key = {
         key: f"$data${key[0]:08x}"
@@ -2798,7 +2949,21 @@ def native_data_object_bytes(
         )
         for key in sorted(relocation_target_keys)
     ]
-    symbols = sorted(external_symbols + local_symbols, key=lambda item: item[0])
+    undefined_relocation_symbols = [
+        (symbol, None, matchlib.IMAGE_SYM_CLASS_EXTERNAL)
+        for symbol in sorted(
+            {
+                str(relocation.target_symbol)
+                for region in regions
+                for relocation in region.relocations
+                if relocation.target_symbol is not None
+            },
+        )
+    ]
+    symbols: list[tuple[str, NativeDataBinding | None, int]] = sorted(
+        defined_symbols + local_symbols + undefined_relocation_symbols,
+        key=lambda item: item[0],
+    )
     if len({symbol for symbol, _, _ in symbols}) != len(symbols):
         raise ValueError("generated data object contains duplicate symbol names")
     symbol_index_by_name = {
@@ -2872,16 +3037,22 @@ def native_data_object_bytes(
         )
         payload[raw_offset : raw_offset + len(region.data)] = region.data
         for relocation_index, relocation in enumerate(region.relocations):
-            target_key = (
-                relocation.target_address,
-                relocation.target_name,
+            relocation_symbol = (
+                str(relocation.target_symbol)
+                if relocation.target_symbol is not None
+                else local_symbol_by_key[
+                    (
+                        relocation.target_address,
+                        str(relocation.target_name),
+                    )
+                ]
             )
             struct.pack_into(
                 "<IIH",
                 payload,
                 relocation_offset + relocation_index * 10,
                 relocation.section_offset,
-                symbol_index_by_name[local_symbol_by_key[target_key]],
+                symbol_index_by_name[relocation_symbol],
                 IMAGE_REL_I386_DIR32,
             )
 
@@ -2895,8 +3066,8 @@ def native_data_object_bytes(
         payload.extend(
             struct.pack(
                 "<IhHBB",
-                binding.section_offset,
-                binding.section_number,
+                binding.section_offset if binding is not None else 0,
+                binding.section_number if binding is not None else 0,
                 0,
                 storage_class,
                 0,
@@ -2913,15 +3084,18 @@ def native_data_object_bytes(
     }
     if set(parsed_external_symbols) != {
         symbol
-        for symbol, _, _ in external_symbols
+        for symbol, _, storage_class in symbols
+        if storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }:
         raise ValueError("generated data object symbol table did not round-trip")
     parsed_symbols = {symbol.name: symbol for symbol in coff.symbols}
     for symbol, binding, storage_class in symbols:
         parsed = parsed_symbols[symbol]
+        expected_section_number = binding.section_number if binding is not None else 0
+        expected_value = binding.section_offset if binding is not None else 0
         if (
-            parsed.section_number != binding.section_number
-            or parsed.value != binding.section_offset
+            parsed.section_number != expected_section_number
+            or parsed.value != expected_value
             or parsed.storage_class != storage_class
         ):
             raise ValueError(
@@ -2935,10 +3109,17 @@ def native_data_object_bytes(
             parsed_section.relocations,
             strict=True,
         ):
-            target_key = (expected.target_address, expected.target_name)
-            target_symbol = parsed_symbols[
-                local_symbol_by_key[target_key]
-            ]
+            relocation_symbol = (
+                str(expected.target_symbol)
+                if expected.target_symbol is not None
+                else local_symbol_by_key[
+                    (
+                        expected.target_address,
+                        str(expected.target_name),
+                    )
+                ]
+            )
+            target_symbol = parsed_symbols[relocation_symbol]
             if (
                 parsed.virtual_address != expected.section_offset
                 or parsed.symbol_index != target_symbol.raw_index
@@ -3003,6 +3184,7 @@ def _data_definition_state(entry: dict[str, Any]) -> str:
         entry.get("initializer_hex") is not None
         or entry.get("initializer_fill") is not None
         or entry.get("initializer_target") is not None
+        or bool(entry.get("initializer_symbols"))
     )
     present = sum(
         (
@@ -3158,6 +3340,8 @@ def data_manifest_payload(
             entry["definition_group"] = definition["definition_group"]
         if definition is not None and definition["initializer_fill"] is not None:
             entry["initializer_fill"] = definition["initializer_fill"]
+        if definition is not None and definition["initializer_symbols"]:
+            entry["initializer_symbols"] = definition["initializer_symbols"]
         entries.append(entry)
     unmatched_definition_keys = set(definitions_by_key) - matched_definition_keys
     if unmatched_definition_keys:
@@ -3253,6 +3437,7 @@ def data_manifest_payload(
                 entry["initializer_hex"] is not None
                 or entry.get("initializer_fill") is not None
                 or entry.get("initializer_target") is not None
+                or bool(entry.get("initializer_symbols"))
                 for entry in entries
             ),
             "explicit_size_entries": sum(

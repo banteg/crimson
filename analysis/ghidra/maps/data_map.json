@@ -10292,6 +10292,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x100530f0",
+      "comment": "NUL-terminated paq magic string referenced by grim_lookup_blob_magic.",
+      "name": "grim_lookup_blob_magic_text",
+      "program": "grim.dll",
+      "type": "char[4]"
+    },
+    {
       "address": "0x100530f4",
       "comment": "Default callback error text used when no frame function is installed.",
       "name": "grim_missing_frame_error_text",
@@ -10373,6 +10380,13 @@
       "name": "grim_index_buffer",
       "program": "grim.dll",
       "type": "LPDIRECT3DINDEXBUFFER8"
+    },
+    {
+      "address": "0x10059bbc",
+      "comment": "Default key-character buffer installed before a caller supplies replacement storage.",
+      "name": "grim_key_char_default_buffer",
+      "program": "grim.dll",
+      "type": "unsigned char[510]"
     },
     {
       "address": "0x10059dbc",
@@ -11214,6 +11228,13 @@
       "name": "grim_mouse_wheel_delta_cached",
       "program": "grim.dll",
       "type": "float"
+    },
+    {
+      "address": "0x1005d3c0",
+      "comment": "Default key-character buffer count referenced before a caller supplies replacement storage.",
+      "name": "grim_key_char_default_count",
+      "program": "grim.dll",
+      "type": "int"
     },
     {
       "address": "0x1005d3c4",

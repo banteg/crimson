@@ -16,13 +16,16 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | no | no | 0 | 1354 | 97 |
-| grim.dll | current | 137 | 135 | 1 | passed | yes | no | no | 0 | 189 | 55 |
+| crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | no | no | 0 | 1354 | 97 |
+| grim.dll | current | 137 | 135 | 1 | passed | yes | no | no | 0 | 274 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=70, external=1, game_data=0, import=25, toolchain=1 | 0 | 1551 | 767 | 685 | 685 | 685 |
-| grim.dll | excluded_function=36, external=1, game_data=4, import=12, toolchain=2 | 4 | 273 | 182 | 115 | 115 | 115 |
+| grim.dll | excluded_function=39, external=1, game_data=0, import=12, toolchain=2 | 0 | 276 | 185 | 122 | 122 | 122 |
+
+Artifact freshness issues:
+- `crimsonland.exe`: **stale** — 1 recorded file inputs changed or missing
 
 ## Function dispositions
 

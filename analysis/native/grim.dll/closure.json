@@ -1,5 +1,5 @@
 {
-  "audit_digest": "392864512111f95a772095ee07a4d758015bf2d75f5cd0a6ec2cc9875c2a8f9a",
+  "audit_digest": "0a2bbd11e95eb95a5133fb4a1bb9702141fcd514780e2049ebfd0fe02786f3b3",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -3259,6 +3259,30 @@
     {
       "definitions": [
         {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 268747320,
+          "data_binding_kind": "definition",
+          "data_name": "grim_interface_vtable",
+          "data_storage_address": 268747320,
+          "data_storage_name": "grim_interface_vtable",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 336,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 336,
+          "weak": false
+        }
+      ],
+      "name": "?grim_interface_vtable@@3PAXA"
+    },
+    {
+      "definitions": [
+        {
           "comdat": true,
           "comdat_associative_section": null,
           "comdat_key": "?grim_is_joystick_button_down@IGrim2D_cpp@@UAEEH@Z",
@@ -3537,6 +3561,54 @@
         }
       ],
       "name": "?grim_joystick_up_active@@YAHXZ"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 268775496,
+          "data_binding_kind": "definition",
+          "data_name": "grim_key_char_buffer",
+          "data_storage_address": 268775496,
+          "data_storage_name": "grim_key_char_buffer",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "?grim_key_char_buffer@@3PAEA"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 268775500,
+          "data_binding_kind": "definition",
+          "data_name": "grim_key_char_buffer_count",
+          "data_storage_address": 268775500,
+          "data_storage_name": "grim_key_char_buffer_count",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "?grim_key_char_buffer_count@@3PAHA"
     },
     {
       "definitions": [
@@ -3921,6 +3993,30 @@
         }
       ],
       "name": "?grim_lookup_blob_loaded@@3EA"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 268775488,
+          "data_binding_kind": "definition",
+          "data_name": "grim_lookup_blob_magic",
+          "data_storage_address": 268775488,
+          "data_storage_name": "grim_lookup_blob_magic",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "?grim_lookup_blob_magic@@3PADA"
     },
     {
       "definitions": [
@@ -9747,6 +9843,31 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_apply_settings@IGrim2D_cpp@@UAE_NXZ",
+          "comdat_selection": 1,
+          "function": "grim_apply_settings",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_apply_settings/build/msvc6.5/5e91d143e1978233/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_apply_settings@IGrim2D_cpp@@UAE_NXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -9993,6 +10114,56 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_begin_batch@IGrim2D_cpp@@UAEXXZ",
+          "comdat_selection": 1,
+          "function": "grim_begin_batch",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/grim_begin_batch/build/msvc6.5/484538efa8876dff/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_begin_batch@IGrim2D_cpp@@UAEXXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_bind_texture@IGrim2D_cpp@@UAEXHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_bind_texture",
+          "kind": "section",
+          "logical_section_size": 64,
+          "object": "tools/match/scratches/grim_bind_texture/build/msvc6.5/78ac64bf61d28fa1/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_bind_texture@IGrim2D_cpp@@UAEXHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -10017,6 +10188,31 @@
         {
           "function": "grim_bind_texture",
           "object": "tools/match/scratches/grim_bind_texture/build/msvc6.5/78ac64bf61d28fa1/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_clear_color@IGrim2D_cpp@@UAEXMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_clear_color",
+          "kind": "section",
+          "logical_section_size": 160,
+          "object": "tools/match/scratches/grim_clear_color/build/msvc6.5/ae7d1a074aca7b08/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_clear_color@IGrim2D_cpp@@UAEXMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -10481,6 +10677,31 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_create_texture@IGrim2D_cpp@@UAE_NPADHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_create_texture",
+          "kind": "section",
+          "logical_section_size": 272,
+          "object": "tools/match/scratches/grim_create_texture/build/msvc6.5/2e3f89a773bb4ef0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_create_texture@IGrim2D_cpp@@UAE_NPADHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -10715,6 +10936,31 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_destroy_texture@IGrim2D_cpp@@UAEXH@Z",
+          "comdat_selection": 1,
+          "function": "grim_destroy_texture",
+          "kind": "section",
+          "logical_section_size": 64,
+          "object": "tools/match/scratches/grim_destroy_texture/build/msvc6.5/d2100d509119e51e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_destroy_texture@IGrim2D_cpp@@UAEXH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -10817,6 +11063,406 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_circle_filled@IGrim2D_cpp@@UAEXMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_circle_filled",
+          "kind": "section",
+          "logical_section_size": 432,
+          "object": "tools/match/scratches/grim_draw_circle_filled/build/msvc6.5/204de07adb812c01/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_circle_filled@IGrim2D_cpp@@UAEXMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_circle_outline@IGrim2D_cpp@@UAEXMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_circle_outline",
+          "kind": "section",
+          "logical_section_size": 464,
+          "object": "tools/match/scratches/grim_draw_circle_outline/build/msvc6.5/75ab53dda4f00f52/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_circle_outline@IGrim2D_cpp@@UAEXMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_fullscreen_color@IGrim2D_cpp@@UAEXMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_fullscreen_color",
+          "kind": "section",
+          "logical_section_size": 272,
+          "object": "tools/match/scratches/grim_draw_fullscreen_color/build/msvc6.5/5db2e573aa94f355/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_fullscreen_color@IGrim2D_cpp@@UAEXMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_fullscreen_quad@IGrim2D_cpp@@UAEXH@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_fullscreen_quad",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_draw_fullscreen_quad/build/msvc6.5/13902773aafaea21/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_fullscreen_quad@IGrim2D_cpp@@UAEXH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_line",
+          "kind": "section",
+          "logical_section_size": 144,
+          "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/610208ca1962d05f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_line_quad",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_draw_line_quad/build/msvc6.5/9fe67944da1213a0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_quad@IGrim2D_cpp@@UAEXMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_quad",
+          "kind": "section",
+          "logical_section_size": 800,
+          "object": "tools/match/scratches/grim_draw_quad/build/msvc6.5/a0ea873bac428a3e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_quad@IGrim2D_cpp@@UAEXMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_quad_points",
+          "kind": "section",
+          "logical_section_size": 560,
+          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/5439656fa4c68009/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_quad_rotated_matrix@IGrim2D_cpp@@UAEXMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_quad_rotated_matrix",
+          "kind": "section",
+          "logical_section_size": 960,
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/2c22f6677f07597b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_quad_rotated_matrix@IGrim2D_cpp@@UAEXMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_quad_xy@IGrim2D_cpp@@UAEXPAMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_quad_xy",
+          "kind": "section",
+          "logical_section_size": 48,
+          "object": "tools/match/scratches/grim_draw_quad_xy/build/msvc6.5/e0e7c3daaf97e273/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_quad_xy@IGrim2D_cpp@@UAEXPAMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_rect_filled@IGrim2D_cpp@@UAEXPAMMM0@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_rect_filled",
+          "kind": "section",
+          "logical_section_size": 208,
+          "object": "tools/match/scratches/grim_draw_rect_filled/build/msvc6.5/14154dd68e419f02/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_rect_filled@IGrim2D_cpp@@UAEXPAMMM0@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_rect_outline@IGrim2D_cpp@@UAEXPAMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_rect_outline",
+          "kind": "section",
+          "logical_section_size": 368,
+          "object": "tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/79322b207cadfdb2/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_rect_outline@IGrim2D_cpp@@UAEXPAMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_text_mono",
+          "kind": "section",
+          "logical_section_size": 1024,
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/a418a209a028cca2/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_text_mono_fmt@IGrim2D_cpp@@UAAXMMPADZZ",
+          "comdat_selection": 1,
+          "function": "grim_draw_text_mono_fmt",
+          "kind": "section",
+          "logical_section_size": 64,
+          "object": "tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/0da2787600884a67/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_text_mono_fmt@IGrim2D_cpp@@UAAXMMPADZZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_text_small@IGrim2D_cpp@@UAEXMMPAD@Z",
+          "comdat_selection": 1,
+          "function": "grim_draw_text_small",
+          "kind": "section",
+          "logical_section_size": 528,
+          "object": "tools/match/scratches/grim_draw_text_small/build/msvc6.5/386617bbaecb2767/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_text_small@IGrim2D_cpp@@UAEXMMPAD@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_draw_text_small_fmt@IGrim2D_cpp@@UAAXMMPADZZ",
+          "comdat_selection": 1,
+          "function": "grim_draw_text_small_fmt",
+          "kind": "section",
+          "logical_section_size": 64,
+          "object": "tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/09a3a809a19097fd/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_draw_text_small_fmt@IGrim2D_cpp@@UAAXMMPADZZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -10851,6 +11497,31 @@
         {
           "function": "grim_state_init",
           "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_end_batch@IGrim2D_cpp@@UAEXXZ",
+          "comdat_selection": 1,
+          "function": "grim_end_batch",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_end_batch/build/msvc6.5/b614bb15894637b5/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_end_batch@IGrim2D_cpp@@UAEXXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -10912,6 +11583,56 @@
         {
           "function": "grim_state_init",
           "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_flush_batch@IGrim2D_cpp@@UAEXXZ",
+          "comdat_selection": 1,
+          "function": "grim_flush_batch",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_flush_batch/build/msvc6.5/bcf76a5399ab68fe/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_flush_batch@IGrim2D_cpp@@UAEXXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_flush_input@IGrim2D_cpp@@UAEXXZ",
+          "comdat_selection": 1,
+          "function": "grim_flush_input",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/grim_flush_input/build/msvc6.5/6b9db6930d325121/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_flush_input@IGrim2D_cpp@@UAEXXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -11429,6 +12150,445 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_config_float@IGrim2D_cpp@@UAEMH@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_config_float",
+          "kind": "section",
+          "logical_section_size": 272,
+          "object": "tools/match/scratches/grim_get_config_float/build/msvc6.5/14915453aac00ed0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_config_float@IGrim2D_cpp@@UAEMH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_config_var@IGrim2D_cpp@@UAE?AUgrim_config_value_t@@H@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_config_var",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_get_config_var/build/msvc6.5/08ff53a2f164561f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_config_var@IGrim2D_cpp@@UAE?AUgrim_config_value_t@@H@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_fps@IGrim2D_cpp@@UAEMXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_fps",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_fps/build/msvc6.5/cb0bff97f19e92cb/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_fps@IGrim2D_cpp@@UAEMXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_joystick_pov@IGrim2D_cpp@@UAEHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_joystick_pov",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_joystick_pov/build/msvc6.5/a55f4f3b30207336/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_joystick_pov@IGrim2D_cpp@@UAEHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_joystick_x@IGrim2D_cpp@@UAEHXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_joystick_x",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_joystick_x/build/msvc6.5/b675a42895f4304e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_joystick_x@IGrim2D_cpp@@UAEHXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_joystick_y@IGrim2D_cpp@@UAEHXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_joystick_y",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_joystick_y/build/msvc6.5/c96645dfead39df4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_joystick_y@IGrim2D_cpp@@UAEHXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_joystick_z@IGrim2D_cpp@@UAEHXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_joystick_z",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_joystick_z/build/msvc6.5/8457aceecf9a666c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_joystick_z@IGrim2D_cpp@@UAEHXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_key_char@IGrim2D_cpp@@UAEHXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_key_char",
+          "kind": "section",
+          "logical_section_size": 64,
+          "object": "tools/match/scratches/grim_get_key_char/build/msvc6.5/3917d9dc5c02f9d6/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_key_char@IGrim2D_cpp@@UAEHXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_mouse_dx@IGrim2D_cpp@@UAEMXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_mouse_dx",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_mouse_dx/build/msvc6.5/a73101c636b69b55/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_mouse_dx@IGrim2D_cpp@@UAEMXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_mouse_dx_indexed@IGrim2D_cpp@@UAEMH@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_mouse_dx_indexed",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_mouse_dx_indexed/build/msvc6.5/4d213a2dd0994a0d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_mouse_dx_indexed@IGrim2D_cpp@@UAEMH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_mouse_dy@IGrim2D_cpp@@UAEMXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_mouse_dy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_mouse_dy/build/msvc6.5/f8776d6b5922c1f3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_mouse_dy@IGrim2D_cpp@@UAEMXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_mouse_dy_indexed@IGrim2D_cpp@@UAEMH@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_mouse_dy_indexed",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_mouse_dy_indexed/build/msvc6.5/471f99c23d5ca079/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_mouse_dy_indexed@IGrim2D_cpp@@UAEMH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_mouse_y@IGrim2D_cpp@@UAEMXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_mouse_y",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_mouse_y/build/msvc6.5/5598dabe9a30a983/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_mouse_y@IGrim2D_cpp@@UAEMXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_slot_float",
+          "functions": [
+            "grim_get_slot_float",
+            "grim_get_slot_int",
+            "grim_set_slot_float",
+            "grim_set_slot_int"
+          ],
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/4ff8e21897266674/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "translation_unit": "grim-slot-state-accessors",
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_slot_int@IGrim2D_cpp@@UAEHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_slot_int",
+          "functions": [
+            "grim_get_slot_float",
+            "grim_get_slot_int",
+            "grim_set_slot_float",
+            "grim_set_slot_int"
+          ],
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/4ff8e21897266674/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "translation_unit": "grim-slot-state-accessors",
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_slot_int@IGrim2D_cpp@@UAEHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_texture_handle@IGrim2D_cpp@@UAEHPAD@Z",
+          "comdat_selection": 1,
+          "function": "grim_get_texture_handle",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_texture_handle/build/msvc6.5/3d940420dd285394/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_texture_handle@IGrim2D_cpp@@UAEHPAD@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_get_version@IGrim2D_cpp@@UAEMXZ",
+          "comdat_selection": 1,
+          "function": "grim_get_version",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_version/build/msvc6.5/a7d29f5c493d8f14/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_get_version@IGrim2D_cpp@@UAEMXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -11453,6 +12613,31 @@
         {
           "function": "grim_apply_render_state",
           "object": "tools/match/scratches/grim_apply_render_state/build/msvc6.5/c53c287184ecb2ea/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_init_system@IGrim2D_cpp@@UAE_NXZ",
+          "comdat_selection": 1,
+          "function": "grim_init_system",
+          "kind": "section",
+          "logical_section_size": 320,
+          "object": "tools/match/scratches/grim_init_system/build/msvc6.5/c3dcc912ec7cc8bb/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_init_system@IGrim2D_cpp@@UAE_NXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -11633,6 +12818,137 @@
         {
           "function": "grim_joystick_up_active",
           "object": "tools/match/scratches/grim_joystick_up_active/build/msvc6.5/84c81401dc952864/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 268747320,
+          "data_binding_kind": "definition",
+          "data_name": "grim_interface_vtable",
+          "data_storage_address": 268747320,
+          "data_storage_name": "grim_interface_vtable",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 336,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 336,
+          "weak": false
+        }
+      ],
+      "name": "?grim_interface_vtable@@3PAXA",
+      "referenced_by": [
+        {
+          "function": "GRIM__GetInterface",
+          "object": "tools/match/scratches/grim_get_interface/build/msvc6.5/b8e41d673a8df839/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_is_joystick_button_down@IGrim2D_cpp@@UAEEH@Z",
+          "comdat_selection": 1,
+          "function": "grim_is_joystick_button_down",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_is_joystick_button_down/build/msvc6.5/8284d384ef1df26a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_is_joystick_button_down@IGrim2D_cpp@@UAEEH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_is_key_active@IGrim2D_cpp@@UAEEH@Z",
+          "comdat_selection": 1,
+          "function": "grim_is_key_active",
+          "kind": "section",
+          "logical_section_size": 464,
+          "object": "tools/match/scratches/grim_is_key_active/build/msvc6.5/7f27063469fc1f83/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_is_key_active@IGrim2D_cpp@@UAEEH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z",
+          "comdat_selection": 1,
+          "function": "grim_is_key_down",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_is_key_down/build/msvc6.5/d878c33b608b7f1e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_is_mouse_button_down@IGrim2D_cpp@@UAEEH@Z",
+          "comdat_selection": 1,
+          "function": "grim_is_mouse_button_down",
+          "kind": "section",
+          "logical_section_size": 48,
+          "object": "tools/match/scratches/grim_is_mouse_button_down/build/msvc6.5/87c85710f5475198/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_is_mouse_button_down@IGrim2D_cpp@@UAEEH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -11990,6 +13306,68 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 268775496,
+          "data_binding_kind": "definition",
+          "data_name": "grim_key_char_buffer",
+          "data_storage_address": 268775496,
+          "data_storage_name": "grim_key_char_buffer",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "?grim_key_char_buffer@@3PAEA",
+      "referenced_by": [
+        {
+          "function": "grim_set_key_char_buffer",
+          "object": "tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/5f9aca6fa304b14e/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 268775500,
+          "data_binding_kind": "definition",
+          "data_name": "grim_key_char_buffer_count",
+          "data_storage_address": 268775500,
+          "data_storage_name": "grim_key_char_buffer_count",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "?grim_key_char_buffer_count@@3PAHA",
+      "referenced_by": [
+        {
+          "function": "grim_set_key_char_buffer",
+          "object": "tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/5f9aca6fa304b14e/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 268775504,
           "data_binding_kind": "definition",
           "data_name": "grim_key_char_buffer_size",
@@ -12307,6 +13685,31 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "?grim_load_texture@IGrim2D_cpp@@UAE_NPAD0@Z",
+          "comdat_selection": 1,
+          "function": "grim_load_texture",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/grim_load_texture/build/msvc6.5/06958b754a445259/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_load_texture@IGrim2D_cpp@@UAE_NPAD0@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "?grim_load_texture_internal@@YA_NPAD0@Z",
           "comdat_selection": 1,
           "function": "grim_load_texture_internal",
@@ -12513,6 +13916,42 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 268775488,
+          "data_binding_kind": "definition",
+          "data_name": "grim_lookup_blob_magic",
+          "data_storage_address": 268775488,
+          "data_storage_name": "grim_lookup_blob_magic",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "?grim_lookup_blob_magic@@3PADA",
+      "referenced_by": [
+        {
+          "function": "grim_lookup_blob_find",
+          "object": "tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/7b940d93d29042dc/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "grim_lookup_blob_size_for_path",
+          "object": "tools/match/scratches/grim_lookup_blob_size_for_path/build/msvc6.5/b121032ea6f2f161/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 268805208,
           "data_binding_kind": "definition",
           "data_name": "grim_lookup_blob_size",
@@ -12665,6 +14104,31 @@
         {
           "function": "grim_init_system",
           "object": "tools/match/scratches/grim_init_system/build/msvc6.5/c3dcc912ec7cc8bb/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_measure_text_width@IGrim2D_cpp@@UAEHPAD@Z",
+          "comdat_selection": 1,
+          "function": "grim_measure_text_width",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_measure_text_width/build/msvc6.5/d92216dc1e3bc4bc/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_measure_text_width@IGrim2D_cpp@@UAEHPAD@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -13358,6 +14822,56 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_recreate_texture@IGrim2D_cpp@@UAE_NH@Z",
+          "comdat_selection": 1,
+          "function": "grim_recreate_texture",
+          "kind": "section",
+          "logical_section_size": 160,
+          "object": "tools/match/scratches/grim_recreate_texture/build/msvc6.5/8c3a043a739ff95e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_recreate_texture@IGrim2D_cpp@@UAE_NH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_release@IGrim2D_cpp@@UAEXXZ",
+          "comdat_selection": 1,
+          "function": "grim_release",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_release/build/msvc6.5/67d4f92482feb68f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_release@IGrim2D_cpp@@UAEXXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -13821,6 +15335,345 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "?grim_set_atlas_frame@IGrim2D_cpp@@UAEXHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_atlas_frame",
+          "kind": "section",
+          "logical_section_size": 144,
+          "object": "tools/match/scratches/grim_set_atlas_frame/build/msvc6.5/e038d2fa73ea084e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_atlas_frame@IGrim2D_cpp@@UAEXHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_color@IGrim2D_cpp@@UAEXMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_color",
+          "kind": "section",
+          "logical_section_size": 176,
+          "object": "tools/match/scratches/grim_set_color/build/msvc6.5/d93fc9d31f65d1ea/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_color@IGrim2D_cpp@@UAEXMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_color_ptr@IGrim2D_cpp@@UAEXPAM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_color_ptr",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_set_color_ptr/build/msvc6.5/196055685e170263/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_color_ptr@IGrim2D_cpp@@UAEXPAM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_color_slot@IGrim2D_cpp@@UAEXHMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_color_slot",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/grim_set_color_slot/build/msvc6.5/c833c916fee0df40/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_color_slot@IGrim2D_cpp@@UAEXHMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_config_var",
+          "kind": "section",
+          "logical_section_size": 1712,
+          "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/5267400e704d1dd7/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_key_char_buffer@IGrim2D_cpp@@UAEXPAEPAHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_key_char_buffer",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/5f9aca6fa304b14e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_key_char_buffer@IGrim2D_cpp@@UAEXPAEPAHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_mouse_pos@IGrim2D_cpp@@UAEXMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_mouse_pos",
+          "kind": "section",
+          "logical_section_size": 48,
+          "object": "tools/match/scratches/grim_set_mouse_pos/build/msvc6.5/f0cf74280b42fd8d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_mouse_pos@IGrim2D_cpp@@UAEXMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_paused@IGrim2D_cpp@@UAEXH@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_paused",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_set_paused/build/msvc6.5/7335248fb3f9fc63/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_paused@IGrim2D_cpp@@UAEXH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_render_target@IGrim2D_cpp@@UAE_NH@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_render_target",
+          "kind": "section",
+          "logical_section_size": 240,
+          "object": "tools/match/scratches/grim_set_render_target/build/msvc6.5/e3c7163af561c94b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_render_target@IGrim2D_cpp@@UAE_NH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_rotation@IGrim2D_cpp@@UAEXM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_rotation",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/grim_set_rotation/build/msvc6.5/b13b36e9f2726543/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_rotation@IGrim2D_cpp@@UAEXM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_slot_float@IGrim2D_cpp@@UAEXHM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_slot_float",
+          "functions": [
+            "grim_get_slot_float",
+            "grim_get_slot_int",
+            "grim_set_slot_float",
+            "grim_set_slot_int"
+          ],
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/4ff8e21897266674/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "translation_unit": "grim-slot-state-accessors",
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_slot_float@IGrim2D_cpp@@UAEXHM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_slot_int@IGrim2D_cpp@@UAEXHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_slot_int",
+          "functions": [
+            "grim_get_slot_float",
+            "grim_get_slot_int",
+            "grim_set_slot_float",
+            "grim_set_slot_int"
+          ],
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/4ff8e21897266674/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "translation_unit": "grim-slot-state-accessors",
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_slot_int@IGrim2D_cpp@@UAEXHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_sub_rect@IGrim2D_cpp@@UAEXHHHH@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_sub_rect",
+          "kind": "section",
+          "logical_section_size": 144,
+          "object": "tools/match/scratches/grim_set_sub_rect/build/msvc6.5/49c6dcc6bea797bd/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_sub_rect@IGrim2D_cpp@@UAEXHHHH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "?grim_set_texture_stage_ops@@YAEI@Z",
           "comdat_selection": 1,
           "function": "grim_set_texture_stage_ops",
@@ -13837,6 +15690,106 @@
         {
           "function": "grim_set_config_var",
           "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/5267400e704d1dd7/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_time_ms@IGrim2D_cpp@@UAEXH@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_time_ms",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_set_time_ms/build/msvc6.5/c74ebfde329d8351/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_time_ms@IGrim2D_cpp@@UAEXH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_uv@IGrim2D_cpp@@UAEXMMMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_uv",
+          "kind": "section",
+          "logical_section_size": 80,
+          "object": "tools/match/scratches/grim_set_uv/build/msvc6.5/1305550478609ce4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_uv@IGrim2D_cpp@@UAEXMMMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_set_uv_point@IGrim2D_cpp@@UAEXHMM@Z",
+          "comdat_selection": 1,
+          "function": "grim_set_uv_point",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/grim_set_uv_point/build/msvc6.5/a1e33802bc43712a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_set_uv_point@IGrim2D_cpp@@UAEXHMM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_shutdown@IGrim2D_cpp@@UAEXXZ",
+          "comdat_selection": 1,
+          "function": "grim_shutdown",
+          "kind": "section",
+          "logical_section_size": 48,
+          "object": "tools/match/scratches/grim_shutdown/build/msvc6.5/8dbb94cd02e37a06/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_shutdown@IGrim2D_cpp@@UAEXXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -13938,6 +15891,156 @@
         {
           "function": "GRIM__GetInterface",
           "object": "tools/match/scratches/grim_get_interface/build/msvc6.5/b8e41d673a8df839/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_submit_quad_raw@IGrim2D_cpp@@UAEXPAM@Z",
+          "comdat_selection": 1,
+          "function": "grim_submit_quad_raw",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/grim_submit_quad_raw/build/msvc6.5/3d65fccfa77e061b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_submit_quad_raw@IGrim2D_cpp@@UAEXPAM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_submit_vertex_raw@IGrim2D_cpp@@UAEXPAM@Z",
+          "comdat_selection": 1,
+          "function": "grim_submit_vertex_raw",
+          "kind": "section",
+          "logical_section_size": 128,
+          "object": "tools/match/scratches/grim_submit_vertex_raw/build/msvc6.5/708c86172a2482f7/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_submit_vertex_raw@IGrim2D_cpp@@UAEXPAM@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_submit_vertices_offset@IGrim2D_cpp@@UAEXPAMH0@Z",
+          "comdat_selection": 1,
+          "function": "grim_submit_vertices_offset",
+          "kind": "section",
+          "logical_section_size": 160,
+          "object": "tools/match/scratches/grim_submit_vertices_offset/build/msvc6.5/a7411fc94d20b5be/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_submit_vertices_offset@IGrim2D_cpp@@UAEXPAMH0@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_submit_vertices_offset_color@IGrim2D_cpp@@UAEXPAMH0PAK@Z",
+          "comdat_selection": 1,
+          "function": "grim_submit_vertices_offset_color",
+          "kind": "section",
+          "logical_section_size": 176,
+          "object": "tools/match/scratches/grim_submit_vertices_offset_color/build/msvc6.5/74b043d9d8a18d56/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_submit_vertices_offset_color@IGrim2D_cpp@@UAEXPAMH0PAK@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_submit_vertices_transform@IGrim2D_cpp@@UAEXPAMH00@Z",
+          "comdat_selection": 1,
+          "function": "grim_submit_vertices_transform",
+          "kind": "section",
+          "logical_section_size": 192,
+          "object": "tools/match/scratches/grim_submit_vertices_transform/build/msvc6.5/ad7842c8d691a802/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_submit_vertices_transform@IGrim2D_cpp@@UAEXPAMH00@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_submit_vertices_transform_color@IGrim2D_cpp@@UAEXPAMH00PAK@Z",
+          "comdat_selection": 1,
+          "function": "grim_submit_vertices_transform_color",
+          "kind": "section",
+          "logical_section_size": 224,
+          "object": "tools/match/scratches/grim_submit_vertices_transform_color/build/msvc6.5/429be25ec9b4313d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_submit_vertices_transform_color@IGrim2D_cpp@@UAEXPAMH00PAK@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -15476,6 +17579,56 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_was_key_pressed@IGrim2D_cpp@@UAE_NI@Z",
+          "comdat_selection": 1,
+          "function": "grim_was_key_pressed",
+          "kind": "section",
+          "logical_section_size": 128,
+          "object": "tools/match/scratches/grim_was_key_pressed/build/msvc6.5/f6dda3089274d5fe/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_was_key_pressed@IGrim2D_cpp@@UAE_NI@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?grim_was_mouse_button_pressed@IGrim2D_cpp@@UAE_NH@Z",
+          "comdat_selection": 1,
+          "function": "grim_was_mouse_button_pressed",
+          "kind": "section",
+          "logical_section_size": 144,
+          "object": "tools/match/scratches/grim_was_mouse_button_pressed/build/msvc6.5/b9cfd7507a6e8286/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?grim_was_mouse_button_pressed@IGrim2D_cpp@@UAE_NH@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -15764,6 +17917,131 @@
         {
           "function": "grim_get_frame_dt",
           "object": "tools/match/scratches/grim_get_frame_dt/build/msvc6.5/ee92514cee7b5fd5/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_get_error_text",
+          "comdat_selection": 1,
+          "function": "grim_get_error_text",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_error_text/build/msvc6.5/fe39f69a3b47c928/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_get_error_text",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_get_frame_dt",
+          "comdat_selection": 1,
+          "function": "grim_get_frame_dt",
+          "kind": "section",
+          "logical_section_size": 48,
+          "object": "tools/match/scratches/grim_get_frame_dt/build/msvc6.5/ee92514cee7b5fd5/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_get_frame_dt",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_get_mouse_wheel_delta",
+          "comdat_selection": 1,
+          "function": "grim_get_mouse_wheel_delta",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/grim_get_mouse_wheel_delta/build/msvc6.5/b2644aa75b26f7bd/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_get_mouse_wheel_delta",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_get_mouse_x",
+          "comdat_selection": 1,
+          "function": "grim_get_mouse_x",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_mouse_x/build/msvc6.5/e1206e6e6cb30d89/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_get_mouse_x",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_get_time_ms",
+          "comdat_selection": 1,
+          "function": "grim_get_time_ms",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_get_time_ms/build/msvc6.5/63cc4d3861d7865d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_get_time_ms",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
@@ -16301,7 +18579,7 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "c09119daba3a3486c2746da74c6509654316700fcc0961e6effee6b19c189a55"
+        "sha256": "4d6064931505f58f147b625c133c6fd014fc4c0ab87a60eb3714a42bc2796438"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -16318,7 +18596,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 12,
-    "defined_symbols": 333,
+    "defined_symbols": 337,
     "function_closure": true,
     "function_count": 137,
     "game_function_debt": {},
@@ -16327,15 +18605,14 @@
     "hard_duplicate_symbols": 0,
     "object_count": 135,
     "reference_exports_closed": true,
-    "resolved_symbols": 189,
+    "resolved_symbols": 274,
     "unresolved_by_category": {
-      "excluded_function": 36,
+      "excluded_function": 39,
       "external": 1,
-      "game_data": 4,
       "import": 12,
       "toolchain": 2
     },
-    "unresolved_symbols": 55
+    "unresolved_symbols": 54
   },
   "unresolved": [
     {
@@ -16476,6 +18753,26 @@
       "candidate_definitions": [],
       "catalog": [
         {
+          "address": 268459328,
+          "disposition": "platform-replaced",
+          "function": "grim_apply_config"
+        }
+      ],
+      "category": "excluded_function",
+      "lookup_name": "grim_apply_config",
+      "name": "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "candidate_definitions": [],
+      "catalog": [
+        {
           "address": 268451424,
           "disposition": "platform-replaced",
           "function": "grim_d3d_init"
@@ -16513,25 +18810,6 @@
         {
           "function": "grim_shutdown",
           "object": "tools/match/scratches/grim_shutdown/build/msvc6.5/8dbb94cd02e37a06/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 268747320,
-          "name": "grim_interface_vtable"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "grim_interface_vtable",
-      "name": "?grim_interface_vtable@@3PAXA",
-      "referenced_by": [
-        {
-          "function": "GRIM__GetInterface",
-          "object": "tools/match/scratches/grim_get_interface/build/msvc6.5/b8e41d673a8df839/scratch.obj",
           "weak": false
         }
       ]
@@ -16592,44 +18870,6 @@
         {
           "function": "grim_shutdown",
           "object": "tools/match/scratches/grim_shutdown/build/msvc6.5/8dbb94cd02e37a06/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 268775496,
-          "name": "grim_key_char_buffer"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "grim_key_char_buffer",
-      "name": "?grim_key_char_buffer@@3PAEA",
-      "referenced_by": [
-        {
-          "function": "grim_set_key_char_buffer",
-          "object": "tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/5f9aca6fa304b14e/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 268775500,
-          "name": "grim_key_char_buffer_count"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "grim_key_char_buffer_count",
-      "name": "?grim_key_char_buffer_count@@3PAHA",
-      "referenced_by": [
-        {
-          "function": "grim_set_key_char_buffer",
-          "object": "tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/5f9aca6fa304b14e/scratch.obj",
           "weak": false
         }
       ]
@@ -16708,30 +18948,6 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 268775488,
-          "name": "grim_lookup_blob_magic"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "grim_lookup_blob_magic",
-      "name": "?grim_lookup_blob_magic@@3PADA",
-      "referenced_by": [
-        {
-          "function": "grim_lookup_blob_find",
-          "object": "tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/7b940d93d29042dc/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "grim_lookup_blob_size_for_path",
-          "object": "tools/match/scratches/grim_lookup_blob_size_for_path/build/msvc6.5/b121032ea6f2f161/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
           "address": 268477840,
           "disposition": "platform-replaced",
           "function": "grim_mouse_button_down"
@@ -16789,6 +19005,46 @@
         {
           "function": "grim_shutdown",
           "object": "tools/match/scratches/grim_shutdown/build/msvc6.5/8dbb94cd02e37a06/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "candidate_definitions": [],
+      "catalog": [
+        {
+          "address": 268459184,
+          "disposition": "platform-replaced",
+          "function": "grim_save_screenshot"
+        }
+      ],
+      "category": "excluded_function",
+      "lookup_name": "grim_save_screenshot",
+      "name": "?grim_save_screenshot@IGrim2D_cpp@@UAE_NPAD@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "candidate_definitions": [],
+      "catalog": [
+        {
+          "address": 268466000,
+          "disposition": "platform-replaced",
+          "function": "grim_save_texture"
+        }
+      ],
+      "category": "excluded_function",
+      "lookup_name": "grim_save_texture",
+      "name": "?grim_save_texture@IGrim2D_cpp@@UAE_NHPAD@Z",
+      "referenced_by": [
+        {
+          "function": null,
+          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "weak": false
         }
       ]
