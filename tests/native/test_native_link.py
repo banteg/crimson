@@ -597,21 +597,132 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
 
     assert coverage["covered_symbols"] == 53
     assert coverage["import_symbols"] == 20
-    assert coverage["placeholder_symbols"] == 33
+    assert coverage["generated_import_symbols"] == 5
+    assert coverage["archive_symbols"] == 18
+    assert coverage["placeholder_symbols"] == 30
     assert coverage["runnable"] is False
     assert [
         provider.name
         for provider in config.providers
         if provider.resolution == "import-library"
     ] == [
-        "msvcrt.dll",
         "user32.dll",
         "winmm.dll",
         "d3d8.dll",
     ]
+    assert [
+        provider.name
+        for provider in config.providers
+        if provider.resolution == "archive-library"
+    ] == [
+        "msvcrt.dll",
+        "msvc6-runtime-static",
+        "msvc6-toolchain",
+    ]
+    assert len(config.archives) == 1
+    archive = config.archives[0]
+    assert archive.id == "vc6-sp6-msvcrt"
+    assert archive.size == 235942
+    assert archive.sha256 == (
+        "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63"
+    )
 
 
-def test_native_provider_import_definitions_preserve_linker_names() -> None:
+def test_provider_archive_can_be_absent_but_present_bytes_are_hash_checked(
+    tmp_path: Path,
+) -> None:
+    provenance = tmp_path / "analysis/library_provenance.json"
+    provenance.parent.mkdir()
+    provenance.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "source_artifacts": [
+                    {
+                        "id": "vc6",
+                        "members": [
+                            {
+                                "path": "vc98/lib/msvcrt.lib",
+                                "size": 3,
+                                "sha256": (
+                                    "ba7816bf8f01cfea414140de5dae2223"
+                                    "b00361a396177a9cb410ff61f20015ad"
+                                ),
+                            },
+                        ],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    config_path = tmp_path / "providers.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "schema": 2,
+                "image": "grim.dll",
+                "entry": "DllMain",
+                "image_base": "0x10000000",
+                "mode": "structural",
+                "archives": [
+                    {
+                        "id": "vc6-msvcrt",
+                        "path": "providers/build/msvcrt.lib",
+                        "sha256": (
+                            "ba7816bf8f01cfea414140de5dae2223"
+                            "b00361a396177a9cb410ff61f20015ad"
+                        ),
+                        "provenance": {
+                            "path": "analysis/library_provenance.json",
+                            "source_artifact": "vc6",
+                            "member": "vc98/lib/msvcrt.lib",
+                        },
+                    },
+                ],
+                "providers": [
+                    {
+                        "name": "vc6-toolchain",
+                        "kind": "toolchain",
+                        "resolution": "archive-library",
+                        "archive": "vc6-msvcrt",
+                        "evidence": [
+                            {
+                                "path": "analysis/library_provenance.json",
+                                "note": "test evidence",
+                            },
+                        ],
+                        "symbols": [
+                            {
+                                "name": "__fltused",
+                                "binding": "data",
+                            },
+                        ],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    config = load_native_provider_config(
+        config_path,
+        image="grim.dll",
+        repo_root=tmp_path,
+    )
+
+    assert not config.archives[0].path.exists()
+    config.archives[0].path.parent.mkdir(parents=True)
+    config.archives[0].path.write_bytes(b"abd")
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
+        load_native_provider_config(
+            config_path,
+            image="grim.dll",
+            repo_root=tmp_path,
+        )
+
+
+def test_native_provider_import_definitions_preserve_reference_export_names() -> None:
     config = load_native_provider_config(
         DEFAULT_PROVIDER_CONFIGS["grim.dll"],
         image="grim.dll",
@@ -621,13 +732,20 @@ def test_native_provider_import_definitions_preserve_linker_names() -> None:
     assert render_native_import_definition(providers["user32.dll"]) == (
         "LIBRARY USER32.dll\n"
         "EXPORTS\n"
-        "    LoadIconA@8=LoadIconA\n"
-        "    MessageBoxA@16=MessageBoxA\n"
+        "    LoadIconA\n"
+        "    MessageBoxA\n"
     )
-    msvcrt = render_native_import_definition(providers["msvcrt.dll"])
-    assert "    __CxxLongjmpUnwind@4=__CxxLongjmpUnwind\n" in msvcrt
-    assert "    strdup=_strdup\n" in msvcrt
-    assert "    atexit\n" not in msvcrt
+    assert [
+        (alias.alias, alias.target)
+        for alias in providers["user32.dll"].aliases
+    ] == [
+        ("__imp__LoadIconA@8", "__imp__LoadIconA"),
+        ("__imp__MessageBoxA@16", "__imp__MessageBoxA"),
+    ]
+    assert [
+        (alias.alias, alias.target)
+        for alias in providers["msvcrt.dll"].aliases
+    ] == [("_strdup", "__strdup")]
 
 
 def test_native_provider_placeholder_object_is_deterministic() -> None:
@@ -650,8 +768,8 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
 
-    assert len(symbols) == 33
-    assert [section.name for section in coff.sections] == [".text", ".data"]
+    assert len(symbols) == 30
+    assert [section.name for section in coff.sections] == [".text"]
     stdcall = symbols["_D3DXCreateTexture@32"]
     assert coff.sections[stdcall.section_number - 1].data[
         stdcall.value : stdcall.value + 5
@@ -660,7 +778,7 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
     assert coff.sections[cxx.section_number - 1].data[
         cxx.value : cxx.value + 3
     ] == b"\x31\xc0\xc3"
-    assert symbols["__fltused"].section_number == 2
+    assert "__fltused" not in symbols
 
 
 def test_coff_archive_timestamp_normalization_is_idempotent() -> None:

@@ -38,6 +38,11 @@
           "path": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
           "size": 934378,
           "sha256": "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a"
+        },
+        {
+          "path": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
+          "size": 235942,
+          "sha256": "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63"
         }
       ]
     },
@@ -243,11 +248,11 @@
         },
         {
           "id": "msvc6-crt",
-          "version": "Visual C++ 6.0 SP6 CRT startup and import seam",
+          "version": "Visual C++ 6.0 SP6 DLL CRT import and startup library (MSVCRT.LIB)",
           "linkage": "dynamic-crt-startup",
           "confidence": "archive-confirmed",
           "source_artifact": "visual-cpp-6-sp6-media",
-          "archive_member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
+          "archive_member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
           "ranges": [
             {
               "start": "0x1000A8D0",
@@ -467,6 +472,28 @@
           "matched_bytes": 253,
           "unique_functions": 2,
           "unique_bytes": 175
+        }
+      ]
+    },
+    {
+      "component": "msvc6-dll-crt",
+      "source_artifact": "visual-cpp-6-sp6-media",
+      "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
+      "sha256": "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63",
+      "archive_members": 898,
+      "coff_members": 43,
+      "object_functions": 92,
+      "targets": [
+        {
+          "artifact": "grim.dll",
+          "start": "0x1000A8D0",
+          "end": "0x1000AAA6",
+          "target_functions": 17,
+          "target_bytes": 468,
+          "matched_functions": 4,
+          "matched_bytes": 390,
+          "unique_functions": 4,
+          "unique_bytes": 390
         }
       ]
     }

@@ -72,7 +72,9 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
 
 - Evidence: `VS6sp61.cab` from preserved Visual Studio 6 SP6 media contains
   `vc98/lib/libcmt.lib` with SHA-256
-  `a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a`.
+  `a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a`
+  and `vc98/lib/msvcrt.lib` with SHA-256
+  `3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63`.
 
 - Evidence: exact non-relocated bytes plus COFF relocations match 299 of 366
   functions (43,754 of 54,038 bytes) in the EXE range
@@ -80,11 +82,25 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   single `LIBCMT.LIB` symbol. The SP6 single-threaded `LIBC.LIB` matches only
   203 functions (29,886 bytes), confirming the multithreaded static flavor.
 
-- Evidence: the same archive identifies 15 of 17 functions in Grim's
+- Evidence: `LIBCMT.LIB` identifies 15 of 17 functions in Grim's
   `0x1000a8d0..0x1000aaa6` runtime/import seam. The two substantive unique
   matches are `dllcrt0.obj:__DllMainCRTStartup@12` and
   `onexit.obj:_atexit`; Grim imports `MSVCRT.DLL`, so this is startup glue
   rather than a second statically linked CRT body.
+
+- Evidence: the DLL-flavor `MSVCRT.LIB` is the stronger provider match for
+  Grim. It uniquely matches 4 of 17 functions (390 of 468 bytes):
+  `atonexit.obj:__onexit`, `atonexit.obj:_atexit`,
+  `crtdll.obj:__CRT_INIT@12`, and
+  `crtdll.obj:__DllMainCRTStartup@12`. Its 308-byte `dllsupp.obj` defines
+  absolute `__except_list=0` and `__fltused=0x9876`, exactly the two
+  toolchain externals required by the native link.
+
+- Evidence: a whole-image Grim link with this pinned archive resolves all 15
+  configured MSVCRT imports, `_atexit`, `__except_list`, and `__fltused`.
+  The game object's nonstandard `_strdup` reference is a weak COFF alias to
+  the archive's `__strdup` thunk, preserving the reference PE import name
+  `_strdup` without inventing a CRT body.
 
 - Evidence: `crimsonland.exe` contains 137 product-10/build-9782 C records and
   34 product-11/build-9782 C++ records. Controlled Processor Pack compiles emit
@@ -97,10 +113,11 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   image level, but the aggregate Rich data does not map either build to an
   individual engine function.
 
-- Status: the EXE's static CRT archive and Grim's CRT startup seam are
-  archive-confirmed. Grim engine code remains in scope through `0x1000a8d0`;
+- Status: the EXE's static CRT archive and Grim's DLL CRT provider are
+  archive-confirmed. The Grim provider now participates in the structural
+  whole-image link. Grim engine code remains in scope through `0x1000a8d0`;
   in particular, the JAZ/zlib helpers at `0x1000a810..0x1000a8c2` do not
-  match D3DX or the CRT archive.
+  match D3DX or either CRT archive.
 
 Reproduce the archive proof:
 
@@ -113,6 +130,8 @@ unzip -j /tmp/crimson-vc6/vs6sp6.iso.zip -d /tmp/crimson-vc6
 7z e /tmp/crimson-vc6/vs6sp6.iso VS6sp61.cab -o/tmp/crimson-vc6
 cabextract -F vc98/lib/libcmt.lib -d /tmp/crimson-vc6 \
   /tmp/crimson-vc6/VS6sp61.cab
+cabextract -F vc98/lib/msvcrt.lib -d /tmp/crimson-vc6 \
+  /tmp/crimson-vc6/VS6sp61.cab
 
 uv run crimson match archive /tmp/crimson-vc6/vc98/lib/libcmt.lib \
   --image game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
@@ -124,6 +143,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/libcmt.lib \
   --start 0x1000a8d0 --end 0x1000aaa6 \
   --expected-sha256 a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a \
   --check
+uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
+  --image game_bins/crimsonland/1.9.93-gog/grim.dll \
+  --start 0x1000a8d0 --end 0x1000aaa6 \
+  --expected-sha256 3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63 \
+  --show-matches --check
 ```
 
 ### libpng (version 1.0.5)

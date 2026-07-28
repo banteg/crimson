@@ -152,23 +152,40 @@ just native-link grim.dll
 
 `tools/native/providers/grim.dll.json` must cover the unresolved-symbol set
 exactly. It distinguishes 20 exports that the reference PE really imports
-from `MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll` from 33 static,
-toolchain, or host-replaced symbols that still lack recovered provider
-objects. Every group cites repository evidence, and reference-import entries
-are checked against the pinned PE import table before linking.
+from `MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll`. The original
+VC6 SP6 `MSVCRT.LIB` now supplies 15 of those imports plus the exact
+`atonexit.obj` runtime adapter and `dllsupp.obj` toolchain absolutes: 18
+closure symbols total. Five imports still use generated import libraries, and
+30 static-library or host-replaced symbols remain explicit placeholders.
+Every group cites repository evidence, and reference-import entries are
+checked against both the pinned PE import table and the linked output.
 
-The command rebuilds the canonical audit, synthesizes import libraries with
-the recorded VC6 tools, emits an explicitly labeled placeholder COFF object
-for the remaining providers, and invokes the VC6 linker with the recovered
-entry point, image base, and export definition. It writes
+The archive is ignored proprietary input, pinned by size and SHA-256 to
+`analysis/library_provenance.json`. Provision it at the configured path before
+linking:
+
+```bash
+mkdir -p tools/native/providers/build/vc6-sp6
+cabextract -F vc98/lib/msvcrt.lib \
+  -d tools/native/providers/build/vc6-sp6 \
+  /path/to/VS6sp61.cab
+```
+
+The command rebuilds the canonical audit, rejects archive drift, synthesizes
+the five remaining import-library symbols with the recorded VC6 tools, emits
+deterministic weak COFF aliases where compiler decoration differs from the
+reference export name, and creates an explicitly labeled placeholder COFF
+object for the remaining providers. It then invokes the VC6 linker with the
+recovered entry point, image base, and export definition and verifies all 20
+configured exports in the resulting PE import table. It writes
 `analysis/native/grim.dll/link/link.json`; bulk PE, map, library, response,
-log, and provider outputs remain ignored. Archive, object, PE header, and PE
-export-directory timestamps are normalized, so identical inputs produce the
-same linked-image hash.
+log, and provider outputs remain ignored. Generated archive, object, PE
+header, and PE export-directory timestamps are normalized, so identical
+inputs produce the same linked-image hash.
 
 This is a structural linker milestone, not a runnable DLL or a byte-match
 claim. `link.json.runnable` stays false while any placeholder symbol remains.
-The canonical closure report also keeps those 33 references unresolved, so
+The canonical closure report also keeps those 30 references unresolved, so
 `all_references_closed` cannot pass merely because a generated stub made the
 linker accept the image. Replacing each placeholder group with its actual
 provider object is the path from a structural image to a runnable one.

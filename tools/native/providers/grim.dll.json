@@ -1,19 +1,42 @@
 {
-  "schema": 1,
+  "schema": 2,
   "image": "grim.dll",
   "entry": "DllMain",
   "image_base": "0x10000000",
   "mode": "structural",
+  "archives": [
+    {
+      "id": "vc6-sp6-msvcrt",
+      "path": "tools/native/providers/build/vc6-sp6/vc98/lib/msvcrt.lib",
+      "sha256": "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "source_artifact": "visual-cpp-6-sp6-media",
+        "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib"
+      }
+    }
+  ],
   "providers": [
     {
       "name": "msvcrt.dll",
       "kind": "reference-import",
-      "resolution": "import-library",
+      "resolution": "archive-library",
       "module": "MSVCRT.dll",
+      "archive": "vc6-sp6-msvcrt",
       "evidence": [
         {
           "path": "analysis/ida/raw/grim.dll/imports.json",
           "note": "The reference image imports these exports from MSVCRT."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The provenance manifest pins the original VC6 SP6 MSVCRT import archive used by the reference runtime seam."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_strdup",
+          "target": "__strdup"
         }
       ],
       "symbols": [
@@ -105,15 +128,25 @@
           "note": "The reference image imports these exports from USER32."
         }
       ],
+      "aliases": [
+        {
+          "alias": "__imp__LoadIconA@8",
+          "target": "__imp__LoadIconA"
+        },
+        {
+          "alias": "__imp__MessageBoxA@16",
+          "target": "__imp__MessageBoxA"
+        }
+      ],
       "symbols": [
         {
           "name": "__imp__LoadIconA@8",
-          "link_name": "LoadIconA@8",
+          "link_name": "LoadIconA",
           "export": "LoadIconA"
         },
         {
           "name": "__imp__MessageBoxA@16",
-          "link_name": "MessageBoxA@16",
+          "link_name": "MessageBoxA",
           "export": "MessageBoxA"
         }
       ]
@@ -129,15 +162,25 @@
           "note": "The reference image imports these exports from WINMM."
         }
       ],
+      "aliases": [
+        {
+          "alias": "__imp__timeBeginPeriod@4",
+          "target": "__imp__timeBeginPeriod"
+        },
+        {
+          "alias": "__imp__timeGetTime@0",
+          "target": "__imp__timeGetTime"
+        }
+      ],
       "symbols": [
         {
           "name": "__imp__timeBeginPeriod@4",
-          "link_name": "timeBeginPeriod@4",
+          "link_name": "timeBeginPeriod",
           "export": "timeBeginPeriod"
         },
         {
           "name": "__imp__timeGetTime@0",
-          "link_name": "timeGetTime@0",
+          "link_name": "timeGetTime",
           "export": "timeGetTime"
         }
       ]
@@ -153,10 +196,16 @@
           "note": "The reference image imports Direct3DCreate8 from d3d8."
         }
       ],
+      "aliases": [
+        {
+          "alias": "_Direct3DCreate8@4",
+          "target": "_Direct3DCreate8"
+        }
+      ],
       "symbols": [
         {
           "name": "_Direct3DCreate8@4",
-          "link_name": "Direct3DCreate8@4",
+          "link_name": "Direct3DCreate8",
           "export": "Direct3DCreate8"
         }
       ]
@@ -340,11 +389,16 @@
     {
       "name": "msvc6-runtime-static",
       "kind": "static-library",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "archive": "vc6-sp6-msvcrt",
       "evidence": [
         {
           "path": "analysis/ida/raw/grim.dll/functions.json",
           "note": "The reference image contains its atexit adapter rather than importing atexit."
+        },
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "VC6 SP6 atonexit.obj uniquely matches Grim's __onexit and _atexit functions byte-for-byte."
         }
       ],
       "symbols": [
@@ -357,11 +411,16 @@
     {
       "name": "msvc6-toolchain",
       "kind": "toolchain",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "archive": "vc6-sp6-msvcrt",
       "evidence": [
         {
           "path": "analysis/native/grim.dll/closure.json",
           "note": "The native closure classifier identifies these as MSVC toolchain externals."
+        },
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols."
         }
       ],
       "symbols": [

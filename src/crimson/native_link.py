@@ -21,8 +21,8 @@ NATIVE_DATA_MANIFEST_SCHEMA = 1
 NATIVE_DATA_DEFINITION_SCHEMA = 1
 NATIVE_TRANSLATION_UNIT_SCHEMA = 1
 NATIVE_LINKER_ALIAS_SCHEMA = 1
-NATIVE_PROVIDER_SCHEMA = 1
-NATIVE_LINK_MANIFEST_SCHEMA = 1
+NATIVE_PROVIDER_SCHEMA = 2
+NATIVE_LINK_MANIFEST_SCHEMA = 2
 
 NATIVE_OBJECT_MANIFEST_KIND = "crimson-native-object-manifest"
 NATIVE_SYMBOL_CLOSURE_KIND = "crimson-native-symbol-closure"
@@ -173,6 +173,28 @@ class NativeProviderEvidence:
 
 
 @dataclass(frozen=True, slots=True)
+class NativeProviderArchiveProvenance:
+    path: Path
+    source_artifact: str
+    member: str
+
+
+@dataclass(frozen=True, slots=True)
+class NativeProviderArchiveSpec:
+    id: str
+    path: Path
+    sha256: str
+    size: int
+    provenance: NativeProviderArchiveProvenance
+
+
+@dataclass(frozen=True, slots=True)
+class NativeProviderAliasSpec:
+    alias: str
+    target: str
+
+
+@dataclass(frozen=True, slots=True)
 class NativeProviderSymbol:
     name: str
     binding: str | None = None
@@ -186,6 +208,8 @@ class NativeProviderSpec:
     kind: str
     resolution: str
     module: str | None
+    archive: NativeProviderArchiveSpec | None
+    aliases: tuple[NativeProviderAliasSpec, ...]
     evidence: tuple[NativeProviderEvidence, ...]
     symbols: tuple[NativeProviderSymbol, ...]
 
@@ -198,6 +222,7 @@ class NativeProviderConfig:
     entry: str
     image_base: int
     mode: str
+    archives: tuple[NativeProviderArchiveSpec, ...]
     providers: tuple[NativeProviderSpec, ...]
 
 
@@ -571,6 +596,126 @@ def load_native_provider_config(
     mode = payload.get("mode")
     if mode != "structural":
         raise ValueError(f"{path}: mode must be 'structural'")
+    raw_archives = payload.get("archives", [])
+    if not isinstance(raw_archives, list):
+        raise TypeError(f"{path}: archives must be a list")
+
+    def repository_path(raw_path: object, *, label: str) -> Path:
+        if not isinstance(raw_path, str) or not raw_path:
+            raise ValueError(f"{label} must be non-empty")
+        relative_path = Path(raw_path)
+        if relative_path.is_absolute() or ".." in relative_path.parts:
+            raise ValueError(f"{label} must be repository-relative")
+        return (repo_root / relative_path).resolve()
+
+    archives: list[NativeProviderArchiveSpec] = []
+    archives_by_id: dict[str, NativeProviderArchiveSpec] = {}
+    for archive_index, raw_archive in enumerate(raw_archives):
+        label = f"{path}: archives[{archive_index}]"
+        if not isinstance(raw_archive, dict):
+            raise TypeError(f"{label} must be an object")
+        archive_id = raw_archive.get("id")
+        if not isinstance(archive_id, str) or not archive_id:
+            raise ValueError(f"{label}.id must be non-empty")
+        if archive_id in archives_by_id:
+            raise ValueError(f"{path}: duplicate archive id {archive_id!r}")
+        archive_path = repository_path(
+            raw_archive.get("path"),
+            label=f"{label}.path",
+        )
+        archive_sha256 = raw_archive.get("sha256")
+        if (
+            not isinstance(archive_sha256, str)
+            or re.fullmatch(r"[0-9a-f]{64}", archive_sha256) is None
+        ):
+            raise ValueError(f"{label}.sha256 must be a lowercase SHA-256")
+        raw_provenance = raw_archive.get("provenance")
+        if not isinstance(raw_provenance, dict):
+            raise TypeError(f"{label}.provenance must be an object")
+        provenance_path = repository_path(
+            raw_provenance.get("path"),
+            label=f"{label}.provenance.path",
+        )
+        if not provenance_path.is_file():
+            raise ValueError(
+                f"{label}.provenance.path does not exist: "
+                f"{raw_provenance.get('path')}",
+            )
+        source_artifact = raw_provenance.get("source_artifact")
+        member = raw_provenance.get("member")
+        if not isinstance(source_artifact, str) or not source_artifact:
+            raise ValueError(f"{label}.provenance.source_artifact must be non-empty")
+        if not isinstance(member, str) or not member:
+            raise ValueError(f"{label}.provenance.member must be non-empty")
+        provenance_payload = json.loads(provenance_path.read_text(encoding="utf-8"))
+        source_rows = provenance_payload.get("source_artifacts")
+        if not isinstance(source_rows, list):
+            raise TypeError(
+                f"{label}.provenance.path lacks source_artifacts",
+            )
+        source_row = next(
+            (
+                row
+                for row in source_rows
+                if isinstance(row, dict) and row.get("id") == source_artifact
+            ),
+            None,
+        )
+        if source_row is None:
+            raise ValueError(
+                f"{label}: provenance lacks source artifact {source_artifact!r}",
+            )
+        member_row = next(
+            (
+                row
+                for row in source_row.get("members", [])
+                if isinstance(row, dict) and row.get("path") == member
+            ),
+            None,
+        )
+        if member_row is None:
+            raise ValueError(
+                f"{label}: provenance lacks member {member!r}",
+            )
+        if member_row.get("sha256") != archive_sha256:
+            raise ValueError(
+                f"{label}: archive SHA-256 disagrees with provenance member",
+            )
+        try:
+            archive_size = int(member_row.get("size"))
+        except (TypeError, ValueError) as error:
+            raise ValueError(
+                f"{label}: provenance member size must be an integer",
+            ) from error
+        if archive_size <= 0:
+            raise ValueError(f"{label}: provenance member size must be positive")
+        if archive_path.exists():
+            if not archive_path.is_file():
+                raise ValueError(f"{label}.path is not a file: {archive_path}")
+            if archive_path.stat().st_size != archive_size:
+                raise ValueError(
+                    f"{label}.path size does not match provenance: "
+                    f"{archive_path.stat().st_size}/{archive_size}",
+                )
+            actual_sha256 = _sha256(archive_path)
+            if actual_sha256 != archive_sha256:
+                raise ValueError(
+                    f"{label}.path SHA-256 mismatch: "
+                    f"{actual_sha256}/{archive_sha256}",
+                )
+        archive = NativeProviderArchiveSpec(
+            id=archive_id,
+            path=archive_path,
+            sha256=archive_sha256,
+            size=archive_size,
+            provenance=NativeProviderArchiveProvenance(
+                path=provenance_path,
+                source_artifact=source_artifact,
+                member=member,
+            ),
+        )
+        archives.append(archive)
+        archives_by_id[archive_id] = archive
     raw_providers = payload.get("providers")
     if not isinstance(raw_providers, list) or not raw_providers:
         raise ValueError(f"{path}: providers must be a non-empty list")
@@ -586,6 +731,7 @@ def load_native_provider_config(
         kind = raw_provider.get("kind")
         resolution = raw_provider.get("resolution")
         module = raw_provider.get("module")
+        archive_id = raw_provider.get("archive")
         if not isinstance(name, str) or not name:
             raise ValueError(f"{label}.name must be non-empty")
         if name in provider_names:
@@ -598,17 +744,36 @@ def load_native_provider_config(
             "toolchain",
         }:
             raise ValueError(f"{label}.kind is unsupported: {kind!r}")
-        if resolution not in {"import-library", "placeholder-object"}:
+        if resolution not in {
+            "archive-library",
+            "import-library",
+            "placeholder-object",
+        }:
             raise ValueError(f"{label}.resolution is unsupported: {resolution!r}")
-        if resolution == "import-library":
-            if kind != "reference-import":
-                raise ValueError(
-                    f"{label}: import-library resolution requires reference-import kind",
-                )
+        if resolution == "import-library" and kind != "reference-import":
+            raise ValueError(
+                f"{label}: import-library resolution requires reference-import kind",
+            )
+        if kind == "reference-import":
             if not isinstance(module, str) or not module:
                 raise ValueError(f"{label}.module must be non-empty")
         elif module is not None:
-            raise ValueError(f"{label}.module is only valid for import-library providers")
+            raise ValueError(
+                f"{label}.module is only valid for reference-import providers",
+            )
+        archive: NativeProviderArchiveSpec | None = None
+        if resolution == "archive-library":
+            if not isinstance(archive_id, str) or not archive_id:
+                raise ValueError(
+                    f"{label}.archive must name a configured archive",
+                )
+            archive = archives_by_id.get(archive_id)
+            if archive is None:
+                raise ValueError(f"{label}.archive is unknown: {archive_id!r}")
+        elif archive_id is not None:
+            raise ValueError(
+                f"{label}.archive is only valid for archive-library providers",
+            )
 
         raw_evidence = raw_provider.get("evidence")
         if not isinstance(raw_evidence, list) or not raw_evidence:
@@ -658,10 +823,10 @@ def load_native_provider_config(
             binding = raw_symbol.get("binding")
             link_name = raw_symbol.get("link_name")
             export = raw_symbol.get("export")
-            if resolution == "import-library":
+            if kind == "reference-import":
                 if binding is not None:
                     raise ValueError(
-                        f"{symbol_label}.binding is invalid for an import-library",
+                        f"{symbol_label}.binding is invalid for a reference import",
                     )
                 if not isinstance(link_name, str) or not link_name:
                     raise ValueError(f"{symbol_label}.link_name must be non-empty")
@@ -674,7 +839,7 @@ def load_native_provider_config(
                     )
                 if link_name is not None or export is not None:
                     raise ValueError(
-                        f"{symbol_label}: placeholder symbols cannot declare import names",
+                        f"{symbol_label}: non-import symbols cannot declare import names",
                     )
             symbols.append(
                 NativeProviderSymbol(
@@ -684,12 +849,61 @@ def load_native_provider_config(
                     export=cast(str | None, export),
                 ),
             )
+        raw_aliases = raw_provider.get("aliases", [])
+        if not isinstance(raw_aliases, list):
+            raise TypeError(f"{label}.aliases must be a list")
+        if raw_aliases and resolution not in {
+            "archive-library",
+            "import-library",
+        }:
+            raise ValueError(
+                f"{label}.aliases require a library-backed provider",
+            )
+        aliases: list[NativeProviderAliasSpec] = []
+        alias_names: set[str] = set()
+        provider_symbol_names = {symbol.name for symbol in symbols}
+        for alias_index, raw_alias in enumerate(raw_aliases):
+            alias_label = f"{label}.aliases[{alias_index}]"
+            if not isinstance(raw_alias, dict):
+                raise TypeError(f"{alias_label} must be an object")
+            alias_name = raw_alias.get("alias")
+            target = raw_alias.get("target")
+            if not isinstance(alias_name, str) or not alias_name:
+                raise ValueError(f"{alias_label}.alias must be non-empty")
+            if not isinstance(target, str) or not target:
+                raise ValueError(f"{alias_label}.target must be non-empty")
+            for field_name, value in (("alias", alias_name), ("target", target)):
+                try:
+                    value.encode("latin1")
+                except UnicodeEncodeError as error:
+                    raise ValueError(
+                        f"{alias_label}.{field_name} must be Latin-1",
+                    ) from error
+            if alias_name not in provider_symbol_names:
+                raise ValueError(
+                    f"{alias_label}.alias must name a provider symbol",
+                )
+            if alias_name in alias_names:
+                raise ValueError(f"{label}: duplicate alias {alias_name!r}")
+            alias_names.add(alias_name)
+            aliases.append(
+                NativeProviderAliasSpec(
+                    alias=alias_name,
+                    target=target,
+                ),
+            )
+        if tuple(sorted(alias.alias for alias in aliases)) != tuple(
+            alias.alias for alias in aliases
+        ):
+            raise ValueError(f"{label}.aliases must be sorted by alias")
         providers.append(
             NativeProviderSpec(
                 name=name,
                 kind=cast(str, kind),
                 resolution=cast(str, resolution),
                 module=cast(str | None, module),
+                archive=archive,
+                aliases=tuple(aliases),
                 evidence=tuple(evidence),
                 symbols=tuple(symbols),
             ),
@@ -701,6 +915,7 @@ def load_native_provider_config(
         entry=entry,
         image_base=image_base,
         mode=mode,
+        archives=tuple(archives),
         providers=tuple(providers),
     )
 
@@ -749,7 +964,7 @@ def native_provider_coverage(
     }
     provider_rows: list[dict[str, Any]] = []
     for provider in config.providers:
-        if provider.resolution == "import-library":
+        if provider.kind == "reference-import":
             assert provider.module is not None
             for symbol in provider.symbols:
                 assert symbol.export is not None
@@ -793,16 +1008,46 @@ def native_provider_coverage(
                 "name": provider.name,
                 "resolution": provider.resolution,
                 "symbol_count": len(provider.symbols),
+                **(
+                    {"archive": provider.archive.id}
+                    if provider.archive is not None
+                    else {}
+                ),
+                **(
+                    {"alias_count": len(provider.aliases)}
+                    if provider.aliases
+                    else {}
+                ),
             },
         )
     import_count = sum(
         len(provider.symbols)
         for provider in config.providers
+        if provider.kind == "reference-import"
+    )
+    generated_import_count = sum(
+        len(provider.symbols)
+        for provider in config.providers
         if provider.resolution == "import-library"
     )
-    placeholder_count = len(provider_symbols) - import_count
+    archive_count = sum(
+        len(provider.symbols)
+        for provider in config.providers
+        if provider.resolution == "archive-library"
+    )
+    placeholder_count = sum(
+        len(provider.symbols)
+        for provider in config.providers
+        if provider.resolution == "placeholder-object"
+    )
+    if generated_import_count + archive_count + placeholder_count != len(
+        provider_symbols,
+    ):
+        raise ValueError("provider resolution counts do not cover every symbol")
     return {
+        "archive_symbols": archive_count,
         "covered_symbols": len(provider_symbols),
+        "generated_import_symbols": generated_import_count,
         "import_symbols": import_count,
         "placeholder_symbols": placeholder_count,
         "providers": provider_rows,
@@ -4028,14 +4273,16 @@ def native_provider_placeholder_object_bytes(
     return object_data
 
 
-def native_linker_alias_object_bytes(
-    aliases: tuple[NativeLinkerAliasSpec, ...],
+def native_weak_alias_object_bytes(
+    aliases: tuple[tuple[str, str], ...],
 ) -> bytes:
     if not aliases:
-        raise ValueError("linker alias object requires at least one alias")
+        raise ValueError("weak alias object requires at least one alias")
+    if len({alias for alias, _ in aliases}) != len(aliases):
+        raise ValueError("weak alias object contains duplicate aliases")
 
-    targets = sorted({alias.target for alias in aliases})
-    names = [*targets, *(alias.alias for alias in aliases)]
+    targets = sorted({target for _, target in aliases})
+    names = [*targets, *(alias for alias, _ in aliases)]
     string_offsets: dict[str, int] = {}
     string_payload = bytearray()
     for name in names:
@@ -4084,8 +4331,8 @@ def native_linker_alias_object_bytes(
                 0,
             ),
         )
-    for alias in aliases:
-        payload.extend(symbol_name_field(alias.alias))
+    for alias, target in aliases:
+        payload.extend(symbol_name_field(alias))
         payload.extend(
             struct.pack(
                 "<IhHBB",
@@ -4099,7 +4346,7 @@ def native_linker_alias_object_bytes(
         payload.extend(
             struct.pack(
                 "<II10x",
-                target_indices[alias.target],
+                target_indices[target],
                 IMAGE_WEAK_EXTERN_SEARCH_ALIAS,
             ),
         )
@@ -4120,8 +4367,8 @@ def native_linker_alias_object_bytes(
             raise ValueError(
                 f"generated linker alias target {target!r} did not remain undefined",
             )
-    for alias in aliases:
-        symbol = parsed[alias.alias]
+    for alias, target in aliases:
+        symbol = parsed[alias]
         fallback = next(
             candidate
             for candidate in coff.symbols
@@ -4130,13 +4377,21 @@ def native_linker_alias_object_bytes(
         if (
             symbol.storage_class != IMAGE_SYM_CLASS_WEAK_EXTERNAL
             or symbol.weak_search != IMAGE_WEAK_EXTERN_SEARCH_ALIAS
-            or fallback.name != alias.target
+            or fallback.name != target
         ):
             raise ValueError(
-                f"generated linker alias {alias.alias!r} did not retain "
-                f"fallback {alias.target!r}",
+                f"generated linker alias {alias!r} did not retain "
+                f"fallback {target!r}",
             )
     return object_data
+
+
+def native_linker_alias_object_bytes(
+    aliases: tuple[NativeLinkerAliasSpec, ...],
+) -> bytes:
+    return native_weak_alias_object_bytes(
+        tuple((alias.alias, alias.target) for alias in aliases),
+    )
 
 
 def _validate_native_linker_aliases(
@@ -4828,6 +5083,74 @@ def native_pe_summary(data: bytes) -> dict[str, Any]:
     }
 
 
+def native_pe_imports(data: bytes) -> dict[str, tuple[str, ...]]:
+    try:
+        import pefile
+    except ModuleNotFoundError as error:
+        raise RuntimeError("pefile is required to validate linked imports") from error
+
+    pe = pefile.PE(data=data, fast_load=True)
+    try:
+        pe.parse_data_directories(
+            directories=[
+                pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"],
+            ],
+        )
+        imports: dict[str, set[str]] = defaultdict(set)
+        for descriptor in getattr(pe, "DIRECTORY_ENTRY_IMPORT", ()):
+            module = descriptor.dll.decode("latin1").casefold().removesuffix(".dll")
+            for imported in descriptor.imports:
+                if imported.name is not None:
+                    imports[module].add(imported.name.decode("latin1"))
+        return {
+            module: tuple(sorted(names))
+            for module, names in sorted(imports.items())
+        }
+    finally:
+        pe.close()
+
+
+def _validate_linked_reference_imports(
+    config: NativeProviderConfig,
+    image_data: bytes,
+) -> dict[str, Any]:
+    actual = native_pe_imports(image_data)
+    expected: dict[str, set[str]] = defaultdict(set)
+    for provider in config.providers:
+        if provider.kind != "reference-import":
+            continue
+        assert provider.module is not None
+        module = provider.module.casefold().removesuffix(".dll")
+        expected[module].update(
+            cast(str, symbol.export)
+            for symbol in provider.symbols
+        )
+    missing = sorted(
+        (module, symbol)
+        for module, symbols in expected.items()
+        for symbol in symbols
+        if symbol not in actual.get(module, ())
+    )
+    if missing:
+        rendered = ", ".join(
+            f"{module}.dll!{symbol}"
+            for module, symbol in missing
+        )
+        raise ValueError(
+            f"linked PE is missing configured reference imports: {rendered}",
+        )
+    return {
+        "modules": [
+            {
+                "module": module,
+                "symbols": sorted(symbols),
+            }
+            for module, symbols in sorted(expected.items())
+        ],
+        "symbol_count": sum(len(symbols) for symbols in expected.values()),
+    }
+
+
 def _wibo_windows_path(path: Path) -> str:
     windows_path = str(path.resolve()).replace("/", "\\")
     return f"Z:{windows_path}"
@@ -4877,6 +5200,43 @@ def _run_native_tool(
     )
 
 
+def _native_provider_archive_payload(
+    archive: NativeProviderArchiveSpec,
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
+    if not archive.path.is_file():
+        relative = _repo_relative(archive.path, repo_root=repo_root)
+        raise ValueError(
+            f"provider archive {archive.id!r} is missing at {relative}; "
+            "extract the provenance-pinned source member before linking",
+        )
+    actual_size = archive.path.stat().st_size
+    if actual_size != archive.size:
+        raise ValueError(
+            f"provider archive {archive.id!r} size mismatch: "
+            f"{actual_size}/{archive.size}",
+        )
+    actual_sha256 = _sha256(archive.path)
+    if actual_sha256 != archive.sha256:
+        raise ValueError(
+            f"provider archive {archive.id!r} SHA-256 mismatch: "
+            f"{actual_sha256}/{archive.sha256}",
+        )
+    return {
+        "file": _file_payload(archive.path, repo_root=repo_root),
+        "id": archive.id,
+        "provenance": {
+            "manifest": _file_payload(
+                archive.provenance.path,
+                repo_root=repo_root,
+            ),
+            "member": archive.provenance.member,
+            "source_artifact": archive.provenance.source_artifact,
+        },
+    }
+
+
 def link_native_image(
     audit: NativeAudit,
     provider_config: NativeProviderConfig,
@@ -4897,7 +5257,11 @@ def link_native_image(
     provider_directory.mkdir(parents=True, exist_ok=True)
     linker_output: list[str] = []
     provider_artifact_rows: list[dict[str, Any]] = []
+    archive_artifact_rows: list[dict[str, Any]] = []
+    archive_libraries: list[Path] = []
     import_libraries: list[Path] = []
+    provider_alias_objects: list[Path] = []
+    linked_archive_ids: set[str] = set()
     stems: set[str] = set()
     for provider in provider_config.providers:
         evidence = [
@@ -4914,11 +5278,46 @@ def link_native_image(
             "resolution": provider.resolution,
             "symbols": [symbol.name for symbol in provider.symbols],
         }
-        if provider.resolution == "import-library":
+        stem: str | None = None
+        if provider.resolution == "import-library" or provider.aliases:
             stem = _provider_file_stem(provider.name)
             if stem in stems:
                 raise ValueError(f"provider file stem collision: {stem!r}")
             stems.add(stem)
+        if provider.archive is not None:
+            artifact_row["archive"] = provider.archive.id
+            if provider.archive.id not in linked_archive_ids:
+                archive_artifact_rows.append(
+                    _native_provider_archive_payload(
+                        provider.archive,
+                        repo_root=repo_root,
+                    ),
+                )
+                archive_libraries.append(provider.archive.path)
+                linked_archive_ids.add(provider.archive.id)
+        if provider.aliases:
+            assert stem is not None
+            alias_path = provider_directory / f"{stem}-aliases.obj"
+            alias_bytes = native_weak_alias_object_bytes(
+                tuple(
+                    (alias.alias, alias.target)
+                    for alias in provider.aliases
+                ),
+            )
+            _write_bytes_atomic(alias_path, alias_bytes)
+            provider_alias_objects.append(alias_path)
+            artifact_row["aliases"] = {
+                "object": _file_payload(alias_path, repo_root=repo_root),
+                "symbols": [
+                    {
+                        "alias": alias.alias,
+                        "target": alias.target,
+                    }
+                    for alias in provider.aliases
+                ],
+            }
+        if provider.resolution == "import-library":
+            assert stem is not None
             definition_path = provider_directory / f"{stem}.def"
             import_library_path = provider_directory / f"{stem}.lib"
             matchlib._write_text_atomic(
@@ -4991,10 +5390,12 @@ def link_native_image(
         *(record.object_path for record in audit.objects.records),
         *(record.object_path for record in audit.objects.data_records),
         *(record.object_path for record in audit.objects.linker_alias_records),
+        *provider_alias_objects,
         *import_libraries,
     ]
     if placeholder_path is not None:
         object_paths.append(placeholder_path)
+    object_paths.extend(archive_libraries)
     response_path = output_directory / "link.rsp"
     matchlib._write_text_atomic(
         response_path,
@@ -5059,7 +5460,8 @@ def link_native_image(
             exp_data[4:8] = b"\x00" * 4
             _write_bytes_atomic(generated_exp, bytes(exp_data))
 
-    pe_summary = native_pe_summary(image_path.read_bytes())
+    linked_image_data = image_path.read_bytes()
+    pe_summary = native_pe_summary(linked_image_data)
     if (
         pe_summary["machine"] != matchlib.IMAGE_FILE_MACHINE_I386
         or not pe_summary["dll"]
@@ -5067,7 +5469,16 @@ def link_native_image(
         or pe_summary["timestamp"] != 0
     ):
         raise ValueError(f"linked PE failed structural validation: {pe_summary}")
+    reference_imports = _validate_linked_reference_imports(
+        provider_config,
+        linked_image_data,
+    )
+    if reference_imports["symbol_count"] != coverage["import_symbols"]:
+        raise ValueError(
+            "linked reference-import count disagrees with provider coverage",
+        )
     manifest = {
+        "archives": archive_artifact_rows,
         "audit_digest": audit.object_manifest["audit_digest"],
         "image": audit.objects.image,
         "kind": NATIVE_LINK_MANIFEST_KIND,
@@ -5082,12 +5493,14 @@ def link_native_image(
             "declared_sha256": provider_config.sha256,
         },
         "providers": provider_artifact_rows,
+        "reference_imports": reference_imports,
         "runnable": coverage["runnable"],
         "schema": NATIVE_LINK_MANIFEST_SCHEMA,
         "status": "linked",
         "summary": {
             **coverage,
             "input_object_count": len(object_paths),
+            "validated_reference_import_symbols": reference_imports["symbol_count"],
         },
         "toolchain": {
             "library_tool": _file_payload(library_tool, repo_root=repo_root),

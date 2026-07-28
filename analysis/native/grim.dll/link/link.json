@@ -1,4 +1,23 @@
 {
+  "archives": [
+    {
+      "file": {
+        "path": "tools/native/providers/build/vc6-sp6/vc98/lib/msvcrt.lib",
+        "repository_relative": true,
+        "sha256": "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63"
+      },
+      "id": "vc6-sp6-msvcrt",
+      "provenance": {
+        "manifest": {
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+        },
+        "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
+        "source_artifact": "visual-cpp-6-sp6-media"
+      }
+    }
+  ],
   "audit_digest": "bb2867a15a850e0f47867a8ff9ea7b4c612f55758f3d7f80cfc16d8f5d1e2a4c",
   "image": "grim.dll",
   "kind": "crimson-native-linked-image",
@@ -18,44 +37,53 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "e411a134071ccd72445d5d986623acc438695a8ba8b2e5acb8ff619d252b414b"
+    "sha256": "6159cb3ffff4736a4dc8cba9cd703f40a7f4505ec615a257527d4630bbe11101"
   },
   "placeholder_object": {
     "path": "analysis/native/grim.dll/link/providers/placeholders.obj",
     "repository_relative": true,
-    "sha256": "3dbc22e86c90321fe404460b0b39de9b4d0f8e54bd3f219a0cab488c609c438d",
-    "symbol_count": 33
+    "sha256": "9e4820fb335a39cbc455f3db1c14a6255cbe35b2e1b7415c95fad227b5abe077",
+    "symbol_count": 30
   },
   "provider_config": {
-    "declared_sha256": "73758341baff3078c9e1e39b0c543c9a2f21ba3196803bec90284b9229dd8e07",
+    "declared_sha256": "1c2034629c3300114bad9a4e011c5c6958ec587f1b514ed83d4ea32a68d1b9f0",
     "path": "tools/native/providers/grim.dll.json",
     "repository_relative": true,
-    "sha256": "73758341baff3078c9e1e39b0c543c9a2f21ba3196803bec90284b9229dd8e07"
+    "sha256": "1c2034629c3300114bad9a4e011c5c6958ec587f1b514ed83d4ea32a68d1b9f0"
   },
   "providers": [
     {
-      "definition": {
-        "path": "analysis/native/grim.dll/link/providers/msvcrt-dll.def",
-        "repository_relative": true,
-        "sha256": "d95d389a66efb2cdee7bb55fef9704090fd525d66541faa91dc5a7406522c31f"
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/msvcrt-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "64d84c539a3db0923f87986c8069579a8b66675cdc649443b4c1504634142bdf"
+        },
+        "symbols": [
+          {
+            "alias": "_strdup",
+            "target": "__strdup"
+          }
+        ]
       },
+      "archive": "vc6-sp6-msvcrt",
       "evidence": [
         {
           "note": "The reference image imports these exports from MSVCRT.",
           "path": "analysis/ida/raw/grim.dll/imports.json",
           "repository_relative": true,
           "sha256": "ffc865dc723dd872e65ee74c3c6471296712f26191b3ff214c05abf22da9b6a2"
+        },
+        {
+          "note": "The provenance manifest pins the original VC6 SP6 MSVCRT import archive used by the reference runtime seam.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
         }
       ],
-      "import_library": {
-        "path": "analysis/native/grim.dll/link/providers/msvcrt-dll.lib",
-        "repository_relative": true,
-        "sha256": "fc267fed3d828005fce4b583ed6c758cfe2a1ae6ad81fbf86cd901ff76084f93"
-      },
       "kind": "reference-import",
-      "module": "MSVCRT.dll",
       "name": "msvcrt.dll",
-      "resolution": "import-library",
+      "resolution": "archive-library",
       "symbols": [
         "??2@YAPAXI@Z",
         "??3@YAXPAX@Z",
@@ -75,10 +103,27 @@
       ]
     },
     {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/user32-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "5897a4b218bfc26ac4298f0580338fb8670026dbcea9ed685bbf18feca38ad15"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__LoadIconA@8",
+            "target": "__imp__LoadIconA"
+          },
+          {
+            "alias": "__imp__MessageBoxA@16",
+            "target": "__imp__MessageBoxA"
+          }
+        ]
+      },
       "definition": {
         "path": "analysis/native/grim.dll/link/providers/user32-dll.def",
         "repository_relative": true,
-        "sha256": "a9d98593a56e4bbe16747f9364a1290df7695bdefd30d400471eefddebc66434"
+        "sha256": "2fb30d11967625b1282008c72fcdfc6ece859f98dd0668c5ec64bad728ae9eae"
       },
       "evidence": [
         {
@@ -91,7 +136,7 @@
       "import_library": {
         "path": "analysis/native/grim.dll/link/providers/user32-dll.lib",
         "repository_relative": true,
-        "sha256": "99f7775a0ac40ec5669c980b75c00f8f385851a7956b37f43d7b0240224c6e94"
+        "sha256": "0043ddd9ee939ffb382fe630b8a6c70aeff56de4cabe63e9e118994293775b5a"
       },
       "kind": "reference-import",
       "module": "USER32.dll",
@@ -103,10 +148,27 @@
       ]
     },
     {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/winmm-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "869d5421dad06e334c95d4f16ca9a988091c7be5f41baba2b8ea3d5e44937d84"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__timeBeginPeriod@4",
+            "target": "__imp__timeBeginPeriod"
+          },
+          {
+            "alias": "__imp__timeGetTime@0",
+            "target": "__imp__timeGetTime"
+          }
+        ]
+      },
       "definition": {
         "path": "analysis/native/grim.dll/link/providers/winmm-dll.def",
         "repository_relative": true,
-        "sha256": "273ae48f265cd5a00a3842c2bfb78426600c60510f6df74fbe559f1d42c42a62"
+        "sha256": "622a1c69ed2dc24c87479864b52a87af4b027463ea26380f57e2feea3b8433f1"
       },
       "evidence": [
         {
@@ -119,7 +181,7 @@
       "import_library": {
         "path": "analysis/native/grim.dll/link/providers/winmm-dll.lib",
         "repository_relative": true,
-        "sha256": "40acc3213c75ecd5f64dcef4477f009bfe207acaa0abc4c38135ba808e9d8438"
+        "sha256": "8b043936ac8c65e2de229c9265b12a9694c27b479e5a027b1c077c28ad3ff3e5"
       },
       "kind": "reference-import",
       "module": "WINMM.dll",
@@ -131,10 +193,23 @@
       ]
     },
     {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/d3d8-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "6631f04d29c31c4950dbabdce2658d21b1ca884484f5bcf4826abc261423f139"
+        },
+        "symbols": [
+          {
+            "alias": "_Direct3DCreate8@4",
+            "target": "_Direct3DCreate8"
+          }
+        ]
+      },
       "definition": {
         "path": "analysis/native/grim.dll/link/providers/d3d8-dll.def",
         "repository_relative": true,
-        "sha256": "6dbec0fb92f9b4270baf8b30220f47aba68781ccaabce824f000ac5ec30f255e"
+        "sha256": "0227602c30809dbe4b4f627e73202f5a628031c7bb60badbb07405959caf2c08"
       },
       "evidence": [
         {
@@ -147,7 +222,7 @@
       "import_library": {
         "path": "analysis/native/grim.dll/link/providers/d3d8-dll.lib",
         "repository_relative": true,
-        "sha256": "457dd10f71825ea638ca6096664ab36c281427051233c3108fb049e9c34e3649"
+        "sha256": "382d77790badb4877d1c0511e430318c057f2aee2ea10113b6c9d3fcda7e21cf"
       },
       "kind": "reference-import",
       "module": "d3d8.dll",
@@ -254,67 +329,133 @@
       ]
     },
     {
+      "archive": "vc6-sp6-msvcrt",
       "evidence": [
         {
           "note": "The reference image contains its atexit adapter rather than importing atexit.",
           "path": "analysis/ida/raw/grim.dll/functions.json",
           "repository_relative": true,
           "sha256": "c2226db5bc1c854d75bc72b50588c6fad64f2577de8ebe360fa0eead7679e104"
+        },
+        {
+          "note": "VC6 SP6 atonexit.obj uniquely matches Grim's __onexit and _atexit functions byte-for-byte.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "f3c5efd3921d68946eeb94f7fa84776e1d2f4dca4b7487d269682acd8c3434c0"
         }
       ],
       "kind": "static-library",
       "name": "msvc6-runtime-static",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
       "symbols": [
         "_atexit"
       ]
     },
     {
+      "archive": "vc6-sp6-msvcrt",
       "evidence": [
         {
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
           "sha256": "40915cd147d71b5070c38a3a7ee6719dc1bed07298e6ac2981fdec73dc868177"
+        },
+        {
+          "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "f3c5efd3921d68946eeb94f7fa84776e1d2f4dca4b7487d269682acd8c3434c0"
         }
       ],
       "kind": "toolchain",
       "name": "msvc6-toolchain",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
       "symbols": [
         "__except_list",
         "__fltused"
       ]
     }
   ],
+  "reference_imports": {
+    "modules": [
+      {
+        "module": "d3d8",
+        "symbols": [
+          "Direct3DCreate8"
+        ]
+      },
+      {
+        "module": "msvcrt",
+        "symbols": [
+          "??2@YAPAXI@Z",
+          "??3@YAXPAX@Z",
+          "__CxxFrameHandler",
+          "__CxxLongjmpUnwind",
+          "_ftol",
+          "_getcwd",
+          "_setjmp3",
+          "_strdup",
+          "fclose",
+          "fopen",
+          "fread",
+          "fseek",
+          "ftell",
+          "longjmp",
+          "vsprintf"
+        ]
+      },
+      {
+        "module": "user32",
+        "symbols": [
+          "LoadIconA",
+          "MessageBoxA"
+        ]
+      },
+      {
+        "module": "winmm",
+        "symbols": [
+          "timeBeginPeriod",
+          "timeGetTime"
+        ]
+      }
+    ],
+    "symbol_count": 20
+  },
   "runnable": false,
-  "schema": 1,
+  "schema": 2,
   "status": "linked",
   "summary": {
+    "archive_symbols": 18,
     "covered_symbols": 53,
+    "generated_import_symbols": 5,
     "import_symbols": 20,
-    "input_object_count": 136,
-    "placeholder_symbols": 33,
+    "input_object_count": 140,
+    "placeholder_symbols": 30,
     "providers": [
       {
+        "alias_count": 1,
+        "archive": "vc6-sp6-msvcrt",
         "kind": "reference-import",
         "name": "msvcrt.dll",
-        "resolution": "import-library",
+        "resolution": "archive-library",
         "symbol_count": 15
       },
       {
+        "alias_count": 2,
         "kind": "reference-import",
         "name": "user32.dll",
         "resolution": "import-library",
         "symbol_count": 2
       },
       {
+        "alias_count": 2,
         "kind": "reference-import",
         "name": "winmm.dll",
         "resolution": "import-library",
         "symbol_count": 2
       },
       {
+        "alias_count": 1,
         "kind": "reference-import",
         "name": "d3d8.dll",
         "resolution": "import-library",
@@ -345,19 +486,22 @@
         "symbol_count": 1
       },
       {
+        "archive": "vc6-sp6-msvcrt",
         "kind": "static-library",
         "name": "msvc6-runtime-static",
-        "resolution": "placeholder-object",
+        "resolution": "archive-library",
         "symbol_count": 1
       },
       {
+        "archive": "vc6-sp6-msvcrt",
         "kind": "toolchain",
         "name": "msvc6-toolchain",
-        "resolution": "placeholder-object",
+        "resolution": "archive-library",
         "symbol_count": 2
       }
     ],
-    "runnable": false
+    "runnable": false,
+    "validated_reference_import_symbols": 20
   },
   "toolchain": {
     "library_tool": {

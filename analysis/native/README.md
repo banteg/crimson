@@ -26,6 +26,10 @@ An image with a provider boundary may also contain
 map, import libraries, placeholder object, response file, and linker log stay
 ignored. The manifest records their hashes and keeps `runnable: false` until
 every unresolved symbol is backed by a real import or provider object.
+Provenance-backed archive inputs remain ignored as well: the provider config
+pins their repository-relative staging path, source-manifest member, size, and
+SHA-256. A native link fails on a missing or drifted archive and verifies each
+configured reference export in the generated PE import table.
 
 Object files remain ignored compiler-cache outputs. The manifest records their
 repository-relative paths and hashes so a build can be reproduced and audited

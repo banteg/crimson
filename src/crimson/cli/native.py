@@ -252,6 +252,8 @@ def cmd_native_link(
         f"providers={len(manifest['providers'])} "
         f"covered={summary['covered_symbols']} "
         f"imports={summary['import_symbols']} "
+        f"archives={summary['archive_symbols']} "
+        f"generated_imports={summary['generated_import_symbols']} "
         f"placeholders={summary['placeholder_symbols']} "
         f"runnable={manifest['runnable']}",
     )
