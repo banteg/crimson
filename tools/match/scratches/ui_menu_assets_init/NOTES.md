@@ -64,3 +64,59 @@ Rich records, so the residual is not explained by having tested only the
 default 8966 backend. Further work needs a different recovered type/TU
 constraint or the missing historical source context, not another generic flag
 or alias sweep.
+
+## Address-neighbor TU audit (2026-07-28)
+
+The native address island immediately around this function is:
+
+- `ui_element_set_rect` at `0x00419ba0`, exact at 91/91 instructions and
+  `refs=6/0/0`;
+- `ui_element_load` at `0x00419d00`, exact at 67/67 instructions and
+  `refs=10/0/0`;
+- `ui_menu_assets_init` at `0x00419dd0`;
+- the exact `j___cfltcvt_init_3` / `__cfltcvt_init_3` initializer pair at
+  `0x0041a000` / `0x0041a010`;
+- `ui_cursor_render` at `0x0041a040`, on the far side of that initializer pair
+  and still a WIP.
+
+Two reproducible source probes test the useful parts of the neighbor
+hypothesis. `probe_shared_ui_quad.cpp` applies the nested depth/UV
+`vec2`/vertex/quad shape recovered from exact `ui_element_set_rect` to this
+function while retaining the empty constructors required by the native copy
+schedule. It is byte-for-byte neutral: 110/110 instructions and
+`refs=64/0/2`.
+
+`probe_neighbor_translation_unit.cpp` compiles the exact predecessor island as
+one object in native address order. It deliberately keeps each function's
+independently recovered local types so the test isolates translation-unit
+presence instead of changing source shape. Rechecking every symbol from that
+object gives:
+
+- `ui_element_set_rect`: 91/91, `refs=6/0/0`;
+- `ui_element_load`: 67/67, `refs=10/0/0`;
+- `ui_menu_assets_init`: 110/110, `refs=64/0/2`.
+
+The shared type and exact-neighbor co-compilation hypotheses are therefore
+falsified for the two destination-load references: neither changes VC6's
+equal-value propagation, while both exact neighbors remain exact in the
+combined object. The initializer pair is a natural stopping boundary, so the
+non-exact `ui_cursor_render` was not mixed into the controlled probe. Do not
+promote this island to a modeled TU cluster yet; it would preserve the same
+two-reference audit residual without adding exact coverage.
+
+Reproduce the target probes with:
+
+```sh
+.venv/bin/crimson match probe \
+  tools/match/scratches/ui_menu_assets_init \
+  --source tools/match/scratches/ui_menu_assets_init/probe_shared_ui_quad.cpp
+.venv/bin/crimson match probe \
+  tools/match/scratches/ui_menu_assets_init \
+  --source tools/match/scratches/ui_menu_assets_init/probe_neighbor_translation_unit.cpp
+```
+
+The probe results, including source hashes, are recorded in
+`experiments.jsonl`. A future exit now needs a source-level constraint that
+changes the two copied-slot loads without regressing the surrounding 110
+instructions; mere address adjacency, a shared layout, or another compiler
+profile is not evidence for one.
