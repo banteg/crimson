@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from typer.testing import CliRunner
 
 from crimson.cli import app
+from crimson.match import NativeLinkStatus
 from crimson.native_link import NativeAuditArtifacts, NativeLinkedImageArtifacts
 
 
@@ -143,3 +144,97 @@ def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Pat
         completed.stdout
     )
     assert f"linked_image={tmp_path / 'grim.dll'}" in completed.stdout
+
+
+def test_native_verify_cli_gates_both_checked_in_images(monkeypatch) -> None:
+    captured = {}
+
+    def collect(**kwargs):
+        captured.update(kwargs)
+        return [
+            NativeLinkStatus(
+                image=image,
+                artifact_state="current",
+                artifact_note="verified",
+                function_closure=True,
+                game_owned_closure=True,
+                all_references_closed=False,
+            )
+            for image in ("crimsonland.exe", "grim.dll")
+        ]
+
+    monkeypatch.setattr(
+        "crimson.cli.native.matchlib.collect_native_link_statuses",
+        collect,
+    )
+
+    completed = CliRunner().invoke(
+        app,
+        [
+            "native",
+            "verify",
+            "--require-game-closure",
+            "--allow-absent-toolchain",
+        ],
+    )
+
+    assert completed.exit_code == 0
+    assert captured["images"] == ("crimsonland.exe", "grim.dll")
+    assert captured["allow_absent_toolchain"] is True
+    assert "image=crimsonland.exe artifacts=current" in completed.stdout
+    assert "image=grim.dll artifacts=current" in completed.stdout
+
+
+def test_native_verify_cli_rejects_stale_artifacts_before_gate(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "crimson.cli.native.matchlib.collect_native_link_statuses",
+        lambda **kwargs: [
+            NativeLinkStatus(
+                image="grim.dll",
+                artifact_state="stale",
+                artifact_note="recorded input changed",
+                game_owned_closure=True,
+            ),
+        ],
+    )
+
+    completed = CliRunner().invoke(
+        app,
+        [
+            "native",
+            "verify",
+            "--image",
+            "grim.dll",
+            "--require-game-closure",
+        ],
+    )
+
+    assert completed.exit_code == 2
+    assert "artifact_note=recorded input changed" in completed.stdout
+
+
+def test_native_verify_cli_rejects_open_game_closure(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "crimson.cli.native.matchlib.collect_native_link_statuses",
+        lambda **kwargs: [
+            NativeLinkStatus(
+                image="grim.dll",
+                artifact_state="current",
+                artifact_note="verified",
+                game_owned_closure=False,
+            ),
+        ],
+    )
+
+    completed = CliRunner().invoke(
+        app,
+        [
+            "native",
+            "verify",
+            "--image",
+            "grim.dll",
+            "--require-game-closure",
+        ],
+    )
+
+    assert completed.exit_code == 1

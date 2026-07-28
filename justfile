@@ -129,6 +129,9 @@ native-audit image="grim.dll" *args:
 native-link image="grim.dll" *args:
     uv run crimson native link --image "{{image}}" --out-dir "analysis/native/{{image}}/link" {{args}}
 
+native-verify *args:
+    uv run crimson native verify {{args}}
+
 function-hotspots:
     uv run scripts/function_hotspots.py --top 12 --only-fun
 

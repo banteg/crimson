@@ -1641,6 +1641,82 @@ def test_native_link_status_detects_changed_companion_artifact(tmp_path: Path) -
     assert "1 generated linker artifacts changed or missing" in status.artifact_note
 
 
+def test_native_link_status_can_allow_absent_ignored_toolchain(tmp_path: Path) -> None:
+    analysis_dir, _ = _write_native_link_fixture(tmp_path)
+    paths = {
+        name: analysis_dir / name
+        for name in ("objects.json", "closure.json", "data.json")
+    }
+    payloads = {
+        name: json.loads(path.read_text(encoding="utf-8"))
+        for name, path in paths.items()
+    }
+    objects = payloads["objects.json"]
+    objects["provenance"]["toolchain"]["wibo"] = {
+        "path": "tools/match/bin/wibo",
+        "repository_relative": True,
+        "sha256": "1" * 64,
+    }
+    objects["provenance"]["toolchain"]["compiler_bundles"] = [
+        {
+            "bundle_sha256": "2" * 64,
+            "compiler": "msvc6.5",
+            "included_trees": ["Bin", "Include"],
+            "root": "tools/match/compilers/msvc6.5",
+        },
+    ]
+    digest_payload = {
+        "data_manifest": {
+            key: value
+            for key, value in payloads["data.json"].items()
+            if key != "audit_digest"
+        },
+        "object_manifest": {
+            key: value
+            for key, value in objects.items()
+            if key != "audit_digest"
+        },
+        "symbol_closure": {
+            key: value
+            for key, value in payloads["closure.json"].items()
+            if key != "audit_digest"
+        },
+    }
+    audit_digest = hashlib.sha256(
+        json.dumps(
+            digest_payload,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode(),
+    ).hexdigest()
+    for name, payload in payloads.items():
+        payload["audit_digest"] = audit_digest
+        paths[name].write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+
+    strict = collect_native_link_statuses(
+        analysis_root=analysis_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+    portable = collect_native_link_statuses(
+        analysis_root=analysis_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+        allow_absent_toolchain=True,
+    )[0]
+
+    assert strict.artifact_state == "stale"
+    assert "1 recorded file inputs changed or missing" in strict.artifact_note
+    assert "1 compiler bundles changed or missing" in strict.artifact_note
+    assert portable.artifact_state == "current"
+    assert portable.artifact_note == (
+        "artifact digest and required repository inputs agree; "
+        "toolchain availability not required"
+    )
+
+
 def test_native_link_status_reports_missing_artifacts_without_claiming_metrics(
     tmp_path: Path,
 ) -> None:

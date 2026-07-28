@@ -105,6 +105,75 @@ def cmd_native_audit(
         raise typer.Exit(code=1)
 
 
+@native_app.command("verify")
+def cmd_native_verify(
+    image: list[str] | None = typer.Option(
+        None,
+        "--image",
+        help="checked-in native image to verify (repeatable; default: both images)",
+    ),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="expected matching ownership scope",
+    ),
+    analysis_root: Path = typer.Option(
+        native_link.DEFAULT_NATIVE_ANALYSIS_ROOT,
+        "--analysis-root",
+        help="root containing checked-in native audit artifacts",
+    ),
+    require_game_closure: bool = typer.Option(
+        False,
+        "--require-game-closure",
+        help="fail unless every selected image passes game-owned closure",
+    ),
+    allow_absent_toolchain: bool = typer.Option(
+        False,
+        "--allow-absent-toolchain",
+        help=(
+            "allow ignored VC6/Wibo files to be absent while still hashing every "
+            "available and tracked input"
+        ),
+    ),
+) -> None:
+    """Verify checked-in native artifacts without rebuilding their COFF objects."""
+
+    images = tuple(image or matchlib.TRACKED_IMAGE_NAMES)
+    unsupported = sorted(set(images) - set(matchlib.TRACKED_IMAGE_NAMES))
+    if unsupported:
+        typer.echo(
+            f"native verify failed: unsupported images: {', '.join(unsupported)}",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+    if len(images) != len(set(images)):
+        typer.echo("native verify failed: duplicate --image values", err=True)
+        raise typer.Exit(code=2)
+
+    statuses = matchlib.collect_native_link_statuses(
+        analysis_root=analysis_root,
+        scope=scope,
+        images=images,
+        allow_absent_toolchain=allow_absent_toolchain,
+    )
+    for status in statuses:
+        typer.echo(
+            f"image={status.image} artifacts={status.artifact_state} "
+            f"function_closed={status.function_closure} "
+            f"game_owned_closed={status.game_owned_closure} "
+            f"all_references_closed={status.all_references_closed}",
+        )
+        typer.echo(f"artifact_note={status.artifact_note}")
+
+    if any(status.artifact_state != "current" for status in statuses):
+        raise typer.Exit(code=2)
+    if require_game_closure and any(
+        status.game_owned_closure is not True
+        for status in statuses
+    ):
+        raise typer.Exit(code=1)
+
+
 @native_app.command("link")
 def cmd_native_link(
     image: Literal["crimsonland.exe", "grim.dll"] = typer.Option(

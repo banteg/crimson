@@ -127,6 +127,20 @@ Use `--require-game-closure` when the second gate is expected to pass. It exits
 with status 1 while honest game-data debt remains; malformed inputs or build
 failures exit with status 2.
 
+CI verifies the checked-in artifacts for both images with:
+
+```bash
+just native-verify --require-game-closure --allow-absent-toolchain
+```
+
+This recomputes the shared audit digest, checks the companion hashes and every
+available recorded input, and enforces both game-owned closure claims without
+requiring a proprietary compiler bundle on the CI runner. The exception is
+narrow: only absent ignored files below `tools/match/bin/` or
+`tools/match/compilers/` are permitted. If those files are present, their
+recorded hashes are still checked; all tracked sources, configs, catalogs,
+definitions, reference binaries, and generated companions remain mandatory.
+
 ## Structural Grim link
 
 Grim is the first image with a checked-in provider boundary. Once its

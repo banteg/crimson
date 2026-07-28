@@ -4891,6 +4891,7 @@ def _native_input_staleness(
     data: dict[str, Any],
     *,
     repo_root: Path,
+    allow_absent_toolchain: bool = False,
 ) -> list[str]:
     file_rows, bundle_rows = _native_input_records(objects, closure, data)
     expected_files: dict[str, str] = {}
@@ -4917,6 +4918,14 @@ def _native_input_staleness(
         try:
             actual_sha256 = _native_file_sha256(path)
         except OSError:
+            if (
+                allow_absent_toolchain
+                and not path.exists()
+                and label.startswith(
+                    ("tools/match/bin/", "tools/match/compilers/"),
+                )
+            ):
+                continue
             changed_files += 1
             continue
         if actual_sha256 != expected_sha256:
@@ -4940,6 +4949,12 @@ def _native_input_staleness(
         try:
             actual_sha256 = _native_tree_set_sha256(path, trees)
         except (OSError, ValueError):
+            if (
+                allow_absent_toolchain
+                and not path.exists()
+                and label.startswith("tools/match/compilers/")
+            ):
+                continue
             changed_bundles += 1
             continue
         if actual_sha256 != expected_sha256:
@@ -5020,6 +5035,7 @@ def collect_native_link_statuses(
     repo_root: Path = REPO_ROOT,
     scope: str = DEFAULT_MATCH_SCOPE,
     images: Collection[str] = TRACKED_IMAGE_NAMES,
+    allow_absent_toolchain: bool = False,
 ) -> list[NativeLinkStatus]:
     statuses: list[NativeLinkStatus] = []
     for image in images:
@@ -5120,6 +5136,7 @@ def collect_native_link_statuses(
                     closure,
                     data,
                     repo_root=repo_root,
+                    allow_absent_toolchain=allow_absent_toolchain,
                 ),
             )
             reasons.extend(
@@ -5130,7 +5147,15 @@ def collect_native_link_statuses(
                 ),
             )
             state = "stale" if reasons else "current"
-            note = "; ".join(reasons) if reasons else "audited inputs and artifact digest agree"
+            if reasons:
+                note = "; ".join(reasons)
+            elif allow_absent_toolchain:
+                note = (
+                    "artifact digest and required repository inputs agree; "
+                    "toolchain availability not required"
+                )
+            else:
+                note = "audited inputs and artifact digest agree"
             statuses.append(
                 NativeLinkStatus(
                     image=image,
