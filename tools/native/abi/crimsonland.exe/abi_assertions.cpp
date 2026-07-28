@@ -7,12 +7,69 @@
 #define CRIMSON_ABI_ASSERT(name, condition) \
     typedef char crimson_abi_assert_##name[(condition) ? 1 : -1]
 
+struct crimson_char_alignment_probe_t {
+    char prefix;
+    unsigned char value;
+};
+
+struct crimson_int_alignment_probe_t {
+    char prefix;
+    int value;
+};
+
+struct crimson_float_alignment_probe_t {
+    char prefix;
+    float value;
+};
+
+struct crimson_pointer_alignment_probe_t {
+    char prefix;
+    void *value;
+};
+
+struct crimson_game_mode_alignment_probe_t {
+    char prefix;
+    game_mode_id_t value;
+};
+
+struct crimson_game_state_alignment_probe_t {
+    char prefix;
+    game_state_id_t value;
+};
+
+struct crimson_console_queue_alignment_probe_t {
+    char prefix;
+    console_queue_t value;
+};
+
 CRIMSON_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 CRIMSON_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 CRIMSON_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
 CRIMSON_ABI_ASSERT(long_is_32_bit, sizeof(long) == 4);
 CRIMSON_ABI_ASSERT(float_is_32_bit, sizeof(float) == 4);
 CRIMSON_ABI_ASSERT(bool_is_one_byte, sizeof(bool) == 1);
+CRIMSON_ABI_ASSERT(unsigned_char_is_one_byte, sizeof(unsigned char) == 1);
+CRIMSON_ABI_ASSERT(game_mode_id_is_32_bit, sizeof(game_mode_id_t) == 4);
+CRIMSON_ABI_ASSERT(game_state_id_is_32_bit, sizeof(game_state_id_t) == 4);
+
+CRIMSON_ABI_ASSERT(
+    default_char_alignment_is_one,
+    offsetof(crimson_char_alignment_probe_t, value) == 1);
+CRIMSON_ABI_ASSERT(
+    default_int_alignment_is_four,
+    offsetof(crimson_int_alignment_probe_t, value) == 4);
+CRIMSON_ABI_ASSERT(
+    default_float_alignment_is_four,
+    offsetof(crimson_float_alignment_probe_t, value) == 4);
+CRIMSON_ABI_ASSERT(
+    default_pointer_alignment_is_four,
+    offsetof(crimson_pointer_alignment_probe_t, value) == 4);
+CRIMSON_ABI_ASSERT(
+    default_game_mode_alignment_is_four,
+    offsetof(crimson_game_mode_alignment_probe_t, value) == 4);
+CRIMSON_ABI_ASSERT(
+    default_game_state_alignment_is_four,
+    offsetof(crimson_game_state_alignment_probe_t, value) == 4);
 
 CRIMSON_ABI_ASSERT(vec2_is_8_bytes, sizeof(vec2f_t) == 0x08);
 CRIMSON_ABI_ASSERT(cvar_float_is_16_bytes, sizeof(cvar_float_t) == 0x10);
@@ -62,6 +119,9 @@ CRIMSON_ABI_ASSERT(
     sizeof(console_history_entry_t) == 8);
 CRIMSON_ABI_ASSERT(console_log_node_is_8_bytes, sizeof(console_log_node_t) == 8);
 CRIMSON_ABI_ASSERT(console_queue_is_0x2c, sizeof(console_queue_t) == 0x2c);
+CRIMSON_ABI_ASSERT(
+    console_queue_alignment_is_four,
+    offsetof(crimson_console_queue_alignment_probe_t, value) == 4);
 CRIMSON_ABI_ASSERT(
     console_queue_open_is_at_0x28,
     offsetof(console_queue_t, open) == 0x28);

@@ -1006,6 +1006,32 @@ def test_grim_data_manifest_applies_only_explicit_data_definitions() -> None:
     )["size"] is None
 
 
+def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
+    payload = data_manifest_payload("crimsonland.exe")
+
+    assert payload["summary"]["entry_count"] == 1547
+    assert payload["summary"]["explicit_size_entries"] == 35
+    assert payload["summary"]["explicit_alignment_entries"] == 35
+    assert payload["summary"]["explicit_initializer_entries"] == 35
+    assert payload["summary"]["fully_specified_entries"] == 35
+    assert payload["source"]["definitions"] == (
+        "tools/native/data_definitions/crimsonland.exe.json"
+    )
+    defined = {
+        entry["name"]: entry
+        for entry in payload["entries"]
+        if entry["definition_state"] == "fully-specified"
+    }
+    assert defined["console_log_queue"]["size"] == 0x2C
+    assert defined["grim_interface_ptr"]["size"] == 4
+    assert defined["sfx_unmuted_flag"]["size"] == 1
+    assert next(
+        entry
+        for entry in payload["entries"]
+        if entry["name"] == "quest_unlock_index"
+    )["size"] is None
+
+
 def test_data_manifest_ranks_game_data_by_reference_fan_in() -> None:
     closure = {
         "unresolved": [
