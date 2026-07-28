@@ -698,6 +698,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
+        ["0x00484fc8", "camera_offset"],
         ["0x004871d0", "player_aux_timer"],
         ["0x00490418", "unused_fx_queue_random_prefix_vec2"],
         ["0x00490f78", "unused_effect_uv_strip16_prefix_vec2"],
@@ -737,6 +738,7 @@
         ["0x00491000", "unused_effect_uv8_prefix_state"],
         ["0x00495ab8", "unused_particle_pool_suffix_color"],
         ["0x00495ac8", "local_system_time"],
+        ["0x004965f8", "render_tint_color"],
         ["0x00496688", "unused_aim64_prefix_color"],
         ["0x0049ba20", "unused_fx_rotated_effect_id_prefix_color"]
       ]

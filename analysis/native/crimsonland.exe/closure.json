@@ -1,5 +1,5 @@
 {
-  "audit_digest": "3b7fcdc33b1642077df46a2c6f401189c2da389c8b6244d9fd3439f259a6c636",
+  "audit_digest": "efefd84b959cc22f22985eb5b3eeabd57fd35a73d323ceb413f857993f131bab",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -80912,12 +80912,36 @@
           "comdat_selection": null,
           "data_address": 4739016,
           "data_binding_kind": "definition",
+          "data_name": "camera_offset",
+          "data_storage_address": 4739016,
+          "data_storage_name": "camera_offset",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 8,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 8,
+          "weak": false
+        }
+      ],
+      "name": "_camera_offset"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4739016,
+          "data_binding_kind": "definition",
           "data_name": "camera_offset_x",
           "data_storage_address": 4739016,
           "data_storage_name": "camera_offset_x",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 8,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -80941,7 +80965,7 @@
           "data_storage_name": "camera_offset_y",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 8,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -98094,6 +98118,30 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 4810232,
+          "data_binding_kind": "definition",
+          "data_name": "render_tint_color",
+          "data_storage_address": 4810232,
+          "data_storage_name": "render_tint_color",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 16,
+          "weak": false
+        }
+      ],
+      "name": "_render_tint_color"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 4810244,
           "data_binding_kind": "definition",
           "data_name": "render_tint_color_a",
@@ -98101,7 +98149,7 @@
           "data_storage_name": "render_tint_color_a",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 16,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -98161,7 +98209,7 @@
           "data_storage_name": "render_tint_color_r",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 16,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -121360,12 +121408,73 @@
           "comdat_selection": null,
           "data_address": 4739016,
           "data_binding_kind": "definition",
+          "data_name": "camera_offset",
+          "data_storage_address": 4739016,
+          "data_storage_name": "camera_offset",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 8,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 8,
+          "weak": false
+        }
+      ],
+      "name": "_camera_offset",
+      "referenced_by": [
+        {
+          "function": "creature_render_type",
+          "object": "tools/match/scratches/creature_render_type/build/msvc6.5/42e6070a2b805ae1/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "gameplay_reset_state",
+          "object": "tools/match/scratches/gameplay_reset_state/build/msvc6.5/753c17f127a2c513/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "player_render_overlays",
+          "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/9cf42baf643792fc/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "projectile_render",
+          "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "terrain_generate",
+          "object": "tools/match/scratches/terrain_generate/build/msvc6.5/f047ac38daf23e24/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "terrain_generate_random",
+          "object": "tools/match/scratches/terrain_generate_random/build/msvc6.5/586f13f483285017/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "ui_render_aim_indicators",
+          "object": "tools/match/scratches/ui_render_aim_indicators/build/msvc6.5/19eb85bfd930f2e9/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4739016,
+          "data_binding_kind": "definition",
           "data_name": "camera_offset_x",
           "data_storage_address": 4739016,
           "data_storage_name": "camera_offset_x",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 8,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -121441,7 +121550,7 @@
           "data_storage_name": "camera_offset_y",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 8,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -147844,6 +147953,37 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 4810232,
+          "data_binding_kind": "definition",
+          "data_name": "render_tint_color",
+          "data_storage_address": 4810232,
+          "data_storage_name": "render_tint_color",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 16,
+          "weak": false
+        }
+      ],
+      "name": "_render_tint_color",
+      "referenced_by": [
+        {
+          "function": "render_tint_color_global_init",
+          "object": "tools/match/scratches/render_tint_color_global_init/build/msvc6.5/d1ca19765b0a5050/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 4810244,
           "data_binding_kind": "definition",
           "data_name": "render_tint_color_a",
@@ -147851,7 +147991,7 @@
           "data_storage_name": "render_tint_color_a",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 16,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -147922,7 +148062,7 @@
           "data_storage_name": "render_tint_color_r",
           "function": null,
           "kind": "section",
-          "logical_section_size": 4,
+          "logical_section_size": 16,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
           "size": 4,
@@ -164642,7 +164782,7 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "f4a74bf4deee760e3a8a2803cbfab3e5d98626812f31d3a551aac39cbf13db28"
+        "sha256": "c09119daba3a3486c2746da74c6509654316700fcc0961e6effee6b19c189a55"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -164659,7 +164799,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3148,
+    "defined_symbols": 3150,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -164668,14 +164808,14 @@
     "hard_duplicate_symbols": 0,
     "object_count": 663,
     "reference_exports_closed": true,
-    "resolved_symbols": 1352,
+    "resolved_symbols": 1354,
     "unresolved_by_category": {
       "excluded_function": 70,
-      "external": 3,
+      "external": 1,
       "import": 25,
       "toolchain": 1
     },
-    "unresolved_symbols": 99
+    "unresolved_symbols": 97
   },
   "unresolved": [
     {
@@ -167632,50 +167772,6 @@
     },
     {
       "candidate_definitions": [],
-      "catalog": [],
-      "category": "external",
-      "lookup_name": "camera_offset",
-      "name": "_camera_offset",
-      "referenced_by": [
-        {
-          "function": "creature_render_type",
-          "object": "tools/match/scratches/creature_render_type/build/msvc6.5/42e6070a2b805ae1/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "gameplay_reset_state",
-          "object": "tools/match/scratches/gameplay_reset_state/build/msvc6.5/753c17f127a2c513/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "player_render_overlays",
-          "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/9cf42baf643792fc/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "projectile_render",
-          "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "terrain_generate",
-          "object": "tools/match/scratches/terrain_generate/build/msvc6.5/f047ac38daf23e24/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "terrain_generate_random",
-          "object": "tools/match/scratches/terrain_generate_random/build/msvc6.5/586f13f483285017/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "ui_render_aim_indicators",
-          "object": "tools/match/scratches/ui_render_aim_indicators/build/msvc6.5/19eb85bfd930f2e9/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
       "catalog": [
         {
           "address": 4590982,
@@ -169270,20 +169366,6 @@
         {
           "function": "game_save_status",
           "object": "tools/match/scratches/game_save_status/build/msvc6.5/3824ce7f51d8a67e/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [],
-      "category": "external",
-      "lookup_name": "render_tint_color",
-      "name": "_render_tint_color",
-      "referenced_by": [
-        {
-          "function": "render_tint_color_global_init",
-          "object": "tools/match/scratches/render_tint_color_global_init/build/msvc6.5/d1ca19765b0a5050/scratch.obj",
           "weak": false
         }
       ]

@@ -1247,12 +1247,12 @@ def test_grim_data_manifest_applies_only_explicit_data_definitions() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["entry_count"] == 1549
-    assert payload["summary"]["explicit_size_entries"] == 683
-    assert payload["summary"]["explicit_alignment_entries"] == 683
-    assert payload["summary"]["explicit_initializer_entries"] == 683
-    assert payload["summary"]["fully_specified_entries"] == 683
-    assert payload["summary"]["definition_group_entries"] == 599
+    assert payload["summary"]["entry_count"] == 1551
+    assert payload["summary"]["explicit_size_entries"] == 685
+    assert payload["summary"]["explicit_alignment_entries"] == 685
+    assert payload["summary"]["explicit_initializer_entries"] == 685
+    assert payload["summary"]["fully_specified_entries"] == 685
+    assert payload["summary"]["definition_group_entries"] == 601
     assert payload["summary"]["definition_groups"] == 68
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
@@ -1303,6 +1303,8 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["resource_pack_entry_name_buf"]["size"] == 512
     assert defined["grim_dll_name"]["size"] == 256
     assert defined["typo_word_highscore_cache"]["size"] == 20 * 32
+    assert defined["camera_offset"]["size"] == 8
+    assert defined["render_tint_color"]["size"] == 16
     assert defined["reserved_color_4871b8"]["size"] == 16
     assert defined["console_empty_arg"]["initializer_target"] == {
         "address": 0x0047F4D8,

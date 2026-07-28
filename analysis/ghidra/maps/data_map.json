@@ -3348,6 +3348,13 @@
     },
     {
       "address": "0x00484fc8",
+      "comment": "Camera offset vector applied to world positions for rendering; aggregate overlay of camera_offset_x and camera_offset_y.",
+      "name": "camera_offset",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
+    },
+    {
+      "address": "0x00484fc8",
       "comment": "Camera offset X applied to world positions for rendering.",
       "name": "camera_offset_x",
       "program": "crimsonland.exe"
@@ -6700,6 +6707,13 @@
       "name": "render_scratch_f3",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x004965f8",
+      "comment": "Shared UI/HUD tint RGBA aggregate initialized at startup; overlays the four render_tint_color component rows.",
+      "name": "render_tint_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
     },
     {
       "address": "0x004965f8",

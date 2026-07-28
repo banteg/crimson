@@ -1,5 +1,5 @@
 {
-  "audit_digest": "3b7fcdc33b1642077df46a2c6f401189c2da389c8b6244d9fd3439f259a6c636",
+  "audit_digest": "efefd84b959cc22f22985eb5b3eeabd57fd35a73d323ceb413f857993f131bab",
   "entries": [
     {
       "address": 4211888,
@@ -10291,6 +10291,27 @@
       "address": 4739016,
       "aliases": [],
       "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
+      "comment": "Camera offset vector applied to world positions for rendering; aggregate overlay of camera_offset_x and camera_offset_y.",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "camera_offset",
+      "section": ".data",
+      "section_offset": 81864,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
+      "type": "vec2f_t"
+    },
+    {
+      "address": 4739016,
+      "aliases": [],
+      "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Camera offset X applied to world positions for rendering.",
       "definition_state": "fully-specified",
@@ -20386,6 +20407,27 @@
       "size": null,
       "size_source": null,
       "type": "float"
+    },
+    {
+      "address": 4810232,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
+      "comment": "Shared UI/HUD tint RGBA aggregate initialized at startup; overlays the four render_tint_color component rows.",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "render_tint_color",
+      "section": ".data",
+      "section_offset": 153080,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
+      "type": "effect_color_t"
     },
     {
       "address": 4810232,
@@ -30715,6 +30757,20 @@
   "notes": "Data label map for globals and tables. Keep names unique per program.",
   "overlays": [
     {
+      "address": 4739016,
+      "names": [
+        "camera_offset",
+        "camera_offset_x"
+      ]
+    },
+    {
+      "address": 4810232,
+      "names": [
+        "render_tint_color",
+        "render_tint_color_r"
+      ]
+    },
+    {
       "address": 4895164,
       "names": [
         "effect_template",
@@ -30733,9 +30789,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "f4a74bf4deee760e3a8a2803cbfab3e5d98626812f31d3a551aac39cbf13db28",
+    "data_map_sha256": "c09119daba3a3486c2746da74c6509654316700fcc0961e6effee6b19c189a55",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "1db4fef3a35fb886c96c99eedda891d40ab53e4d0872d77fc53b993c307885ea",
+    "definitions_sha256": "c9efad458ba1765718e5e1ff752706a2dce8d99d39e4c94f6cceed3f96a05d0b",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -30746,26 +30802,26 @@
   "summary": {
     "alias_names": 35,
     "alias_rows": 35,
-    "definition_group_entries": 599,
+    "definition_group_entries": 601,
     "definition_groups": 68,
-    "entry_count": 1549,
-    "explicit_alignment_entries": 683,
-    "explicit_initializer_entries": 683,
-    "explicit_size_entries": 683,
+    "entry_count": 1551,
+    "explicit_alignment_entries": 685,
+    "explicit_initializer_entries": 685,
+    "explicit_size_entries": 685,
     "fixed_array_types": 96,
-    "fully_specified_entries": 683,
+    "fully_specified_entries": 685,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 5,
-    "overlay_addresses": 2,
+    "overlay_addresses": 4,
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 1541,
+      ".data": 1543,
       ".rdata": 4,
       ".text": 4
     },
-    "typed_entries": 765,
+    "typed_entries": 767,
     "unique_addresses": 1547,
     "untyped_entries": 784
   }
