@@ -6,7 +6,7 @@
     "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
     "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
   },
-  "notes": "Initial high-fan-in Grim data tranche. Every extent, alignment, and initializer is explicit; no size is inferred from adjacency.",
+  "notes": "High-confidence Grim native data definitions. Every extent, alignment, and initializer is explicit; no size is inferred from adjacency.",
   "entries": [
     {
       "address": "0x1005976c",
@@ -87,6 +87,264 @@
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "initializer_hex": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005d3f4"
+    }
+  ],
+  "groups": [
+    {
+      "name": "literal-float32",
+      "types": ["float"],
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered extern float declarations; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x10053044", "grim_key_repeat_delay", "0000003f"],
+        ["0x10059f40", "grim_rotation_sin", "00000000"],
+        ["0x1005a460", "grim_rotation_m00", "00000000"],
+        ["0x1005a464", "grim_rotation_m01", "00000000"],
+        ["0x1005a468", "grim_rotation_m10", "00000000"],
+        ["0x1005a46c", "grim_rotation_m11", "00000000"],
+        ["0x1005b288", "grim_vertex_z", "00000000"],
+        ["0x1005b28c", "grim_vertex_rhw", "00000000"],
+        ["0x1005cd08", "grim_font_scale", "00000000"],
+        ["0x1005d138", "grim_joystick_deadzone", "00000000"],
+        ["0x1005d148", "grim_joystick_center_x", "00000000"],
+        ["0x1005d158", "grim_joystick_center_y", "00000000"],
+        ["0x1005d3b0", "grim_ms_to_seconds_scale", "00000000"],
+        ["0x1005d3b8", "grim_mouse_wheel_delta_cached", "00000000"],
+        ["0x1005db58", "grim_mouse_wheel_delta", "00000000"]
+      ]
+    },
+    {
+      "name": "literal-int32",
+      "types": ["DWORD", "UINT", "int", "uint"],
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x10053050", "grim_key_char_buffer_size", "fe010000"],
+        ["0x1005305c", "grim_texture_slot_max_index", "ffffffff"],
+        ["0x10059dc4", "grim_tick_prev_ms", "00000000"],
+        ["0x1005a458", "grim_lookup_blob_size", "00000000"],
+        ["0x1005bad0", "grim_tick_now_ms", "00000000"],
+        ["0x1005bad4", "grim_timing_epoch_ms", "00000000"],
+        ["0x1005d3e4", "grim_key_char_queue_count", "00000000"],
+        ["0x1005d3e8", "grim_selected_adapter_index", "00000000"],
+        ["0x1005d814", "grim_fps_sample_frames", "00000000"],
+        ["0x1005d818", "grim_fps_sample_elapsed_ms", "00000000"]
+      ]
+    },
+    {
+      "name": "zero-byte",
+      "types": ["bool", "char"],
+      "size": 1,
+      "size_source": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_bool_alignment_is_one and default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x1005a470", "grim_timing_frozen"],
+        ["0x1005bc14", "grim_lookup_blob_loaded"],
+        ["0x1005cc38", "grim_keyboard_enabled"],
+        ["0x1005cc48", "grim_mouse_enabled"],
+        ["0x1005cc68", "grim_joystick_enabled"],
+        ["0x1005d3ac", "grim_reserved_d3ac"],
+        ["0x1005d828", "grim_empty_string"]
+      ]
+    },
+    {
+      "name": "zero-pointer32",
+      "types": [
+        "GrimInputProvider *",
+        "HICON",
+        "HWND",
+        "HWND *",
+        "IGrim2D *",
+        "LPDIRECT3D8",
+        "LPDIRECT3DINDEXBUFFER8",
+        "LPDIRECT3DSURFACE8",
+        "LPDIRECTINPUTDEVICE8A",
+        "char *",
+        "int (*)(void)",
+        "void *",
+        "void (*)(void)"
+      ],
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered pointer and Win32 handle declarations; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x10059770", "grim_on_device_restore"],
+        ["0x10059778", "grim_window_icon_handle"],
+        ["0x1005977c", "grim_frame_callback"],
+        ["0x10059bb8", "grim_index_buffer"],
+        ["0x1005a48c", "grim_render_target_surface"],
+        ["0x1005a670", "grim_lookup_blob"],
+        ["0x1005b2c4", "grim_d3d8_probe"],
+        ["0x1005bac8", "grim_window_title"],
+        ["0x1005c8fc", "grim_d3d8"],
+        ["0x1005c900", "grim_backbuffer_surface"],
+        ["0x1005d0b4", "grim_main_window_hwnd_ref"],
+        ["0x1005d3a8", "grim_on_device_lost"],
+        ["0x1005d3b4", "grim_input_provider"],
+        ["0x1005d3f8", "grim_main_window_hwnd"],
+        ["0x1005d3fc", "grim_device_window_override"],
+        ["0x1005d81c", "grim_interface_instance"],
+        ["0x1005da24", "grim_keyboard_device"]
+      ]
+    },
+    {
+      "name": "literal-char-array-00023",
+      "types": ["char[35]"],
+      "size": 35,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete NUL-terminated error string extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x100530f4", "grim_missing_frame_error_text", "53797374656d3a204e6f204672616d652046756e6374696f6e20646566696e65642e00"]
+      ]
+    },
+    {
+      "name": "zero-char-array-00104",
+      "types": ["char[260]"],
+      "size": 260,
+      "size_source": "tools/match/scratches: _getcwd destination declaration and MAX_PATH extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x10059e3c", "grim_working_dir"]
+      ]
+    },
+    {
+      "name": "zero-uchar-array-00010",
+      "types": ["unsigned char[16]"],
+      "size": 16,
+      "size_source": "tools/match/scratches: recovered sixteen-element mouse button arrays",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x1005a044", "grim_mouse_button_cache"],
+        ["0x1005c8e8", "grim_mouse_button_latch"]
+      ]
+    },
+    {
+      "name": "zero-uchar-array-00100",
+      "types": ["unsigned char[256]"],
+      "size": 256,
+      "size_source": "tools/match/scratches: recovered 256-element DirectInput key-state arrays",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x10059f44", "grim_key_repeat_first_press"],
+        ["0x1005da28", "grim_keyboard_state"]
+      ]
+    },
+    {
+      "name": "zero-float-array-00400",
+      "types": ["float[256]"],
+      "size": 1024,
+      "size_source": "tools/match/scratches/grim_was_key_pressed: grim_key_repeat_timers[256]; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005a058", "grim_key_repeat_timers"]
+      ]
+    },
+    {
+      "name": "zero-config-value-00010",
+      "types": ["grim_config_value_t"],
+      "size": 16,
+      "size_source": "tools/native/abi/grim.dll/abi_assertions.cpp: config_value_is_16_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_config_value_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at the member VA",
+      "members": [
+        ["0x1005a478", "grim_config_default"]
+      ]
+    },
+    {
+      "name": "zero-config-blob-00480",
+      "types": ["crimson_cfg_t"],
+      "size": 1152,
+      "size_source": "tools/native/abi/grim.dll/abi_assertions.cpp: config_blob_is_0x480_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_config_blob_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
+      "members": [
+        ["0x1005c418", "grim_config_blob"]
+      ]
+    },
+    {
+      "name": "zero-config-values-00800",
+      "types": ["grim_config_value_t[128]"],
+      "size": 2048,
+      "size_source": "tools/match/scratches: recovered 128-entry config table; tools/native/abi/grim.dll/abi_assertions.cpp: config_value_is_16_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_config_value_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
+      "members": [
+        ["0x1005cb88", "grim_config_values"]
+      ]
+    },
+    {
+      "name": "zero-int-array-00020",
+      "types": ["int[8]"],
+      "size": 32,
+      "size_source": "tools/match/scratches: recovered eight-entry key-character queue; tools/native/abi/grim.dll/abi_assertions.cpp: int_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
+      "members": [
+        ["0x1005d3c4", "grim_key_char_queue"]
+      ]
+    },
+    {
+      "name": "zero-joystick-state-00110",
+      "types": ["DIJOYSTATE2"],
+      "size": 272,
+      "size_source": "tools/native/abi/grim.dll/abi_assertions.cpp: joystick_state_is_0x110_bytes",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_joystick_state_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
+      "members": [
+        ["0x1005d830", "grim_joystick_state"]
+      ]
+    },
+    {
+      "name": "zero-keyboard-events-000c8",
+      "types": ["DIDEVICEOBJECTDATA[10]"],
+      "size": 200,
+      "size_source": "tools/match/scratches/grim_keyboard_poll and tools/native/abi/grim.dll/abi_assertions.cpp: ten 0x14-byte keyboard event records",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_keyboard_event_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data virtual zero-fill at the member VA",
+      "members": [
+        ["0x1005d958", "grim_keyboard_event_buffer"]
+      ]
     }
   ]
 }

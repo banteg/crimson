@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/grim.dll/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "5bea47e64fc357a8f5f54abc42d2f9ae037e69cc48bc054785f47cc908542bbe"
+        "sha256": "ed958a6efaf3fbd9ed2580665dccb4265b0c8e551c5e429190a7709856c03b5c"
       },
       {
         "path": "tools/native/abi/grim.dll/scratch.conf",
@@ -31,6 +31,11 @@
         "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
       },
       {
+        "path": "third_party/headers/crimsonland_types.h",
+        "repository_relative": true,
+        "sha256": "2835189508416e50efbf90c0eb80ad21732a10e77587e085bcf3b8dbd4302a6f"
+      },
+      {
         "path": "tools/match/include/grim2d_abi.h",
         "repository_relative": true,
         "sha256": "49b43a44c83ba2218233c63d779ba5a32ee6a01a88af92de546f7656353fd53e"
@@ -39,6 +44,11 @@
         "path": "tools/match/include/grim2d_cpp.h",
         "repository_relative": true,
         "sha256": "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
+      },
+      {
+        "path": "tools/match/include/grim_joystick_state.h",
+        "repository_relative": true,
+        "sha256": "fcdbafb7c62910864670464cfd3c576c23e7dd27c4399a66d59dc947db396824"
       }
     ],
     "config": "tools/native/abi/grim.dll/scratch.conf",
@@ -46,22 +56,1967 @@
     "object": "tools/native/abi/grim.dll/build/msvc6.5/528f168a972345bf/abi_assertions.obj",
     "object_sha256": "f337d520b587647e4e3e496f5176a6f7e845ff341e36a3e22c34dc741acc86fd",
     "source": "tools/native/abi/grim.dll/abi_assertions.cpp",
-    "source_sha256": "5bea47e64fc357a8f5f54abc42d2f9ae037e69cc48bc054785f47cc908542bbe",
+    "source_sha256": "ed958a6efaf3fbd9ed2580665dccb4265b0c8e551c5e429190a7709856c03b5c",
     "status": "passed"
   },
-  "audit_digest": "dc6e1712c29c0d9ba31b6a21e2776a0b578149eafe9d89725776061d78442aa8",
+  "audit_digest": "2cb9af6d91f9777bc995f028cf8c943ac64e063644bbb48fe52471b2021a9f43",
+  "data_object_count": 1,
+  "data_objects": [
+    {
+      "bindings": [
+        {
+          "address": 268775492,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_repeat_delay",
+          "section_number": 1,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775492,
+          "storage_name": "grim_key_repeat_delay",
+          "symbols": [
+            "?grim_key_repeat_delay@@3MA"
+          ]
+        },
+        {
+          "address": 268775504,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_char_buffer_size",
+          "section_number": 2,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775504,
+          "storage_name": "grim_key_char_buffer_size",
+          "symbols": [
+            "?grim_key_char_buffer_size@@3HA"
+          ]
+        },
+        {
+          "address": 268775516,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_texture_slot_max_index",
+          "section_number": 3,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268775516,
+          "storage_name": "grim_texture_slot_max_index",
+          "symbols": [
+            "?grim_texture_slot_max_index@@3HA"
+          ]
+        },
+        {
+          "address": 268775668,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_missing_frame_error_text",
+          "section_number": 4,
+          "section_offset": 0,
+          "size": 35,
+          "storage_address": 268775668,
+          "storage_name": "grim_missing_frame_error_text",
+          "symbols": [
+            "?grim_missing_frame_error_text@@3QBDB"
+          ]
+        },
+        {
+          "address": 268801900,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_vertex_capacity",
+          "section_number": 5,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268801900,
+          "storage_name": "grim_vertex_capacity",
+          "symbols": [
+            "?grim_vertex_capacity@@3IA"
+          ]
+        },
+        {
+          "address": 268801904,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_on_device_restore",
+          "section_number": 6,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268801904,
+          "storage_name": "grim_on_device_restore",
+          "symbols": [
+            "?grim_on_device_restore@@3P6AXXZA"
+          ]
+        },
+        {
+          "address": 268801912,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_window_icon_handle",
+          "section_number": 7,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268801912,
+          "storage_name": "grim_window_icon_handle",
+          "symbols": [
+            "?grim_window_icon_handle@@3PAUHICON__@@A"
+          ]
+        },
+        {
+          "address": 268801916,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_frame_callback",
+          "section_number": 8,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268801916,
+          "storage_name": "grim_frame_callback",
+          "symbols": [
+            "?grim_frame_callback@@3P6AXXZA"
+          ]
+        },
+        {
+          "address": 268803000,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_index_buffer",
+          "section_number": 9,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803000,
+          "storage_name": "grim_index_buffer",
+          "symbols": [
+            "?grim_index_buffer@@3PAUIDirect3DIndexBuffer8@@A"
+          ]
+        },
+        {
+          "address": 268803516,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_d3d_device",
+          "section_number": 10,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803516,
+          "storage_name": "grim_d3d_device",
+          "symbols": [
+            "?grim_d3d_device@@3PAUIDirect3DDevice8@@A"
+          ]
+        },
+        {
+          "address": 268803524,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_tick_prev_ms",
+          "section_number": 11,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803524,
+          "storage_name": "grim_tick_prev_ms",
+          "symbols": [
+            "?grim_tick_prev_ms@@3KA"
+          ]
+        },
+        {
+          "address": 268803628,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_vertex_buffer",
+          "section_number": 12,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803628,
+          "storage_name": "grim_vertex_buffer",
+          "symbols": [
+            "?grim_vertex_buffer@@3PAUIDirect3DVertexBuffer8@@A"
+          ]
+        },
+        {
+          "address": 268803644,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_working_dir",
+          "section_number": 13,
+          "section_offset": 0,
+          "size": 260,
+          "storage_address": 268803644,
+          "storage_name": "grim_working_dir",
+          "symbols": [
+            "?grim_working_dir@@3PADA"
+          ]
+        },
+        {
+          "address": 268803904,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_rotation_sin",
+          "section_number": 14,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268803904,
+          "storage_name": "grim_rotation_sin",
+          "symbols": [
+            "?grim_rotation_sin@@3MA"
+          ]
+        },
+        {
+          "address": 268803908,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_repeat_first_press",
+          "section_number": 15,
+          "section_offset": 0,
+          "size": 256,
+          "storage_address": 268803908,
+          "storage_name": "grim_key_repeat_first_press",
+          "symbols": [
+            "?grim_key_repeat_first_press@@3PAEA"
+          ]
+        },
+        {
+          "address": 268804164,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_button_cache",
+          "section_number": 16,
+          "section_offset": 0,
+          "size": 16,
+          "storage_address": 268804164,
+          "storage_name": "grim_mouse_button_cache",
+          "symbols": [
+            "?grim_mouse_button_cache@@3PAEA",
+            "?grim_mouse_button_cache@@3PA_NA"
+          ]
+        },
+        {
+          "address": 268804184,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_repeat_timers",
+          "section_number": 17,
+          "section_offset": 0,
+          "size": 1024,
+          "storage_address": 268804184,
+          "storage_name": "grim_key_repeat_timers",
+          "symbols": [
+            "?grim_key_repeat_timers@@3PAMA"
+          ]
+        },
+        {
+          "address": 268805208,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_lookup_blob_size",
+          "section_number": 18,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805208,
+          "storage_name": "grim_lookup_blob_size",
+          "symbols": [
+            "?grim_lookup_blob_size@@3HA"
+          ]
+        },
+        {
+          "address": 268805216,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_rotation_m00",
+          "section_number": 19,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805216,
+          "storage_name": "grim_rotation_m00",
+          "symbols": [
+            "?grim_rotation_m00@@3MA"
+          ]
+        },
+        {
+          "address": 268805220,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_rotation_m01",
+          "section_number": 20,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805220,
+          "storage_name": "grim_rotation_m01",
+          "symbols": [
+            "?grim_rotation_m01@@3MA"
+          ]
+        },
+        {
+          "address": 268805224,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_rotation_m10",
+          "section_number": 21,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805224,
+          "storage_name": "grim_rotation_m10",
+          "symbols": [
+            "?grim_rotation_m10@@3MA"
+          ]
+        },
+        {
+          "address": 268805228,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_rotation_m11",
+          "section_number": 22,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805228,
+          "storage_name": "grim_rotation_m11",
+          "symbols": [
+            "?grim_rotation_m11@@3MA"
+          ]
+        },
+        {
+          "address": 268805232,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_timing_frozen",
+          "section_number": 23,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268805232,
+          "storage_name": "grim_timing_frozen",
+          "symbols": [
+            "?grim_timing_frozen@@3EA"
+          ]
+        },
+        {
+          "address": 268805240,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_config_default",
+          "section_number": 24,
+          "section_offset": 0,
+          "size": 16,
+          "storage_address": 268805240,
+          "storage_name": "grim_config_default",
+          "symbols": [
+            "?grim_config_default@@3Ugrim_config_value_t@@A"
+          ]
+        },
+        {
+          "address": 268805260,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_render_target_surface",
+          "section_number": 25,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805260,
+          "storage_name": "grim_render_target_surface",
+          "symbols": [
+            "?grim_render_target_surface@@3PAUIDirect3DSurface8@@A"
+          ]
+        },
+        {
+          "address": 268805744,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_lookup_blob",
+          "section_number": 26,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268805744,
+          "storage_name": "grim_lookup_blob",
+          "symbols": [
+            "?grim_lookup_blob@@3PADA",
+            "?grim_lookup_blob@@3PAXA"
+          ]
+        },
+        {
+          "address": 268808840,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_vertex_z",
+          "section_number": 27,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268808840,
+          "storage_name": "grim_vertex_z",
+          "symbols": [
+            "?grim_vertex_z@@3MA",
+            "?grim_vertex_z@@3UGrimDepth@@A",
+            "?grim_vertex_z@@3UGrimUV@@A"
+          ]
+        },
+        {
+          "address": 268808844,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_vertex_rhw",
+          "section_number": 28,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268808844,
+          "storage_name": "grim_vertex_rhw",
+          "symbols": [
+            "?grim_vertex_rhw@@3MA"
+          ]
+        },
+        {
+          "address": 268808900,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_d3d8_probe",
+          "section_number": 29,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268808900,
+          "storage_name": "grim_d3d8_probe",
+          "symbols": [
+            "?grim_d3d8_probe@@3PAUIDirect3D8@@A"
+          ]
+        },
+        {
+          "address": 268810952,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_window_title",
+          "section_number": 30,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268810952,
+          "storage_name": "grim_window_title",
+          "symbols": [
+            "?grim_window_title@@3PADA"
+          ]
+        },
+        {
+          "address": 268810960,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_tick_now_ms",
+          "section_number": 31,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268810960,
+          "storage_name": "grim_tick_now_ms",
+          "symbols": [
+            "?grim_tick_now_ms@@3KA"
+          ]
+        },
+        {
+          "address": 268810964,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_timing_epoch_ms",
+          "section_number": 32,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268810964,
+          "storage_name": "grim_timing_epoch_ms",
+          "symbols": [
+            "?grim_timing_epoch_ms@@3KA"
+          ]
+        },
+        {
+          "address": 268811284,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_lookup_blob_loaded",
+          "section_number": 33,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268811284,
+          "storage_name": "grim_lookup_blob_loaded",
+          "symbols": [
+            "?grim_lookup_blob_loaded@@3EA"
+          ]
+        },
+        {
+          "address": 268813336,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_config_blob",
+          "section_number": 34,
+          "section_offset": 0,
+          "size": 1152,
+          "storage_address": 268813336,
+          "storage_name": "grim_config_blob",
+          "symbols": [
+            "?grim_config_blob@@3Ucrimson_cfg_t@@A"
+          ]
+        },
+        {
+          "address": 268814488,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_device_ready",
+          "section_number": 35,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268814488,
+          "storage_name": "grim_device_ready",
+          "symbols": [
+            "?grim_device_ready@@3EA"
+          ]
+        },
+        {
+          "address": 268814556,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_vertex_count",
+          "section_number": 36,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268814556,
+          "storage_name": "grim_vertex_count",
+          "symbols": [
+            "?grim_vertex_count@@3KA"
+          ]
+        },
+        {
+          "address": 268814568,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_button_latch",
+          "section_number": 37,
+          "section_offset": 0,
+          "size": 16,
+          "storage_address": 268814568,
+          "storage_name": "grim_mouse_button_latch",
+          "symbols": [
+            "?grim_mouse_button_latch@@3PAEA",
+            "?grim_mouse_button_latch@@3PAIA"
+          ]
+        },
+        {
+          "address": 268814584,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_error_text",
+          "section_number": 38,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268814584,
+          "storage_name": "grim_error_text",
+          "symbols": [
+            "?grim_error_text@@3PADA",
+            "_grim_error_text"
+          ]
+        },
+        {
+          "address": 268814588,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_d3d8",
+          "section_number": 39,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268814588,
+          "storage_name": "grim_d3d8",
+          "symbols": [
+            "?grim_d3d8@@3PAUIDirect3D8@@A"
+          ]
+        },
+        {
+          "address": 268814592,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_backbuffer_surface",
+          "section_number": 40,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268814592,
+          "storage_name": "grim_backbuffer_surface",
+          "symbols": [
+            "?grim_backbuffer_surface@@3PAUIDirect3DSurface8@@A"
+          ]
+        },
+        {
+          "address": 268815240,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_config_values",
+          "section_number": 41,
+          "section_offset": 0,
+          "size": 2048,
+          "storage_address": 268815240,
+          "storage_name": "grim_config_values",
+          "symbols": [
+            "?grim_config_values@@3PAUgrim_config_value_t@@A"
+          ]
+        },
+        {
+          "address": 268815416,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_keyboard_enabled",
+          "section_number": 41,
+          "section_offset": 176,
+          "size": 1,
+          "storage_address": 268815416,
+          "storage_name": "grim_keyboard_enabled",
+          "symbols": [
+            "?grim_keyboard_enabled@@3_NA"
+          ]
+        },
+        {
+          "address": 268815432,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_enabled",
+          "section_number": 41,
+          "section_offset": 192,
+          "size": 1,
+          "storage_address": 268815432,
+          "storage_name": "grim_mouse_enabled",
+          "symbols": [
+            "?grim_mouse_enabled@@3_NA"
+          ]
+        },
+        {
+          "address": 268815448,
+          "alignment": null,
+          "initializer_target": null,
+          "kind": "interior-alias",
+          "name": "grim_input_cached",
+          "section_number": 41,
+          "section_offset": 208,
+          "size": null,
+          "storage_address": 268815240,
+          "storage_name": "grim_config_values",
+          "symbols": [
+            "?grim_input_cached@@3EA",
+            "?grim_input_cached@@3_NA",
+            "_grim_input_cached"
+          ]
+        },
+        {
+          "address": 268815464,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_joystick_enabled",
+          "section_number": 41,
+          "section_offset": 224,
+          "size": 1,
+          "storage_address": 268815464,
+          "storage_name": "grim_joystick_enabled",
+          "symbols": [
+            "?grim_joystick_enabled@@3_NA"
+          ]
+        },
+        {
+          "address": 268815608,
+          "alignment": null,
+          "initializer_target": null,
+          "kind": "interior-alias",
+          "name": "grim_font_texture_bound",
+          "section_number": 41,
+          "section_offset": 368,
+          "size": null,
+          "storage_address": 268815240,
+          "storage_name": "grim_config_values",
+          "symbols": [
+            "?grim_font_texture_bound@@3EA"
+          ]
+        },
+        {
+          "address": 268815624,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_font_scale",
+          "section_number": 41,
+          "section_offset": 384,
+          "size": 4,
+          "storage_address": 268815624,
+          "storage_name": "grim_font_scale",
+          "symbols": [
+            "?grim_font_scale@@3MA"
+          ]
+        },
+        {
+          "address": 268816564,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_main_window_hwnd_ref",
+          "section_number": 41,
+          "section_offset": 1324,
+          "size": 4,
+          "storage_address": 268816564,
+          "storage_name": "grim_main_window_hwnd_ref",
+          "symbols": [
+            "?grim_main_window_hwnd_ref@@3PAPAUHWND__@@A"
+          ]
+        },
+        {
+          "address": 268816696,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_joystick_deadzone",
+          "section_number": 41,
+          "section_offset": 1456,
+          "size": 4,
+          "storage_address": 268816696,
+          "storage_name": "grim_joystick_deadzone",
+          "symbols": [
+            "?grim_joystick_deadzone@@3MA"
+          ]
+        },
+        {
+          "address": 268816712,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_joystick_center_x",
+          "section_number": 41,
+          "section_offset": 1472,
+          "size": 4,
+          "storage_address": 268816712,
+          "storage_name": "grim_joystick_center_x",
+          "symbols": [
+            "?grim_joystick_center_x@@3MA"
+          ]
+        },
+        {
+          "address": 268816728,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_joystick_center_y",
+          "section_number": 41,
+          "section_offset": 1488,
+          "size": 4,
+          "storage_address": 268816728,
+          "storage_name": "grim_joystick_center_y",
+          "symbols": [
+            "?grim_joystick_center_y@@3MA"
+          ]
+        },
+        {
+          "address": 268817320,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_on_device_lost",
+          "section_number": 42,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817320,
+          "storage_name": "grim_on_device_lost",
+          "symbols": [
+            "?grim_on_device_lost@@3P6AXXZA"
+          ]
+        },
+        {
+          "address": 268817324,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_reserved_d3ac",
+          "section_number": 43,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268817324,
+          "storage_name": "grim_reserved_d3ac",
+          "symbols": [
+            "?grim_reserved_d3ac@@3EA"
+          ]
+        },
+        {
+          "address": 268817328,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_ms_to_seconds_scale",
+          "section_number": 44,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817328,
+          "storage_name": "grim_ms_to_seconds_scale",
+          "symbols": [
+            "?grim_ms_to_seconds_scale@@3MA"
+          ]
+        },
+        {
+          "address": 268817332,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_input_provider",
+          "section_number": 45,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817332,
+          "storage_name": "grim_input_provider",
+          "symbols": [
+            "?grim_input_provider@@3PAVGrimInputProvider@@A"
+          ]
+        },
+        {
+          "address": 268817336,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_wheel_delta_cached",
+          "section_number": 46,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817336,
+          "storage_name": "grim_mouse_wheel_delta_cached",
+          "symbols": [
+            "_grim_mouse_wheel_delta_cached"
+          ]
+        },
+        {
+          "address": 268817341,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_render_disabled",
+          "section_number": 47,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268817341,
+          "storage_name": "grim_render_disabled",
+          "symbols": [
+            "?grim_render_disabled@@3EA"
+          ]
+        },
+        {
+          "address": 268817348,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_char_queue",
+          "section_number": 48,
+          "section_offset": 0,
+          "size": 32,
+          "storage_address": 268817348,
+          "storage_name": "grim_key_char_queue",
+          "symbols": [
+            "?grim_key_char_queue@@3PAHA"
+          ]
+        },
+        {
+          "address": 268817380,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_key_char_queue_count",
+          "section_number": 49,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817380,
+          "storage_name": "grim_key_char_queue_count",
+          "symbols": [
+            "?grim_key_char_queue_count@@3HA"
+          ]
+        },
+        {
+          "address": 268817384,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_selected_adapter_index",
+          "section_number": 50,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817384,
+          "storage_name": "grim_selected_adapter_index",
+          "symbols": [
+            "?grim_selected_adapter_index@@3IA"
+          ]
+        },
+        {
+          "address": 268817396,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_batch_active",
+          "section_number": 51,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268817396,
+          "storage_name": "grim_batch_active",
+          "symbols": [
+            "?grim_batch_active@@3EA"
+          ]
+        },
+        {
+          "address": 268817400,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_main_window_hwnd",
+          "section_number": 52,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817400,
+          "storage_name": "grim_main_window_hwnd",
+          "symbols": [
+            "?grim_main_window_hwnd@@3PAUHWND__@@A",
+            "?grim_main_window_hwnd@@3PAXA"
+          ]
+        },
+        {
+          "address": 268817404,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_device_window_override",
+          "section_number": 53,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268817404,
+          "storage_name": "grim_device_window_override",
+          "symbols": [
+            "?grim_device_window_override@@3PAUHWND__@@A"
+          ]
+        },
+        {
+          "address": 268818452,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_fps_sample_frames",
+          "section_number": 54,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268818452,
+          "storage_name": "grim_fps_sample_frames",
+          "symbols": [
+            "?grim_fps_sample_frames@@3KA"
+          ]
+        },
+        {
+          "address": 268818456,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_fps_sample_elapsed_ms",
+          "section_number": 55,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268818456,
+          "storage_name": "grim_fps_sample_elapsed_ms",
+          "symbols": [
+            "?grim_fps_sample_elapsed_ms@@3KA"
+          ]
+        },
+        {
+          "address": 268818460,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_interface_instance",
+          "section_number": 56,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268818460,
+          "storage_name": "grim_interface_instance",
+          "symbols": [
+            "?grim_interface_instance@@3PAUGrimInterface@@A",
+            "?grim_interface_instance@@3PAVIGrim2D_cpp@@A"
+          ]
+        },
+        {
+          "address": 268818472,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_empty_string",
+          "section_number": 57,
+          "section_offset": 0,
+          "size": 1,
+          "storage_address": 268818472,
+          "storage_name": "grim_empty_string",
+          "symbols": [
+            "?grim_empty_string@@3DA"
+          ]
+        },
+        {
+          "address": 268818480,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_joystick_state",
+          "section_number": 58,
+          "section_offset": 0,
+          "size": 272,
+          "storage_address": 268818480,
+          "storage_name": "grim_joystick_state",
+          "symbols": [
+            "?grim_joystick_state@@3UGrimJoystickState@@A"
+          ]
+        },
+        {
+          "address": 268818776,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_keyboard_event_buffer",
+          "section_number": 59,
+          "section_offset": 0,
+          "size": 200,
+          "storage_address": 268818776,
+          "storage_name": "grim_keyboard_event_buffer",
+          "symbols": [
+            "?grim_keyboard_event_buffer@@3PAUGrimKeyboardEvent@@A"
+          ]
+        },
+        {
+          "address": 268818980,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_keyboard_device",
+          "section_number": 60,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268818980,
+          "storage_name": "grim_keyboard_device",
+          "symbols": [
+            "?grim_keyboard_device@@3PAUGrimKeyboardDevice@@A"
+          ]
+        },
+        {
+          "address": 268818984,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_keyboard_state",
+          "section_number": 61,
+          "section_offset": 0,
+          "size": 256,
+          "storage_address": 268818984,
+          "storage_name": "grim_keyboard_state",
+          "symbols": [
+            "?grim_keyboard_state@@3PAEA"
+          ]
+        },
+        {
+          "address": 268819288,
+          "alignment": 4,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_mouse_wheel_delta",
+          "section_number": 62,
+          "section_offset": 0,
+          "size": 4,
+          "storage_address": 268819288,
+          "storage_name": "grim_mouse_wheel_delta",
+          "symbols": [
+            "_grim_mouse_wheel_delta"
+          ]
+        }
+      ],
+      "definitions": {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "repository_relative": true,
+        "sha256": "0bde80cbd862d9e2e99818b38e9deb011900f51b176cee405eaa43351c7ff891"
+      },
+      "emitted_symbol_count": 82,
+      "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
+      "object_sha256": "ef0591d8b23f9dfe96b89fc58c4c3454306c796ac621422aea7f47566e0a9df9",
+      "regions": [
+        {
+          "address": 268775492,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775492,
+              "name": "grim_key_repeat_delay"
+            }
+          ],
+          "relocations": [],
+          "section_number": 1,
+          "size": 4
+        },
+        {
+          "address": 268775504,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775504,
+              "name": "grim_key_char_buffer_size"
+            }
+          ],
+          "relocations": [],
+          "section_number": 2,
+          "size": 4
+        },
+        {
+          "address": 268775516,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268775516,
+              "name": "grim_texture_slot_max_index"
+            }
+          ],
+          "relocations": [],
+          "section_number": 3,
+          "size": 4
+        },
+        {
+          "address": 268775668,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268775668,
+              "name": "grim_missing_frame_error_text"
+            }
+          ],
+          "relocations": [],
+          "section_number": 4,
+          "size": 35
+        },
+        {
+          "address": 268801900,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268801900,
+              "name": "grim_vertex_capacity"
+            }
+          ],
+          "relocations": [],
+          "section_number": 5,
+          "size": 4
+        },
+        {
+          "address": 268801904,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268801904,
+              "name": "grim_on_device_restore"
+            }
+          ],
+          "relocations": [],
+          "section_number": 6,
+          "size": 4
+        },
+        {
+          "address": 268801912,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268801912,
+              "name": "grim_window_icon_handle"
+            }
+          ],
+          "relocations": [],
+          "section_number": 7,
+          "size": 4
+        },
+        {
+          "address": 268801916,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268801916,
+              "name": "grim_frame_callback"
+            }
+          ],
+          "relocations": [],
+          "section_number": 8,
+          "size": 4
+        },
+        {
+          "address": 268803000,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803000,
+              "name": "grim_index_buffer"
+            }
+          ],
+          "relocations": [],
+          "section_number": 9,
+          "size": 4
+        },
+        {
+          "address": 268803516,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803516,
+              "name": "grim_d3d_device"
+            }
+          ],
+          "relocations": [],
+          "section_number": 10,
+          "size": 4
+        },
+        {
+          "address": 268803524,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803524,
+              "name": "grim_tick_prev_ms"
+            }
+          ],
+          "relocations": [],
+          "section_number": 11,
+          "size": 4
+        },
+        {
+          "address": 268803628,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803628,
+              "name": "grim_vertex_buffer"
+            }
+          ],
+          "relocations": [],
+          "section_number": 12,
+          "size": 4
+        },
+        {
+          "address": 268803644,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268803644,
+              "name": "grim_working_dir"
+            }
+          ],
+          "relocations": [],
+          "section_number": 13,
+          "size": 260
+        },
+        {
+          "address": 268803904,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268803904,
+              "name": "grim_rotation_sin"
+            }
+          ],
+          "relocations": [],
+          "section_number": 14,
+          "size": 4
+        },
+        {
+          "address": 268803908,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268803908,
+              "name": "grim_key_repeat_first_press"
+            }
+          ],
+          "relocations": [],
+          "section_number": 15,
+          "size": 256
+        },
+        {
+          "address": 268804164,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268804164,
+              "name": "grim_mouse_button_cache"
+            }
+          ],
+          "relocations": [],
+          "section_number": 16,
+          "size": 16
+        },
+        {
+          "address": 268804184,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268804184,
+              "name": "grim_key_repeat_timers"
+            }
+          ],
+          "relocations": [],
+          "section_number": 17,
+          "size": 1024
+        },
+        {
+          "address": 268805208,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805208,
+              "name": "grim_lookup_blob_size"
+            }
+          ],
+          "relocations": [],
+          "section_number": 18,
+          "size": 4
+        },
+        {
+          "address": 268805216,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805216,
+              "name": "grim_rotation_m00"
+            }
+          ],
+          "relocations": [],
+          "section_number": 19,
+          "size": 4
+        },
+        {
+          "address": 268805220,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805220,
+              "name": "grim_rotation_m01"
+            }
+          ],
+          "relocations": [],
+          "section_number": 20,
+          "size": 4
+        },
+        {
+          "address": 268805224,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805224,
+              "name": "grim_rotation_m10"
+            }
+          ],
+          "relocations": [],
+          "section_number": 21,
+          "size": 4
+        },
+        {
+          "address": 268805228,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805228,
+              "name": "grim_rotation_m11"
+            }
+          ],
+          "relocations": [],
+          "section_number": 22,
+          "size": 4
+        },
+        {
+          "address": 268805232,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268805232,
+              "name": "grim_timing_frozen"
+            }
+          ],
+          "relocations": [],
+          "section_number": 23,
+          "size": 1
+        },
+        {
+          "address": 268805240,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805240,
+              "name": "grim_config_default"
+            }
+          ],
+          "relocations": [],
+          "section_number": 24,
+          "size": 16
+        },
+        {
+          "address": 268805260,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805260,
+              "name": "grim_render_target_surface"
+            }
+          ],
+          "relocations": [],
+          "section_number": 25,
+          "size": 4
+        },
+        {
+          "address": 268805744,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268805744,
+              "name": "grim_lookup_blob"
+            }
+          ],
+          "relocations": [],
+          "section_number": 26,
+          "size": 4
+        },
+        {
+          "address": 268808840,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808840,
+              "name": "grim_vertex_z"
+            }
+          ],
+          "relocations": [],
+          "section_number": 27,
+          "size": 4
+        },
+        {
+          "address": 268808844,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808844,
+              "name": "grim_vertex_rhw"
+            }
+          ],
+          "relocations": [],
+          "section_number": 28,
+          "size": 4
+        },
+        {
+          "address": 268808900,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268808900,
+              "name": "grim_d3d8_probe"
+            }
+          ],
+          "relocations": [],
+          "section_number": 29,
+          "size": 4
+        },
+        {
+          "address": 268810952,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268810952,
+              "name": "grim_window_title"
+            }
+          ],
+          "relocations": [],
+          "section_number": 30,
+          "size": 4
+        },
+        {
+          "address": 268810960,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268810960,
+              "name": "grim_tick_now_ms"
+            }
+          ],
+          "relocations": [],
+          "section_number": 31,
+          "size": 4
+        },
+        {
+          "address": 268810964,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268810964,
+              "name": "grim_timing_epoch_ms"
+            }
+          ],
+          "relocations": [],
+          "section_number": 32,
+          "size": 4
+        },
+        {
+          "address": 268811284,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268811284,
+              "name": "grim_lookup_blob_loaded"
+            }
+          ],
+          "relocations": [],
+          "section_number": 33,
+          "size": 1
+        },
+        {
+          "address": 268813336,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268813336,
+              "name": "grim_config_blob"
+            }
+          ],
+          "relocations": [],
+          "section_number": 34,
+          "size": 1152
+        },
+        {
+          "address": 268814488,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268814488,
+              "name": "grim_device_ready"
+            }
+          ],
+          "relocations": [],
+          "section_number": 35,
+          "size": 1
+        },
+        {
+          "address": 268814556,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268814556,
+              "name": "grim_vertex_count"
+            }
+          ],
+          "relocations": [],
+          "section_number": 36,
+          "size": 4
+        },
+        {
+          "address": 268814568,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268814568,
+              "name": "grim_mouse_button_latch"
+            }
+          ],
+          "relocations": [],
+          "section_number": 37,
+          "size": 16
+        },
+        {
+          "address": 268814584,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268814584,
+              "name": "grim_error_text"
+            }
+          ],
+          "relocations": [],
+          "section_number": 38,
+          "size": 4
+        },
+        {
+          "address": 268814588,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268814588,
+              "name": "grim_d3d8"
+            }
+          ],
+          "relocations": [],
+          "section_number": 39,
+          "size": 4
+        },
+        {
+          "address": 268814592,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268814592,
+              "name": "grim_backbuffer_surface"
+            }
+          ],
+          "relocations": [],
+          "section_number": 40,
+          "size": 4
+        },
+        {
+          "address": 268815240,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268815240,
+              "name": "grim_config_values"
+            },
+            {
+              "address": 268815416,
+              "name": "grim_keyboard_enabled"
+            },
+            {
+              "address": 268815432,
+              "name": "grim_mouse_enabled"
+            },
+            {
+              "address": 268815464,
+              "name": "grim_joystick_enabled"
+            },
+            {
+              "address": 268815624,
+              "name": "grim_font_scale"
+            },
+            {
+              "address": 268816564,
+              "name": "grim_main_window_hwnd_ref"
+            },
+            {
+              "address": 268816696,
+              "name": "grim_joystick_deadzone"
+            },
+            {
+              "address": 268816712,
+              "name": "grim_joystick_center_x"
+            },
+            {
+              "address": 268816728,
+              "name": "grim_joystick_center_y"
+            }
+          ],
+          "relocations": [],
+          "section_number": 41,
+          "size": 2048
+        },
+        {
+          "address": 268817320,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817320,
+              "name": "grim_on_device_lost"
+            }
+          ],
+          "relocations": [],
+          "section_number": 42,
+          "size": 4
+        },
+        {
+          "address": 268817324,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268817324,
+              "name": "grim_reserved_d3ac"
+            }
+          ],
+          "relocations": [],
+          "section_number": 43,
+          "size": 1
+        },
+        {
+          "address": 268817328,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817328,
+              "name": "grim_ms_to_seconds_scale"
+            }
+          ],
+          "relocations": [],
+          "section_number": 44,
+          "size": 4
+        },
+        {
+          "address": 268817332,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817332,
+              "name": "grim_input_provider"
+            }
+          ],
+          "relocations": [],
+          "section_number": 45,
+          "size": 4
+        },
+        {
+          "address": 268817336,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817336,
+              "name": "grim_mouse_wheel_delta_cached"
+            }
+          ],
+          "relocations": [],
+          "section_number": 46,
+          "size": 4
+        },
+        {
+          "address": 268817341,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268817341,
+              "name": "grim_render_disabled"
+            }
+          ],
+          "relocations": [],
+          "section_number": 47,
+          "size": 1
+        },
+        {
+          "address": 268817348,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817348,
+              "name": "grim_key_char_queue"
+            }
+          ],
+          "relocations": [],
+          "section_number": 48,
+          "size": 32
+        },
+        {
+          "address": 268817380,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817380,
+              "name": "grim_key_char_queue_count"
+            }
+          ],
+          "relocations": [],
+          "section_number": 49,
+          "size": 4
+        },
+        {
+          "address": 268817384,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817384,
+              "name": "grim_selected_adapter_index"
+            }
+          ],
+          "relocations": [],
+          "section_number": 50,
+          "size": 4
+        },
+        {
+          "address": 268817396,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268817396,
+              "name": "grim_batch_active"
+            }
+          ],
+          "relocations": [],
+          "section_number": 51,
+          "size": 1
+        },
+        {
+          "address": 268817400,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817400,
+              "name": "grim_main_window_hwnd"
+            }
+          ],
+          "relocations": [],
+          "section_number": 52,
+          "size": 4
+        },
+        {
+          "address": 268817404,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268817404,
+              "name": "grim_device_window_override"
+            }
+          ],
+          "relocations": [],
+          "section_number": 53,
+          "size": 4
+        },
+        {
+          "address": 268818452,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268818452,
+              "name": "grim_fps_sample_frames"
+            }
+          ],
+          "relocations": [],
+          "section_number": 54,
+          "size": 4
+        },
+        {
+          "address": 268818456,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268818456,
+              "name": "grim_fps_sample_elapsed_ms"
+            }
+          ],
+          "relocations": [],
+          "section_number": 55,
+          "size": 4
+        },
+        {
+          "address": 268818460,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268818460,
+              "name": "grim_interface_instance"
+            }
+          ],
+          "relocations": [],
+          "section_number": 56,
+          "size": 4
+        },
+        {
+          "address": 268818472,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268818472,
+              "name": "grim_empty_string"
+            }
+          ],
+          "relocations": [],
+          "section_number": 57,
+          "size": 1
+        },
+        {
+          "address": 268818480,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268818480,
+              "name": "grim_joystick_state"
+            }
+          ],
+          "relocations": [],
+          "section_number": 58,
+          "size": 272
+        },
+        {
+          "address": 268818776,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268818776,
+              "name": "grim_keyboard_event_buffer"
+            }
+          ],
+          "relocations": [],
+          "section_number": 59,
+          "size": 200
+        },
+        {
+          "address": 268818980,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268818980,
+              "name": "grim_keyboard_device"
+            }
+          ],
+          "relocations": [],
+          "section_number": 60,
+          "size": 4
+        },
+        {
+          "address": 268818984,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 268818984,
+              "name": "grim_keyboard_state"
+            }
+          ],
+          "relocations": [],
+          "section_number": 61,
+          "size": 256
+        },
+        {
+          "address": 268819288,
+          "alignment": 4,
+          "entries": [
+            {
+              "address": 268819288,
+              "name": "grim_mouse_wheel_delta"
+            }
+          ],
+          "relocations": [],
+          "section_number": 62,
+          "size": 4
+        }
+      ]
+    }
+  ],
   "function_count": 137,
   "image": "grim.dll",
   "kind": "crimson-native-object-manifest",
-  "object_count": 134,
+  "object_count": 135,
   "object_hash": {
     "algorithm": "sha256",
     "normalization": [
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "32eede5de23910d15817545edaed2a872af3bad248f6c7b1b4785d74870a24d9",
-  "object_order": "ascending-minimum-reference-address",
+  "object_list_sha256": "6ca9e0e219ec3cc7417c66161753050c5395b7fa7eca74e1c5c5412e34ccec7f",
+  "object_order": "ascending-minimum-reference-address-then-generated-data",
   "objects": [
     {
       "address": 268439584,
@@ -13207,7 +15162,7 @@
     }
   ],
   "provenance": {
-    "build_policy": "forced-explicit-translation-unit-recompile",
+    "build_policy": "forced-explicit-translation-unit-recompile-with-generated-data-definitions",
     "selection_inputs": [
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",
@@ -13233,6 +15188,11 @@
         "path": "tools/native/translation_units/grim.dll.json",
         "repository_relative": true,
         "sha256": "65aa1871d545c5c06d6054a6cb3b534fa59584ff74deab9ecbda5a1671fcba57"
+      },
+      {
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "repository_relative": true,
+        "sha256": "0bde80cbd862d9e2e99818b38e9deb011900f51b176cee405eaa43351c7ff891"
       }
     ],
     "toolchain": {

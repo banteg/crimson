@@ -1,4 +1,6 @@
 #include "grim2d_abi.h"
+#include "crimsonland_types.h"
+#include "grim_joystick_state.h"
 
 #define GRIM_ABI_ASSERT(name, condition) \
     typedef char grim_abi_assert_##name[(condition) ? 1 : -1]
@@ -18,6 +20,49 @@ struct grim_unsigned_long_alignment_probe_t {
     unsigned long value;
 };
 
+struct grim_float_alignment_probe_t {
+    char prefix;
+    float value;
+};
+
+struct grim_int_alignment_probe_t {
+    char prefix;
+    int value;
+};
+
+struct grim_bool_alignment_probe_t {
+    char prefix;
+    bool value;
+};
+
+struct grim_config_value_alignment_probe_t {
+    char prefix;
+    grim_config_value_t value;
+};
+
+struct grim_config_blob_alignment_probe_t {
+    char prefix;
+    crimson_cfg_t value;
+};
+
+struct grim_joystick_state_alignment_probe_t {
+    char prefix;
+    GrimJoystickState value;
+};
+
+struct grim_keyboard_event_layout_t {
+    unsigned long dwOfs;
+    unsigned long dwData;
+    unsigned long dwTimeStamp;
+    unsigned long dwSequence;
+    unsigned long uAppData;
+};
+
+struct grim_keyboard_event_alignment_probe_t {
+    char prefix;
+    grim_keyboard_event_layout_t value;
+};
+
 GRIM_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 GRIM_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 GRIM_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
@@ -34,6 +79,11 @@ GRIM_ABI_ASSERT(
     config_words_fill_record,
     sizeof(((grim_config_value_t *)0)->words) == 0x10);
 GRIM_ABI_ASSERT(config_word_is_32_bit, sizeof(((grim_config_value_t *)0)->words[0]) == 4);
+GRIM_ABI_ASSERT(config_blob_is_0x480_bytes, sizeof(crimson_cfg_t) == 0x480);
+GRIM_ABI_ASSERT(joystick_state_is_0x110_bytes, sizeof(GrimJoystickState) == 0x110);
+GRIM_ABI_ASSERT(
+    keyboard_event_is_0x14_bytes,
+    sizeof(grim_keyboard_event_layout_t) == 0x14);
 GRIM_ABI_ASSERT(interface_is_one_vptr, sizeof(IGrim2D_cpp) == 4);
 GRIM_ABI_ASSERT(vtable_is_84_slots, sizeof(grim2d_vtable_layout_t) == 0x150);
 GRIM_ABI_ASSERT(
@@ -66,6 +116,27 @@ GRIM_ABI_ASSERT(
 GRIM_ABI_ASSERT(
     default_unsigned_long_alignment_is_four,
     offsetof(grim_unsigned_long_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_float_alignment_is_four,
+    offsetof(grim_float_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_int_alignment_is_four,
+    offsetof(grim_int_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_bool_alignment_is_one,
+    offsetof(grim_bool_alignment_probe_t, value) == 1);
+GRIM_ABI_ASSERT(
+    default_config_value_alignment_is_four,
+    offsetof(grim_config_value_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_config_blob_alignment_is_four,
+    offsetof(grim_config_blob_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_joystick_state_alignment_is_four,
+    offsetof(grim_joystick_state_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_keyboard_event_alignment_is_four,
+    offsetof(grim_keyboard_event_alignment_probe_t, value) == 4);
 
 GRIM_ABI_ASSERT(factory_pointer_is_32_bit, sizeof(grim_get_interface_fn) == 4);
 GRIM_ABI_ASSERT(member_pointer_is_32_bit, sizeof(grim_apply_settings_fn) == 4);

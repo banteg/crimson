@@ -1216,15 +1216,17 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
     assert _vc6_linker_internal_name("?decorated@Cpp@@") == "?decorated@Cpp@@"
 
 
-def test_grim_data_manifest_applies_only_explicit_data_definitions() -> None:
+def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
     assert payload["summary"]["entry_count"] == 273
     assert payload["summary"]["typed_entries"] == 182
-    assert payload["summary"]["explicit_size_entries"] == 8
-    assert payload["summary"]["explicit_alignment_entries"] == 8
-    assert payload["summary"]["explicit_initializer_entries"] == 8
-    assert payload["summary"]["fully_specified_entries"] == 8
+    assert payload["summary"]["explicit_size_entries"] == 70
+    assert payload["summary"]["explicit_alignment_entries"] == 70
+    assert payload["summary"]["explicit_initializer_entries"] == 70
+    assert payload["summary"]["fully_specified_entries"] == 70
+    assert payload["summary"]["definition_group_entries"] == 62
+    assert payload["summary"]["definition_groups"] == 15
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
     )
@@ -1237,6 +1239,14 @@ def test_grim_data_manifest_applies_only_explicit_data_definitions() -> None:
     assert defined["grim_d3d_device"]["initializer_hex"] == "00000000"
     assert defined["grim_render_disabled"]["size"] == 1
     assert defined["grim_render_disabled"]["initializer_hex"] == "00"
+    assert defined["grim_config_blob"]["size"] == 0x480
+    assert defined["grim_config_values"]["size"] == 128 * 0x10
+    assert defined["grim_joystick_state"]["size"] == 0x110
+    assert defined["grim_keyboard_event_buffer"]["size"] == 10 * 0x14
+    assert defined["grim_vertex_z"]["definition_group"] == "literal-float32"
+    assert defined["grim_interface_instance"]["definition_group"] == (
+        "zero-pointer32"
+    )
     assert next(
         entry
         for entry in payload["entries"]
