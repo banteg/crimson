@@ -1228,7 +1228,8 @@
       "address": "0x004755f4",
       "comment": "Effect id table frame index (effect_id_table + 0x04).",
       "name": "effect_id_frame",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00477758",
@@ -1693,19 +1694,22 @@
       "address": "0x0047eea8",
       "comment": "Console log list head (console_log_queue + 0x08).",
       "name": "console_log_head",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "console_log_node_t *"
     },
     {
       "address": "0x0047eeac",
       "comment": "Console echo flag (console_log_queue + 0x0c).",
       "name": "console_echo_enabled",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0047eeb8",
       "comment": "Console UI height in pixels (default 300; extendconsole sets 480).",
       "name": "console_height_px",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0047eec8",
@@ -1963,43 +1967,50 @@
       "address": "0x00480349",
       "comment": "Config: music disabled flag (1 disables music init).",
       "name": "config_music_disabled",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048034a",
       "comment": "Config: high-score date validation mode (1=year+month,2=checksum+year,3=day+month+year).",
       "name": "config_highscore_date_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048034b",
       "comment": "Config: high-score duplicate handling (1 replaces existing entry).",
       "name": "config_highscore_duplicate_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048034c",
       "comment": "Config: per-player direction-arrow flags (u8[2], gates the world-arrow pass).",
       "name": "config_direction_arrow_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char[2]"
     },
     {
       "address": "0x00480356",
       "comment": "Config: FX detail flag0 (enables extra shadow-ish passes; e.g. ui_element_render + creature_render_type). Set by config_apply_detail_preset.",
       "name": "config_fx_detail_flag0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00480358",
       "comment": "Config: FX detail flag1 (enables heavier FX in some render paths; e.g. projectile_render/bonus_render). Set by config_apply_detail_preset.",
       "name": "config_fx_detail_flag1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00480359",
       "comment": "Config: FX detail flag2 (additional FX tier toggle; observed gating an extra sprite_effect_pool render pass in bonus_render). Set by config_apply_detail_preset.",
       "name": "config_fx_detail_flag2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048035c",
@@ -2031,31 +2042,36 @@
       "address": "0x004803b8",
       "comment": "Config: texture/terrain scale factor (clamped 0.5..4.0).",
       "name": "config_texture_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004803bc",
       "comment": "Config: player name buffer (char[12]) copied on load; limited usage so far.",
       "name": "config_player_name_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[12]"
     },
     {
       "address": "0x004803c8",
       "comment": "Config: selected saved-name slot (0..7).",
       "name": "config_selected_saved_name_slot",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004803cc",
       "comment": "Config: saved-name count / insert index.",
       "name": "config_saved_name_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004803d0",
       "comment": "Config: saved-name order table (u32[8]).",
       "name": "config_saved_name_order",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[8]"
     },
     {
       "address": "0x004803f0",
@@ -2109,19 +2125,22 @@
       "address": "0x004804c8",
       "comment": "Config: player name (copied to runtime player_name on load).",
       "name": "config_player_name",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[32]"
     },
     {
       "address": "0x004804e8",
       "comment": "Config: player name length (mirrored to runtime on load).",
       "name": "config_player_name_length",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480500",
       "comment": "Config: display color depth (bits per pixel).",
       "name": "config_display_bpp",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480504",
@@ -2134,7 +2153,8 @@
       "address": "0x00480508",
       "comment": "Config: screen height.",
       "name": "config_screen_height",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048050c",
@@ -2346,13 +2366,15 @@
       "address": "0x00480791",
       "comment": "Config: UI info texts toggle.",
       "name": "config_ui_info_texts",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00480794",
       "comment": "Config: perk prompt counter (0..0x32, increments on each prompt).",
       "name": "config_perk_prompt_counter",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004807a8",
@@ -2365,37 +2387,43 @@
       "address": "0x004807ac",
       "comment": "Config: SFX volume multiplier.",
       "name": "config_sfx_volume",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004807b0",
       "comment": "Config: music volume multiplier.",
       "name": "config_music_volume",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004807b4",
       "comment": "Config: violence-disabled flag (gates blood/particle paths and alternate perk text).",
       "name": "config_violence_disabled",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004807b5",
       "comment": "Config: score-load gating flag (used with config_highscore_date_mode).",
       "name": "config_score_load_gate",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004807b6",
       "comment": "Config: safe-mode backend flag mirrored to Grim config var id 0x54.",
       "name": "config_safe_mode_backend_enabled",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004807b8",
       "comment": "Config: Graphics detail preset (1..5); applied by config_apply_detail_preset to config_fx_detail_flag0/1/2.",
       "name": "config_detail_preset",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004807bc",
@@ -2408,13 +2436,15 @@
       "address": "0x004807c0",
       "comment": "Config: keybind for perk selection (level-up prompt).",
       "name": "config_key_pick_perk",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004807c4",
       "comment": "Config: keybind for reload.",
       "name": "config_key_reload",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004807c8",
@@ -2717,7 +2747,8 @@
       "address": "0x00480984",
       "comment": "Credits line table flags (credits_line_table + 0x04; bit0 heading, bit2 clicked).",
       "name": "credits_line_table_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480978",
@@ -3050,19 +3081,22 @@
       "address": "0x00482598",
       "comment": "Game-over name text-input state: max accepted character count (0x14/0x18).",
       "name": "game_over_name_input_state_max_chars",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048259c",
       "comment": "Game-over name text-input state: input box width in pixels.",
       "name": "game_over_name_input_state_width_px",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004825a0",
       "comment": "Game-over name text-input state: alpha/visibility scalar.",
       "name": "game_over_name_input_state_alpha",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004825a4",
@@ -3186,19 +3220,22 @@
       "address": "0x004826f0",
       "comment": "Quest-results name text-input state: max accepted character count (0x14/0x18).",
       "name": "quest_results_name_input_state_max_chars",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004826f4",
       "comment": "Quest-results name text-input state: input box width in pixels.",
       "name": "quest_results_name_input_state_width_px",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004826f8",
       "comment": "Quest-results name text-input state: alpha/visibility scalar.",
       "name": "quest_results_name_input_state_alpha",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00482700",
@@ -3317,25 +3354,29 @@
       "address": "0x0048275c",
       "comment": "Creature type anim rate (creature_type_table + 0x34).",
       "name": "creature_type_anim_rate",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00482760",
       "comment": "Creature type atlas base frame (creature_type_table + 0x38).",
       "name": "creature_type_base_frame",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482764",
       "comment": "Creature type corpse frame (creature_type_table + 0x3c).",
       "name": "creature_type_corpse_frame",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482768",
       "comment": "Creature type animation flags (creature_type_table + 0x40).",
       "name": "creature_type_anim_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048276c",
@@ -3385,37 +3426,43 @@
       "address": "0x0048294c",
       "comment": "Bonus state flag (bonus_pool + 0x04)",
       "name": "bonus_state",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00482950",
       "comment": "Bonus time left (bonus_pool + 0x08)",
       "name": "bonus_time_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00482954",
       "comment": "Bonus time max (bonus_pool + 0x0c)",
       "name": "bonus_time_max",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00482958",
       "comment": "Bonus position X (bonus_pool + 0x10)",
       "name": "bonus_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048295c",
       "comment": "Bonus position Y (bonus_pool + 0x14)",
       "name": "bonus_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00482960",
       "comment": "Bonus amount/duration (bonus_pool + 0x18)",
       "name": "bonus_amount",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482b08",
@@ -3442,61 +3489,71 @@
       "address": "0x00484734",
       "comment": "Quest metadata entry index/number (quest_selected_meta + 0x04, stride 0x2c).",
       "name": "quest_meta_index",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484738",
       "comment": "Quest time limit in ms (quest_selected_meta + 0x08, stride 0x2c).",
       "name": "quest_meta_time_limit_ms",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048473c",
       "comment": "Quest display name pointer (quest_selected_meta + 0x0c, stride 0x2c).",
       "name": "quest_meta_name",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x00484740",
       "comment": "Terrain texture index (layer A) used by terrain_generate (quest_selected_meta + 0x10, stride 0x2c).",
       "name": "quest_meta_terrain_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484744",
       "comment": "Terrain texture index (layer B) used by terrain_generate (quest_selected_meta + 0x14, stride 0x2c).",
       "name": "quest_meta_terrain_id_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484748",
       "comment": "Terrain texture index (layer C) used by terrain_generate (quest_selected_meta + 0x18, stride 0x2c).",
       "name": "quest_meta_terrain_id_c",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048474c",
       "comment": "Current quest builder function pointer (runs quest script).",
       "name": "quest_selected_builder",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "quest_builder_fn_t"
     },
     {
       "address": "0x00484750",
       "comment": "Quest unlock perk id field (quest_selected_meta + 0x20, stride 0x2c). Used by perks_rebuild_available.",
       "name": "quest_unlock_perk_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484754",
       "comment": "Quest unlock weapon id field (quest_selected_meta + 0x24, stride 0x2c). Used by weapon_refresh_available.",
       "name": "quest_unlock_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484758",
       "comment": "Quest starting weapon id (quest_selected_meta + 0x28, stride 0x2c). Applied in quest_start_selected.",
       "name": "quest_start_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484914",
@@ -3551,13 +3608,15 @@
       "address": "0x00484fd4",
       "comment": "Spawn slot current count (creature_spawn_slot_table + 0x04).",
       "name": "creature_spawn_slot_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484fd8",
       "comment": "Spawn slot spawn limit (creature_spawn_slot_table + 0x08).",
       "name": "creature_spawn_slot_limit",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00484fdc",
@@ -3595,37 +3654,43 @@
       "address": "0x004853d4",
       "comment": "Bonus metadata description pointer (bonus_meta_table + 0x04).",
       "name": "bonus_meta_description",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004853d8",
       "comment": "Bonus metadata icon id (bonus_meta_table + 0x08).",
       "name": "bonus_meta_icon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004853dc",
       "comment": "Bonus metadata enabled flag (bonus_meta_table + 0x0c); id 0 is disabled.",
       "name": "bonus_meta_enabled",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004853e0",
       "comment": "Bonus metadata default amount (bonus_meta_table + 0x10).",
       "name": "bonus_meta_default_amount",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004853e4",
       "comment": "Bonus label string for Points (bonus id 1).",
       "name": "bonus_label_points",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004853f8",
       "comment": "Bonus label string for Energizer (bonus id 12).",
       "name": "bonus_label_energizer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x00485400",
@@ -3638,7 +3703,8 @@
       "address": "0x00485420",
       "comment": "Bonus label string for Weapon Power Up (bonus id 4).",
       "name": "bonus_label_weapon_power_up",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x00485428",
@@ -3651,7 +3717,8 @@
       "address": "0x00485448",
       "comment": "Bonus label string for Double Experience (bonus id 6).",
       "name": "bonus_label_double_experience",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x00485450",
@@ -3664,7 +3731,8 @@
       "address": "0x00485484",
       "comment": "Bonus label string for Reflex Boost (bonus id 9).",
       "name": "bonus_label_reflex_boost",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x0048548c",
@@ -3677,7 +3745,8 @@
       "address": "0x00485498",
       "comment": "Bonus label string for Shield (bonus id 10).",
       "name": "bonus_label_shield",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004854a0",
@@ -3690,7 +3759,8 @@
       "address": "0x004854ac",
       "comment": "Bonus label string for Freeze (bonus id 11).",
       "name": "bonus_label_freeze",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004854b4",
@@ -3703,7 +3773,8 @@
       "address": "0x004854d4",
       "comment": "Bonus label string for Speed (bonus id 13).",
       "name": "bonus_label_speed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004854dc",
@@ -3716,7 +3787,8 @@
       "address": "0x004854e8",
       "comment": "Bonus label string for Fire Bullets (bonus id 14).",
       "name": "bonus_label_fire_bullets",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004854f0",
@@ -3785,7 +3857,8 @@
       "address": "0x00485794",
       "comment": "Saved game sequence id loaded from registry.",
       "name": "game_sequence_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
     },
     {
       "address": "0x004857a8",
@@ -3938,7 +4011,8 @@
       "address": "0x00486fec",
       "comment": "Survival reward tracking: recent creature death Y positions (survival_recent_death_pos + 0x04; 3 entries, stride 0x08 bytes).",
       "name": "survival_recent_death_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00486ff0",
@@ -4091,13 +4165,15 @@
       "address": "0x00487060",
       "comment": "Survival elapsed time (ms); stored in high score record offset 0x20.",
       "name": "survival_elapsed_ms",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
     },
     {
       "address": "0x00487064",
       "comment": "Score/XP snapshot for high score insertion (record offset 0x24), copied from player_experience.",
       "name": "highscore_score_xp",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
     },
     {
       "address": "0x00487068",
@@ -4127,13 +4203,15 @@
       "address": "0x0048706c",
       "comment": "High score record shots fired count (offset 0x2c).",
       "name": "highscore_record_shots_fired",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
     },
     {
       "address": "0x00487070",
       "comment": "High score record shots hit count (offset 0x30).",
       "name": "highscore_record_shots_hit",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
     },
     {
       "address": "0x00487074",
@@ -4153,37 +4231,43 @@
       "address": "0x00487080",
       "comment": "High score record day-of-month field (offset 0x40).",
       "name": "highscore_day",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00487081",
       "comment": "High score record date checksum (offset 0x41).",
       "name": "highscore_record_date_checksum",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00487082",
       "comment": "High score record month field (offset 0x42).",
       "name": "highscore_month",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00487083",
       "comment": "High score record year-2000 field (offset 0x43).",
       "name": "highscore_year_offset",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00487084",
       "comment": "High score record flags (offset 0x44); bit0 gates save/load, bit1 marks replaced entries, bit2 marks display-selected entries.",
       "name": "highscore_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00487085",
       "comment": "High score record hardcore marker (offset 0x45); 0x75 when config_hardcore is set.",
       "name": "highscore_hardcore_marker",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00487088",
@@ -5383,25 +5467,29 @@
       "address": "0x0048f594",
       "comment": "Bonus HUD slot timer pointer (bonus_hud_slot_table + 0x0c).",
       "name": "bonus_hud_slot_timer_ptr",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float *"
     },
     {
       "address": "0x0048f598",
       "comment": "Bonus HUD slot alternate timer pointer (bonus_hud_slot_table + 0x10); used for player 2 timers.",
       "name": "bonus_hud_slot_alt_timer_ptr",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float *"
     },
     {
       "address": "0x0048f59c",
       "comment": "Bonus HUD slot label string pointer (bonus_hud_slot_table + 0x14).",
       "name": "bonus_hud_slot_label",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x0048f5a0",
       "comment": "Bonus HUD slot icon id (bonus_hud_slot_table + 0x18).",
       "name": "bonus_hud_slot_icon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048f788",
@@ -5708,7 +5796,8 @@
       "address": "0x0048fe58",
       "comment": "Texture handle dword for ui_menu_item_subtemplate_block_01 (+0xe0 from block base).",
       "name": "ui_menu_item_subtemplate_block_01_texture_handle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048fe5c",
@@ -5727,7 +5816,8 @@
       "address": "0x0048ff40",
       "comment": "Texture handle dword for ui_menu_item_subtemplate_block_02 (+0xe0 from block base).",
       "name": "ui_menu_item_subtemplate_block_02_texture_handle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048ff44",
@@ -5746,7 +5836,8 @@
       "address": "0x00490028",
       "comment": "Texture handle dword for ui_menu_item_subtemplate_block_03 (+0xe0 from block base).",
       "name": "ui_menu_item_subtemplate_block_03_texture_handle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049002c",
@@ -5765,7 +5856,8 @@
       "address": "0x00490110",
       "comment": "Texture handle dword for ui_menu_item_subtemplate_block_04 (+0xe0 from block base).",
       "name": "ui_menu_item_subtemplate_block_04_texture_handle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490114",
@@ -5784,7 +5876,8 @@
       "address": "0x004901f8",
       "comment": "Texture handle dword for ui_menu_item_subtemplate_block_05 (+0xe0 from block base).",
       "name": "ui_menu_item_subtemplate_block_05_texture_handle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004901fc",
@@ -5803,7 +5896,8 @@
       "address": "0x004902e0",
       "comment": "Texture handle dword for ui_menu_item_subtemplate_block_06 (+0xe0 from block base).",
       "name": "ui_menu_item_subtemplate_block_06_texture_handle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004902e4",
@@ -5902,19 +5996,22 @@
       "address": "0x00490424",
       "comment": "Randomized grayscale color G used by fx_queue_add helper FUN_00427700.",
       "name": "fx_queue_random_color_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490428",
       "comment": "Randomized grayscale color B used by fx_queue_add helper FUN_00427700.",
       "name": "fx_queue_random_color_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049042c",
       "comment": "Randomized color alpha used by fx_queue_add helper FUN_00427700.",
       "name": "fx_queue_random_color_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490430",
@@ -5927,7 +6024,8 @@
       "address": "0x00490434",
       "comment": "Rotated FX queue position Y array",
       "name": "fx_rotated_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490630",
@@ -5961,7 +6059,8 @@
       "address": "0x004908b9",
       "comment": "Per-player Plaguebearer perk active flag; this reuses byte +0x09 of the shared entity prefix.",
       "name": "player_plaguebearer_active",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004908b0",
@@ -5974,115 +6073,134 @@
       "address": "0x004908c0",
       "comment": "Per-player death/respawn timer (player_state_table + 0x10).",
       "name": "player_death_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004908c4",
       "comment": "Per-player position X (player_state_table + 0x14).",
       "name": "player_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004908c8",
       "comment": "Per-player position Y (player_state_table + 0x18).",
       "name": "player_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004908cc",
       "comment": "Per-player movement delta X (player_state_table + 0x1c).",
       "name": "player_move_dx",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004908d0",
       "comment": "Per-player movement delta Y (player_state_table + 0x20).",
       "name": "player_move_dy",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004908d4",
       "comment": "Per-player health value (player_state_table + 0x24).",
       "name": "player_health",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004908dc",
       "comment": "Per-player body heading radians (player_health + 0x08)",
       "name": "player_heading",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004908e4",
       "comment": "Per-player size/diameter (player_health + 0x10)",
       "name": "player_size",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490900",
       "comment": "Per-player aim target X (player_health + 0x2c)",
       "name": "player_aim_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490904",
       "comment": "Per-player aim target Y (player_health + 0x30)",
       "name": "player_aim_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049090c",
       "comment": "Per-player movement speed multiplier (player_health + 0x38)",
       "name": "player_speed_multiplier",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490910",
       "comment": "Per-player weapon reset latch (player_health + 0x3c); cleared when weapon timers/ammo are reset.",
       "name": "player_weapon_reset_latch",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490918",
       "comment": "Per-player move speed/accel factor (player_health + 0x44)",
       "name": "player_move_speed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490944",
       "comment": "Per-player movement phase accumulator (player_health + 0x70)",
       "name": "player_move_phase",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049094c",
       "comment": "Per-player Hot Tempered timer (player_health + 0x78)",
       "name": "player_hot_tempered_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490950",
       "comment": "Per-player Man Bomb charge timer (player_health + 0x7c)",
       "name": "player_man_bomb_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490954",
       "comment": "Per-player Living Fortress timer (player_health + 0x80)",
       "name": "player_living_fortress_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490958",
       "comment": "Per-player Fire Cough timer (player_health + 0x84)",
       "name": "player_fire_cough_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049095c",
       "comment": "Per-player experience points (XP) used for level-ups, survival scaling, and Regression Bullets/Ammunition Within costs.",
       "name": "player_experience",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490960",
@@ -6095,103 +6213,120 @@
       "address": "0x00490964",
       "comment": "Per-player level/perk tier; increments when XP crosses thresholds and gates survival wave milestones.",
       "name": "player_level",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490968",
       "comment": "Per-player perk count table (0x80 ints), indexed by perk id; stride 0x360 bytes.",
       "name": "player_perk_counts",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[128]"
     },
     {
       "address": "0x00490b68",
       "comment": "Per-player spread/heat accumulator (player_health + 0x294)",
       "name": "player_spread_heat",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b70",
       "comment": "Per-player current weapon id (player_health + 0x29c)",
       "name": "player_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490b74",
       "comment": "Per-player clip size (float slot; runtime capture shows values like 10.0/12.0/25.0 at player_health + 0x2a0).",
       "name": "player_clip_size",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b78",
       "comment": "Per-player reload active flag (player_health + 0x2a4)",
       "name": "player_reload_active",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00490b7c",
       "comment": "Per-player current ammo (float slot; runtime capture shows values like 0.0..30.0 at player_health + 0x2a8).",
       "name": "player_ammo",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b80",
       "comment": "Per-player reload timer (player_health + 0x2ac)",
       "name": "player_reload_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b84",
       "comment": "Per-player shot cooldown timer (player_health + 0x2b0)",
       "name": "player_shot_cooldown",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b88",
       "comment": "Per-player reload timer max (player_health + 0x2b4)",
       "name": "player_reload_timer_max",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b8c",
       "comment": "Per-player alt weapon id (player_health + 0x2b8)",
       "name": "player_alt_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490b90",
       "comment": "Per-player alt clip size (float slot; runtime capture mirrors values such as 12.0).",
       "name": "player_alt_clip_size",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b94",
       "comment": "Per-player alt reload active flag (player_health + 0x2c0)",
       "name": "player_alt_reload_active",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00490b98",
       "comment": "Per-player alt ammo count (float slot; runtime capture mirrors values such as 12.0).",
       "name": "player_alt_ammo",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490b9c",
       "comment": "Per-player alt reload timer (player_health + 0x2c8)",
       "name": "player_alt_reload_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490ba0",
       "comment": "Per-player alt shot cooldown (player_health + 0x2cc)",
       "name": "player_alt_shot_cooldown",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490ba4",
       "comment": "Per-player alt reload timer max (player_health + 0x2d0)",
       "name": "player_alt_reload_timer_max",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490ba8",
@@ -6204,205 +6339,239 @@
       "address": "0x00490bac",
       "comment": "Per-player muzzle flash / weapon glow intensity; decays each frame and accumulates on fire.",
       "name": "player_muzzle_flash_alpha",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bb0",
       "comment": "Per-player aim heading radians (player_health + 0x2dc)",
       "name": "player_aim_heading",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bb4",
       "comment": "Per-player turn speed accumulator for keyboard/tank controls (player_health + 0x2e0)",
       "name": "player_turn_speed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bb8",
       "comment": "Per-player aux state (player_health + 0x2e4); zeroed in player reset, no read sites yet.",
       "name": "player_state_aux",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bbc",
       "comment": "Creature index targeted by Evil Eyes perk; set in FUN_00406b40 and read in creature_update_all.",
       "name": "evil_eyes_target_creature",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bc0",
       "comment": "Low-health warning timer (player_health + 0x2ec)",
       "name": "player_low_health_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bc4",
       "comment": "Per-player speed bonus timer (player_health + 0x2f0)",
       "name": "player_speed_bonus_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bc8",
       "comment": "Per-player shield timer (player_health + 0x2f4)",
       "name": "player_shield_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bcc",
       "comment": "Per-player Fire Bullets timer (player_health + 0x2f8)",
       "name": "player_fire_bullets_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bd0",
       "comment": "Per-player auto-aim target creature index (player_health + 0x2fc)",
       "name": "player_auto_target",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bd4",
       "comment": "Per-player movement target X (player_health + 0x300)",
       "name": "player_move_target_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bd8",
       "comment": "Per-player movement target Y (player_health + 0x304)",
       "name": "player_move_target_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490bdc",
       "comment": "Per-player forward move key (player_health + 0x308)",
       "name": "player_move_key_forward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490be0",
       "comment": "Per-player backward move key (player_health + 0x30c)",
       "name": "player_move_key_backward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490be4",
       "comment": "Per-player turn-left key (player_health + 0x310)",
       "name": "player_turn_key_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490be8",
       "comment": "Per-player turn-right key (player_health + 0x314)",
       "name": "player_turn_key_right",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bec",
       "comment": "Per-player primary fire key (player_health + 0x318)",
       "name": "player_fire_key",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bf0",
       "comment": "Per-player reserved keybind slot (player_health + 0x31c); copied from config, no callsites found.",
       "name": "player_key_reserved_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bf4",
       "comment": "Per-player reserved keybind slot (player_health + 0x320); copied from config, no callsites found.",
       "name": "player_key_reserved_1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bf8",
       "comment": "Per-player aim rotate-left key (player_health + 0x324)",
       "name": "player_aim_key_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bfc",
       "comment": "Per-player aim rotate-right key (player_health + 0x328)",
       "name": "player_aim_key_right",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490c00",
       "comment": "Per-player aim axis X binding (player_health + 0x32c)",
       "name": "player_axis_aim_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490c04",
       "comment": "Per-player aim axis Y binding (player_health + 0x330)",
       "name": "player_axis_aim_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490c08",
       "comment": "Per-player move axis X binding (player_health + 0x334)",
       "name": "player_axis_move_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490c0c",
       "comment": "Per-player move axis Y binding (player_health + 0x338)",
       "name": "player_axis_move_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490c20",
       "comment": "Player 2 death/respawn timer (player_death_timer + 0x360).",
       "name": "player2_death_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490c24",
       "comment": "Player 2 position X (player_pos_x + 0x360).",
       "name": "player2_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490c28",
       "comment": "Player 2 position Y (player_pos_y + 0x360).",
       "name": "player2_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490c34",
       "comment": "Player 2 health (player_health + 0x360).",
       "name": "player2_health",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490ed0",
       "comment": "Player 2 current weapon id (player_weapon_id + 0x360).",
       "name": "player2_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490edc",
       "comment": "Player 2 current ammo (player_ammo + 0x360).",
       "name": "player2_ammo",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490f24",
       "comment": "Player 2 speed bonus timer (player_speed_bonus_timer + 0x360).",
       "name": "player2_speed_bonus_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490f28",
       "comment": "Player 2 shield timer (player_shield_timer + 0x360).",
       "name": "player2_shield_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490f2c",
       "comment": "Player 2 Fire Bullets timer (player_fire_bullets_timer + 0x360).",
       "name": "player2_fire_bullets_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00490f3c",
@@ -6499,7 +6668,8 @@
       "address": "0x00491014",
       "comment": "Effect UV table V for 8x8 atlas frames (effect_uv8 + 0x04).",
       "name": "effect_uv8_v",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00491090",
@@ -6519,7 +6689,8 @@
       "address": "0x00491214",
       "comment": "Effect UV table V for 4x4 atlas frames (effect_uv4 + 0x04).",
       "name": "effect_uv4_v",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00491248",
@@ -6546,7 +6717,8 @@
       "address": "0x00491294",
       "comment": "Effect UV table V for 2x2 atlas frames (effect_uv2 + 0x04).",
       "name": "effect_uv2_v",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912b0",
@@ -6569,55 +6741,64 @@
       "address": "0x004912bc",
       "comment": "FX queue rotation (fx_queue + 0x04)",
       "name": "fx_queue_rotation",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912c0",
       "comment": "FX queue position X (fx_queue + 0x08)",
       "name": "fx_queue_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912c4",
       "comment": "FX queue position Y (fx_queue + 0x0c)",
       "name": "fx_queue_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912c8",
       "comment": "FX queue height (fx_queue + 0x10)",
       "name": "fx_queue_height",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912cc",
       "comment": "FX queue width (fx_queue + 0x14)",
       "name": "fx_queue_width",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912d0",
       "comment": "FX queue color R (fx_queue + 0x18)",
       "name": "fx_queue_color_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912d4",
       "comment": "FX queue color G (fx_queue + 0x1c)",
       "name": "fx_queue_color_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912d8",
       "comment": "FX queue color B (fx_queue + 0x20)",
       "name": "fx_queue_color_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004912dc",
       "comment": "FX queue color A (fx_queue + 0x24)",
       "name": "fx_queue_color_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926b8",
@@ -6630,91 +6811,106 @@
       "address": "0x004926bc",
       "comment": "Projectile heading (projectile_pool + 0x04)",
       "name": "projectile_angle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926c0",
       "comment": "Projectile position X (projectile_pool + 0x08)",
       "name": "projectile_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926c4",
       "comment": "Projectile position Y (projectile_pool + 0x0c)",
       "name": "projectile_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926c8",
       "comment": "Projectile origin X (projectile_pool + 0x10)",
       "name": "projectile_origin_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926cc",
       "comment": "Projectile origin Y (projectile_pool + 0x14)",
       "name": "projectile_origin_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926d0",
       "comment": "Projectile velocity X (projectile_pool + 0x18)",
       "name": "projectile_vel_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926d4",
       "comment": "Projectile velocity Y (projectile_pool + 0x1c)",
       "name": "projectile_vel_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926d8",
       "comment": "Projectile type id (projectile_pool + 0x20)",
       "name": "projectile_type_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "projectile_type_id_t"
     },
     {
       "address": "0x004926dc",
       "comment": "Projectile life timer (projectile_pool + 0x24)",
       "name": "projectile_life_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926e0",
       "comment": "Projectile reserved/unused (projectile_pool + 0x28)",
       "name": "projectile_reserved",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926e4",
       "comment": "Projectile speed scale (projectile_pool + 0x2c)",
       "name": "projectile_speed_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926e8",
       "comment": "Projectile damage pool / pierce budget (projectile_pool + 0x30)",
       "name": "projectile_damage_pool",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926ec",
       "comment": "Projectile hit radius (projectile_pool + 0x34)",
       "name": "projectile_hit_radius",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926f0",
       "comment": "Projectile travel budget / weapon meta (projectile_pool + 0x38)",
       "name": "projectile_travel_budget",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004926f4",
       "comment": "Projectile owner id (projectile_pool + 0x3c)",
       "name": "projectile_owner_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00493eb8",
@@ -6727,79 +6923,92 @@
       "address": "0x00493ebc",
       "comment": "Particle position X (particle_pool + 0x04)",
       "name": "particle_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ec0",
       "comment": "Particle position Y (particle_pool + 0x08)",
       "name": "particle_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ec4",
       "comment": "Particle velocity X (particle_pool + 0x0c)",
       "name": "particle_vel_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ec8",
       "comment": "Particle velocity Y (particle_pool + 0x10)",
       "name": "particle_vel_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ecc",
       "comment": "Particle scale X (particle_pool + 0x14)",
       "name": "particle_scale_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ed0",
       "comment": "Particle scale Y (particle_pool + 0x18)",
       "name": "particle_scale_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ed4",
       "comment": "Particle scale Z (particle_pool + 0x1c)",
       "name": "particle_scale_z",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ed8",
       "comment": "Particle age/timer (particle_pool + 0x20)",
       "name": "particle_age",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493edc",
       "comment": "Particle intensity (particle_pool + 0x24)",
       "name": "particle_intensity",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ee0",
       "comment": "Particle angle (particle_pool + 0x28)",
       "name": "particle_angle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ee4",
       "comment": "Particle spin (particle_pool + 0x2c)",
       "name": "particle_spin",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00493ee8",
       "comment": "Particle style id (particle_pool + 0x30)",
       "name": "particle_style_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00493eec",
       "comment": "Particle target id (particle_pool + 0x34)",
       "name": "particle_target_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00495ab8",
@@ -6838,7 +7047,8 @@
       "address": "0x00495adc",
       "comment": "Secondary projectile angle (secondary_projectile_pool + 0x04)",
       "name": "secondary_proj_angle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00495ae0",
@@ -6850,31 +7060,36 @@
       "address": "0x00495ae4",
       "comment": "Secondary projectile position X (secondary_projectile_pool + 0x0c)",
       "name": "secondary_proj_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00495ae8",
       "comment": "Secondary projectile position Y (secondary_projectile_pool + 0x10)",
       "name": "secondary_proj_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00495aec",
       "comment": "Secondary projectile velocity X (secondary_projectile_pool + 0x14)",
       "name": "secondary_proj_vel_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00495af0",
       "comment": "Secondary projectile velocity Y (secondary_projectile_pool + 0x18)",
       "name": "secondary_proj_vel_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00495af4",
       "comment": "Secondary projectile type id (secondary_projectile_pool + 0x1c)",
       "name": "secondary_proj_type_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "secondary_projectile_type_id_t"
     },
     {
       "address": "0x00495af8",
@@ -6886,7 +7101,8 @@
       "address": "0x00495afc",
       "comment": "Secondary projectile target id (secondary_projectile_pool + 0x24)",
       "name": "secondary_proj_target_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00495b00",
@@ -6997,61 +7213,71 @@
       "address": "0x00496824",
       "comment": "Sprite effect color R (sprite_effect_pool + 0x04)",
       "name": "sprite_effect_color_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00496828",
       "comment": "Sprite effect color G (sprite_effect_pool + 0x08)",
       "name": "sprite_effect_color_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049682c",
       "comment": "Sprite effect color B (sprite_effect_pool + 0x0c)",
       "name": "sprite_effect_color_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00496830",
       "comment": "Sprite effect color A / lifetime (sprite_effect_pool + 0x10)",
       "name": "sprite_effect_color_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00496834",
       "comment": "Sprite effect rotation (sprite_effect_pool + 0x14)",
       "name": "sprite_effect_rotation",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00496838",
       "comment": "Sprite effect position X (sprite_effect_pool + 0x18)",
       "name": "sprite_effect_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049683c",
       "comment": "Sprite effect position Y (sprite_effect_pool + 0x1c)",
       "name": "sprite_effect_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00496840",
       "comment": "Sprite effect velocity X (sprite_effect_pool + 0x20)",
       "name": "sprite_effect_vel_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00496844",
       "comment": "Sprite effect velocity Y (sprite_effect_pool + 0x24)",
       "name": "sprite_effect_vel_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00496848",
       "comment": "Sprite effect scale/size (sprite_effect_pool + 0x28)",
       "name": "sprite_effect_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049ba20",
@@ -7085,19 +7311,22 @@
       "address": "0x0049bb3c",
       "comment": "Rotated FX queue color G array",
       "name": "fx_rotated_color_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bb40",
       "comment": "Rotated FX queue color B array",
       "name": "fx_rotated_color_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bb44",
       "comment": "Rotated FX queue color A array",
       "name": "fx_rotated_color_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf38",
@@ -7110,163 +7339,190 @@
       "address": "0x0049bf3c",
       "comment": "Creature phase seed (creature_pool + 0x04).",
       "name": "creature_phase_seed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049bf40",
       "comment": "Creature state flag (creature_pool + 0x08).",
       "name": "creature_state_flag",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0049bf41",
       "comment": "Creature collision/contact flag (creature_pool + 0x09).",
       "name": "creature_collision_flag",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0049bf44",
       "comment": "Creature collision timer (creature_pool + 0x0c).",
       "name": "creature_collision_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf48",
       "comment": "Creature lifecycle stage sentinel (creature_pool + 0x10).",
       "name": "creature_lifecycle_stage",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf4c",
       "comment": "Creature position X (creature_pool + 0x14).",
       "name": "creature_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf50",
       "comment": "Creature position Y (creature_pool + 0x18).",
       "name": "creature_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf54",
       "comment": "Creature velocity X (creature_pool + 0x1c).",
       "name": "creature_vel_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf58",
       "comment": "Creature velocity Y (creature_pool + 0x20).",
       "name": "creature_vel_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf5c",
       "comment": "Creature health (creature_pool + 0x24).",
       "name": "creature_health",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf60",
       "comment": "Creature max health (creature_pool + 0x28).",
       "name": "creature_max_health",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf64",
       "comment": "Creature heading radians (creature_pool + 0x2c).",
       "name": "creature_heading",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf68",
       "comment": "Creature desired heading (creature_pool + 0x30).",
       "name": "creature_target_heading",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf6c",
       "comment": "Creature size/radius (creature_pool + 0x34).",
       "name": "creature_size",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf70",
       "comment": "Creature hit flash timer (creature_pool + 0x38).",
       "name": "creature_hit_flash_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf74",
       "comment": "Creature tint red (creature_pool + 0x3c).",
       "name": "creature_tint_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf78",
       "comment": "Creature tint green (creature_pool + 0x40).",
       "name": "creature_tint_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf7c",
       "comment": "Creature tint blue (creature_pool + 0x44).",
       "name": "creature_tint_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf80",
       "comment": "Creature tint alpha (creature_pool + 0x48).",
       "name": "creature_tint_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf84",
       "comment": "Creature force-target flag (creature_pool + 0x4c).",
       "name": "creature_force_target",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0049bf88",
       "comment": "Creature target X (creature_pool + 0x50).",
       "name": "creature_target_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf8c",
       "comment": "Creature target Y (creature_pool + 0x54).",
       "name": "creature_target_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf90",
       "comment": "Creature contact damage (creature_pool + 0x58).",
       "name": "creature_contact_damage",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf94",
       "comment": "Creature movement speed scalar (creature_pool + 0x5c).",
       "name": "creature_move_speed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf98",
       "comment": "Creature attack cooldown timer (creature_pool + 0x60).",
       "name": "creature_attack_cooldown",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bf9c",
       "comment": "Creature reward value (creature_pool + 0x64).",
       "name": "creature_reward_value",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bfa4",
       "comment": "Creature type id (creature_pool + 0x6c).",
       "name": "creature_type_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049bfa8",
@@ -7279,49 +7535,57 @@
       "address": "0x0049bfb0",
       "comment": "Creature link index/state timer (creature_pool + 0x78).",
       "name": "creature_link_index",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049bfb4",
       "comment": "Creature target offset X (creature_pool + 0x7c).",
       "name": "creature_target_offset_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bfb8",
       "comment": "Creature target offset Y (creature_pool + 0x80).",
       "name": "creature_target_offset_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bfbc",
       "comment": "Creature orbit angle (creature_pool + 0x84).",
       "name": "creature_orbit_angle",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0049bfc0",
       "comment": "Creature orbit radius/timer (creature_pool + 0x88).",
       "name": "creature_orbit_radius",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "creature_orbit_radius_t"
     },
     {
       "address": "0x0049bfc4",
       "comment": "Creature flags bitfield (creature_pool + 0x8c).",
       "name": "creature_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049bfc8",
       "comment": "Creature AI mode (creature_pool + 0x90).",
       "name": "creature_ai_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049bfcc",
       "comment": "Creature animation phase accumulator (creature_pool + 0x94).",
       "name": "creature_anim_phase",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004aa4d0",
@@ -7341,7 +7605,8 @@
       "address": "0x004aa4dc",
       "comment": "Effect UV table V for 16x16 atlas frames (effect_uv16 + 0x04).",
       "name": "effect_uv16_v",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004aacd8",
@@ -7571,91 +7836,106 @@
       "address": "0x004ab1bc",
       "comment": "Effect template vel_x (effect template block base)",
       "name": "effect_template_vel_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1c0",
       "comment": "Effect template vel_y (effect_template_vel_x + 0x04)",
       "name": "effect_template_vel_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1c4",
       "comment": "Effect template rotation (effect_template_vel_x + 0x08)",
       "name": "effect_template_rotation",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1c8",
       "comment": "Effect template scale (effect_template_vel_x + 0x0c)",
       "name": "effect_template_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1cc",
       "comment": "Effect template half width (effect_template_vel_x + 0x10)",
       "name": "effect_template_half_width",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1d0",
       "comment": "Effect template half height (effect_template_vel_x + 0x14)",
       "name": "effect_template_half_height",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1d4",
       "comment": "Effect template age (effect_template_vel_x + 0x18)",
       "name": "effect_template_age",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1d8",
       "comment": "Effect template lifetime (effect_template_vel_x + 0x1c)",
       "name": "effect_template_lifetime",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1dc",
       "comment": "Effect template flags (effect_template_vel_x + 0x20)",
       "name": "effect_template_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004ab1e0",
       "comment": "Effect template color R (effect_template_vel_x + 0x24)",
       "name": "effect_template_color_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1e4",
       "comment": "Effect template color G (effect_template_vel_x + 0x28)",
       "name": "effect_template_color_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1e8",
       "comment": "Effect template color B (effect_template_vel_x + 0x2c)",
       "name": "effect_template_color_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1ec",
       "comment": "Effect template color A (effect_template_vel_x + 0x30)",
       "name": "effect_template_color_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1f0",
       "comment": "Effect template rotation step (effect_template_vel_x + 0x34)",
       "name": "effect_template_rotation_step",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1f4",
       "comment": "Effect template scale step (effect_template_vel_x + 0x38)",
       "name": "effect_template_scale_step",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab268",
@@ -7689,103 +7969,120 @@
       "address": "0x004ab334",
       "comment": "Effect pool pos_y (effect_pool_pos_x + 0x04)",
       "name": "effect_pool_pos_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab338",
       "comment": "Effect pool effect id (effect_pool_pos_x + 0x08)",
       "name": "effect_pool_effect_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004ab33c",
       "comment": "Effect pool vel_x (effect_pool_pos_x + 0x0c)",
       "name": "effect_pool_vel_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab340",
       "comment": "Effect pool vel_y (effect_pool_pos_x + 0x10)",
       "name": "effect_pool_vel_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab344",
       "comment": "Effect pool rotation (effect_pool_pos_x + 0x14)",
       "name": "effect_pool_rotation",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab348",
       "comment": "Effect pool scale (effect_pool_pos_x + 0x18)",
       "name": "effect_pool_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab34c",
       "comment": "Effect pool half width (effect_pool_pos_x + 0x1c)",
       "name": "effect_pool_half_width",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab350",
       "comment": "Effect pool half height (effect_pool_pos_x + 0x20)",
       "name": "effect_pool_half_height",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab354",
       "comment": "Effect pool age (effect_pool_pos_x + 0x24)",
       "name": "effect_pool_age",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab358",
       "comment": "Effect pool lifetime (effect_pool_pos_x + 0x28)",
       "name": "effect_pool_lifetime",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab35c",
       "comment": "Effect pool flags (effect_pool_pos_x + 0x2c)",
       "name": "effect_pool_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004ab360",
       "comment": "Effect pool color R (effect_pool_pos_x + 0x30)",
       "name": "effect_pool_color_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab364",
       "comment": "Effect pool color G (effect_pool_pos_x + 0x34)",
       "name": "effect_pool_color_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab368",
       "comment": "Effect pool color B (effect_pool_pos_x + 0x38)",
       "name": "effect_pool_color_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab36c",
       "comment": "Effect pool color A (effect_pool_pos_x + 0x3c)",
       "name": "effect_pool_color_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab370",
       "comment": "Effect pool rotation step (effect_pool_pos_x + 0x40)",
       "name": "effect_pool_rotation_step",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab374",
       "comment": "Effect pool scale step (effect_pool_pos_x + 0x44)",
       "name": "effect_pool_scale_step",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab378",
@@ -8258,13 +8555,15 @@
       "address": "0x004c2c48",
       "comment": "Perk flags table (perk_meta_table + 0x08).",
       "name": "perk_flags_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c2c4c",
       "comment": "Perk availability table (perk_meta_table + 0x0c).",
       "name": "perk_available_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004c2c50",
@@ -9443,25 +9742,29 @@
       "address": "0x004d0f2c",
       "comment": "Profile menu name text-input state: current cursor/length index.",
       "name": "profile_name_input_state_cursor",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d0f30",
       "comment": "Profile menu name text-input state: max accepted character count (0x1b).",
       "name": "profile_name_input_state_max_chars",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d0f34",
       "comment": "Profile menu name text-input state: input box width in pixels.",
       "name": "profile_name_input_state_width_px",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d0f38",
       "comment": "Profile menu name text-input state: alpha/visibility scalar.",
       "name": "profile_name_input_state_alpha",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004d0fa8",
@@ -10260,19 +10563,22 @@
       "address": "0x004d7a98",
       "comment": "Weapon table projectile travel budget (weapon_table + 0x6c, stride 0x7c)",
       "name": "weapon_projectile_travel_budget",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004d7a9c",
       "comment": "Weapon table projectile damage scale (weapon_table + 0x70, stride 0x7c)",
       "name": "weapon_projectile_damage_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004d7aa0",
       "comment": "Weapon table projectile pellet count (weapon_table + 0x74, stride 0x7c)",
       "name": "weapon_projectile_pellet_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d7b7c",
@@ -10780,7 +11086,9 @@
     },
     {
       "address": "0x10059df8",
-      "aliases": ["grim_present_parameters"],
+      "aliases": [
+        "grim_present_parameters"
+      ],
       "comment": "D3DPRESENT_PARAMETERS block; this address is its BackBufferWidth field.",
       "name": "grim_present_width",
       "program": "grim.dll",
@@ -11213,7 +11521,9 @@
     },
     {
       "address": "0x1005bbd8",
-      "aliases": ["?grim_app@@3VMyApp@@A"],
+      "aliases": [
+        "?grim_app@@3VMyApp@@A"
+      ],
       "comment": "Singleton runtime object initialized before the Win32 message loop.",
       "name": "grim_app",
       "program": "grim.dll"
@@ -11474,7 +11784,9 @@
     },
     {
       "address": "0x1005cf14",
-      "aliases": ["?grim_joystick_state_ptr@@3PAUGrimJoystickState@@A"],
+      "aliases": [
+        "?grim_joystick_state_ptr@@3PAUGrimJoystickState@@A"
+      ],
       "comment": "Published pointer to the current DIJOYSTATE2 buffer, refreshed by the main loop.",
       "name": "grim_joystick_state_ptr",
       "program": "grim.dll",
@@ -11531,7 +11843,9 @@
     },
     {
       "address": "0x1005d1c8",
-      "aliases": ["?grim_client_rect@@3TGrimClientRect@@A"],
+      "aliases": [
+        "?grim_client_rect@@3TGrimClientRect@@A"
+      ],
       "comment": "Win32 client rectangle overlaid with a low-byte enabled flag and published by MyApp initialization.",
       "name": "grim_client_rect",
       "program": "grim.dll"

@@ -450,6 +450,50 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["ui_element_table_end"] == "ui_element_t *[41]"
 
 
+def test_data_map_preserves_recovered_aggregate_alias_types():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "data_map.json"
+    )
+    rows = json.loads(map_path.read_text())["entries"]
+    types_by_name = {
+        row["name"]: row.get("type")
+        for row in rows
+        if row.get("program") == "crimsonland.exe" and row.get("name")
+    }
+
+    assert types_by_name["config_direction_arrow_flags"] == "unsigned char[2]"
+    assert types_by_name["config_player_name_buf"] == "char[12]"
+    assert types_by_name["config_saved_name_order"] == "int[8]"
+    assert types_by_name["config_player_name"] == "char[32]"
+    assert types_by_name["console_log_head"] == "console_log_node_t *"
+    assert types_by_name["game_sequence_id"] == "unsigned int"
+    assert types_by_name["highscore_score_xp"] == "unsigned int"
+    assert types_by_name["quest_selected_builder"] == "quest_builder_fn_t"
+    assert types_by_name["player_perk_counts"] == "int[128]"
+    assert types_by_name["player2_health"] == "float"
+    assert types_by_name["creature_orbit_radius"] == "creature_orbit_radius_t"
+    assert types_by_name["projectile_type_id"] == "projectile_type_id_t"
+    assert (
+        types_by_name["secondary_proj_type_id"]
+        == "secondary_projectile_type_id_t"
+    )
+    assert types_by_name["effect_pool_effect_id"] == "unsigned char"
+    assert types_by_name["particle_style_id"] == "unsigned char"
+    assert types_by_name["bonus_label_points"] == "char *"
+    assert types_by_name["bonus_hud_slot_timer_ptr"] == "float *"
+    assert types_by_name["perk_flags_table"] == "int"
+    assert types_by_name["weapon_projectile_travel_budget"] == "float"
+    assert (
+        types_by_name["ui_menu_item_subtemplate_block_01_texture_handle"]
+        == "int"
+    )
+    assert types_by_name["effect_uv16_v"] == "float"
+
+
 def test_importer_preserves_ui_element_pointer_table_aggregate():
     importer = _load_importer()
 
