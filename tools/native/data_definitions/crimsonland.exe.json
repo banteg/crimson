@@ -6,7 +6,7 @@
     "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
     "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
   },
-  "notes": "High-fan-in Crimsonland data plus the complete named input-key label and DIK dispatch tranches. Conflicting or large aggregate declarations remain unresolved; every recorded extent, alignment, and initializer is explicit.",
+  "notes": "High-fan-in Crimsonland data plus complete named input-key and catalog-CString tranches. Conflicting or large aggregate declarations remain unresolved; every recorded extent, alignment, and initializer is explicit.",
   "groups": [
     {
       "name": "literal-float32",
@@ -1628,6 +1628,329 @@
         ["0x004719b0", "input_key_name_rim1_y_axis", "52494d31594178697300"],
         ["0x004719c8", "input_key_name_rim2_x_axis", "52494d32584178697300"],
         ["0x004719e0", "input_key_name_rim0_x_axis", "52494d30584178697300"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00002",
+      "types": [null],
+      "size": 2,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004713f8", "console_cvar_default_false", "3000"],
+        ["0x004739b8", "dx_version_query_root_path", "5c00"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00003",
+      "types": [null],
+      "size": 3,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00471340", "console_cvar_default_pad_aim_dist_mul", "393600"],
+        ["0x00471f40", "s_fmt_decimal_int", "256400"],
+        ["0x00471fc4", "s_fmt_percent_s", "257300"],
+        ["0x00472998", "file_mode_read_binary", "726200"],
+        ["0x00473668", "file_mode_write_binary", "776200"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00004",
+      "types": [null],
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00471230", "console_cmd_set_str", "73657400"],
+        ["0x00471260", "console_cvar_default_scalar", "302e3700"],
+        ["0x00471f44", "s_fmt_decimal_int_zero_prefixed", "30256400"],
+        ["0x00478888", "highscore_month_label_dec", "44656300"],
+        ["0x0047888c", "highscore_month_label_nov", "4e6f7600"],
+        ["0x00478890", "highscore_month_label_oct", "4f637400"],
+        ["0x00478894", "highscore_month_label_sep", "53657000"],
+        ["0x00478898", "highscore_month_label_aug", "41756700"],
+        ["0x0047889c", "highscore_month_label_jul", "4a756c00"],
+        ["0x004788a0", "highscore_month_label_jun", "4a756e00"],
+        ["0x004788a4", "highscore_month_label_may", "4d617900"],
+        ["0x004788a8", "highscore_month_label_apr", "41707200"],
+        ["0x004788ac", "highscore_month_label_mar", "4d617200"],
+        ["0x004788b0", "highscore_month_label_feb", "46656200"],
+        ["0x004788b4", "highscore_month_label_jan", "4a616e00"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00005",
+      "types": [null],
+      "size": 5,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004711f8", "console_cmd_exec_str", "6578656300"],
+        ["0x00471228", "console_cmd_quit_str", "7175697400"],
+        ["0x00471234", "console_cmd_echo_str", "6563686f00"],
+        ["0x0047123c", "console_cmd_vars_str", "7661727300"],
+        ["0x00471b38", "shell_execute_operation_open", "6f70656e00"],
+        ["0x00477bf4", "s_fmt_typo_target_name_2_parts", "2573257300"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00006",
+      "types": [null],
+      "size": 6,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00471220", "console_cmd_clear_str", "636c65617200"],
+        ["0x0047896c", "s_highscore_label_score", "53636f726500"],
+        ["0x00478f10", "input_configure_label_mouse", "4d6f75736500"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00007",
+      "types": [null],
+      "size": 7,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00472e90", "menu_label_secret", "53656372657400"],
+        ["0x00478998", "s_fmt_highscore_universe_tag", "756e6923256400"],
+        ["0x00478e24", "s_fmt_typo_target_name_3_parts", "25732573257300"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00008",
+      "types": [null],
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00471244", "console_cmd_cmdlist_str", "636d646c69737400"],
+        ["0x00472e88", "menu_label_credits", "6372656469747300"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00009",
+      "types": [null],
+      "size": 9,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x0047365c", "game_status_filename", "67616d652e63666700"],
+        ["0x00478954", "s_fmt_highscore_rank", "52616e6b3a20257300"],
+        ["0x00478e2c", "s_fmt_typo_target_name_4_parts", "257325732573257300"],
+        ["0x00478ecc", "input_configure_label_computer", "436f6d707574657200"],
+        ["0x00478ee8", "input_configure_label_joystick", "4a6f79737469636b00"],
+        ["0x00478ef4", "input_configure_label_keyboard", "4b6579626f61726400"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00010",
+      "types": [null],
+      "size": 10,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00473950", "dx_dll_path_d3d9", "5c643364392e646c6c00"],
+        ["0x00473978", "dx_dll_path_d3d8", "5c643364382e646c6c00"],
+        ["0x00478878", "s_fmt_highscore_date_label", "25642e20257320256400"],
+        ["0x00478930", "s_fmt_highscore_frags", "46726167733a20256400"],
+        ["0x0047893c", "s_highscore_label_game_time", "47616d652074696d6500"],
+        ["0x00478960", "s_fmt_highscore_seconds", "252e3266207365637300"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00011",
+      "types": [null],
+      "size": 11,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x0047395c", "dx_dll_path_dpnet", "5c64706e65742e646c6c00"],
+        ["0x004739ac", "dx_dll_path_ddraw", "5c64647261772e646c6c00"],
+        ["0x00478948", "s_highscore_label_experience", "457870657269656e636500"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00012",
+      "types": [null],
+      "size": 12,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00473984", "dx_dll_path_dinput", "5c64696e7075742e646c6c00"],
+        ["0x00473990", "dx_dll_path_dplayx", "5c64706c6179782e646c6c00"],
+        ["0x00473e48", "config_filename", "6372696d736f6e2e63666700"],
+        ["0x00474028", "console_log_filename", "636f6e736f6c652e6c6f6700"],
+        ["0x00478974", "s_highscore_label_local_score", "4c6f63616c2073636f726500"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00013",
+      "types": [null],
+      "size": 13,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00473968", "dx_filter_path_mpg2splt", "5c6d70673273706c742e617800"],
+        ["0x0047399c", "dx_dll_path_d3drg8x", "5c643364726738782e646c6c00"],
+        ["0x00478920", "s_fmt_highscore_hit_percent", "4869742025253a202564252500"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00014",
+      "types": [null],
+      "size": 14,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00471210", "console_cmd_extend_str", "657874656e64636f6e736f6c6500"],
+        ["0x00478e04", "s_typo_fallback_word", "717569636b62726f776e666f7800"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00015",
+      "types": [null],
+      "size": 15,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00478f00", "input_configure_label_mouse_relative", "4d6f7573652072656c617469766500"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00016",
+      "types": [null],
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00471200", "console_cmd_minimize_str", "6d696e696d697a65636f6e736f6c6500"],
+        ["0x00478e14", "s_fmt_typo_unique_word_log", "25642e20756e697175653a2025730a00"],
+        ["0x00478ed8", "input_configure_label_dual_action_pad", "4475616c20416374696f6e2050616400"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00024",
+      "types": [null],
+      "size": 24,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00478980", "s_highscore_label_internet_score", "53636f72652066726f6d2074686520496e7465726e657400"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00025",
+      "types": [null],
+      "size": 25,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004788e0", "s_highscore_tooltip_game_time", "5468652074696d65207468652067616d65206c617374656400"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00031",
+      "types": [null],
+      "size": 31,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004789a0", "s_highscore_label_internet_local_origin", "496e7465726e65742073636f7265206f66206c6f63616c206f726967696e00"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00033",
+      "types": [null],
+      "size": 33,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004788fc", "s_highscore_tooltip_weapon_usage", "4d6f7374207573656420776561706f6e20647572696e67207468652067616d6500"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00035",
+      "types": [null],
+      "size": 35,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x00473b14", "secret_hint_wonder", "203a4422576f6e6465722077686174206865277320757020746f206e6f772e2e2e0a00"]
+      ]
+    },
+    {
+      "name": "catalog-cstring-char-array-00037",
+      "types": [null],
+      "size": 37,
+      "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        ["0x004788b8", "s_highscore_tooltip_hit_ratio", "5468652025206f662073686f742062756c6c65747320686974207468652074617267657400"]
       ]
     }
   ],
