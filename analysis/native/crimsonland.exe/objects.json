@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "d1f5f8fa2e0d5acd3577f5e7e32ff096a04f2653fc25d4196057745d4d33ac83",
+  "audit_digest": "4e47164a1e6f1c74b5c64d311d14f05e5e58b570067aeb1e677ea6e7c0d7241b",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -44778,7 +44778,7 @@
         {
           "path": "tools/match/scratches/ui_render_hud/scratch.cpp",
           "repository_relative": true,
-          "sha256": "ee637eb004ded284c63b80e3b24ea9e70dd2e7fd87113be2244894c716be0782"
+          "sha256": "5bf76d4f46f86bd89958d20e0861150da5c3cb18bca1a012d4379ce1b240cba7"
         },
         {
           "path": "tools/match/scratches/ui_render_hud/scratch.conf",
@@ -44824,7 +44824,7 @@
           "canonical_config_sha256": "a9d011a5ecc747deaa23bde615a7f8457c36f2c7f5a8184be3f490c445513117",
           "canonical_scratch": "tools/match/scratches/ui_render_hud",
           "canonical_source": "tools/match/scratches/ui_render_hud/scratch.cpp",
-          "canonical_source_sha256": "ee637eb004ded284c63b80e3b24ea9e70dd2e7fd87113be2244894c716be0782",
+          "canonical_source_sha256": "5bf76d4f46f86bd89958d20e0861150da5c3cb18bca1a012d4379ce1b240cba7",
           "effective_end": 4311673,
           "end": 4311673,
           "function": "ui_render_hud",
@@ -44834,7 +44834,7 @@
             "masked_ok": 390,
             "masked_unresolved": 0,
             "prefix_instructions": 42,
-            "ratio": 0.8818206745270085,
+            "ratio": 0.8829174664107485,
             "state": "wip",
             "target_instructions": 1824
           },
@@ -44848,16 +44848,16 @@
         "masked_ok": 390,
         "masked_unresolved": 0,
         "prefix_instructions": 42,
-        "ratio": 0.8818206745270085,
+        "ratio": 0.8829174664107485,
         "state": "wip",
         "target_instructions": 1824
       },
       "object": "tools/match/scratches/ui_render_hud/build/msvc6.5/2710cb374767c2df/scratch.obj",
       "object_function_symbol": "_ui_render_hud",
-      "object_sha256": "43882c1b79c62894298543a6c769ecc5c7053164ca6a7cc6974a741686ac9a0f",
+      "object_sha256": "120ba594871514aee013840d0b9e1bd3bc48f0da62ec25c2721055f02ce9d3bc",
       "scratch": "tools/match/scratches/ui_render_hud",
       "source": "tools/match/scratches/ui_render_hud/scratch.cpp",
-      "source_sha256": "ee637eb004ded284c63b80e3b24ea9e70dd2e7fd87113be2244894c716be0782",
+      "source_sha256": "5bf76d4f46f86bd89958d20e0861150da5c3cb18bca1a012d4379ce1b240cba7",
       "target_size": 7081,
       "translation_unit": {
         "kind": "isolated",

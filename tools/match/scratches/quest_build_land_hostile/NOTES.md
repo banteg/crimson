@@ -29,3 +29,21 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Setter-shape exact-tail bound (2026-07-29)
+
+Two focused sweeps cover the remaining inlined-setter distinctions. The
+four-variant parameter/copy sweep shows that const-reference, by-value, and
+const-by-value aggregate copies are byte-identical. Scalar member copies
+remove fourteen native instructions, reset the exact prefix, and lose
+122.24487284659558 weighted bytes. Its spec SHA-256 is
+`1de9b7619d488d3fcdb36d1a36ea7864e7b8ba45d61d5a8a180d0bdd470c081d`.
+
+The five non-baseline metadata assignment permutations all regress while
+preserving the native 53-instruction count and `2/0/0` references. Losses
+range from 4.509433962264154 to 22.54716981132077 weighted bytes. Its spec
+SHA-256 is
+`bffc23aaee38cb1510a07dc7588abe647e22e381e0b0bc0a827da3d7e10516b6`.
+Combined with the earlier whole-entry audit, this bounds the natural
+temporary, aggregate-copy, and metadata-order source families. The canonical
+92.45% candidate remains unchanged.

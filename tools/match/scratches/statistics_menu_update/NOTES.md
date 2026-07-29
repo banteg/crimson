@@ -91,3 +91,29 @@ only a `compiler` residual. The five audit mismatches pair the three adjacent
 music IDs and their already-present mute/play calls after the playtime
 scheduling divergence; they remain visible and unaliased rather than being
 treated as independent reference debt.
+
+## Session-playtime lifetime and call-shape bounds (2026-07-29)
+
+Live native `0x0043fa8b` confirms the recovered seconds, minutes, and hours
+arithmetic, including the magic divides, interleaved renderer/vtable loads,
+the spilled hour value, and the third unused formatting argument. Two
+recorded sweeps test thirteen natural spellings around that sequence without
+changing the retained source.
+
+`session-playtime-lifetime-mutations.json` evaluates seven declaration and
+renderer-snapshot placements. Naming seconds is byte-neutral. The five early
+renderer forms trade one mismatched reference for one resolved reference but
+lose 55.36787564766837 weighted bytes; moving the renderer after all
+arithmetic loses 178.8808290155439 weighted bytes and eleven aligned
+references. Its spec SHA-256 is
+`c7e02701c102d1f1d90eb9212a249ef798629e7b91d67476d0acd9310f64ad47`.
+
+`session-playtime-call-mutations.json` evaluates six call-expression forms.
+The two modulo spellings recover the native 676-instruction count and improve
+the reference audit to `265/0/4`, but lose 57.21704172670661 weighted bytes.
+The four fully inlined arithmetic forms emit 678 instructions and lose
+175.6472091901942 weighted bytes plus eleven aligned references. Its spec
+SHA-256 is
+`cb691dfef8cf77d81e4ef3eb00da8bda448ff22d43839b8fc1adb990542c5349`.
+Because both apparent instruction/reference wins worsen the overall native
+alignment, neither tradeoff is retained.

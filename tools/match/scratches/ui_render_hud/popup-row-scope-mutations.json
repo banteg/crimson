@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "popup-row-scope",
+      "find": "    int text_y = (int)bonus_y + 1;\n    int icon_y = (int)bonus_y - 5;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {",
+      "replacements": [
+        {
+          "name": "direct-text-scoped-derived-icon",
+          "text": "    int text_y = (int)bonus_y + 1;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "staged-increment-scoped-derived-icon",
+          "text": "    int text_y = (int)bonus_y;\n    ++text_y;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "staged-add-scoped-derived-icon",
+          "text": "    int text_y = (int)bonus_y;\n    text_y += 1;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "staged-assignment-scoped-derived-icon",
+          "text": "    int text_y = (int)bonus_y;\n    text_y = text_y + 1;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "direct-text-scoped-split-icon",
+          "text": "    int text_y = (int)bonus_y + 1;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {\n        int icon_y;\n        icon_y = text_y - 6;"
+        },
+        {
+          "name": "direct-text-scoped-independent-icon",
+          "text": "    int text_y = (int)bonus_y + 1;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {\n        int icon_y = (int)bonus_y - 5;"
+        }
+      ]
+    }
+  ]
+}

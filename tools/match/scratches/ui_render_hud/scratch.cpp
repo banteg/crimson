@@ -533,10 +533,6 @@ extern "C" void ui_render_hud(float transition_alpha)
                 quest_stage_major,
                 stage_minor);
 
-            float stage_y =
-                (float)(config_screen_height / 2 - 32)
-                + stage_scale * 23.36f
-                - stage_scale * 16.0f;
             float stage_x =
                 name_x
                 - (float)strlen(quest_stage_label_buffer)
@@ -546,7 +542,9 @@ extern "C" void ui_render_hud(float transition_alpha)
                 - 4.0f;
             grim_interface_ptr->grim_draw_text_mono_fmt(
                 stage_x,
-                stage_y,
+                (float)(config_screen_height / 2 - 32)
+                    + stage_scale * 23.36f
+                    - stage_scale * 16.0f,
                 quest_stage_label_buffer);
         }
 

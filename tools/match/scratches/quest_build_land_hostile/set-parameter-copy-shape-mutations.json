@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "set-parameter-copy-shape",
+      "find": "    void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }",
+      "replacements": [
+        {
+          "name": "by-value-aggregate-copy",
+          "text": "    void set(\n        quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        },
+        {
+          "name": "const-by-value-aggregate-copy",
+          "text": "    void set(\n        const quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        },
+        {
+          "name": "reference-scalar-copy",
+          "text": "    void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos.x = position.x;\n        pos.y = position.y;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        },
+        {
+          "name": "by-value-scalar-copy",
+          "text": "    void set(\n        quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos.x = position.x;\n        pos.y = position.y;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        }
+      ]
+    }
+  ]
+}

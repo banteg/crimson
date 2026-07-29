@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    },
+    {
+      "name": "bottom-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    },
+    {
+      "name": "left-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    },
+    {
+      "name": "top-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_ZOMBIE_RANDOM_41,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    }
+  ]
+}

@@ -46,3 +46,21 @@ Together the two source changes raise weighted bytes from
 `222.8139534883721` to `246.09302325581393`, reduce the gap from
 `63.18604651162789` to `39.90697674418607`, and preserve the exact 86
 instructions, 22-instruction prefix, and `7/0/0` references.
+
+## Cross-sweep interaction bound (2026-07-29)
+
+The retained bottom-entry count placement was introduced after the original
+direct-metadata sweep, so a new 15-variant interaction pass re-evaluates every
+single and combined direct-field spelling at the current baseline. All
+fifteen are exactly byte-neutral. The spec SHA-256 is
+`bd26d5d97af4b29a83375ee90967742ea64dc3d5674ed68a97db418eaf28d19e`.
+
+The normalized native diff appears to materialize the bottom entry's
+`terrain_texture_width + 64` Y coordinate before its X coordinate. A separate
+three-variant sweep tests every natural builder-count placement around that
+Y-then-X spelling. Two forms lose 13.302325581395337 weighted bytes; placing
+the increment after both coordinates loses the full 39.90697674418604-byte
+baseline gap and one reference. The spec SHA-256 is
+`7d176dadb49614a566fe21e64b02c7894488c9de2865edaa1b65e8d645cb12e6`.
+This falsifies the apparent source-order clue and leaves the current
+X/count/Y spelling as the evidence-backed best form.

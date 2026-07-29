@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bottom-coordinate-order",
+      "find": "        spawn->pos.x = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->pos.y = (float)(terrain_texture_width + 64);",
+      "replacements": [
+        {
+          "name": "y-x-increment",
+          "text": "        spawn->pos.y = (float)(terrain_texture_width + 64);\n        spawn->pos.x = (float)(terrain_texture_width / 2);\n        ++builder.count;"
+        },
+        {
+          "name": "y-increment-x",
+          "text": "        spawn->pos.y = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        spawn->pos.x = (float)(terrain_texture_width / 2);"
+        },
+        {
+          "name": "increment-y-x",
+          "text": "        ++builder.count;\n        spawn->pos.y = (float)(terrain_texture_width + 64);\n        spawn->pos.x = (float)(terrain_texture_width / 2);"
+        }
+      ]
+    }
+  ]
+}

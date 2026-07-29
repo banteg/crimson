@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "stage-label-call",
+      "find": "            float stage_y =\n                (float)(config_screen_height / 2 - 32)\n                + stage_scale * 23.36f\n                - stage_scale * 16.0f;\n            float stage_x =\n                name_x\n                - (float)strlen(quest_stage_label_buffer)\n                    * stage_scale\n                    * 8.0f\n                - stage_scale * 32.0f\n                - 4.0f;\n            grim_interface_ptr->grim_draw_text_mono_fmt(\n                stage_x,\n                stage_y,\n                quest_stage_label_buffer);",
+      "replacements": [
+        {
+          "name": "inline-both",
+          "text": "            grim_interface_ptr->grim_draw_text_mono_fmt(\n                name_x\n                    - (float)strlen(quest_stage_label_buffer)\n                        * stage_scale\n                        * 8.0f\n                    - stage_scale * 32.0f\n                    - 4.0f,\n                (float)(config_screen_height / 2 - 32)\n                    + stage_scale * 23.36f\n                    - stage_scale * 16.0f,\n                quest_stage_label_buffer);"
+        },
+        {
+          "name": "inline-both-grouped-width",
+          "text": "            grim_interface_ptr->grim_draw_text_mono_fmt(\n                name_x\n                    - ((float)strlen(quest_stage_label_buffer)\n                       * stage_scale * 8.0f)\n                    - (stage_scale * 32.0f)\n                    - 4.0f,\n                (float)(config_screen_height / 2 - 32)\n                    + stage_scale * 23.36f\n                    - stage_scale * 16.0f,\n                quest_stage_label_buffer);"
+        },
+        {
+          "name": "inline-both-length-first",
+          "text": "            grim_interface_ptr->grim_draw_text_mono_fmt(\n                -(float)strlen(quest_stage_label_buffer)\n                        * stage_scale\n                        * 8.0f\n                    + name_x\n                    - stage_scale * 32.0f\n                    - 4.0f,\n                (float)(config_screen_height / 2 - 32)\n                    + stage_scale * 23.36f\n                    - stage_scale * 16.0f,\n                quest_stage_label_buffer);"
+        },
+        {
+          "name": "named-length-inline-both",
+          "text": "            int stage_label_length =\n                strlen(quest_stage_label_buffer);\n            grim_interface_ptr->grim_draw_text_mono_fmt(\n                name_x\n                    - (float)stage_label_length\n                        * stage_scale\n                        * 8.0f\n                    - stage_scale * 32.0f\n                    - 4.0f,\n                (float)(config_screen_height / 2 - 32)\n                    + stage_scale * 23.36f\n                    - stage_scale * 16.0f,\n                quest_stage_label_buffer);"
+        },
+        {
+          "name": "named-x-inline-y",
+          "text": "            float stage_x =\n                name_x\n                - (float)strlen(quest_stage_label_buffer)\n                    * stage_scale\n                    * 8.0f\n                - stage_scale * 32.0f\n                - 4.0f;\n            grim_interface_ptr->grim_draw_text_mono_fmt(\n                stage_x,\n                (float)(config_screen_height / 2 - 32)\n                    + stage_scale * 23.36f\n                    - stage_scale * 16.0f,\n                quest_stage_label_buffer);"
+        },
+        {
+          "name": "inline-x-named-y",
+          "text": "            float stage_y =\n                (float)(config_screen_height / 2 - 32)\n                + stage_scale * 23.36f\n                - stage_scale * 16.0f;\n            grim_interface_ptr->grim_draw_text_mono_fmt(\n                name_x\n                    - (float)strlen(quest_stage_label_buffer)\n                        * stage_scale\n                        * 8.0f\n                    - stage_scale * 32.0f\n                    - 4.0f,\n                stage_y,\n                quest_stage_label_buffer);"
+        }
+      ]
+    }
+  ]
+}

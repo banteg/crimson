@@ -231,3 +231,31 @@ all four popup-row-origin variants lose 7.766383328763368 weighted bytes and
 one reference, so the remaining popup-origin difference is not improved by a
 natural single-site lifetime spelling. The scratch remains
 `semantic-complete` with only a `compiler` residual.
+
+## Stage-label call evaluation and popup-scope bound (2026-07-29)
+
+Native `0x0041bfc8..0x0041c01c` loads the renderer receiver and virtual call
+target, leaves the stage-label Y expression live on x87, and then runs the
+inlined `strlen` used to form X. A six-variant call-expression sweep recovered
+that schedule by retaining the named `stage_x` calculation while inlining the
+Y expression into `grim_draw_text_mono`. The conservative
+`stage-label-call/named-x-inline-y` winner gains
+7.766383328763368 weighted bytes with the same 1,823 candidate instructions,
+42-instruction prefix, and `390/0/0` references. Three more fully inlined
+spellings tie the byte result; the retained form keeps the recovered
+native-backed X calculation explicit.
+
+The final score is 6,251.93857965451/7,081 weighted bytes
+(`88.29174664107485%`), gap 829.0614203454898, 1,823/1,824 instructions,
+prefix 42, and `390/0/0` references. The prior stage-label structural
+missing/extra pair disappears from the localized diff.
+
+The adjacent popup-origin hypothesis is now independently bounded.
+`popup-row-scope-mutations.json` evaluates six staged, direct, split, and
+derived row-origin lifetimes. All six lose exactly 7.766383328763368 weighted
+bytes and one aligned reference while preserving instruction count. No popup
+scope source change is retained. The recorded spec SHA-256 values are
+`0b61e5b25921a32ea8ad34a1f2b632d2f92e87fb5eb6df9c5342e0189bbf6827`
+for the stage-label sweep and
+`2b0ddc7c84308d1903c783fbee23ca839ae4b1c8fc3286e2bab0616b4ea60820`
+for the popup-scope sweep.
