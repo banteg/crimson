@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "jaz-result-lifetime",
+      "find": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = grim_path_has_extension(path, \"jaz\");\n    if (result) {\n",
+      "replacements": [
+        {
+          "name": "result-before-image-outputs",
+          "text": "    bool result = grim_path_has_extension(path, \"jaz\");\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    if (result) {\n"
+        },
+        {
+          "name": "result-before-image-info",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    bool result = grim_path_has_extension(path, \"jaz\");\n    GrimD3dxImageInfo source_info;\n    if (result) {\n"
+        },
+        {
+          "name": "image-info-first",
+          "text": "    GrimD3dxImageInfo source_info;\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    bool result = grim_path_has_extension(path, \"jaz\");\n    if (result) {\n"
+        },
+        {
+          "name": "separate-result-assignment",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result;\n    result = grim_path_has_extension(path, \"jaz\");\n    if (result) {\n"
+        },
+        {
+          "name": "assignment-in-condition",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result;\n    if ((result = grim_path_has_extension(path, \"jaz\"))) {\n"
+        },
+        {
+          "name": "explicit-true-test",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = grim_path_has_extension(path, \"jaz\");\n    if (result == true) {\n"
+        },
+        {
+          "name": "explicit-false-test",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = grim_path_has_extension(path, \"jaz\");\n    if (result != false) {\n"
+        },
+        {
+          "name": "double-negated-test",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = grim_path_has_extension(path, \"jaz\");\n    if (!!result) {\n"
+        },
+        {
+          "name": "normalized-call-result",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = grim_path_has_extension(path, \"jaz\") ? true : false;\n    if (result) {\n"
+        },
+        {
+          "name": "named-extension-result",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool has_jaz_extension = grim_path_has_extension(path, \"jaz\");\n    bool result = has_jaz_extension;\n    if (result) {\n"
+        },
+        {
+          "name": "branch-local-constant-result",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    if (grim_path_has_extension(path, \"jaz\")) {\n        bool result = true;\n"
+        },
+        {
+          "name": "function-scope-branch-assignment",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result;\n    if (grim_path_has_extension(path, \"jaz\")) {\n        result = true;\n"
+        },
+        {
+          "name": "preinitialized-true-result",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = true;\n    if (grim_path_has_extension(path, \"jaz\")) {\n"
+        }
+      ]
+    }
+  ]
+}

@@ -26,8 +26,8 @@ bool GrimTexture::grim_texture_load_file(char *path)
     }
     this->texture = 0;
 
-    unsigned char *lookup_data = 0;
     bool found_in_lookup = false;
+    unsigned char *lookup_data = 0;
     if (grim_lookup_blob_loaded) {
         lookup_data = (unsigned char *)grim_lookup_blob_find(path);
         found_in_lookup = lookup_data != 0;
@@ -37,8 +37,8 @@ bool GrimTexture::grim_texture_load_file(char *path)
     int image_height;
     unsigned int image_size;
     GrimD3dxImageInfo source_info;
-    if (grim_path_has_extension(path, "jaz")) {
-        bool result = true;
+    bool result = grim_path_has_extension(path, "jaz");
+    if (result) {
         unsigned int source_size;
         unsigned char *source_data;
 
