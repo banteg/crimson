@@ -1970,8 +1970,8 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1551
-    assert payload["summary"]["typed_entries"] == 919
-    assert payload["summary"]["untyped_entries"] == 632
+    assert payload["summary"]["typed_entries"] == 1116
+    assert payload["summary"]["untyped_entries"] == 435
     assert payload["summary"]["explicit_size_entries"] == 998
     assert payload["summary"]["explicit_alignment_entries"] == 998
     assert payload["summary"]["explicit_initializer_entries"] == 998
@@ -2041,6 +2041,9 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["perk_selection_choice_items"]["size"] == 0xA0
     assert defined["mod_info_block"]["size"] == 0x48
     assert defined["highscore_screen_score_line_buffers"]["size"] == 0x668
+    assert defined["console_log_queue"]["type"] == "console_queue_t"
+    assert defined["frame_dt"]["type"] == "float"
+    assert defined["perk_id_doctor"]["type"] == "int"
     assert defined["console_input_buf"]["size"] == 1024
     assert defined["typo_target_name_table"]["size"] == 384 * 64
     assert defined["terrain_texture_handles"]["size"] == 8 * 4

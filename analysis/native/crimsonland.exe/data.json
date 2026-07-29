@@ -1,5 +1,5 @@
 {
-  "audit_digest": "7ed74eee9606da7bb93100c4e6eea30998ef1be5a4b221f9842a51b65823282d",
+  "audit_digest": "8f5f3c6aebb9b9c0726faf31ded9fb55080a009a189951fcd511621f1b548236",
   "entries": [
     {
       "address": 4211888,
@@ -2540,7 +2540,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json and reference PE: complete NUL-terminated CString extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4664968,
@@ -4869,7 +4869,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4713056,
@@ -4972,7 +4972,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 44,
       "size_source": "tools/match/include/crimsonland_console.h: console_queue_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: console_queue_is_0x2c",
-      "type": null
+      "type": "console_queue_t"
     },
     {
       "address": 4714148,
@@ -5151,7 +5151,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4715736,
@@ -5948,7 +5948,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches/player_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719456,
@@ -6328,7 +6328,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches/bonus_render/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719880,
@@ -6993,7 +6993,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/include/crimsonland_gameplay.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4720529,
@@ -7387,7 +7387,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_gameplay.h: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4720708,
@@ -7406,7 +7406,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches/game_frame_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720712,
@@ -7469,7 +7469,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4720721,
@@ -7490,7 +7490,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4720724,
@@ -7782,7 +7782,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4720788,
@@ -7803,7 +7803,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720792,
@@ -7845,7 +7845,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720804,
@@ -7887,7 +7887,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720812,
@@ -7950,7 +7950,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720824,
@@ -7971,7 +7971,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4720825,
@@ -8013,7 +8013,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720832,
@@ -8034,7 +8034,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720836,
@@ -8297,7 +8297,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4723136,
@@ -8339,7 +8339,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4723144,
@@ -10593,7 +10593,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches/camera_update/scratch.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4739020,
@@ -10612,7 +10612,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches/camera_update/scratch.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4739024,
@@ -11383,7 +11383,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747177,
@@ -11530,7 +11530,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747200,
@@ -11572,7 +11572,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747208,
@@ -11593,7 +11593,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747212,
@@ -11675,7 +11675,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747228,
@@ -11696,7 +11696,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747232,
@@ -11717,7 +11717,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747236,
@@ -11738,7 +11738,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747237,
@@ -11759,7 +11759,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747240,
@@ -11858,7 +11858,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747268,
@@ -11917,7 +11917,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747277,
@@ -11936,7 +11936,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/include/crimsonland_gameplay.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747278,
@@ -11957,7 +11957,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747280,
@@ -11978,7 +11978,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747284,
@@ -12607,7 +12607,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747668,
@@ -12983,7 +12983,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/include/crimsonland_ui.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747728,
@@ -13027,7 +13027,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747740,
@@ -13048,7 +13048,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747744,
@@ -13069,7 +13069,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747748,
@@ -13090,7 +13090,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747752,
@@ -13130,7 +13130,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_ui.h: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747760,
@@ -13149,7 +13149,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_ui.h: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747764,
@@ -13271,7 +13271,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/include/crimsonland_gameplay.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747841,
@@ -13334,7 +13334,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4747852,
@@ -13353,7 +13353,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches/game_frame_update/scratch.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747853,
@@ -13374,7 +13374,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747856,
@@ -13500,7 +13500,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747880,
@@ -13601,7 +13601,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747900,
@@ -15671,7 +15671,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4781352,
@@ -15713,7 +15713,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4781364,
@@ -15732,7 +15732,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_gameplay.h: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4781368,
@@ -15751,7 +15751,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_gameplay.h: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4781372,
@@ -16350,7 +16350,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4782028,
@@ -16392,7 +16392,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4782040,
@@ -16434,7 +16434,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4782048,
@@ -16476,7 +16476,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4782056,
@@ -16497,7 +16497,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4782060,
@@ -16516,7 +16516,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches/effects_render/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4782064,
@@ -16537,7 +16537,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4782068,
@@ -17421,7 +17421,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4784900,
@@ -22098,7 +22098,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4894436,
@@ -22180,7 +22180,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4894492,
@@ -22327,7 +22327,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4894548,
@@ -22432,7 +22432,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4894597,
@@ -23455,7 +23455,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991812,
@@ -23476,7 +23476,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991816,
@@ -23497,7 +23497,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991820,
@@ -23518,7 +23518,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991824,
@@ -23539,7 +23539,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991828,
@@ -23560,7 +23560,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991832,
@@ -23581,7 +23581,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991836,
@@ -23602,7 +23602,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991840,
@@ -23623,7 +23623,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991844,
@@ -23644,7 +23644,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991848,
@@ -23665,7 +23665,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991856,
@@ -23686,7 +23686,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991860,
@@ -23707,7 +23707,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991864,
@@ -23728,7 +23728,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991868,
@@ -23749,7 +23749,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991872,
@@ -23770,7 +23770,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991876,
@@ -23791,7 +23791,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991880,
@@ -23812,7 +23812,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991884,
@@ -23854,7 +23854,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991892,
@@ -23875,7 +23875,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991896,
@@ -23896,7 +23896,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991900,
@@ -23917,7 +23917,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991904,
@@ -23938,7 +23938,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991908,
@@ -23959,7 +23959,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991912,
@@ -23980,7 +23980,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991916,
@@ -24001,7 +24001,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991920,
@@ -24022,7 +24022,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991924,
@@ -24043,7 +24043,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991928,
@@ -24064,7 +24064,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991932,
@@ -24085,7 +24085,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991936,
@@ -24106,7 +24106,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991940,
@@ -24127,7 +24127,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991944,
@@ -24148,7 +24148,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991948,
@@ -24190,7 +24190,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991956,
@@ -24211,7 +24211,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991960,
@@ -24232,7 +24232,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991964,
@@ -24253,7 +24253,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991968,
@@ -24274,7 +24274,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991972,
@@ -24295,7 +24295,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991976,
@@ -24316,7 +24316,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991980,
@@ -24337,7 +24337,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991984,
@@ -24358,7 +24358,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991988,
@@ -24379,7 +24379,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991992,
@@ -24400,7 +24400,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4991996,
@@ -24421,7 +24421,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992000,
@@ -24442,7 +24442,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992004,
@@ -24463,7 +24463,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992008,
@@ -24484,7 +24484,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992012,
@@ -24505,7 +24505,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992016,
@@ -24526,7 +24526,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992020,
@@ -24547,7 +24547,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992024,
@@ -24568,7 +24568,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992028,
@@ -24589,7 +24589,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992032,
@@ -24610,7 +24610,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992036,
@@ -24631,7 +24631,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992040,
@@ -24652,7 +24652,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992044,
@@ -24673,7 +24673,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992048,
@@ -24694,7 +24694,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4992056,
@@ -25189,7 +25189,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4996208,
@@ -25317,7 +25317,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996868,
@@ -25376,7 +25376,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996880,
@@ -25397,7 +25397,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996884,
@@ -25418,7 +25418,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996888,
@@ -25439,7 +25439,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996892,
@@ -25460,7 +25460,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996896,
@@ -25481,7 +25481,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996900,
@@ -25502,7 +25502,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996904,
@@ -25523,7 +25523,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996908,
@@ -25544,7 +25544,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996912,
@@ -25565,7 +25565,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996916,
@@ -25586,7 +25586,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996920,
@@ -25607,7 +25607,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996924,
@@ -25628,7 +25628,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996928,
@@ -25649,7 +25649,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996932,
@@ -25670,7 +25670,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996936,
@@ -25691,7 +25691,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996940,
@@ -25712,7 +25712,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996944,
@@ -25733,7 +25733,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996948,
@@ -25754,7 +25754,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996952,
@@ -25775,7 +25775,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996956,
@@ -25796,7 +25796,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996960,
@@ -25817,7 +25817,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996964,
@@ -25838,7 +25838,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996968,
@@ -25859,7 +25859,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996972,
@@ -25880,7 +25880,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996976,
@@ -25901,7 +25901,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996980,
@@ -25922,7 +25922,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996984,
@@ -25943,7 +25943,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996988,
@@ -25964,7 +25964,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996992,
@@ -25985,7 +25985,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4996996,
@@ -26006,7 +26006,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997000,
@@ -26027,7 +26027,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997004,
@@ -26048,7 +26048,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997008,
@@ -26069,7 +26069,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997016,
@@ -26090,7 +26090,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997020,
@@ -26111,7 +26111,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997024,
@@ -26132,7 +26132,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997028,
@@ -26153,7 +26153,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997032,
@@ -26174,7 +26174,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997036,
@@ -26195,7 +26195,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997040,
@@ -26216,7 +26216,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997044,
@@ -26237,7 +26237,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997048,
@@ -26258,7 +26258,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997052,
@@ -26279,7 +26279,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997056,
@@ -26300,7 +26300,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997060,
@@ -26321,7 +26321,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997064,
@@ -26342,7 +26342,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997068,
@@ -26363,7 +26363,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997072,
@@ -26479,7 +26479,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997096,
@@ -26500,7 +26500,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997100,
@@ -26521,7 +26521,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997104,
@@ -26542,7 +26542,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997108,
@@ -26563,7 +26563,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997112,
@@ -26584,7 +26584,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997116,
@@ -26605,7 +26605,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997120,
@@ -26645,7 +26645,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997128,
@@ -26685,7 +26685,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997136,
@@ -26706,7 +26706,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997140,
@@ -26727,7 +26727,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997144,
@@ -26748,7 +26748,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997148,
@@ -26788,7 +26788,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997156,
@@ -26809,7 +26809,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997160,
@@ -26830,7 +26830,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997164,
@@ -26870,7 +26870,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997172,
@@ -26889,7 +26889,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_audio.h: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997176,
@@ -26908,7 +26908,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_audio.h: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997180,
@@ -26927,7 +26927,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/include/crimsonland_audio.h: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997184,
@@ -26948,7 +26948,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997188,
@@ -26969,7 +26969,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
-      "type": null
+      "type": "int"
     },
     {
       "address": 4997196,
@@ -27172,7 +27172,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
       "size_source": "tools/match/include/crimsonland_audio.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 5032152,
@@ -31261,9 +31261,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "3ef6112dd63e4ecfdfc11cb9802c8359b6e1f04701583378ac4c97890f6a0a3e",
+    "data_map_sha256": "cedefb9acab64323a68c7ee188b46d41aeae92b6cd4d1bf27945f023c25fee31",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "2d22474e03ea184b7ed4fa9a457412ec4a509a01d50eec767ce62bb01e538b74",
+    "definitions_sha256": "0635e22cc154cb7cd447e3e4bd3ba7bed3ea635cb86a81c17829527e11aed066",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -31280,7 +31280,7 @@
     "explicit_alignment_entries": 998,
     "explicit_initializer_entries": 998,
     "explicit_size_entries": 998,
-    "fixed_array_types": 248,
+    "fixed_array_types": 249,
     "fully_specified_entries": 998,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -31293,8 +31293,8 @@
       ".rdata": 4,
       ".text": 4
     },
-    "typed_entries": 919,
+    "typed_entries": 1116,
     "unique_addresses": 1547,
-    "untyped_entries": 632
+    "untyped_entries": 435
   }
 }
