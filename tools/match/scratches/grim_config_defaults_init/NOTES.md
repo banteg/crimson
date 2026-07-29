@@ -59,3 +59,30 @@ offset, and local-reference spellings do not repair that tradeoff; standard
 VC6.0, 6.5, and 6.6 backends also emit the same object. The joint ordering
 probe is recorded in `experiments.jsonl`, while the canonical shared body and
 the stronger 87.32% profile remain unchanged.
+
+A later typed-cursor interaction supersedes that checkpoint. Moving the
+9-byte name clear to the order used by exact sibling
+`config_sync_from_grim`, traversing `saved_name_order` with an `int *`, and
+advancing a typed `char (*)[27]` saved-name cursor in the `strcpy` expression
+lets the stock `/O2 /GB /W3 /GR-` profile reach **89.36%**, 142 candidate
+versus 140 native instructions, and references `80/0/0`. The same shared body
+produces the identical improvement for executable copy
+`config_init_defaults`.
+
+Relative to the former retained `/Oy-` result, this recovers 14.96 additional
+fuzzy-weighted bytes, reduces the candidate by two instructions, narrows the
+gap from 93.04 to 78.09 bytes, preserves complete reference agreement, and
+removes the function-local frame-pointer override. The pointer traversal is a
+typed presentation of the two contiguous recovered arrays, not a raw-offset
+or address-shaped expression.
+
+The remaining residual is still compiler allocation. Native keeps the slot
+value in `EBX`, a strength-reduced order offset in `EBP`, and only the
+saved-name cursor on the stack. VC6 instead keeps both typed cursors in
+callee-saved registers and spills the slot value plus the postincrement's old
+name pointer, producing an 8-byte frame. A name cursor alone reached 87.94%
+with clean references; the typed order bound supplied the retained gain.
+Explicit cursor advances collapse to the older 77.03% allocation, and a
+pointer-distance bound grows to 148 instructions and 87.50%. Recovered `bool`
+and named-integer field views were byte-neutral, so no speculative type change
+is retained.

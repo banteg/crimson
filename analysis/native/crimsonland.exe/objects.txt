@@ -38,7 +38,7 @@ tools/match/scratches/console_command_find/build/msvc6.5/33b5544254aad583/scratc
 tools/match/scratches/console_command_autocomplete/build/msvc6.5/42e8d60c3aaaa446/scratch.obj
 tools/match/scratches/console_flush_log/build/msvc6.5/5e4c1847b8820d81/scratch.obj
 tools/match/scratches/j_config_init_defaults/build/msvc6.5/57057979bd001198/scratch.obj
-tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj
+tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj
 tools/match/scratches/game_build_path/build/msvc6.5/c86ed03a01eebe4d/scratch.obj
 tools/match/scratches/register_core_cvars/build/msvc6.5/435df9ac5fa67a63/scratch.obj
 tools/match/scratches/ui_render_loading/build/msvc6.5/18747f74f792a35e/scratch.obj

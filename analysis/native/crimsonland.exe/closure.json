@@ -1,5 +1,5 @@
 {
-  "audit_digest": "a8a7e6e11893c451eea0bd362da574c930e5c8c715df68a93d0f2d3443251a42",
+  "audit_digest": "c5ace9f69495f6fee90ccdf6e0559c125100b67a58b022c65add9b87e30fa236",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -4697,7 +4697,7 @@
           "function": "config_init_defaults",
           "kind": "section",
           "logical_section_size": 7,
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -5400,7 +5400,7 @@
           "function": "config_init_defaults",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -26872,7 +26872,7 @@
         "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/a6a032fd2c754315/scratch.obj",
         "tools/match/scratches/config_apply_detail_preset/build/msvc6.5/95597a046c191374/scratch.obj",
         "tools/match/scratches/config_ensure_file/build/msvc6.5/e280a1c1627f2109/scratch.obj",
-        "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+        "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
         "tools/match/scratches/config_load_presets/build/msvc6.5/33f205d3cdf74c4f/scratch.obj",
         "tools/match/scratches/config_sync_from_grim/build/msvc6.5/6315932917e5058f/scratch.obj",
         "tools/match/scratches/console_clear_log/build/msvc6.5/2ee004cf23150827/scratch.obj",
@@ -27540,7 +27540,7 @@
         "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/a6a032fd2c754315/scratch.obj",
         "tools/match/scratches/config_apply_detail_preset/build/msvc6.5/95597a046c191374/scratch.obj",
         "tools/match/scratches/config_ensure_file/build/msvc6.5/e280a1c1627f2109/scratch.obj",
-        "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+        "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
         "tools/match/scratches/config_load_presets/build/msvc6.5/33f205d3cdf74c4f/scratch.obj",
         "tools/match/scratches/config_sync_from_grim/build/msvc6.5/6315932917e5058f/scratch.obj",
         "tools/match/scratches/console_clear_log/build/msvc6.5/2ee004cf23150827/scratch.obj",
@@ -35693,7 +35693,7 @@
           "function": "config_init_defaults",
           "kind": "section",
           "logical_section_size": 7,
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -36540,7 +36540,7 @@
           "function": "config_init_defaults",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -81448,7 +81448,7 @@
           "function": "config_init_defaults",
           "kind": "section",
           "logical_section_size": 752,
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -109040,7 +109040,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj"
+      "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj"
     },
     {
       "directives": [
@@ -121993,7 +121993,7 @@
         },
         {
           "function": "config_init_defaults",
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "weak": false
         },
         {
@@ -122757,7 +122757,7 @@
           "function": "config_init_defaults",
           "kind": "section",
           "logical_section_size": 752,
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -165451,7 +165451,7 @@
         },
         {
           "function": "config_init_defaults",
-          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
+          "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
           "weak": false
         },
         {

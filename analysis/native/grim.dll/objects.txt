@@ -20,7 +20,7 @@ tools/match/scratches/grim_missing_frame_callback/build/msvc6.5/a002a7157055cf3e
 tools/match/scratches/grim_default_device_callback/build/msvc6.5/183cc64416a7a030/scratch.obj
 tools/match/scratches/grim_noop/build/msvc6.5/09d752796616e51e/scratch.obj
 tools/match/scratches/grim_config_defaults_init_thunk/build/msvc6.5/eae4e698075e2e7a/scratch.obj
-tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj
+tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj
 tools/match/scratches/grim_apply_render_state/build/msvc6.5/c53c287184ecb2ea/scratch.obj
 tools/match/scratches/grim_is_texture_format_supported/build/msvc6.5/cbdfe1ae1c52e511/scratch.obj
 tools/match/scratches/grim_select_texture_format/build/msvc6.5/0970a8219c13e62e/scratch.obj

@@ -65,3 +65,21 @@ are swapped. Under `/Oy-` that source falls to 73.94% and `63/0/2`.
 Natural register, loop-scope, post-test, flattened-index, explicit-cursor,
 typed-offset, local-reference, and standard VC6 backend variants do not repair
 the tradeoff. The stronger 87.32% shared body therefore remains canonical.
+
+A later interaction between the two recovered saved-name arrays supersedes
+that checkpoint. The 9-byte name clear now follows the order used by exact
+sibling `config_sync_from_grim`; an `int *` traverses
+`saved_name_order`; and a typed `char (*)[27]` cursor advances through
+`saved_names` in the `strcpy` expression. With the stock
+`/O2 /GB /W3 /GR-` profile, both this function and its byte-identical Grim copy
+reach **89.36%**, 142 candidate versus 140 native instructions, and references
+`80/0/0`.
+
+This recovers 14.96 fuzzy-weighted bytes over the former `/Oy-` result, removes
+two candidate instructions and the function-local frame-pointer override, and
+narrows the gap from 93.04 to 78.09 bytes without introducing raw offsets or
+reference debt. The remaining compiler-only residual is the native one-slot
+frame versus VC6's two-slot allocation: native keeps the saved-name cursor on
+the stack and the slot/order inductions in `EBX`/`EBP`, while the candidate
+keeps both typed cursors in registers and spills the slot plus the
+postincrement temporary.

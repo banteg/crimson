@@ -9,8 +9,9 @@
 extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
 {
     int i;
+    int *saved_order;
+    char (*saved_name)[27];
 
-    memset(CRIMSON_CONFIG_DEFAULTS_BLOB.player_name_buf, 0, 9);
     CRIMSON_CONFIG_DEFAULTS_BLOB.hardcore = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.ui_info_texts = 1;
     CRIMSON_CONFIG_DEFAULTS_BLOB.perk_prompt_counter = 0;
@@ -21,10 +22,16 @@ extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
     CRIMSON_CONFIG_DEFAULTS_BLOB.safe_mode_backend_enabled = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.texture_scale = 1.0f;
     CRIMSON_CONFIG_DEFAULTS_BLOB.score_load_gate = 0;
+    memset(CRIMSON_CONFIG_DEFAULTS_BLOB.player_name_buf, 0, 9);
 
-    for (i = 0; i < 8; ++i) {
-        CRIMSON_CONFIG_DEFAULTS_BLOB.saved_name_order[i] = i;
-        strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[i], "default");
+    i = 0;
+    saved_name = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names;
+    saved_order = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_name_order;
+    while (saved_order < CRIMSON_CONFIG_DEFAULTS_BLOB.saved_name_order + 8) {
+        *saved_order = i;
+        strcpy(*saved_name++, "default");
+        ++saved_order;
+        ++i;
     }
 
     CRIMSON_CONFIG_DEFAULTS_BLOB.highscore_duplicate_mode = 0;
