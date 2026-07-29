@@ -1,5 +1,5 @@
 {
-  "audit_digest": "17df76a8f456261beef208c6f903b2f1ca803f874940ecdbacfbab7162049f09",
+  "audit_digest": "9f29632135b2494b2317427428b0a48eb73313ed8060f37595e464aac1bd6bdb",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -21472,6 +21472,19 @@
           "section": ".rdata",
           "size": null,
           "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@4003b000000000000000",
+          "comdat_selection": 2,
+          "function": "unlocked_weapons_database_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
         }
       ],
       "name": "__real@4@4003b000000000000000"
@@ -21775,6 +21788,19 @@
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/quest_results_screen_update/build/msvc6.5/b1fd6cafe6cb600f/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@4003d000000000000000",
+          "comdat_selection": 2,
+          "function": "unlocked_weapons_database_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -23309,19 +23335,6 @@
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/ui_text_input_render/build/msvc6.5/3490373e8628ff2b/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4004c000000000000000",
-          "comdat_selection": 2,
-          "function": "unlocked_weapons_database_update",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -72636,6 +72649,19 @@
           "section": ".rdata",
           "size": null,
           "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@4003b000000000000000",
+          "comdat_selection": 2,
+          "function": "unlocked_weapons_database_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
         }
       ],
       "name": "__real@4@4003b000000000000000"
@@ -72957,6 +72983,19 @@
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/quest_results_screen_update/build/msvc6.5/b1fd6cafe6cb600f/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@4003d000000000000000",
+          "comdat_selection": 2,
+          "function": "unlocked_weapons_database_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -74617,19 +74656,6 @@
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/ui_text_input_render/build/msvc6.5/3490373e8628ff2b/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4004c000000000000000",
-          "comdat_selection": 2,
-          "function": "unlocked_weapons_database_update",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -107581,7 +107607,7 @@
           "comdat_selection": 1,
           "function": "unlocked_weapons_database_update",
           "kind": "section",
-          "logical_section_size": 2080,
+          "logical_section_size": 2096,
           "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
           "section": ".text",
           "size": null,
@@ -163334,7 +163360,7 @@
           "comdat_selection": 1,
           "function": "unlocked_weapons_database_update",
           "kind": "section",
-          "logical_section_size": 2080,
+          "logical_section_size": 2096,
           "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
           "section": ".text",
           "size": null,

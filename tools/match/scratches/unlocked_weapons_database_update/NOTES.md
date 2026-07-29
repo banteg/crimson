@@ -18,9 +18,9 @@ callback:
   the ammo-class-1 `n/a` case), reload time, and clip size, including the
   narrow-screen horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 98.37% of 523 target
-instructions with 522 candidate instructions, a 29-instruction exact prefix,
-the exact native `0x118`-byte frame, and `154/0/0` audited references. All
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 99.81% of 523 target
+instructions with all 523 candidate instructions, a 74-instruction exact
+prefix, the exact native `0x118`-byte frame, and `157/0/0` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
 former unresolved alignments were constant-pool effects of vector-temporary
 ownership. The retained shared-panel forms now align both native UI-field
@@ -29,10 +29,10 @@ reads without introducing aliases or reference overrides.
 The frame and control-flow improvement comes from source-supported structure:
 the title separator and three panel anchors have their native disjoint
 lifetimes, and the Back button receives the scoped copied coordinate pair
-visible before the native call. The native `20 + 10`, `20 + 8`, and `16 + 4`
-vertical spacings remain separate operations, the compact-to-real-id mapping
-uses its native post-increment test, and the fire-rate branches place the RPM
-path before the ammo-class-1 `n/a` path.
+visible before the native call. The native `20 + 10`, `20 + 8`, `16 + 4`, and
+weapon-icon `22 + 26` vertical spacings remain separate operations, the
+compact-to-real-id mapping uses its native post-increment test, and the
+fire-rate branches place the RPM path before the ammo-class-1 `n/a` path.
 
 An older caller-local scrollbar replica typed its tab-column offsets as
 `float[8]` and scored 85.74% with `143/0/2` references. Live
@@ -50,15 +50,17 @@ fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 98.37%, 522/523 instructions, and
-`154/0/0` references before and after classification. There are no mismatched
+A fresh corpus audit keeps the candidate at 99.81%, 523/523 instructions, and
+`157/0/0` references before and after classification. There are no mismatched
 or unresolved references. As in the sibling perks callback, the retained
 chained opening-panel expression removes the former slot-09 entry and extends
 the exact prologue; the direct back-panel owner and named chained detail-panel
 temporary remove the remaining slot-33 alignment debt.
 
-No data-map or scrollbar/UI layout correction is supported. The remaining
-byte regions are compiler scheduling and register allocation only, and
+No data-map or scrollbar/UI layout correction is supported. The sole remaining
+byte region swaps two independent instructions after the title-separator
+coordinates are stored: native loads the virtual-table slot before converting
+the integer width to float, while the candidate schedules them oppositely.
 `RESIDUAL=compiler` records that conclusion.
 
 ## Shared-class source-shape recovery
@@ -112,11 +114,30 @@ independently here:
 - `detail-panel-expression-order-mutations.json` separates the render-offset,
   panel-x, and constant adjustments in native order, adding 23.95 weighted
   bytes and one aligned reference without debt.
+- `weapon-icon-position-mutations.json` recovers the native `22 + 26`
+  vertical split around the 32-pixel x adjustment. It adds the missing
+  candidate instruction, 25.96 weighted bytes, and two aligned references,
+  collapsing every downstream branch-displacement residual.
+- `opening-title-interaction-mutations.json` evaluates all 17 single and
+  two-site combinations of the native final-adjustment order and eight
+  title-separator ownership forms. The constructed-temporary interaction adds
+  3.99 weighted bytes, extends the exact prefix from 29 to 74 instructions,
+  and aligns one more reference.
+- `title-separator-call-schedule-mutations.json` evaluates eight ordinary
+  interface-owner, width-local, and half-width spellings against the final
+  four-byte gap. All compile byte-identically, bounding the remaining
+  scheduling residual.
 
-Together they move the fresh baseline from 82.87% to 98.37% and from
-`140/0/2` to `154/0/0` references. The complete append-only evidence is in
+The installed compiler matrix reinforces that boundary: VC6.6 reproduces the
+same four-byte gap, Processor Pack and VC7 regress decisively, and `/G5`,
+`/Ob1`, and `/Ob2` are byte-neutral under VC6.5. `/G6`, `/Oy-`, and `/O1`
+all regress.
+
+Together the retained changes move the fresh baseline from 82.87% to 99.81%,
+from 522 to 523 candidate instructions, and from `140/0/2` to `157/0/0`
+references. The complete append-only evidence is in
 `experiments.jsonl`
-(`sha256:34ca4a81cd3e61c0a039cfbf5e9f2a50725153bf2633e150ea7008a4c556ed19`).
+(`sha256:ae51c4bc3f539e323883eec3ebbc4d6e2c4742fabc5ccdae524a76e499687537`).
 
 ## Unlock-loop mutation audit
 

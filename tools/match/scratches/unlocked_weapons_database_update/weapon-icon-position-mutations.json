@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "weapon-icon-position",
+      "find": "        position.x += 32.0f;\n        position.y += 48.0f;\n",
+      "replacements": [
+        {
+          "name": "pre-y22-plus-vector32-26",
+          "text": "        position.y += 22.0f;\n        position += database_vec2_t(32.0f, 26.0f);\n"
+        },
+        {
+          "name": "pre-y22-assigned-plus-vector32-26",
+          "text": "        position.y += 22.0f;\n        position = position + database_vec2_t(32.0f, 26.0f);\n"
+        },
+        {
+          "name": "pre-y22-x32-y26",
+          "text": "        position.y += 22.0f;\n        position.x += 32.0f;\n        position.y += 26.0f;\n"
+        },
+        {
+          "name": "x32-y22-y26",
+          "text": "        position.x += 32.0f;\n        position.y += 22.0f;\n        position.y += 26.0f;\n"
+        },
+        {
+          "name": "vector32-22-then-y26",
+          "text": "        position += database_vec2_t(32.0f, 22.0f);\n        position.y += 26.0f;\n"
+        },
+        {
+          "name": "assigned-vector32-22-then-y26",
+          "text": "        position = position + database_vec2_t(32.0f, 22.0f);\n        position.y += 26.0f;\n"
+        },
+        {
+          "name": "pre-y26-plus-vector32-22",
+          "text": "        position.y += 26.0f;\n        position += database_vec2_t(32.0f, 22.0f);\n"
+        },
+        {
+          "name": "vector32-26-then-y22",
+          "text": "        position += database_vec2_t(32.0f, 26.0f);\n        position.y += 22.0f;\n"
+        },
+        {
+          "name": "constructed-x32-y22-then-y26",
+          "text": "        position = database_vec2_t(\n            position.x + 32.0f, position.y + 22.0f);\n        position.y += 26.0f;\n"
+        },
+        {
+          "name": "constructed-x32-y26-after-y22",
+          "text": "        position.y += 22.0f;\n        position = database_vec2_t(\n            position.x + 32.0f, position.y + 26.0f);\n"
+        }
+      ]
+    }
+  ]
+}

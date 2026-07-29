@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-final-order",
+      "find": "    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 32.0f;\n    position.y += 10.0f;\n",
+      "replacements": [
+        {
+          "name": "y-before-final-x",
+          "text": "    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.y += 10.0f;\n    position.x -= 32.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "title-separator-shape",
+      "find": "    {\n        database_vec2_t separator_position;\n        separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        separator_position.y = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n",
+      "replacements": [
+        {
+          "name": "named-owner",
+          "text": "    {\n        database_vec2_t title_separator_position;\n        title_separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        title_separator_position.y = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&title_separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "constructed",
+          "text": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "scalar-array",
+          "text": "    {\n        float separator_position[2];\n        separator_position[0] =\n            position.x + (float)(132 - title_width / 2);\n        separator_position[1] = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "named-coordinates-constructed",
+          "text": "    {\n        float separator_x =\n            position.x + (float)(132 - title_width / 2);\n        float separator_y = position.y + 13.0f;\n        database_vec2_t separator_position(separator_x, separator_y);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "local-half-width",
+          "text": "    {\n        int title_half_width = title_width / 2;\n        database_vec2_t separator_position;\n        separator_position.x = position.x + (float)(132 - title_half_width);\n        separator_position.y = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "local-float-width",
+          "text": "    {\n        database_vec2_t separator_position;\n        separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        separator_position.y = position.y + 13.0f;\n        float separator_width = (float)title_width;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, separator_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "local-interface-owner",
+          "text": "    {\n        database_vec2_t separator_position;\n        separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        separator_position.y = position.y + 13.0f;\n        IGrim2D_cpp *interface_owner = grim_interface_ptr;\n        interface_owner->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "component-y-before-x",
+          "text": "    {\n        database_vec2_t separator_position;\n        separator_position.y = position.y + 13.0f;\n        separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

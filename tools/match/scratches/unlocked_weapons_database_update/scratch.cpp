@@ -102,8 +102,8 @@ extern "C" void unlocked_weapons_database_update(void)
     position.x += ui_element_slot_09.render_offset_x;
     position.x += 44.0f;
     position.x -= 110.0f;
-    position.x -= 32.0f;
     position.y += 10.0f;
+    position.x -= 32.0f;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     int title_width = grim_interface_ptr->grim_measure_text_width(
@@ -115,10 +115,9 @@ extern "C" void unlocked_weapons_database_update(void)
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
     {
-        database_vec2_t separator_position;
-        separator_position.x =
-            position.x + (float)(132 - title_width / 2);
-        separator_position.y = position.y + 13.0f;
+        database_vec2_t separator_position(
+            position.x + (float)(132 - title_width / 2),
+            position.y + 13.0f);
         grim_interface_ptr->grim_draw_rect_outline(
             (float *)&separator_position, (float)title_width, 1.0f);
     }
@@ -253,8 +252,9 @@ extern "C" void unlocked_weapons_database_update(void)
         grim_interface_ptr->grim_draw_text_small_fmt(
             position.x, position.y, "%s", weapon_table[weapon_id].name);
 
+        position.y += 22.0f;
         position.x += 32.0f;
-        position.y += 48.0f;
+        position.y += 26.0f;
         grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);
         grim_interface_ptr->grim_set_sub_rect(
             8, 2, 1, weapon_table[weapon_id].hud_icon_id << 1);

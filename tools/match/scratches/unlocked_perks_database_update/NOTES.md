@@ -19,13 +19,13 @@ callback:
   prerequisite name, and wrapped description, including the narrow-screen
   horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 99.61% of 511 target
-instructions with all 511 candidate instructions, a 29-instruction exact
-prefix, the exact native `0x218`-byte frame, and `147/0/0` audited references. All
-object, guard, function, string, and gameplay-data references resolve. The two
-former unresolved alignments were constant-pool effects of vector-temporary
-ownership. The retained shared-panel forms now align both native UI-field
-reads without introducing aliases or reference overrides.
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 99.80% of 511 target
+instructions with all 511 candidate instructions, a 74-instruction exact
+prefix, the exact native `0x218`-byte frame, and `148/0/0` audited references.
+All object, guard, function, string, and gameplay-data references resolve. The
+two former unresolved alignments were constant-pool effects of
+vector-temporary ownership. The retained shared-panel forms now align both
+native UI-field reads without introducing aliases or reference overrides.
 
 The improved source shape keeps both separator temporaries, the back-button
 position, and the later panel vectors in their native disjoint lexical
@@ -33,8 +33,8 @@ lifetimes. The opening anchor uses the same chained-vector expression recovered
 in the exact victory-screen callback, followed by the native separate x
 adjustments. The button uses the directly constructed copied coordinate pair
 visible before the native call instead of mutating the shared panel position.
-The scrollbar constructor
-initializes its two active columns with a bounded loop; VC6 unrolls that loop
+The scrollbar constructor initializes its two active columns with a bounded
+loop; VC6 unrolls that loop
 to the native two stores while recovering five additional aligned references.
 The source also preserves the native `20 + 8` and `16 + 4` vertical spacings
 and compact-row post-increment test. Selected-perk rendering performs the
@@ -46,17 +46,17 @@ fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 99.61%, 511/511 instructions, and
-`147/0/0` references before and after classification. There are no mismatched
+A fresh corpus audit keeps the candidate at 99.80%, 511/511 instructions, and
+`148/0/0` references before and after classification. There are no mismatched
 or unresolved references. The retained chained opening-panel expression
 removes the former slot-09 entry and extends the exact prologue; the direct
 back-panel owner and named chained detail-panel temporary remove the remaining
 slot-33 alignment debt.
 
-The sole remaining byte region is an opening x87 scheduling difference: the
-candidate stores the final x subtraction before updating y, while native
-updates y first. Bounded shared-panel expression variants can move that
-boundary but regress the rest of the function. No map or layout correction is
+The sole remaining byte region is one independent instruction swap after the
+title-separator coordinates are stored: native loads the virtual-table slot
+before converting the integer width to float, while the candidate performs
+the same two operations in the opposite order. No map or layout correction is
 supported, so `RESIDUAL=compiler` remains the honest classification.
 
 ## Recorded lifetime and constructor recovery
@@ -115,9 +115,14 @@ Bounded mutation sweeps document the current source-shape recovery:
 - `opening-shared-panel-expression-mutations.json` retests six
   source-supported forms borrowed from exact sibling callbacks. The
   prefix-extending forms lose at least 36.37 weighted bytes, so none is
-  retained and the last compiler-scheduling residual is bounded.
+  retained; and
+- `opening-title-interaction-mutations.json` evaluates all 17 single and
+  two-site combinations of the native final-adjustment order and eight
+  title-separator ownership forms. Neither change wins alone, but their
+  constructed-temporary interaction adds 4.04 weighted bytes, extends the
+  exact prefix from 29 to 74 instructions, and aligns one more reference.
 
-Together these retained changes move the fresh baseline from 85.38% to 99.61%,
-from 508 to 511 candidate instructions, and from `135/0/2` to `147/0/0`
+Together these retained changes move the fresh baseline from 85.38% to 99.80%,
+from 508 to 511 candidate instructions, and from `135/0/2` to `148/0/0`
 references. The complete append-only evidence is in `experiments.jsonl`
-(`sha256:d69451dd177c4882a0345bc8e7cdbbe254335c28b8fd1778838003fc74f00548`).
+(`sha256:9a221ab3fc9d21b04b62b78f7fe3dd8f00995cf5ffb2b6347d6ca863193ecd4f`).
