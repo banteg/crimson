@@ -6,7 +6,7 @@
     "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
     "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
   },
-  "notes": "High-fan-in Crimsonland data plus complete named input-key, catalog-CString, and independent primitive BSS tranches. Conflicting, overlapping, or large aggregate declarations remain unresolved; every recorded extent, alignment, and initializer is explicit.",
+  "notes": "High-fan-in Crimsonland data plus complete named input-key, catalog-CString, and independent typed BSS tranches. Conflicting, overlapping, or large aggregate declarations remain unresolved; every recorded extent, alignment, and initializer is explicit.",
   "groups": [
     {
       "name": "literal-float32",
@@ -2071,6 +2071,238 @@
         ["0x004cc910", "menu_item_palette_init_flags"],
         ["0x004cc930", "ui_update_notice_button_init_guard"],
         ["0x004cccd8", "profile_menu_init_flags"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-pointer32",
+      "types": ["char*", "char **", "HANDLE", "void **", "FILE **"],
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: recovered pointer declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x0047ea64", "console_cmd_arg1"],
+        ["0x0047ea68", "console_cmd_arg2"],
+        ["0x004d99a0", "crt_environ"],
+        ["0x004da3a4", "crt_heap_handle"],
+        ["0x004da3c0", "crt_pioinfo_table"],
+        ["0x004da4c4", "crt_stream_table"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-ui-button",
+      "types": ["ui_button_t"],
+      "size": 24,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_button_is_0x18",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_button_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x0047f5e0", "game_completed_survival_button"],
+        ["0x0047f5f8", "demo_trial_purchase_button"],
+        ["0x0047f610", "ui_button_already_paid"],
+        ["0x0047f678", "demo_purchase_purchase_button"],
+        ["0x00480090", "perk_selection_cancel_button"],
+        ["0x00480250", "tutorial_prompt_repeat_button"],
+        ["0x00480268", "game_completed_main_menu_button"],
+        ["0x00480280", "game_completed_rush_button"],
+        ["0x004802b0", "demo_purchase_maybe_later_button"],
+        ["0x00480328", "game_completed_typo_button"],
+        ["0x004807d0", "tutorial_prompt_primary_button"],
+        ["0x00480808", "ui_button_maybe_later"],
+        ["0x00480820", "perk_selection_select_button"],
+        ["0x004819d0", "credits_secret_reset_button"],
+        ["0x00481af0", "mods_menu_main_menu_button"],
+        ["0x00481b88", "mods_menu_launch_button"],
+        ["0x00481bc0", "credits_secret_back_button"],
+        ["0x004824f0", "quest_failed_main_menu_button"],
+        ["0x00482508", "game_over_play_again_button"],
+        ["0x00482520", "quest_results_name_submit_button"],
+        ["0x00482538", "game_over_main_menu_button"],
+        ["0x00482550", "game_over_highscores_button"],
+        ["0x004825a8", "game_over_name_submit_button"],
+        ["0x004825c0", "quest_results_play_next_button"],
+        ["0x00482608", "quest_results_play_again_button"],
+        ["0x00482668", "quest_results_highscores_button"],
+        ["0x00482680", "quest_failed_play_again_button"],
+        ["0x00482698", "quest_failed_play_another_button"],
+        ["0x004826b0", "quest_results_main_menu_button"],
+        ["0x004cc8e0", "unlocked_weapons_back_button"],
+        ["0x004cc8f8", "statistics_perks_button"],
+        ["0x004cc918", "statistics_high_scores_button"],
+        ["0x004ccb00", "profile_name_delete_button"],
+        ["0x004ccb80", "unlocked_perks_back_button"],
+        ["0x004ccc90", "profile_name_add_button"],
+        ["0x004cccc0", "statistics_back_button"],
+        ["0x004ccd50", "statistics_mods_button"],
+        ["0x004d0eb8", "statistics_credits_button"],
+        ["0x004d0ed0", "ui_update_notice_button"],
+        ["0x004d0f08", "highscore_screen_play_button"],
+        ["0x004d0f40", "statistics_weapons_button"],
+        ["0x004d0f60", "statistics_typo_button"],
+        ["0x004d0f78", "highscore_screen_update_button"],
+        ["0x004d0f90", "highscore_screen_back_button"],
+        ["0x004d11c8", "statistics_update_button"],
+        ["0x004d7748", "quest_select_back_button"],
+        ["0x004d7988", "options_controls_button"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-ui-color-or-slider",
+      "types": ["effect_color_t", "ui_segmented_slider_t"],
+      "size": 16,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: effect_color_is_0x10 and ui_segmented_slider_is_0x10",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: effect_color_alignment_is_four and ui_segmented_slider_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x00490420", "fx_queue_random_color_r"],
+        ["0x004d7590", "options_graphics_detail_slider"],
+        ["0x004d75e8", "options_music_volume_slider"],
+        ["0x004d7628", "quest_select_row_idle_color"],
+        ["0x004d7680", "options_mouse_sensitivity_slider"],
+        ["0x004d7690", "quest_select_unused_orange_color"],
+        ["0x004d76e0", "quest_select_hovered_stage_color"],
+        ["0x004d76f0", "quest_select_row_hover_color"],
+        ["0x004d7720", "quest_select_title_color"],
+        ["0x004d7738", "quest_select_unused_blue_dim_color"],
+        ["0x004d77f8", "options_sfx_volume_slider"],
+        ["0x004d7888", "quest_select_unused_blue_color"],
+        ["0x004d79a8", "quest_select_selected_stage_color"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-ui-list-widget",
+      "types": ["ui_list_widget_t"],
+      "size": 28,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_list_widget_is_0x1c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_list_widget_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x004ccce0", "highscore_game_mode_list"],
+        ["0x004d0d78", "highscore_date_filter_list"],
+        ["0x004d0ee8", "profile_name_slot_list"],
+        ["0x004d0fa8", "highscore_player_count_list"],
+        ["0x004d79b8", "play_game_player_count_list"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-ui-checkbox",
+      "types": ["ui_checkbox_t"],
+      "size": 8,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_checkbox_is_0x08",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_checkbox_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x004d0d98", "highscore_hardcore_checkbox"],
+        ["0x004d0e20", "highscore_online_scores_checkbox"],
+        ["0x004d7658", "play_game_menu_hardcore_checkbox"],
+        ["0x004d7700", "quest_select_hardcore_checkbox"],
+        ["0x004d77e0", "options_ui_info_checkbox"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-ui-scrollbar",
+      "types": ["ui_scrollbar_t"],
+      "size": 56,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_scrollbar_is_0x38",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_scrollbar_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x00481bd8", "mods_menu_scrollbar"],
+        ["0x004ccac8", "highscore_screen_score_scrollbar"],
+        ["0x004ccb98", "unlocked_perks_scrollbar"],
+        ["0x004ccc58", "unlocked_weapons_scrollbar"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-ui-text-input",
+      "types": ["ui_text_input_state_t"],
+      "size": 20,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_text_input_state_is_0x14",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_text_input_state_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x00482590", "game_over_name_input_state"],
+        ["0x004826e8", "quest_results_name_input_state"],
+        ["0x004d0f28", "profile_name_input_state"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-perk-choice-items",
+      "types": ["perk_selection_choice_item_table_t"],
+      "size": 160,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: perk_selection_choice_items_are_0xa0",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: perk_selection_choice_items_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x004800a8", "perk_selection_choice_items"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-mod-info",
+      "types": ["mod_info_t"],
+      "size": 72,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: mod_info_is_0x48",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: mod_info_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x00481c88", "mod_info_block"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-pointer-array-00028",
+      "types": ["char *[10]"],
+      "size": 40,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_array_10_is_0x28",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x004cc934", "highscore_screen_score_line_items"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-char-array-00668",
+      "types": ["char[10][164]"],
+      "size": 1640,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: highscore_line_buffers_are_0x668",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x004ccd68", "highscore_screen_score_line_buffers"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-char-array-00080",
+      "types": ["char[128]"],
+      "size": 128,
+      "size_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: char_array_128_is_0x80",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x004d0fc4", "highscore_screen_title_buffer"]
       ]
     }
   ],

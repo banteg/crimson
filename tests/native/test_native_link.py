@@ -1970,12 +1970,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1551
-    assert payload["summary"]["explicit_size_entries"] == 910
-    assert payload["summary"]["explicit_alignment_entries"] == 910
-    assert payload["summary"]["explicit_initializer_entries"] == 910
-    assert payload["summary"]["fully_specified_entries"] == 910
-    assert payload["summary"]["definition_group_entries"] == 826
-    assert payload["summary"]["definition_groups"] == 103
+    assert payload["summary"]["explicit_size_entries"] == 998
+    assert payload["summary"]["explicit_alignment_entries"] == 998
+    assert payload["summary"]["explicit_initializer_entries"] == 998
+    assert payload["summary"]["fully_specified_entries"] == 998
+    assert payload["summary"]["definition_group_entries"] == 914
+    assert payload["summary"]["definition_groups"] == 115
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -2033,6 +2033,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     )
     assert defined["typo_target_world_y"]["size"] == 4
     assert defined["play_game_menu_survival_enabled"]["size"] == 1
+    assert defined["game_completed_survival_button"]["size"] == 0x18
+    assert defined["perk_selection_choice_items"]["size"] == 0xA0
+    assert defined["mod_info_block"]["size"] == 0x48
+    assert defined["highscore_screen_score_line_buffers"]["size"] == 0x668
     assert defined["console_input_buf"]["size"] == 1024
     assert defined["typo_target_name_table"]["size"] == 384 * 64
     assert defined["terrain_texture_handles"]["size"] == 8 * 4

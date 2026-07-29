@@ -77,8 +77,15 @@ CRIMSON_ABI_ASSERT(
     pointer_array_9_is_0x24,
     sizeof(char *[9]) == 0x24);
 CRIMSON_ABI_ASSERT(
+    pointer_array_10_is_0x28,
+    sizeof(char *[10]) == 0x28);
+CRIMSON_ABI_ASSERT(
     pointer_array_32_is_0x80,
     sizeof(char *[32]) == 0x80);
+CRIMSON_ABI_ASSERT(char_array_128_is_0x80, sizeof(char[128]) == 0x80);
+CRIMSON_ABI_ASSERT(
+    highscore_line_buffers_are_0x668,
+    sizeof(char[10][164]) == 0x668);
 CRIMSON_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 CRIMSON_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
 CRIMSON_ABI_ASSERT(long_is_32_bit, sizeof(long) == 4);
@@ -333,14 +340,30 @@ CRIMSON_ABI_ASSERT(
     sizeof(ui_element_t *[41]) == 0xa4);
 CRIMSON_ABI_ASSERT_ALIGN4(ui_element, ui_element_t);
 CRIMSON_ABI_ASSERT(ui_button_is_0x18, sizeof(ui_button_t) == 0x18);
+CRIMSON_ABI_ASSERT(
+    perk_selection_choice_items_are_0xa0,
+    sizeof(perk_selection_choice_item_table_t) == 0xa0);
+CRIMSON_ABI_ASSERT(
+    ui_segmented_slider_is_0x10,
+    sizeof(ui_segmented_slider_t) == 0x10);
 CRIMSON_ABI_ASSERT(ui_list_widget_is_0x1c, sizeof(ui_list_widget_t) == 0x1c);
+CRIMSON_ABI_ASSERT(ui_scrollbar_is_0x38, sizeof(ui_scrollbar_t) == 0x38);
 CRIMSON_ABI_ASSERT(ui_checkbox_is_0x08, sizeof(ui_checkbox_t) == 0x08);
+CRIMSON_ABI_ASSERT(
+    ui_text_input_state_is_0x14,
+    sizeof(ui_text_input_state_t) == 0x14);
 CRIMSON_ABI_ASSERT(
     controls_rebind_items_is_0xf0,
     sizeof(controls_rebind_item_table_t) == 0xf0);
 CRIMSON_ABI_ASSERT_ALIGN4(ui_button, ui_button_t);
+CRIMSON_ABI_ASSERT_ALIGN4(
+    perk_selection_choice_items,
+    perk_selection_choice_item_table_t);
+CRIMSON_ABI_ASSERT_ALIGN4(ui_segmented_slider, ui_segmented_slider_t);
 CRIMSON_ABI_ASSERT_ALIGN4(ui_list_widget, ui_list_widget_t);
+CRIMSON_ABI_ASSERT_ALIGN4(ui_scrollbar, ui_scrollbar_t);
 CRIMSON_ABI_ASSERT_ALIGN4(ui_checkbox, ui_checkbox_t);
+CRIMSON_ABI_ASSERT_ALIGN4(ui_text_input_state, ui_text_input_state_t);
 CRIMSON_ABI_ASSERT_ALIGN4(
     controls_rebind_items,
     controls_rebind_item_table_t);
@@ -359,7 +382,9 @@ CRIMSON_ABI_ASSERT(
 
 CRIMSON_ABI_ASSERT(mod_api_cpp_is_0x6c, sizeof(mod_api_cpp_t) == 0x6c);
 CRIMSON_ABI_ASSERT(mod_api_is_0x68, sizeof(mod_api_t) == 0x68);
+CRIMSON_ABI_ASSERT(mod_info_is_0x48, sizeof(mod_info_t) == 0x48);
 CRIMSON_ABI_ASSERT_ALIGN4(mod_api, mod_api_t);
+CRIMSON_ABI_ASSERT_ALIGN4(mod_info, mod_info_t);
 CRIMSON_ABI_ASSERT(
     mod_api_state_is_at_0x68,
     offsetof(mod_api_cpp_t, field_0x68) == 0x68);
