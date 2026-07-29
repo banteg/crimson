@@ -1,5 +1,5 @@
 {
-  "audit_digest": "1456a322ed5cef13e204838d40841b4054488b0a4401e9664f46a4e2841aac2a",
+  "audit_digest": "7562639261652831bdf77142c423ecad01f9ccf33b8b561a013d17fbf9fc2d0b",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -55,7 +55,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 5,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -226,7 +226,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -257,7 +257,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -332,7 +332,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -533,7 +533,7 @@
   "default_libraries": [
     {
       "name": "LIBC",
-      "object_count": 125,
+      "object_count": 124,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/c53c287184ecb2ea/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/5e91d143e1978233/scratch.obj",
@@ -646,7 +646,6 @@
         "tools/match/scratches/grim_set_uv/build/msvc6.5/1305550478609ce4/scratch.obj",
         "tools/match/scratches/grim_set_uv_point/build/msvc6.5/a1e33802bc43712a/scratch.obj",
         "tools/match/scratches/grim_shutdown/build/msvc6.5/8dbb94cd02e37a06/scratch.obj",
-        "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
         "tools/match/scratches/grim_submit_quad_raw/build/msvc6.5/3d65fccfa77e061b/scratch.obj",
         "tools/match/scratches/grim_submit_vertex_raw/build/msvc6.5/708c86172a2482f7/scratch.obj",
         "tools/match/scratches/grim_submit_vertices_offset/build/msvc6.5/a7411fc94d20b5be/scratch.obj",
@@ -664,11 +663,12 @@
     },
     {
       "name": "MSVCRT",
-      "object_count": 4,
+      "object_count": 5,
       "objects": [
         "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
         "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
         "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/095675e8fc249479/scratch.obj",
+        "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
         "tools/match/scratches/grim_texture_load_file/build/msvc6.5/432726981df38261/scratch.obj"
       ]
     },
@@ -790,7 +790,7 @@
         "tools/match/scratches/grim_set_uv/build/msvc6.5/1305550478609ce4/scratch.obj",
         "tools/match/scratches/grim_set_uv_point/build/msvc6.5/a1e33802bc43712a/scratch.obj",
         "tools/match/scratches/grim_shutdown/build/msvc6.5/8dbb94cd02e37a06/scratch.obj",
-        "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+        "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
         "tools/match/scratches/grim_submit_quad_raw/build/msvc6.5/3d65fccfa77e061b/scratch.obj",
         "tools/match/scratches/grim_submit_vertex_raw/build/msvc6.5/708c86172a2482f7/scratch.obj",
         "tools/match/scratches/grim_submit_vertices_offset/build/msvc6.5/a7411fc94d20b5be/scratch.obj",
@@ -981,7 +981,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 5,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -1035,7 +1035,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -5384,7 +5384,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 1872,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -6804,7 +6804,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -6853,7 +6853,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -6902,7 +6902,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -6946,7 +6946,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -9056,10 +9056,10 @@
     },
     {
       "directives": [
-        "-defaultlib:LIBC",
+        "-defaultlib:MSVCRT",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj"
+      "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj"
     },
     {
       "directives": [
@@ -9869,7 +9869,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -9972,7 +9972,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -10211,7 +10211,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -10334,7 +10334,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -10406,7 +10406,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -10478,7 +10478,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -10586,7 +10586,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -10637,7 +10637,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -11476,7 +11476,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -11562,7 +11562,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -11653,7 +11653,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -11699,7 +11699,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -11823,7 +11823,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -12086,7 +12086,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -12994,7 +12994,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -13035,7 +13035,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -13086,7 +13086,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -13526,7 +13526,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         },
         {
@@ -13777,7 +13777,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -13878,7 +13878,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         },
         {
@@ -13965,7 +13965,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -14052,7 +14052,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -14294,7 +14294,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -14593,7 +14593,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -14629,7 +14629,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -14691,7 +14691,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -15017,7 +15017,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -15860,7 +15860,7 @@
           "function": "grim_state_init",
           "kind": "section",
           "logical_section_size": 1872,
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -16061,7 +16061,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16092,7 +16092,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16123,7 +16123,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16154,7 +16154,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16185,7 +16185,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16221,7 +16221,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16860,7 +16860,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16891,7 +16891,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16922,7 +16922,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -16953,7 +16953,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -17551,7 +17551,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -17668,7 +17668,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -17781,7 +17781,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -18109,7 +18109,7 @@
       "referenced_by": [
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -18611,10 +18611,10 @@
     "resolved_symbols": 273,
     "unresolved_by_category": {
       "excluded_function": 39,
-      "import": 12,
+      "import": 13,
       "toolchain": 2
     },
-    "unresolved_symbols": 53
+    "unresolved_symbols": 54
   },
   "unresolved": [
     {
@@ -18674,7 +18674,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         },
         {
@@ -19502,7 +19502,7 @@
         },
         {
           "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         },
         {
@@ -19798,6 +19798,26 @@
         {
           "function": "grim_jaz_jpeg_error_exit",
           "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/095675e8fc249479/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "candidate_definitions": [],
+      "catalog": [
+        {
+          "address": 268746928,
+          "module": "MSVCRT",
+          "name": "_strdup"
+        }
+      ],
+      "category": "import",
+      "lookup_name": "strdup",
+      "name": "__imp__strdup",
+      "referenced_by": [
+        {
+          "function": "grim_state_init",
+          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
           "weak": false
         }
       ]
@@ -20134,11 +20154,6 @@
         {
           "function": "grim_set_config_var",
           "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/5267400e704d1dd7/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj",
           "weak": false
         }
       ]

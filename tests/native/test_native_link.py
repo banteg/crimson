@@ -595,10 +595,11 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
 
     coverage = native_provider_coverage(config, closure)
 
-    assert coverage["covered_symbols"] == 53
-    assert coverage["import_symbols"] == 20
+    assert coverage["covered_symbols"] == 54
+    assert coverage["import_symbols"] == 21
+    assert coverage["import_exports"] == 20
     assert coverage["generated_import_symbols"] == 5
-    assert coverage["archive_symbols"] == 32
+    assert coverage["archive_symbols"] == 33
     assert coverage["link_dependency_symbols"] == 24
     assert coverage["placeholder_symbols"] == 16
     assert coverage["runnable"] is False
@@ -659,7 +660,8 @@ def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
 
     assert manifest["schema"] == 3
     assert manifest["summary"]["link_dependency_symbols"] == 24
-    assert manifest["summary"]["archive_symbols"] == 32
+    assert manifest["summary"]["archive_symbols"] == 33
+    assert manifest["summary"]["import_exports"] == 20
     assert manifest["summary"]["placeholder_symbols"] == 16
     assert manifest["summary"]["retained_link_dependency_import_symbols"] == 17
     assert manifest["summary"]["validated_output_import_symbols"] == 54

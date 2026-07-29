@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "config-uv-source-order",
+      "find": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "all-uv-before-64",
+          "text": "    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n\n    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "all-uv-after-64",
+          "text": "    grim_config_values[0x64] = true;\n\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "all-uv-after-12",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "all-uv-after-13",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "vertex-before-64",
+          "text": "    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "vertex-after-64",
+          "text": "    grim_config_values[0x64] = true;\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "vertex-after-12",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "vertex-after-13",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "vertex-u0-after-64",
+          "text": "    grim_config_values[0x64] = true;\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "vertex-u0-after-12",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "vertex-u0-after-13",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_config_values[0x14] = (unsigned int)6;\n\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        }
+      ]
+    }
+  ]
+}

@@ -139,6 +139,11 @@
           "export": "vsprintf"
         },
         {
+          "name": "__imp__strdup",
+          "link_name": "strdup",
+          "export": "_strdup"
+        },
+        {
           "name": "_strdup",
           "link_name": "strdup",
           "export": "_strdup"

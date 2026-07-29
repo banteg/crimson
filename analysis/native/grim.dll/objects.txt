@@ -36,7 +36,7 @@ tools/match/scratches/grim_texture_name_equals/build/msvc6.5/d34ae53895189043/sc
 tools/match/scratches/grim_find_texture_by_name/build/msvc6.5/74fb16573fa22e69/scratch.obj
 tools/match/scratches/grim_find_free_texture_slot/build/msvc6.5/a71fa000542a0bba/scratch.obj
 tools/match/scratches/grim_load_texture_internal/build/msvc6.5/b75eb0c92e74f66c/scratch.obj
-tools/match/scratches/grim_state_init/build/msvc6.5/c43ecc96554bb62f/scratch.obj
+tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj
 tools/match/scratches/grim_lookup_blob_load/build/msvc6.5/ac90aa7b28f8aa12/scratch.obj
 tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/7b940d93d29042dc/scratch.obj
 tools/match/scratches/grim_lookup_blob_size_for_path/build/msvc6.5/b121032ea6f2f161/scratch.obj

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-true-config-value",
+      "find": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n",
+      "replacements": [
+        {
+          "name": "named-config-value",
+          "text": "    grim_config_value_t enabled_value(true);\n    grim_config_values[0x64] = enabled_value;\n    grim_config_values[0x12] = enabled_value;\n"
+        },
+        {
+          "name": "const-named-config-value",
+          "text": "    const grim_config_value_t enabled_value(true);\n    grim_config_values[0x64] = enabled_value;\n    grim_config_values[0x12] = enabled_value;\n"
+        },
+        {
+          "name": "copy-from-64",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = grim_config_values[0x64];\n"
+        },
+        {
+          "name": "copy-from-12",
+          "text": "    grim_config_values[0x12] = true;\n    grim_config_values[0x64] = grim_config_values[0x12];\n"
+        },
+        {
+          "name": "chain-64-then-12",
+          "text": "    grim_config_values[0x64] =\n        grim_config_values[0x12] = true;\n"
+        },
+        {
+          "name": "chain-12-then-64",
+          "text": "    grim_config_values[0x12] =\n        grim_config_values[0x64] = true;\n"
+        },
+        {
+          "name": "shared-bool-scalar",
+          "text": "    bool enabled_value = true;\n    grim_config_values[0x64] = enabled_value;\n    grim_config_values[0x12] = enabled_value;\n"
+        },
+        {
+          "name": "const-shared-bool-scalar",
+          "text": "    const bool enabled_value = true;\n    grim_config_values[0x64] = enabled_value;\n    grim_config_values[0x12] = enabled_value;\n"
+        }
+      ]
+    }
+  ]
+}

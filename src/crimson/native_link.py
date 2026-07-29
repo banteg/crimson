@@ -1125,6 +1125,17 @@ def native_provider_coverage(
         for provider in closure_providers
         if provider.kind == "reference-import"
     )
+    import_export_count = len(
+        {
+            (
+                cast(str, provider.module).casefold().removesuffix(".dll"),
+                cast(str, symbol.export),
+            )
+            for provider in closure_providers
+            if provider.kind == "reference-import"
+            for symbol in provider.symbols
+        },
+    )
     generated_import_count = sum(
         len(provider.symbols)
         for provider in closure_providers
@@ -1148,6 +1159,7 @@ def native_provider_coverage(
         "archive_symbols": archive_count,
         "covered_symbols": len(provider_symbols),
         "generated_import_symbols": generated_import_count,
+        "import_exports": import_export_count,
         "import_symbols": import_count,
         "link_dependency_symbols": len(dependency_symbols),
         "placeholder_symbols": placeholder_count,
@@ -5652,7 +5664,7 @@ def link_native_image(
         linked_image_data,
         audit.symbol_closure,
     )
-    if reference_imports["symbol_count"] != coverage["import_symbols"]:
+    if reference_imports["symbol_count"] != coverage["import_exports"]:
         raise ValueError(
             "linked reference-import count disagrees with provider coverage",
         )

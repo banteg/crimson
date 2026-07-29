@@ -114,6 +114,7 @@ def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Pat
             "archive_symbols": 32,
             "covered_symbols": 53,
             "generated_import_symbols": 5,
+            "import_exports": 20,
             "import_symbols": 20,
             "link_dependency_symbols": 24,
             "placeholder_symbols": 16,
@@ -144,7 +145,8 @@ def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Pat
     assert completed.exit_code == 0
     assert "image=grim.dll mode=structural status=linked" in completed.stdout
     assert (
-        "providers=2 covered=53 imports=20 archives=32 generated_imports=5 "
+        "providers=2 covered=53 imports=20 exports=20 archives=32 "
+        "generated_imports=5 "
         "link_deps=24 placeholders=16 runnable=False"
     ) in completed.stdout
     assert f"linked_image={tmp_path / 'grim.dll'}" in completed.stdout

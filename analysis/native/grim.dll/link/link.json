@@ -67,7 +67,7 @@
       }
     }
   ],
-  "audit_digest": "1456a322ed5cef13e204838d40841b4054488b0a4401e9664f46a4e2841aac2a",
+  "audit_digest": "7562639261652831bdf77142c423ecad01f9ccf33b8b561a013d17fbf9fc2d0b",
   "image": "grim.dll",
   "kind": "crimson-native-linked-image",
   "mode": "structural",
@@ -86,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "2afbe458a1dc1978b4a159eee859ac6236aa85cb5587e662a658d0f430ddb74f"
+    "sha256": "7d53113c9e988e1abdf3922277d1a690895ead6349f9a185e097348fdd02e728"
   },
   "placeholder_object": {
     "path": "analysis/native/grim.dll/link/providers/placeholders.obj",
@@ -95,10 +95,10 @@
     "symbol_count": 16
   },
   "provider_config": {
-    "declared_sha256": "85512de751d634f6d3c39da7b03ff30201fd1afa8c208df0113a4e56ebe2c816",
+    "declared_sha256": "de35c4817dab10e255bc20a993d8979cfb5f5d4ed78b844ee34e1586ca242694",
     "path": "tools/native/providers/grim.dll.json",
     "repository_relative": true,
-    "sha256": "85512de751d634f6d3c39da7b03ff30201fd1afa8c208df0113a4e56ebe2c816"
+    "sha256": "de35c4817dab10e255bc20a993d8979cfb5f5d4ed78b844ee34e1586ca242694"
   },
   "providers": [
     {
@@ -149,6 +149,7 @@
         "__imp__fseek",
         "__imp__ftell",
         "__imp__vsprintf",
+        "__imp__strdup",
         "_strdup"
       ]
     },
@@ -713,7 +714,7 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "93beb0f1b7fda0481e5e0abbc19dae625fec7e62e5eb6b2306b5a3d7dd67966c"
+          "sha256": "8d10edd1942c892674bd56520936ebe8a6b05e728d1daea01b3a25000ba12dcc"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",
@@ -944,10 +945,11 @@
   "schema": 3,
   "status": "linked",
   "summary": {
-    "archive_symbols": 32,
-    "covered_symbols": 53,
+    "archive_symbols": 33,
+    "covered_symbols": 54,
     "generated_import_symbols": 5,
-    "import_symbols": 20,
+    "import_exports": 20,
+    "import_symbols": 21,
     "input_object_count": 151,
     "link_dependency_symbols": 24,
     "placeholder_symbols": 16,
@@ -959,7 +961,7 @@
         "name": "msvcrt.dll",
         "resolution": "archive-library",
         "scope": "closure",
-        "symbol_count": 15
+        "symbol_count": 16
       },
       {
         "alias_count": 2,

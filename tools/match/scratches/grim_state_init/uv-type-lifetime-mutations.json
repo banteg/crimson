@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "uv-type-definition",
+      "find": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n};\n",
+      "replacements": [
+        {
+          "name": "constructor-body-stores",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value)\n    {\n        u = u_value;\n        v = v_value;\n    }\n};\n"
+        },
+        {
+          "name": "constructor-set-helper",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) { set(u_value, v_value); }\n    void set(float u_value, float v_value)\n    {\n        u = u_value;\n        v = v_value;\n    }\n};\n"
+        },
+        {
+          "name": "explicit-copy-assignment",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n    GrimUV &operator=(const GrimUV &other)\n    {\n        u = other.u;\n        v = other.v;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "explicit-copy-assignment-reversed-body",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n    GrimUV &operator=(const GrimUV &other)\n    {\n        v = other.v;\n        u = other.u;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "void-copy-assignment",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n    void operator=(const GrimUV &other)\n    {\n        u = other.u;\n        v = other.v;\n    }\n};\n"
+        },
+        {
+          "name": "copy-assignment-by-value",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n    GrimUV &operator=(GrimUV other)\n    {\n        u = other.u;\n        v = other.v;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "constructor-reversed-body",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value)\n    {\n        v = v_value;\n        u = u_value;\n    }\n};\n"
+        }
+      ]
+    },
+    {
+      "name": "uv-assignment-spelling",
+      "find": "    grim_vertex_z = GrimUV(0.5f, 1.0f);\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "explicit-assignment-operators",
+          "text": "    grim_vertex_z.operator=(GrimUV(0.5f, 1.0f));\n    grim_uv_u0.operator=(GrimUV(0.0f, 0.0f));\n    grim_uv_u1.operator=(GrimUV(1.0f, 0.0f));\n    grim_uv_u2.operator=(GrimUV(1.0f, 1.0f));\n    grim_uv_u3.operator=(GrimUV(0.0f, 1.0f));\n"
+        },
+        {
+          "name": "named-temporaries",
+          "text": "    GrimUV vertex_z_value(0.5f, 1.0f);\n    GrimUV uv_u0_value(0.0f, 0.0f);\n    GrimUV uv_u1_value(1.0f, 0.0f);\n    GrimUV uv_u2_value(1.0f, 1.0f);\n    GrimUV uv_u3_value(0.0f, 1.0f);\n    grim_vertex_z = vertex_z_value;\n    grim_uv_u0 = uv_u0_value;\n    grim_uv_u1 = uv_u1_value;\n    grim_uv_u2 = uv_u2_value;\n    grim_uv_u3 = uv_u3_value;\n"
+        },
+        {
+          "name": "direct-field-stores",
+          "text": "    grim_vertex_z.u = 0.5f;\n    grim_vertex_z.v = 1.0f;\n    grim_uv_u0.u = 0.0f;\n    grim_uv_u0.v = 0.0f;\n    grim_uv_u1.u = 1.0f;\n    grim_uv_u1.v = 0.0f;\n    grim_uv_u2.u = 1.0f;\n    grim_uv_u2.v = 1.0f;\n    grim_uv_u3.u = 0.0f;\n    grim_uv_u3.v = 1.0f;\n"
+        }
+      ]
+    }
+  ]
+}

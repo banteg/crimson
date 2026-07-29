@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **690/808** functions matched exactly, **129451/341963** code bytes (**37.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **299877/341963** code bytes (**87.7%**).
+Fuzzy-weighted alignment is **299881/341963** code bytes (**87.7%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -17,12 +17,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
 | crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
-| grim.dll | current | 137 | 131 | 3 | passed | yes | yes | no | 0 | 273 | 53 |
+| grim.dll | current | 137 | 131 | 3 | passed | yes | yes | no | 0 | 273 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=70, game_data=0, import=25, toolchain=2 | 0 | 1548 | 1548 | 998 | 998 | 998 |
-| grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 276 | 185 | 122 | 122 | 122 |
+| grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 276 | 185 | 122 | 122 | 122 |
 
 ## Function dispositions
 
@@ -93,7 +93,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279544/320805 | 87.1% | 671/671 | 320805/320805 | 100.0% | 559/671 |
-| grim.dll | 131/137 | 14938/21158 | 70.6% | 20333/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
+| grim.dll | 131/137 | 14938/21158 | 70.6% | 20337/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
@@ -775,7 +775,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## grim.dll
 
-**131/137** functions, **14938/21158** bytes (**70.6%**), **20333/21158** fuzzy-weighted bytes (**96.1%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
+**131/137** functions, **14938/21158** bytes (**70.6%**), **20337/21158** fuzzy-weighted bytes (**96.1%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -817,7 +817,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | grim_find_texture_by_name | 0x10005170 | 68 | 68/68 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | grim-texture-name-lookup |
 | match | grim_find_free_texture_slot | 0x100051c0 | 28 | 28/28 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | grim-texture-slot-allocation |
 | match | grim_load_texture_internal | 0x100051e0 | 265 | 265/265 | 0 | 80/80 | 100.00% | 80/80 | 14/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | grim-texture-file-load |
-| wip | grim_state_init | 0x100052f0 | 1872 | 1473/1872 | 399 | 414/425 | 78.67% | 167/425 | 134/0/9 |  | grim-global-state-and-atlas-defaults |
+| wip | grim_state_init | 0x100052f0 | 1872 | 1477/1872 | 395 | 414/425 | 78.90% | 167/425 | 135/0/9 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-global-state-and-atlas-defaults |
 | match | grim_lookup_blob_load | 0x10005a40 | 146 | 146/146 | 0 | 51/51 | 100.00% | 51/51 | 15/0/0 |  | grim-lookup-blob-lifecycle |
 | match | grim_lookup_blob_find | 0x10005ae0 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-search |
 | match | grim_lookup_blob_size_for_path | 0x10005b80 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-size |

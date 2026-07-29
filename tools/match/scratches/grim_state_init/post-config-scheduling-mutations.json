@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-default-store-shape",
+      "find": "    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n",
+      "replacements": [
+        {
+          "name": "chain-native-order",
+          "text": "    grim_color_slot1 = grim_color_slot2 =\n        grim_color_slot3 = grim_color_slot0 = 0xffffffff;\n"
+        },
+        {
+          "name": "chain-source-order",
+          "text": "    grim_color_slot0 = grim_color_slot3 =\n        grim_color_slot2 = grim_color_slot1 = 0xffffffff;\n"
+        },
+        {
+          "name": "named-color-default",
+          "text": "    unsigned int color_default = 0xffffffff;\n    grim_color_slot0 = color_default;\n    grim_color_slot3 = color_default;\n    grim_color_slot2 = color_default;\n    grim_color_slot1 = color_default;\n"
+        },
+        {
+          "name": "const-named-color-default",
+          "text": "    const unsigned int color_default = 0xffffffff;\n    grim_color_slot0 = color_default;\n    grim_color_slot3 = color_default;\n    grim_color_slot2 = color_default;\n    grim_color_slot1 = color_default;\n"
+        },
+        {
+          "name": "volatile-store-barrier",
+          "text": "    *(volatile unsigned int *)&grim_color_slot0 = 0xffffffff;\n    *(volatile unsigned int *)&grim_color_slot3 = 0xffffffff;\n    *(volatile unsigned int *)&grim_color_slot2 = 0xffffffff;\n    *(volatile unsigned int *)&grim_color_slot1 = 0xffffffff;\n"
+        }
+      ]
+    },
+    {
+      "name": "strdup-iat-declaration",
+      "find": "#include \"grim2d_cpp.h\"\n",
+      "replacements": [
+        {
+          "name": "explicit-iat-pointer",
+          "text": "#include \"grim2d_cpp.h\"\n\nextern \"C\" char *(__cdecl *_imp__strdup)(const char *source);\n"
+        }
+      ]
+    },
+    {
+      "name": "strdup-iat-call",
+      "find": "        (unsigned int)strdup(&grim_empty_string);\n",
+      "replacements": [
+        {
+          "name": "call-iat-pointer",
+          "text": "        (unsigned int)_imp__strdup(&grim_empty_string);\n"
+        }
+      ]
+    },
+    {
+      "name": "window-title-source-type",
+      "find": "    char *default_title = \"Grim - No Title\";\n",
+      "replacements": [
+        {
+          "name": "const-char-pointer",
+          "text": "    const char *default_title = \"Grim - No Title\";\n"
+        },
+        {
+          "name": "char-array",
+          "text": "    char default_title[] = \"Grim - No Title\";\n"
+        },
+        {
+          "name": "const-char-array",
+          "text": "    const char default_title[] = \"Grim - No Title\";\n"
+        }
+      ]
+    }
+  ]
+}

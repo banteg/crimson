@@ -13,15 +13,15 @@ default callback at `0x10001150` is the two-instruction true-return stub.
 The byte at `0x1005d3ac` has only the initializer write as a static xref, so it
 is retained under the evidence-limited name `grim_reserved_d3ac`.
 
-Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` currently produces a
-`78.67%` match with a `167/425` exact instruction prefix, `425/414`
-target/candidate instructions, and references `134/0/9`. All references
+Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR- /MD` currently produces a
+`78.90%` match with a `167/425` exact instruction prefix, `425/414`
+target/candidate instructions, and references `135/0/9`. All references
 resolve. Direct row-major indexing reproduces the native interleaved UV
 field references without layout padding or byte-level match constructs.
 
 The remaining diff is compiler-shaped: scheduling of the configuration-value
-constructor temporaries and current-UV stores, direct versus import-indirect
-`strdup`, and counter-versus-end-pointer forms for the atlas loops. Every
+constructor temporaries and current-UV stores, plus counter-versus-end-pointer
+forms for the atlas loops. Every
 observed state store, callback assignment, allocation/copy, and table loop is
 represented, so the recovery is marked semantic-complete rather than exact.
 
@@ -72,3 +72,24 @@ conversion copies, row offsets, and nested `do/while` loops are byte-neutral;
 and unsigned counters perturb the earlier allocator enough to fall to 46.96%.
 The sweep therefore supplies negative allocation evidence and does not support
 a source change.
+
+The native `_strdup` call at `0x1000583c` is import-indirect. Adding `/MD`
+reproduces that call and relocation directly, improving the fuzzy-weighted
+score by 4.46 bytes and exact references from 134 to 135 without changing the
+167-instruction prefix. `/GX` is byte-neutral on top of `/MD`, so the smaller
+runtime profile is retained.
+
+The post-profile scheduling probes close several tempting source-only
+explanations. Reusing one named config value for the adjacent true defaults
+shortens the candidate and regresses the first mismatch. Constructor-body,
+explicit assignment, and named-temporary spellings for `GrimUV` are either
+byte-neutral or materially worse. Function-scoped and `register` loop counters
+are byte-neutral even when reused across all five grids. Moving the vertex
+initializer among the last config assignments yields only metric tradeoffs:
+the best weighted result adds three reference mismatches, while the best
+reference result moves the first mismatch earlier. None is retained.
+
+Forcing the four color stores through volatile lvalues improves 8.92
+fuzzy-weighted bytes, but there is no xref or type evidence that these globals
+were volatile. That source changes the program's observable semantics and is
+rejected as a scheduling-only fakematch.

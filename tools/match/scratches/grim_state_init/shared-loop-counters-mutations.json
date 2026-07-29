@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-counter-declaration",
+      "find": "void grim_state_init(void)\n{\n",
+      "replacements": [
+        {
+          "name": "function-scoped-counters",
+          "text": "void grim_state_init(void)\n{\n    int x;\n    int y;\n"
+        },
+        {
+          "name": "register-function-scoped-counters",
+          "text": "void grim_state_init(void)\n{\n    register int x;\n    register int y;\n"
+        }
+      ]
+    },
+    {
+      "name": "font-grid-shared-counters",
+      "find": "        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "reuse-function-counters",
+          "text": "        for (y = 0; y < 16; ++y) {\n            for (x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "character-map-shared-counter",
+      "find": "    for (int x = 0; x < 256; ++x) {\n        grim_font2_char_map[x] = (unsigned char)x;\n    }\n",
+      "replacements": [
+        {
+          "name": "reuse-function-counter",
+          "text": "    for (x = 0; x < 256; ++x) {\n        grim_font2_char_map[x] = (unsigned char)x;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "two-grid-shared-counters",
+      "find": "        for (int y = 0; y < 2; ++y) {\n            for (int x = 0; x < 2; ++x) {\n                grim_subrect_table_0[y * 2 + x].u = (float)x * 0.5f;\n                grim_subrect_table_0[y * 2 + x].v = (float)y * 0.5f;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "reuse-function-counters",
+          "text": "        for (y = 0; y < 2; ++y) {\n            for (x = 0; x < 2; ++x) {\n                grim_subrect_table_0[y * 2 + x].u = (float)x * 0.5f;\n                grim_subrect_table_0[y * 2 + x].v = (float)y * 0.5f;\n            }\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "four-grid-shared-counters",
+      "find": "        for (int y = 0; y < 4; ++y) {\n            for (int x = 0; x < 4; ++x) {\n                grim_subrect_table_1[y * 4 + x].u = (float)x * 0.25f;\n                grim_subrect_table_1[y * 4 + x].v = (float)y * 0.25f;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "reuse-function-counters",
+          "text": "        for (y = 0; y < 4; ++y) {\n            for (x = 0; x < 4; ++x) {\n                grim_subrect_table_1[y * 4 + x].u = (float)x * 0.25f;\n                grim_subrect_table_1[y * 4 + x].v = (float)y * 0.25f;\n            }\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "eight-grid-shared-counters",
+      "find": "        for (int y = 0; y < 8; ++y) {\n            for (int x = 0; x < 8; ++x) {\n                grim_subrect_table_2[y * 8 + x].u =\n                    (float)x * 0.125f;\n                grim_subrect_table_2[y * 8 + x].v =\n                    (float)y * 0.125f;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "reuse-function-counters",
+          "text": "        for (y = 0; y < 8; ++y) {\n            for (x = 0; x < 8; ++x) {\n                grim_subrect_table_2[y * 8 + x].u =\n                    (float)x * 0.125f;\n                grim_subrect_table_2[y * 8 + x].v =\n                    (float)y * 0.125f;\n            }\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "sixteen-grid-shared-counters",
+      "find": "        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_subrect_table[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_subrect_table[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "reuse-function-counters",
+          "text": "        for (y = 0; y < 16; ++y) {\n            for (x = 0; x < 16; ++x) {\n                grim_subrect_table[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_subrect_table[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n"
+        }
+      ]
+    }
+  ]
+}
