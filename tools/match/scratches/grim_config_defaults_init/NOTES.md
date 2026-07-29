@@ -86,3 +86,25 @@ Explicit cursor advances collapse to the older 77.03% allocation, and a
 pointer-distance bound grows to 148 instructions and 87.50%. Recovered `bool`
 and named-integer field views were byte-neutral, so no speculative type change
 is retained.
+
+A recovered field-cursor interaction now supersedes that allocation. Spelling
+`ui_info_texts` as the one-byte initialization it is prevents VC6 from sharing
+its integer-one value with the later four-byte reserved-field store, leaving
+`EBX` available for the saved-name slot index. The order traversal follows the
+native byte cursor from `offsetof(crimson_cfg_t, saved_name_order)` up to
+`offsetof(crimson_cfg_t, saved_names)` in `sizeof(int)` steps. These are
+recovered field boundaries rather than hard-coded offsets, and the shared
+implementation passes the matcher fakematch validator.
+
+Stock `/O2 /GB /W3 /GR-` now reaches **99.29%**, the exact native
+**140/140** instruction count, and references `83/0/0`. The fuzzy gap falls
+from 78.09 to 5.24 bytes, a gain of 72.84 fuzzy-weighted bytes. Executable copy
+`config_init_defaults` produces the same result.
+
+Only one scheduler inversion remains: native publishes the saved-name cursor
+to its stack slot before loading the `0x88` order offset into `EBP`; available
+VC6 backends emit those two independent setup moves in the opposite order.
+VC6.0, 6.5, and 6.6 with `/GB`, `/G5`, `/Ob1`, explicit `/Ot`, `/Oa`, and
+`/Ow` all tie at the same one-swap result. `/G6`, `/Os`, `/Op`, `/Oy-`, the
+processor-pack compiler, and MSVC 7 regress, bounding the residual as compiler
+scheduling rather than missing behavior.

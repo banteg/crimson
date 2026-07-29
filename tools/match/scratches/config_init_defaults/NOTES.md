@@ -83,3 +83,27 @@ frame versus VC6's two-slot allocation: native keeps the saved-name cursor on
 the stack and the slot/order inductions in `EBX`/`EBP`, while the candidate
 keeps both typed cursors in registers and spills the slot plus the
 postincrement temporary.
+
+A recovered field-cursor interaction now supersedes the typed-cursor
+checkpoint. Expressing `ui_info_texts` as the one-byte initialization it is
+prevents VC6 from sharing its integer-one value with the later four-byte
+reserved-field store, leaving `EBX` available for the saved-name slot index.
+The order traversal then follows the native byte cursor from
+`offsetof(crimson_cfg_t, saved_name_order)` up to
+`offsetof(crimson_cfg_t, saved_names)` in `sizeof(int)` steps. Those bounds are
+derived from the recovered fields rather than hard-coded offsets, and the
+matcher fakematch validator accepts the shared implementation.
+
+Stock `/O2 /GB /W3 /GR-` now reaches **99.29%**, the exact native
+**140/140** instruction count, and references `83/0/0`. The fuzzy gap falls
+from 78.09 to 5.24 bytes, a gain of 72.84 fuzzy-weighted bytes, and the
+byte-identical Grim copy produces the same object shape. The only residual is
+one scheduler inversion between two independent setup instructions: native
+publishes the saved-name cursor to its stack slot before loading the `0x88`
+order offset into `EBP`, while available VC6 backends emit those two moves in
+the opposite order.
+
+VC6.0, 6.5, and 6.6 with `/GB`, `/G5`, `/Ob1`, explicit `/Ot`, `/Oa`, and
+`/Ow` all reproduce the same one-swap result. `/G6`, `/Os`, `/Op`, `/Oy-`,
+the processor-pack compiler, and MSVC 7 regress. The remaining delta is
+therefore bounded as compiler scheduling rather than missing behavior.

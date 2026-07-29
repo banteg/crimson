@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "c5ace9f69495f6fee90ccdf6e0559c125100b67a58b022c65add9b87e30fa236",
+  "audit_digest": "8573bf272f5ea0551e1e125e63ff9ab1430aab0db46af78142adc01c7178dd9d",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -24958,7 +24958,7 @@
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
           "repository_relative": true,
-          "sha256": "5d7d2c3c4aa43d8beaf962f1a2f6c70a995a22b975c47600e75a06207ffa9941"
+          "sha256": "6ee0263d32f100ad2959666e6f10a2ece64b2300da0348653a6379f94ef7b32c"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -24984,12 +24984,12 @@
           "end": 4205518,
           "function": "config_init_defaults",
           "match": {
-            "candidate_instructions": 142,
+            "candidate_instructions": 140,
             "masked_mismatches": 0,
-            "masked_ok": 80,
+            "masked_ok": 83,
             "masked_unresolved": 0,
-            "prefix_instructions": 0,
-            "ratio": 0.8936170212765957,
+            "prefix_instructions": 21,
+            "ratio": 0.9928571428571429,
             "state": "wip",
             "target_instructions": 140
           },
@@ -24998,18 +24998,18 @@
         }
       ],
       "match": {
-        "candidate_instructions": 142,
+        "candidate_instructions": 140,
         "masked_mismatches": 0,
-        "masked_ok": 80,
+        "masked_ok": 83,
         "masked_unresolved": 0,
-        "prefix_instructions": 0,
-        "ratio": 0.8936170212765957,
+        "prefix_instructions": 21,
+        "ratio": 0.9928571428571429,
         "state": "wip",
         "target_instructions": 140
       },
       "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/e09d8a4ec93f224b/scratch.obj",
       "object_function_symbol": "_config_init_defaults",
-      "object_sha256": "0d720deb9bb7aacca6f5eb80444ee81f04b3967f7a3e107c01349e0d4c87e6c0",
+      "object_sha256": "e41ad4bde4be54126d3a85ffee9809a1fd5eda7b913765ed6865533115da36d2",
       "scratch": "tools/match/scratches/config_init_defaults",
       "source": "tools/match/scratches/config_init_defaults/scratch.cpp",
       "source_sha256": "0fe3b665088860f96b945077acf407c4910bf68d86d32c5f26a089d5e9370467",

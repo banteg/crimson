@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 #ifndef CRIMSON_CONFIG_DEFAULTS_FUNCTION
 #error "define CRIMSON_CONFIG_DEFAULTS_FUNCTION before including this file"
 #endif
@@ -9,11 +11,13 @@
 extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
 {
     int i;
-    int *saved_order;
-    char (*saved_name)[27];
+    int saved_order_offset;
 
     CRIMSON_CONFIG_DEFAULTS_BLOB.hardcore = 0;
-    CRIMSON_CONFIG_DEFAULTS_BLOB.ui_info_texts = 1;
+    memset(
+        &CRIMSON_CONFIG_DEFAULTS_BLOB.ui_info_texts,
+        1,
+        sizeof(CRIMSON_CONFIG_DEFAULTS_BLOB.ui_info_texts));
     CRIMSON_CONFIG_DEFAULTS_BLOB.perk_prompt_counter = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.mouse_sensitivity = 0.5f;
     *(int *)&CRIMSON_CONFIG_DEFAULTS_BLOB.reserved6_450[0] = 1;
@@ -25,14 +29,13 @@ extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
     memset(CRIMSON_CONFIG_DEFAULTS_BLOB.player_name_buf, 0, 9);
 
     i = 0;
-    saved_name = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names;
-    saved_order = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_name_order;
-    while (saved_order < CRIMSON_CONFIG_DEFAULTS_BLOB.saved_name_order + 8) {
-        *saved_order = i;
-        strcpy(*saved_name++, "default");
-        ++saved_order;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+    do {
+        *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + saved_order_offset) = i;
+        strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[i], "default");
+        saved_order_offset += sizeof(int);
         ++i;
-    }
+    } while (saved_order_offset < (int)offsetof(crimson_cfg_t, saved_names));
 
     CRIMSON_CONFIG_DEFAULTS_BLOB.highscore_duplicate_mode = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.highscore_date_mode = 0;

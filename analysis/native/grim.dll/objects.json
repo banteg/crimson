@@ -59,7 +59,7 @@
     "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "457011c4b59725d2246d0ed06dedfe18a6ec5a62b8f5480f6582d79015bbb04e",
+  "audit_digest": "2813832b158323e8a50e13c8bb172250f9c32b955a0622862025352711706a54",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -6381,7 +6381,7 @@
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
           "repository_relative": true,
-          "sha256": "5d7d2c3c4aa43d8beaf962f1a2f6c70a995a22b975c47600e75a06207ffa9941"
+          "sha256": "6ee0263d32f100ad2959666e6f10a2ece64b2300da0348653a6379f94ef7b32c"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -6407,12 +6407,12 @@
           "end": 268442094,
           "function": "grim_config_defaults_init",
           "match": {
-            "candidate_instructions": 142,
+            "candidate_instructions": 140,
             "masked_mismatches": 0,
-            "masked_ok": 80,
+            "masked_ok": 83,
             "masked_unresolved": 0,
-            "prefix_instructions": 0,
-            "ratio": 0.8936170212765957,
+            "prefix_instructions": 21,
+            "ratio": 0.9928571428571429,
             "state": "wip",
             "target_instructions": 140
           },
@@ -6421,18 +6421,18 @@
         }
       ],
       "match": {
-        "candidate_instructions": 142,
+        "candidate_instructions": 140,
         "masked_mismatches": 0,
-        "masked_ok": 80,
+        "masked_ok": 83,
         "masked_unresolved": 0,
-        "prefix_instructions": 0,
-        "ratio": 0.8936170212765957,
+        "prefix_instructions": 21,
+        "ratio": 0.9928571428571429,
         "state": "wip",
         "target_instructions": 140
       },
       "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
       "object_function_symbol": "_grim_config_defaults_init",
-      "object_sha256": "475e2d8cbf997459e0807cb205e2e0eaa51fb51bdab5e88a67df12b1d4a588e1",
+      "object_sha256": "5f37ec6cfe442281ad3911c9df5c3848832f77c05315ce458859cf9f036055ff",
       "scratch": "tools/match/scratches/grim_config_defaults_init",
       "source": "tools/match/scratches/grim_config_defaults_init/scratch.cpp",
       "source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
