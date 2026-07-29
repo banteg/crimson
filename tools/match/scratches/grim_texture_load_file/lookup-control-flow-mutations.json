@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "lookup-control-flow",
+      "find": "    bool found_in_lookup = false;\n    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n",
+      "replacements": [
+        {
+          "name": "derive-flag-after-guard",
+          "text": "    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n    }\n    bool found_in_lookup = lookup_data != 0;\n"
+        },
+        {
+          "name": "explicit-else",
+          "text": "    bool found_in_lookup;\n    unsigned char *lookup_data;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    } else {\n        lookup_data = 0;\n        found_in_lookup = false;\n    }\n"
+        },
+        {
+          "name": "conditional-pointer",
+          "text": "    unsigned char *lookup_data = grim_lookup_blob_loaded\n        ? (unsigned char *)grim_lookup_blob_find(path)\n        : 0;\n    bool found_in_lookup = lookup_data != 0;\n"
+        },
+        {
+          "name": "nested-hit-branch",
+          "text": "    bool found_in_lookup = false;\n    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        if (lookup_data != 0) {\n            found_in_lookup = true;\n        }\n    }\n"
+        },
+        {
+          "name": "pointer-test-expression",
+          "text": "    bool found_in_lookup = false;\n    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data ? true : false;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

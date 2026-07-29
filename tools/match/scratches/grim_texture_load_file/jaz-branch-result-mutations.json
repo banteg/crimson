@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "jaz-branch-result-lifetime",
+      "find": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = grim_path_has_extension(path, \"jaz\");\n    if (result) {\n",
+      "replacements": [
+        {
+          "name": "predicate-then-result",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool has_jaz_extension = grim_path_has_extension(path, \"jaz\");\n    bool result;\n    if (has_jaz_extension) {\n        result = true;\n"
+        },
+        {
+          "name": "result-then-predicate",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result;\n    bool has_jaz_extension = grim_path_has_extension(path, \"jaz\");\n    if (has_jaz_extension) {\n        result = true;\n"
+        },
+        {
+          "name": "scoped-result-from-predicate",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool has_jaz_extension = grim_path_has_extension(path, \"jaz\");\n    if (has_jaz_extension) {\n        bool result = has_jaz_extension;\n"
+        },
+        {
+          "name": "scoped-constant-result",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool has_jaz_extension = grim_path_has_extension(path, \"jaz\");\n    if (has_jaz_extension) {\n        bool result = true;\n"
+        },
+        {
+          "name": "explicit-predicate-test",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result;\n    if (grim_path_has_extension(path, \"jaz\") != false) {\n        result = true;\n"
+        },
+        {
+          "name": "preinitialize-false",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    bool result = false;\n    if (grim_path_has_extension(path, \"jaz\")) {\n        result = true;\n"
+        }
+      ]
+    }
+  ]
+}

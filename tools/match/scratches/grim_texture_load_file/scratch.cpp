@@ -37,8 +37,9 @@ bool GrimTexture::grim_texture_load_file(char *path)
     int image_height;
     unsigned int image_size;
     GrimD3dxImageInfo source_info;
-    bool result = grim_path_has_extension(path, "jaz");
-    if (result) {
+    bool has_jaz_extension = grim_path_has_extension(path, "jaz");
+    if (has_jaz_extension) {
+        bool result = has_jaz_extension;
         unsigned int source_size;
         unsigned char *source_data;
 

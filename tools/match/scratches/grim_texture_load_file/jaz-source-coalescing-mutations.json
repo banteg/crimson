@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "jaz-source-declaration-order",
+      "find": "        unsigned int source_size;\n        unsigned char *source_data;\n",
+      "replacements": [
+        {
+          "name": "data-before-size",
+          "text": "        unsigned char *source_data;\n        unsigned int source_size;\n"
+        },
+        {
+          "name": "signed-size",
+          "text": "        int source_size;\n        unsigned char *source_data;\n"
+        },
+        {
+          "name": "data-before-signed-size",
+          "text": "        unsigned char *source_data;\n        int source_size;\n"
+        }
+      ]
+    },
+    {
+      "name": "lookup-source-assignment-order",
+      "find": "            source_size = grim_lookup_blob_size_for_path(path);\n            source_data = lookup_data;\n",
+      "replacements": [
+        {
+          "name": "data-before-size",
+          "text": "            source_data = lookup_data;\n            source_size = grim_lookup_blob_size_for_path(path);\n"
+        },
+        {
+          "name": "named-lookup-size",
+          "text": "            unsigned int lookup_size = grim_lookup_blob_size_for_path(path);\n            source_data = lookup_data;\n            source_size = lookup_size;\n"
+        }
+      ]
+    },
+    {
+      "name": "disk-size-materialization",
+      "find": "            source_size = ftell(file);\n            fseek(file, 0, SEEK_SET);\n            source_data = new unsigned char[source_size];\n",
+      "replacements": [
+        {
+          "name": "named-file-size",
+          "text": "            unsigned int file_size = ftell(file);\n            source_size = file_size;\n            fseek(file, 0, SEEK_SET);\n            source_data = new unsigned char[file_size];\n"
+        },
+        {
+          "name": "publish-size-after-allocation",
+          "text": "            unsigned int file_size = ftell(file);\n            fseek(file, 0, SEEK_SET);\n            source_data = new unsigned char[file_size];\n            source_size = file_size;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -3,9 +3,10 @@
 Native target: `grim.dll` at `0x10004ec0..0x1000510f` (591 bytes).
 
 This is an evidence-backed semantic-complete reconstruction, not an exact
-match. Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 234
-normalized instructions against 235 native instructions, with 84.01%
-similarity, 496.49/591 fuzzy-weighted bytes, and masked references `23/0/0`.
+match. Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces
+exactly 235 normalized instructions against 235 native instructions, with
+85.96% similarity, 508.01/591 fuzzy-weighted bytes, and masked references
+`24/0/0`.
 
 ## Recovered source shape
 
@@ -24,10 +25,10 @@ similarity, 496.49/591 fuzzy-weighted bytes, and masked references `23/0/0`.
   `new[]`, `fread`, and `fclose`. The native code does not release either the
   file buffer or the decoded image in this function, so the scratch preserves
   those observed leaks.
-- The extension result is retained in the function result byte. This is
-  semantically equivalent to assigning true on entry to the JAZ branch, but it
-  recovers the native 0x30-byte frame, spilled lookup-hit byte, path register,
-  and all but one of the native instructions.
+- The extension predicate is retained separately and initializes the
+  branch-owned result byte. This recovers the native 0x30-byte frame, spilled
+  lookup-hit byte, path register, texture-slot register, and instruction
+  count.
 - `grim_decode_jaz_texture` receives the source pointer/size and three output
   pointers. A successful decode stores width and height before calling
   `D3DXCreateTextureFromFileInMemoryEx` with managed-pool/default-size
@@ -48,19 +49,19 @@ calling conventions. The name map carries the same evidence.
 ## Remaining mismatch
 
 Native keeps `path`, `this`, the texture-field address, and lookup data in
-`esi`, `ebp`, `ebx`, and `edi`; the retained reconstruction keeps `path` in
-`esi` but cyclically assigns the other three values to `edi`, `ebp`, and
-`ebx`. Both now spill the lookup-hit byte and use the native 0x30-byte frame.
+`esi`, `ebp`, `ebx`, and `edi`; the retained reconstruction now agrees on
+`path` and the texture-field address, but assigns `this` and lookup data to
+`edi` and `ebp`. Both spill the lookup-hit byte, use the native 0x30-byte
+frame, and emit 235 normalized instructions.
 
-The one-instruction count and one-reference deltas have a single localized
-cause. Native tests the extension result before loading
-`grim_lookup_blob_loaded`, stores true to the result byte inside the JAZ
-branch, and reloads the global in the non-JAZ branch. VC6 stores the returned
-bool first and hoists the following global read across the branch, so the
-non-JAZ path reuses `al`. Structured `else` spelling, branch-local snapshots,
-and explicit texture-field aliases compile byte-identically. Declaring the
-global volatile regresses to 83.58% and still does not recover the missing
-read, so no unsupported type qualifier is retained.
+The remaining scheduling delta is localized. Native tests the extension
+predicate, loads `grim_lookup_blob_loaded`, and then stores true to the
+branch-owned result byte. VC6 stores the known-true predicate byte first and
+then loads the global. The non-JAZ branch reloads the global in both versions.
+Structured `else` spelling, branch-local snapshots, and explicit
+texture-field aliases compile byte-identically. Declaring the global volatile
+regresses and still does not recover the schedule, so no unsupported type
+qualifier is retained.
 
 The following diagnostic variants were rejected rather than retained:
 
@@ -120,6 +121,29 @@ explicit `self` and `source_path` aliases compile byte-identically at 84.01%,
 with the same register cycle, 234 instructions, and `23/0/0` references.
 Named pointer and reference aliases for the texture-field slot are also
 byte-neutral.
+
+## Branch-owned result and register allocation
+
+`jaz-branch-result-mutations.json` separates the extension predicate from the
+result used only inside the JAZ branch. Initializing the scoped result from
+that predicate is the sole improving variant: it adds 11.52 fuzzy-weighted
+bytes, raises the match from 84.01% to **85.96%**, reaches the native
+**235/235** instruction count, and improves references from `23/0/0` to
+**`24/0/0`**. It also moves the texture-field address from candidate `ebp` to
+the native `ebx`, reducing the former three-register cycle to the remaining
+`this`/lookup-data swap.
+
+Four follow-up sweeps record 49 ordinary source interactions without finding
+a further gain. `object-lookup-allocation-mutations.json` crosses object
+aliases with lookup declaration order; all 17 variants are byte-neutral.
+`jaz-source-coalescing-mutations.json` tests 23 declaration, assignment, and
+file-size materialization combinations for the coalesced
+`this -> source_size` and `lookup_data -> source_data` lifetimes; all are
+byte-neutral. Five lookup control-flow forms are neutral or regress, and four
+JAZ-local snapshots of `grim_lookup_blob_loaded` are byte-neutral. These
+results bound lexical ordering and the obvious global-snapshot explanation;
+the remaining two-register assignment and one-byte block shift are compiler
+allocation residuals.
 
 No volatile state, dummy reference, forced address, fake helper, or
 layout-only arithmetic is retained. The residual is a compiler allocation and

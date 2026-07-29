@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "jaz-lookup-snapshot",
+      "find": "    if (has_jaz_extension) {\n        bool result = has_jaz_extension;\n        unsigned int source_size;\n        unsigned char *source_data;\n\n        if (grim_lookup_blob_loaded && found_in_lookup) {\n",
+      "replacements": [
+        {
+          "name": "byte-snapshot-before-result",
+          "text": "    if (has_jaz_extension) {\n        unsigned char lookup_blob_loaded = grim_lookup_blob_loaded;\n        bool result = has_jaz_extension;\n        unsigned int source_size;\n        unsigned char *source_data;\n\n        if (lookup_blob_loaded && found_in_lookup) {\n"
+        },
+        {
+          "name": "bool-snapshot-before-result",
+          "text": "    if (has_jaz_extension) {\n        bool lookup_blob_loaded = grim_lookup_blob_loaded != 0;\n        bool result = has_jaz_extension;\n        unsigned int source_size;\n        unsigned char *source_data;\n\n        if (lookup_blob_loaded && found_in_lookup) {\n"
+        },
+        {
+          "name": "byte-snapshot-after-result",
+          "text": "    if (has_jaz_extension) {\n        bool result = has_jaz_extension;\n        unsigned char lookup_blob_loaded = grim_lookup_blob_loaded;\n        unsigned int source_size;\n        unsigned char *source_data;\n\n        if (lookup_blob_loaded && found_in_lookup) {\n"
+        },
+        {
+          "name": "byte-snapshot-after-source-locals",
+          "text": "    if (has_jaz_extension) {\n        unsigned int source_size;\n        unsigned char *source_data;\n        unsigned char lookup_blob_loaded = grim_lookup_blob_loaded;\n        bool result = has_jaz_extension;\n\n        if (lookup_blob_loaded && found_in_lookup) {\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "object-alias-lifetime",
+      "find": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n",
+      "replacements": [
+        {
+          "name": "named-self",
+          "text": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n    GrimTexture *self = this;\n#define this self\n"
+        },
+        {
+          "name": "named-self-after-path",
+          "text": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n    char *source_path = path;\n    GrimTexture *self = this;\n#define path source_path\n#define this self\n"
+        }
+      ]
+    },
+    {
+      "name": "lookup-declaration-lifetime",
+      "find": "    bool found_in_lookup = false;\n    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n",
+      "replacements": [
+        {
+          "name": "pointer-before-flag",
+          "text": "    unsigned char *lookup_data = 0;\n    bool found_in_lookup = false;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        },
+        {
+          "name": "split-pointer-initialization",
+          "text": "    bool found_in_lookup = false;\n    unsigned char *lookup_data;\n    lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        },
+        {
+          "name": "split-both-initializations",
+          "text": "    bool found_in_lookup;\n    unsigned char *lookup_data;\n    found_in_lookup = false;\n    lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        },
+        {
+          "name": "image-outputs-first",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n\n    bool found_in_lookup = false;\n    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n"
+        },
+        {
+          "name": "lookup-pointer-after-outputs",
+          "text": "    bool found_in_lookup = false;\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

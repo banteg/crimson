@@ -59,7 +59,7 @@
     "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "49628c67a61e3da8662192fa1cbea8e4acc4ad6a2722df9c552652d8a80c1ed3",
+  "audit_digest": "457011c4b59725d2246d0ed06dedfe18a6ec5a62b8f5480f6582d79015bbb04e",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7478,7 +7478,7 @@
         {
           "path": "tools/match/scratches/grim_texture_load_file/scratch.cpp",
           "repository_relative": true,
-          "sha256": "cdc9cd302c4b14216016e7f2bbf2c3285c89dfe49ac4c463ad76940b30a2a053"
+          "sha256": "75a9abffb4085a40d5a8c7aac0e81df722fe8240a4619859935155f7090e0e1d"
         },
         {
           "path": "tools/match/scratches/grim_texture_load_file/scratch.conf",
@@ -7524,17 +7524,17 @@
           "canonical_config_sha256": "56d895ae3a8751c687f019f0bf2088cbdf0b6117e0212b83b9b4c54d7a897714",
           "canonical_scratch": "tools/match/scratches/grim_texture_load_file",
           "canonical_source": "tools/match/scratches/grim_texture_load_file/scratch.cpp",
-          "canonical_source_sha256": "cdc9cd302c4b14216016e7f2bbf2c3285c89dfe49ac4c463ad76940b30a2a053",
+          "canonical_source_sha256": "75a9abffb4085a40d5a8c7aac0e81df722fe8240a4619859935155f7090e0e1d",
           "effective_end": 268456207,
           "end": 268456207,
           "function": "grim_texture_load_file",
           "match": {
-            "candidate_instructions": 234,
+            "candidate_instructions": 235,
             "masked_mismatches": 0,
-            "masked_ok": 23,
+            "masked_ok": 24,
             "masked_unresolved": 0,
             "prefix_instructions": 5,
-            "ratio": 0.8400852878464818,
+            "ratio": 0.8595744680851064,
             "state": "wip",
             "target_instructions": 235
           },
@@ -7543,21 +7543,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 234,
+        "candidate_instructions": 235,
         "masked_mismatches": 0,
-        "masked_ok": 23,
+        "masked_ok": 24,
         "masked_unresolved": 0,
         "prefix_instructions": 5,
-        "ratio": 0.8400852878464818,
+        "ratio": 0.8595744680851064,
         "state": "wip",
         "target_instructions": 235
       },
       "object": "tools/match/scratches/grim_texture_load_file/build/msvc6.5/432726981df38261/scratch.obj",
       "object_function_symbol": "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z",
-      "object_sha256": "7673a16d39eb672516fb5b1e1de34b050f8cac5ae60e75e9b257cd1b7214e930",
+      "object_sha256": "284051f4dd3de67e53c2c02e396a91cdbff5c05972030897b08d333d0064b683",
       "scratch": "tools/match/scratches/grim_texture_load_file",
       "source": "tools/match/scratches/grim_texture_load_file/scratch.cpp",
-      "source_sha256": "cdc9cd302c4b14216016e7f2bbf2c3285c89dfe49ac4c463ad76940b30a2a053",
+      "source_sha256": "75a9abffb4085a40d5a8c7aac0e81df722fe8240a4619859935155f7090e0e1d",
       "target_size": 591,
       "translation_unit": {
         "kind": "isolated",
