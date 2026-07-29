@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outer-update-order",
+      "find": "        outer_seed += 0x35;\n        ++outer_index;\n        trigger_base += 30000;\n",
+      "replacements": [
+        {
+          "name": "index-seed-trigger",
+          "text": "        ++outer_index;\n        outer_seed += 0x35;\n        trigger_base += 30000;\n"
+        },
+        {
+          "name": "seed-trigger-index",
+          "text": "        outer_seed += 0x35;\n        trigger_base += 30000;\n        ++outer_index;\n"
+        },
+        {
+          "name": "index-trigger-seed",
+          "text": "        ++outer_index;\n        trigger_base += 30000;\n        outer_seed += 0x35;\n"
+        },
+        {
+          "name": "trigger-seed-index",
+          "text": "        trigger_base += 30000;\n        outer_seed += 0x35;\n        ++outer_index;\n"
+        },
+        {
+          "name": "trigger-index-seed",
+          "text": "        trigger_base += 30000;\n        ++outer_index;\n        outer_seed += 0x35;\n"
+        }
+      ]
+    }
+  ]
+}

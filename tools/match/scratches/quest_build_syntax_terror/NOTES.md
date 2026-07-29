@@ -13,14 +13,11 @@ polynomials reduced with signed `% 0x380`, then biased by 64 and converted to
 float. Every entry has count one, so the final count is four times the active
 inner-loop count. The Python and Zig ports agree with the recovered formulas.
 
-The candidate preserves the native temporary hardcore mutation, nested loop
+The recovered source matches all **339/339 bytes** and **104/104 instructions**
+under the evidenced `msvc6.5 /O2 /GB` profile, with all six audited references
+resolved. It preserves the native temporary hardcore mutation, nested loop
 bounds, seed and trigger recurrences, signed division, x87 conversions,
 24-byte entry layout, template/count metadata, and exact `0x1c` local frame.
-The default `msvc6.5 /O2 /GB` profile compiles to 106 instructions versus the
-native 104 and scores 49.52%, with one aligned audited reference. The historical
-Processor Pack experiment reached 54.03% and four references, but its absent
-product-48/49 build-9044 records rule it out as native-object provenance; that
-result remains only a source-shape search signal.
 
 The shared 24-byte `quest_spawn_entry_t` is now a flat semantic record:
 `pos_x`, `pos_y`, `heading`, `template_id`, `trigger_time_ms`, and `count`.
@@ -29,25 +26,18 @@ builder cluster instead of routing ordinary accesses through nested
 `pos_y_block.heading_block` paths. The separate trigger/count cursor types
 remain available for the two loops that genuinely walk interior fields.
 
-The unknown original source shape makes default VC6 choose different allocation
-and scheduling. Native keeps the output count in EBP and inner seed in EBX,
-computes both coordinates before storing spawn metadata, and restores the count
-through EBP. The candidate spills the count, assigns the induction values
-differently, and schedules the independent metadata stores before the
-coordinate arithmetic. Direct fields, one and two coordinate temporaries,
-pointer/count and cursor builders, post-incremented reservation, vector
-aggregate and all-fields setters were checked. A complete 6.5/6.5pp/7.0
-optimizer matrix found the alternate profile to be the strongest current-source
-score, but the canonical scratch uses the evidenced default. This remains an
-honest WIP without volatile state, dummy dependencies, or forced-register
-constructs.
+Three source-level relationships recover the native allocation and schedule.
+Naming the two outer-loop polynomial terms keeps their true loop-invariant
+lifetimes visible to VC6, which assigns the emitted count to EBP and the inner
+seed to EBX. Addressing `spawns[entry_count]` separately for the position and
+metadata setters preserves the native order: both coordinates are completed
+before template, trigger, and count are stored. Finally, incrementing the
+independent outer index before advancing the outer seed selects the native
+spill-slot assignment while VC6 still emits the seed increment first.
 
-The scratch is classified `semantic-complete` with an `analysis` residual for
-the unknown source shape. Fresh live disassembly confirms the exact `0x1c`
-frame, four outer batches, signed cubic/modulo coordinate arithmetic, per-entry
-metadata, hardcore player-count restoration, and both output-count return
-paths. The remaining 106/104 instruction delta is register assignment and
-scheduling; one audited reference is matched.
+These are ordinary semantic source forms backed by the native dataflow. No
+volatile state, dummy dependency, forced register, or artificial control flow
+is used.
 
 ## 2026-07-27 focused profile and mutation pass
 
@@ -57,7 +47,7 @@ references, but the product/build provenance noted above still excludes it;
 MSVC 7.0 scored 37.91%. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tied, while
 `/G6` regressed.
 
-`local-declaration-order-mutations.json` (SHA-256
+At the intermediate source, `local-declaration-order-mutations.json` (SHA-256
 `55e5669524b23537f156632a6488f1bb0beecdbc2e05a80d876c0c6f06ae8214`)
 recorded all 15 requested single and interaction variants. Reordering the
 semantic outer-loop locals to trigger, index, seed recovered the native
@@ -70,3 +60,19 @@ Fresh scratch recomputation improved 167.8857142857143/339 to
 65.07177033492823%, with the gap falling from 171.1142857142857 to
 118.40669856459331. The validated result has 105/104 instructions, prefix
 two, and six matched references with no mismatch or unresolved reference.
+
+## 2026-07-29 exact recovery
+
+Naming `outer_x_term` and `outer_y_term` raised the intermediate result from
+65.07% to 85.58%, removed the instruction-count delta, and extended the exact
+prefix from two to twelve instructions. Selecting the index-trigger-seed
+declaration order then reached 86.54% and a fifteen-instruction prefix.
+
+The separate indexed position/metadata expressions recovered the native store
+schedule and raised the score to 94.23%. At that point the only differences
+were the stack slots assigned to `outer_index` and `outer_seed`.
+`outer-update-order-mutations.json` exhaustively tested the five remaining
+orders of the three independent loop updates. Advancing `outer_index` before
+`outer_seed` selected the native slots and produced the exact 339-byte object.
+The declaration, inner-lifetime, and split-declaration sweeps record the bounded
+neutral and regressing alternatives.

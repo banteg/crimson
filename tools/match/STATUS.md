@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**690/808** functions matched exactly, **129451/341963** code bytes (**37.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **300242/341963** code bytes (**87.8%**).
+Fuzzy-weighted alignment is **300361/341963** code bytes (**87.8%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279905/320805 | 87.3% | 671/671 | 320805/320805 | 100.0% | 559/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280024/320805 | 87.3% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20337/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**559/671** functions, **114513/320805** bytes (**35.7%**), **279905/320805** fuzzy-weighted bytes (**87.3%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **280024/320805** fuzzy-weighted bytes (**87.3%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -541,7 +541,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 179/249 | 70 | 57/60 | 71.79% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 358/382 | 24 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |
 | wip | quest_build_gauntlet | 0x004369a0 | 614 | 493/614 | 121 | 182/182 | 80.22% | 31/182 | 25/0/0 |  | quest-gauntlet-rings-and-edges |
-| wip | quest_build_syntax_terror | 0x00436c10 | 339 | 221/339 | 118 | 105/104 | 65.07% | 2/104 | 6/0/0 |  | quest-syntax-terror-polynomial-spawners |
+| match | quest_build_syntax_terror | 0x00436c10 | 339 | 339/339 | 0 | 104/104 | 100.00% | 104/104 | 6/0/0 |  | quest-syntax-terror-polynomial-spawners |
 | wip | quest_build_spider_spawns | 0x00436d70 | 365 | 320/365 | 45 | 73/73 | 87.67% | 2/73 | 0/0/0 |  | quest-spider-spawns-fixed-table |
 | match | quest_build_two_fronts | 0x00436ee0 | 383 | 383/383 | 0 | 112/112 | 100.00% | 112/112 | 3/0/0 |  | quest-two-fronts-cardinal-waves |
 | wip | quest_build_survival_of_the_fastest | 0x00437060 | 861 | 548/861 | 313 | 218/228 | 63.68% | 5/228 | 0/0/0 |  | quest-survival-fastest-shared-index-path |

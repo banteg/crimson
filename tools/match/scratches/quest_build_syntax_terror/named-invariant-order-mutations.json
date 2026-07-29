@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outer-induction-declaration-order",
+      "find": "    int outer_index = 0;\n    int trigger_base = 1500;\n    int outer_seed = 0x14c9;\n",
+      "replacements": [
+        {
+          "name": "index-seed-trigger",
+          "text": "    int outer_index = 0;\n    int outer_seed = 0x14c9;\n    int trigger_base = 1500;\n"
+        },
+        {
+          "name": "trigger-index-seed",
+          "text": "    int trigger_base = 1500;\n    int outer_index = 0;\n    int outer_seed = 0x14c9;\n"
+        },
+        {
+          "name": "trigger-seed-index",
+          "text": "    int trigger_base = 1500;\n    int outer_seed = 0x14c9;\n    int outer_index = 0;\n"
+        },
+        {
+          "name": "seed-index-trigger",
+          "text": "    int outer_seed = 0x14c9;\n    int outer_index = 0;\n    int trigger_base = 1500;\n"
+        },
+        {
+          "name": "seed-trigger-index",
+          "text": "    int outer_seed = 0x14c9;\n    int trigger_base = 1500;\n    int outer_index = 0;\n"
+        }
+      ]
+    }
+  ]
+}

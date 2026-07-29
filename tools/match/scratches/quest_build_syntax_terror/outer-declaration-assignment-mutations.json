@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outer-declaration-assignment-shape",
+      "find": "    int outer_index = 0;\n    int trigger_base = 1500;\n    int outer_seed = 0x14c9;\n",
+      "replacements": [
+        {
+          "name": "declare-index-trigger-seed",
+          "text": "    int outer_index;\n    int trigger_base;\n    int outer_seed;\n    outer_index = 0;\n    trigger_base = 1500;\n    outer_seed = 0x14c9;\n"
+        },
+        {
+          "name": "declare-index-seed-trigger",
+          "text": "    int outer_index;\n    int outer_seed;\n    int trigger_base;\n    outer_index = 0;\n    trigger_base = 1500;\n    outer_seed = 0x14c9;\n"
+        },
+        {
+          "name": "declare-trigger-index-seed",
+          "text": "    int trigger_base;\n    int outer_index;\n    int outer_seed;\n    outer_index = 0;\n    trigger_base = 1500;\n    outer_seed = 0x14c9;\n"
+        },
+        {
+          "name": "declare-trigger-seed-index",
+          "text": "    int trigger_base;\n    int outer_seed;\n    int outer_index;\n    outer_index = 0;\n    trigger_base = 1500;\n    outer_seed = 0x14c9;\n"
+        },
+        {
+          "name": "declare-seed-index-trigger",
+          "text": "    int outer_seed;\n    int outer_index;\n    int trigger_base;\n    outer_index = 0;\n    trigger_base = 1500;\n    outer_seed = 0x14c9;\n"
+        },
+        {
+          "name": "declare-seed-trigger-index",
+          "text": "    int outer_seed;\n    int trigger_base;\n    int outer_index;\n    outer_index = 0;\n    trigger_base = 1500;\n    outer_seed = 0x14c9;\n"
+        }
+      ]
+    }
+  ]
+}

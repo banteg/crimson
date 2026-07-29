@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "94b5e45e98324304dc2ec435d19b043838beccf61302861b4b36ab1b46c7e506",
+  "audit_digest": "fdd9be6d86be38172d1001cdacbeb22bf43415e4ecf62fa302b7784a85e4b7ac",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -64298,12 +64298,12 @@
         {
           "path": "tools/match/scratches/quest_build_syntax_terror/scratch.cpp",
           "repository_relative": true,
-          "sha256": "169a884df0700be66845c8b399c9a3c0ae6b426acae6795dd0e409e1b49bcdff"
+          "sha256": "f773ed742051e06a7e14b9a64204a427b404e4580cc2d83fa649a1a6fc1f01b1"
         },
         {
           "path": "tools/match/scratches/quest_build_syntax_terror/scratch.conf",
           "repository_relative": true,
-          "sha256": "1045d26353ca0f22862225618f08021e331ce83aa33fba7bd93ec31f4452b4b5"
+          "sha256": "5e496bc090b14e9f5689ff8937fcc09c7bb7ee94a016671399b95509ed0f1414"
         },
         {
           "path": "tools/match/cl.sh",
@@ -64328,7 +64328,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_syntax_terror/scratch.conf",
-      "config_sha256": "1045d26353ca0f22862225618f08021e331ce83aa33fba7bd93ec31f4452b4b5",
+      "config_sha256": "5e496bc090b14e9f5689ff8937fcc09c7bb7ee94a016671399b95509ed0f1414",
       "effective_end": 4418915,
       "end": 4418915,
       "function": "quest_build_syntax_terror",
@@ -64336,21 +64336,21 @@
         {
           "address": 4418576,
           "canonical_config": "tools/match/scratches/quest_build_syntax_terror/scratch.conf",
-          "canonical_config_sha256": "1045d26353ca0f22862225618f08021e331ce83aa33fba7bd93ec31f4452b4b5",
+          "canonical_config_sha256": "5e496bc090b14e9f5689ff8937fcc09c7bb7ee94a016671399b95509ed0f1414",
           "canonical_scratch": "tools/match/scratches/quest_build_syntax_terror",
           "canonical_source": "tools/match/scratches/quest_build_syntax_terror/scratch.cpp",
-          "canonical_source_sha256": "169a884df0700be66845c8b399c9a3c0ae6b426acae6795dd0e409e1b49bcdff",
+          "canonical_source_sha256": "f773ed742051e06a7e14b9a64204a427b404e4580cc2d83fa649a1a6fc1f01b1",
           "effective_end": 4418915,
           "end": 4418915,
           "function": "quest_build_syntax_terror",
           "match": {
-            "candidate_instructions": 105,
+            "candidate_instructions": 104,
             "masked_mismatches": 0,
             "masked_ok": 6,
             "masked_unresolved": 0,
-            "prefix_instructions": 2,
-            "ratio": 0.6507177033492823,
-            "state": "wip",
+            "prefix_instructions": 104,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 104
           },
           "object_function_symbol": "_quest_build_syntax_terror",
@@ -64358,21 +64358,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 105,
+        "candidate_instructions": 104,
         "masked_mismatches": 0,
         "masked_ok": 6,
         "masked_unresolved": 0,
-        "prefix_instructions": 2,
-        "ratio": 0.6507177033492823,
-        "state": "wip",
+        "prefix_instructions": 104,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 104
       },
       "object": "tools/match/scratches/quest_build_syntax_terror/build/msvc6.5/ad5e593bc1d8bf0e/scratch.obj",
       "object_function_symbol": "_quest_build_syntax_terror",
-      "object_sha256": "c02dc8035c2e6590a1851acc89f24802f27c8710311956a4dd42e2abcb8c8eed",
+      "object_sha256": "60b7846538074d6602d0854c858042d68a1193d23cdfb5aee2a7ab744819df29",
       "scratch": "tools/match/scratches/quest_build_syntax_terror",
       "source": "tools/match/scratches/quest_build_syntax_terror/scratch.cpp",
-      "source_sha256": "169a884df0700be66845c8b399c9a3c0ae6b426acae6795dd0e409e1b49bcdff",
+      "source_sha256": "f773ed742051e06a7e14b9a64204a427b404e4580cc2d83fa649a1a6fc1f01b1",
       "target_size": 339,
       "translation_unit": {
         "kind": "isolated",
@@ -87600,8 +87600,8 @@
   },
   "states": {
     "audit": 1,
-    "match": 559,
-    "wip": 111
+    "match": 560,
+    "wip": 110
   },
   "translation_units": {
     "cluster_count": 3,

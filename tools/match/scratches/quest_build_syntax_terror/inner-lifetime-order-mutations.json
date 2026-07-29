@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "inner-lifetime-declaration-order",
+      "find": "            int outer_x_term = outer_seed * outer_index;\n            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int inner_seed = 0x4c5;\n            int trigger_time_ms = trigger_base;\n",
+      "replacements": [
+        {
+          "name": "outer-y-x-seed-trigger",
+          "text": "            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int outer_x_term = outer_seed * outer_index;\n            int inner_seed = 0x4c5;\n            int trigger_time_ms = trigger_base;\n"
+        },
+        {
+          "name": "outer-x-y-trigger-seed",
+          "text": "            int outer_x_term = outer_seed * outer_index;\n            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int trigger_time_ms = trigger_base;\n            int inner_seed = 0x4c5;\n"
+        },
+        {
+          "name": "outer-y-x-trigger-seed",
+          "text": "            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int outer_x_term = outer_seed * outer_index;\n            int trigger_time_ms = trigger_base;\n            int inner_seed = 0x4c5;\n"
+        },
+        {
+          "name": "outer-x-seed-y-trigger",
+          "text": "            int outer_x_term = outer_seed * outer_index;\n            int inner_seed = 0x4c5;\n            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int trigger_time_ms = trigger_base;\n"
+        },
+        {
+          "name": "outer-x-trigger-y-seed",
+          "text": "            int outer_x_term = outer_seed * outer_index;\n            int trigger_time_ms = trigger_base;\n            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int inner_seed = 0x4c5;\n"
+        },
+        {
+          "name": "trigger-outer-x-y-seed",
+          "text": "            int trigger_time_ms = trigger_base;\n            int outer_x_term = outer_seed * outer_index;\n            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int inner_seed = 0x4c5;\n"
+        },
+        {
+          "name": "seed-outer-x-y-trigger",
+          "text": "            int inner_seed = 0x4c5;\n            int outer_x_term = outer_seed * outer_index;\n            int outer_y_term =\n                (outer_index * outer_index * 0x4c + 0x1b) * outer_index;\n            int trigger_time_ms = trigger_base;\n"
+        }
+      ]
+    }
+  ]
+}
