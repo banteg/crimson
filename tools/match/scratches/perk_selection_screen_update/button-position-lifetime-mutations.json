@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "button-declaration-lifetime",
+      "find": "    perk_selection_vec2_t panel_position =\n        *(perk_selection_vec2_t *)&ui_element_slot_27.pos\n        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;\n\n    float line_height = 19.0f;\n    bool any_hovered = false;\n    int choice_count = 5;\n",
+      "replacements": [
+        {
+          "name": "before-panel-position",
+          "text": "    perk_selection_vec2_t button_position;\n    perk_selection_vec2_t panel_position =\n        *(perk_selection_vec2_t *)&ui_element_slot_27.pos\n        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;\n\n    float line_height = 19.0f;\n    bool any_hovered = false;\n    int choice_count = 5;\n"
+        },
+        {
+          "name": "after-panel-position",
+          "text": "    perk_selection_vec2_t panel_position =\n        *(perk_selection_vec2_t *)&ui_element_slot_27.pos\n        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;\n\n    perk_selection_vec2_t button_position;\n    float line_height = 19.0f;\n    bool any_hovered = false;\n    int choice_count = 5;\n"
+        },
+        {
+          "name": "after-line-height",
+          "text": "    perk_selection_vec2_t panel_position =\n        *(perk_selection_vec2_t *)&ui_element_slot_27.pos\n        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;\n\n    float line_height = 19.0f;\n    perk_selection_vec2_t button_position;\n    bool any_hovered = false;\n    int choice_count = 5;\n"
+        },
+        {
+          "name": "after-hover-state",
+          "text": "    perk_selection_vec2_t panel_position =\n        *(perk_selection_vec2_t *)&ui_element_slot_27.pos\n        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;\n\n    float line_height = 19.0f;\n    bool any_hovered = false;\n    perk_selection_vec2_t button_position;\n    int choice_count = 5;\n"
+        },
+        {
+          "name": "after-choice-count",
+          "text": "    perk_selection_vec2_t panel_position =\n        *(perk_selection_vec2_t *)&ui_element_slot_27.pos\n        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;\n\n    float line_height = 19.0f;\n    bool any_hovered = false;\n    int choice_count = 5;\n    perk_selection_vec2_t button_position;\n"
+        }
+      ]
+    },
+    {
+      "name": "button-publication",
+      "find": "    perk_selection_vec2_t button_position(\n        anchor_position.x + 162.0f,\n        anchor_position.y + 276.0f);\n",
+      "replacements": [
+        {
+          "name": "assign-members-xy",
+          "text": "    button_position.x = anchor_position.x + 162.0f;\n    button_position.y = anchor_position.y + 276.0f;\n"
+        },
+        {
+          "name": "assign-members-yx",
+          "text": "    button_position.y = anchor_position.y + 276.0f;\n    button_position.x = anchor_position.x + 162.0f;\n"
+        },
+        {
+          "name": "assign-vector-value",
+          "text": "    button_position = perk_selection_vec2_t(\n        anchor_position.x + 162.0f,\n        anchor_position.y + 276.0f);\n"
+        }
+      ]
+    }
+  ]
+}

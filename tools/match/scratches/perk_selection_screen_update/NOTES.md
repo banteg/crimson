@@ -50,3 +50,38 @@ behavior.
 The panel anchor now consumes the recovered `ui_element_t::pos` and
 `ui_element_vertex_t::position` aggregates. This type-only cleanup preserves
 the same 314 instructions, 86.94% score, and 117 resolved references.
+
+## Cancel-position lifetime audit
+
+Live native and candidate disassembly confirms that the frame-size difference
+is tied to the late Cancel-button vector. The native reserves `0x28` bytes and
+reuses the dead line-height area at the call, while the canonical candidate
+reserves `0x24` bytes and gives the vector a fresh pair of slots.
+
+Three recorded mutation sweeps bound the ordinary source explanations:
+
+- `button-position-lifetime-mutations.json` tests five declaration points and
+  direct X/Y, reversed Y/X, and whole-vector publication. Its 23-case pilot has
+  SHA-256 `d970eeadb63a83a9879a76fc76c49450f8459989c9d76776b9259db7936eb5ab`.
+- `button-position-assignment-helper-mutations.json` expands that matrix with
+  five reference/value/void assignment operators. All 143 possible one-, two-,
+  and three-site variants were evaluated under SHA-256
+  `ede14e0f87c670d80104a61f74a2b42f1481e7bb8094c2218914647693afa37b`.
+- `button-position-special-member-mutations.json` evaluates 27 constructor,
+  copy-constructor, and destructor interactions under SHA-256
+  `5eab8f1aac58105acc00d8f20e17aee6f1c60fe638b21c9151c06e5e201c45c9`.
+
+The only large apparent gain declares the vector early and assigns a temporary
+value late. It reaches 93.35% and reproduces the native `0x28` frame, but emits
+318 instructions against 314, drops reference agreement from `117/0/0` to
+`115/0/1`, and copies the temporary through the wrong final stack pair. A
+focused region comparison exposes all four extra instructions at the Cancel
+call. Direct X/Y publication is byte-identical to the baseline; reversed
+publication introduces two reference conflicts; explicit assignment helpers,
+copy constructors, and zero-initializing defaults either erase the frame gain
+or regress further.
+
+The higher score is therefore a misleading stack-shift tradeoff rather than a
+better reconstruction. The canonical 314-instruction, `117/0/0` source remains
+unchanged, and the missing coalescing stays classified as compiler allocation
+residue.
