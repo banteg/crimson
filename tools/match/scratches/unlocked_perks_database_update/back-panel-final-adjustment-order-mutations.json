@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "back-panel-final-adjustment-order",
+      "find": "    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 10.0f;\n    position.y += 275.0f;\n",
+      "replacements": [
+        {
+          "name": "y-before-final-x",
+          "text": "    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.y += 275.0f;\n    position.x -= 10.0f;\n"
+        },
+        {
+          "name": "y-before-subtractions",
+          "text": "    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.y += 275.0f;\n    position.x -= 110.0f;\n    position.x -= 10.0f;\n"
+        },
+        {
+          "name": "y-after-render-offset",
+          "text": "    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x += ui_element_slot_09.render_offset_x;\n    position.y += 275.0f;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 10.0f;\n"
+        },
+        {
+          "name": "y-before-all-x-adjustments",
+          "text": "    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.y += 275.0f;\n    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 10.0f;\n"
+        }
+      ]
+    }
+  ]
+}

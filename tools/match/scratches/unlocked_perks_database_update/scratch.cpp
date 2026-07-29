@@ -199,15 +199,14 @@ extern "C" void unlocked_perks_database_update(void)
     position.x += ui_element_slot_09.render_offset_x;
     position.x += 44.0f;
     position.x -= 110.0f;
-    position.x -= 10.0f;
     position.y += 275.0f;
+    position.x -= 10.0f;
 
     static database_button_t back_button;
     back_button.label = "Back";
     {
-        database_vec2_t button_position;
-        button_position.x = position.x + 132.0f;
-        button_position.y = position.y;
+        database_vec2_t button_position(
+            position.x + 132.0f, position.y);
         if (ui_button_update(
                 (float *)&button_position, (ui_button_t *)&back_button)) {
             ui_transition_direction = 0;
@@ -221,10 +220,11 @@ extern "C" void unlocked_perks_database_update(void)
             + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x
             + database_vec2_t(300.0f, 40.0f);
         position = panel_position;
-        position.x =
-            panel_position.x + ui_element_slot_33.render_offset_x
-            - 16.0f - 240.0f - 10.0f;
+        position.x = ui_element_slot_33.render_offset_x - 16.0f;
+        position.x += panel_position.x;
+        position.x -= 240.0f;
         position.y += 10.0f;
+        position.x -= 10.0f;
         if (config_screen_width <= 640) {
             position.x -= 10.0f;
         }

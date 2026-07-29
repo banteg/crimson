@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "back-button-copy-form",
+      "find": "    static database_button_t back_button;\n    back_button.label = \"Back\";\n    {\n        database_vec2_t button_position;\n        button_position.x = position.x + 132.0f;\n        button_position.y = position.y;\n        if (ui_button_update(\n                (float *)&button_position, (ui_button_t *)&back_button)) {\n            ui_transition_direction = 0;\n            game_state_pending = GAME_STATE_STATISTICS_MENU;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "scoped-constructed",
+          "text": "    static database_button_t back_button;\n    back_button.label = \"Back\";\n    {\n        database_vec2_t button_position(\n            position.x + 132.0f, position.y);\n        if (ui_button_update(\n                (float *)&button_position, (ui_button_t *)&back_button)) {\n            ui_transition_direction = 0;\n            game_state_pending = GAME_STATE_STATISTICS_MENU;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-temporary-initialized",
+          "text": "    static database_button_t back_button;\n    back_button.label = \"Back\";\n    {\n        database_vec2_t button_position = database_vec2_t(\n            position.x + 132.0f, position.y);\n        if (ui_button_update(\n                (float *)&button_position, (ui_button_t *)&back_button)) {\n            ui_transition_direction = 0;\n            game_state_pending = GAME_STATE_STATISTICS_MENU;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-temporary-assigned",
+          "text": "    static database_button_t back_button;\n    back_button.label = \"Back\";\n    {\n        database_vec2_t button_position;\n        button_position = database_vec2_t(\n            position.x + 132.0f, position.y);\n        if (ui_button_update(\n                (float *)&button_position, (ui_button_t *)&back_button)) {\n            ui_transition_direction = 0;\n            game_state_pending = GAME_STATE_STATISTICS_MENU;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-scalar-components",
+          "text": "    static database_button_t back_button;\n    back_button.label = \"Back\";\n    {\n        float button_position[2];\n        button_position[0] = position.x + 132.0f;\n        button_position[1] = position.y;\n        if (ui_button_update(button_position, (ui_button_t *)&back_button)) {\n            ui_transition_direction = 0;\n            game_state_pending = GAME_STATE_STATISTICS_MENU;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-scalar-initializer",
+          "text": "    static database_button_t back_button;\n    back_button.label = \"Back\";\n    {\n        float button_position[2] = {\n            position.x + 132.0f, position.y};\n        if (ui_button_update(button_position, (ui_button_t *)&back_button)) {\n            ui_transition_direction = 0;\n            game_state_pending = GAME_STATE_STATISTICS_MENU;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-named-x-constructed",
+          "text": "    static database_button_t back_button;\n    back_button.label = \"Back\";\n    {\n        float button_x = position.x + 132.0f;\n        database_vec2_t button_position(button_x, position.y);\n        if (ui_button_update(\n                (float *)&button_position, (ui_button_t *)&back_button)) {\n            ui_transition_direction = 0;\n            game_state_pending = GAME_STATE_STATISTICS_MENU;\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

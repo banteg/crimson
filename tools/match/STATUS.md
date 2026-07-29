@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **300723/341963** code bytes (**87.9%**).
+Fuzzy-weighted alignment is **300838/341963** code bytes (**88.0%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280386/320805 | 87.4% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280501/320805 | 87.4% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20337/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **280386/320805** fuzzy-weighted bytes (**87.4%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **280501/320805** fuzzy-weighted bytes (**87.4%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -664,10 +664,10 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | nullsub_50 | 0x004400e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_51 | 0x004400f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_52 | 0x00440100 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 2020/2086 | 66 | 522/523 | 96.84% | 29/523 | 152/0/0 |  | unlocked-weapon-list-and-detail-panel |
+| wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 2052/2086 | 34 | 522/523 | 98.37% | 29/523 | 154/0/0 |  | unlocked-weapon-list-and-detail-panel |
 | match | unlocked_weapons_back_button_destroy | 0x00440940 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-back-button-empty-destructor |
 | match | unlocked_weapons_scrollbar_destroy | 0x00440950 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-scrollbar-empty-destructor |
-| wip | unlocked_perks_database_update | 0x00440960 | 2065 | 1974/2065 | 91 | 510/511 | 95.59% | 29/511 | 144/0/0 |  | unlocked-perk-list-prerequisite-and-description-panel |
+| wip | unlocked_perks_database_update | 0x00440960 | 2065 | 2057/2065 | 8 | 511/511 | 99.61% | 29/511 | 147/0/0 |  | unlocked-perk-list-prerequisite-and-description-panel |
 | match | unlocked_perks_back_button_destroy | 0x00441180 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-back-button-empty-destructor |
 | match | unlocked_perks_scrollbar_destroy | 0x00441190 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-scrollbar-empty-destructor |
 | match | j_nullsub_119 | 0x004411a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |

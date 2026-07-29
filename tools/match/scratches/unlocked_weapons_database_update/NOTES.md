@@ -18,9 +18,9 @@ callback:
   the ammo-class-1 `n/a` case), reload time, and clip size, including the
   narrow-screen horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 96.84% of 523 target
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 98.37% of 523 target
 instructions with 522 candidate instructions, a 29-instruction exact prefix,
-the exact native `0x118`-byte frame, and `152/0/0` audited references. All
+the exact native `0x118`-byte frame, and `154/0/0` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
 former unresolved alignments were constant-pool effects of vector-temporary
 ownership. The retained shared-panel forms now align both native UI-field
@@ -50,8 +50,8 @@ fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 96.84%, 522/523 instructions, and
-`152/0/0` references before and after classification. There are no mismatched
+A fresh corpus audit keeps the candidate at 98.37%, 522/523 instructions, and
+`154/0/0` references before and after classification. There are no mismatched
 or unresolved references. As in the sibling perks callback, the retained
 chained opening-panel expression removes the former slot-09 entry and extends
 the exact prologue; the direct back-panel owner and named chained detail-panel
@@ -100,11 +100,23 @@ independently here:
   detail-panel ownership forms. The direct form scores higher but drops one
   resolved reference; the retained named chained temporary instead adds 7.98
   weighted bytes with all 152 references aligned.
+- `back-panel-final-adjustment-order-mutations.json` places the Back-panel y
+  adjustment before the final x subtraction, adding 7.98 weighted bytes and
+  one aligned reference without changing the instruction count or prefix.
+- `detail-panel-adjustment-order-mutations.json` tests five broader ownership
+  and adjustment schedules. Every positive variant loses a resolved reference,
+  so none is retained.
+- `back-button-copy-form-mutations.json` retests the perk callback's
+  constructor breakthrough across five ordinary forms. All are byte-for-byte
+  neutral here, bounding that sibling-specific constraint.
+- `detail-panel-expression-order-mutations.json` separates the render-offset,
+  panel-x, and constant adjustments in native order, adding 23.95 weighted
+  bytes and one aligned reference without debt.
 
-Together they move the fresh baseline from 82.87% to 96.84% and from
-`140/0/2` to `152/0/0` references. The complete append-only evidence is in
+Together they move the fresh baseline from 82.87% to 98.37% and from
+`140/0/2` to `154/0/0` references. The complete append-only evidence is in
 `experiments.jsonl`
-(`sha256:dc288d1294dd18c7f85251a94927778af92c3c764ed2c5d19a3d35e854b9083c`).
+(`sha256:34ca4a81cd3e61c0a039cfbf5e9f2a50725153bf2633e150ea7008a4c556ed19`).
 
 ## Unlock-loop mutation audit
 
