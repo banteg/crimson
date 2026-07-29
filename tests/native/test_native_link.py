@@ -670,11 +670,11 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
     assert coverage["import_symbols"] == 34
     assert coverage["import_exports"] == 34
     assert coverage["generated_import_symbols"] == 34
-    assert coverage["archive_symbols"] == 59
-    assert coverage["link_dependency_symbols"] == 81
-    assert coverage["closure_placeholder_symbols"] == 4
+    assert coverage["archive_symbols"] == 60
+    assert coverage["link_dependency_symbols"] == 87
+    assert coverage["closure_placeholder_symbols"] == 3
     assert coverage["link_dependency_placeholder_symbols"] == 10
-    assert coverage["placeholder_symbols"] == 14
+    assert coverage["placeholder_symbols"] == 13
     assert coverage["runnable"] is False
     assert config.entry == "WinMainCRTStartup"
     assert [
@@ -683,11 +683,14 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
     ] == [
         ("_WinMain@16", "_crimsonland_main@16"),
     ]
-    assert len(config.archives) == 1
-    archive = config.archives[0]
-    assert archive.id == "vc6-sp6-libcmt"
-    assert archive.size == 934378
-    assert archive.sha256 == (
+    assert len(config.archives) == 2
+    archives = {archive.id: archive for archive in config.archives}
+    assert archives["directx-8.1-d3dx8"].size == 2150226
+    assert archives["directx-8.1-d3dx8"].sha256 == (
+        "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+    )
+    assert archives["vc6-sp6-libcmt"].size == 934378
+    assert archives["vc6-sp6-libcmt"].sha256 == (
         "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a"
     )
     runtime = next(
@@ -699,6 +702,17 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
     assert aliases["_FUN_004623b2"] == "_time"
     assert aliases["_crt_atof_l"] == "_atof"
     assert aliases["_strdup_malloc"] == "__strdup"
+    d3dx_math = next(
+        provider
+        for provider in config.providers
+        if provider.name == "directx-8.1-d3dx8-math"
+    )
+    assert [
+        (alias.alias, alias.target)
+        for alias in d3dx_math.aliases
+    ] == [
+        ("_vec2_normalize_dispatch@8", "_D3DXVec2Normalize@8"),
+    ]
 
 
 def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
@@ -751,19 +765,19 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["status"] == "linked"
     assert manifest["runnable"] is False
     assert manifest["summary"]["covered_symbols"] == 97
-    assert manifest["summary"]["archive_symbols"] == 59
+    assert manifest["summary"]["archive_symbols"] == 60
     assert manifest["summary"]["import_exports"] == 34
-    assert manifest["summary"]["link_dependency_symbols"] == 81
-    assert manifest["summary"]["closure_placeholder_symbols"] == 4
+    assert manifest["summary"]["link_dependency_symbols"] == 87
+    assert manifest["summary"]["closure_placeholder_symbols"] == 3
     assert manifest["summary"]["link_dependency_placeholder_symbols"] == 10
-    assert manifest["summary"]["placeholder_symbols"] == 14
+    assert manifest["summary"]["placeholder_symbols"] == 13
     assert manifest["summary"]["discarded_placeholder_symbols"] == 10
-    assert manifest["summary"]["retained_closure_placeholder_symbols"] == 4
+    assert manifest["summary"]["retained_closure_placeholder_symbols"] == 3
     assert manifest["summary"]["retained_link_dependency_placeholder_symbols"] == 0
-    assert manifest["summary"]["retained_placeholder_symbols"] == 4
-    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 70
-    assert manifest["summary"]["validated_output_import_symbols"] == 104
-    assert manifest["summary"]["input_object_count"] == 688
+    assert manifest["summary"]["retained_placeholder_symbols"] == 3
+    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 77
+    assert manifest["summary"]["validated_output_import_symbols"] == 111
+    assert manifest["summary"]["input_object_count"] == 694
     assert manifest["entry"]["symbol"] == "WinMainCRTStartup"
     assert manifest["entry"]["aliases"]["symbols"] == [
         {
@@ -771,12 +785,11 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
             "target": "_crimsonland_main@16",
         },
     ]
-    assert manifest["placeholder_object"]["symbol_count"] == 14
+    assert manifest["placeholder_object"]["symbol_count"] == 13
     assert manifest["placeholder_object"]["retained_symbols"] == [
         "_dx_get_version",
         "_reg_read_dword_default",
         "_reg_write_dword",
-        "_vec2_normalize_dispatch@8",
     ]
     assert manifest["placeholder_object"]["discarded_symbols"] == [
         "__imp__EnumSystemLocalesA@8",
@@ -793,12 +806,12 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["output"]["pe"] == {
         "characteristics": 271,
         "dll": False,
-        "entry_point_rva": 323700,
+        "entry_point_rva": 323680,
         "image_base": 0x00400000,
-        "image_size": 794624,
+        "image_size": 864256,
         "machine": matchlib.IMAGE_FILE_MACHINE_I386,
         "optional_magic": 0x10B,
-        "section_count": 3,
+        "section_count": 4,
         "subsystem": 2,
         "timestamp": 0,
     }
@@ -807,12 +820,34 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
         for row in manifest["reference_imports"]["modules"]
     }
     assert modules["dsound"] == ["#11"]
-    dependencies = manifest["reference_imports"]["link_dependencies"]
-    assert len(dependencies) == 1
-    assert dependencies[0]["module"] == "kernel32"
-    assert len(dependencies[0]["declared_symbols"]) == 71
-    assert len(dependencies[0]["retained_symbols"]) == 70
-    assert dependencies[0]["discarded_symbols"] == ["IsBadWritePtr"]
+    dependencies = {
+        row["module"]: row
+        for row in manifest["reference_imports"]["link_dependencies"]
+    }
+    assert dependencies["advapi32"]["declared_symbols"] == [
+        "RegOpenKeyA",
+        "RegQueryValueExA",
+    ]
+    assert dependencies["advapi32"]["retained_symbols"] == [
+        "RegOpenKeyA",
+        "RegQueryValueExA",
+    ]
+    assert dependencies["advapi32"]["discarded_symbols"] == []
+    assert len(dependencies["kernel32"]["declared_symbols"]) == 75
+    assert len(dependencies["kernel32"]["retained_symbols"]) == 75
+    assert dependencies["kernel32"]["discarded_symbols"] == []
+    d3dx_provider = next(
+        provider
+        for provider in manifest["providers"]
+        if provider["name"] == "directx-8.1-d3dx8-math"
+    )
+    assert d3dx_provider["archive"] == "directx-8.1-d3dx8"
+    assert d3dx_provider["aliases"]["symbols"] == [
+        {
+            "alias": "_vec2_normalize_dispatch@8",
+            "target": "_D3DXVec2Normalize@8",
+        },
+    ]
 
 
 def test_provider_archive_can_be_absent_but_present_bytes_are_hash_checked(
@@ -1019,11 +1054,11 @@ def test_crimsonland_placeholder_object_records_transitive_archive_shims() -> No
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
 
-    assert len(symbols) == 14
-    assert len(coff.sections) == 14
+    assert len(symbols) == 13
+    assert len(coff.sections) == 13
     assert [section.name for section in coff.sections] == [
         ".data",
-    ] * 10 + [".text"] * 4
+    ] * 10 + [".text"] * 3
     assert {
         (section.comdat_key, section.comdat_selection)
         for section in coff.sections
@@ -1034,8 +1069,9 @@ def test_crimsonland_placeholder_object_records_transitive_archive_shims() -> No
     assert "_main" not in symbols
     tls_free = symbols["__imp__TlsFree@4"]
     assert coff.sections[tls_free.section_number - 1].name == ".data"
-    vec2_normalize = symbols["_vec2_normalize_dispatch@8"]
-    assert coff.sections[vec2_normalize.section_number - 1].name == ".text"
+    assert "_vec2_normalize_dispatch@8" not in symbols
+    dx_version = symbols["_dx_get_version"]
+    assert coff.sections[dx_version.section_number - 1].name == ".text"
     assert "_RtlUnwind@16" not in symbols
 
 

@@ -46,9 +46,14 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
   remaining unmatched functions are a boundary/symbol-recovery problem, not a
   reason to recreate D3DX from decompilation.
 
-- Native provider: Grim now links the pinned archive for
-  `D3DXCreateTexture`, both `D3DXCreateTextureFromFile*` entrypoints,
-  `D3DXVec2Normalize`, and the byte-identical internal
+- Native provider: both images now link the pinned archive.
+  Crimsonland resolves its recovered `vec2_normalize_dispatch` name to the
+  exact `D3DXVec2Normalize` thunk and initializer in `d3dxmath.obj`; the
+  selected graph retains six additional KERNEL32/ADVAPI32 imports already
+  present in the reference executable and eliminates the last non-platform
+  executable placeholder. Grim links `D3DXCreateTexture`, both
+  `D3DXCreateTextureFromFile*` entrypoints, `D3DXVec2Normalize`, and the
+  byte-identical internal
   `D3DXComputeNormalMap` body (`0x1000b3fe`, 2,046 bytes and 52 normalized
   relocations). Its 24 decorated platform dependencies are modeled separately
   from closure coverage; release dead-code elimination retains 17 imports

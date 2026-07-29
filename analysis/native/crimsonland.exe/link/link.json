@@ -16,6 +16,23 @@
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
       }
+    },
+    {
+      "file": {
+        "path": "tools/native/providers/build/directx-8.1/d3dx8.lib",
+        "repository_relative": true,
+        "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+      },
+      "id": "directx-8.1-d3dx8",
+      "provenance": {
+        "manifest": {
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+        },
+        "member": "DXF/DXSDK/lib/d3dx8.lib",
+        "source_artifact": "directx-8.1-sdk-full"
+      }
     }
   ],
   "audit_digest": "bf7b7b8470d1207d8244e1a88c29f920776213f1094e934f3c2375c5a2466b3c",
@@ -43,17 +60,17 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 323700,
+      "entry_point_rva": 323680,
       "image_base": 4194304,
-      "image_size": 794624,
+      "image_size": 864256,
       "machine": 332,
       "optional_magic": 267,
-      "section_count": 3,
+      "section_count": 4,
       "subsystem": 2,
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "c911d5caf2e8f68e8e1227b9e8c5e6ec1c5cb3f1edb93e32de1f3900ed48704d"
+    "sha256": "a8457798070c38debb4cb1ac675b9be8b4263e665acfc2a610e1a092f1c60936"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -73,17 +90,16 @@
     "retained_symbols": [
       "_dx_get_version",
       "_reg_read_dword_default",
-      "_reg_write_dword",
-      "_vec2_normalize_dispatch@8"
+      "_reg_write_dword"
     ],
-    "sha256": "df45bb9d4843519239227e584df970404d5858a440f08a232929249c0e50af02",
-    "symbol_count": 14
+    "sha256": "0d007993af5732e5a4bfa6dc1f6c093e7a4f298343995016ef52f95fde3184a2",
+    "symbol_count": 13
   },
   "provider_config": {
-    "declared_sha256": "a44b2b7f1b8eaaf2de63a70dab55d9dde289d143e84c246283991aede2e8a96f",
+    "declared_sha256": "91714cddc733b82f6682633bd87a875a86f16ed3ece4c897cffe8c14d79da494",
     "path": "tools/native/providers/crimsonland.exe.json",
     "repository_relative": true,
-    "sha256": "a44b2b7f1b8eaaf2de63a70dab55d9dde289d143e84c246283991aede2e8a96f"
+    "sha256": "91714cddc733b82f6682633bd87a875a86f16ed3ece4c897cffe8c14d79da494"
   },
   "providers": [
     {
@@ -230,7 +246,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive matches 299 executable CRT functions byte-for-byte and uniquely identifies 254 of them.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "51e0b809b5f29064ef4098acb7e6de740a88f670e8251a5e35d47a4b9549a305"
+          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
         },
         {
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
@@ -316,7 +332,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "51e0b809b5f29064ef4098acb7e6de740a88f670e8251a5e35d47a4b9549a305"
+          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
         }
       ],
       "kind": "toolchain",
@@ -937,7 +953,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive records these decorated KERNEL32 references.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "51e0b809b5f29064ef4098acb7e6de740a88f670e8251a5e35d47a4b9549a305"
+          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
         }
       ],
       "import_library": {
@@ -1022,6 +1038,120 @@
         "__imp__VirtualFree@12",
         "__imp__WideCharToMultiByte@32",
         "__imp__WriteFile@20"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-advapi32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "3ae61dc4bf15311748dede7f5cf5dcb52065207cee50c3bcc1e71084fc74efed"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__RegOpenKeyA@12",
+            "target": "__imp__RegOpenKeyA"
+          },
+          {
+            "alias": "__imp__RegQueryValueExA@24",
+            "target": "__imp__RegQueryValueExA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-advapi32.def",
+        "repository_relative": true,
+        "sha256": "841f070ee72f56925ae0a4cd23472462a330780130a1c7b43b0f3b4d4fc4af3f"
+      },
+      "evidence": [
+        {
+          "note": "The D3DX8 CPU-detection registry imports are present in the reference executable.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-advapi32.lib",
+        "repository_relative": true,
+        "sha256": "fbeefc14d1bdf706a0158b3a8e672b93390357298023d8c262a3268f473628dd"
+      },
+      "kind": "reference-import",
+      "module": "ADVAPI32.dll",
+      "name": "directx-8.1-d3dx8-advapi32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__RegOpenKeyA@12",
+        "__imp__RegQueryValueExA@24"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-kernel32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "92771609e403699985b2ef55c5f188847d9a6935105f68643cb371ab42cc3e14"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__IsBadCodePtr@4",
+            "target": "__imp__IsBadCodePtr"
+          },
+          {
+            "alias": "__imp__IsBadReadPtr@8",
+            "target": "__imp__IsBadReadPtr"
+          },
+          {
+            "alias": "__imp__IsProcessorFeaturePresent@4",
+            "target": "__imp__IsProcessorFeaturePresent"
+          },
+          {
+            "alias": "__imp__SetUnhandledExceptionFilter@4",
+            "target": "__imp__SetUnhandledExceptionFilter"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-kernel32.def",
+        "repository_relative": true,
+        "sha256": "fafc61db8e29d7ebac4722625f82e70bb3600c51de239dc6def494431a565f13"
+      },
+      "evidence": [
+        {
+          "note": "The selected D3DX8 and runtime graph's platform imports are present in the reference executable.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-kernel32.lib",
+        "repository_relative": true,
+        "sha256": "7a9728b481f6c38575b3ed31ba04c14eabc84068333f927234d4fe6e25b86b60"
+      },
+      "kind": "reference-import",
+      "module": "KERNEL32.dll",
+      "name": "directx-8.1-d3dx8-kernel32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__IsBadCodePtr@4",
+        "__imp__IsBadReadPtr@8",
+        "__imp__IsProcessorFeaturePresent@4",
+        "__imp__SetUnhandledExceptionFilter@4"
       ]
     },
     {
@@ -1246,7 +1376,7 @@
           "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF.",
           "path": "docs/re/static/native-linking.md",
           "repository_relative": true,
-          "sha256": "11c6c0929c73ad74d1c93bb39720b45d4637c1a6f226d50c8e1ccda13d6e49fa"
+          "sha256": "e2baaf4f77dee0dfdf755f761b89063f5abc3f1e1944c0a4e39a2839655efba4"
         },
         {
           "note": "None of the ten API names is present in the reference executable import table.",
@@ -1305,27 +1435,37 @@
       ]
     },
     {
-      "discarded_symbols": [],
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-math-aliases.obj",
+          "repository_relative": true,
+          "sha256": "c300b0f5155958d6faba87aee7c70908ea62882b5dc97267cf79d6268961f5d9"
+        },
+        "symbols": [
+          {
+            "alias": "_vec2_normalize_dispatch@8",
+            "target": "_D3DXVec2Normalize@8"
+          }
+        ]
+      },
+      "archive": "directx-8.1-d3dx8",
       "evidence": [
         {
-          "note": "The lazy vector-normalization dispatch remains explicitly outside the selected port scope.",
-          "path": "analysis/native/crimsonland.exe/closure.json",
+          "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly.",
+          "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "02cf217d9d76ded22ed8a5abd27f3b893c0e7b327c28d77cd667fa22623ba774"
+          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
         },
         {
-          "note": "The recovered data map records the lazy implementation pointer and its runtime retargeting behavior.",
-          "path": "analysis/ghidra/maps/data_map.json",
+          "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "258936e7afc90cabb39b5bc098875ae5a4f937d9f4d4796ada3b9c1e0f72349d"
+          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
         }
       ],
       "kind": "static-library",
-      "name": "excluded-game-helper",
-      "resolution": "placeholder-object",
-      "retained_symbols": [
-        "_vec2_normalize_dispatch@8"
-      ],
+      "name": "directx-8.1-d3dx8-math",
+      "resolution": "archive-library",
       "scope": "closure",
       "symbols": [
         "_vec2_normalize_dispatch@8"
@@ -1334,6 +1474,18 @@
   ],
   "reference_imports": {
     "link_dependencies": [
+      {
+        "declared_symbols": [
+          "RegOpenKeyA",
+          "RegQueryValueExA"
+        ],
+        "discarded_symbols": [],
+        "module": "advapi32",
+        "retained_symbols": [
+          "RegOpenKeyA",
+          "RegQueryValueExA"
+        ]
+      },
       {
         "declared_symbols": [
           "CloseHandle",
@@ -1384,7 +1536,10 @@
           "InitializeCriticalSection",
           "InterlockedDecrement",
           "InterlockedIncrement",
+          "IsBadCodePtr",
+          "IsBadReadPtr",
           "IsBadWritePtr",
+          "IsProcessorFeaturePresent",
           "LCMapStringA",
           "LCMapStringW",
           "LeaveCriticalSection",
@@ -1398,6 +1553,7 @@
           "SetHandleCount",
           "SetLastError",
           "SetStdHandle",
+          "SetUnhandledExceptionFilter",
           "TerminateProcess",
           "TlsAlloc",
           "TlsGetValue",
@@ -1408,9 +1564,7 @@
           "WideCharToMultiByte",
           "WriteFile"
         ],
-        "discarded_symbols": [
-          "IsBadWritePtr"
-        ],
+        "discarded_symbols": [],
         "module": "kernel32",
         "retained_symbols": [
           "CloseHandle",
@@ -1461,6 +1615,10 @@
           "InitializeCriticalSection",
           "InterlockedDecrement",
           "InterlockedIncrement",
+          "IsBadCodePtr",
+          "IsBadReadPtr",
+          "IsBadWritePtr",
+          "IsProcessorFeaturePresent",
           "LCMapStringA",
           "LCMapStringW",
           "LeaveCriticalSection",
@@ -1474,6 +1632,7 @@
           "SetHandleCount",
           "SetLastError",
           "SetStdHandle",
+          "SetUnhandledExceptionFilter",
           "TerminateProcess",
           "TlsAlloc",
           "TlsGetValue",
@@ -1486,7 +1645,7 @@
         ]
       }
     ],
-    "link_dependency_retained_symbol_count": 70,
+    "link_dependency_retained_symbol_count": 77,
     "modules": [
       {
         "module": "advapi32",
@@ -1578,7 +1737,9 @@
         "module": "advapi32",
         "symbols": [
           "RegCloseKey",
-          "RegCreateKeyExA"
+          "RegCreateKeyExA",
+          "RegOpenKeyA",
+          "RegQueryValueExA"
         ]
       },
       {
@@ -1650,6 +1811,10 @@
           "InitializeCriticalSection",
           "InterlockedDecrement",
           "InterlockedIncrement",
+          "IsBadCodePtr",
+          "IsBadReadPtr",
+          "IsBadWritePtr",
+          "IsProcessorFeaturePresent",
           "LCMapStringA",
           "LCMapStringW",
           "LeaveCriticalSection",
@@ -1667,6 +1832,7 @@
           "SetHandleCount",
           "SetLastError",
           "SetStdHandle",
+          "SetUnhandledExceptionFilter",
           "Sleep",
           "TerminateProcess",
           "TlsAlloc",
@@ -1729,24 +1895,24 @@
         ]
       }
     ],
-    "output_symbol_count": 104,
+    "output_symbol_count": 111,
     "symbol_count": 34
   },
   "runnable": false,
   "schema": 3,
   "status": "linked",
   "summary": {
-    "archive_symbols": 59,
-    "closure_placeholder_symbols": 4,
+    "archive_symbols": 60,
+    "closure_placeholder_symbols": 3,
     "covered_symbols": 97,
     "discarded_placeholder_symbols": 10,
     "generated_import_symbols": 34,
     "import_exports": 34,
     "import_symbols": 34,
-    "input_object_count": 688,
+    "input_object_count": 694,
     "link_dependency_placeholder_symbols": 10,
-    "link_dependency_symbols": 81,
-    "placeholder_symbols": 14,
+    "link_dependency_symbols": 87,
+    "placeholder_symbols": 13,
     "providers": [
       {
         "alias_count": 32,
@@ -1821,6 +1987,22 @@
         "symbol_count": 71
       },
       {
+        "alias_count": 2,
+        "kind": "reference-import",
+        "name": "directx-8.1-d3dx8-advapi32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 2
+      },
+      {
+        "alias_count": 4,
+        "kind": "reference-import",
+        "name": "directx-8.1-d3dx8-kernel32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 4
+      },
+      {
         "alias_count": 1,
         "kind": "reference-import",
         "name": "shell32.dll",
@@ -1867,19 +2049,21 @@
         "symbol_count": 3
       },
       {
+        "alias_count": 1,
+        "archive": "directx-8.1-d3dx8",
         "kind": "static-library",
-        "name": "excluded-game-helper",
-        "resolution": "placeholder-object",
+        "name": "directx-8.1-d3dx8-math",
+        "resolution": "archive-library",
         "scope": "closure",
         "symbol_count": 1
       }
     ],
-    "retained_closure_placeholder_symbols": 4,
-    "retained_link_dependency_import_symbols": 70,
+    "retained_closure_placeholder_symbols": 3,
+    "retained_link_dependency_import_symbols": 77,
     "retained_link_dependency_placeholder_symbols": 0,
-    "retained_placeholder_symbols": 4,
+    "retained_placeholder_symbols": 3,
     "runnable": false,
-    "validated_output_import_symbols": 104,
+    "validated_output_import_symbols": 111,
     "validated_reference_import_symbols": 34
   },
   "toolchain": {

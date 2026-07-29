@@ -233,10 +233,11 @@ just native-link crimsonland.exe
 ```
 
 `tools/native/providers/crimsonland.exe.json` covers the current 97-symbol
-non-game closure exactly. The pinned archive supplies 57 excluded CRT
-functions plus `__fltused` and `sscanf`; generated import libraries supply 34
-exports that are present in the reference PE; and four project/platform
-helpers remain explicit closure placeholders.
+non-game closure exactly. The pinned VC6 archive supplies 57 excluded CRT
+functions plus `__fltused` and `sscanf`; the pinned DirectX 8.1 archive
+supplies `D3DXVec2Normalize`; generated import libraries supply 34 exports
+that are present in the reference PE; and three platform helpers remain
+explicit closure placeholders.
 
 The executable now enters through VC6's authentic `WinMainCRTStartup` member
 from `wincrt0.obj`. A deterministic weak alias maps the CRT's `_WinMain@16`
@@ -244,9 +245,15 @@ reference to the recovered `_crimsonland_main@16`, so the link exercises the
 GUI startup graph instead of selecting the console startup and fabricating a
 `_main` shim.
 
-That archive-backed graph declares 81 transitive symbols. Seventy-one map to
-KERNEL32 exports retained by the reference image and are modeled as ordinary
-`link-dependency` imports. The other ten archive imports
+The vector-normalization callsites had previously been labeled as an excluded
+game helper. Archive matching instead proves that the initializer and thunk
+are D3DX8's `init_D3DXVec2Normalize` and `_D3DXVec2Normalize@8` in
+`d3dxmath.obj`. A weak alias now resolves the recovered
+`_vec2_normalize_dispatch@8` name to that original archive symbol.
+
+The combined archive-backed graph declares 87 transitive symbols. Seventy-seven
+map to KERNEL32 or ADVAPI32 exports retained by the reference image and are
+modeled as ordinary `link-dependency` imports. The other ten archive imports
 (`EnumSystemLocalesA`, `FatalAppExitA`, `GetCurrentThread`, `GetLocaleInfoA`,
 `GetLocaleInfoW`, `GetUserDefaultLCID`, `IsValidCodePage`, `IsValidLocale`,
 `SetConsoleCtrlHandler`, and `TlsFree`) are absent from the reference import
@@ -254,13 +261,12 @@ boundary. They remain explicitly configured as link-only placeholders, but
 per-symbol COMDATs let `/OPT:REF` prove that all ten are discarded and do not
 survive in the produced PE.
 
-The canonical structural link retains 70 of the 71 reference-backed
-dependencies; only `IsBadWritePtr` is discarded. Its 104 output imports are
-all present in the reference table, including DSOUND ordinal 11. Four of 14
-configured placeholders survive: the three intentional platform replacements
-and `vec2_normalize_dispatch`. The CLI therefore reports `placeholders=4/14`,
-and `runnable` remains false. The resulting PE file is 778,240 bytes with a
-794,624-byte in-memory image, entry RVA `0x4f074`, i386 machine type, Windows
+The canonical structural link retains all 77 reference-backed dependencies.
+Its 111 output imports are all present in the reference table, including
+DSOUND ordinal 11. Three of 13 configured placeholders survive, all intentional
+platform replacements. The CLI therefore reports `placeholders=3/13`, and
+`runnable` remains false. The resulting PE file is 851,968 bytes with an
+864,256-byte in-memory image, entry RVA `0x4f060`, i386 machine type, Windows
 GUI subsystem, base `0x00400000`, and normalized zero timestamp. The checked
 record is
 `analysis/native/crimsonland.exe/link/link.json`; the PE, map, response, log,

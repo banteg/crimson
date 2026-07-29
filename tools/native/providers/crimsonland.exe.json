@@ -12,6 +12,16 @@
   "mode": "structural",
   "archives": [
     {
+      "id": "directx-8.1-d3dx8",
+      "path": "tools/native/providers/build/directx-8.1/d3dx8.lib",
+      "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "source_artifact": "directx-8.1-sdk-full",
+        "member": "DXF/DXSDK/lib/d3dx8.lib"
+      }
+    },
+    {
       "id": "vc6-sp6-libcmt",
       "path": "tools/native/providers/build/vc6-sp6/vc98/lib/libcmt.lib",
       "sha256": "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a",
@@ -1359,6 +1369,102 @@
       ]
     },
     {
+      "name": "directx-8.1-d3dx8-advapi32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "ADVAPI32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The D3DX8 CPU-detection registry imports are present in the reference executable."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__RegOpenKeyA@12",
+          "target": "__imp__RegOpenKeyA"
+        },
+        {
+          "alias": "__imp__RegQueryValueExA@24",
+          "target": "__imp__RegQueryValueExA"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__RegOpenKeyA@12",
+          "link_name": "RegOpenKeyA",
+          "export": "RegOpenKeyA"
+        },
+        {
+          "name": "__imp__RegQueryValueExA@24",
+          "link_name": "RegQueryValueExA",
+          "export": "RegQueryValueExA"
+        }
+      ]
+    },
+    {
+      "name": "directx-8.1-d3dx8-kernel32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "KERNEL32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The selected D3DX8 and runtime graph's platform imports are present in the reference executable."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__IsBadCodePtr@4",
+          "target": "__imp__IsBadCodePtr"
+        },
+        {
+          "alias": "__imp__IsBadReadPtr@8",
+          "target": "__imp__IsBadReadPtr"
+        },
+        {
+          "alias": "__imp__IsProcessorFeaturePresent@4",
+          "target": "__imp__IsProcessorFeaturePresent"
+        },
+        {
+          "alias": "__imp__SetUnhandledExceptionFilter@4",
+          "target": "__imp__SetUnhandledExceptionFilter"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__IsBadCodePtr@4",
+          "link_name": "IsBadCodePtr",
+          "export": "IsBadCodePtr"
+        },
+        {
+          "name": "__imp__IsBadReadPtr@8",
+          "link_name": "IsBadReadPtr",
+          "export": "IsBadReadPtr"
+        },
+        {
+          "name": "__imp__IsProcessorFeaturePresent@4",
+          "link_name": "IsProcessorFeaturePresent",
+          "export": "IsProcessorFeaturePresent"
+        },
+        {
+          "name": "__imp__SetUnhandledExceptionFilter@4",
+          "link_name": "SetUnhandledExceptionFilter",
+          "export": "SetUnhandledExceptionFilter"
+        }
+      ]
+    },
+    {
       "name": "shell32.dll",
       "kind": "reference-import",
       "resolution": "import-library",
@@ -1618,17 +1724,24 @@
       ]
     },
     {
-      "name": "excluded-game-helper",
+      "name": "directx-8.1-d3dx8-math",
       "kind": "static-library",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "archive": "directx-8.1-d3dx8",
       "evidence": [
         {
-          "path": "analysis/native/crimsonland.exe/closure.json",
-          "note": "The lazy vector-normalization dispatch remains explicitly outside the selected port scope."
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly."
         },
         {
-          "path": "analysis/ghidra/maps/data_map.json",
-          "note": "The recovered data map records the lazy implementation pointer and its runtime retargeting behavior."
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_vec2_normalize_dispatch@8",
+          "target": "_D3DXVec2Normalize@8"
         }
       ],
       "symbols": [
