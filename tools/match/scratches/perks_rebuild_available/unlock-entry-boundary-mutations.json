@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-unlock-entry-boundary",
+      "find": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                if (unlock_count > 0) {\n                    int *unlock_perk_id =\n                        &quest_selected_meta[0].unlock_perk_id;\n                    do {\n                        int perk_id;\n                        if ((int)unlock_perk_id\n                            >= (int)&quest_selected_meta[50].unlock_perk_id) {\n                            break;\n                        }\n                        perk_id = *unlock_perk_id;\n                        ++index;\n                        unlock_perk_id +=\n                            sizeof(quest_meta_t) / sizeof(int);\n                        perk_meta_table[perk_id].available = one;\n                    } while (index < unlock_count);\n                }\n",
+      "replacements": [
+        {
+          "name": "nested-entry-guard-do-loop",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                if (unlock_count > 0) {\n                    int *unlock_perk_id =\n                        &quest_selected_meta[0].unlock_perk_id;\n                    if ((int)unlock_perk_id\n                        < (int)&quest_selected_meta[50].unlock_perk_id) {\n                        do {\n                            int perk_id = *unlock_perk_id;\n                            ++index;\n                            unlock_perk_id +=\n                                sizeof(quest_meta_t) / sizeof(int);\n                            perk_meta_table[perk_id].available = one;\n                        } while (index < unlock_count);\n                    }\n                }\n"
+        },
+        {
+          "name": "nested-entry-guard-while-loop",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                if (unlock_count > 0) {\n                    int *unlock_perk_id =\n                        &quest_selected_meta[0].unlock_perk_id;\n                    if ((int)unlock_perk_id\n                        < (int)&quest_selected_meta[50].unlock_perk_id) {\n                        while (index < unlock_count) {\n                            int perk_id = *unlock_perk_id;\n                            ++index;\n                            unlock_perk_id +=\n                                sizeof(quest_meta_t) / sizeof(int);\n                            perk_meta_table[perk_id].available = one;\n                        }\n                    }\n                }\n"
+        },
+        {
+          "name": "nested-entry-guard-for-loop",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                if (unlock_count > 0) {\n                    int *unlock_perk_id =\n                        &quest_selected_meta[0].unlock_perk_id;\n                    if ((int)unlock_perk_id\n                        < (int)&quest_selected_meta[50].unlock_perk_id) {\n                        for (; index < unlock_count; ++index) {\n                            int perk_id = *unlock_perk_id;\n                            unlock_perk_id +=\n                                sizeof(quest_meta_t) / sizeof(int);\n                            perk_meta_table[perk_id].available = one;\n                        }\n                    }\n                }\n"
+        },
+        {
+          "name": "combined-entry-guard-do-loop",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                int *unlock_perk_id =\n                    &quest_selected_meta[0].unlock_perk_id;\n                if (unlock_count > 0\n                    && (int)unlock_perk_id\n                        < (int)&quest_selected_meta[50].unlock_perk_id) {\n                    do {\n                        int perk_id = *unlock_perk_id;\n                        ++index;\n                        unlock_perk_id +=\n                            sizeof(quest_meta_t) / sizeof(int);\n                        perk_meta_table[perk_id].available = one;\n                    } while (index < unlock_count);\n                }\n"
+        },
+        {
+          "name": "pointer-guard-then-count-guard",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                int *unlock_perk_id =\n                    &quest_selected_meta[0].unlock_perk_id;\n                if ((int)unlock_perk_id\n                    < (int)&quest_selected_meta[50].unlock_perk_id) {\n                    if (unlock_count > 0) {\n                        do {\n                            int perk_id = *unlock_perk_id;\n                            ++index;\n                            unlock_perk_id +=\n                                sizeof(quest_meta_t) / sizeof(int);\n                            perk_meta_table[perk_id].available = one;\n                        } while (index < unlock_count);\n                    }\n                }\n"
+        }
+      ]
+    }
+  ]
+}

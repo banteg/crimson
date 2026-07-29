@@ -40,7 +40,8 @@ references without changing behavior or instruction count.
 
 The remaining mismatch is confined to the quest-unlock loop. The candidate
 proves the initial quest cursor is below the fixed table end and rotates that
-bound check to the loop latch; native retains it at the loop header.
+bound check to the loop latch; native performs the upper-bound compare only on
+the entry path before its count-bounded loop.
 Tail-tested, pre-tested, conjunctive, pointer-bounded, struct-cursor, and
 explicit-label forms were checked under both default VC6 and SP6. The
 conjunctive form restores the native header and latch checks, but assigns the
@@ -79,3 +80,15 @@ pointer-first `while`/`for` conditions plus a count-headed loop with an
 internal pointer break. All five completed without truncation. The best three
 fell to 84.62%, prefix 30, and 17 resolved references; the pointer-first forms
 also lost two instructions. No source change was retained.
+
+## One-time entry-bound sweep
+
+`unlock-entry-boundary-mutations.json` records the direct source interpretation
+of the native CFG: check the fixed table end once, then run a count-bounded
+loop. Five nested, combined, and guard-order spellings were compiled with
+stock VC6. The two closest forms shrink to 50 instructions, fall to 94.12%,
+lose the 38-instruction prefix at instruction 30, and align only 17 references.
+The three nested forms perturb the prologue and register allocation much more
+severely. This confirms the native control-flow meaning but rules out the
+ordinary C spellings under the supported compiler profile; the cleaner
+52-instruction candidate remains retained.
