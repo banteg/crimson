@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-pointer-init",
+      "find": "            int *template_id = &entry->template_id;\n            int spread;\n\n            spread = 0;\n",
+      "replacements": [
+        {
+          "name": "split-before-spread",
+          "text": "            int *template_id;\n            int spread;\n\n            template_id = &entry->template_id;\n            spread = 0;\n"
+        },
+        {
+          "name": "pointer-declared-after-spread",
+          "text": "            int spread;\n            int *template_id = &entry->template_id;\n\n            spread = 0;\n"
+        },
+        {
+          "name": "spread-initialized-before-pointer",
+          "text": "            int spread = 0;\n            int *template_id = &entry->template_id;\n"
+        },
+        {
+          "name": "pointer-assigned-after-spread",
+          "text": "            int *template_id;\n            int spread;\n\n            spread = 0;\n            template_id = &entry->template_id;\n"
+        },
+        {
+          "name": "null-then-assigned",
+          "text": "            int *template_id = 0;\n            int spread;\n\n            template_id = &entry->template_id;\n            spread = 0;\n"
+        },
+        {
+          "name": "const-pointer",
+          "text": "            int *const template_id = &entry->template_id;\n            int spread;\n\n            spread = 0;\n"
+        },
+        {
+          "name": "pointer-to-const",
+          "text": "            const int *template_id = &entry->template_id;\n            int spread;\n\n            spread = 0;\n"
+        },
+        {
+          "name": "named-current-entry",
+          "text": "            quest_spawn_entry_t *current_entry = entry;\n            int *template_id = &current_entry->template_id;\n            int spread;\n\n            spread = 0;\n"
+        }
+      ]
+    }
+  ]
+}

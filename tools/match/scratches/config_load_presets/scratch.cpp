@@ -63,20 +63,21 @@ extern "C" bool config_load_presets(bool skip_grim_settings)
 
     for (player_index = 0; player_index < 2; ++player_index) {
         bindings = &config_blob.input_config[player_index];
+        int *binding_cursor = &bindings->axis_move_x;
         input = &player_state_table[player_index].input;
-        input->move_key_forward = bindings->move_key_forward;
-        input->move_key_backward = bindings->move_key_backward;
-        input->turn_key_left = bindings->turn_key_left;
-        input->turn_key_right = bindings->turn_key_right;
-        input->fire_key = bindings->fire_key;
-        input->key_reserved_0 = bindings->key_reserved_0;
-        input->key_reserved_1 = bindings->key_reserved_1;
-        input->aim_key_left = bindings->aim_key_left;
-        input->aim_key_right = bindings->aim_key_right;
-        input->axis_aim_y = bindings->axis_aim_y;
-        input->axis_aim_x = bindings->axis_aim_x;
-        input->axis_move_y = bindings->axis_move_y;
-        input->axis_move_x = bindings->axis_move_x;
+        input->move_key_forward = binding_cursor[-12];
+        input->move_key_backward = binding_cursor[-11];
+        input->turn_key_left = binding_cursor[-10];
+        input->turn_key_right = binding_cursor[-9];
+        input->fire_key = binding_cursor[-8];
+        input->key_reserved_0 = binding_cursor[-7];
+        input->key_reserved_1 = binding_cursor[-6];
+        input->aim_key_left = binding_cursor[-5];
+        input->aim_key_right = binding_cursor[-4];
+        input->axis_aim_y = binding_cursor[-3];
+        input->axis_aim_x = binding_cursor[-2];
+        input->axis_move_y = binding_cursor[-1];
+        input->axis_move_x = binding_cursor[0];
     }
 
     grim_interface_ptr->grim_set_config_var(

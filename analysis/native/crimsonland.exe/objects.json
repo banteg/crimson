@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "c310ded61aaebfd023f353c5eb0621ff4561acb59a6089efff833dc29fa5edee",
+  "audit_digest": "8bd8c9ffd5368b45a361bcee16289c86922d29b0ea5e069987ce25bedcc6f060",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -52085,7 +52085,7 @@
         {
           "path": "tools/match/scratches/config_load_presets/scratch.cpp",
           "repository_relative": true,
-          "sha256": "90402ff8958966338ed26e594baa6fe2a9a8203a2ad1fceb35ea1fcf3ce304c1"
+          "sha256": "22bc36bc59da75ca2c8eb17f4f7be3941ef9b985b0501589d9b558029a51ca62"
         },
         {
           "path": "tools/match/scratches/config_load_presets/scratch.conf",
@@ -52131,7 +52131,7 @@
           "canonical_config_sha256": "0edad8a213325d83af411c8d549d4a5f0d795fdb23d7e53974c41983ff6d93a5",
           "canonical_scratch": "tools/match/scratches/config_load_presets",
           "canonical_source": "tools/match/scratches/config_load_presets/scratch.cpp",
-          "canonical_source_sha256": "90402ff8958966338ed26e594baa6fe2a9a8203a2ad1fceb35ea1fcf3ce304c1",
+          "canonical_source_sha256": "22bc36bc59da75ca2c8eb17f4f7be3941ef9b985b0501589d9b558029a51ca62",
           "effective_end": 4322349,
           "end": 4322349,
           "function": "config_load_presets",
@@ -52141,7 +52141,7 @@
             "masked_ok": 50,
             "masked_unresolved": 0,
             "prefix_instructions": 67,
-            "ratio": 0.8820224719101124,
+            "ratio": 0.8876404494382022,
             "state": "wip",
             "target_instructions": 178
           },
@@ -52155,16 +52155,16 @@
         "masked_ok": 50,
         "masked_unresolved": 0,
         "prefix_instructions": 67,
-        "ratio": 0.8820224719101124,
+        "ratio": 0.8876404494382022,
         "state": "wip",
         "target_instructions": 178
       },
       "object": "tools/match/scratches/config_load_presets/build/msvc6.5/33f205d3cdf74c4f/scratch.obj",
       "object_function_symbol": "_config_load_presets",
-      "object_sha256": "90ada62ad28f68761af502a62934c356f3890c01908e35dbcb91fe541e3ec1da",
+      "object_sha256": "6c3b47acf45c12c736bcc63d68f94a4e89d1db01d4ed030d5c147d1296f85c63",
       "scratch": "tools/match/scratches/config_load_presets",
       "source": "tools/match/scratches/config_load_presets/scratch.cpp",
-      "source_sha256": "90402ff8958966338ed26e594baa6fe2a9a8203a2ad1fceb35ea1fcf3ce304c1",
+      "source_sha256": "22bc36bc59da75ca2c8eb17f4f7be3941ef9b985b0501589d9b558029a51ca62",
       "target_size": 653,
       "translation_unit": {
         "kind": "isolated",

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "binding-source-anchor",
+      "find": "    for (player_index = 0; player_index < 2; ++player_index) {\n        bindings = &config_blob.input_config[player_index];\n        input = &player_state_table[player_index].input;\n        input->move_key_forward = bindings->move_key_forward;\n        input->move_key_backward = bindings->move_key_backward;\n        input->turn_key_left = bindings->turn_key_left;\n        input->turn_key_right = bindings->turn_key_right;\n        input->fire_key = bindings->fire_key;\n        input->key_reserved_0 = bindings->key_reserved_0;\n        input->key_reserved_1 = bindings->key_reserved_1;\n        input->aim_key_left = bindings->aim_key_left;\n        input->aim_key_right = bindings->aim_key_right;\n        input->axis_aim_y = bindings->axis_aim_y;\n        input->axis_aim_x = bindings->axis_aim_x;\n        input->axis_move_y = bindings->axis_move_y;\n        input->axis_move_x = bindings->axis_move_x;\n    }\n",
+      "replacements": [
+        {
+          "name": "axis-source-runtime-record",
+          "text": "    for (player_index = 0; player_index < 2; ++player_index) {\n        bindings = &config_blob.input_config[player_index];\n        int *binding_cursor = &bindings->axis_move_x;\n        input = &player_state_table[player_index].input;\n        input->move_key_forward = binding_cursor[-12];\n        input->move_key_backward = binding_cursor[-11];\n        input->turn_key_left = binding_cursor[-10];\n        input->turn_key_right = binding_cursor[-9];\n        input->fire_key = binding_cursor[-8];\n        input->key_reserved_0 = binding_cursor[-7];\n        input->key_reserved_1 = binding_cursor[-6];\n        input->aim_key_left = binding_cursor[-5];\n        input->aim_key_right = binding_cursor[-4];\n        input->axis_aim_y = binding_cursor[-3];\n        input->axis_aim_x = binding_cursor[-2];\n        input->axis_move_y = binding_cursor[-1];\n        input->axis_move_x = binding_cursor[0];\n    }\n"
+        },
+        {
+          "name": "axis-source-backward-destination",
+          "text": "    for (player_index = 0; player_index < 2; ++player_index) {\n        bindings = &config_blob.input_config[player_index];\n        int *binding_cursor = &bindings->axis_move_x;\n        input = &player_state_table[player_index].input;\n        int *input_cursor = &input->move_key_backward;\n        input_cursor[-1] = binding_cursor[-12];\n        input_cursor[0] = binding_cursor[-11];\n        input_cursor[1] = binding_cursor[-10];\n        input_cursor[2] = binding_cursor[-9];\n        input_cursor[3] = binding_cursor[-8];\n        input_cursor[4] = binding_cursor[-7];\n        input_cursor[5] = binding_cursor[-6];\n        input_cursor[6] = binding_cursor[-5];\n        input_cursor[7] = binding_cursor[-4];\n        input_cursor[9] = binding_cursor[-3];\n        input_cursor[8] = binding_cursor[-2];\n        input_cursor[11] = binding_cursor[-1];\n        input_cursor[10] = binding_cursor[0];\n    }\n"
+        },
+        {
+          "name": "direct-axis-expression",
+          "text": "    for (player_index = 0; player_index < 2; ++player_index) {\n        bindings = &config_blob.input_config[player_index];\n        input = &player_state_table[player_index].input;\n        input->move_key_forward = (&bindings->axis_move_x)[-12];\n        input->move_key_backward = (&bindings->axis_move_x)[-11];\n        input->turn_key_left = (&bindings->axis_move_x)[-10];\n        input->turn_key_right = (&bindings->axis_move_x)[-9];\n        input->fire_key = (&bindings->axis_move_x)[-8];\n        input->key_reserved_0 = (&bindings->axis_move_x)[-7];\n        input->key_reserved_1 = (&bindings->axis_move_x)[-6];\n        input->aim_key_left = (&bindings->axis_move_x)[-5];\n        input->aim_key_right = (&bindings->axis_move_x)[-4];\n        input->axis_aim_y = (&bindings->axis_move_x)[-3];\n        input->axis_aim_x = (&bindings->axis_move_x)[-2];\n        input->axis_move_y = (&bindings->axis_move_x)[-1];\n        input->axis_move_x = (&bindings->axis_move_x)[0];\n    }\n"
+        }
+      ]
+    }
+  ]
+}

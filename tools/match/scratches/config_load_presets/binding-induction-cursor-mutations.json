@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "binding-induction-cursors",
+      "find": "    for (player_index = 0; player_index < 2; ++player_index) {\n        bindings = &config_blob.input_config[player_index];\n        int *binding_cursor = &bindings->axis_move_x;\n        input = &player_state_table[player_index].input;\n        input->move_key_forward = binding_cursor[-12];\n        input->move_key_backward = binding_cursor[-11];\n        input->turn_key_left = binding_cursor[-10];\n        input->turn_key_right = binding_cursor[-9];\n        input->fire_key = binding_cursor[-8];\n        input->key_reserved_0 = binding_cursor[-7];\n        input->key_reserved_1 = binding_cursor[-6];\n        input->aim_key_left = binding_cursor[-5];\n        input->aim_key_right = binding_cursor[-4];\n        input->axis_aim_y = binding_cursor[-3];\n        input->axis_aim_x = binding_cursor[-2];\n        input->axis_move_y = binding_cursor[-1];\n        input->axis_move_x = binding_cursor[0];\n    }\n",
+      "replacements": [
+        {
+          "name": "source-induction-indexed-destination",
+          "text": "    int *binding_cursor = &config_blob.input_config[0].axis_move_x;\n    for (player_index = 0; player_index < 2; ++player_index) {\n        input = &player_state_table[player_index].input;\n        input->move_key_forward = binding_cursor[-12];\n        input->move_key_backward = binding_cursor[-11];\n        input->turn_key_left = binding_cursor[-10];\n        input->turn_key_right = binding_cursor[-9];\n        input->fire_key = binding_cursor[-8];\n        input->key_reserved_0 = binding_cursor[-7];\n        input->key_reserved_1 = binding_cursor[-6];\n        input->aim_key_left = binding_cursor[-5];\n        input->aim_key_right = binding_cursor[-4];\n        input->axis_aim_y = binding_cursor[-3];\n        input->axis_aim_x = binding_cursor[-2];\n        input->axis_move_y = binding_cursor[-1];\n        input->axis_move_x = binding_cursor[0];\n        binding_cursor += sizeof(player_input_config_t) / sizeof(int);\n    }\n"
+        },
+        {
+          "name": "source-and-destination-induction-counted",
+          "text": "    int *binding_cursor = &config_blob.input_config[0].axis_move_x;\n    int *input_cursor = &player_state_table[0].input.move_key_backward;\n    for (player_index = 0; player_index < 2; ++player_index) {\n        input_cursor[-1] = binding_cursor[-12];\n        input_cursor[0] = binding_cursor[-11];\n        input_cursor[1] = binding_cursor[-10];\n        input_cursor[2] = binding_cursor[-9];\n        input_cursor[3] = binding_cursor[-8];\n        input_cursor[4] = binding_cursor[-7];\n        input_cursor[5] = binding_cursor[-6];\n        input_cursor[6] = binding_cursor[-5];\n        input_cursor[7] = binding_cursor[-4];\n        input_cursor[9] = binding_cursor[-3];\n        input_cursor[8] = binding_cursor[-2];\n        input_cursor[11] = binding_cursor[-1];\n        input_cursor[10] = binding_cursor[0];\n        binding_cursor += sizeof(player_input_config_t) / sizeof(int);\n        input_cursor = (int *)((char *)input_cursor + sizeof(player_state_t));\n    }\n"
+        },
+        {
+          "name": "source-pointer-bound-typed-destination",
+          "text": "    int *binding_cursor = &config_blob.input_config[0].axis_move_x;\n    input = &player_state_table[0].input;\n    do {\n        input->move_key_forward = binding_cursor[-12];\n        input->move_key_backward = binding_cursor[-11];\n        input->turn_key_left = binding_cursor[-10];\n        input->turn_key_right = binding_cursor[-9];\n        input->fire_key = binding_cursor[-8];\n        input->key_reserved_0 = binding_cursor[-7];\n        input->key_reserved_1 = binding_cursor[-6];\n        input->aim_key_left = binding_cursor[-5];\n        input->aim_key_right = binding_cursor[-4];\n        input->axis_aim_y = binding_cursor[-3];\n        input->axis_aim_x = binding_cursor[-2];\n        input->axis_move_y = binding_cursor[-1];\n        input->axis_move_x = binding_cursor[0];\n        binding_cursor += sizeof(player_input_config_t) / sizeof(int);\n        input = (player_input_t *)((char *)input + sizeof(player_state_t));\n    } while (binding_cursor < (int *)&config_blob.reserved4[0x30]);\n"
+        },
+        {
+          "name": "source-and-destination-pointer-bound",
+          "text": "    int *binding_cursor = &config_blob.input_config[0].axis_move_x;\n    int *input_cursor = &player_state_table[0].input.move_key_backward;\n    do {\n        input_cursor[-1] = binding_cursor[-12];\n        input_cursor[0] = binding_cursor[-11];\n        input_cursor[1] = binding_cursor[-10];\n        input_cursor[2] = binding_cursor[-9];\n        input_cursor[3] = binding_cursor[-8];\n        input_cursor[4] = binding_cursor[-7];\n        input_cursor[5] = binding_cursor[-6];\n        input_cursor[6] = binding_cursor[-5];\n        input_cursor[7] = binding_cursor[-4];\n        input_cursor[9] = binding_cursor[-3];\n        input_cursor[8] = binding_cursor[-2];\n        input_cursor[11] = binding_cursor[-1];\n        input_cursor[10] = binding_cursor[0];\n        binding_cursor += sizeof(player_input_config_t) / sizeof(int);\n        input_cursor = (int *)((char *)input_cursor + sizeof(player_state_t));\n    } while (binding_cursor < (int *)&config_blob.reserved4[0x30]);\n"
+        }
+      ]
+    }
+  ]
+}

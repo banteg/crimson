@@ -46,6 +46,13 @@ MSVC 6.6 produces the same best tail. MSVC 6.5pp combines caller cleanup and
 scores worse; `/G6` changes the x87 schedule and also scores worse. No dummy
 access or register-forcing construct is retained.
 
+Two recorded mutation sweeps cover 28 single and paired lifetime changes for
+the aggregate accumulators, adjusted count, template id, and nested hardcore
+locals. Every variant is byte-neutral. The native `edi`/`ebp` zero stores and
+`esi`/`ecx` loop temporaries therefore cannot be selected through these honest
+source scopes; further local-name or declaration-order churn is now a
+documented dead end.
+
 ## Port parity
 
 Python and Zig already apply the recovered hardcore count rules and consume the

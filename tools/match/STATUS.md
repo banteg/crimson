@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **690/808** functions matched exactly, **129451/341963** code bytes (**37.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **299881/341963** code bytes (**87.7%**).
+Fuzzy-weighted alignment is **299885/341963** code bytes (**87.7%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279544/320805 | 87.1% | 671/671 | 320805/320805 | 100.0% | 559/671 |
+| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279548/320805 | 87.1% | 671/671 | 320805/320805 | 100.0% | 559/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20337/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**559/671** functions, **114513/320805** bytes (**35.7%**), **279544/320805** fuzzy-weighted bytes (**87.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
+**559/671** functions, **114513/320805** bytes (**35.7%**), **279548/320805** fuzzy-weighted bytes (**87.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -419,7 +419,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | creature_handle_death | 0x0041e910 | 834 | 734/834 | 100 | 203/204 | 87.96% | 6/204 | 82/0/0 |  | creature-death-side-effects |
 | match | config_sync_from_grim | 0x0041ec60 | 1225 | 1225/1225 | 0 | 277/277 | 100.00% | 277/277 | 37/0/0 |  | grim-config-sync-and-legacy-migration |
 | match | config_ensure_file | 0x0041f130 | 112 | 112/112 | 0 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
-| wip | config_load_presets | 0x0041f1a0 | 653 | 576/653 | 77 | 178/178 | 88.20% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
+| wip | config_load_presets | 0x0041f1a0 | 653 | 580/653 | 73 | 178/178 | 88.76% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
 | wip | angle_approach | 0x0041f430 | 299 | 283/299 | 16 | 100/101 | 94.53% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
 | match | bonus_pool_sentinel_global_init_thunk | 0x0041f560 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-sentinel-global-initialization-thunk |
 | match | bonus_pool_sentinel_global_init | 0x0041f570 | 11 | 11/11 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | bonus-pool-sentinel-global-initialization |

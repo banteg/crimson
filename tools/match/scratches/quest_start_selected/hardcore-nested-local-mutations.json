@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "hardcore-nested-locals",
+      "find": "        int template_id;\n        int count;\n        if (config_hardcore) {\n            count = count_cursor[0];\n            if (count > 1) {\n                template_id = count_cursor[-2];\n                if (template_id != 0x3c) {\n                    if (template_id == 0x2b) {\n                        count += 2;\n                    } else {\n                        count += 8;\n                    }\n                    count_cursor[0] = count;\n                }\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "initialized-count-and-nested-template",
+          "text": "        if (config_hardcore) {\n            int count = count_cursor[0];\n            if (count > 1) {\n                int template_id = count_cursor[-2];\n                if (template_id != 0x3c) {\n                    if (template_id == 0x2b) {\n                        count += 2;\n                    } else {\n                        count += 8;\n                    }\n                    count_cursor[0] = count;\n                }\n            }\n        }\n"
+        },
+        {
+          "name": "assigned-count-and-initialized-template",
+          "text": "        int count;\n        if (config_hardcore) {\n            count = count_cursor[0];\n            if (count > 1) {\n                int template_id = count_cursor[-2];\n                if (template_id != 0x3c) {\n                    if (template_id == 0x2b) {\n                        count += 2;\n                    } else {\n                        count += 8;\n                    }\n                    count_cursor[0] = count;\n                }\n            }\n        }\n"
+        },
+        {
+          "name": "initialized-count-and-assigned-template",
+          "text": "        if (config_hardcore) {\n            int count = count_cursor[0];\n            if (count > 1) {\n                int template_id;\n                template_id = count_cursor[-2];\n                if (template_id != 0x3c) {\n                    if (template_id == 0x2b) {\n                        count += 2;\n                    } else {\n                        count += 8;\n                    }\n                    count_cursor[0] = count;\n                }\n            }\n        }\n"
+        },
+        {
+          "name": "nested-template-count-add-assignment",
+          "text": "        if (config_hardcore) {\n            int count = count_cursor[0];\n            if (count > 1) {\n                int template_id = count_cursor[-2];\n                if (template_id != 0x3c) {\n                    if (template_id == 0x2b) {\n                        count = count + 2;\n                    } else {\n                        count = count + 8;\n                    }\n                    count_cursor[0] = count;\n                }\n            }\n        }\n"
+        }
+      ]
+    }
+  ]
+}

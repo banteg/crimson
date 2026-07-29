@@ -78,6 +78,15 @@ adds its aligned-frame prologue. `/Og-` broadly deoptimizes the function. No
 volatile pointer, artificial union, dummy access, or other register-forcing
 construct is retained.
 
+Two recorded sweeps exhaust 14 honest source-level lifetime variants around
+the template field and its interior pointer. All are byte-neutral, confirming
+that VC6 folds the recovered pointer regardless of declaration position,
+scope, constness, alias, or explicit initialization form. A separate ten-profile
+compiler matrix is also closed: base, `/Ob1`, `/Ot`, `/Oa`, `/Ow`, `/Oi-`, and
+`/G5` are neutral, while `/G6`, `/Op`, and `/Oy-` regress. This bounds the
+remaining two instructions as a compiler-local lifetime artifact rather than
+an untried optimizer flag.
+
 ## Port parity
 
 The Python and Zig quest-timeline models already implement the recovered strict
