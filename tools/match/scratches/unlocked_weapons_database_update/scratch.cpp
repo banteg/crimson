@@ -34,7 +34,9 @@ struct database_scrollbar_t {
 
     database_scrollbar_t()
     {
-        column_offsets[0] = column_offsets[1] = 0.0f;
+        for (int index = 0; index < 2; ++index) {
+            column_offsets[index] = 0;
+        }
     }
 
     ~database_scrollbar_t() {}
@@ -212,11 +214,15 @@ extern "C" void unlocked_weapons_database_update(void)
 
     static database_button_t back_button;
     back_button.label = "Back";
-    position.x += 144.0f;
-    position.y += 8.0f;
-    if (ui_button_update((float *)&position, (ui_button_t *)&back_button)) {
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_STATISTICS_MENU;
+    {
+        database_vec2_t button_position;
+        button_position.x = position.x + 144.0f;
+        button_position.y = position.y + 8.0f;
+        if (ui_button_update(
+                (float *)&button_position, (ui_button_t *)&back_button)) {
+            ui_transition_direction = 0;
+            game_state_pending = GAME_STATE_STATISTICS_MENU;
+        }
     }
 
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);

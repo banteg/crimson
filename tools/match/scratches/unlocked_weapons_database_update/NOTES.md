@@ -18,9 +18,9 @@ callback:
   the ammo-class-1 `n/a` case), reload time, and clip size, including the
   narrow-screen horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction matches 82.87% of 523 target
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 92.44% of 523 target
 instructions with 522 candidate instructions, a nine-instruction exact prefix,
-the exact native `0x118`-byte frame, and `140/0/2` audited references. All
+the exact native `0x118`-byte frame, and `149/0/2` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
 residual reference mismatches are constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
@@ -28,27 +28,30 @@ constants and source operations are present elsewhere in the aligned flow.
 
 The frame and control-flow improvement comes from source-supported structure:
 the title separator and three panel anchors have their native disjoint
-lifetimes, the native `20 + 10`, `20 + 8`, and `16 + 4` vertical spacings remain
-separate operations, the compact-to-real-id mapping uses its native
-post-increment test, and the fire-rate branches place the RPM path before the
-ammo-class-1 `n/a` path.
+lifetimes, and the Back button receives the scoped copied coordinate pair
+visible before the native call. The native `20 + 10`, `20 + 8`, and `16 + 4`
+vertical spacings remain separate operations, the compact-to-real-id mapping
+uses its native post-increment test, and the fire-rate branches place the RPM
+path before the ammo-class-1 `n/a` path.
 
 An older caller-local scrollbar replica typed its tab-column offsets as
 `float[8]` and scored 85.74% with `143/0/2` references. Live
 `ui_scrollbar_update` disassembly proves those fields are `int[8]`: the helper
 multiplies integer entries and the highscore caller stores raw integers 10, 30,
 and 44. Reverting to the known 85.74% result would reintroduce the incorrect
-float type. The lower correctly typed result above is intentional;
-ordinary chained, separate, and integer-literal zero initializers all compile
-identically.
+float type. The correctly typed constructor now initializes its two active
+columns with a bounded loop. VC6 unrolls that loop to the native two stores and
+recovers nine additional aligned references; ordinary chained, separate, and
+integer-literal zero initializers all compile identically at the former lower
+score.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 82.87%, 522/523 instructions, and
-`140/0/2` references before and after classification. Both entries are aligned
+A fresh corpus audit keeps the candidate at 92.44%, 522/523 instructions, and
+`149/0/2` references before and after classification. Both entries are aligned
 mismatches; there are no unresolved references. As in the sibling perks
 callback, they pair native reads of
 `ui_element_slot_09.render_offset_x` (`0x00489de8`) with candidate constant-pool
@@ -60,6 +63,25 @@ and Binary Ninja confirms the address is `+0x08` inside the mapped
 No data-map or scrollbar/UI layout correction is supported. The residual is
 compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
 without changing the two honest mismatches.
+
+## Shared-class source-shape recovery
+
+The sibling perks callback supplied two source constraints that were retested
+independently here:
+
+- `scrollbar-zero-initializer-mutations.json` evaluates all eight ordinary
+  constructor forms. The two-entry loop is the sole improvement, adding 187.64
+  fuzzy-weighted bytes and nine resolved references while retaining 522/523
+  instructions and the exact prefix.
+- `back-button-position-lifetime-mutations.json` evaluates eight copied,
+  component-wise, constructed, scalar, order, and scope variants. The scoped
+  component/scalar pair adds 11.98 bytes without a metric tradeoff; the typed
+  component form is retained.
+
+Together they move the fresh baseline from 82.87% to 92.44% and from
+`140/0/2` to `149/0/2` references. The complete append-only evidence is in
+`experiments.jsonl`
+(`sha256:d56741f9f111564f331eb4c9a989a2b2ca8f59712e313efca89dfa5508c84064`).
 
 ## Unlock-loop mutation audit
 

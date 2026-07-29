@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scrollbar-zero-initializer",
+      "find": "        column_offsets[0] = column_offsets[1] = 0.0f;\n",
+      "replacements": [
+        {
+          "name": "chained-integer-zero",
+          "text": "        column_offsets[0] = column_offsets[1] = 0;\n"
+        },
+        {
+          "name": "reverse-chained-integer-zero",
+          "text": "        column_offsets[1] = column_offsets[0] = 0;\n"
+        },
+        {
+          "name": "separate-integer-zeroes",
+          "text": "        column_offsets[0] = 0;\n        column_offsets[1] = 0;\n"
+        },
+        {
+          "name": "separate-float-zeroes",
+          "text": "        column_offsets[0] = 0.0f;\n        column_offsets[1] = 0.0f;\n"
+        },
+        {
+          "name": "copy-first-zero",
+          "text": "        column_offsets[0] = 0;\n        column_offsets[1] = column_offsets[0];\n"
+        },
+        {
+          "name": "local-integer-zero",
+          "text": "        int zero = 0;\n        column_offsets[0] = zero;\n        column_offsets[1] = zero;\n"
+        },
+        {
+          "name": "two-entry-loop",
+          "text": "        for (int index = 0; index < 2; ++index) {\n            column_offsets[index] = 0;\n        }\n"
+        },
+        {
+          "name": "value-initialized-zeroes",
+          "text": "        column_offsets[0] = int();\n        column_offsets[1] = int();\n"
+        }
+      ]
+    }
+  ]
+}
