@@ -1,7 +1,13 @@
 {
   "schema": 3,
   "image": "crimsonland.exe",
-  "entry": "crimsonland_main",
+  "entry": "WinMainCRTStartup",
+  "entry_aliases": [
+    {
+      "alias": "_WinMain@16",
+      "target": "_crimsonland_main@16"
+    }
+  ],
   "image_base": "0x00400000",
   "mode": "structural",
   "archives": [
@@ -1532,7 +1538,7 @@
       "evidence": [
         {
           "path": "docs/re/static/native-linking.md",
-          "note": "The first archive-backed executable link identified ten imports and _main that are induced by isolated LIBCMT member selection but absent from the reference boundary."
+          "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF."
         },
         {
           "path": "analysis/ida/raw/crimsonland.exe/imports.json",
@@ -1579,10 +1585,6 @@
         {
           "name": "__imp__TlsFree@4",
           "binding": "data"
-        },
-        {
-          "name": "_main",
-          "binding": "function"
         }
       ]
     },

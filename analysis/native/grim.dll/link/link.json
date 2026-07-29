@@ -68,6 +68,9 @@
     }
   ],
   "audit_digest": "7562639261652831bdf77142c423ecad01f9ccf33b8b561a013d17fbf9fc2d0b",
+  "entry": {
+    "symbol": "DllMain"
+  },
   "image": "grim.dll",
   "kind": "crimson-native-linked-image",
   "mode": "structural",
@@ -76,7 +79,7 @@
     "pe": {
       "characteristics": 8462,
       "dll": true,
-      "entry_point_rva": 24256,
+      "entry_point_rva": 24240,
       "image_base": 268435456,
       "image_size": 348160,
       "machine": 332,
@@ -86,12 +89,31 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "7d53113c9e988e1abdf3922277d1a690895ead6349f9a185e097348fdd02e728"
+    "sha256": "9c39594255ac3761c74f73f05f6bfb2e710e13e824132d90dad0115dd1c791e7"
   },
   "placeholder_object": {
+    "discarded_symbols": [],
     "path": "analysis/native/grim.dll/link/providers/placeholders.obj",
     "repository_relative": true,
-    "sha256": "1d0c66a3ea542d9824599a4edb5c6c05213a2ae5d948a8e654502d6a26ba0155",
+    "retained_symbols": [
+      "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ",
+      "?grim_d3d_init@@YA_NXZ",
+      "?grim_d3d_shutdown@@YAXXZ",
+      "?grim_joystick_button_down@@YAEI@Z",
+      "?grim_joystick_init@@YA_NPAUHWND__@@@Z",
+      "?grim_joystick_shutdown@@YAXXZ",
+      "?grim_keyboard_init@@YA_NPAUHWND__@@@Z",
+      "?grim_keyboard_key_down@@YAEI@Z",
+      "?grim_keyboard_shutdown@@YAXXZ",
+      "?grim_mouse_button_down@@YAEH@Z",
+      "?grim_mouse_init@@YA_NPAUHWND__@@@Z",
+      "?grim_mouse_shutdown@@YAXXZ",
+      "?grim_save_screenshot@IGrim2D_cpp@@UAE_NPAD@Z",
+      "?grim_save_texture@IGrim2D_cpp@@UAE_NHPAD@Z",
+      "?grim_window_destroy@@YAHXZ",
+      "_grim_run_loop"
+    ],
+    "sha256": "3ccaa5a1ee1b7cc5a16d8358850203850c3be583d818ad2262d74af1aa412029",
     "symbol_count": 16
   },
   "provider_config": {
@@ -287,6 +309,7 @@
       ]
     },
     {
+      "discarded_symbols": [],
       "evidence": [
         {
           "note": "The port scope assigns these Win32, Direct3D, and input responsibilities to host backends.",
@@ -298,6 +321,24 @@
       "kind": "platform-replaced",
       "name": "host-platform-replacements",
       "resolution": "placeholder-object",
+      "retained_symbols": [
+        "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ",
+        "?grim_d3d_init@@YA_NXZ",
+        "?grim_d3d_shutdown@@YAXXZ",
+        "?grim_joystick_button_down@@YAEI@Z",
+        "?grim_joystick_init@@YA_NPAUHWND__@@@Z",
+        "?grim_joystick_shutdown@@YAXXZ",
+        "?grim_keyboard_init@@YA_NPAUHWND__@@@Z",
+        "?grim_keyboard_key_down@@YAEI@Z",
+        "?grim_keyboard_shutdown@@YAXXZ",
+        "?grim_mouse_button_down@@YAEH@Z",
+        "?grim_mouse_init@@YA_NPAUHWND__@@@Z",
+        "?grim_mouse_shutdown@@YAXXZ",
+        "?grim_save_screenshot@IGrim2D_cpp@@UAE_NPAD@Z",
+        "?grim_save_texture@IGrim2D_cpp@@UAE_NHPAD@Z",
+        "?grim_window_destroy@@YAHXZ",
+        "_grim_run_loop"
+      ],
       "scope": "closure",
       "symbols": [
         "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ",
@@ -946,11 +987,14 @@
   "status": "linked",
   "summary": {
     "archive_symbols": 33,
+    "closure_placeholder_symbols": 16,
     "covered_symbols": 54,
+    "discarded_placeholder_symbols": 0,
     "generated_import_symbols": 5,
     "import_exports": 20,
     "import_symbols": 21,
     "input_object_count": 151,
+    "link_dependency_placeholder_symbols": 0,
     "link_dependency_symbols": 24,
     "placeholder_symbols": 16,
     "providers": [
@@ -1061,7 +1105,10 @@
         "symbol_count": 2
       }
     ],
+    "retained_closure_placeholder_symbols": 16,
     "retained_link_dependency_import_symbols": 17,
+    "retained_link_dependency_placeholder_symbols": 0,
+    "retained_placeholder_symbols": 16,
     "runnable": false,
     "validated_output_import_symbols": 54,
     "validated_reference_import_symbols": 20

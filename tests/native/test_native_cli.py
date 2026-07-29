@@ -118,6 +118,7 @@ def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Pat
             "import_symbols": 20,
             "link_dependency_symbols": 24,
             "placeholder_symbols": 16,
+            "retained_placeholder_symbols": 4,
         },
     }
     monkeypatch.setattr(
@@ -147,7 +148,7 @@ def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Pat
     assert (
         "providers=2 covered=53 imports=20 exports=20 archives=32 "
         "generated_imports=5 "
-        "link_deps=24 placeholders=16 runnable=False"
+        "link_deps=24 placeholders=4/16 runnable=False"
     ) in completed.stdout
     assert f"linked_image={tmp_path / 'grim.dll'}" in completed.stdout
 

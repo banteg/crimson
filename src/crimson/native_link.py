@@ -224,6 +224,7 @@ class NativeProviderConfig:
     path: Path
     sha256: str
     entry: str
+    entry_aliases: tuple[NativeProviderAliasSpec, ...]
     image_base: int
     mode: str
     archives: tuple[NativeProviderArchiveSpec, ...]
@@ -593,6 +594,37 @@ def load_native_provider_config(
     entry = payload.get("entry")
     if not isinstance(entry, str) or not entry:
         raise ValueError(f"{path}: entry must be a non-empty string")
+    raw_entry_aliases = payload.get("entry_aliases", [])
+    if not isinstance(raw_entry_aliases, list):
+        raise TypeError(f"{path}: entry_aliases must be a list")
+    entry_aliases: list[NativeProviderAliasSpec] = []
+    entry_alias_names: set[str] = set()
+    for alias_index, raw_alias in enumerate(raw_entry_aliases):
+        label = f"{path}: entry_aliases[{alias_index}]"
+        if not isinstance(raw_alias, dict):
+            raise TypeError(f"{label} must be an object")
+        alias = raw_alias.get("alias")
+        target = raw_alias.get("target")
+        if not isinstance(alias, str) or not alias:
+            raise ValueError(f"{label}.alias must be non-empty")
+        if not isinstance(target, str) or not target:
+            raise ValueError(f"{label}.target must be non-empty")
+        for field_name, value in (("alias", alias), ("target", target)):
+            try:
+                value.encode("latin1")
+            except UnicodeEncodeError as error:
+                raise ValueError(f"{label}.{field_name} must be Latin-1") from error
+        if alias == target:
+            raise ValueError(f"{label} must map distinct symbols")
+        if alias in entry_alias_names:
+            raise ValueError(f"{path}: duplicate entry alias {alias!r}")
+        entry_alias_names.add(alias)
+        entry_aliases.append(NativeProviderAliasSpec(alias=alias, target=target))
+    if tuple(sorted(alias.alias for alias in entry_aliases)) != tuple(
+        alias.alias
+        for alias in entry_aliases
+    ):
+        raise ValueError(f"{path}: entry_aliases must be sorted by alias")
     raw_image_base = payload.get("image_base")
     try:
         image_base = (
@@ -999,6 +1031,7 @@ def load_native_provider_config(
         path=path.resolve(),
         sha256=_sha256(path),
         entry=entry,
+        entry_aliases=tuple(entry_aliases),
         image_base=image_base,
         mode=mode,
         archives=tuple(archives),
@@ -4276,24 +4309,29 @@ def native_provider_placeholder_object_bytes(
         raise ValueError("provider placeholder object requires at least one symbol")
     if len({symbol.name for symbol in symbols}) != len(symbols):
         raise ValueError("provider placeholder object contains duplicate symbols")
-    function_symbols = [
-        symbol
-        for symbol in symbols
-        if symbol.binding == "function"
-    ]
-    data_symbols = [
-        symbol
-        for symbol in symbols
-        if symbol.binding == "data"
-    ]
-    if len(function_symbols) + len(data_symbols) != len(symbols):
+    if any(symbol.binding not in {"function", "data"} for symbol in symbols):
         raise ValueError("provider placeholder symbols require function or data binding")
 
-    text = bytearray()
-    function_offsets: dict[str, int] = {}
-    for symbol in function_symbols:
-        function_offsets[symbol.name] = len(text)
-        text.extend(b"\x31\xc0")
+    section_rows: list[tuple[NativeProviderSymbol, str, bytes, int]] = []
+    for symbol in symbols:
+        if symbol.binding == "data":
+            section_rows.append(
+                (
+                    symbol,
+                    ".data",
+                    b"\x00" * 4,
+                    (
+                        IMAGE_SCN_CNT_INITIALIZED_DATA
+                        | IMAGE_SCN_LNK_COMDAT
+                        | _coff_alignment_characteristic(4)
+                        | IMAGE_SCN_MEM_READ
+                        | IMAGE_SCN_MEM_WRITE
+                    ),
+                ),
+            )
+            continue
+
+        code = bytearray(b"\x31\xc0")
         stack_match = re.search(r"@([0-9]+)$", symbol.name)
         stack_bytes = int(stack_match.group(1)) if stack_match else 0
         if stack_bytes:
@@ -4301,48 +4339,26 @@ def native_provider_placeholder_object_bytes(
                 raise ValueError(
                     f"placeholder function {symbol.name!r} stack size exceeds 16 bits",
                 )
-            text.extend(b"\xc2")
-            text.extend(struct.pack("<H", stack_bytes))
+            code.extend(b"\xc2")
+            code.extend(struct.pack("<H", stack_bytes))
         else:
-            text.extend(b"\xc3")
-        while len(text) % 4:
-            text.extend(b"\x90")
-    data = bytes(len(data_symbols) * 4)
-    data_offsets = {
-        symbol.name: index * 4
-        for index, symbol in enumerate(data_symbols)
-    }
-
-    section_rows: list[tuple[str, bytes, int]] = []
-    section_number_by_kind: dict[str, int] = {}
-    if text:
+            code.extend(b"\xc3")
+        while len(code) % 4:
+            code.extend(b"\x90")
         section_rows.append(
             (
+                symbol,
                 ".text",
-                bytes(text),
+                bytes(code),
                 (
                     IMAGE_SCN_CNT_CODE
+                    | IMAGE_SCN_LNK_COMDAT
                     | _coff_alignment_characteristic(16)
                     | IMAGE_SCN_MEM_EXECUTE
                     | IMAGE_SCN_MEM_READ
                 ),
             ),
         )
-        section_number_by_kind["function"] = len(section_rows)
-    if data:
-        section_rows.append(
-            (
-                ".data",
-                data,
-                (
-                    IMAGE_SCN_CNT_INITIALIZED_DATA
-                    | _coff_alignment_characteristic(4)
-                    | IMAGE_SCN_MEM_READ
-                    | IMAGE_SCN_MEM_WRITE
-                ),
-            ),
-        )
-        section_number_by_kind["data"] = len(section_rows)
 
     string_offsets: dict[str, int] = {}
     string_payload = bytearray()
@@ -4358,7 +4374,7 @@ def native_provider_placeholder_object_bytes(
     section_table_end = 20 + len(section_rows) * 40
     cursor = section_table_end
     raw_offsets: list[int] = []
-    for _, section_data, _ in section_rows:
+    for _, _, section_data, _ in section_rows:
         cursor = (cursor + 3) & ~3
         raw_offsets.append(cursor)
         cursor += len(section_data)
@@ -4372,11 +4388,14 @@ def native_provider_placeholder_object_bytes(
         len(section_rows),
         0,
         symbol_table_offset,
-        len(symbols),
+        len(symbols) * 3,
         0,
         0,
     )
-    for index, ((section_name, section_data, characteristics), raw_offset) in enumerate(
+    for index, (
+        (_, section_name, section_data, characteristics),
+        raw_offset,
+    ) in enumerate(
         zip(section_rows, raw_offsets, strict=True),
     ):
         header_offset = 20 + index * 40
@@ -4400,7 +4419,34 @@ def native_provider_placeholder_object_bytes(
         )
         payload[raw_offset : raw_offset + len(section_data)] = section_data
 
-    for symbol in symbols:
+    section_number_by_symbol: dict[str, int] = {}
+    for section_number, (symbol, section_name, section_data, _) in enumerate(
+        section_rows,
+        start=1,
+    ):
+        section_number_by_symbol[symbol.name] = section_number
+        payload.extend(
+            struct.pack(
+                "<8sIhHBB",
+                section_name.encode().ljust(8, b"\x00"),
+                0,
+                section_number,
+                0,
+                matchlib.IMAGE_SYM_CLASS_STATIC,
+                1,
+            ),
+        )
+        payload.extend(
+            struct.pack(
+                "<IHHIhB3x",
+                len(section_data),
+                0,
+                0,
+                0,
+                0,
+                2,
+            ),
+        )
         encoded = symbol.name.encode("latin1")
         name_field = (
             encoded.ljust(8, b"\x00")
@@ -4408,17 +4454,12 @@ def native_provider_placeholder_object_bytes(
             else struct.pack("<II", 0, string_offsets[symbol.name])
         )
         payload.extend(name_field)
-        if symbol.binding == "function":
-            value = function_offsets[symbol.name]
-            symbol_type = 0x20
-        else:
-            value = data_offsets[symbol.name]
-            symbol_type = 0
+        symbol_type = 0x20 if symbol.binding == "function" else 0
         payload.extend(
             struct.pack(
                 "<IhHBB",
-                value,
-                section_number_by_kind[cast(str, symbol.binding)],
+                0,
+                section_number,
                 symbol_type,
                 matchlib.IMAGE_SYM_CLASS_EXTERNAL,
                 0,
@@ -4437,10 +4478,14 @@ def native_provider_placeholder_object_bytes(
         raise ValueError("generated provider placeholder symbols did not round-trip")
     for symbol in symbols:
         parsed_symbol = parsed[symbol.name]
-        binding = cast(str, symbol.binding)
-        if parsed_symbol.section_number != section_number_by_kind[binding]:
+        if parsed_symbol.section_number != section_number_by_symbol[symbol.name]:
             raise ValueError(
                 f"generated provider placeholder {symbol.name!r} has wrong section",
+            )
+        section = coff.sections[parsed_symbol.section_number - 1]
+        if section.comdat_key != symbol.name or section.comdat_selection != 2:
+            raise ValueError(
+                f"generated provider placeholder {symbol.name!r} is not a selectable COMDAT",
             )
     return object_data
 
@@ -5499,6 +5544,16 @@ def _native_link_image_options(
     raise ValueError(f"native link does not support image kind {image!r}")
 
 
+_NATIVE_LINK_MAP_SYMBOL = re.compile(
+    r"^\s+[0-9A-Fa-f]{4}:[0-9A-Fa-f]{8}\s+(\S+)",
+    re.MULTILINE,
+)
+
+
+def _native_link_map_public_symbols(map_text: str) -> frozenset[str]:
+    return frozenset(_NATIVE_LINK_MAP_SYMBOL.findall(map_text))
+
+
 def link_native_image(
     audit: NativeAudit,
     provider_config: NativeProviderConfig,
@@ -5523,6 +5578,24 @@ def link_native_image(
     archive_libraries: list[Path] = []
     import_libraries: list[Path] = []
     provider_alias_objects: list[Path] = []
+    entry_alias_payload: dict[str, Any] | None = None
+    if provider_config.entry_aliases:
+        entry_alias_path = provider_directory / "entry-aliases.obj"
+        entry_alias_bytes = native_weak_alias_object_bytes(
+            tuple(
+                (alias.alias, alias.target)
+                for alias in provider_config.entry_aliases
+            ),
+        )
+        _write_bytes_atomic(entry_alias_path, entry_alias_bytes)
+        provider_alias_objects.append(entry_alias_path)
+        entry_alias_payload = {
+            "object": _file_payload(entry_alias_path, repo_root=repo_root),
+            "symbols": [
+                {"alias": alias.alias, "target": alias.target}
+                for alias in provider_config.entry_aliases
+            ],
+        }
     linked_archive_ids: set[str] = set()
     stems: set[str] = set()
     for provider in provider_config.providers:
@@ -5746,9 +5819,54 @@ def link_native_image(
         raise ValueError(
             "linked reference-import count disagrees with provider coverage",
         )
+    map_symbols = _native_link_map_public_symbols(
+        map_path.read_text(encoding="latin1"),
+    )
+    placeholder_symbols_by_scope = {
+        scope: {
+            symbol.name
+            for provider in placeholder_providers
+            if provider.scope == scope
+            for symbol in provider.symbols
+        }
+        for scope in ("closure", "link-dependency")
+    }
+    configured_placeholder_symbols = set().union(
+        *placeholder_symbols_by_scope.values(),
+    )
+    retained_placeholder_symbols = configured_placeholder_symbols & map_symbols
+    discarded_placeholder_symbols = (
+        configured_placeholder_symbols - retained_placeholder_symbols
+    )
+    linked_runnable = not retained_placeholder_symbols
+    for provider, artifact_row in zip(
+        provider_config.providers,
+        provider_artifact_rows,
+        strict=True,
+    ):
+        if provider.resolution != "placeholder-object":
+            continue
+        provider_symbols = {symbol.name for symbol in provider.symbols}
+        artifact_row["discarded_symbols"] = sorted(
+            provider_symbols & discarded_placeholder_symbols,
+        )
+        artifact_row["retained_symbols"] = sorted(
+            provider_symbols & retained_placeholder_symbols,
+        )
+    if placeholder_payload is not None:
+        placeholder_payload.update(
+            {
+                "discarded_symbols": sorted(discarded_placeholder_symbols),
+                "retained_symbols": sorted(retained_placeholder_symbols),
+            },
+        )
     manifest = {
         "archives": archive_artifact_rows,
         "audit_digest": audit.object_manifest["audit_digest"],
+        "entry": {
+            **({"aliases": entry_alias_payload} if entry_alias_payload else {}),
+            "symbol": provider_config.entry,
+        },
         "image": audit.objects.image,
         "kind": NATIVE_LINK_MANIFEST_KIND,
         "mode": provider_config.mode,
@@ -5763,15 +5881,26 @@ def link_native_image(
         },
         "providers": provider_artifact_rows,
         "reference_imports": reference_imports,
-        "runnable": coverage["runnable"],
+        "runnable": linked_runnable,
         "schema": NATIVE_LINK_MANIFEST_SCHEMA,
         "status": "linked",
         "summary": {
             **coverage,
+            "discarded_placeholder_symbols": len(discarded_placeholder_symbols),
             "input_object_count": len(object_paths),
+            "retained_closure_placeholder_symbols": len(
+                placeholder_symbols_by_scope["closure"]
+                & retained_placeholder_symbols,
+            ),
+            "retained_link_dependency_placeholder_symbols": len(
+                placeholder_symbols_by_scope["link-dependency"]
+                & retained_placeholder_symbols,
+            ),
             "retained_link_dependency_import_symbols": (
                 reference_imports["link_dependency_retained_symbol_count"]
             ),
+            "retained_placeholder_symbols": len(retained_placeholder_symbols),
+            "runnable": linked_runnable,
             "validated_output_import_symbols": (
                 reference_imports["output_symbol_count"]
             ),

@@ -201,7 +201,8 @@ The link command rebuilds the canonical audit, rejects archive drift,
 synthesizes the five remaining closure imports and 24 D3DX link dependencies
 with the recorded VC6 tools, emits deterministic weak COFF aliases where
 compiler decoration differs from the reference export name, and creates an
-explicitly labeled placeholder COFF object for the remaining providers. It
+explicitly labeled per-symbol COMDAT placeholder COFF object for the remaining
+providers. It
 then invokes the VC6 release linker with the recovered entry point, image
 base, export definition, and dead-code elimination. It verifies all 20
 configured closure exports plus the complete output import-table subset
@@ -212,8 +213,10 @@ header, and PE export-directory timestamps are normalized, so identical
 inputs produce the same linked-image hash.
 
 This is a structural linker milestone, not a runnable DLL or a byte-match
-claim. `link.json.runnable` stays false while any placeholder symbol remains.
-The canonical closure report also keeps those 16 references unresolved, so
+claim. `link.json.runnable` stays false while any placeholder COMDAT is
+retained. The canonical Grim link proves that all 16 configured placeholders
+survive `/OPT:REF`; its closure report also keeps those 16 references
+unresolved, so
 `all_references_closed` cannot pass merely because a generated stub made the
 linker accept the image. Replacing each placeholder group with its actual
 provider object is the path from a structural image to a runnable one.
@@ -235,24 +238,31 @@ functions plus `__fltused` and `sscanf`; generated import libraries supply 34
 exports that are present in the reference PE; and four project/platform
 helpers remain explicit closure placeholders.
 
-The first real archive-backed link also exposed 82 transitive symbols. Of
-those, 71 map to KERNEL32 exports already retained by the reference image and
-are modeled as ordinary `link-dependency` imports. The other ten archive
-imports (`EnumSystemLocalesA`, `FatalAppExitA`, `GetCurrentThread`,
-`GetLocaleInfoA`, `GetLocaleInfoW`, `GetUserDefaultLCID`, `IsValidCodePage`,
-`IsValidLocale`, `SetConsoleCtrlHandler`, and `TlsFree`) plus `_main` are not
-present in the reference import/function boundary. They arise because pulling
-isolated LIBCMT members cannot reuse the reference image's full already-linked
-CRT graph. They are recorded as eleven transitive placeholders, not silently
-added as new PE imports. This keeps output-import validation strict and keeps
-`runnable` false until the remaining CRT graph is supplied faithfully.
+The executable now enters through VC6's authentic `WinMainCRTStartup` member
+from `wincrt0.obj`. A deterministic weak alias maps the CRT's `_WinMain@16`
+reference to the recovered `_crimsonland_main@16`, so the link exercises the
+GUI startup graph instead of selecting the console startup and fabricating a
+`_main` shim.
 
-The canonical structural link retains 58 of the 71 reference-backed
-dependencies and discards 13 under `/OPT:REF`. Its 92 output imports are all
-present in the reference table, including DSOUND ordinal 11. The resulting
-794,624-byte PE is i386, is not marked as a DLL, uses the Windows GUI
-subsystem, preserves base `0x00400000`, and has a normalized zero timestamp.
-The checked record is
+That archive-backed graph declares 81 transitive symbols. Seventy-one map to
+KERNEL32 exports retained by the reference image and are modeled as ordinary
+`link-dependency` imports. The other ten archive imports
+(`EnumSystemLocalesA`, `FatalAppExitA`, `GetCurrentThread`, `GetLocaleInfoA`,
+`GetLocaleInfoW`, `GetUserDefaultLCID`, `IsValidCodePage`, `IsValidLocale`,
+`SetConsoleCtrlHandler`, and `TlsFree`) are absent from the reference import
+boundary. They remain explicitly configured as link-only placeholders, but
+per-symbol COMDATs let `/OPT:REF` prove that all ten are discarded and do not
+survive in the produced PE.
+
+The canonical structural link retains 70 of the 71 reference-backed
+dependencies; only `IsBadWritePtr` is discarded. Its 104 output imports are
+all present in the reference table, including DSOUND ordinal 11. Four of 14
+configured placeholders survive: the three intentional platform replacements
+and `vec2_normalize_dispatch`. The CLI therefore reports `placeholders=4/14`,
+and `runnable` remains false. The resulting PE file is 778,240 bytes with a
+794,624-byte in-memory image, entry RVA `0x4f074`, i386 machine type, Windows
+GUI subsystem, base `0x00400000`, and normalized zero timestamp. The checked
+record is
 `analysis/native/crimsonland.exe/link/link.json`; the PE, map, response, log,
 generated provider libraries, aliases, and placeholder object remain ignored.
 

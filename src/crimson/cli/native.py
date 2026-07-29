@@ -247,6 +247,12 @@ def cmd_native_link(
         raise typer.Exit(code=2) from exc
 
     summary = manifest["summary"]
+    retained_placeholders = summary.get("retained_placeholder_symbols")
+    placeholder_summary = str(summary["placeholder_symbols"])
+    if retained_placeholders is not None:
+        placeholder_summary = (
+            f"{retained_placeholders}/{summary['placeholder_symbols']}"
+        )
     typer.echo(f"image={image} mode={manifest['mode']} status={manifest['status']}")
     typer.echo(
         f"providers={len(manifest['providers'])} "
@@ -256,7 +262,7 @@ def cmd_native_link(
         f"archives={summary['archive_symbols']} "
         f"generated_imports={summary['generated_import_symbols']} "
         f"link_deps={summary['link_dependency_symbols']} "
-        f"placeholders={summary['placeholder_symbols']} "
+        f"placeholders={placeholder_summary} "
         f"runnable={manifest['runnable']}",
     )
     typer.echo(f"linked_image={artifacts.image}")

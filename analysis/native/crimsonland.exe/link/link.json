@@ -19,6 +19,22 @@
     }
   ],
   "audit_digest": "bf7b7b8470d1207d8244e1a88c29f920776213f1094e934f3c2375c5a2466b3c",
+  "entry": {
+    "aliases": {
+      "object": {
+        "path": "analysis/native/crimsonland.exe/link/providers/entry-aliases.obj",
+        "repository_relative": true,
+        "sha256": "7a8c107c693d657e6ed5bafdfc557f0d417ba7f3d25e20f0a245ed2ff55f9764"
+      },
+      "symbols": [
+        {
+          "alias": "_WinMain@16",
+          "target": "_crimsonland_main@16"
+        }
+      ]
+    },
+    "symbol": "WinMainCRTStartup"
+  },
   "image": "crimsonland.exe",
   "kind": "crimson-native-linked-image",
   "mode": "structural",
@@ -27,7 +43,7 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 166592,
+      "entry_point_rva": 323700,
       "image_base": 4194304,
       "image_size": 794624,
       "machine": 332,
@@ -37,19 +53,37 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "fa81635d20a1dd32b3d8ac98e284fbb9ac463b35aae3967db33fa51beb2f00aa"
+    "sha256": "c911d5caf2e8f68e8e1227b9e8c5e6ec1c5cb3f1edb93e32de1f3900ed48704d"
   },
   "placeholder_object": {
+    "discarded_symbols": [
+      "__imp__EnumSystemLocalesA@8",
+      "__imp__FatalAppExitA@8",
+      "__imp__GetCurrentThread@0",
+      "__imp__GetLocaleInfoA@16",
+      "__imp__GetLocaleInfoW@16",
+      "__imp__GetUserDefaultLCID@0",
+      "__imp__IsValidCodePage@4",
+      "__imp__IsValidLocale@8",
+      "__imp__SetConsoleCtrlHandler@8",
+      "__imp__TlsFree@4"
+    ],
     "path": "analysis/native/crimsonland.exe/link/providers/placeholders.obj",
     "repository_relative": true,
-    "sha256": "270df81472c5c0b8286657c897e3e6f3e85e02d323f8aa21fb6c2a05d1cd0b9a",
-    "symbol_count": 15
+    "retained_symbols": [
+      "_dx_get_version",
+      "_reg_read_dword_default",
+      "_reg_write_dword",
+      "_vec2_normalize_dispatch@8"
+    ],
+    "sha256": "df45bb9d4843519239227e584df970404d5858a440f08a232929249c0e50af02",
+    "symbol_count": 14
   },
   "provider_config": {
-    "declared_sha256": "733a80fa87aacdb9052896ce4a47419be5d5cb6dd9f0682aef41cc23fd93750b",
+    "declared_sha256": "a44b2b7f1b8eaaf2de63a70dab55d9dde289d143e84c246283991aede2e8a96f",
     "path": "tools/native/providers/crimsonland.exe.json",
     "repository_relative": true,
-    "sha256": "733a80fa87aacdb9052896ce4a47419be5d5cb6dd9f0682aef41cc23fd93750b"
+    "sha256": "a44b2b7f1b8eaaf2de63a70dab55d9dde289d143e84c246283991aede2e8a96f"
   },
   "providers": [
     {
@@ -1195,12 +1229,24 @@
       ]
     },
     {
+      "discarded_symbols": [
+        "__imp__EnumSystemLocalesA@8",
+        "__imp__FatalAppExitA@8",
+        "__imp__GetCurrentThread@0",
+        "__imp__GetLocaleInfoA@16",
+        "__imp__GetLocaleInfoW@16",
+        "__imp__GetUserDefaultLCID@0",
+        "__imp__IsValidCodePage@4",
+        "__imp__IsValidLocale@8",
+        "__imp__SetConsoleCtrlHandler@8",
+        "__imp__TlsFree@4"
+      ],
       "evidence": [
         {
-          "note": "The first archive-backed executable link identified ten imports and _main that are induced by isolated LIBCMT member selection but absent from the reference boundary.",
+          "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF.",
           "path": "docs/re/static/native-linking.md",
           "repository_relative": true,
-          "sha256": "4aa75b04a330bb0bee8b100ceb96b2e6e5297fb588e60abeda2266e96d936989"
+          "sha256": "11c6c0929c73ad74d1c93bb39720b45d4637c1a6f226d50c8e1ccda13d6e49fa"
         },
         {
           "note": "None of the ten API names is present in the reference executable import table.",
@@ -1212,6 +1258,7 @@
       "kind": "static-library",
       "name": "msvc6-archive-only-shims",
       "resolution": "placeholder-object",
+      "retained_symbols": [],
       "scope": "link-dependency",
       "symbols": [
         "__imp__EnumSystemLocalesA@8",
@@ -1223,11 +1270,11 @@
         "__imp__IsValidCodePage@4",
         "__imp__IsValidLocale@8",
         "__imp__SetConsoleCtrlHandler@8",
-        "__imp__TlsFree@4",
-        "_main"
+        "__imp__TlsFree@4"
       ]
     },
     {
+      "discarded_symbols": [],
       "evidence": [
         {
           "note": "The native closure catalog marks these Windows-specific helpers as platform-replaced.",
@@ -1245,6 +1292,11 @@
       "kind": "platform-replaced",
       "name": "platform-replaced",
       "resolution": "placeholder-object",
+      "retained_symbols": [
+        "_dx_get_version",
+        "_reg_read_dword_default",
+        "_reg_write_dword"
+      ],
       "scope": "closure",
       "symbols": [
         "_dx_get_version",
@@ -1253,6 +1305,7 @@
       ]
     },
     {
+      "discarded_symbols": [],
       "evidence": [
         {
           "note": "The lazy vector-normalization dispatch remains explicitly outside the selected port scope.",
@@ -1270,6 +1323,9 @@
       "kind": "static-library",
       "name": "excluded-game-helper",
       "resolution": "placeholder-object",
+      "retained_symbols": [
+        "_vec2_normalize_dispatch@8"
+      ],
       "scope": "closure",
       "symbols": [
         "_vec2_normalize_dispatch@8"
@@ -1353,19 +1409,7 @@
           "WriteFile"
         ],
         "discarded_symbols": [
-          "FreeEnvironmentStringsA",
-          "FreeEnvironmentStringsW",
-          "GetEnvironmentStrings",
-          "GetEnvironmentStringsW",
-          "GetEnvironmentVariableA",
-          "GetStartupInfoA",
-          "GetVersion",
-          "GetVersionExA",
-          "HeapCreate",
-          "HeapDestroy",
-          "IsBadWritePtr",
-          "SetHandleCount",
-          "TlsAlloc"
+          "IsBadWritePtr"
         ],
         "module": "kernel32",
         "retained_symbols": [
@@ -1384,23 +1428,33 @@
           "FindFirstFileA",
           "FindNextFileA",
           "FlushFileBuffers",
+          "FreeEnvironmentStringsA",
+          "FreeEnvironmentStringsW",
           "GetACP",
           "GetCPInfo",
           "GetCurrentDirectoryA",
           "GetCurrentProcess",
           "GetCurrentThreadId",
           "GetDriveTypeA",
+          "GetEnvironmentStrings",
+          "GetEnvironmentStringsW",
+          "GetEnvironmentVariableA",
           "GetFileType",
           "GetFullPathNameA",
           "GetModuleFileNameA",
           "GetModuleHandleA",
           "GetOEMCP",
+          "GetStartupInfoA",
           "GetStdHandle",
           "GetStringTypeA",
           "GetStringTypeW",
           "GetSystemTime",
           "GetTimeZoneInformation",
+          "GetVersion",
+          "GetVersionExA",
           "HeapAlloc",
+          "HeapCreate",
+          "HeapDestroy",
           "HeapFree",
           "HeapReAlloc",
           "HeapSize",
@@ -1417,9 +1471,11 @@
           "SetEndOfFile",
           "SetEnvironmentVariableA",
           "SetFilePointer",
+          "SetHandleCount",
           "SetLastError",
           "SetStdHandle",
           "TerminateProcess",
+          "TlsAlloc",
           "TlsGetValue",
           "TlsSetValue",
           "UnhandledExceptionFilter",
@@ -1430,7 +1486,7 @@
         ]
       }
     ],
-    "link_dependency_retained_symbol_count": 58,
+    "link_dependency_retained_symbol_count": 70,
     "modules": [
       {
         "module": "advapi32",
@@ -1556,6 +1612,8 @@
           "FindFirstFileA",
           "FindNextFileA",
           "FlushFileBuffers",
+          "FreeEnvironmentStringsA",
+          "FreeEnvironmentStringsW",
           "FreeLibrary",
           "GetACP",
           "GetCPInfo",
@@ -1564,6 +1622,9 @@
           "GetCurrentProcess",
           "GetCurrentThreadId",
           "GetDriveTypeA",
+          "GetEnvironmentStrings",
+          "GetEnvironmentStringsW",
+          "GetEnvironmentVariableA",
           "GetFileType",
           "GetFullPathNameA",
           "GetLastError",
@@ -1572,12 +1633,17 @@
           "GetModuleHandleA",
           "GetOEMCP",
           "GetProcAddress",
+          "GetStartupInfoA",
           "GetStdHandle",
           "GetStringTypeA",
           "GetStringTypeW",
           "GetSystemTime",
           "GetTimeZoneInformation",
+          "GetVersion",
+          "GetVersionExA",
           "HeapAlloc",
+          "HeapCreate",
+          "HeapDestroy",
           "HeapFree",
           "HeapReAlloc",
           "HeapSize",
@@ -1598,10 +1664,12 @@
           "SetEndOfFile",
           "SetEnvironmentVariableA",
           "SetFilePointer",
+          "SetHandleCount",
           "SetLastError",
           "SetStdHandle",
           "Sleep",
           "TerminateProcess",
+          "TlsAlloc",
           "TlsGetValue",
           "TlsSetValue",
           "UnhandledExceptionFilter",
@@ -1661,7 +1729,7 @@
         ]
       }
     ],
-    "output_symbol_count": 92,
+    "output_symbol_count": 104,
     "symbol_count": 34
   },
   "runnable": false,
@@ -1671,13 +1739,14 @@
     "archive_symbols": 59,
     "closure_placeholder_symbols": 4,
     "covered_symbols": 97,
+    "discarded_placeholder_symbols": 10,
     "generated_import_symbols": 34,
     "import_exports": 34,
     "import_symbols": 34,
-    "input_object_count": 687,
-    "link_dependency_placeholder_symbols": 11,
-    "link_dependency_symbols": 82,
-    "placeholder_symbols": 15,
+    "input_object_count": 688,
+    "link_dependency_placeholder_symbols": 10,
+    "link_dependency_symbols": 81,
+    "placeholder_symbols": 14,
     "providers": [
       {
         "alias_count": 32,
@@ -1788,7 +1857,7 @@
         "name": "msvc6-archive-only-shims",
         "resolution": "placeholder-object",
         "scope": "link-dependency",
-        "symbol_count": 11
+        "symbol_count": 10
       },
       {
         "kind": "platform-replaced",
@@ -1805,9 +1874,12 @@
         "symbol_count": 1
       }
     ],
-    "retained_link_dependency_import_symbols": 58,
+    "retained_closure_placeholder_symbols": 4,
+    "retained_link_dependency_import_symbols": 70,
+    "retained_link_dependency_placeholder_symbols": 0,
+    "retained_placeholder_symbols": 4,
     "runnable": false,
-    "validated_output_import_symbols": 92,
+    "validated_output_import_symbols": 104,
     "validated_reference_import_symbols": 34
   },
   "toolchain": {
