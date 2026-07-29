@@ -43,3 +43,19 @@ initialization, and the sibling initializer's alternate memset ordering were
 neutral or worse, so none are retained. The remaining residual is still the
 one-local native frame versus the compiler's two-local allocation; no register
 hints, volatile state, raw offsets, or other coercion is present.
+
+A follow-up cross-profile probe isolated why the native `/Oy` allocation does
+not emerge from the current source. Moving the 9-byte name clear to the order
+used by exact sibling `config_sync_from_grim` is insufficient on its own. Only
+moving that clear and both early one-valued stores across the saved-name loop
+frees `EBX`: `/Oy` then emits the native 140 instructions and a 10-instruction
+prefix, but reaches only 82.14% with references `65/0/2` because those stores
+remain on the wrong side of the loop and the two induction registers are
+swapped. The same source falls to 73.94% and `63/0/2` under the retained
+`/Oy-` profile.
+
+Register, loop-scoped, post-tested, flattened-index, explicit cursor, typed
+offset, and local-reference spellings do not repair that tradeoff; standard
+VC6.0, 6.5, and 6.6 backends also emit the same object. The joint ordering
+probe is recorded in `experiments.jsonl`, while the canonical shared body and
+the stronger 87.32% profile remain unchanged.

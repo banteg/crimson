@@ -53,3 +53,15 @@ offsets, early index initialization, and alternate memset ordering were neutral
 or worse and are not retained. The remaining mismatch is the native one-local
 frame versus the compiler's two-local allocation, with no register hints,
 volatile state, raw offsets, or other coercion in the canonical source.
+
+A follow-up cross-profile probe on the byte-identical Grim copy tested the
+remaining `/Oy` allocation directly. Moving the name clear to the exact
+sibling's order is insufficient by itself. Moving it together with both early
+one-valued stores across the saved-name loop yields the native 140-instruction
+count and a 10-instruction prefix, but only 82.14% and references `65/0/2`;
+the stores remain on the wrong side of the loop and the two induction registers
+are swapped. Under `/Oy-` that source falls to 73.94% and `63/0/2`.
+
+Natural register, loop-scope, post-test, flattened-index, explicit-cursor,
+typed-offset, local-reference, and standard VC6 backend variants do not repair
+the tradeoff. The stronger 87.32% shared body therefore remains canonical.
