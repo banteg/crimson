@@ -1970,14 +1970,23 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1551
-    assert payload["summary"]["typed_entries"] == 1542
-    assert payload["summary"]["untyped_entries"] == 9
+    assert payload["summary"]["typed_entries"] == 1548
+    assert payload["summary"]["untyped_entries"] == 3
     assert payload["summary"]["explicit_size_entries"] == 998
     assert payload["summary"]["explicit_alignment_entries"] == 998
     assert payload["summary"]["explicit_initializer_entries"] == 998
     assert payload["summary"]["fully_specified_entries"] == 998
     assert payload["summary"]["definition_group_entries"] == 914
     assert payload["summary"]["definition_groups"] == 115
+    assert [
+        (entry["name"], entry["section"])
+        for entry in payload["entries"]
+        if entry["type"] is None
+    ] == [
+        ("game_startup_intro_mute_callsite", ".text"),
+        ("game_startup_theme_play_callsite", ".text"),
+        ("game_startup_intro_play_callsite", ".text"),
+    ]
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )

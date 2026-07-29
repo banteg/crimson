@@ -98,6 +98,22 @@ CRIMSON_ABI_ASSERT(u16_is_16_bit, sizeof(u16_t) == 2);
 CRIMSON_ABI_ASSERT(guid_is_0x10, sizeof(GUID) == 0x10);
 CRIMSON_ABI_ASSERT(systemtime_is_0x10, sizeof(SYSTEMTIME) == 0x10);
 CRIMSON_ABI_ASSERT(hmodule_is_32_bit, sizeof(HMODULE) == 4);
+CRIMSON_ABI_ASSERT(
+    crt_dosmaperr_entry_is_0x08,
+    sizeof(crt_dosmaperr_entry_t) == 0x08);
+CRIMSON_ABI_ASSERT(
+    crt_dosmaperr_errno_is_at_0x04,
+    offsetof(crt_dosmaperr_entry_t, crt_errno) == 0x04);
+CRIMSON_ABI_ASSERT(
+    crt_dosmaperr_table_is_0x168,
+    sizeof(crt_dosmaperr_entry_t[45]) == 0x168);
+CRIMSON_ABI_ASSERT(
+    crt_onexit_fn_is_32_bit,
+    sizeof(crt_onexit_fn_t) == 4);
+CRIMSON_ABI_ASSERT(
+    crt_onexit_cursor_is_32_bit,
+    sizeof(crt_onexit_fn_t *) == 4);
+CRIMSON_ABI_ASSERT_ALIGN4(crt_dosmaperr_entry, crt_dosmaperr_entry_t);
 
 CRIMSON_ABI_ASSERT(
     default_char_alignment_is_one,

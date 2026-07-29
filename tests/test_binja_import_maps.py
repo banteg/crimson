@@ -556,6 +556,39 @@ def test_data_map_preserves_recovered_standalone_semantic_types():
     assert {name: types_by_name[name] for name in expected} == expected
 
 
+def test_data_map_preserves_recovered_crt_and_weapon_alias_types():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "data_map.json"
+    )
+    rows = json.loads(map_path.read_text())["entries"]
+    by_address = {
+        row["address"]: row
+        for row in rows
+        if row.get("program") == "crimsonland.exe"
+    }
+
+    expected = {
+        "0x0047b1c0": ("crt_ctype_table", "unsigned short *"),
+        "0x0047b7c0": (
+            "crt_dosmaperr_table",
+            "crt_dosmaperr_entry_t[45]",
+        ),
+        "0x004d7a90": ("weapon_hud_icon_id", "int"),
+        "0x004da3a8": ("crt_heap_mode", "int"),
+        "0x004db4f0": ("crt_onexit_table_end", "crt_onexit_fn_t *"),
+        "0x004db4f4": ("crt_onexit_table_begin", "crt_onexit_fn_t *"),
+    }
+
+    assert {
+        address: (by_address[address]["name"], by_address[address].get("type"))
+        for address in expected
+    } == expected
+
+
 def test_importer_preserves_ui_element_pointer_table_aggregate():
     importer = _load_importer()
 

@@ -4,6 +4,14 @@
 
 typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
 
+// VC6 CRT data layouts recovered from the executable's bundled runtime.
+typedef struct crt_dosmaperr_entry_t {
+    unsigned int os_error;
+    int crt_errno;
+} crt_dosmaperr_entry_t;
+
+typedef void (*crt_onexit_fn_t)(void);
+
 typedef struct vec2f_t {
     float x;
     float y;

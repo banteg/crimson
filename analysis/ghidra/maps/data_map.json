@@ -1592,13 +1592,15 @@
       "address": "0x0047b1c0",
       "comment": "CRT ctype lookup table pointer (used by crt_isctype).",
       "name": "crt_ctype_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned short *"
     },
     {
       "address": "0x0047b7c0",
-      "comment": "CRT dosmaperr table (Win32 error -> errno mapping).",
+      "comment": "45-entry CRT dosmaperr table (Win32 error -> errno mapping, 0x168 bytes).",
       "name": "crt_dosmaperr_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "crt_dosmaperr_entry_t[45]"
     },
     {
       "address": "0x0047e448",
@@ -10675,9 +10677,10 @@
     },
     {
       "address": "0x004d7a90",
-      "comment": "Effect frame table used for grim_set_sub_rect selection.",
-      "name": "effect_subrect_frame_table",
-      "program": "crimsonland.exe"
+      "comment": "Weapon-table HUD icon id alias (weapon_table[0].hud_icon_id; stride 0x7c), used for Grim sub-rect selection.",
+      "name": "weapon_hud_icon_id",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d7a98",
@@ -10809,7 +10812,8 @@
       "address": "0x004da3a8",
       "comment": "CRT heap mode flag used by crt_free paths.",
       "name": "crt_heap_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004da3c0",
@@ -10841,15 +10845,17 @@
     },
     {
       "address": "0x004db4f0",
-      "comment": "CRT onexit table begin pointer.",
-      "name": "crt_onexit_table_begin",
-      "program": "crimsonland.exe"
+      "comment": "CRT onexit table logical-end cursor (next free callback slot).",
+      "name": "crt_onexit_table_end",
+      "program": "crimsonland.exe",
+      "type": "crt_onexit_fn_t *"
     },
     {
       "address": "0x004db4f4",
-      "comment": "CRT onexit table end pointer.",
-      "name": "crt_onexit_table_end",
-      "program": "crimsonland.exe"
+      "comment": "CRT onexit table allocation-base cursor (first callback slot).",
+      "name": "crt_onexit_table_begin",
+      "program": "crimsonland.exe",
+      "type": "crt_onexit_fn_t *"
     },
     {
       "address": "0x10022114",

@@ -13,7 +13,7 @@ The HUD and post‑game stats render weapon icons via:
 grim_set_sub_rect(8, 2, 1, icon_index << 1)
 ```
 
-Where `icon_index` is the `effect_subrect_frame_table` entry at weapon table
+Where `icon_index` is the `weapon_hud_icon_id` entry at weapon table
 offset `0x64` (`weapon_table + 0x64 + weapon_id * 0x7c`). This means:
 
 - The atlas is an **8×8** grid of **32×32** cells.

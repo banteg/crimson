@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ab9c7222653f1f03dc7998f66acae1bf6f777ae52b62729bd61a9f4a89af342c",
+  "audit_digest": "0bbad4885dce9b103c0cf04e951534ca0479441bc0401b12c909a3161c1f15ee",
   "entries": [
     {
       "address": 4211888,
@@ -4703,14 +4703,14 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned short *"
     },
     {
       "address": 4700096,
       "aliases": [],
       "alignment": null,
       "alignment_source": null,
-      "comment": "CRT dosmaperr table (Win32 error -> errno mapping).",
+      "comment": "45-entry CRT dosmaperr table (Win32 error -> errno mapping, 0x168 bytes).",
       "definition_state": "unknown",
       "initializer_hex": null,
       "initializer_source": null,
@@ -4722,7 +4722,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "crt_dosmaperr_entry_t[45]"
     },
     {
       "address": 4711496,
@@ -30716,19 +30716,19 @@
       "aliases": [],
       "alignment": null,
       "alignment_source": null,
-      "comment": "Effect frame table used for grim_set_sub_rect selection.",
+      "comment": "Weapon-table HUD icon id alias (weapon_table[0].hud_icon_id; stride 0x7c), used for Grim sub-rect selection.",
       "definition_state": "unknown",
       "initializer_hex": null,
       "initializer_source": null,
       "initializer_target": null,
       "linker_reference_count": 0,
-      "name": "effect_subrect_frame_table",
+      "name": "weapon_hud_icon_id",
       "section": ".data",
       "section_offset": 420496,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 5077656,
@@ -31099,7 +31099,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 5088192,
@@ -31190,26 +31190,7 @@
       "aliases": [],
       "alignment": null,
       "alignment_source": null,
-      "comment": "CRT onexit table begin pointer.",
-      "definition_state": "unknown",
-      "initializer_hex": null,
-      "initializer_source": null,
-      "initializer_target": null,
-      "linker_reference_count": 0,
-      "name": "crt_onexit_table_begin",
-      "section": ".data",
-      "section_offset": 435440,
-      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": null
-    },
-    {
-      "address": 5092596,
-      "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
-      "comment": "CRT onexit table end pointer.",
+      "comment": "CRT onexit table logical-end cursor (next free callback slot).",
       "definition_state": "unknown",
       "initializer_hex": null,
       "initializer_source": null,
@@ -31217,11 +31198,30 @@
       "linker_reference_count": 0,
       "name": "crt_onexit_table_end",
       "section": ".data",
+      "section_offset": 435440,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "crt_onexit_fn_t *"
+    },
+    {
+      "address": 5092596,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "CRT onexit table allocation-base cursor (first callback slot).",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_onexit_table_begin",
+      "section": ".data",
       "section_offset": 435444,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "crt_onexit_fn_t *"
     }
   ],
   "image": "crimsonland.exe",
@@ -31261,7 +31261,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "d0f206a17eabbcb704540f62cb6327d7cd6d2376be78172083eecb1da67718a0",
+    "data_map_sha256": "1f67558f0e26d27315bb136f47f4f24d87e037e6337f22ee80c1a079366c3e3a",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
     "definitions_sha256": "0635e22cc154cb7cd447e3e4bd3ba7bed3ea635cb86a81c17829527e11aed066",
     "reference_image": {
@@ -31280,7 +31280,7 @@
     "explicit_alignment_entries": 998,
     "explicit_initializer_entries": 998,
     "explicit_size_entries": 998,
-    "fixed_array_types": 265,
+    "fixed_array_types": 266,
     "fully_specified_entries": 998,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -31293,8 +31293,8 @@
       ".rdata": 4,
       ".text": 4
     },
-    "typed_entries": 1542,
+    "typed_entries": 1548,
     "unique_addresses": 1547,
-    "untyped_entries": 9
+    "untyped_entries": 3
   }
 }
