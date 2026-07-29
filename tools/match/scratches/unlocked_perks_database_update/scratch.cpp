@@ -34,7 +34,9 @@ struct database_scrollbar_t {
 
     database_scrollbar_t()
     {
-        column_offsets[0] = column_offsets[1] = 0.0f;
+        for (int index = 0; index < 2; ++index) {
+            column_offsets[index] = 0;
+        }
     }
 
     ~database_scrollbar_t() {}
@@ -107,12 +109,14 @@ extern "C" void unlocked_perks_database_update(void)
         "Unlocked Perks Database");
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
-    database_vec2_t separator_position;
-    separator_position.x =
-        position.x + (float)(132 - title_width / 2);
-    separator_position.y = position.y + 13.0f;
-    grim_interface_ptr->grim_draw_rect_outline(
-        (float *)&separator_position, (float)title_width, 1.0f);
+    {
+        database_vec2_t separator_position;
+        separator_position.x =
+            position.x + (float)(132 - title_width / 2);
+        separator_position.y = position.y + 13.0f;
+        grim_interface_ptr->grim_draw_rect_outline(
+            (float *)&separator_position, (float)title_width, 1.0f);
+    }
 
     position.y += 20.0f;
     int database_count = 0;
@@ -203,10 +207,15 @@ extern "C" void unlocked_perks_database_update(void)
 
     static database_button_t back_button;
     back_button.label = "Back";
-    position.x += 132.0f;
-    if (ui_button_update((float *)&position, (ui_button_t *)&back_button)) {
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_STATISTICS_MENU;
+    {
+        database_vec2_t button_position;
+        button_position.x = position.x + 132.0f;
+        button_position.y = position.y;
+        if (ui_button_update(
+                (float *)&button_position, (ui_button_t *)&back_button)) {
+            ui_transition_direction = 0;
+            game_state_pending = GAME_STATE_STATISTICS_MENU;
+        }
     }
 
     {
@@ -243,11 +252,14 @@ extern "C" void unlocked_perks_database_update(void)
             perk_meta_table[perk_id].name);
 
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
-        separator_position.x =
-            position.x + (float)(128 - name_width / 2);
-        separator_position.y = position.y + 13.0f;
-        grim_interface_ptr->grim_draw_rect_outline(
-            (float *)&separator_position, (float)name_width, 1.0f);
+        {
+            database_vec2_t separator_position;
+            separator_position.x =
+                position.x + (float)(128 - name_width / 2);
+            separator_position.y = position.y + 13.0f;
+            grim_interface_ptr->grim_draw_rect_outline(
+                (float *)&separator_position, (float)name_width, 1.0f);
+        }
         position.y += 22.0f;
 
         if (perk_meta_table[perk_id].prerequisite != -1) {

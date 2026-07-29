@@ -69,3 +69,13 @@ representations; the explicit live-`sqrt` plus stored-float form is the sole
 improvement. Recorded probes confirm that reusing the shared float-returning
 helper regresses to 90.50%, while an equivalent double/output-parameter helper
 is byte-neutral at 93.33%.
+
+`lower-bound-control-flow-mutations.json` then evaluates eight ordinary
+representations of the residual `min_dist` gate from that improved baseline:
+comma-sequenced storage, nested comparisons, an in-guard distance, early and
+positive-guard gotos, a named boolean, and reference/pointer lower bounds.
+Seven are byte-neutral. Computing the distance inside the guard adds one
+candidate instruction and loses 6.13 fuzzy-weighted bytes. Across the three
+recorded plans, all 15 bounded lifetime/control-flow variants are now covered;
+none removes VC6's final `fld`/`fxch`/`fcompp` lowering, so no further source
+change is retained.

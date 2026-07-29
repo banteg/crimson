@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-separator-lifetime",
+      "find": "        separator_position.x =\n            position.x + (float)(128 - name_width / 2);\n        separator_position.y = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)name_width, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "shadowed-detail-separator",
+          "text": "        {\n            database_vec2_t separator_position;\n            separator_position.x =\n                position.x + (float)(128 - name_width / 2);\n            separator_position.y = position.y + 13.0f;\n            grim_interface_ptr->grim_draw_rect_outline(\n                (float *)&separator_position, (float)name_width, 1.0f);\n        }\n"
+        },
+        {
+          "name": "named-detail-separator",
+          "text": "        database_vec2_t detail_separator_position;\n        detail_separator_position.x =\n            position.x + (float)(128 - name_width / 2);\n        detail_separator_position.y = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&detail_separator_position, (float)name_width, 1.0f);\n"
+        },
+        {
+          "name": "constructed-detail-separator",
+          "text": "        database_vec2_t detail_separator_position(\n            position.x + (float)(128 - name_width / 2),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&detail_separator_position, (float)name_width, 1.0f);\n"
+        },
+        {
+          "name": "copied-detail-separator",
+          "text": "        database_vec2_t detail_separator_position = position;\n        detail_separator_position.x +=\n            (float)(128 - name_width / 2);\n        detail_separator_position.y += 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&detail_separator_position, (float)name_width, 1.0f);\n"
+        },
+        {
+          "name": "scalar-detail-separator",
+          "text": "        float detail_separator_position[2];\n        detail_separator_position[0] =\n            position.x + (float)(128 - name_width / 2);\n        detail_separator_position[1] = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            detail_separator_position, (float)name_width, 1.0f);\n"
+        }
+      ]
+    }
+  ]
+}

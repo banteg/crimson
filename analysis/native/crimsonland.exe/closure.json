@@ -1,5 +1,5 @@
 {
-  "audit_digest": "8bd8c9ffd5368b45a361bcee16289c86922d29b0ea5e069987ce25bedcc6f060",
+  "audit_digest": "8ee7c495403c006ce94d66e65d478317d5de774417feb2c32c17e5ebebb1e646",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -107503,7 +107503,7 @@
           "comdat_selection": 1,
           "function": "unlocked_perks_database_update",
           "kind": "section",
-          "logical_section_size": 2064,
+          "logical_section_size": 2080,
           "object": "tools/match/scratches/unlocked_perks_database_update/build/msvc6.5/6d66278841f8bc65/scratch.obj",
           "section": ".text",
           "size": null,
@@ -163275,7 +163275,7 @@
           "comdat_selection": 1,
           "function": "unlocked_perks_database_update",
           "kind": "section",
-          "logical_section_size": 2064,
+          "logical_section_size": 2080,
           "object": "tools/match/scratches/unlocked_perks_database_update/build/msvc6.5/6d66278841f8bc65/scratch.obj",
           "section": ".text",
           "size": null,

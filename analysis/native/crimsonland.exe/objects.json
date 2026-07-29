@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "8bd8c9ffd5368b45a361bcee16289c86922d29b0ea5e069987ce25bedcc6f060",
+  "audit_digest": "8ee7c495403c006ce94d66e65d478317d5de774417feb2c32c17e5ebebb1e646",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -77282,7 +77282,7 @@
         {
           "path": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "5d25ae28d42d05723396547168954f4e6ca0a67d880a28bc303fa197a7d4a168"
+          "sha256": "52d176ff493087de7c594966bf597ae33627a71834cf9fb0d8d6cc921363bcd6"
         },
         {
           "path": "tools/match/scratches/unlocked_perks_database_update/scratch.conf",
@@ -77328,17 +77328,17 @@
           "canonical_config_sha256": "3a506f7c06853aa0dff6067af1ac3e808467c4ef55f6b44b198118e74d8fa92e",
           "canonical_scratch": "tools/match/scratches/unlocked_perks_database_update",
           "canonical_source": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
-          "canonical_source_sha256": "5d25ae28d42d05723396547168954f4e6ca0a67d880a28bc303fa197a7d4a168",
+          "canonical_source_sha256": "52d176ff493087de7c594966bf597ae33627a71834cf9fb0d8d6cc921363bcd6",
           "effective_end": 4460913,
           "end": 4460913,
           "function": "unlocked_perks_database_update",
           "match": {
-            "candidate_instructions": 508,
+            "candidate_instructions": 510,
             "masked_mismatches": 2,
-            "masked_ok": 135,
+            "masked_ok": 141,
             "masked_unresolved": 0,
-            "prefix_instructions": 0,
-            "ratio": 0.8537782139352306,
+            "prefix_instructions": 9,
+            "ratio": 0.9089128305582762,
             "state": "wip",
             "target_instructions": 511
           },
@@ -77347,21 +77347,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 508,
+        "candidate_instructions": 510,
         "masked_mismatches": 2,
-        "masked_ok": 135,
+        "masked_ok": 141,
         "masked_unresolved": 0,
-        "prefix_instructions": 0,
-        "ratio": 0.8537782139352306,
+        "prefix_instructions": 9,
+        "ratio": 0.9089128305582762,
         "state": "wip",
         "target_instructions": 511
       },
       "object": "tools/match/scratches/unlocked_perks_database_update/build/msvc6.5/6d66278841f8bc65/scratch.obj",
       "object_function_symbol": "_unlocked_perks_database_update",
-      "object_sha256": "4a6f989ca31ce631ab145bc2880306c64f016859c9a2faca2f12cb48094f46cd",
+      "object_sha256": "dd7bb3e00f18fafdbb91a0ba7560307f10b35f84df2fb75540c8e71e51c179eb",
       "scratch": "tools/match/scratches/unlocked_perks_database_update",
       "source": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
-      "source_sha256": "5d25ae28d42d05723396547168954f4e6ca0a67d880a28bc303fa197a7d4a168",
+      "source_sha256": "52d176ff493087de7c594966bf597ae33627a71834cf9fb0d8d6cc921363bcd6",
       "target_size": 2065,
       "translation_unit": {
         "kind": "isolated",

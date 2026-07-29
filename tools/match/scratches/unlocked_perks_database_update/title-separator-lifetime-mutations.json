@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "title-separator-lifetime",
+      "find": "    database_vec2_t separator_position;\n    separator_position.x =\n        position.x + (float)(132 - title_width / 2);\n    separator_position.y = position.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&separator_position, (float)title_width, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "scoped-title-separator",
+          "text": "    {\n        database_vec2_t separator_position;\n        separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        separator_position.y = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "named-title-separator",
+          "text": "    {\n        database_vec2_t title_separator_position;\n        title_separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        title_separator_position.y = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&title_separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "constructed-title-separator",
+          "text": "    {\n        database_vec2_t title_separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&title_separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "scalar-title-separator",
+          "text": "    {\n        float title_separator_position[2];\n        title_separator_position[0] =\n            position.x + (float)(132 - title_width / 2);\n        title_separator_position[1] = position.y + 13.0f;\n        grim_interface_ptr->grim_draw_rect_outline(\n            title_separator_position, (float)title_width, 1.0f);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

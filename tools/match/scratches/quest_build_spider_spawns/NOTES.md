@@ -33,3 +33,13 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Direct metadata-store audit
+
+`direct-metadata-site-mutations.json` independently replaces each of the
+eleven metadata-setter calls with the equivalent direct template, trigger, and
+count stores. Ten variants are byte-for-byte neutral. Expanding entry two
+alone loses 10 fuzzy-weighted bytes. The fixed table values, offsets, and
+setter semantics are therefore not hiding the remaining schedule difference;
+the complete 11-variant record is retained in `experiments.jsonl`, and no
+source mutation is kept.

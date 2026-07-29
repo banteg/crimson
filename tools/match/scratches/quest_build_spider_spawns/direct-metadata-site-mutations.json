@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-0-metadata",
+      "find": "    spawns[0].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 1500, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[0].trigger_time_ms = 1500;\n    spawns[0].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-1-metadata",
+      "find": "    spawns[1].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 1500, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[1].trigger_time_ms = 1500;\n    spawns[1].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-2-metadata",
+      "find": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 1500, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[2].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[2].trigger_time_ms = 1500;\n    spawns[2].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-3-metadata",
+      "find": "    spawns[3].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 1500, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[3].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[3].trigger_time_ms = 1500;\n    spawns[3].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-4-metadata",
+      "find": "    spawns[4].set_spawn(\n        SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, 3000, 2);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[4].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    spawns[4].trigger_time_ms = 3000;\n    spawns[4].count = 2;"
+        }
+      ]
+    },
+    {
+      "name": "entry-5-metadata",
+      "find": "    spawns[5].set_spawn(\n        SPAWN_ID_DEN_SPIDER_BASIC_0A, 18000, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[5].template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n    spawns[5].trigger_time_ms = 18000;\n    spawns[5].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-6-metadata",
+      "find": "    spawns[6].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 20500, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[6].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[6].trigger_time_ms = 20500;\n    spawns[6].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-7-metadata",
+      "find": "    spawns[7].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 26000, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[7].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[7].trigger_time_ms = 26000;\n    spawns[7].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-8-metadata",
+      "find": "    spawns[8].set_spawn(\n        SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, 21000, 2);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[8].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    spawns[8].trigger_time_ms = 21000;\n    spawns[8].count = 2;"
+        }
+      ]
+    },
+    {
+      "name": "entry-9-metadata",
+      "find": "    spawns[9].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 31500, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[9].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[9].trigger_time_ms = 31500;\n    spawns[9].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "entry-10-metadata",
+      "find": "    spawns[10].set_spawn(\n        SPAWN_ID_DEN_SPIDER_WEAK_10, 22000, 1);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[10].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n    spawns[10].trigger_time_ms = 22000;\n    spawns[10].count = 1;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-loop-lower-bound",
+      "find": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            if (live_distance > min_dist && distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n",
+      "replacements": [
+        {
+          "name": "comma-sequenced-store",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance;\n            if ((distance = (float)live_distance, live_distance > min_dist)\n                && distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n"
+        },
+        {
+          "name": "nested-lower-bound",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            if (live_distance > min_dist) {\n                if (distance < best_distance) {\n                    best_index = index;\n                    best_distance = distance;\n                }\n            }\n"
+        },
+        {
+          "name": "distance-inside-lower-bound",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            if (live_distance > min_dist) {\n                float distance = (float)live_distance;\n                if (distance < best_distance) {\n                    best_index = index;\n                    best_distance = distance;\n                }\n            }\n"
+        },
+        {
+          "name": "early-reject-goto",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            if (!(live_distance > min_dist)) {\n                goto next_creature;\n            }\n            if (distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n        next_creature:\n            ;\n"
+        },
+        {
+          "name": "positive-guard-gotos",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            if (live_distance > min_dist) {\n                goto compare_distance;\n            }\n            goto next_creature;\n        compare_distance:\n            if (distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n        next_creature:\n            ;\n"
+        },
+        {
+          "name": "named-lower-bound-result",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            bool above_minimum = live_distance > min_dist;\n            if (above_minimum && distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n"
+        },
+        {
+          "name": "minimum-reference",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            const float &minimum_distance = min_dist;\n            if (live_distance > minimum_distance\n                && distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n"
+        },
+        {
+          "name": "minimum-pointer",
+          "text": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            const float *minimum_distance = &min_dist;\n            if (live_distance > *minimum_distance\n                && distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n"
+        }
+      ]
+    }
+  ]
+}
