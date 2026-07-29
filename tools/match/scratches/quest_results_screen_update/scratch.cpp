@@ -519,15 +519,16 @@ show_results:
             xy.y += 14.0f;
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, 0.9f);
-            int quest_index =
-                quest_stage_minor + quest_stage_major * 10 - 11;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 xy.x,
                 xy.y,
                 "%s",
                 weapon_table_entry(
-                    quest_selected_meta[quest_index]
-                        .unlock_weapon_id));
+                    quest_selected_meta[
+                        quest_stage_minor
+                        + quest_stage_major * 10
+                        - 11]
+                            .unlock_weapon_id));
             xy.y += 16.0f;
         }
         if (quest_results_unlock_perk_id != perk_id_antiperk) {

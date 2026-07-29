@@ -39,7 +39,7 @@ those scoped `REFERENCE_ALIASES`.
 ## Matching evidence and honest residual
 
 The verified VC6 build is 1,165 normalized instructions against 1,168 native,
-scores 87.18%, and audits 438 references as resolved, zero as unresolved, and
+scores 88.38%, and audits 442 references as resolved, zero as unresolved, and
 2 as mismatched within nonmatching instruction regions. The remaining broad
 delta is register/stack allocation: native uses a 24-byte frame and caches the
 working coordinates in `edi`/`ebp`, while the natural reconstruction still
@@ -93,7 +93,7 @@ The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output covers the four-step reveal,
 high-score qualification and name validation, unlock notices, and every exit
 route; IDA and Ghidra corroborate the same 21-callee surface. The candidate is
-within three instructions of native at 1,165/1,168 with `438/0/2`
+within three instructions of native at 1,165/1,168 with `442/0/2`
 references. Both mismatches align the repeated `sfx_ui_clink_01` load against
 the adjacent, already-recovered health/perk reveal accumulators after the
 stack-allocation divergence. They remain visible and unaliased, but are not
@@ -126,7 +126,8 @@ Binary-Ninja-grounded base/perk reveal ordering matrix
 Those negative results bound the remaining source-shape search without
 register forcing or artificial storage overlap.
 
-The retained source is now **87.1839%**, 1,165/1,168 instructions, a
+At the end of that tranche the retained source was **87.1839%**,
+1,165/1,168 instructions, a
 1-instruction exact prefix, and `438/0/2` references. It gains 33.309901
 weighted bytes over the prior baseline. Spec SHA-256 values are
 `5abcd4c986d71457dd9b5997399e0687c5e07abd5405423fae34daeed9cce59e`
@@ -137,3 +138,36 @@ weighted bytes over the prior baseline. Spec SHA-256 values are
 `a9dc6deca9310b323f80ceae0127ece9505aa5de987bf80907d334e5e2cbe595`
 (reveal ordering). The retained source SHA-256 is
 `bce9bb81ae0a484367fdf7d5f18daf560ba06145c5dac64dc8c9110ec20d2179`.
+
+## Unlock-index expression recovery (2026-07-29)
+
+Live Binary Ninja disassembly at `0x00411afd` through `0x00411b48` shows the
+weapon notice setting up the Grim vtable before recomputing
+`quest_stage_minor + quest_stage_major * 10 - 11` inside the
+`weapon_table_entry` argument. The prior named `quest_index` caused VC6 to
+compute that index before loading the interface and split the otherwise
+native instruction schedule.
+
+`unlock-index-expression-mutations.json` exhausts all 15 single-site and
+two-site combinations across the weapon and perk notices. Inlining only the
+weapon lookup adds 58.292327 weighted bytes and four aligned references with
+no instruction or reference-debt regression. Both arithmetic spellings
+compile identically; the retained minor-plus-major form follows the live
+decompiler. The perk variants are byte-neutral because VC6 already folds that
+named pair into the native nested lookup.
+
+The exact sibling's local name-buffer idiom and five equivalent constructor
+address spellings were separately bounded by all six variants in
+`name-buffer-constructor-mutations.json`; every variant is byte-identical.
+That falsifies the constructor expression as the cause of the early
+name-buffer register lifetime without introducing a barrier or artificial
+alias.
+
+The current source is **88.3841%**, remains 1,165/1,168 instructions with a
+1-instruction exact prefix, and audits `442/0/2` references. Spec SHA-256
+values are
+`1509f8110222447c18fd0236ccfea447d3d0ef4d47b18be51344ec89b1c7c01a`
+(unlock index) and
+`a2380c499a18611c2b037b0f33c187f26b0c0c4cbf5734ae1c2be26ae744b4e6`
+(name-buffer constructor). The retained source SHA-256 is
+`ba6e8fe7c57c408c554c11f1a2ef417d6f60f05d0ef83491b8951f36681da102`.

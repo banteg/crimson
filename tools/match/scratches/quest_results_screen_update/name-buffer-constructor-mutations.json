@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "name-buffer-constructor-shape",
+      "find": "    static quest_results_button_t name_submit_button;\n    static quest_results_text_input_t name_input(\n        quest_results_name_input_buffer, 0x18, 0x60);",
+      "replacements": [
+        {
+          "name": "sibling-local-before-statics",
+          "text": "    char *name_buffer = quest_results_name_input_buffer;\n    static quest_results_button_t name_submit_button;\n    static quest_results_text_input_t name_input(\n        name_buffer, 0x18, 0x60);"
+        },
+        {
+          "name": "local-between-statics",
+          "text": "    static quest_results_button_t name_submit_button;\n    char *name_buffer = quest_results_name_input_buffer;\n    static quest_results_text_input_t name_input(\n        name_buffer, 0x18, 0x60);"
+        },
+        {
+          "name": "const-local-before-statics",
+          "text": "    char *const name_buffer = quest_results_name_input_buffer;\n    static quest_results_button_t name_submit_button;\n    static quest_results_text_input_t name_input(\n        name_buffer, 0x18, 0x60);"
+        },
+        {
+          "name": "address-of-first-element",
+          "text": "    static quest_results_button_t name_submit_button;\n    static quest_results_text_input_t name_input(\n        &quest_results_name_input_buffer[0], 0x18, 0x60);"
+        },
+        {
+          "name": "array-address-cast",
+          "text": "    static quest_results_button_t name_submit_button;\n    static quest_results_text_input_t name_input(\n        (char *)&quest_results_name_input_buffer, 0x18, 0x60);"
+        },
+        {
+          "name": "pointer-plus-zero",
+          "text": "    static quest_results_button_t name_submit_button;\n    static quest_results_text_input_t name_input(\n        quest_results_name_input_buffer + 0, 0x18, 0x60);"
+        }
+      ]
+    }
+  ]
+}
