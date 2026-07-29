@@ -160,9 +160,9 @@ six closure symbols, including byte-proven aliases from the recovered
 `d3dx_copy_texture_filtered` name to the archive's
 `D3DXComputeNormalMap` and from `jpeg_std_error` to the archive's namespaced
 IJG body. Deterministic VC6 builds from the pinned IJG 6a and zlib 1.1.3
-sources supply two more closure symbols. Five closure imports still use
-generated import libraries, and 22 static-library or host-replaced symbols
-remain explicit placeholders.
+sources supply eight more closure symbols. Five closure imports still use
+generated import libraries, and 16 host-replaced symbols remain explicit
+placeholders.
 
 The D3DX archive also needs 24 decorated platform symbols while the linker
 selects and prunes its members. These are modeled as `link-dependency`
@@ -192,10 +192,10 @@ uv run python scripts/build_native_codec_providers.py \
   --zlib-tar /path/to/zlib-1.1.3.tar.gz
 ```
 
-The codec recipe verifies its pinned source and tool hashes, normalizes archive
-and COFF timestamps, and requires exact matches for `jpeg_destroy_decompress`,
-its `jpeg_destroy` dependency, and zlib's `uncompress` entry before publishing
-either archive.
+The codec recipe verifies its pinned source and tool hashes, applies IJG's
+documented one-byte Windows `boolean` ABI, normalizes archive and COFF
+timestamps, and requires exact matches for 18 libjpeg functions plus zlib's
+`uncompress` entry before publishing either archive.
 
 The link command rebuilds the canonical audit, rejects archive drift,
 synthesizes the five remaining closure imports and 24 D3DX link dependencies
@@ -213,7 +213,7 @@ inputs produce the same linked-image hash.
 
 This is a structural linker milestone, not a runnable DLL or a byte-match
 claim. `link.json.runnable` stays false while any placeholder symbol remains.
-The canonical closure report also keeps those 22 references unresolved, so
+The canonical closure report also keeps those 16 references unresolved, so
 `all_references_closed` cannot pass merely because a generated stub made the
 linker accept the image. Replacing each placeholder group with its actual
 provider object is the path from a structural image to a runnable one.

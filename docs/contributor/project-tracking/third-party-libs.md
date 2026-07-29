@@ -210,18 +210,25 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   decoder copy: the confirmed D3DX8 archive exposes namespaced symbols with
   byte-distinct entry bodies elsewhere in Grim, so this cluster remains a
   separate provider target.
-- Native provider: the isolated upstream `jpeg_destroy_decompress` body
-  compiled with VC6 `/O2 /GB /W3 /MD` exactly matches the 12-byte entry at
-  `0x10009b20`. Its `_jpeg_destroy` dependency from `jcomapi.c` exactly
-  matches the 31-byte body at `0x1003dd30` under `/O2 /G6 /W3 /MD`. The
-  normalized two-object archive has SHA-256
-  `9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c`.
+- Native provider: IJG's documented Windows compatibility choice
+  `typedef unsigned char boolean` reproduces Grim's `0x1a8`
+  `jpeg_decompress_struct` ABI. With that build configuration, stock IJG 6a
+  compiled with VC6 `/O2 /GB /W3 /MD` exactly matches all nine entry-cluster
+  functions (1,642 bytes total). `jdmarker.c`, `jcomapi.c`, and the recovered
+  custom memory source use `/O2 /G6 /W3 /MD`.
+- Native provider: `grim_jpeg_memory_src` at `0x1003a990` and its four local
+  callbacks at `0x1003aa10..0x1003ab00` are exact matches totaling 354 bytes.
+  The recipe additionally gates exact `jpeg_resync_to_restart`, `jpeg_abort`,
+  and `jpeg_destroy` bodies. Across the archive, 18 functions are required to
+  match their reference addresses before publication.
+- Native provider: the normalized 28-object archive has size 152,452 and
+  SHA-256
+  `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.
 - Native provider: `jpeg_std_error` at `0x1003ab10` is a 76-byte exact match
   for `obj\i386\jerror.obj` in the pinned DirectX 8.1 archive and links
   through an evidence-backed weak alias to its namespaced D3DX symbol.
-- Status: these two closure entries and zlib's `_uncompress` are now
-  archive-backed. The custom memory source and five remaining public JPEG
-  entries stay explicit placeholders until their bodies are byte-proven.
+- Status: every JAZ libjpeg closure entry and zlib's `_uncompress` are now
+  archive-backed; the JAZ provider has no remaining placeholder symbols.
 - Status: `grim_jaz_jpeg_error_exit` remains a 100% scratch match with the 6a
   headers. It and the surrounding JAZ payload/RLE logic remain Grim-owned.
 
@@ -239,8 +246,8 @@ uv run python scripts/build_native_codec_providers.py \
 ```
 
 The recipe verifies both source hashes, the VC6/Wibo tool hashes, the
-normalized output hashes, and the three required exact address matches before
-publishing either ignored archive.
+normalized output hashes, 18 required libjpeg address matches, and zlib's
+`uncompress` match before publishing either ignored archive.
 
 ### libvorbisfile / libvorbis / libogg (Ogg Vorbis Win32 SDK 1.0)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.

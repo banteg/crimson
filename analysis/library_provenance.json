@@ -128,19 +128,55 @@
     {
       "id": "ijg-libjpeg-6a-vc6-jaz-provider",
       "path": "tools/native/providers/build/ijg-libjpeg-6a/libjpeg.lib",
-      "size": 2270,
-      "sha256": "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c",
+      "size": 152452,
+      "sha256": "c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869",
       "recipe": "scripts/build_native_codec_providers.py",
       "source_artifacts": [
         "ijg-libjpeg-6a"
       ],
+      "configuration": {
+        "source_member": "jpeg-6a/jmorecfg.h",
+        "change": "typedef int boolean; -> typedef unsigned char boolean;",
+        "evidence_member": "jpeg-6a/install.doc",
+        "note": "IJG documents this Windows compatibility typedef; it reproduces Grim's 0x1a8 jpeg_decompress_struct ABI."
+      },
       "objects": [
         {
-          "source": "tools/native/providers/sources/ijg-libjpeg-6a/jpeg_destroy_decompress.c",
+          "source_members": [
+            "jpeg-6a/jdapimin.c",
+            "jpeg-6a/jdapistd.c",
+            "jpeg-6a/jdtrans.c",
+            "jpeg-6a/jdatasrc.c",
+            "jpeg-6a/jdmaster.c",
+            "jpeg-6a/jdinput.c",
+            "jpeg-6a/jdhuff.c",
+            "jpeg-6a/jdphuff.c",
+            "jpeg-6a/jdmainct.c",
+            "jpeg-6a/jdcoefct.c",
+            "jpeg-6a/jdpostct.c",
+            "jpeg-6a/jddctmgr.c",
+            "jpeg-6a/jidctfst.c",
+            "jpeg-6a/jidctflt.c",
+            "jpeg-6a/jidctint.c",
+            "jpeg-6a/jidctred.c",
+            "jpeg-6a/jdsample.c",
+            "jpeg-6a/jdcolor.c",
+            "jpeg-6a/jquant1.c",
+            "jpeg-6a/jquant2.c",
+            "jpeg-6a/jdmerge.c",
+            "jpeg-6a/jutils.c",
+            "jpeg-6a/jerror.c",
+            "jpeg-6a/jmemmgr.c",
+            "jpeg-6a/jmemnobs.c"
+          ],
           "cflags": "/O2 /GB /W3 /MD"
         },
         {
-          "source_member": "jpeg-6a/jcomapi.c",
+          "source_members": [
+            "jpeg-6a/jdmarker.c",
+            "jpeg-6a/jcomapi.c"
+          ],
+          "source": "tools/native/providers/sources/ijg-libjpeg-6a/grim_jpeg_memory_src.c",
           "cflags": "/O2 /G6 /W3 /MD"
         }
       ],

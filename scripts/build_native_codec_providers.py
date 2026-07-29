@@ -24,8 +24,64 @@ ZLIB_SOURCE_ID = "zlib-1.1.3"
 JPEG_OUTPUT = Path("ijg-libjpeg-6a/libjpeg.lib")
 ZLIB_OUTPUT = Path("zlib-1.1.3/zlib.lib")
 JPEG_FLAGS = ("/O2", "/GB", "/W3", "/MD")
-JPEG_COMMON_FLAGS = ("/O2", "/G6", "/W3", "/MD")
+JPEG_G6_FLAGS = ("/O2", "/G6", "/W3", "/MD")
 ZLIB_FLAGS = ("/O2", "/GB", "/W3", "/MD")
+JPEG_ARCHIVE_SOURCES = (
+    "jdapimin.c",
+    "jdapistd.c",
+    "jdtrans.c",
+    "jdatasrc.c",
+    "jdmaster.c",
+    "jdinput.c",
+    "jdmarker.c",
+    "jdhuff.c",
+    "jdphuff.c",
+    "jdmainct.c",
+    "jdcoefct.c",
+    "jdpostct.c",
+    "jddctmgr.c",
+    "jidctfst.c",
+    "jidctflt.c",
+    "jidctint.c",
+    "jidctred.c",
+    "jdsample.c",
+    "jdcolor.c",
+    "jquant1.c",
+    "jquant2.c",
+    "jdmerge.c",
+    "jcomapi.c",
+    "jutils.c",
+    "jerror.c",
+    "jmemmgr.c",
+    "jmemnobs.c",
+    "grim_jpeg_memory_src.c",
+)
+JPEG_G6_SOURCES = (
+    "jdmarker.c",
+    "jcomapi.c",
+    "grim_jpeg_memory_src.c",
+)
+JPEG_BLEND_SOURCES = tuple(source for source in JPEG_ARCHIVE_SOURCES if source not in JPEG_G6_SOURCES)
+JPEG_REQUIRED_MATCHES = (
+    (0x10009A50, "_jpeg_CreateDecompress", "jdapimin.obj"),
+    (0x10009B20, "_jpeg_destroy_decompress", "jdapimin.obj"),
+    (0x10009B30, "_jpeg_read_header", "jdapimin.obj"),
+    (0x10009BA0, "_jpeg_consume_input", "jdapimin.obj"),
+    (0x10009C60, "_default_decompress_parms", "jdapimin.obj"),
+    (0x10009E00, "_jpeg_finish_decompress", "jdapimin.obj"),
+    (0x10009EC0, "_jpeg_start_decompress", "jdapistd.obj"),
+    (0x10009FA0, "_output_pass_setup", "jdapistd.obj"),
+    (0x1000A070, "_jpeg_read_scanlines", "jdapistd.obj"),
+    (0x1003A990, "_grim_jpeg_memory_src", "grim_jpeg_memory_src.obj"),
+    (0x1003AA10, "_init_source", "grim_jpeg_memory_src.obj"),
+    (0x1003AA20, "_fill_input_buffer", "grim_jpeg_memory_src.obj"),
+    (0x1003AAC0, "_skip_input_data", "grim_jpeg_memory_src.obj"),
+    (0x1003AB00, "_term_source", "grim_jpeg_memory_src.obj"),
+    (0x1003AB10, "_jpeg_std_error", "jerror.obj"),
+    (0x1003B560, "_jpeg_resync_to_restart", "jdmarker.obj"),
+    (0x1003DD00, "_jpeg_abort", "jcomapi.obj"),
+    (0x1003DD30, "_jpeg_destroy", "jcomapi.obj"),
+)
 ZLIB_SOURCES = (
     "adler32.c",
     "compress.c",
@@ -64,8 +120,7 @@ def _verify_file(path: Path, row: dict[str, Any], *, label: str) -> None:
     actual_sha256 = _sha256(path)
     if actual_size != expected_size or actual_sha256 != expected_sha256:
         raise ValueError(
-            f"{label} mismatch: size={actual_size}/{expected_size} "
-            f"sha256={actual_sha256}/{expected_sha256}",
+            f"{label} mismatch: size={actual_size}/{expected_size} sha256={actual_sha256}/{expected_sha256}",
         )
 
 
@@ -91,11 +146,7 @@ def _toolchain(derived: dict[str, Any]) -> tuple[Path, Path, Path, dict[str, str
         REPO_ROOT.parent / "snail-mail/tools/match/compilers/msvc6.5",
     )
     compiler_root = next(
-        (
-            root
-            for root in compiler_roots
-            if (root / "Bin/CL.EXE").is_file() and (root / "Bin/LIB.EXE").is_file()
-        ),
+        (root for root in compiler_roots if (root / "Bin/CL.EXE").is_file() and (root / "Bin/LIB.EXE").is_file()),
         None,
     )
     if compiler_root is None:
@@ -169,7 +220,7 @@ def _extract_source(
     return candidates[0]
 
 
-def _required_match(archive: Path, address: int, symbol: str) -> None:
+def _required_match(archive: Path, address: int, symbol: str, member: str | None = None) -> None:
     report = match_coff_archive(
         archive,
         image_path=REPO_ROOT / "game_bins/crimsonland/1.9.93-gog/grim.dll",
@@ -183,10 +234,21 @@ def _required_match(archive: Path, address: int, symbol: str) -> None:
         for match in report.matches
         if match.address == address
         for candidate in match.candidates
-        if candidate.symbol == symbol
+        if candidate.symbol == symbol and (member is None or candidate.member == member)
     ]
     if len(candidates) != 1:
-        raise ValueError(f"{archive.name}: no unique {symbol} match at 0x{address:08x}")
+        suffix = f" in {member}" if member is not None else ""
+        raise ValueError(f"{archive.name}: no unique {symbol}{suffix} match at 0x{address:08x}")
+
+
+def _configure_jpeg_boolean(source_root: Path) -> None:
+    path = source_root / "jmorecfg.h"
+    original = "typedef int boolean;"
+    replacement = "typedef unsigned char boolean;"
+    source = path.read_text(encoding="ascii")
+    if source.count(original) != 1 or replacement in source:
+        raise ValueError(f"{path}: expected the stock IJG 6a boolean typedef")
+    path.write_text(source.replace(original, replacement), encoding="ascii")
 
 
 def _publish(source: Path, destination: Path, derived: dict[str, Any]) -> None:
@@ -220,28 +282,29 @@ def build_codec_providers(jpeg_tar: Path, zlib_tar: Path, output_root: Path) -> 
         zlib_root = _extract_source(zlib_tar, zlib_source, temporary / "zlib", label=ZLIB_SOURCE_ID)
 
         shutil.copy2(jpeg_root / "jconfig.bcc", jpeg_root / "jconfig.h")
+        _configure_jpeg_boolean(jpeg_root)
         shutil.copy2(
-            REPO_ROOT / "tools/native/providers/sources/ijg-libjpeg-6a/jpeg_destroy_decompress.c",
-            jpeg_root / "jpeg_destroy_decompress.c",
+            REPO_ROOT / "tools/native/providers/sources/ijg-libjpeg-6a/grim_jpeg_memory_src.c",
+            jpeg_root / "grim_jpeg_memory_src.c",
         )
         _compile(
             jpeg_root,
-            ("jpeg_destroy_decompress.c",),
+            JPEG_BLEND_SOURCES,
             JPEG_FLAGS,
             cl_wrapper=cl_wrapper,
             env=env,
         )
         _compile(
             jpeg_root,
-            ("jcomapi.c",),
-            JPEG_COMMON_FLAGS,
+            JPEG_G6_SOURCES,
+            JPEG_G6_FLAGS,
             cl_wrapper=cl_wrapper,
             env=env,
         )
         jpeg_archive = _build_archive(
             jpeg_root,
             "libjpeg.lib",
-            ("jpeg_destroy_decompress.obj", "jcomapi.obj"),
+            tuple(Path(source).with_suffix(".obj").name for source in JPEG_ARCHIVE_SOURCES),
             library_tool=library_tool,
             wibo=wibo,
         )
@@ -255,8 +318,8 @@ def build_codec_providers(jpeg_tar: Path, zlib_tar: Path, output_root: Path) -> 
             wibo=wibo,
         )
 
-        _required_match(jpeg_archive, 0x10009B20, "_jpeg_destroy_decompress")
-        _required_match(jpeg_archive, 0x1003DD30, "_jpeg_destroy")
+        for address, symbol, member in JPEG_REQUIRED_MATCHES:
+            _required_match(jpeg_archive, address, symbol, member)
         _required_match(zlib_archive, 0x10046400, "_uncompress")
 
         jpeg_output = output_root / JPEG_OUTPUT

@@ -33,7 +33,7 @@ def test_library_provenance_manifest_validates_current_binaries() -> None:
     assert vc6["members"][-1]["sha256"] == "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63"
     derived = {artifact["id"]: artifact for artifact in payload["derived_artifacts"]}
     assert derived["ijg-libjpeg-6a-vc6-jaz-provider"]["sha256"] == (
-        "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c"
+        "c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869"
     )
     assert derived["zlib-1.1.3-vc6-provider"]["sha256"] == (
         "6b44ac2a8a67123b929cb9286c343730af5f6777609a54e12e402e5ac7e503b0"

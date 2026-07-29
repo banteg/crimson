@@ -10782,6 +10782,46 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003aa10",
+    "name": "grim_jpeg_memory_init_source",
+    "aliases": [
+      "init_source"
+    ],
+    "signature": "void grim_jpeg_memory_init_source(void *context)",
+    "comment": "JAZ in-memory libjpeg source callback; exact recovered VC6 body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003aa20",
+    "name": "grim_jpeg_memory_fill_input_buffer",
+    "aliases": [
+      "fill_input_buffer"
+    ],
+    "signature": "int grim_jpeg_memory_fill_input_buffer(void *context)",
+    "comment": "JAZ in-memory libjpeg refill callback; exact recovered VC6 body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003aac0",
+    "name": "grim_jpeg_memory_skip_input_data",
+    "aliases": [
+      "skip_input_data"
+    ],
+    "signature": "void grim_jpeg_memory_skip_input_data(void *context, long byte_count)",
+    "comment": "JAZ in-memory libjpeg skip callback; exact recovered VC6 body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ab00",
+    "name": "grim_jpeg_memory_term_source",
+    "aliases": [
+      "term_source"
+    ],
+    "signature": "void grim_jpeg_memory_term_source(void *context)",
+    "comment": "JAZ in-memory libjpeg terminal callback; exact recovered VC6 body"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003ab10",
     "name": "jpeg_std_error",
     "signature": "void *jpeg_std_error(void *error_manager)",
@@ -10789,11 +10829,31 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003acd0",
+    "name": "jinit_input_controller",
+    "signature": "void jinit_input_controller(void *context)",
+    "comment": "IJG libjpeg 6a decompression input-controller initializer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003b560",
+    "name": "jpeg_resync_to_restart",
+    "signature": "int jpeg_resync_to_restart(void *context, int desired_restart)",
+    "comment": "IJG libjpeg 6a restart-marker recovery; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003b770",
+    "name": "jinit_marker_reader",
+    "signature": "void jinit_marker_reader(void *context)",
+    "comment": "IJG libjpeg 6a decompression marker-reader initializer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003d0d0",
-    "name": "FUN_1003d0d0",
-    "signature": "char* FUN_1003d0d0(int arg1)",
-    "comment": "[binja] char* __fastcall sub_1003d0d0(int32_t arg1)",
-    "create": false
+    "name": "jinit_memory_mgr",
+    "signature": "void jinit_memory_mgr(void *context)",
+    "comment": "IJG libjpeg 6a memory-manager initializer"
   },
   {
     "program": "grim.dll",
@@ -10810,6 +10870,34 @@
     "signature": "int FUN_1003db20(int arg1)",
     "comment": "[binja] int32_t sub_1003db20(int32_t arg1)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003dd00",
+    "name": "jpeg_abort",
+    "signature": "void jpeg_abort(void *context)",
+    "comment": "IJG libjpeg 6a operation reset; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003dd30",
+    "name": "jpeg_destroy",
+    "signature": "void jpeg_destroy(void *context)",
+    "comment": "IJG libjpeg 6a object destroy; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003dd50",
+    "name": "jpeg_alloc_quant_table",
+    "signature": "void *jpeg_alloc_quant_table(void *context)",
+    "comment": "IJG libjpeg 6a quantization-table allocator; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e040",
+    "name": "jinit_master_decompress",
+    "signature": "void jinit_master_decompress(void *context)",
+    "comment": "IJG libjpeg 6a master decompression initializer"
   },
   {
     "program": "grim.dll",

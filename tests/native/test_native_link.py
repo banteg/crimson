@@ -598,9 +598,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     assert coverage["covered_symbols"] == 53
     assert coverage["import_symbols"] == 20
     assert coverage["generated_import_symbols"] == 5
-    assert coverage["archive_symbols"] == 26
+    assert coverage["archive_symbols"] == 32
     assert coverage["link_dependency_symbols"] == 24
-    assert coverage["placeholder_symbols"] == 22
+    assert coverage["placeholder_symbols"] == 16
     assert coverage["runnable"] is False
     assert [
         provider.name
@@ -637,7 +637,7 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
         "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63"
     )
     assert archives["ijg-libjpeg-6a-vc6-jaz"].sha256 == (
-        "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c"
+        "c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869"
     )
     assert (
         archives["ijg-libjpeg-6a-vc6-jaz"].provenance.derived_artifact
@@ -659,10 +659,10 @@ def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
 
     assert manifest["schema"] == 3
     assert manifest["summary"]["link_dependency_symbols"] == 24
-    assert manifest["summary"]["archive_symbols"] == 26
-    assert manifest["summary"]["placeholder_symbols"] == 22
+    assert manifest["summary"]["archive_symbols"] == 32
+    assert manifest["summary"]["placeholder_symbols"] == 16
     assert manifest["summary"]["retained_link_dependency_import_symbols"] == 17
-    assert manifest["summary"]["validated_output_import_symbols"] == 52
+    assert manifest["summary"]["validated_output_import_symbols"] == 54
     dependencies = {
         row["module"]: row
         for row in manifest["reference_imports"]["link_dependencies"]
@@ -823,14 +823,12 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
 
-    assert len(symbols) == 22
+    assert len(symbols) == 16
     assert [section.name for section in coff.sections] == [".text"]
     assert "_D3DXCreateTexture@32" not in symbols
     assert "_d3dx_copy_texture_filtered@24" not in symbols
-    c_provider = symbols["_jpeg_CreateDecompress"]
-    assert coff.sections[c_provider.section_number - 1].data[
-        c_provider.value : c_provider.value + 3
-    ] == b"\x31\xc0\xc3"
+    assert "_jpeg_CreateDecompress" not in symbols
+    assert "_grim_jpeg_memory_src" not in symbols
     cxx = symbols["?grim_apply_config@IGrim2D_cpp@@UAE_NXZ"]
     assert coff.sections[cxx.section_number - 1].data[
         cxx.value : cxx.value + 3

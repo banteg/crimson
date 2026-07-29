@@ -18,7 +18,7 @@
     {
       "id": "ijg-libjpeg-6a-vc6-jaz",
       "path": "tools/native/providers/build/ijg-libjpeg-6a/libjpeg.lib",
-      "sha256": "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c",
+      "sha256": "c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "ijg-libjpeg-6a-vc6-jaz-provider"
@@ -658,32 +658,11 @@
       "evidence": [
         {
           "path": "analysis/library_provenance.json",
-          "note": "The deterministic VC6 provider archive reproduces the JAZ jpeg_destroy_decompress entry and its jpeg_destroy dependency byte-for-byte."
+          "note": "The deterministic mixed-profile VC6 archive reproduces all six JAZ closure entries plus jpeg_destroy_decompress byte-for-byte."
         },
         {
           "path": "docs/contributor/project-tracking/third-party-libs.md",
-          "note": "The provider recipe, compiler profiles, archive hashes, and exact reference addresses are recorded here."
-        }
-      ],
-      "symbols": [
-        {
-          "name": "_jpeg_destroy_decompress",
-          "binding": "function"
-        }
-      ]
-    },
-    {
-      "name": "grim-jaz-libjpeg-6a-static",
-      "kind": "static-library",
-      "resolution": "placeholder-object",
-      "evidence": [
-        {
-          "path": "analysis/matching_scope.json",
-          "note": "The matching scope identifies a separate plain-C IJG libjpeg 6a provider seam."
-        },
-        {
-          "path": "analysis/ghidra/raw/grim.dll_strings.txt",
-          "note": "The reference image retains the corresponding IJG JPEG diagnostics."
+          "note": "The one-byte boolean ABI, compiler profiles, archive hash, custom source reconstruction, and 18 exact reference functions are recorded here."
         }
       ],
       "symbols": [
@@ -693,6 +672,10 @@
         },
         {
           "name": "_jpeg_CreateDecompress",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_destroy_decompress",
           "binding": "function"
         },
         {
