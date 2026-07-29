@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-position-owner",
+      "find": "    database_vec2_t position;\n    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_09.pos_x\n            + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n        position.x =\n            panel_position.x + ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n        position.y += 10.0f;\n    }\n",
+      "replacements": [
+        {
+          "name": "direct-two-vector-adjustments",
+          "text": "    database_vec2_t position;\n    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    position += database_vec2_t(300.0f, 40.0f);\n    position += database_vec2_t(\n        ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f,\n        10.0f);\n"
+        },
+        {
+          "name": "direct-vector-then-scalars",
+          "text": "    database_vec2_t position;\n    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    position += database_vec2_t(300.0f, 40.0f);\n    position.x +=\n        ui_element_slot_09.render_offset_x\n        + 44.0f - 110.0f - 32.0f;\n    position.y += 10.0f;\n"
+        },
+        {
+          "name": "direct-scalar-adjustments",
+          "text": "    database_vec2_t position;\n    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    position.x += 300.0f;\n    position.y += 40.0f;\n    position.x +=\n        ui_element_slot_09.render_offset_x\n        + 44.0f - 110.0f - 32.0f;\n    position.y += 10.0f;\n"
+        },
+        {
+          "name": "chained-first-two-vector-adjustments",
+          "text": "    database_vec2_t position;\n    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position += database_vec2_t(\n        ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f,\n        10.0f);\n"
+        },
+        {
+          "name": "chained-first-then-scalars",
+          "text": "    database_vec2_t position;\n    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x +=\n        ui_element_slot_09.render_offset_x\n        + 44.0f - 110.0f - 32.0f;\n    position.y += 10.0f;\n"
+        },
+        {
+          "name": "declared-from-sum-two-vector-adjustments",
+          "text": "    database_vec2_t position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    position += database_vec2_t(300.0f, 40.0f);\n    position += database_vec2_t(\n        ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f,\n        10.0f);\n"
+        },
+        {
+          "name": "declared-from-chain-then-scalars",
+          "text": "    database_vec2_t position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x +=\n        ui_element_slot_09.render_offset_x\n        + 44.0f - 110.0f - 32.0f;\n    position.y += 10.0f;\n"
+        },
+        {
+          "name": "component-initialize-two-vector-adjustments",
+          "text": "    database_vec2_t position;\n    position.x = ui_element_slot_09.pos_x\n        + ui_element_slot_09.vertices[0].x;\n    position.y = ui_element_slot_09.pos_y\n        + ui_element_slot_09.vertices[0].y;\n    position += database_vec2_t(300.0f, 40.0f);\n    position += database_vec2_t(\n        ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f,\n        10.0f);\n"
+        },
+        {
+          "name": "chained-first-separate-adjustments",
+          "text": "    database_vec2_t position;\n    position =\n        *(database_vec2_t *)&ui_element_slot_09.pos_x\n        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 32.0f;\n    position.y += 10.0f;\n"
+        }
+      ]
+    }
+  ]
+}

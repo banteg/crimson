@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-final-adjustment-order",
+      "find": "    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 32.0f;\n    position.y += 10.0f;\n",
+      "replacements": [
+        {
+          "name": "y-before-final-x-subtract",
+          "text": "    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.y += 10.0f;\n    position.x -= 32.0f;\n"
+        },
+        {
+          "name": "y-before-both-x-subtracts",
+          "text": "    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.y += 10.0f;\n    position.x -= 110.0f;\n    position.x -= 32.0f;\n"
+        },
+        {
+          "name": "y-before-constant-x-adjustments",
+          "text": "    position.x += ui_element_slot_09.render_offset_x;\n    position.y += 10.0f;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 32.0f;\n"
+        },
+        {
+          "name": "y-before-render-offset",
+          "text": "    position.y += 10.0f;\n    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.x -= 32.0f;\n"
+        },
+        {
+          "name": "final-vector-adjustment",
+          "text": "    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position += database_vec2_t(-32.0f, 10.0f);\n"
+        },
+        {
+          "name": "final-component-direct-values",
+          "text": "    position.x += ui_element_slot_09.render_offset_x;\n    position.x += 44.0f;\n    position.x -= 110.0f;\n    position.y = position.y + 10.0f;\n    position.x = position.x - 32.0f;\n"
+        }
+      ]
+    }
+  ]
+}

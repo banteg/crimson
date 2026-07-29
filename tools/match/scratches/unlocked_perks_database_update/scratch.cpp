@@ -88,17 +88,15 @@ extern "C" void unlocked_perks_database_update(void)
 {
     int perk_id = -1;
     database_vec2_t position;
-    {
-        database_vec2_t panel_position =
-            *(database_vec2_t *)&ui_element_slot_09.pos_x
-            + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
-        panel_position += database_vec2_t(300.0f, 40.0f);
-        position = panel_position;
-        position.x =
-            panel_position.x + ui_element_slot_09.render_offset_x
-            + 44.0f - 110.0f - 32.0f;
-        position.y += 10.0f;
-    }
+    position =
+        *(database_vec2_t *)&ui_element_slot_09.pos_x
+        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x
+        + database_vec2_t(300.0f, 40.0f);
+    position.x += ui_element_slot_09.render_offset_x;
+    position.x += 44.0f;
+    position.x -= 110.0f;
+    position.x -= 32.0f;
+    position.y += 10.0f;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     int title_width = grim_interface_ptr->grim_measure_text_width(

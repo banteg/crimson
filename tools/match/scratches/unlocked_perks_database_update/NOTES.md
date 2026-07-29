@@ -19,37 +19,39 @@ callback:
   prerequisite name, and wrapped description, including the narrow-screen
   horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 91.09% of 511 target
-instructions with 510 candidate instructions, a nine-instruction exact prefix,
-the exact native `0x218`-byte frame, and `141/0/1` audited references. All
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 93.83% of 511 target
+instructions with 510 candidate instructions, a 29-instruction exact prefix,
+the exact native `0x218`-byte frame, and `143/0/1` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
 former reference mismatches were constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
 constants and source operations are present elsewhere in the aligned flow.
 
 The improved source shape keeps both separator temporaries, the back-button
-position, and the panel vectors in their native disjoint lexical lifetimes.
-The button uses the copied x/y pair visible before the native call instead of
-mutating the shared panel position. The scrollbar constructor initializes its
-two active columns with a bounded loop; VC6 unrolls that loop to the native two
-stores while recovering five additional aligned references. The source also
-preserves the native `20 + 8` and `16 + 4` vertical spacings and compact-row
-post-increment test. Selected-perk rendering performs the native direct
-metadata reads instead of decompiler-style cached name and prerequisite
-locals.
+position, and the later panel vectors in their native disjoint lexical
+lifetimes. The opening anchor uses the same chained-vector expression recovered
+in the exact victory-screen callback, followed by the native separate x
+adjustments. The button uses the copied x/y pair visible before the native call
+instead of mutating the shared panel position. The scrollbar constructor
+initializes its two active columns with a bounded loop; VC6 unrolls that loop
+to the native two stores while recovering five additional aligned references.
+The source also preserves the native `20 + 8` and `16 + 4` vertical spacings
+and compact-row post-increment test. Selected-perk rendering performs the
+native direct metadata reads instead of decompiler-style cached name and
+prerequisite locals.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 91.09%, 510/511 instructions, and
-`141/0/1` references before and after classification. The sole entry is an
-aligned mismatch; there are no unresolved references. Ordering the copied
-opening-panel x expression before its y adjustment removes the former slot-09
-entry without changing instruction bytes. The remaining entry pairs the
-native detail-panel field read with a candidate constant-pool add from the
-differently scheduled vector expression.
+A fresh corpus audit keeps the candidate at 93.83%, 510/511 instructions, and
+`143/0/1` references before and after classification. The sole entry is an
+aligned mismatch; there are no unresolved references. The retained chained
+opening-panel expression removes the former slot-09 entry and extends the
+exact prologue. The remaining entry pairs the native detail-panel field read
+with a candidate constant-pool add from the differently scheduled vector
+expression.
 
 The UI field and candidate constant both occur in the recovered computation;
 only their x87 ordering differs. No map or layout correction is supported, so
@@ -58,7 +60,7 @@ honest mismatch.
 
 ## Recorded lifetime and constructor recovery
 
-Six bounded mutation families document the current source-shape recovery:
+Eight bounded mutation families document the current source-shape recovery:
 
 - `detail-separator-lifetime-mutations.json` found the scoped detail
   separator, adding 12.16 fuzzy-weighted bytes;
@@ -76,9 +78,17 @@ Six bounded mutation families document the current source-shape recovery:
   mismatch in both database callbacks; and
 - `detail-panel-position-lifetime-mutations.json` evaluated six scope and
   final-coordinate forms. Keeping the panel x live through the direct final-x
-  expression adds 4.05 bytes without a metric tradeoff.
+  expression adds 4.05 bytes without a metric tradeoff;
+- `opening-position-owner-mutations.json` evaluated nine complete ownership
+  and expression shapes. The chained UI-vector sum with separate x
+  adjustments adds 56.63 fuzzy-weighted bytes, extends the exact prefix from
+  nine to 29 instructions, and resolves two more references without debt; and
+- `opening-final-adjustment-order-mutations.json` records the remaining local
+  scheduling boundary. Moving the y adjustment before the final x subtraction
+  extends the prefix to 67 instructions and resolves one more reference, but
+  loses 24.27 fuzzy-weighted bytes across the function, so it is not retained.
 
-Together these retained changes move the fresh baseline from 85.38% to 91.09%,
-from 508 to 510 candidate instructions, and from `135/0/2` to `141/0/1`
+Together these retained changes move the fresh baseline from 85.38% to 93.83%,
+from 508 to 510 candidate instructions, and from `135/0/2` to `143/0/1`
 references. The complete append-only evidence is in `experiments.jsonl`
-(`sha256:e635f9e4a9899cd72dd19f00779a2775cb7a596af90b5a114ef7d11347c167f6`).
+(`sha256:d44e1fd3b92dc5b0a0ebca14b80e2d721ba0538930f330901714080d303ef11b`).

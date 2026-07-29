@@ -18,9 +18,9 @@ callback:
   the ammo-class-1 `n/a` case), reload time, and clip size, including the
   narrow-screen horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 92.44% of 523 target
-instructions with 522 candidate instructions, a nine-instruction exact prefix,
-the exact native `0x118`-byte frame, and `149/0/1` audited references. All
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 95.12% of 523 target
+instructions with 522 candidate instructions, a 29-instruction exact prefix,
+the exact native `0x118`-byte frame, and `151/0/1` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
 former reference mismatches were constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
@@ -50,13 +50,12 @@ fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 92.44%, 522/523 instructions, and
-`149/0/1` references before and after classification. The sole entry is an
+A fresh corpus audit keeps the candidate at 95.12%, 522/523 instructions, and
+`151/0/1` references before and after classification. The sole entry is an
 aligned mismatch; there are no unresolved references. As in the sibling perks
-callback, ordering the copied opening-panel x expression before its y
-adjustment removes the former slot-09 mismatch without changing instruction
-bytes. The remaining entry is confined to the differently scheduled
-detail-panel vector expression.
+callback, the retained chained opening-panel expression removes the former
+slot-09 mismatch and extends the exact prologue. The remaining entry is
+confined to the differently scheduled detail-panel vector expression.
 
 No data-map or scrollbar/UI layout correction is supported. The residual is
 compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
@@ -82,11 +81,17 @@ independently here:
   and final-coordinate forms. Its fuzzy-positive variants reduce resolved
   references or increase reference debt; the only clean form is byte-neutral,
   so no detail-panel change is retained.
+- `opening-position-owner-mutations.json` evaluates four source-supported
+  shared-panel forms. The chained UI-vector sum with separate x adjustments
+  adds 55.89 fuzzy-weighted bytes, extends the exact prefix from nine to 29
+  instructions, and resolves two additional references without debt. Moving
+  the y adjustment before the final x subtraction reaches a 67-instruction
+  prefix but loses 23.95 weighted bytes relative to the retained winner.
 
-Together they move the fresh baseline from 82.87% to 92.44% and from
-`140/0/2` to `149/0/1` references. The complete append-only evidence is in
+Together they move the fresh baseline from 82.87% to 95.12% and from
+`140/0/2` to `151/0/1` references. The complete append-only evidence is in
 `experiments.jsonl`
-(`sha256:7ef0d568bbc2d46dbe8b18f604b0486a7941a6cdbad7bf5d18f108764a2c1c21`).
+(`sha256:defd64ebc4d96b9a84fe745c9311908a8b3bd0a8332c322bc3da24a72ce31042`).
 
 ## Unlock-loop mutation audit
 
