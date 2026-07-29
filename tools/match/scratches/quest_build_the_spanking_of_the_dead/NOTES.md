@@ -70,3 +70,28 @@ the step early, with or without the cursor, added three instructions, lost a
 reference, and lost 93.336 weighted bytes. Those variants are rejected. The
 retained source SHA-256 is
 `fd84038546cad3b963e641273e966a9f6c8d386cc82ddce9c45481b2f3ee7840`.
+
+## Carried-cursor and publication boundary
+
+The native loop keeps an entry address in ECX and advances ECX plus the integer
+step immediately after `fild`, so the earlier per-iteration cursor probe left a
+plausible lifetime untested. `spiral-carried-cursor-mutations.json` (SHA-256
+`da8edc5f22f9f06a626fde25da01f5caabdf40e3a2ff99d14a147f4c0555e65e`)
+crossed five loop-carried/direct-index ownership forms with restoration of the
+aggregate tail positions. All 11/11 variants were evaluated. The least-bad
+loop change was raw indexing at 233.304/391 weighted bytes, down 17.282;
+the simple carried cursor lost 25.923, and both early-advance cursor shapes
+also destroyed the opening prefix. Aggregate tail positions restored the
+native 94-instruction length but lost 9.330 weighted bytes alone and did not
+rescue any ownership form.
+
+`spiral-publication-boundary-mutations.json` (SHA-256
+`e27aee9589dfc75d41f441fdbb97249ef4ef52e817d0a73b4a03a18827834160`)
+then crossed pointer, reference, direct-index, `set_spawn`, and named position
+temporary publication shapes with the same tail boundary. All 11/11 variants
+were evaluated. Pointer/reference/helper spellings compiled identically to the
+retained source; indexed publication reproduced the same 17.282-byte loss as
+raw indexing; every aggregate-tail interaction regressed. The retained
+64.08839779005525% source is therefore a bounded compiler fixed point for the
+recovered loop ownership, publication, induction lifetime, and fixed-position
+boundaries.

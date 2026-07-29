@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "spiral-carried-cursor",
+      "find": "    int step_index = 0;\n    int trigger_time_ms = 5000;\n    while (trigger_time_ms < 0xA988) {\n        float step = (float)step_index;\n        float angle = step * 0.333333343f;\n        float radius = 512.0f - step * 3.79999995f;\n\n        quest_entry_original_t *spawn = &spawns[step_index + 2];\n        spawn->pos = quest_vec2_t(\n            (float)cos(angle) * radius + 512.0f,\n            (float)sin(angle) * radius + 512.0f);\n        spawn->heading = angle;\n        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n\n        trigger_time_ms += 300;\n        ++step_index;\n    }\n",
+      "replacements": [
+        {
+          "name": "tail-advanced-cursor",
+          "text": "    int step_index = 0;\n    int trigger_time_ms = 5000;\n    quest_entry_original_t *spawn = &spawns[2];\n    while (trigger_time_ms < 0xA988) {\n        float step = (float)step_index;\n        float angle = step * 0.333333343f;\n        float radius = 512.0f - step * 3.79999995f;\n\n        spawn->pos = quest_vec2_t(\n            (float)cos(angle) * radius + 512.0f,\n            (float)sin(angle) * radius + 512.0f);\n        spawn->heading = angle;\n        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n\n        trigger_time_ms += 300;\n        ++spawn;\n        ++step_index;\n    }\n"
+        },
+        {
+          "name": "preadvanced-cursor",
+          "text": "    int step_index = 0;\n    int trigger_time_ms = 5000;\n    quest_entry_original_t *spawn = &spawns[1];\n    while (trigger_time_ms < 0xA988) {\n        float step = (float)step_index;\n        ++spawn;\n        float angle = step * 0.333333343f;\n        float radius = 512.0f - step * 3.79999995f;\n\n        spawn->pos = quest_vec2_t(\n            (float)cos(angle) * radius + 512.0f,\n            (float)sin(angle) * radius + 512.0f);\n        spawn->heading = angle;\n        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n\n        trigger_time_ms += 300;\n        ++step_index;\n    }\n"
+        },
+        {
+          "name": "preadvanced-cursor-and-step",
+          "text": "    int step_index = 0;\n    int trigger_time_ms = 5000;\n    quest_entry_original_t *spawn = &spawns[1];\n    while (trigger_time_ms < 0xA988) {\n        float step = (float)step_index;\n        ++spawn;\n        ++step_index;\n        float angle = step * 0.333333343f;\n        float radius = 512.0f - step * 3.79999995f;\n\n        spawn->pos = quest_vec2_t(\n            (float)cos(angle) * radius + 512.0f,\n            (float)sin(angle) * radius + 512.0f);\n        spawn->heading = angle;\n        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n\n        trigger_time_ms += 300;\n    }\n"
+        },
+        {
+          "name": "preadvanced-negative-cursor-and-step",
+          "text": "    int step_index = 0;\n    int trigger_time_ms = 5000;\n    quest_entry_original_t *spawn = &spawns[2];\n    while (trigger_time_ms < 0xA988) {\n        float step = (float)step_index;\n        ++spawn;\n        ++step_index;\n        float angle = step * 0.333333343f;\n        float radius = 512.0f - step * 3.79999995f;\n\n        spawn[-1].pos = quest_vec2_t(\n            (float)cos(angle) * radius + 512.0f,\n            (float)sin(angle) * radius + 512.0f);\n        spawn[-1].heading = angle;\n        spawn[-1].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n\n        trigger_time_ms += 300;\n    }\n"
+        },
+        {
+          "name": "raw-indexed",
+          "text": "    int step_index = 0;\n    int trigger_time_ms = 5000;\n    while (trigger_time_ms < 0xA988) {\n        float step = (float)step_index;\n        float angle = step * 0.333333343f;\n        float radius = 512.0f - step * 3.79999995f;\n\n        spawns[step_index + 2].pos = quest_vec2_t(\n            (float)cos(angle) * radius + 512.0f,\n            (float)sin(angle) * radius + 512.0f);\n        spawns[step_index + 2].heading = angle;\n        spawns[step_index + 2].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawns[step_index + 2].trigger_time_ms = trigger_time_ms;\n        spawns[step_index + 2].count = 1;\n\n        trigger_time_ms += 300;\n        ++step_index;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "tail-position-publication",
+      "find": "    spawns[130].pos.x = 1280.0f;\n    spawns[130].pos.y = 512.0f;\n    spawns[130].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 10000,\n        16);\n\n    spawns[131].pos.x = -256.0f;\n    spawns[131].pos.y = 512.0f;\n    spawns[131].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 20000,\n        16);\n",
+      "replacements": [
+        {
+          "name": "aggregate-position",
+          "text": "    spawns[130].pos = quest_vec2_t(1280.0f, 512.0f);\n    spawns[130].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 10000,\n        16);\n\n    spawns[131].pos = quest_vec2_t(-256.0f, 512.0f);\n    spawns[131].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 20000,\n        16);\n"
+        }
+      ]
+    }
+  ]
+}
