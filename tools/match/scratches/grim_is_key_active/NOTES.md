@@ -87,3 +87,12 @@ axis comparison chain with the shared x87 threshold immediately after `lX`,
 followed by an action-counted provider loop. The retained source expresses
 that native structure; the reversed router is a misleading aggregate-only
 gain and is not retained.
+
+`axis-inline-helper-mutations.json` closes the remaining natural shared-tail
+hypothesis. It evaluates ordinary, `static`, and forced-inline helpers with
+both byte and integer results, alone and at all six axis call sites. All eight
+compile-valid variants are byte-identical to the retained 79.20% candidate;
+the only failing variant intentionally references the helper without its
+declaration. The helper abstraction therefore cannot move VC6.5's common
+threshold tail, and the surviving axis/provider delta remains a compiler
+layout residual rather than missing source behavior.

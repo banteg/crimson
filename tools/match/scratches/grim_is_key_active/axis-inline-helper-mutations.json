@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "axis-helper-declaration",
+      "find": "extern GrimInputProvider *grim_input_provider;\n",
+      "replacements": [
+        {
+          "name": "inline-byte-helper",
+          "text": "extern GrimInputProvider *grim_input_provider;\n\ninline unsigned char grim_axis_active(long value)\n{\n    return fabs((float)value * 0.001f) > 0.5;\n}\n"
+        },
+        {
+          "name": "static-inline-byte-helper",
+          "text": "extern GrimInputProvider *grim_input_provider;\n\nstatic inline unsigned char grim_axis_active(long value)\n{\n    return fabs((float)value * 0.001f) > 0.5;\n}\n"
+        },
+        {
+          "name": "force-inline-byte-helper",
+          "text": "extern GrimInputProvider *grim_input_provider;\n\n__forceinline unsigned char grim_axis_active(long value)\n{\n    return fabs((float)value * 0.001f) > 0.5;\n}\n"
+        },
+        {
+          "name": "force-inline-int-helper",
+          "text": "extern GrimInputProvider *grim_input_provider;\n\n__forceinline int grim_axis_active(long value)\n{\n    return fabs((float)value * 0.001f) > 0.5;\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "axis-helper-calls",
+      "find": "        if (key == 0x13f) {\n            return fabs((float)grim_joystick_state.lX * 0.001f) > 0.5;\n        }\n        if (key == 0x140) {\n            return fabs((float)grim_joystick_state.lY * 0.001f) > 0.5;\n        }\n        if (key == 0x141) {\n            return fabs((float)grim_joystick_state.lZ * 0.001f) > 0.5;\n        }\n        if (key == 0x153) {\n            return fabs((float)grim_joystick_state.lRx * 0.001f) > 0.5;\n        }\n        if (key == 0x154) {\n            return fabs((float)grim_joystick_state.lRy * 0.001f) > 0.5;\n        }\n        if (key == 0x155) {\n            return fabs((float)grim_joystick_state.lRz * 0.001f) > 0.5;\n        }\n",
+      "replacements": [
+        {
+          "name": "call-shared-helper",
+          "text": "        if (key == 0x13f) {\n            return grim_axis_active(grim_joystick_state.lX);\n        }\n        if (key == 0x140) {\n            return grim_axis_active(grim_joystick_state.lY);\n        }\n        if (key == 0x141) {\n            return grim_axis_active(grim_joystick_state.lZ);\n        }\n        if (key == 0x153) {\n            return grim_axis_active(grim_joystick_state.lRx);\n        }\n        if (key == 0x154) {\n            return grim_axis_active(grim_joystick_state.lRy);\n        }\n        if (key == 0x155) {\n            return grim_axis_active(grim_joystick_state.lRz);\n        }\n"
+        }
+      ]
+    }
+  ]
+}
