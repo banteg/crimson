@@ -1688,7 +1688,8 @@
       "address": "0x0047eea4",
       "comment": "Console command list head (console_log_queue + 0x04).",
       "name": "console_command_list_head",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "console_command_entry_t *"
     },
     {
       "address": "0x0047eea8",
@@ -2030,13 +2031,15 @@
       "address": "0x00480364",
       "comment": "Config: per-player mode flags; value 4 triggers alternate HUD draw and movement scheme checks.",
       "name": "config_player_mode_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[4]"
     },
     {
       "address": "0x0048038c",
       "comment": "Config: aim scheme selector (value 4 enables analog aim axis).",
       "name": "config_aim_scheme",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[4]"
     },
     {
       "address": "0x004803b8",
@@ -2077,49 +2080,57 @@
       "address": "0x004803f0",
       "comment": "Config: Saved name slot 0 (27 bytes).",
       "name": "config_saved_name_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x0048040b",
       "comment": "Config: Saved name slot 1 (27 bytes).",
       "name": "config_saved_name_1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x00480426",
       "comment": "Config: Saved name slot 2 (27 bytes).",
       "name": "config_saved_name_2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x00480441",
       "comment": "Config: Saved name slot 3 (27 bytes).",
       "name": "config_saved_name_3",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x0048045c",
       "comment": "Config: Saved name slot 4 (27 bytes).",
       "name": "config_saved_name_4",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x00480477",
       "comment": "Config: Saved name slot 5 (27 bytes).",
       "name": "config_saved_name_5",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x00480492",
       "comment": "Config: Saved name slot 6 (27 bytes).",
       "name": "config_saved_name_6",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x004804ad",
       "comment": "Config: Saved name slot 7 (27 bytes).",
       "name": "config_saved_name_7",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[27]"
     },
     {
       "address": "0x004804c8",
@@ -2167,193 +2178,225 @@
       "address": "0x00480510",
       "comment": "Config: P1 move forward key.",
       "name": "config_p1_move_forward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480514",
       "comment": "Config: P1 move backward key.",
       "name": "config_p1_move_backward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480518",
       "comment": "Config: P1 turn left key.",
       "name": "config_p1_turn_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048051c",
       "comment": "Config: P1 turn right key.",
       "name": "config_p1_turn_right",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480520",
       "comment": "Config: P1 fire key.",
       "name": "config_p1_fire",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480524",
       "comment": "Config: P1 reserved key 0.",
       "name": "config_p1_key_reserved_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480528",
       "comment": "Config: P1 reserved key 1.",
       "name": "config_p1_key_reserved_1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048052c",
       "comment": "Config: P1 aim left key.",
       "name": "config_p1_aim_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480530",
       "comment": "Config: P1 aim right key.",
       "name": "config_p1_aim_right",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480534",
       "comment": "Config: P1 aim axis Y.",
       "name": "config_p1_axis_aim_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480538",
       "comment": "Config: P1 aim axis X.",
       "name": "config_p1_axis_aim_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048053c",
       "comment": "Config: P1 move axis Y.",
       "name": "config_p1_axis_move_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480540",
       "comment": "Config: P1 move axis X.",
       "name": "config_p1_axis_move_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480544",
       "comment": "Config: P1 padding/reserved 0.",
       "name": "config_p1_padding_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480548",
       "comment": "Config: P1 padding/reserved 1.",
       "name": "config_p1_padding_1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048054c",
       "comment": "Config: P1 padding/reserved 2.",
       "name": "config_p1_padding_2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480550",
       "comment": "Config: P2 move forward key.",
       "name": "config_p2_move_forward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480554",
       "comment": "Config: P2 move backward key.",
       "name": "config_p2_move_backward",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480558",
       "comment": "Config: P2 turn left key.",
       "name": "config_p2_turn_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048055c",
       "comment": "Config: P2 turn right key.",
       "name": "config_p2_turn_right",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480560",
       "comment": "Config: P2 fire key.",
       "name": "config_p2_fire",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480564",
       "comment": "Config: P2 reserved key 0.",
       "name": "config_p2_key_reserved_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480568",
       "comment": "Config: P2 reserved key 1.",
       "name": "config_p2_key_reserved_1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048056c",
       "comment": "Config: P2 aim left key.",
       "name": "config_p2_aim_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480570",
       "comment": "Config: P2 aim right key.",
       "name": "config_p2_aim_right",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480574",
       "comment": "Config: P2 aim axis Y.",
       "name": "config_p2_axis_aim_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480578",
       "comment": "Config: P2 aim axis X.",
       "name": "config_p2_axis_aim_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048057c",
       "comment": "Config: P2 move axis Y.",
       "name": "config_p2_axis_move_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480580",
       "comment": "Config: P2 move axis X.",
       "name": "config_p2_axis_move_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480584",
       "comment": "Config: P2 padding/reserved 0.",
       "name": "config_p2_padding_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480588",
       "comment": "Config: P2 padding/reserved 1.",
       "name": "config_p2_padding_1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048058c",
       "comment": "Config: P2 padding/reserved 2.",
       "name": "config_p2_padding_2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480790",
@@ -2848,25 +2891,29 @@
       "address": "0x004819f0",
       "comment": "Alias of credits_secret_board[1], written to -3 as the second cell of a horizontal match.",
       "name": "credits_secret_match_mask_h0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004819f4",
       "comment": "Alias of credits_secret_board[2], written to -3 as the third cell of a horizontal match.",
       "name": "credits_secret_match_mask_h1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00481a04",
       "comment": "Alias of credits_secret_board[6], written to -3 as the second cell of a vertical match.",
       "name": "credits_secret_match_mask_v0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00481a1c",
       "comment": "Alias of credits_secret_board[12], written to -3 as the third cell of a vertical match.",
       "name": "credits_secret_match_mask_v1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00481a80",
@@ -3075,7 +3122,8 @@
       "address": "0x00482594",
       "comment": "Game-over high-score entry: cached initial active-record player-name length used when copying edited text back.",
       "name": "game_over_name_input_initial_length",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482598",
@@ -3214,7 +3262,8 @@
       "address": "0x004826ec",
       "comment": "Quest-results high-score entry: cached initial active-record player-name length used when copying edited text back.",
       "name": "quest_results_name_input_initial_length",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004826f0",
@@ -3318,37 +3367,43 @@
       "address": "0x0048272c",
       "comment": "Creature type SFX bank A [0] (creature_type_table + 0x04).",
       "name": "creature_type_sfx_a0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482730",
       "comment": "Creature type SFX bank A [1] (creature_type_table + 0x08).",
       "name": "creature_type_sfx_a1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482734",
       "comment": "Creature type SFX bank A [2] (creature_type_table + 0x0c).",
       "name": "creature_type_sfx_a2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482738",
       "comment": "Creature type SFX bank A [3] (creature_type_table + 0x10).",
       "name": "creature_type_sfx_a3",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048273c",
       "comment": "Creature type SFX bank B [0] (creature_type_table + 0x14).",
       "name": "creature_type_sfx_b0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482740",
       "comment": "Creature type SFX bank B [1] (creature_type_table + 0x18).",
       "name": "creature_type_sfx_b1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048275c",
@@ -3382,31 +3437,36 @@
       "address": "0x0048276c",
       "comment": "Creature type entry #1 (lizard).",
       "name": "creature_type_lizard",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "creature_type_t"
     },
     {
       "address": "0x004827b0",
       "comment": "Creature type entry #2 (alien).",
       "name": "creature_type_alien",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "creature_type_t"
     },
     {
       "address": "0x004827f4",
       "comment": "Creature type entry #3 (spider_sp1).",
       "name": "creature_type_spider_sp1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "creature_type_t"
     },
     {
       "address": "0x00482838",
       "comment": "Creature type entry #4 (spider_sp2).",
       "name": "creature_type_spider_sp2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "creature_type_t"
     },
     {
       "address": "0x0048287c",
       "comment": "Creature type entry #5 (trooper).",
       "name": "creature_type_trooper",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "creature_type_t"
     },
     {
       "address": "0x00482940",
@@ -3622,19 +3682,22 @@
       "address": "0x00484fdc",
       "comment": "Spawn slot interval seconds (creature_spawn_slot_table + 0x0c).",
       "name": "creature_spawn_slot_interval",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00484fe0",
       "comment": "Spawn slot countdown timer (creature_spawn_slot_table + 0x10).",
       "name": "creature_spawn_slot_timer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00484fe4",
       "comment": "Spawn slot template id (creature_spawn_slot_table + 0x14).",
       "name": "creature_spawn_slot_template",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004852d0",
@@ -4179,25 +4242,29 @@
       "address": "0x00487068",
       "comment": "High score record game mode (offset 0x28), set from config_game_mode.",
       "name": "highscore_record_game_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00487069",
       "comment": "High score record quest episode/chapter (offset 0x29).",
       "name": "highscore_record_quest_major",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048706a",
       "comment": "High score record quest level (offset 0x2a).",
       "name": "highscore_record_quest_minor",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048706b",
       "comment": "High score record most-used weapon id (offset 0x2b).",
       "name": "highscore_record_weapon_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048706c",
@@ -4493,7 +4560,8 @@
       "address": "0x004871f8",
       "comment": "Per-player aim screen Y coordinates (player_aim_screen_x + 0x04). Stride 8 bytes.",
       "name": "player_aim_screen_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00487234",
@@ -4674,7 +4742,8 @@
       "address": "0x00487292",
       "comment": "Logo sign update-disable lock (ui_sign_crimson + 0x2). When nonzero, ui_element_update early-returns so the sign stays at 0deg. Set by ui_elements_update_and_render when timeline is clamped; cleared by ui_menu_main_click_quit so the sign can pivot out on quit.",
       "name": "ui_sign_crimson_update_disabled",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004875a8",
@@ -5320,37 +5389,43 @@
       "address": "0x0048f500",
       "comment": "Perk prompt hover flag; toggles pulse animation and click gating when cursor is inside the perk prompt.",
       "name": "perk_prompt_hover_active",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0048f504",
       "comment": "Perk prompt pulse accumulator (0..1000) eased by frame_dt_ms; boosted when perk pick key is pressed.",
       "name": "perk_prompt_pulse",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048f510",
       "comment": "Perk prompt UI transform cosine (derived from perk_prompt_timer).",
       "name": "perk_prompt_transform_cos",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f514",
       "comment": "Perk prompt UI transform -sin component (derived from perk_prompt_timer).",
       "name": "perk_prompt_transform_sin_neg",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f518",
       "comment": "Perk prompt UI transform sin component (derived from perk_prompt_timer).",
       "name": "perk_prompt_transform_sin",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f51c",
       "comment": "Perk prompt UI transform cosine (paired with perk_prompt_transform_sin).",
       "name": "perk_prompt_transform_cos_2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f524",
@@ -5461,7 +5536,8 @@
       "address": "0x0048f58c",
       "comment": "Bonus HUD slot slide X offset (bonus_hud_slot_table + 0x04).",
       "name": "bonus_hud_slot_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x0048f594",
@@ -5803,7 +5879,8 @@
       "address": "0x0048fe5c",
       "comment": "Mode sentinel for ui_menu_item_subtemplate_block_01 (+0xe4 from block base); set to 8 in ui_menu_assets_init.",
       "name": "ui_menu_item_subtemplate_block_01_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048fe60",
@@ -5823,7 +5900,8 @@
       "address": "0x0048ff44",
       "comment": "Mode sentinel for ui_menu_item_subtemplate_block_02 (seeded to 4 by ui_menu_template_pool_init).",
       "name": "ui_menu_item_subtemplate_block_02_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0048ff48",
@@ -5843,7 +5921,8 @@
       "address": "0x0049002c",
       "comment": "Mode sentinel for ui_menu_item_subtemplate_block_03 (seeded to 4 by ui_menu_template_pool_init).",
       "name": "ui_menu_item_subtemplate_block_03_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490030",
@@ -5863,7 +5942,8 @@
       "address": "0x00490114",
       "comment": "Mode sentinel for ui_menu_item_subtemplate_block_04 (seeded to 4 by ui_menu_template_pool_init).",
       "name": "ui_menu_item_subtemplate_block_04_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490118",
@@ -5883,7 +5963,8 @@
       "address": "0x004901fc",
       "comment": "Mode sentinel for ui_menu_item_subtemplate_block_05 (seeded to 4 by ui_menu_template_pool_init).",
       "name": "ui_menu_item_subtemplate_block_05_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490200",
@@ -5903,7 +5984,8 @@
       "address": "0x004902e4",
       "comment": "Mode sentinel for ui_menu_item_subtemplate_block_06 (seeded to 4 by ui_menu_template_pool_init).",
       "name": "ui_menu_item_subtemplate_block_06_mode",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004902e8",
@@ -7028,13 +7110,15 @@
       "address": "0x00495ace",
       "comment": "SYSTEMTIME.wDay field (day-of-month) used with local_system_time for date checks.",
       "name": "local_system_day",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned short"
     },
     {
       "address": "0x00495ad6",
       "comment": "SYSTEMTIME.wMilliseconds field read into a stack LARGE_INTEGER before QueryPerformanceCounter seeds the PRNG.",
       "name": "local_system_milliseconds",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned short"
     },
     {
       "address": "0x00495ad8",
@@ -7054,7 +7138,8 @@
       "address": "0x00495ae0",
       "comment": "Secondary projectile speed (secondary_projectile_pool + 0x08)",
       "name": "secondary_proj_speed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00495ae4",
@@ -7095,7 +7180,8 @@
       "address": "0x00495af8",
       "comment": "Secondary projectile lifetime (secondary_projectile_pool + 0x20)",
       "name": "secondary_proj_lifetime",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00495afc",
@@ -8088,7 +8174,8 @@
       "address": "0x004ab378",
       "comment": "Effect pool quad vertex data (effect_pool_pos_x + 0x48)",
       "name": "effect_pool_quad_data",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "effect_vertex_t[4]"
     },
     {
       "address": "0x004c2b30",
@@ -8549,7 +8636,8 @@
       "address": "0x004c2c44",
       "comment": "Perk description pointer table (perk_meta_table + 0x04).",
       "name": "perk_desc_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004c2c48",
@@ -8569,7 +8657,8 @@
       "address": "0x004c2c50",
       "comment": "Perk prerequisite table (perk_meta_table + 0x10).",
       "name": "perk_prereq_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3640",
@@ -9323,7 +9412,8 @@
       "address": "0x004c84e4",
       "comment": "SFX entry table state/slot base used by sfx_play and sfx_load_sample.",
       "name": "sfx_entry_table_state",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "void *"
     },
     {
       "address": "0x004cc6d0",
@@ -10346,73 +10436,85 @@
       "address": "0x004d78a8",
       "comment": "Controls rebind menu-item slot for movement secondary (Move Down / Backward, depending on movement mode).",
       "name": "controls_rebind_move_secondary_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d78b8",
       "comment": "Controls rebind menu-item slot for movement tertiary (Move Left / Turn Left, depending on movement mode).",
       "name": "controls_rebind_move_tertiary_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d78c8",
       "comment": "Controls rebind menu-item slot for movement quaternary (Move Right / Turn Right, depending on movement mode).",
       "name": "controls_rebind_move_quaternary_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d78d8",
       "comment": "Controls rebind menu-item slot for Fire action.",
       "name": "controls_rebind_fire_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7908",
       "comment": "Controls rebind menu-item slot for torso-left aiming action.",
       "name": "controls_rebind_torso_left_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7918",
       "comment": "Controls rebind menu-item slot for torso-right aiming action.",
       "name": "controls_rebind_torso_right_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7928",
       "comment": "Controls rebind menu-item slot for aim up/down analog axis.",
       "name": "controls_rebind_aim_up_down_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7938",
       "comment": "Controls rebind menu-item slot for aim left/right analog axis.",
       "name": "controls_rebind_aim_left_right_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7948",
       "comment": "Controls rebind menu-item slot for movement up/down analog axis.",
       "name": "controls_rebind_move_up_down_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7958",
       "comment": "Controls rebind menu-item slot for movement left/right analog axis.",
       "name": "controls_rebind_move_left_right_axis_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7968",
       "comment": "Controls rebind menu-item slot for the \"Level Up\" action (label mirrors _config_key_pick_perk display name).",
       "name": "controls_key_pick_perk_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7978",
       "comment": "Controls rebind menu-item slot for the \"Reload\" / \"Move to cursor\" action (label mirrors _config_key_reload display name).",
       "name": "controls_key_reload_item",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_menu_item_t"
     },
     {
       "address": "0x004d7988",

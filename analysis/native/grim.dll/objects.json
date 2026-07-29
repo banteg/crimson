@@ -59,7 +59,7 @@
     "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "be3a612294174140828f0c0036165d7ae8986f341d2fd4264d8c59f71d6b9a9b",
+  "audit_digest": "a985f152bc7b998300ba34cd3a59b733c399697b27c7384908c63b1f7d45ce8f",
   "data_object_count": 1,
   "data_objects": [
     {

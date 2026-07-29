@@ -1,5 +1,5 @@
 {
-  "audit_digest": "26f4bb3dbed9928e7ec78a468a69fc802bf6bb19d58b354d00b6cf3c13e47510",
+  "audit_digest": "30a8a6e05ab9dedfaa804ef5f1767e36f4f5d6f8e78fd10a39aae74296878129",
   "entries": [
     {
       "address": 4211888,
@@ -4991,7 +4991,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "console_command_entry_t *"
     },
     {
       "address": 4714152,
@@ -5986,7 +5986,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int[4]"
     },
     {
       "address": 4719500,
@@ -6005,7 +6005,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int[4]"
     },
     {
       "address": 4719544,
@@ -6119,7 +6119,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719627,
@@ -6138,7 +6138,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719654,
@@ -6157,7 +6157,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719681,
@@ -6176,7 +6176,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719708,
@@ -6195,7 +6195,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719735,
@@ -6214,7 +6214,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719762,
@@ -6233,7 +6233,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719789,
@@ -6252,7 +6252,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char[27]"
     },
     {
       "address": 4719816,
@@ -6385,7 +6385,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719892,
@@ -6404,7 +6404,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719896,
@@ -6423,7 +6423,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719900,
@@ -6442,7 +6442,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719904,
@@ -6461,7 +6461,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719908,
@@ -6480,7 +6480,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719912,
@@ -6499,7 +6499,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719916,
@@ -6518,7 +6518,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719920,
@@ -6537,7 +6537,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719924,
@@ -6556,7 +6556,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719928,
@@ -6575,7 +6575,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719932,
@@ -6594,7 +6594,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719936,
@@ -6613,7 +6613,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719940,
@@ -6632,7 +6632,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719944,
@@ -6651,7 +6651,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719948,
@@ -6670,7 +6670,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719952,
@@ -6689,7 +6689,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719956,
@@ -6708,7 +6708,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719960,
@@ -6727,7 +6727,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719964,
@@ -6746,7 +6746,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719968,
@@ -6765,7 +6765,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719972,
@@ -6784,7 +6784,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719976,
@@ -6803,7 +6803,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719980,
@@ -6822,7 +6822,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719984,
@@ -6841,7 +6841,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719988,
@@ -6860,7 +6860,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719992,
@@ -6879,7 +6879,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4719996,
@@ -6898,7 +6898,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720000,
@@ -6917,7 +6917,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720004,
@@ -6936,7 +6936,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720008,
@@ -6955,7 +6955,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720012,
@@ -6974,7 +6974,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4720528,
@@ -8442,7 +8442,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4725236,
@@ -8461,7 +8461,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4725252,
@@ -8480,7 +8480,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4725276,
@@ -8499,7 +8499,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4725376,
@@ -9106,7 +9106,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728216,
@@ -9518,7 +9518,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728560,
@@ -9824,7 +9824,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728624,
@@ -9843,7 +9843,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728628,
@@ -9862,7 +9862,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728632,
@@ -9881,7 +9881,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728636,
@@ -9900,7 +9900,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728640,
@@ -9919,7 +9919,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4728668,
@@ -10014,7 +10014,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "creature_type_t"
     },
     {
       "address": 4728752,
@@ -10033,7 +10033,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "creature_type_t"
     },
     {
       "address": 4728820,
@@ -10052,7 +10052,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "creature_type_t"
     },
     {
       "address": 4728888,
@@ -10071,7 +10071,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "creature_type_t"
     },
     {
       "address": 4728956,
@@ -10090,7 +10090,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "creature_type_t"
     },
     {
       "address": 4729152,
@@ -10689,7 +10689,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4739040,
@@ -10708,7 +10708,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4739044,
@@ -10727,7 +10727,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4739792,
@@ -12276,7 +12276,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747369,
@@ -12295,7 +12295,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747370,
@@ -12314,7 +12314,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747371,
@@ -12333,7 +12333,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4747372,
@@ -13189,7 +13189,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4747828,
@@ -13724,7 +13724,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4748712,
@@ -15555,7 +15555,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned char"
     },
     {
       "address": 4781316,
@@ -15574,7 +15574,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4781328,
@@ -15593,7 +15593,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4781332,
@@ -15612,7 +15612,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4781336,
@@ -15631,7 +15631,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4781340,
@@ -15650,7 +15650,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4781348,
@@ -15980,7 +15980,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4781460,
@@ -16979,7 +16979,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4783712,
@@ -17038,7 +17038,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4783944,
@@ -17097,7 +17097,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4784176,
@@ -17156,7 +17156,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4784408,
@@ -17215,7 +17215,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4784640,
@@ -17274,7 +17274,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4784872,
@@ -20379,7 +20379,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned short"
     },
     {
       "address": 4807382,
@@ -20398,7 +20398,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "unsigned short"
     },
     {
       "address": 4807384,
@@ -20456,7 +20456,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4807396,
@@ -20570,7 +20570,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "float"
     },
     {
       "address": 4807420,
@@ -23371,7 +23371,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "effect_vertex_t[4]"
     },
     {
       "address": 4991792,
@@ -24754,7 +24754,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "char *"
     },
     {
       "address": 4992072,
@@ -24811,7 +24811,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "int"
     },
     {
       "address": 4994624,
@@ -27069,7 +27069,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "void *"
     },
     {
       "address": 5031632,
@@ -30098,7 +30098,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077176,
@@ -30117,7 +30117,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077192,
@@ -30136,7 +30136,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077208,
@@ -30155,7 +30155,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077256,
@@ -30174,7 +30174,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077272,
@@ -30193,7 +30193,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077288,
@@ -30212,7 +30212,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077304,
@@ -30231,7 +30231,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077320,
@@ -30250,7 +30250,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077336,
@@ -30269,7 +30269,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077352,
@@ -30288,7 +30288,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077368,
@@ -30307,7 +30307,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": null,
       "size_source": null,
-      "type": null
+      "type": "ui_menu_item_t"
     },
     {
       "address": 5077384,
@@ -31261,7 +31261,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "2568d8bb29abb6876e5293ca32a3c6624f8f87e75a9c47ce428ba92f425e53f7",
+    "data_map_sha256": "095d831ac2280d85070e8740832316af4842e7662677c0b6d7b05556a80a4da7",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
     "definitions_sha256": "0635e22cc154cb7cd447e3e4bd3ba7bed3ea635cb86a81c17829527e11aed066",
     "reference_image": {
@@ -31280,7 +31280,7 @@
     "explicit_alignment_entries": 998,
     "explicit_initializer_entries": 998,
     "explicit_size_entries": 998,
-    "fixed_array_types": 254,
+    "fixed_array_types": 265,
     "fully_specified_entries": 998,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -31293,8 +31293,8 @@
       ".rdata": 4,
       ".text": 4
     },
-    "typed_entries": 1422,
+    "typed_entries": 1524,
     "unique_addresses": 1547,
-    "untyped_entries": 129
+    "untyped_entries": 27
   }
 }

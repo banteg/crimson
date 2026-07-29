@@ -466,31 +466,54 @@ def test_data_map_preserves_recovered_aggregate_alias_types():
     }
 
     assert types_by_name["config_direction_arrow_flags"] == "unsigned char[2]"
+    assert types_by_name["config_player_mode_flags"] == "int[4]"
+    assert types_by_name["config_aim_scheme"] == "int[4]"
     assert types_by_name["config_player_name_buf"] == "char[12]"
     assert types_by_name["config_saved_name_order"] == "int[8]"
+    assert types_by_name["config_saved_name_7"] == "char[27]"
     assert types_by_name["config_player_name"] == "char[32]"
+    assert types_by_name["config_p2_axis_move_x"] == "int"
+    assert (
+        types_by_name["console_command_list_head"]
+        == "console_command_entry_t *"
+    )
     assert types_by_name["console_log_head"] == "console_log_node_t *"
+    assert types_by_name["credits_secret_match_mask_v1"] == "int"
     assert types_by_name["game_sequence_id"] == "unsigned int"
     assert types_by_name["highscore_score_xp"] == "unsigned int"
+    assert types_by_name["highscore_record_weapon_id"] == "unsigned char"
     assert types_by_name["quest_selected_builder"] == "quest_builder_fn_t"
     assert types_by_name["player_perk_counts"] == "int[128]"
     assert types_by_name["player2_health"] == "float"
+    assert types_by_name["player_aim_screen_y"] == "float"
     assert types_by_name["creature_orbit_radius"] == "creature_orbit_radius_t"
+    assert types_by_name["creature_type_trooper"] == "creature_type_t"
+    assert types_by_name["creature_spawn_slot_timer"] == "float"
     assert types_by_name["projectile_type_id"] == "projectile_type_id_t"
     assert (
         types_by_name["secondary_proj_type_id"]
         == "secondary_projectile_type_id_t"
     )
+    assert types_by_name["secondary_proj_lifetime"] == "float"
     assert types_by_name["effect_pool_effect_id"] == "unsigned char"
+    assert types_by_name["effect_pool_quad_data"] == "effect_vertex_t[4]"
     assert types_by_name["particle_style_id"] == "unsigned char"
     assert types_by_name["bonus_label_points"] == "char *"
     assert types_by_name["bonus_hud_slot_timer_ptr"] == "float *"
+    assert types_by_name["bonus_hud_slot_y"] == "float"
+    assert types_by_name["perk_desc_table"] == "char *"
     assert types_by_name["perk_flags_table"] == "int"
     assert types_by_name["weapon_projectile_travel_budget"] == "float"
+    assert types_by_name["ui_sign_crimson_update_disabled"] == "unsigned char"
+    assert types_by_name["perk_prompt_transform_cos"] == "float"
     assert (
         types_by_name["ui_menu_item_subtemplate_block_01_texture_handle"]
         == "int"
     )
+    assert types_by_name["ui_menu_item_subtemplate_block_06_mode"] == "int"
+    assert types_by_name["local_system_milliseconds"] == "unsigned short"
+    assert types_by_name["sfx_entry_table_state"] == "void *"
+    assert types_by_name["controls_key_reload_item"] == "ui_menu_item_t"
     assert types_by_name["effect_uv16_v"] == "float"
 
 
