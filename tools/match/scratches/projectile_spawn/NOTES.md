@@ -112,3 +112,21 @@ byte-neutral. Repeating the evidenced `1.0f` assignment on either side of the
 type override raises the candidate to 120 instructions but worsens the score
 to 69.92%; the backend still does not reproduce native's four-byte local, so
 the redundant source assignment is not retained.
+
+## Recorded vector value-ABI search
+
+The recovered `oldtypes.h` by-value declaration motivated a bounded ABI check
+rather than another control-flow rewrite. `vector-value-abi-mutations.json`
+temporarily masks the lowered pointer prototype from the shared matching
+header, then tests an eight-byte vector value with a default constructor,
+scalar constructor, copy constructor, destructor, or copy constructor plus
+destructor. This isolates the VC6 non-POD parameter-lowering hypothesis while
+leaving the function body unchanged.
+
+All five variants compile, preserve `13/0/0` references, and produce the same
+69.20% result, a regression from the 71.67% lowered-pointer baseline. The spec
+SHA-256 is
+`61105c369e7877c31940a539980077ae50c1d1d537eb2ff87ee9182e5e24853d`.
+Special-member-driven by-value lowering therefore does not recover the native
+four-byte default-damage local, and the canonical scratch retains the
+evidence-backed pointer boundary.

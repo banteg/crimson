@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "projectile-vector-value-abi",
+      "find": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nextern \"C\" int projectile_spawn(\n    const vec2f_t *pos,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n",
+      "replacements": [
+        {
+          "name": "value-with-default-constructor",
+          "text": "#define projectile_spawn projectile_spawn_pointer_decl\n#include \"crimsonland_gameplay.h\"\n#undef projectile_spawn\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nstruct projectile_vec2_value_t : vec2f_t {\n    projectile_vec2_value_t() {}\n};\n\nextern \"C\" int projectile_spawn(\n    projectile_vec2_value_t pos_value,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n    const vec2f_t *pos = &pos_value;\n"
+        },
+        {
+          "name": "value-with-scalar-constructor",
+          "text": "#define projectile_spawn projectile_spawn_pointer_decl\n#include \"crimsonland_gameplay.h\"\n#undef projectile_spawn\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nstruct projectile_vec2_value_t : vec2f_t {\n    projectile_vec2_value_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n};\n\nextern \"C\" int projectile_spawn(\n    projectile_vec2_value_t pos_value,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n    const vec2f_t *pos = &pos_value;\n"
+        },
+        {
+          "name": "value-with-copy-constructor",
+          "text": "#define projectile_spawn projectile_spawn_pointer_decl\n#include \"crimsonland_gameplay.h\"\n#undef projectile_spawn\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nstruct projectile_vec2_value_t : vec2f_t {\n    projectile_vec2_value_t(const projectile_vec2_value_t &other)\n    {\n        x = other.x;\n        y = other.y;\n    }\n};\n\nextern \"C\" int projectile_spawn(\n    projectile_vec2_value_t pos_value,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n    const vec2f_t *pos = &pos_value;\n"
+        },
+        {
+          "name": "value-with-destructor",
+          "text": "#define projectile_spawn projectile_spawn_pointer_decl\n#include \"crimsonland_gameplay.h\"\n#undef projectile_spawn\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nstruct projectile_vec2_value_t : vec2f_t {\n    ~projectile_vec2_value_t() {}\n};\n\nextern \"C\" int projectile_spawn(\n    projectile_vec2_value_t pos_value,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n    const vec2f_t *pos = &pos_value;\n"
+        },
+        {
+          "name": "value-with-copy-and-destructor",
+          "text": "#define projectile_spawn projectile_spawn_pointer_decl\n#include \"crimsonland_gameplay.h\"\n#undef projectile_spawn\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nstruct projectile_vec2_value_t : vec2f_t {\n    projectile_vec2_value_t(const projectile_vec2_value_t &other)\n    {\n        x = other.x;\n        y = other.y;\n    }\n\n    ~projectile_vec2_value_t() {}\n};\n\nextern \"C\" int projectile_spawn(\n    projectile_vec2_value_t pos_value,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n    const vec2f_t *pos = &pos_value;\n"
+        }
+      ]
+    }
+  ]
+}

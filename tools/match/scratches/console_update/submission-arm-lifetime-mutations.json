@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "submission-arm-lifetime",
+      "find": "        if (console_input_ready) {\n            if (strcmp(history_head->line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n            history_index = 0;\n            console_printf(\n                &console_log_queue, \"> %s\\n\", console_input_buffer());\n            exec_line(console_input_buffer());\n            console_input_clear();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n            return;\n        }\n\n        console_input_buffer();\n        grim_interface_ptr->grim_was_key_pressed(0x1c);\n",
+      "replacements": [
+        {
+          "name": "explicit-submit-first-else",
+          "text": "        if (console_input_ready) {\n            if (strcmp(history_head->line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n            history_index = 0;\n            console_printf(\n                &console_log_queue, \"> %s\\n\", console_input_buffer());\n            exec_line(console_input_buffer());\n            console_input_clear();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n            return;\n        } else {\n            console_input_buffer();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n        }\n"
+        },
+        {
+          "name": "explicit-nonsubmit-first",
+          "text": "        if (!console_input_ready) {\n            console_input_buffer();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n        } else {\n            if (strcmp(history_head->line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n            history_index = 0;\n            console_printf(\n                &console_log_queue, \"> %s\\n\", console_input_buffer());\n            exec_line(console_input_buffer());\n            console_input_clear();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n            return;\n        }\n"
+        },
+        {
+          "name": "equality-nonsubmit-first",
+          "text": "        if (console_input_ready == 0) {\n            console_input_buffer();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n        } else {\n            if (strcmp(history_head->line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n            history_index = 0;\n            console_printf(\n                &console_log_queue, \"> %s\\n\", console_input_buffer());\n            exec_line(console_input_buffer());\n            console_input_clear();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n            return;\n        }\n"
+        },
+        {
+          "name": "switch-ready-arms",
+          "text": "        switch (console_input_ready) {\n        case 0:\n            console_input_buffer();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n            break;\n        default:\n            if (strcmp(history_head->line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n            history_index = 0;\n            console_printf(\n                &console_log_queue, \"> %s\\n\", console_input_buffer());\n            exec_line(console_input_buffer());\n            console_input_clear();\n            grim_interface_ptr->grim_was_key_pressed(0x1c);\n            return;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

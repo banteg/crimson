@@ -63,3 +63,17 @@ extra early saved-register instruction; no independent missing call, input
 branch, or history operation appears. With the late pointer-declaration sweep
 already byte-neutral, this recheck provides no new semantic source hypothesis,
 so no additional mutation or source change is retained.
+
+## Submission-arm lifetime sweep
+
+`submission-arm-lifetime-mutations.json` tested four explicit ownership shapes
+for the final ready/not-ready split: submit-first `if`/`else`, non-submit-first
+inequality and equality forms, and a two-arm `switch`. The submit-first
+`if`/`else` and `switch` are byte-identical to the 90.05% baseline at 297/296
+instructions and `64/0/0` references. Both non-submit-first forms regress to
+86.34% and lose two resolved references.
+
+The spec SHA-256 is
+`4d21d3c8a0c719c7af709a3a630aedeca779e40568d015ca46f014616095dc33`.
+The remaining save-placement mismatch is therefore not controlled by source
+ownership of the submission arms, and no source change is retained.
