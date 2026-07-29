@@ -27,6 +27,24 @@ matches. Their remaining 11 mismatches are unconstrained VC6 scheduling of
 four identical vector constants, callee-save pushes, and independent metadata
 stores; direct fields and an inlined setter produce the same opening body.
 
+## Recorded opening audit
+
+Two complete mutation sweeps record 16 plausible opening shapes without
+retaining a change. `opening-scheduling-mutations.json` covers template/count
+locals, named and scoped position aggregates, direct field stores, and the
+entry setter. `opening-lifetime-boundary-mutations.json` then covers split
+initialization, a reused position local, const aggregates, and movement of the
+second position across the first entry's metadata boundary. Fourteen variants
+are byte-neutral. Moving the second position earlier loses 3.45 weighted bytes,
+and direct field stores lose 24.04; neither improves any other metric.
+
+A 25-profile matrix across MSVC 6.0, 6.5, 6.5pp, 6.6, and 7.0 with the
+baseline, `/Ob1`, `/Ot`, `/G5`, and `/G6` flag shapes finds no improvement.
+MSVC 6.0, 6.5, and 6.6 reproduce the current best under the neutral flag
+variants; the preprocessor build, VC7, and `/G6` regress. Together with the
+exact post-opening body, this bounds the remaining mismatch as compiler
+scheduling rather than unrecovered quest policy.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

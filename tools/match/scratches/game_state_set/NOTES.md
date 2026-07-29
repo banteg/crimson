@@ -82,3 +82,15 @@ subsequent x/y adjustments. The existing local vector-class cast remains only
 at the class-assignment boundary. This source cleanup is byte-neutral at
 85.35%, 393/399 instructions, a 166-instruction prefix, and `162/0/0`
 references.
+
+## Recorded mode-tail audit
+
+Two complete mutation sweeps record 11 source-equivalent challenges to the
+six-instruction final-mode deficit. `mode-tail-sequencing-mutations.json`
+covers nested and inverted final arms, a copied mode, counter pointer/reference
+aliases, a status pointer, an explicit final condition, and an explicit join.
+`mode-counter-scope-mutations.json` adds shared signed/unsigned counters and
+guarded mode blocks. Every variant compiles byte-for-byte identically to the
+baseline. This bounds ordinary CFG and local-lifetime spelling as explanations
+for VC6's native repeated load/flag/increment/flag/store sequence; no artificial
+dependency is justified.

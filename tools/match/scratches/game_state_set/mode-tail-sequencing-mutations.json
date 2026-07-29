@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mode-tail-sequencing",
+      "find": "            } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {\n                unsigned int play_count = game_status_blob.mode_play_typo;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                game_status_blob.mode_play_typo = play_count;\n            } else {\n                unsigned int play_count = game_status_blob.mode_play_other;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                game_status_blob.mode_play_other = play_count;\n            }\n",
+      "replacements": [
+        {
+          "name": "nested-final-mode",
+          "text": "            } else {\n                if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {\n                    unsigned int play_count = game_status_blob.mode_play_typo;\n                    render_pass_mode = 1;\n                    ++play_count;\n                    gameplay_transition_latch = 1;\n                    game_status_blob.mode_play_typo = play_count;\n                } else {\n                    unsigned int play_count = game_status_blob.mode_play_other;\n                    render_pass_mode = 1;\n                    ++play_count;\n                    gameplay_transition_latch = 1;\n                    game_status_blob.mode_play_other = play_count;\n                }\n            }\n"
+        },
+        {
+          "name": "inverted-nested-final-mode",
+          "text": "            } else {\n                if (config_game_mode != GAME_MODE_TYPO_SHOOTER) {\n                    unsigned int play_count = game_status_blob.mode_play_other;\n                    render_pass_mode = 1;\n                    ++play_count;\n                    gameplay_transition_latch = 1;\n                    game_status_blob.mode_play_other = play_count;\n                } else {\n                    unsigned int play_count = game_status_blob.mode_play_typo;\n                    render_pass_mode = 1;\n                    ++play_count;\n                    gameplay_transition_latch = 1;\n                    game_status_blob.mode_play_typo = play_count;\n                }\n            }\n"
+        },
+        {
+          "name": "copied-mode-tail",
+          "text": "            } else {\n                int mode = (int)config_game_mode;\n                if (mode == (int)GAME_MODE_TYPO_SHOOTER) {\n                    unsigned int play_count = game_status_blob.mode_play_typo;\n                    render_pass_mode = 1;\n                    ++play_count;\n                    gameplay_transition_latch = 1;\n                    game_status_blob.mode_play_typo = play_count;\n                } else {\n                    unsigned int play_count = game_status_blob.mode_play_other;\n                    render_pass_mode = 1;\n                    ++play_count;\n                    gameplay_transition_latch = 1;\n                    game_status_blob.mode_play_other = play_count;\n                }\n            }\n"
+        },
+        {
+          "name": "counter-pointer-tail",
+          "text": "            } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {\n                unsigned int *play_count_ptr = &game_status_blob.mode_play_typo;\n                unsigned int play_count = *play_count_ptr;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                *play_count_ptr = play_count;\n            } else {\n                unsigned int *play_count_ptr = &game_status_blob.mode_play_other;\n                unsigned int play_count = *play_count_ptr;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                *play_count_ptr = play_count;\n            }\n"
+        },
+        {
+          "name": "counter-reference-tail",
+          "text": "            } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {\n                unsigned int &play_count_ref = game_status_blob.mode_play_typo;\n                unsigned int play_count = play_count_ref;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                play_count_ref = play_count;\n            } else {\n                unsigned int &play_count_ref = game_status_blob.mode_play_other;\n                unsigned int play_count = play_count_ref;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                play_count_ref = play_count;\n            }\n"
+        },
+        {
+          "name": "status-pointer-tail",
+          "text": "            } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {\n                game_status_t *status = &game_status_blob;\n                unsigned int play_count = status->mode_play_typo;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                status->mode_play_typo = play_count;\n            } else {\n                game_status_t *status = &game_status_blob;\n                unsigned int play_count = status->mode_play_other;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                status->mode_play_other = play_count;\n            }\n"
+        },
+        {
+          "name": "explicit-final-condition",
+          "text": "            } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {\n                unsigned int play_count = game_status_blob.mode_play_typo;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                game_status_blob.mode_play_typo = play_count;\n            } else if (config_game_mode != GAME_MODE_TYPO_SHOOTER) {\n                unsigned int play_count = game_status_blob.mode_play_other;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                game_status_blob.mode_play_other = play_count;\n            }\n"
+        },
+        {
+          "name": "explicit-tail-join",
+          "text": "            } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {\n                unsigned int play_count = game_status_blob.mode_play_typo;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                game_status_blob.mode_play_typo = play_count;\n                goto gameplay_mode_ready;\n            } else {\n                unsigned int play_count = game_status_blob.mode_play_other;\n                render_pass_mode = 1;\n                ++play_count;\n                gameplay_transition_latch = 1;\n                game_status_blob.mode_play_other = play_count;\n            }\ngameplay_mode_ready:\n            ;\n"
+        }
+      ]
+    }
+  ]
+}

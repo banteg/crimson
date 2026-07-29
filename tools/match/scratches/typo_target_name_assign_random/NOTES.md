@@ -47,6 +47,15 @@ and its native tail merges. MSVC 6.0 and 6.6 are no better, 6.5pp and 7.0
 regress sharply, and `/G6` is slightly worse. No volatile state, dummy work, or
 register-forcing construct is retained.
 
+The complete recorded allocation audit adds 16 byte-neutral variants.
+`name-table-type-mutations.json` covers row typedefs, row-struct conversions,
+typed wrapper access, and byte/shifted offsets.
+`first-name-slot-address-mutations.json` covers copied indices, named
+multiply/shift offsets, and both base-first address forms at the first affected
+site. A separate compiler/flags matrix confirms the baseline MSVC 6.5/6.6
+shape is still best. These results bound ordinary type and address spelling as
+causes of the remaining temporary-register choice.
+
 ## Port parity
 
 Python and Zig already preserve the signed score tiers, gate thresholds,

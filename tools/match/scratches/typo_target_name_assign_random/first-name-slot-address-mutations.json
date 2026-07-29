@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-name-slot-address",
+      "find": "                name = typo_target_name_table[creature_id];\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "base-then-multiply-offset",
+          "text": "                name = &typo_target_name_table[0][0];\n                name += creature_id * 64;\n"
+        },
+        {
+          "name": "base-then-shifted-offset",
+          "text": "                name = &typo_target_name_table[0][0];\n                name += creature_id << 6;\n"
+        },
+        {
+          "name": "byte-base-then-multiply-offset",
+          "text": "                name = (char *)typo_target_name_table;\n                name += creature_id * 64;\n"
+        },
+        {
+          "name": "named-multiply-offset",
+          "text": "                int name_offset = creature_id * 64;\n                name = (char *)typo_target_name_table + name_offset;\n"
+        },
+        {
+          "name": "named-shifted-offset",
+          "text": "                int name_offset = creature_id << 6;\n                name = (char *)typo_target_name_table + name_offset;\n"
+        },
+        {
+          "name": "split-shifted-offset",
+          "text": "                int name_offset = creature_id;\n                name_offset <<= 6;\n                name = (char *)typo_target_name_table + name_offset;\n"
+        },
+        {
+          "name": "named-base-plus-offset",
+          "text": "                char *name_base = &typo_target_name_table[0][0];\n                name = name_base + creature_id * 64;\n"
+        },
+        {
+          "name": "copied-index",
+          "text": "                int name_index = creature_id;\n                name = typo_target_name_table[name_index];\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-lifetime-boundary",
+      "find": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    int entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    spawns[1].pos = quest_vec2_t(256.0f, 128.0f);\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n",
+      "replacements": [
+        {
+          "name": "split-template-after-first-position",
+          "text": "    int spawn_template_id;\n    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawn_template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[0].template_id = spawn_template_id;\n    int entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    spawns[1].pos = quest_vec2_t(256.0f, 128.0f);\n    spawns[1].template_id = spawn_template_id;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        },
+        {
+          "name": "split-template-and-count",
+          "text": "    int spawn_template_id;\n    int entry_count;\n    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawn_template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[0].template_id = spawn_template_id;\n    entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    spawns[1].pos = quest_vec2_t(256.0f, 128.0f);\n    spawns[1].template_id = spawn_template_id;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        },
+        {
+          "name": "split-count-after-template",
+          "text": "    int entry_count;\n    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    spawns[1].pos = quest_vec2_t(256.0f, 128.0f);\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        },
+        {
+          "name": "second-position-before-first-tail",
+          "text": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    int entry_count = 2;\n    spawns[1].pos = quest_vec2_t(256.0f, 128.0f);\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        },
+        {
+          "name": "both-positions-before-metadata",
+          "text": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[1].pos = quest_vec2_t(256.0f, 128.0f);\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    int entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        },
+        {
+          "name": "shared-position-local",
+          "text": "    quest_vec2_t position(256.0f, 256.0f);\n    spawns[0].pos = position;\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    int entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    position = quest_vec2_t(256.0f, 128.0f);\n    spawns[1].pos = position;\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        },
+        {
+          "name": "const-position-locals",
+          "text": "    const quest_vec2_t first_position(256.0f, 256.0f);\n    spawns[0].pos = first_position;\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    int entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    const quest_vec2_t second_position(256.0f, 128.0f);\n    spawns[1].pos = second_position;\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        },
+        {
+          "name": "scoped-second-position-after-first-tail",
+          "text": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    int entry_count = 2;\n    spawns[0].trigger_time_ms = 1000;\n    spawns[0].count = entry_count;\n\n    {\n        quest_vec2_t second_position(256.0f, 128.0f);\n        spawns[1].pos = second_position;\n    }\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 1700;\n    spawns[1].count = entry_count;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "name-table-type",
+      "find": "extern \"C\" char typo_target_name_table[384][64];\n",
+      "replacements": [
+        {
+          "name": "typedef-row-array",
+          "text": "typedef char typo_target_name_row_t[64];\nextern \"C\" typo_target_name_row_t typo_target_name_table[384];\n"
+        },
+        {
+          "name": "row-struct-conversion",
+          "text": "struct typo_target_name_row_t {\n    char text[64];\n    operator char *() { return text; }\n};\nextern \"C\" typo_target_name_row_t typo_target_name_table[384];\n"
+        },
+        {
+          "name": "row-struct-address-conversion",
+          "text": "struct typo_target_name_row_t {\n    char text[64];\n    operator char *() { return &text[0]; }\n};\nextern \"C\" typo_target_name_row_t typo_target_name_table[384];\n"
+        },
+        {
+          "name": "table-wrapper-row-array",
+          "text": "struct typo_target_name_table_t {\n    char rows[384][64];\n    char *operator[](int index) { return rows[index]; }\n};\nextern \"C\" typo_target_name_table_t typo_target_name_table;\n"
+        },
+        {
+          "name": "table-wrapper-row-address",
+          "text": "struct typo_target_name_table_t {\n    char rows[384][64];\n    char *operator[](int index) { return &rows[index][0]; }\n};\nextern \"C\" typo_target_name_table_t typo_target_name_table;\n"
+        },
+        {
+          "name": "table-wrapper-byte-offset",
+          "text": "struct typo_target_name_table_t {\n    char rows[384][64];\n    char *operator[](int index) { return (char *)rows + index * 64; }\n};\nextern \"C\" typo_target_name_table_t typo_target_name_table;\n"
+        },
+        {
+          "name": "table-wrapper-shifted-offset",
+          "text": "struct typo_target_name_table_t {\n    char rows[384][64];\n    char *operator[](int index) {\n        int offset = index << 6;\n        return (char *)rows + offset;\n    }\n};\nextern \"C\" typo_target_name_table_t typo_target_name_table;\n"
+        },
+        {
+          "name": "table-wrapper-typed-rows",
+          "text": "struct typo_target_name_row_t {\n    char text[64];\n};\nstruct typo_target_name_table_t {\n    typo_target_name_row_t rows[384];\n    char *operator[](int index) { return rows[index].text; }\n};\nextern \"C\" typo_target_name_table_t typo_target_name_table;\n"
+        }
+      ]
+    }
+  ]
+}
