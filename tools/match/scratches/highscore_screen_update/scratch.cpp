@@ -96,8 +96,11 @@ struct highscore_scrollbar_t {
 
     highscore_scrollbar_t()
     {
-        column_offsets[0] = 0;
-        column_offsets[1] = 0;
+        int *column = column_offsets;
+        int *end = column_offsets + 2;
+        while (column != end) {
+            *column++ = 0;
+        }
     }
 
     ~highscore_scrollbar_t() {}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-panel-position-lifetime",
+      "find": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n    }\n    position.y += 10.0f;\n    position.x +=\n        ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n    if (config_screen_width <= 640) {\n        position.x += 20.0f;\n    }\n",
+      "replacements": [
+        {
+          "name": "scoped-compound-y-before-x",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n        position.y += 10.0f;\n        position.x +=\n            ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n        if (config_screen_width <= 640) {\n            position.x += 20.0f;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-compound-x-before-y",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n        position.x +=\n            ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n        position.y += 10.0f;\n        if (config_screen_width <= 640) {\n            position.x += 20.0f;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-direct-y-before-x",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n        position.y += 10.0f;\n        position.x =\n            panel_position.x + ui_element_slot_33.render_offset_x\n            - 16.0f - 240.0f - 10.0f;\n        if (config_screen_width <= 640) {\n            position.x += 20.0f;\n        }\n    }\n"
+        },
+        {
+          "name": "scoped-direct-x-before-y",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n        position.x =\n            panel_position.x + ui_element_slot_33.render_offset_x\n            - 16.0f - 240.0f - 10.0f;\n        position.y += 10.0f;\n        if (config_screen_width <= 640) {\n            position.x += 20.0f;\n        }\n    }\n"
+        },
+        {
+          "name": "direct-x-scope-before-width",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n        position.x =\n            panel_position.x + ui_element_slot_33.render_offset_x\n            - 16.0f - 240.0f - 10.0f;\n        position.y += 10.0f;\n    }\n    if (config_screen_width <= 640) {\n        position.x += 20.0f;\n    }\n"
+        },
+        {
+          "name": "named-panel-x",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        float panel_x = panel_position.x;\n        position = panel_position;\n        position.x =\n            panel_x + ui_element_slot_33.render_offset_x\n            - 16.0f - 240.0f - 10.0f;\n        position.y += 10.0f;\n        if (config_screen_width <= 640) {\n            position.x += 20.0f;\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

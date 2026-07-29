@@ -393,3 +393,20 @@ The canonical source SHA-256 is still
 `cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595`.
 `experiments.jsonl` now contains fifteen complete records and has SHA-256
 `47aae4f551dc287b415ae7b977b334efcd6e66faac65c9aff05e0c920df723b4`.
+
+## Scrollbar pointer-range recovery
+
+The two-column constructor was re-audited after the same bounded-loop source
+shape improved the perks, weapons, and Mods callers.
+`scrollbar-column-loop-mutations.json` evaluates four complete forms. The
+two-entry index `for`, `while`, and `do` loops each lose 50.07
+fuzzy-weighted bytes and two resolved references. A bounded pointer walk is
+the clean winner: it adds two candidate instructions, 4.93 weighted bytes, and
+one resolved reference while preserving the 45-instruction prefix and all
+seven honest reference mismatches.
+
+The retained result is 78.08%, 1,969/2,004 instructions, and `589/0/7`
+references. Current source SHA-256 is
+`c4f7a34a755702aff1eae62242f691296de8bd7ceca6a10f72e1cba3d2ecb784`;
+the complete append-only experiment ledger SHA-256 is
+`f1ed07afc0cb6a1a483ba439931ff646da4cf5e9389b8bef5c6220b67462bc46`.

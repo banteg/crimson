@@ -27,7 +27,7 @@ matching the native load at `0x0040ec74` and its use at `0x0040ecbc`.
 Current MSVC 6.5 `/O2 /GB` result:
 
 ```txt
-match=85.23% prefix=0/648 target_insns=648 candidate_insns=645 refs=169/0/0
+match=86.09% prefix=0/648 target_insns=648 candidate_insns=646 refs=172/0/0
 first_target=sub esp, 0x144
 first_candidate=sub esp, 0x15c
 ```
@@ -130,7 +130,19 @@ decomposed `/Og /Oi /Ot /Oy /Ob1|2` also ties instruction bytes but leaves
 16 references unresolved. `/G6`, `/Op`, `/Oy-`, `/Oi-`, `/Os`, and `/O1`
 regress. No profile override is retained.
 
-Final source SHA-256 is
-`fb24d0b3077b3fa86fab7bdf1b57bf8822db3b3c431c09372825472d2cc7fed4`.
+## Scrollbar bounded-loop recovery
+
+The earlier five-variant constructor sweep did not cover loop source forms.
+`scrollbar-column-loop-mutations.json` adds four complete bounded-loop
+variants. The two-entry `for`, `while`, and `do` forms compile identically,
+adding one candidate instruction, 22.46 fuzzy-weighted bytes, and three
+resolved references without debt. The pointer-range form adds two
+instructions but loses 3.43 bytes. The canonical `for` loop is retained.
+
+The current result is 86.09%, 646/648 instructions, and `172/0/0`
+references. Final source SHA-256 is
+`1c8cc300b4ba25e154269845eab1901e3c1a53448fe2ea5308b63dda29579f9b`;
+the complete experiment ledger SHA-256 is
+`64ce1cf1b3cfbb4fe5accc57cfb9b3ab77647990cc81cebca10f24fa2adacfc4`.
 The frame remains `0x15c` versus native `0x144`; the remaining gap is still
 classified `RESIDUAL=compiler`.

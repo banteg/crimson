@@ -49,7 +49,9 @@ struct mods_scrollbar_t {
 
     mods_scrollbar_t()
     {
-        column_offsets[0] = column_offsets[1] = 0.0f;
+        for (int index = 0; index < 2; ++index) {
+            column_offsets[index] = 0;
+        }
     }
 
     ~mods_scrollbar_t() {}

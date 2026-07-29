@@ -19,11 +19,11 @@ callback:
   prerequisite name, and wrapped description, including the narrow-screen
   horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 90.89% of 511 target
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 91.09% of 511 target
 instructions with 510 candidate instructions, a nine-instruction exact prefix,
-the exact native `0x218`-byte frame, and `141/0/2` audited references. All
+the exact native `0x218`-byte frame, and `141/0/1` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
-residual reference mismatches are constant-pool alignments caused by the
+former reference mismatches were constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
 constants and source operations are present elsewhere in the aligned flow.
 
@@ -43,22 +43,22 @@ fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 90.89%, 510/511 instructions, and
-`141/0/2` references before and after classification. Both entries are aligned
-mismatches; there are no unresolved references. They pair native reads of
-`ui_element_slot_09.render_offset_x` (`0x00489de8`) with candidate constant-pool
-adds from the differently scheduled opening and detail-panel vector
-expressions. Live Binary Ninja confirms `0x00489de8` is `+0x08` inside the
-mapped `0x318`-byte slot-09 element.
+A fresh corpus audit keeps the candidate at 91.09%, 510/511 instructions, and
+`141/0/1` references before and after classification. The sole entry is an
+aligned mismatch; there are no unresolved references. Ordering the copied
+opening-panel x expression before its y adjustment removes the former slot-09
+entry without changing instruction bytes. The remaining entry pairs the
+native detail-panel field read with a candidate constant-pool add from the
+differently scheduled vector expression.
 
-The UI field and both candidate constants occur in the recovered computation;
+The UI field and candidate constant both occur in the recovered computation;
 only their x87 ordering differs. No map or layout correction is supported, so
 the residual is compiler scheduling only and `RESIDUAL=compiler` preserves the
-two honest mismatches.
+honest mismatch.
 
 ## Recorded lifetime and constructor recovery
 
-Four bounded mutation families document the current source-shape recovery:
+Six bounded mutation families document the current source-shape recovery:
 
 - `detail-separator-lifetime-mutations.json` found the scoped detail
   separator, adding 12.16 fuzzy-weighted bytes;
@@ -70,9 +70,15 @@ Four bounded mutation families document the current source-shape recovery:
   instructions and 20.76 bytes without disturbing that prefix; and
 - `scrollbar-zero-initializer-mutations.json` evaluated all eight ordinary
   initializer shapes. Its two-entry loop added 64.72 bytes and five resolved
-  references while preserving the exact two-store behavior.
+  references while preserving the exact two-store behavior;
+- `opening-panel-position-mutations.json` evaluated six copy/order forms. The
+  direct x-before-y order is byte-neutral but removes one aligned reference
+  mismatch in both database callbacks; and
+- `detail-panel-position-lifetime-mutations.json` evaluated six scope and
+  final-coordinate forms. Keeping the panel x live through the direct final-x
+  expression adds 4.05 bytes without a metric tradeoff.
 
-Together these retained changes move the fresh baseline from 85.38% to 90.89%,
-from 508 to 510 candidate instructions, and from `135/0/2` to `141/0/2`
+Together these retained changes move the fresh baseline from 85.38% to 91.09%,
+from 508 to 510 candidate instructions, and from `135/0/2` to `141/0/1`
 references. The complete append-only evidence is in `experiments.jsonl`
-(`sha256:d8ce4688eb2bc431f351dcd26b71bd16d58ab691bce6d5befdc739e9f4a82990`).
+(`sha256:e635f9e4a9899cd72dd19f00779a2775cb7a596af90b5a114ef7d11347c167f6`).

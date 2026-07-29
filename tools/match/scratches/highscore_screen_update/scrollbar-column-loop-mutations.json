@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scrollbar-column-loop",
+      "find": "        column_offsets[0] = 0;\n        column_offsets[1] = 0;\n",
+      "replacements": [
+        {
+          "name": "two-entry-for-loop",
+          "text": "        for (int index = 0; index < 2; ++index) {\n            column_offsets[index] = 0;\n        }\n"
+        },
+        {
+          "name": "two-entry-while-loop",
+          "text": "        int index = 0;\n        while (index < 2) {\n            column_offsets[index] = 0;\n            ++index;\n        }\n"
+        },
+        {
+          "name": "two-entry-do-loop",
+          "text": "        int index = 0;\n        do {\n            column_offsets[index] = 0;\n            ++index;\n        } while (index < 2);\n"
+        },
+        {
+          "name": "two-entry-pointer-loop",
+          "text": "        int *column = column_offsets;\n        int *end = column_offsets + 2;\n        while (column != end) {\n            *column++ = 0;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

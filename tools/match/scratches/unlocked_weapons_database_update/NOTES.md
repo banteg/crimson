@@ -20,9 +20,9 @@ callback:
 
 The natural `msvc6.5 /O2 /GB` reconstruction now matches 92.44% of 523 target
 instructions with 522 candidate instructions, a nine-instruction exact prefix,
-the exact native `0x118`-byte frame, and `149/0/2` audited references. All
+the exact native `0x118`-byte frame, and `149/0/1` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
-residual reference mismatches are constant-pool alignments caused by the
+former reference mismatches were constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
 constants and source operations are present elsewhere in the aligned flow.
 
@@ -51,14 +51,12 @@ fake aliases, or unreachable shaping are used.
 ## Reference residual re-audit
 
 A fresh corpus audit keeps the candidate at 92.44%, 522/523 instructions, and
-`149/0/2` references before and after classification. Both entries are aligned
-mismatches; there are no unresolved references. As in the sibling perks
-callback, they pair native reads of
-`ui_element_slot_09.render_offset_x` (`0x00489de8`) with candidate constant-pool
-adds from differently scheduled vector expressions. The native sequences at
-`0x00440171` and the perks callback's `0x004409c1` are structurally identical,
-and Binary Ninja confirms the address is `+0x08` inside the mapped
-`0x318`-byte slot-09 element.
+`149/0/1` references before and after classification. The sole entry is an
+aligned mismatch; there are no unresolved references. As in the sibling perks
+callback, ordering the copied opening-panel x expression before its y
+adjustment removes the former slot-09 mismatch without changing instruction
+bytes. The remaining entry is confined to the differently scheduled
+detail-panel vector expression.
 
 No data-map or scrollbar/UI layout correction is supported. The residual is
 compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
@@ -66,7 +64,7 @@ without changing the two honest mismatches.
 
 ## Shared-class source-shape recovery
 
-The sibling perks callback supplied two source constraints that were retested
+The sibling perks callback supplied four source constraints that were retested
 independently here:
 
 - `scrollbar-zero-initializer-mutations.json` evaluates all eight ordinary
@@ -77,11 +75,18 @@ independently here:
   component-wise, constructed, scalar, order, and scope variants. The scoped
   component/scalar pair adds 11.98 bytes without a metric tradeoff; the typed
   component form is retained.
+- `opening-panel-position-mutations.json` evaluates six copy/order forms. The
+  direct x-before-y order is byte-neutral but removes one aligned reference
+  mismatch, so it is retained.
+- `detail-panel-position-lifetime-mutations.json` evaluates six wider scope
+  and final-coordinate forms. Its fuzzy-positive variants reduce resolved
+  references or increase reference debt; the only clean form is byte-neutral,
+  so no detail-panel change is retained.
 
 Together they move the fresh baseline from 82.87% to 92.44% and from
-`140/0/2` to `149/0/2` references. The complete append-only evidence is in
+`140/0/2` to `149/0/1` references. The complete append-only evidence is in
 `experiments.jsonl`
-(`sha256:d56741f9f111564f331eb4c9a989a2b2ca8f59712e313efca89dfa5508c84064`).
+(`sha256:7ef0d568bbc2d46dbe8b18f604b0486a7941a6cdbad7bf5d18f108764a2c1c21`).
 
 ## Unlock-loop mutation audit
 

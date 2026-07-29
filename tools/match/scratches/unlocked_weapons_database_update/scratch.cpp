@@ -101,10 +101,10 @@ extern "C" void unlocked_weapons_database_update(void)
             + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
         panel_position += database_vec2_t(300.0f, 40.0f);
         position = panel_position;
-        position.y += 10.0f;
         position.x =
             panel_position.x + ui_element_slot_09.render_offset_x
             + 44.0f - 110.0f - 32.0f;
+        position.y += 10.0f;
     }
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);

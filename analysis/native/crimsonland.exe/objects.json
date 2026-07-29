@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "39c98415064daacfad95b740b1b52c430b0da751b383f805d1c4feb6c71efb0a",
+  "audit_digest": "d1f5f8fa2e0d5acd3577f5e7e32ff096a04f2653fc25d4196057745d4d33ac83",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -36272,7 +36272,7 @@
         {
           "path": "tools/match/scratches/mods_menu_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "fb24d0b3077b3fa86fab7bdf1b57bf8822db3b3c431c09372825472d2cc7fed4"
+          "sha256": "1c8cc300b4ba25e154269845eab1901e3c1a53448fe2ea5308b63dda29579f9b"
         },
         {
           "path": "tools/match/scratches/mods_menu_update/scratch.conf",
@@ -36323,17 +36323,17 @@
           "canonical_config_sha256": "9e8ec180a15fb030eb48b5d3d0fbc12a5cd5893ab1e21e19d3ced8643731bda5",
           "canonical_scratch": "tools/match/scratches/mods_menu_update",
           "canonical_source": "tools/match/scratches/mods_menu_update/scratch.cpp",
-          "canonical_source_sha256": "fb24d0b3077b3fa86fab7bdf1b57bf8822db3b3c431c09372825472d2cc7fed4",
+          "canonical_source_sha256": "1c8cc300b4ba25e154269845eab1901e3c1a53448fe2ea5308b63dda29579f9b",
           "effective_end": 4256719,
           "end": 4256719,
           "function": "mods_menu_update",
           "match": {
-            "candidate_instructions": 645,
+            "candidate_instructions": 646,
             "masked_mismatches": 0,
-            "masked_ok": 169,
+            "masked_ok": 172,
             "masked_unresolved": 0,
             "prefix_instructions": 0,
-            "ratio": 0.8522815158546017,
+            "ratio": 0.8608964451313755,
             "state": "wip",
             "target_instructions": 648
           },
@@ -36342,21 +36342,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 645,
+        "candidate_instructions": 646,
         "masked_mismatches": 0,
-        "masked_ok": 169,
+        "masked_ok": 172,
         "masked_unresolved": 0,
         "prefix_instructions": 0,
-        "ratio": 0.8522815158546017,
+        "ratio": 0.8608964451313755,
         "state": "wip",
         "target_instructions": 648
       },
       "object": "tools/match/scratches/mods_menu_update/build/msvc6.5/0d50813ae78bf56a/scratch.obj",
       "object_function_symbol": "_mods_menu_update",
-      "object_sha256": "4140782e3273010f763dabbad6248aa1165f8c3f37048f1c13915624441f964b",
+      "object_sha256": "c7a9db8e202aac5ad83b77ae751739691bdecac91f8432708ec1ed1fb40ecf6a",
       "scratch": "tools/match/scratches/mods_menu_update",
       "source": "tools/match/scratches/mods_menu_update/scratch.cpp",
-      "source_sha256": "fb24d0b3077b3fa86fab7bdf1b57bf8822db3b3c431c09372825472d2cc7fed4",
+      "source_sha256": "1c8cc300b4ba25e154269845eab1901e3c1a53448fe2ea5308b63dda29579f9b",
       "target_size": 2607,
       "translation_unit": {
         "kind": "isolated",
@@ -76991,7 +76991,7 @@
         {
           "path": "tools/match/scratches/unlocked_weapons_database_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "826ad1bb002edae04c5ef8f843ee5d310447d04c6eed65acf455bc68f66dc5e8"
+          "sha256": "5fa1dbfa7da509e46df9126e8fdd8d9c728cf62f2e69936d0f9027e4d5ebed24"
         },
         {
           "path": "tools/match/scratches/unlocked_weapons_database_update/scratch.conf",
@@ -77037,13 +77037,13 @@
           "canonical_config_sha256": "89c7577187fd5f61dbbd8f2e53af20750b495ad9f9d61d0e913432155e465e66",
           "canonical_scratch": "tools/match/scratches/unlocked_weapons_database_update",
           "canonical_source": "tools/match/scratches/unlocked_weapons_database_update/scratch.cpp",
-          "canonical_source_sha256": "826ad1bb002edae04c5ef8f843ee5d310447d04c6eed65acf455bc68f66dc5e8",
+          "canonical_source_sha256": "5fa1dbfa7da509e46df9126e8fdd8d9c728cf62f2e69936d0f9027e4d5ebed24",
           "effective_end": 4458806,
           "end": 4458806,
           "function": "unlocked_weapons_database_update",
           "match": {
             "candidate_instructions": 522,
-            "masked_mismatches": 2,
+            "masked_mismatches": 1,
             "masked_ok": 149,
             "masked_unresolved": 0,
             "prefix_instructions": 9,
@@ -77057,7 +77057,7 @@
       ],
       "match": {
         "candidate_instructions": 522,
-        "masked_mismatches": 2,
+        "masked_mismatches": 1,
         "masked_ok": 149,
         "masked_unresolved": 0,
         "prefix_instructions": 9,
@@ -77067,10 +77067,10 @@
       },
       "object": "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/8cfa18bbca8b8ce3/scratch.obj",
       "object_function_symbol": "_unlocked_weapons_database_update",
-      "object_sha256": "4da8c5e4ca136f50ac79f03196b45b885dff59650ea1a1ffe1b5af7621c790c1",
+      "object_sha256": "bc8693923e5940db27f52b4df4ce406097a9abd3db5a35111f5f74fbeb8a6b03",
       "scratch": "tools/match/scratches/unlocked_weapons_database_update",
       "source": "tools/match/scratches/unlocked_weapons_database_update/scratch.cpp",
-      "source_sha256": "826ad1bb002edae04c5ef8f843ee5d310447d04c6eed65acf455bc68f66dc5e8",
+      "source_sha256": "5fa1dbfa7da509e46df9126e8fdd8d9c728cf62f2e69936d0f9027e4d5ebed24",
       "target_size": 2086,
       "translation_unit": {
         "kind": "isolated",
@@ -77282,7 +77282,7 @@
         {
           "path": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "52d176ff493087de7c594966bf597ae33627a71834cf9fb0d8d6cc921363bcd6"
+          "sha256": "effca1c3086ebed671a8aa5c7b4a10b72132be8730083ea089867ec4a6cef058"
         },
         {
           "path": "tools/match/scratches/unlocked_perks_database_update/scratch.conf",
@@ -77328,17 +77328,17 @@
           "canonical_config_sha256": "3a506f7c06853aa0dff6067af1ac3e808467c4ef55f6b44b198118e74d8fa92e",
           "canonical_scratch": "tools/match/scratches/unlocked_perks_database_update",
           "canonical_source": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
-          "canonical_source_sha256": "52d176ff493087de7c594966bf597ae33627a71834cf9fb0d8d6cc921363bcd6",
+          "canonical_source_sha256": "effca1c3086ebed671a8aa5c7b4a10b72132be8730083ea089867ec4a6cef058",
           "effective_end": 4460913,
           "end": 4460913,
           "function": "unlocked_perks_database_update",
           "match": {
             "candidate_instructions": 510,
-            "masked_mismatches": 2,
+            "masked_mismatches": 1,
             "masked_ok": 141,
             "masked_unresolved": 0,
             "prefix_instructions": 9,
-            "ratio": 0.9089128305582762,
+            "ratio": 0.910871694417238,
             "state": "wip",
             "target_instructions": 511
           },
@@ -77348,20 +77348,20 @@
       ],
       "match": {
         "candidate_instructions": 510,
-        "masked_mismatches": 2,
+        "masked_mismatches": 1,
         "masked_ok": 141,
         "masked_unresolved": 0,
         "prefix_instructions": 9,
-        "ratio": 0.9089128305582762,
+        "ratio": 0.910871694417238,
         "state": "wip",
         "target_instructions": 511
       },
       "object": "tools/match/scratches/unlocked_perks_database_update/build/msvc6.5/6d66278841f8bc65/scratch.obj",
       "object_function_symbol": "_unlocked_perks_database_update",
-      "object_sha256": "dd7bb3e00f18fafdbb91a0ba7560307f10b35f84df2fb75540c8e71e51c179eb",
+      "object_sha256": "d51f50564c0ee338e3aa79a8202cb9b5d8ab910cda74126ac628962c2d5a47a7",
       "scratch": "tools/match/scratches/unlocked_perks_database_update",
       "source": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
-      "source_sha256": "52d176ff493087de7c594966bf597ae33627a71834cf9fb0d8d6cc921363bcd6",
+      "source_sha256": "effca1c3086ebed671a8aa5c7b4a10b72132be8730083ea089867ec4a6cef058",
       "target_size": 2065,
       "translation_unit": {
         "kind": "isolated",
@@ -78364,7 +78364,7 @@
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595"
+          "sha256": "c4f7a34a755702aff1eae62242f691296de8bd7ceca6a10f72e1cba3d2ecb784"
         },
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.conf",
@@ -78415,17 +78415,17 @@
           "canonical_config_sha256": "2be398e444e4928e4466e60bcd13baa84a04c047e96cb3f8dc85bc864bfdb8c8",
           "canonical_scratch": "tools/match/scratches/highscore_screen_update",
           "canonical_source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-          "canonical_source_sha256": "cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595",
+          "canonical_source_sha256": "c4f7a34a755702aff1eae62242f691296de8bd7ceca6a10f72e1cba3d2ecb784",
           "effective_end": 4473642,
           "end": 4473642,
           "function": "highscore_screen_update",
           "match": {
-            "candidate_instructions": 1967,
+            "candidate_instructions": 1969,
             "masked_mismatches": 7,
-            "masked_ok": 588,
+            "masked_ok": 589,
             "masked_unresolved": 0,
             "prefix_instructions": 45,
-            "ratio": 0.780156131956686,
+            "ratio": 0.7807701988421848,
             "state": "wip",
             "target_instructions": 2004
           },
@@ -78434,21 +78434,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 1967,
+        "candidate_instructions": 1969,
         "masked_mismatches": 7,
-        "masked_ok": 588,
+        "masked_ok": 589,
         "masked_unresolved": 0,
         "prefix_instructions": 45,
-        "ratio": 0.780156131956686,
+        "ratio": 0.7807701988421848,
         "state": "wip",
         "target_instructions": 2004
       },
       "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/607a94c8abe58bbe/scratch.obj",
       "object_function_symbol": "_highscore_screen_update",
-      "object_sha256": "8ae02cc2b5c89482af11568d7ec601ae62b421a6b9c4f209e202cc0f276ff88e",
+      "object_sha256": "9479a2169bd411d0bb530c71f8addde032069ec5f21cae20fe6c6e49f8803114",
       "scratch": "tools/match/scratches/highscore_screen_update",
       "source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-      "source_sha256": "cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595",
+      "source_sha256": "c4f7a34a755702aff1eae62242f691296de8bd7ceca6a10f72e1cba3d2ecb784",
       "target_size": 8026,
       "translation_unit": {
         "kind": "isolated",

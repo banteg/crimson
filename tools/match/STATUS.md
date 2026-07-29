@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **690/808** functions matched exactly, **129451/341963** code bytes (**37.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **300198/341963** code bytes (**87.8%**).
+Fuzzy-weighted alignment is **300230/341963** code bytes (**87.8%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279861/320805 | 87.2% | 671/671 | 320805/320805 | 100.0% | 559/671 |
+| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279893/320805 | 87.2% | 671/671 | 320805/320805 | 100.0% | 559/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20337/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**559/671** functions, **114513/320805** bytes (**35.7%**), **279861/320805** fuzzy-weighted bytes (**87.2%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
+**559/671** functions, **114513/320805** bytes (**35.7%**), **279893/320805** fuzzy-weighted bytes (**87.2%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -252,7 +252,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | nullsub_21 | 0x0040e850 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | mod_load_mod | 0x0040e860 | 219 | 219/219 | 0 | 61/61 | 100.00% | 61/61 | 24/0/0 |  | mod-interface-dll-loader |
 | match | mods_any_available | 0x0040e940 | 87 | 87/87 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
-| wip | mods_menu_update | 0x0040e9a0 | 2607 | 2222/2607 | 385 | 645/648 | 85.23% | 0/648 | 169/0/0 |  | mods-browser-metadata-and-plugin-launch |
+| wip | mods_menu_update | 0x0040e9a0 | 2607 | 2244/2607 | 363 | 646/648 | 86.09% | 0/648 | 172/0/0 |  | mods-browser-metadata-and-plugin-launch |
 | match | mods_menu_launch_button_destroy | 0x0040f3d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-launch-button-empty-destructor |
 | match | mods_menu_main_menu_button_destroy | 0x0040f3e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-main-menu-button-empty-destructor |
 | match | mods_menu_scrollbar_destroy | 0x0040f3f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-scrollbar-empty-destructor |
@@ -664,10 +664,10 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | nullsub_50 | 0x004400e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_51 | 0x004400f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_52 | 0x00440100 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 1928/2086 | 158 | 522/523 | 92.44% | 9/523 | 149/0/2 |  | unlocked-weapon-list-and-detail-panel |
+| wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 1928/2086 | 158 | 522/523 | 92.44% | 9/523 | 149/0/1 |  | unlocked-weapon-list-and-detail-panel |
 | match | unlocked_weapons_back_button_destroy | 0x00440940 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-back-button-empty-destructor |
 | match | unlocked_weapons_scrollbar_destroy | 0x00440950 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-scrollbar-empty-destructor |
-| wip | unlocked_perks_database_update | 0x00440960 | 2065 | 1877/2065 | 188 | 510/511 | 90.89% | 9/511 | 141/0/2 |  | unlocked-perk-list-prerequisite-and-description-panel |
+| wip | unlocked_perks_database_update | 0x00440960 | 2065 | 1881/2065 | 184 | 510/511 | 91.09% | 9/511 | 141/0/1 |  | unlocked-perk-list-prerequisite-and-description-panel |
 | match | unlocked_perks_back_button_destroy | 0x00441180 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-back-button-empty-destructor |
 | match | unlocked_perks_scrollbar_destroy | 0x00441190 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-scrollbar-empty-destructor |
 | match | j_nullsub_119 | 0x004411a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
@@ -678,7 +678,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | ui_text_input_render | 0x004413a0 | 3504 | 3504/3504 | 0 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 614/614 | 0 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
 | match | nullsub_57 | 0x004423c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| wip | highscore_screen_update | 0x004423d0 | 8026 | 6262/8026 | 1764 | 1967/2004 | 78.02% | 45/2004 | 588/0/7 |  | highscore-list-filters-online-sync-and-state-routing |
+| wip | highscore_screen_update | 0x004423d0 | 8026 | 6266/8026 | 1760 | 1969/2004 | 78.08% | 45/2004 | 589/0/7 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
 | match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
 | match | highscore_date_filter_list_destroy | 0x00444350 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-date-filter-list-empty-destructor |

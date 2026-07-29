@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-panel-position",
+      "find": "        position = panel_position;\n        position.y += 10.0f;\n        position.x =\n            panel_position.x + ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n",
+      "replacements": [
+        {
+          "name": "compound-x-after-y",
+          "text": "        position = panel_position;\n        position.y += 10.0f;\n        position.x +=\n            ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n"
+        },
+        {
+          "name": "compound-x-before-y",
+          "text": "        position = panel_position;\n        position.x +=\n            ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n        position.y += 10.0f;\n"
+        },
+        {
+          "name": "component-copy",
+          "text": "        position.x = panel_position.x;\n        position.y = panel_position.y;\n        position.y += 10.0f;\n        position.x +=\n            ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n"
+        },
+        {
+          "name": "component-final-values",
+          "text": "        position.x =\n            panel_position.x + ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n        position.y = panel_position.y + 10.0f;\n"
+        },
+        {
+          "name": "adjust-panel-then-copy",
+          "text": "        panel_position.y += 10.0f;\n        panel_position.x +=\n            ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n        position = panel_position;\n"
+        },
+        {
+          "name": "direct-x-then-y",
+          "text": "        position = panel_position;\n        position.x =\n            panel_position.x + ui_element_slot_09.render_offset_x\n            + 44.0f - 110.0f - 32.0f;\n        position.y += 10.0f;\n"
+        }
+      ]
+    }
+  ]
+}
