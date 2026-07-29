@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-callsite-value-shape",
+      "find": "        list_vec2_t row_position(\n            xy->x, xy->y + (float)(row_index * 16 + 16));\n        if ((unsigned char)ui_mouse_inside_rect_with_padding(\n                (float *)&row_position, 14, (int)width)) {",
+      "replacements": [
+        {
+          "name": "copy-initialized-constructor",
+          "text": "        list_vec2_t row_position = list_vec2_t(\n            xy->x, xy->y + (float)(row_index * 16 + 16));\n        if ((unsigned char)ui_mouse_inside_rect_with_padding(\n                (float *)&row_position, 14, (int)width)) {"
+        },
+        {
+          "name": "direct-temporary-address",
+          "text": "        if ((unsigned char)ui_mouse_inside_rect_with_padding(\n                (float *)&list_vec2_t(\n                    xy->x,\n                    xy->y + (float)(row_index * 16 + 16)),\n                14,\n                (int)width)) {"
+        },
+        {
+          "name": "const-reference-temporary",
+          "text": "        const list_vec2_t &row_position = list_vec2_t(\n            xy->x, xy->y + (float)(row_index * 16 + 16));\n        if ((unsigned char)ui_mouse_inside_rect_with_padding(\n                (float *)&row_position, 14, (int)width)) {"
+        },
+        {
+          "name": "canonical-pod-aggregate",
+          "text": "        vec2f_t row_position = {\n            xy->x, xy->y + (float)(row_index * 16 + 16)};\n        if ((unsigned char)ui_mouse_inside_rect_with_padding(\n                (float *)&row_position, 14, (int)width)) {"
+        }
+      ]
+    }
+  ]
+}

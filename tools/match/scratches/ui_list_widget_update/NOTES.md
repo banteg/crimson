@@ -95,3 +95,24 @@ temporary copies fall to 81.98% and lose a resolved reference. The recorded
 `reversed-initializer-confirmation` probe is neutral. No source change was
 retained; baseline and final remain **99.26%**, 403/403, prefix 321,
 `50/0/0`.
+
+## Row callsite value-shape boundary (2026-07-29)
+
+The remaining native sequence starts the row-position Y expression before
+storing X, then prepares the hit-test arguments while the candidate completes
+the same constructor in X-first order. A final schema-1 sweep therefore tests
+four ordinary ways to expose the constructed value at that callsite:
+copy initialization, a direct temporary address, a const-reference-bound
+temporary, and a canonical POD aggregate.
+
+All 4/4 variants compiled. The first three are byte-identical to the baseline;
+the POD aggregate loses 21.1414 fuzzy-weighted bytes while preserving the
+instruction count, prefix, and `50/0/0` reference audit. No variant is
+retained. The complete plan has SHA-256
+`eae85b93be1ead939078cac7b91453a0204796092b18465a170de8db12e0d73d`,
+and the four-record experiment log now has SHA-256
+`164a93f668b8150e4c3e29514635be0246e8c1ab7d39227d124b8849ab02a52d`.
+This closes the natural constructor/value-category search around the sole
+residual without padding, volatility, or a forced dependency. The source
+remains **99.26%**, 403/403 instructions, prefix 321, and `50/0/0`
+references.
