@@ -66,6 +66,17 @@ equivalent regions differently from the native function:
   `tools/native/linker_aliases/grim.dll.json`, verifies their direct targets
   against the pinned DLL, and emits the corresponding COFF weak alias.
 
+## Same-TU destructor falsification
+
+The recorded `same-tu-empty-destructor` probe defines the declared empty
+`GrimJazDecodeScope` destructor in the decode translation unit. Stock VC6.5
+emits the same 252-instruction candidate byte-for-byte: **86.51%**, prefix 32,
+and `18/3/0` references, with zero delta in every matcher metric. This rules
+out the missing source-level destructor definition as the cause of the decode
+body's residual. The evidence-backed weak alias to the folded native
+`grim_noop` remains the correct link model; expanding the JAZ cluster solely
+to supply that destructor would not improve this function.
+
 ## Recorded shared-failure sweep
 
 The first meaningful mismatch follows the exact 32-instruction prefix at the
