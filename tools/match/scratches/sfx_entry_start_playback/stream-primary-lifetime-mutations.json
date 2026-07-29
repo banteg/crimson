@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "stream-primary-lifetime",
+      "find": "        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;",
+      "replacements": [
+        {
+          "name": "direct-entry-primary",
+          "text": "        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;"
+        },
+        {
+          "name": "indexed-buffer-primary",
+          "text": "        buffer[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;"
+        },
+        {
+          "name": "named-primary",
+          "text": "        LPDIRECTSOUNDBUFFER primary = *buffer;\n        primary->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;"
+        },
+        {
+          "name": "named-indexed-primary",
+          "text": "        LPDIRECTSOUNDBUFFER primary = buffer[0];\n        primary->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;"
+        },
+        {
+          "name": "primary-reference",
+          "text": "        LPDIRECTSOUNDBUFFER &primary = *buffer;\n        primary->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;"
+        },
+        {
+          "name": "explicit-dword-arguments",
+          "text": "        (*buffer)->Play((DWORD)0, (DWORD)0, (DWORD)DSBPLAY_LOOPING);\n        return 0;"
+        }
+      ]
+    }
+  ]
+}

@@ -14,13 +14,15 @@ extern "C" int sfx_entry_start_playback(sfx_entry_t *entry)
 
     buffer = &entry->buffers[0];
     if (dsound_restore_buffer(*buffer)) {
-        if (entry->vorbis_stream == 0) {
-            sfx_entry_upload_buffer(entry);
+        if (entry->vorbis_stream != 0) {
+            goto stream_playback;
         }
+        sfx_entry_upload_buffer(entry);
     }
 
     result = 0;
     if (entry->vorbis_stream != 0) {
+stream_playback:
         sfx_entry_seek(entry, 0);
         music_stream_fill(entry);
         music_stream_fill(entry);

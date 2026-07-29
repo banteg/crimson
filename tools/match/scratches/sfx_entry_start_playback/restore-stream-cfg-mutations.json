@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "restore-stream-cfg",
+      "find": "    if (dsound_restore_buffer(*buffer)) {\n        if (entry->vorbis_stream == 0) {\n            sfx_entry_upload_buffer(entry);\n        }\n    }\n\n    result = 0;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n",
+      "replacements": [
+        {
+          "name": "label-inside-stream-if",
+          "text": "    if (dsound_restore_buffer(*buffer)) {\n        if (entry->vorbis_stream != 0) {\n            goto stream_playback;\n        }\n        sfx_entry_upload_buffer(entry);\n    }\n\n    result = 0;\n    if (entry->vorbis_stream != 0) {\nstream_playback:\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n"
+        },
+        {
+          "name": "direct-stream-label",
+          "text": "    if (dsound_restore_buffer(*buffer)) {\n        if (entry->vorbis_stream != 0) {\n            goto stream_playback;\n        }\n        sfx_entry_upload_buffer(entry);\n    }\n\n    if (entry->vorbis_stream != 0) {\n        goto stream_playback;\n    }\n    result = 0;\n    goto resident_playback;\n\nstream_playback:\n    sfx_entry_seek(entry, 0);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n    return 0;\n\nresident_playback:\n"
+        },
+        {
+          "name": "direct-stream-label-early-result",
+          "text": "    if (dsound_restore_buffer(*buffer)) {\n        if (entry->vorbis_stream != 0) {\n            goto stream_playback;\n        }\n        sfx_entry_upload_buffer(entry);\n    }\n\n    result = 0;\n    if (entry->vorbis_stream == 0) {\n        goto resident_playback;\n    }\n\nstream_playback:\n    sfx_entry_seek(entry, 0);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n    return 0;\n\nresident_playback:\n"
+        },
+        {
+          "name": "direct-stream-label-fallthrough",
+          "text": "    if (dsound_restore_buffer(*buffer)) {\n        if (entry->vorbis_stream != 0) {\n            goto stream_playback;\n        }\n        sfx_entry_upload_buffer(entry);\n    }\n\n    if (entry->vorbis_stream == 0) {\n        result = 0;\n        goto resident_playback;\n    }\n\nstream_playback:\n    sfx_entry_seek(entry, 0);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n    return 0;\n\nresident_playback:\n"
+        },
+        {
+          "name": "duplicated-stream-arms",
+          "text": "    if (dsound_restore_buffer(*buffer)) {\n        if (entry->vorbis_stream != 0) {\n            sfx_entry_seek(entry, 0);\n            music_stream_fill(entry);\n            music_stream_fill(entry);\n            music_stream_fill(entry);\n            (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n            return 0;\n        }\n        sfx_entry_upload_buffer(entry);\n    }\n\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **690/808** functions matched exactly, **129451/341963** code bytes (**37.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **300238/341963** code bytes (**87.8%**).
+Fuzzy-weighted alignment is **300242/341963** code bytes (**87.8%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279900/320805 | 87.2% | 671/671 | 320805/320805 | 100.0% | 559/671 |
+| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279905/320805 | 87.3% | 671/671 | 320805/320805 | 100.0% | 559/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20337/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**559/671** functions, **114513/320805** bytes (**35.7%**), **279900/320805** fuzzy-weighted bytes (**87.2%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
+**559/671** functions, **114513/320805** bytes (**35.7%**), **279905/320805** fuzzy-weighted bytes (**87.3%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -605,7 +605,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | resource_read_alloc | 0x0043bca0 | 75 | 75/75 | 0 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
 | wip | sfx_entry_load_ogg | 0x0043bcf0 | 304 | 298/304 | 6 | 99/99 | 97.98% | 78/99 | 10/0/0 |  | audio-ogg-resident-load |
 | match | sfx_entry_seek | 0x0043be20 | 56 | 56/56 | 0 | 24/24 | 100.00% | 24/24 | 1/0/0 |  | audio-entry-playback |
-| wip | sfx_entry_start_playback | 0x0043be60 | 215 | 166/215 | 49 | 93/93 | 77.42% | 20/93 | 7/0/0 |  | audio-entry-voice-start |
+| wip | sfx_entry_start_playback | 0x0043be60 | 215 | 171/215 | 44 | 93/93 | 79.57% | 20/93 | 7/0/0 |  | audio-entry-voice-start |
 | match | sfx_entry_resume | 0x0043bf40 | 27 | 27/27 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | audio-entry-playback |
 | match | sfx_entry_stop | 0x0043bf60 | 60 | 60/60 | 0 | 29/29 | 100.00% | 29/29 | 0/0/0 |  | audio-entry-playback |
 | wip | sfx_entry_set_volume | 0x0043bfa0 | 120 | 104/120 | 16 | 45/45 | 86.67% | 2/45 | 5/0/0 |  | audio-entry-volume |
