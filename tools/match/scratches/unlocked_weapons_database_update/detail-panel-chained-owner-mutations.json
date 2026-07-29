@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-panel-chained-owner",
+      "find": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;\n        panel_position += database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n    }\n    position.y += 10.0f;\n    position.x +=\n        ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n    if (config_screen_width <= 640) {\n        position.x += 20.0f;\n    }\n",
+      "replacements": [
+        {
+          "name": "named-chained-panel",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x\n            + database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n    }\n    position.y += 10.0f;\n    position.x +=\n        ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n    if (config_screen_width <= 640) {\n        position.x += 20.0f;\n    }\n"
+        },
+        {
+          "name": "direct-chained-y-then-compound-x",
+          "text": "    position =\n        *(database_vec2_t *)&ui_element_slot_33.pos_x\n        + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.y += 10.0f;\n    position.x +=\n        ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n    if (config_screen_width <= 640) {\n        position.x += 20.0f;\n    }\n"
+        },
+        {
+          "name": "direct-chained-compound-x-then-y",
+          "text": "    position =\n        *(database_vec2_t *)&ui_element_slot_33.pos_x\n        + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x\n        + database_vec2_t(300.0f, 40.0f);\n    position.x +=\n        ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n    position.y += 10.0f;\n    if (config_screen_width <= 640) {\n        position.x += 20.0f;\n    }\n"
+        },
+        {
+          "name": "named-chained-owned-adjustments",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x\n            + database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n        position.y += 10.0f;\n        position.x +=\n            ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;\n        if (config_screen_width <= 640) {\n            position.x += 20.0f;\n        }\n    }\n"
+        },
+        {
+          "name": "named-chained-separate-x",
+          "text": "    {\n        database_vec2_t panel_position =\n            *(database_vec2_t *)&ui_element_slot_33.pos_x\n            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x\n            + database_vec2_t(300.0f, 40.0f);\n        position = panel_position;\n    }\n    position.y += 10.0f;\n    position.x += ui_element_slot_33.render_offset_x;\n    position.x -= 16.0f;\n    position.x -= 240.0f;\n    position.x -= 10.0f;\n    if (config_screen_width <= 640) {\n        position.x += 20.0f;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

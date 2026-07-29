@@ -18,13 +18,13 @@ callback:
   the ammo-class-1 `n/a` case), reload time, and clip size, including the
   narrow-screen horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 95.12% of 523 target
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 96.84% of 523 target
 instructions with 522 candidate instructions, a 29-instruction exact prefix,
-the exact native `0x118`-byte frame, and `151/0/1` audited references. All
+the exact native `0x118`-byte frame, and `152/0/0` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
-former reference mismatches were constant-pool alignments caused by the
-remaining vector-temporary/x87 schedule difference; the corresponding native
-constants and source operations are present elsewhere in the aligned flow.
+former unresolved alignments were constant-pool effects of vector-temporary
+ownership. The retained shared-panel forms now align both native UI-field
+reads without introducing aliases or reference overrides.
 
 The frame and control-flow improvement comes from source-supported structure:
 the title separator and three panel anchors have their native disjoint
@@ -50,16 +50,16 @@ fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 95.12%, 522/523 instructions, and
-`151/0/1` references before and after classification. The sole entry is an
-aligned mismatch; there are no unresolved references. As in the sibling perks
-callback, the retained chained opening-panel expression removes the former
-slot-09 mismatch and extends the exact prologue. The remaining entry is
-confined to the differently scheduled detail-panel vector expression.
+A fresh corpus audit keeps the candidate at 96.84%, 522/523 instructions, and
+`152/0/0` references before and after classification. There are no mismatched
+or unresolved references. As in the sibling perks callback, the retained
+chained opening-panel expression removes the former slot-09 entry and extends
+the exact prologue; the direct back-panel owner and named chained detail-panel
+temporary remove the remaining slot-33 alignment debt.
 
-No data-map or scrollbar/UI layout correction is supported. The residual is
-compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
-without changing the two honest mismatches.
+No data-map or scrollbar/UI layout correction is supported. The remaining
+byte regions are compiler scheduling and register allocation only, and
+`RESIDUAL=compiler` records that conclusion.
 
 ## Shared-class source-shape recovery
 
@@ -87,11 +87,24 @@ independently here:
   instructions, and resolves two additional references without debt. Moving
   the y adjustment before the final x subtraction reaches a 67-instruction
   prefix but loses 23.95 weighted bytes relative to the retained winner.
+- `hovered-row-loop-latch-mutations.json` evaluates four bounded loop forms.
+  The pretested `while` and bounded `for` forms both reproduce the native
+  backedge orientation, adding 7.98 fuzzy-weighted bytes with unchanged
+  instruction and reference counts. The sibling-consistent `while` is
+  retained.
+- `back-panel-position-owner-mutations.json` evaluates five owner and
+  adjustment-order forms for the Back-button anchor. The direct chained owner
+  with separate x adjustments adds 19.96 weighted bytes and clears the last
+  unresolved reference without changing the instruction count or prefix.
+- `detail-panel-chained-owner-mutations.json` evaluates five ordinary
+  detail-panel ownership forms. The direct form scores higher but drops one
+  resolved reference; the retained named chained temporary instead adds 7.98
+  weighted bytes with all 152 references aligned.
 
-Together they move the fresh baseline from 82.87% to 95.12% and from
-`140/0/2` to `151/0/1` references. The complete append-only evidence is in
+Together they move the fresh baseline from 82.87% to 96.84% and from
+`140/0/2` to `152/0/0` references. The complete append-only evidence is in
 `experiments.jsonl`
-(`sha256:defd64ebc4d96b9a84fe745c9311908a8b3bd0a8332c322bc3da24a72ce31042`).
+(`sha256:dc288d1294dd18c7f85251a94927778af92c3c764ed2c5d19a3d35e854b9083c`).
 
 ## Unlock-loop mutation audit
 

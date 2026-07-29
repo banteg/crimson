@@ -19,13 +19,13 @@ callback:
   prerequisite name, and wrapped description, including the narrow-screen
   horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction now matches 93.83% of 511 target
+The natural `msvc6.5 /O2 /GB` reconstruction now matches 95.59% of 511 target
 instructions with 510 candidate instructions, a 29-instruction exact prefix,
-the exact native `0x218`-byte frame, and `143/0/1` audited references. All
+the exact native `0x218`-byte frame, and `144/0/0` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
-former reference mismatches were constant-pool alignments caused by the
-remaining vector-temporary/x87 schedule difference; the corresponding native
-constants and source operations are present elsewhere in the aligned flow.
+former unresolved alignments were constant-pool effects of vector-temporary
+ownership. The retained shared-panel forms now align both native UI-field
+reads without introducing aliases or reference overrides.
 
 The improved source shape keeps both separator temporaries, the back-button
 position, and the later panel vectors in their native disjoint lexical
@@ -45,22 +45,20 @@ fake aliases, or unreachable shaping are used.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 93.83%, 510/511 instructions, and
-`143/0/1` references before and after classification. The sole entry is an
-aligned mismatch; there are no unresolved references. The retained chained
-opening-panel expression removes the former slot-09 entry and extends the
-exact prologue. The remaining entry pairs the native detail-panel field read
-with a candidate constant-pool add from the differently scheduled vector
-expression.
+A fresh corpus audit keeps the candidate at 95.59%, 510/511 instructions, and
+`144/0/0` references before and after classification. There are no mismatched
+or unresolved references. The retained chained opening-panel expression
+removes the former slot-09 entry and extends the exact prologue; the direct
+back-panel owner and named chained detail-panel temporary remove the remaining
+slot-33 alignment debt.
 
-The UI field and candidate constant both occur in the recovered computation;
-only their x87 ordering differs. No map or layout correction is supported, so
-the residual is compiler scheduling only and `RESIDUAL=compiler` preserves the
-honest mismatch.
+The remaining byte regions are x87 lifetime, scheduling, and register
+allocation differences only. No map or layout correction is supported, so
+`RESIDUAL=compiler` remains the honest classification.
 
 ## Recorded lifetime and constructor recovery
 
-Eight bounded mutation families document the current source-shape recovery:
+Bounded mutation sweeps document the current source-shape recovery:
 
 - `detail-separator-lifetime-mutations.json` found the scoped detail
   separator, adding 12.16 fuzzy-weighted bytes;
@@ -86,9 +84,23 @@ Eight bounded mutation families document the current source-shape recovery:
 - `opening-final-adjustment-order-mutations.json` records the remaining local
   scheduling boundary. Moving the y adjustment before the final x subtraction
   extends the prefix to 67 instructions and resolves one more reference, but
-  loses 24.27 fuzzy-weighted bytes across the function, so it is not retained.
+  loses 24.27 fuzzy-weighted bytes across the function, so it is not retained;
+  and
+- `hovered-row-loop-latch-mutations.json` evaluates eight bounded loop forms.
+  The pretested `while` and bounded `for` forms both reproduce the native
+  backedge orientation, adding 8.09 fuzzy-weighted bytes without changing the
+  instruction count, exact prefix, or reference audit. The simpler `while`
+  form is retained;
+- `back-panel-position-owner-mutations.json` evaluates eight owner, scope, and
+  adjustment-order forms for the Back-button anchor. The direct chained owner
+  with separate x adjustments adds 20.23 weighted bytes and clears the last
+  unresolved reference without changing the instruction count or prefix; and
+- `detail-panel-chained-owner-mutations.json` evaluates eight ordinary
+  detail-panel ownership forms. Chaining the final vector into the named
+  temporary adds another 8.09 weighted bytes with all 144 references still
+  aligned.
 
-Together these retained changes move the fresh baseline from 85.38% to 93.83%,
-from 508 to 510 candidate instructions, and from `135/0/2` to `143/0/1`
+Together these retained changes move the fresh baseline from 85.38% to 95.59%,
+from 508 to 510 candidate instructions, and from `135/0/2` to `144/0/0`
 references. The complete append-only evidence is in `experiments.jsonl`
-(`sha256:d44e1fd3b92dc5b0a0ebca14b80e2d721ba0538930f330901714080d303ef11b`).
+(`sha256:cc35a50d249259b2dcb5ccd3045524f9e3cd3f134a6a0c3366c86dd1541f5fb2`).

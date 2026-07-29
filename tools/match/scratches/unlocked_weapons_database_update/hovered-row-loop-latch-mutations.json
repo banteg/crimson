@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "hovered-row-loop-latch",
+      "find": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 1;\n        do {\n            if (weapon_table[index].unlocked != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n            ++index;\n        } while (index < 64);\n    }\n",
+      "replacements": [
+        {
+          "name": "bounded-for-loop",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        for (index = 1; index < 64; ++index) {\n            if (weapon_table[index].unlocked != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "pretested-while-loop",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 1;\n        while (index < 64) {\n            if (weapon_table[index].unlocked != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n            ++index;\n        }\n    }\n"
+        },
+        {
+          "name": "do-while-not-equal",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 1;\n        do {\n            if (weapon_table[index].unlocked != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n            ++index;\n        } while (index != 64);\n    }\n"
+        },
+        {
+          "name": "explicit-bottom-break",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 1;\n        for (;;) {\n            if (weapon_table[index].unlocked != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n            ++index;\n            if (index >= 64) {\n                break;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

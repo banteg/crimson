@@ -188,7 +188,7 @@ extern "C" void unlocked_weapons_database_update(void)
     if (scrollbar.hovered_index != -1) {
         int available_index = 0;
         index = 1;
-        do {
+        while (index < 64) {
             if (weapon_table[index].unlocked != 0) {
                 if (available_index++ == scrollbar.hovered_index) {
                     weapon_id = index;
@@ -196,19 +196,18 @@ extern "C" void unlocked_weapons_database_update(void)
                 }
             }
             ++index;
-        } while (index < 64);
+        }
     }
 
-    {
-        database_vec2_t panel_position =
-            *(database_vec2_t *)&ui_element_slot_09.pos_x
-            + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
-        panel_position += database_vec2_t(300.0f, 40.0f);
-        position = panel_position;
-    }
+    position =
+        *(database_vec2_t *)&ui_element_slot_09.pos_x
+        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x
+        + database_vec2_t(300.0f, 40.0f);
+    position.x += ui_element_slot_09.render_offset_x;
+    position.x += 44.0f;
+    position.x -= 110.0f;
+    position.x -= 10.0f;
     position.y += 265.0f;
-    position.x +=
-        ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 10.0f;
 
     static database_button_t back_button;
     back_button.label = "Back";
@@ -227,8 +226,8 @@ extern "C" void unlocked_weapons_database_update(void)
     {
         database_vec2_t panel_position =
             *(database_vec2_t *)&ui_element_slot_33.pos_x
-            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;
-        panel_position += database_vec2_t(300.0f, 40.0f);
+            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x
+            + database_vec2_t(300.0f, 40.0f);
         position = panel_position;
     }
     position.y += 10.0f;

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "hovered-row-loop-latch",
+      "find": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n        do {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n            ++index;\n        } while (index < 128);\n    }\n",
+      "replacements": [
+        {
+          "name": "do-while-not-equal",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n        do {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n            ++index;\n        } while (index != 128);\n    }\n"
+        },
+        {
+          "name": "do-while-less-equal-last",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n        do {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n            ++index;\n        } while (index <= 127);\n    }\n"
+        },
+        {
+          "name": "bounded-for-loop",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        for (index = 0; index < 128; ++index) {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "pretested-while-loop",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n        while (index < 128) {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n            ++index;\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-bottom-continue",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n        for (;;) {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n            ++index;\n            if (index < 128) {\n                continue;\n            }\n            break;\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-bottom-break",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n        for (;;) {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n            ++index;\n            if (index >= 128) {\n                break;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-bottom-equality-break",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n        for (;;) {\n            if ((char)perk_meta_table[index].available != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    perk_id = index;\n                    break;\n                }\n            }\n            ++index;\n            if (index == 128) {\n                break;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-label-backedge",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 0;\n    hovered_row_scan:\n        if ((char)perk_meta_table[index].available != 0) {\n            if (available_index++ == scrollbar.hovered_index) {\n                perk_id = index;\n            } else {\n                ++index;\n                if (index < 128) {\n                    goto hovered_row_scan;\n                }\n            }\n        } else {\n            ++index;\n            if (index < 128) {\n                goto hovered_row_scan;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}
