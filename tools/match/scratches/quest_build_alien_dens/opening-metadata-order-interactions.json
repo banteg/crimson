@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-zero-metadata",
+      "find": "    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n",
+      "replacements": [
+        {
+          "name": "set-spawn",
+          "text": "    spawns[0].set_spawn(\n        spawn_template_id, trigger_time_ms, one);\n"
+        },
+        {
+          "name": "template-count-trigger",
+          "text": "    spawns[0].template_id = spawn_template_id;\n    spawns[0].count = one;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n"
+        },
+        {
+          "name": "trigger-template-count",
+          "text": "    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].count = one;\n"
+        },
+        {
+          "name": "trigger-count-template",
+          "text": "    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n    spawns[0].template_id = spawn_template_id;\n"
+        },
+        {
+          "name": "count-template-trigger",
+          "text": "    spawns[0].count = one;\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n"
+        },
+        {
+          "name": "count-trigger-template",
+          "text": "    spawns[0].count = one;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].template_id = spawn_template_id;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-one-metadata",
+      "find": "    spawns[1].template_id = spawn_template_id;\n    spawns[1].trigger_time_ms = trigger_time_ms;\n    spawns[1].count = one;\n",
+      "replacements": [
+        {
+          "name": "set-spawn",
+          "text": "    spawns[1].set_spawn(\n        spawn_template_id, trigger_time_ms, one);\n"
+        },
+        {
+          "name": "template-count-trigger",
+          "text": "    spawns[1].template_id = spawn_template_id;\n    spawns[1].count = one;\n    spawns[1].trigger_time_ms = trigger_time_ms;\n"
+        },
+        {
+          "name": "trigger-template-count",
+          "text": "    spawns[1].trigger_time_ms = trigger_time_ms;\n    spawns[1].template_id = spawn_template_id;\n    spawns[1].count = one;\n"
+        },
+        {
+          "name": "trigger-count-template",
+          "text": "    spawns[1].trigger_time_ms = trigger_time_ms;\n    spawns[1].count = one;\n    spawns[1].template_id = spawn_template_id;\n"
+        },
+        {
+          "name": "count-template-trigger",
+          "text": "    spawns[1].count = one;\n    spawns[1].template_id = spawn_template_id;\n    spawns[1].trigger_time_ms = trigger_time_ms;\n"
+        },
+        {
+          "name": "count-trigger-template",
+          "text": "    spawns[1].count = one;\n    spawns[1].trigger_time_ms = trigger_time_ms;\n    spawns[1].template_id = spawn_template_id;\n"
+        }
+      ]
+    }
+  ]
+}

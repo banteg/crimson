@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-zero-boundary",
+      "find": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n",
+      "replacements": [
+        {
+          "name": "set-entry",
+          "text": "    spawns[0].set(\n        quest_vec2_t(256.0f, 256.0f),\n        spawn_template_id,\n        trigger_time_ms,\n        one);\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-one-boundary",
+      "find": "    quest_entry_original_t *entry_one = &spawns[1];\n    entry_one->pos = quest_vec2_t(768.0f, 768.0f);\n    entry_one->template_id = spawn_template_id;\n    entry_one->trigger_time_ms = trigger_time_ms;\n    entry_one->count = one;\n",
+      "replacements": [
+        {
+          "name": "set-entry",
+          "text": "    quest_entry_original_t *entry_one = &spawns[1];\n    entry_one->set(\n        quest_vec2_t(768.0f, 768.0f),\n        spawn_template_id,\n        trigger_time_ms,\n        one);\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-two-boundary",
+      "find": "    quest_vec2_t *entry_two_pos = &spawns[2].pos;\n    *entry_two_pos = quest_vec2_t(512.0f, 512.0f);\n    spawns[2].template_id = spawn_template_id;\n    spawns[2].trigger_time_ms = 23500;\n    spawns[2].count = config_blob.player_count;\n",
+      "replacements": [
+        {
+          "name": "set-entry",
+          "text": "    spawns[2].set(\n        quest_vec2_t(512.0f, 512.0f),\n        spawn_template_id,\n        23500,\n        config_blob.player_count);\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-three-boundary",
+      "find": "    quest_entry_original_t *entry_three = &spawns[3];\n    entry_three->pos = quest_vec2_t(256.0f, 768.0f);\n    entry_three->template_id = spawn_template_id;\n    entry_three->trigger_time_ms = trigger_time_ms;\n    entry_three->count = one;\n",
+      "replacements": [
+        {
+          "name": "set-entry",
+          "text": "    quest_entry_original_t *entry_three = &spawns[3];\n    entry_three->set(\n        quest_vec2_t(256.0f, 768.0f),\n        spawn_template_id,\n        trigger_time_ms,\n        one);\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-four-boundary",
+      "find": "    spawns[4].pos = quest_vec2_t(768.0f, 256.0f);\n    spawns[4].set_spawn(spawn_template_id, trigger_time_ms, one);\n",
+      "replacements": [
+        {
+          "name": "set-entry",
+          "text": "    spawns[4].set(\n        quest_vec2_t(768.0f, 256.0f),\n        spawn_template_id,\n        trigger_time_ms,\n        one);\n"
+        }
+      ]
+    }
+  ]
+}

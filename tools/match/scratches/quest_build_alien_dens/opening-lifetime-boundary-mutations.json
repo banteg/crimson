@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-zero-lifetime",
+      "find": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n",
+      "replacements": [
+        {
+          "name": "record-pointer",
+          "text": "    quest_entry_original_t *entry_zero = &spawns[0];\n    entry_zero->pos = quest_vec2_t(256.0f, 256.0f);\n    entry_zero->template_id = spawn_template_id;\n    entry_zero->trigger_time_ms = trigger_time_ms;\n    entry_zero->count = one;\n"
+        },
+        {
+          "name": "position-pointer",
+          "text": "    quest_vec2_t *entry_zero_pos = &spawns[0].pos;\n    *entry_zero_pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n"
+        },
+        {
+          "name": "record-reference",
+          "text": "    quest_entry_original_t &entry_zero = spawns[0];\n    entry_zero.pos = quest_vec2_t(256.0f, 256.0f);\n    entry_zero.template_id = spawn_template_id;\n    entry_zero.trigger_time_ms = trigger_time_ms;\n    entry_zero.count = one;\n"
+        },
+        {
+          "name": "position-reference",
+          "text": "    quest_vec2_t &entry_zero_pos = spawns[0].pos;\n    entry_zero_pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n"
+        },
+        {
+          "name": "named-position",
+          "text": "    quest_vec2_t entry_zero_pos(256.0f, 256.0f);\n    spawns[0].pos = entry_zero_pos;\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n"
+        },
+        {
+          "name": "named-position-members",
+          "text": "    quest_vec2_t entry_zero_pos(256.0f, 256.0f);\n    spawns[0].pos.x = entry_zero_pos.x;\n    spawns[0].pos.y = entry_zero_pos.y;\n    spawns[0].template_id = spawn_template_id;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = one;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-one-lifetime",
+      "find": "    quest_entry_original_t *entry_one = &spawns[1];\n    entry_one->pos = quest_vec2_t(768.0f, 768.0f);\n    entry_one->template_id = spawn_template_id;\n    entry_one->trigger_time_ms = trigger_time_ms;\n    entry_one->count = one;\n",
+      "replacements": [
+        {
+          "name": "position-pointer",
+          "text": "    quest_vec2_t *entry_one_pos = &spawns[1].pos;\n    *entry_one_pos = quest_vec2_t(768.0f, 768.0f);\n    spawns[1].template_id = spawn_template_id;\n    spawns[1].trigger_time_ms = trigger_time_ms;\n    spawns[1].count = one;\n"
+        },
+        {
+          "name": "record-reference",
+          "text": "    quest_entry_original_t &entry_one = spawns[1];\n    entry_one.pos = quest_vec2_t(768.0f, 768.0f);\n    entry_one.template_id = spawn_template_id;\n    entry_one.trigger_time_ms = trigger_time_ms;\n    entry_one.count = one;\n"
+        },
+        {
+          "name": "position-reference",
+          "text": "    quest_vec2_t &entry_one_pos = spawns[1].pos;\n    entry_one_pos = quest_vec2_t(768.0f, 768.0f);\n    spawns[1].template_id = spawn_template_id;\n    spawns[1].trigger_time_ms = trigger_time_ms;\n    spawns[1].count = one;\n"
+        },
+        {
+          "name": "indexed-record",
+          "text": "    spawns[1].pos = quest_vec2_t(768.0f, 768.0f);\n    spawns[1].template_id = spawn_template_id;\n    spawns[1].trigger_time_ms = trigger_time_ms;\n    spawns[1].count = one;\n"
+        },
+        {
+          "name": "named-position",
+          "text": "    quest_vec2_t entry_one_pos(768.0f, 768.0f);\n    quest_entry_original_t *entry_one = &spawns[1];\n    entry_one->pos = entry_one_pos;\n    entry_one->template_id = spawn_template_id;\n    entry_one->trigger_time_ms = trigger_time_ms;\n    entry_one->count = one;\n"
+        },
+        {
+          "name": "named-position-members",
+          "text": "    quest_vec2_t entry_one_pos(768.0f, 768.0f);\n    quest_entry_original_t *entry_one = &spawns[1];\n    entry_one->pos.x = entry_one_pos.x;\n    entry_one->pos.y = entry_one_pos.y;\n    entry_one->template_id = spawn_template_id;\n    entry_one->trigger_time_ms = trigger_time_ms;\n    entry_one->count = one;\n"
+        }
+      ]
+    }
+  ]
+}

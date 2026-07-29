@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-two-position-boundary",
+      "find": "    spawns[2].pos.x = 512.0f;\n    spawns[2].pos.y = 512.0f;\n    spawns[2].template_id = spawn_template_id;\n    spawns[2].trigger_time_ms = 23500;\n    spawns[2].count = config_blob.player_count;\n",
+      "replacements": [
+        {
+          "name": "indexed-whole-vector",
+          "text": "    spawns[2].pos = quest_vec2_t(512.0f, 512.0f);\n    spawns[2].template_id = spawn_template_id;\n    spawns[2].trigger_time_ms = 23500;\n    spawns[2].count = config_blob.player_count;\n"
+        },
+        {
+          "name": "record-pointer-whole-vector",
+          "text": "    quest_entry_original_t *entry_two = &spawns[2];\n    entry_two->pos = quest_vec2_t(512.0f, 512.0f);\n    entry_two->template_id = spawn_template_id;\n    entry_two->trigger_time_ms = 23500;\n    entry_two->count = config_blob.player_count;\n"
+        },
+        {
+          "name": "position-pointer-whole-vector",
+          "text": "    quest_vec2_t *entry_two_pos = &spawns[2].pos;\n    *entry_two_pos = quest_vec2_t(512.0f, 512.0f);\n    spawns[2].template_id = spawn_template_id;\n    spawns[2].trigger_time_ms = 23500;\n    spawns[2].count = config_blob.player_count;\n"
+        },
+        {
+          "name": "named-vector-copy",
+          "text": "    quest_vec2_t entry_two_pos(512.0f, 512.0f);\n    spawns[2].pos = entry_two_pos;\n    spawns[2].template_id = spawn_template_id;\n    spawns[2].trigger_time_ms = 23500;\n    spawns[2].count = config_blob.player_count;\n"
+        }
+      ]
+    }
+  ]
+}

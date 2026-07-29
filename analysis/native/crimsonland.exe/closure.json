@@ -1,5 +1,5 @@
 {
-  "audit_digest": "22ae7c000174e3ac5f1135ca965d7643a0934a7dddd546a8a57c5b8b08d3b8b9",
+  "audit_digest": "9b33fa71accfad250159e9c71fc1d54334eebbbf655b1bb53fc99478ce888806",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -95599,7 +95599,7 @@
           "comdat_selection": 1,
           "function": "quest_build_alien_dens",
           "kind": "section",
-          "logical_section_size": 240,
+          "logical_section_size": 256,
           "object": "tools/match/scratches/quest_build_alien_dens/build/msvc6.5/8dfe919dd751c78d/scratch.obj",
           "section": ".text",
           "size": null,
@@ -144383,7 +144383,7 @@
           "comdat_selection": 1,
           "function": "quest_build_alien_dens",
           "kind": "section",
-          "logical_section_size": 240,
+          "logical_section_size": 256,
           "object": "tools/match/scratches/quest_build_alien_dens/build/msvc6.5/8dfe919dd751c78d/scratch.obj",
           "section": ".text",
           "size": null,

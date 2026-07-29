@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "22ae7c000174e3ac5f1135ca965d7643a0934a7dddd546a8a57c5b8b08d3b8b9",
+  "audit_digest": "9b33fa71accfad250159e9c71fc1d54334eebbbf655b1bb53fc99478ce888806",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -63992,7 +63992,7 @@
         {
           "path": "tools/match/scratches/quest_build_alien_dens/scratch.cpp",
           "repository_relative": true,
-          "sha256": "7f88f7cbfcd13634233ab44c9512e5c4f41c7c5600fd642311bb5f9d77fd1b37"
+          "sha256": "b4f44182f87d7572dfb0683b0e2217f10b91df9fe813a2224d2df613ba10274a"
         },
         {
           "path": "tools/match/scratches/quest_build_alien_dens/scratch.conf",
@@ -64033,17 +64033,17 @@
           "canonical_config_sha256": "a25aa3e921b355a3f66bc17c317f7f73ee1c5cf11d7b19108538dad83098df27",
           "canonical_scratch": "tools/match/scratches/quest_build_alien_dens",
           "canonical_source": "tools/match/scratches/quest_build_alien_dens/scratch.cpp",
-          "canonical_source_sha256": "7f88f7cbfcd13634233ab44c9512e5c4f41c7c5600fd642311bb5f9d77fd1b37",
+          "canonical_source_sha256": "b4f44182f87d7572dfb0683b0e2217f10b91df9fe813a2224d2df613ba10274a",
           "effective_end": 4417561,
           "end": 4417561,
           "function": "quest_build_alien_dens",
           "match": {
-            "candidate_instructions": 57,
+            "candidate_instructions": 60,
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
-            "prefix_instructions": 4,
-            "ratio": 0.717948717948718,
+            "prefix_instructions": 8,
+            "ratio": 0.9333333333333333,
             "state": "wip",
             "target_instructions": 60
           },
@@ -64052,21 +64052,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 57,
+        "candidate_instructions": 60,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
-        "prefix_instructions": 4,
-        "ratio": 0.717948717948718,
+        "prefix_instructions": 8,
+        "ratio": 0.9333333333333333,
         "state": "wip",
         "target_instructions": 60
       },
       "object": "tools/match/scratches/quest_build_alien_dens/build/msvc6.5/8dfe919dd751c78d/scratch.obj",
       "object_function_symbol": "_quest_build_alien_dens",
-      "object_sha256": "a79f057657ed27a6e533cf4fe2bdc9a79d7571890d11ab9c96f50d5ff29c0a24",
+      "object_sha256": "1e5a6c0367b5bbd7973e3be2c4df87d5884bc187beef1e56691365409c49f90e",
       "scratch": "tools/match/scratches/quest_build_alien_dens",
       "source": "tools/match/scratches/quest_build_alien_dens/scratch.cpp",
-      "source_sha256": "7f88f7cbfcd13634233ab44c9512e5c4f41c7c5600fd642311bb5f9d77fd1b37",
+      "source_sha256": "b4f44182f87d7572dfb0683b0e2217f10b91df9fe813a2224d2df613ba10274a",
       "target_size": 249,
       "translation_unit": {
         "kind": "isolated",
