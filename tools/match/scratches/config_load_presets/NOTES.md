@@ -38,3 +38,31 @@ the candidate compiler-selected anchors, not unknown data or incorrect
 offsets.
 Everything outside that single localized loop is exact, so recovery is
 `semantic-complete` with a `compiler` residual.
+
+## Shared member-boundary audit
+
+The same binding-copy residual appears in `crimsonland_main`, making a
+translation-unit-local row method or assignment operator a plausible shared
+source constraint. Three recorded plans now bound that hypothesis:
+
+- `binding-member-boundary-mutations.json` (SHA-256
+  `ed19614167fc34a2a1e5f05bc2e5b686bcda24d6d7c0279612e8fd2b4a53c143`)
+  tests six local runtime-owned, persisted-owned, assignment, and
+  axis-relative member forms. VC6 leaves the member body out of line, removing
+  23 instructions from the target function; all six produce the same
+  155-instruction result.
+- `binding-forceinline-member-mutations.json` (SHA-256
+  `e4edd8b87f036a62709e31960f10619ddbd1eb48352311f69b69a39ddebd68f0`)
+  confirms that applying `__forceinline` to those local-class methods does not
+  change that lowering.
+- `binding-global-member-mutations.json` (SHA-256
+  `b4cedb31cd1581996e4c26eccd1b09b5a95a2242d0fd3a0dd12774dcd9d7e559`)
+  moves the member types to file scope. Forced inlining restores the
+  178-instruction body, but the persisted-owned direction loses 3.6685
+  weighted bytes and the runtime-owned method and assignment forms each lose
+  36.6854. None improves the three-reference induction-anchor audit.
+
+The ordinary free-helper, raw/interior cursor, and member/operator source
+menus are therefore all closed. Replaying the member forms in
+`crimsonland_main` would test the same compiler decision in a noisier caller
+and is not justified by the smaller function's complete negative matrix.
