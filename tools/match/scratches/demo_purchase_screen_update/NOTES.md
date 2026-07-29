@@ -61,3 +61,21 @@ It is deliberately rejected: the regional diff shows VC6 emitting a jump table,
 while live native disassembly at `0x0040c137..0x0040c185` is the recovered
 comparison ladder. The higher aggregate score is therefore not matching
 evidence for a source correction.
+
+The native cold-tail layout is now bounded directly. Replacing the opening
+active test with a forward guard and moving the comparison ladder after the
+epilogue makes VC6 emit exactly `691` instructions and the observed backward
+jump into the shared renderer, but it regresses the fuzzy score to `92.76%`
+(`-14.28` weighted bytes) without changing the `187/0/0` reference result.
+Preserving the original `if/else` entry while moving only the selector is
+compiled back to the baseline object byte-for-byte. A complete 35-variant
+interaction sweep with the natural renderer declaration/materialization
+spellings finds no improving interaction: the cold-tail variants remain at
+the same `92.76%`, while the remaining variants are neutral or worse.
+
+These results are recorded by `message-cold-tail-mutations.json`,
+`message-cold-tail-else-mutations.json`, and
+`message-cold-tail-interaction-mutations.json`. They reject source order,
+the natural guard spellings, and the already-identified renderer lifetimes as
+independent levers. Further work needs a different recovered type/lifetime or
+original-TU constraint rather than retaining a score-regressing layout rewrite.

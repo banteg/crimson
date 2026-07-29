@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "message-cold-tail-entry",
+      "find": "    if (demo_purchase_screen_active != 0) {\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "zero-guard-goto",
+          "text": "    if (demo_purchase_screen_active == 0) {\n        goto select_inactive_message;\n    }\n    {\n"
+        },
+        {
+          "name": "negated-guard-goto",
+          "text": "    if (!demo_purchase_screen_active) {\n        goto select_inactive_message;\n    }\n    {\n"
+        }
+      ]
+    },
+    {
+      "name": "message-cold-tail-layout",
+      "find": "    } else {\n        int message_index = demo_upsell_message_index;\n        if (quest_spawn_timeline == 0) {\n            message_index = (message_index + 1) % 5;\n            demo_upsell_message_index = message_index;\n        }\n\n        if (message_index == 0) {\n            message = \"Want more Levels?\";\n        } else if (message_index == 1) {\n            message = \"Want more Weapons?\";\n        } else if (message_index == 2) {\n            message = \"Want more Perks?\";\n        } else if (message_index == 3) {\n            message = \"Want unlimited Play time?\";\n        } else if (message_index == 4) {\n            message = \"Want to post your high scores?\";\n        }\n    }\n\n    demo_purchase_render_message(message, position_y, alpha);\n\n    ui_elements_update_and_render();\n    ui_cursor_render();\n}\n",
+      "replacements": [
+        {
+          "name": "selector-after-return",
+          "text": "    }\n\nrender_message:\n    demo_purchase_render_message(message, position_y, alpha);\n\n    ui_elements_update_and_render();\n    ui_cursor_render();\n    return;\n\nselect_inactive_message:\n    {\n        int message_index = demo_upsell_message_index;\n        if (quest_spawn_timeline == 0) {\n            message_index = (message_index + 1) % 5;\n            demo_upsell_message_index = message_index;\n        }\n\n        if (message_index == 0) {\n            message = \"Want more Levels?\";\n        } else if (message_index == 1) {\n            message = \"Want more Weapons?\";\n        } else if (message_index == 2) {\n            message = \"Want more Perks?\";\n        } else if (message_index == 3) {\n            message = \"Want unlimited Play time?\";\n        } else if (message_index == 4) {\n            message = \"Want to post your high scores?\";\n        }\n    }\n    goto render_message;\n}\n"
+        }
+      ]
+    }
+  ]
+}
