@@ -805,3 +805,40 @@ value-object copy. The spec SHA-256 is
 `e11ddf48ea48aeb4d126ad72056d5b7f8795e2122a3bc6559be25045f25416b8`;
 the tested source remains
 `3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
+
+## Grid-child vector-add boundary
+
+A fresh native/candidate region audit isolated the repeated grid-child
+position seam across all five formation handlers. Native pops the converted
+vertical offset into `target_offset.y`, then reloads both target-offset
+components before adding `pos`; the candidate keeps both x87 values live
+through the same source expression. Four recorded, exhaustive sweeps bound
+the natural recovered vector-operation shapes:
+
+- `grid-child-vector-add-mutations.json`
+  (`c60f7bb288ea78173f3ed94477672ce9695208577c15277b75e85453c6a19aa2`)
+  evaluates all 11/11 operator/result variants. The only VC6-valid
+  scratch-union form adds five instructions and loses 5.315 weighted bytes.
+- `grid-child-vector-operator-mutations.json`
+  (`7461dfefbf484d3656aa96e5fb0d916e91ece034c69a74273cfa70bb83cdf466`)
+  evaluates all 17/17 constructor/operator/root-initialization combinations.
+  VC6 rejects every constructor-bearing form because the modeled vector is a
+  member of the scratch union; this rules out that type model rather than
+  silently treating compile failures as a shape result.
+- `grid-child-vector-add-out-mutations.json`
+  (`9175c0798763683aa4ce88083ed9184434c8720b8efd18ad1a17d27116363644`)
+  evaluates all 8/8 typed out-parameter variants.
+- `grid-child-vector-alias-add-mutations.json`
+  (`bf2bc231ae557b6f4a02c9188208f6b853fdf19bd9974c430e98a4246a6ac531`)
+  evaluates all 14/14 mutable/const `float *` aliasing and returned-result
+  variants, including the recovered `vec2_add_out` family used elsewhere.
+
+Every valid out-parameter spelling produces the same tradeoff: it gains
+48.182929 fuzzy-weighted bytes and five resolved references, but adds one
+candidate instruction per grid expansion (3,166 versus native 3,159) and
+still keeps the non-native x87 values live instead of reproducing the native
+pop/reload boundary. The apparent score gain is therefore not retained as a
+source recovery. The honest baseline remains 87.689873%, 3,161/3,159
+instructions, a 23-instruction prefix, `352/0/1` references, and source
+SHA-256
+`3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.

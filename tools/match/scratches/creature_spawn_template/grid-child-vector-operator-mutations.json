@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "grid-vec2-operator-shape",
+      "find": "    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }",
+      "replacements": [
+        {
+          "name": "lhs-first",
+          "text": "    creature_spawn_vec2_t() {}\n\n    creature_spawn_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    creature_spawn_vec2_t operator+(\n        const creature_spawn_vec2_t &other) const\n    {\n        return creature_spawn_vec2_t(x + other.x, y + other.y);\n    }"
+        },
+        {
+          "name": "rhs-first",
+          "text": "    creature_spawn_vec2_t() {}\n\n    creature_spawn_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    creature_spawn_vec2_t operator+(\n        const creature_spawn_vec2_t &other) const\n    {\n        return creature_spawn_vec2_t(other.x + x, other.y + y);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "root-velocity-constructor",
+      "find": "    creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};",
+      "replacements": [
+        {
+          "name": "direct-construction",
+          "text": "    creature_spawn_vec2_t root_velocity(0.0f, 0.0f);"
+        }
+      ]
+    },
+    {
+      "name": "grid-child-vector-operator",
+      "find": "        chain_position.set(pos->x + creature->target_offset.x, creature->target_offset.y + pos->y);                       \\\n        *(creature_spawn_vec2_t *)&creature->position = chain_position;                                                    \\",
+      "replacements": [
+        {
+          "name": "target-plus-position",
+          "text": "        chain_position = *(creature_spawn_vec2_t *)&creature->target_offset + *(const creature_spawn_vec2_t *)pos;         \\\n        *(creature_spawn_vec2_t *)&creature->position = chain_position;                                                    \\"
+        },
+        {
+          "name": "position-plus-target",
+          "text": "        chain_position = *(const creature_spawn_vec2_t *)pos + *(creature_spawn_vec2_t *)&creature->target_offset;         \\\n        *(creature_spawn_vec2_t *)&creature->position = chain_position;                                                    \\"
+        }
+      ]
+    }
+  ]
+}
