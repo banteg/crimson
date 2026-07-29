@@ -87,3 +87,23 @@ first coordinate-conversion window. `first-line-advance-order-mutations.json`
 (SHA-256 `df2bdeabb596459e7475753725fff7e720e9d199df7c6aac99f89d207fbf09c8`)
 tested the remaining cursor-before-offset source order. VC6 emitted identical
 bytes, so the canonical smaller ordering and 73.7805% score remain unchanged.
+
+## Trigger-field cursor audit
+
+The native register at each repeated walk is biased to the current entry's
+`trigger_time_ms` field and advances by the six-word entry stride before the
+completed entry is addressed through negative offsets. This is the same
+interior-cursor shape recovered in neighboring quest builders, so
+`trigger-field-cursor-mutations.json` (SHA-256
+`0bc5ee9315638da0568078ce8a1ab7cb13dd6f80ec79f9702430b1ee172ca383`)
+tested it independently in the right, left, ghost, and ring walks.
+
+All fifteen single, pair, triple, and complete four-walk combinations compile
+to exactly the retained 162-instruction candidate: 478.8353658536585 weighted
+bytes, 73.78048780487805%, a 37-instruction prefix, and `7/0/0` references.
+The explicit `int *` trigger cursors and negative metadata offsets are therefore
+source-equivalent under VC6 optimization; they do not recover the native
+register assignment. Together with the earlier current-entry pointer,
+reference, helper-call, and advance-order sweeps, this closes the natural
+cursor-type and cursor-lifetime search without encoding an artificial
+dependency.

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-wave-trigger-cursor",
+      "find": "    quest_entry_original_t *spawn = &spawns[2];\n    do {\n        spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);",
+      "replacements": [
+        {
+          "name": "trigger-field-negative-offsets",
+          "text": "    quest_entry_original_t *spawn = &spawns[2];\n    int *right_trigger = &spawns[2].trigger_time_ms;\n    do {\n        ((quest_entry_original_t *)(right_trigger - 4))->pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        right_trigger += 6;\n        right_trigger[-7] = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        right_trigger[-6] = trigger_time_ms;\n        right_trigger[-5] = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);"
+        }
+      ]
+    },
+    {
+      "name": "left-wave-trigger-cursor",
+      "find": "    spawn = &spawns[11];\n    do {\n        spawn->pos = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 8;\n        trigger_time_ms += 100;\n        x -= 32;\n    } while (x > -320);",
+      "replacements": [
+        {
+          "name": "trigger-field-negative-offsets",
+          "text": "    spawn = &spawns[11];\n    int *left_trigger = &spawns[11].trigger_time_ms;\n    do {\n        ((quest_entry_original_t *)(left_trigger - 4))->pos = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));\n        left_trigger += 6;\n        left_trigger[-7] = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        left_trigger[-6] = trigger_time_ms;\n        left_trigger[-5] = 8;\n        trigger_time_ms += 100;\n        x -= 32;\n    } while (x > -320);"
+        }
+      ]
+    },
+    {
+      "name": "ghost-wave-trigger-cursor",
+      "find": "    spawn = &spawns[19];\n    do {\n        spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_GHOST_0F;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 4;\n        trigger_time_ms += 100;\n        y -= 42;\n    } while (y > -316);",
+      "replacements": [
+        {
+          "name": "trigger-field-negative-offsets",
+          "text": "    spawn = &spawns[19];\n    int *ghost_trigger = &spawns[19].trigger_time_ms;\n    do {\n        ((quest_entry_original_t *)(ghost_trigger - 4))->pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);\n        ghost_trigger += 6;\n        ghost_trigger[-7] = SPAWN_ID_ALIEN_GHOST_0F;\n        ghost_trigger[-6] = trigger_time_ms;\n        ghost_trigger[-5] = 4;\n        trigger_time_ms += 100;\n        y -= 42;\n    } while (y > -316);"
+        }
+      ]
+    },
+    {
+      "name": "ring-wave-trigger-cursor",
+      "find": "    spawn = &spawns[25];\n    do {\n        spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + y_offset + 44));\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 2;\n        y_offset += 32;\n        trigger_time_ms += 100;\n    } while (trigger_time_ms < 40600);",
+      "replacements": [
+        {
+          "name": "trigger-field-negative-offsets",
+          "text": "    spawn = &spawns[25];\n    int *ring_trigger = &spawns[25].trigger_time_ms;\n    do {\n        ((quest_entry_original_t *)(ring_trigger - 4))->pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + y_offset + 44));\n        ring_trigger += 6;\n        ring_trigger[-7] = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        ring_trigger[-6] = trigger_time_ms;\n        ring_trigger[-5] = 2;\n        y_offset += 32;\n        trigger_time_ms += 100;\n    } while (trigger_time_ms < 40600);"
+        }
+      ]
+    }
+  ]
+}
