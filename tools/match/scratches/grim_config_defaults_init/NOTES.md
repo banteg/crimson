@@ -16,7 +16,7 @@ The stock VC6 `/O2 /GB` profile produced 77.74%, 140 native versus 143
 candidate normalized instructions, and references `65/0/2`. Live comparison
 with the byte-identical executable copy then isolated the same profitable
 function-local frame-pointer override: compiling the shared implementation with
-`/O2 /GB /Oy- /W3 /GR-` raises the scratch to 86.62%, 144 candidate
+`/O2 /GB /Oy- /W3 /GR-` raised the scratch to 86.62%, 144 candidate
 instructions, and references `80/0/0`.
 
 The `/Oy-` override is retained because the independently matched executable
@@ -33,3 +33,13 @@ explicit `/Ot` are byte-identical when combined with `/Oy-`; removing `/Oy-`
 falls to 77.74% with two reference conflicts, and `/G6 /Oy-` falls to 71.83%.
 The retained `/O2 /GB /Oy- /W3 /GR-` profile remains the only justified local
 configuration and keeps all 80 references exact.
+
+A bounded source-shape sweep then replaced the separate saved-name cursor with
+the direct indexed spelling already proven exact in `config_sync_from_grim`.
+That natural form raises both byte-identical copies from 636/734 (86.62%) to
+641/734 (87.32%), narrows the gap from 98 to 93 bytes, and preserves references
+`80/0/0`. Pointer-headed order loops, explicit typed offsets, early index
+initialization, and the sibling initializer's alternate memset ordering were
+neutral or worse, so none are retained. The remaining residual is still the
+one-local native frame versus the compiler's two-local allocation; no register
+hints, volatile state, raw offsets, or other coercion is present.

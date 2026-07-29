@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **689/808** functions matched exactly, **128666/341963** code bytes (**37.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **299643/341963** code bytes (**87.6%**).
+Fuzzy-weighted alignment is **299654/341963** code bytes (**87.6%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279539/320805 | 87.1% | 671/671 | 320805/320805 | 100.0% | 559/671 |
-| grim.dll | 130/137 | 14153/21158 | 66.9% | 20104/21158 | 95.0% | 137/137 | 21159/21158 | 100.0% | 130/137 |
+| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279544/320805 | 87.1% | 671/671 | 320805/320805 | 100.0% | 559/671 |
+| grim.dll | 130/137 | 14153/21158 | 66.9% | 20110/21158 | 95.0% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**559/671** functions, **114513/320805** bytes (**35.7%**), **279539/320805** fuzzy-weighted bytes (**87.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
+**559/671** functions, **114513/320805** bytes (**35.7%**), **279544/320805** fuzzy-weighted bytes (**87.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -141,7 +141,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | console_command_autocomplete | 0x004027b0 | 165 | 165/165 | 0 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | console_flush_log | 0x00402860 | 121 | 121/121 | 0 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
 | match | j_config_init_defaults | 0x004028e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-config-defaults |
-| wip | config_init_defaults | 0x004028f0 | 734 | 636/734 | 98 | 144/140 | 86.62% | 0/140 | 80/0/0 | msvc6.5 /O2 /GB /Oy- /W3 /GR- | config-defaults-and-input-bindings |
+| wip | config_init_defaults | 0x004028f0 | 734 | 641/734 | 93 | 144/140 | 87.32% | 0/140 | 80/0/0 | msvc6.5 /O2 /GB /Oy- /W3 /GR- | config-defaults-and-input-bindings |
 | match | game_build_path | 0x00402bd0 | 34 | 34/34 | 0 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | register_core_cvars | 0x00402c00 | 326 | 326/326 | 0 | 66/66 | 100.00% | 66/66 | 65/0/0 |  | core-console-variable-registration |
 | match | ui_render_loading | 0x00402d50 | 375 | 375/375 | 0 | 107/107 | 100.00% | 107/107 | 15/0/0 |  | ui-loading-panel-renderer |
@@ -775,7 +775,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## grim.dll
 
-**130/137** functions, **14153/21158** bytes (**66.9%**), **20104/21158** fuzzy-weighted bytes (**95.0%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
+**130/137** functions, **14153/21158** bytes (**66.9%**), **20110/21158** fuzzy-weighted bytes (**95.0%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -801,7 +801,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | grim_default_device_callback | 0x10001150 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | default-device-callback |
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
 | match | grim_config_defaults_init_thunk | 0x10001700 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | config-defaults-tail-thunk |
-| wip | grim_config_defaults_init | 0x10001710 | 734 | 636/734 | 98 | 144/140 | 86.62% | 0/140 | 80/0/0 | msvc6.5 /O2 /GB /Oy- /W3 /GR- | shared-config-defaults-and-input-bindings |
+| wip | grim_config_defaults_init | 0x10001710 | 734 | 641/734 | 93 | 144/140 | 87.32% | 0/140 | 80/0/0 | msvc6.5 /O2 /GB /Oy- /W3 /GR- | shared-config-defaults-and-input-bindings |
 | match | grim_apply_render_state | 0x10004520 | 720 | 720/720 | 0 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 51/51 | 0 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_select_texture_format | 0x10004830 | 232 | 232/232 | 0 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |

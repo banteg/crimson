@@ -9,7 +9,6 @@
 extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
 {
     int i;
-    char *saved_name;
 
     memset(CRIMSON_CONFIG_DEFAULTS_BLOB.player_name_buf, 0, 9);
     CRIMSON_CONFIG_DEFAULTS_BLOB.hardcore = 0;
@@ -23,11 +22,9 @@ extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
     CRIMSON_CONFIG_DEFAULTS_BLOB.texture_scale = 1.0f;
     CRIMSON_CONFIG_DEFAULTS_BLOB.score_load_gate = 0;
 
-    saved_name = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[0];
     for (i = 0; i < 8; ++i) {
         CRIMSON_CONFIG_DEFAULTS_BLOB.saved_name_order[i] = i;
-        strcpy(saved_name, "default");
-        saved_name += sizeof(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[0]);
+        strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[i], "default");
     }
 
     CRIMSON_CONFIG_DEFAULTS_BLOB.highscore_duplicate_mode = 0;

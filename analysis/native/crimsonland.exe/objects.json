@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "ed7574454df387f0e048464d59a28acf8b66f587225f671b48a983b44f99abc3",
+  "audit_digest": "f1cffd82521a93a713752e7ba0ba3a64f061032dee6c93c9092c129a53982298",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -24960,7 +24960,7 @@
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
           "repository_relative": true,
-          "sha256": "095c2b3f1d8b1c7f9d59af192a4e37f07d34f71b0707e87e475e807dd1f2a5ac"
+          "sha256": "4188e6047f2aca017fb3118b0849a9acc0f537c34da533cb6bbf3348508621f7"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -24991,7 +24991,7 @@
             "masked_ok": 80,
             "masked_unresolved": 0,
             "prefix_instructions": 0,
-            "ratio": 0.8661971830985915,
+            "ratio": 0.8732394366197183,
             "state": "wip",
             "target_instructions": 140
           },
@@ -25005,13 +25005,13 @@
         "masked_ok": 80,
         "masked_unresolved": 0,
         "prefix_instructions": 0,
-        "ratio": 0.8661971830985915,
+        "ratio": 0.8732394366197183,
         "state": "wip",
         "target_instructions": 140
       },
       "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/16333f0840fc1456/scratch.obj",
       "object_function_symbol": "_config_init_defaults",
-      "object_sha256": "b1359613430017fa0ccac23fd3e89e7fed925839b647a43a4383e5d58044337f",
+      "object_sha256": "95cf3c0e9e32e0e3632e2c1939219ca4c8fe4320f4934d91ee09acd47a4e9d3b",
       "scratch": "tools/match/scratches/config_init_defaults",
       "source": "tools/match/scratches/config_init_defaults/scratch.cpp",
       "source_sha256": "0fe3b665088860f96b945077acf407c4910bf68d86d32c5f26a089d5e9370467",
