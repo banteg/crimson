@@ -517,6 +517,45 @@ def test_data_map_preserves_recovered_aggregate_alias_types():
     assert types_by_name["effect_uv16_v"] == "float"
 
 
+def test_data_map_preserves_recovered_standalone_semantic_types():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "data_map.json"
+    )
+    rows = json.loads(map_path.read_text())["entries"]
+    types_by_name = {
+        row["name"]: row.get("type")
+        for row in rows
+        if row.get("program") == "crimsonland.exe" and row.get("name")
+    }
+
+    expected = {
+        "aim_screen_x": "float",
+        "aim_screen_y": "float",
+        "game_completed_screen_flags": "char",
+        "credits_secret_button": "ui_button_t",
+        "credits_secret_button_clicked": "unsigned char",
+        "credits_back_button": "ui_button_t",
+        "credits_back_button_clicked": "unsigned char",
+        "sfx_trooper_inpain_02": "int",
+        "sfx_trooper_inpain_03": "int",
+        "sfx_bullet_hit_02": "int",
+        "sfx_bullet_hit_03": "int",
+        "sfx_bullet_hit_04": "int",
+        "sfx_bullet_hit_05": "int",
+        "sfx_bullet_hit_06": "int",
+        "sfx_trooper_inpain_01_alias_0": "int",
+        "sfx_trooper_inpain_01_alias_2": "int",
+        "sfx_ui_typeclick_02": "int",
+        "sfx_bloodspill_02": "int",
+    }
+
+    assert {name: types_by_name[name] for name in expected} == expected
+
+
 def test_importer_preserves_ui_element_pointer_table_aggregate():
     importer = _load_importer()
 

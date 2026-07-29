@@ -1880,13 +1880,15 @@
       "address": "0x004802a8",
       "comment": "Aim/cursor screen X (camera_offset_x + player_aim_x).",
       "name": "aim_screen_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004802ac",
       "comment": "Aim/cursor screen Y (camera_offset_y + player_aim_y).",
       "name": "aim_screen_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004802b0",
@@ -1934,7 +1936,8 @@
       "address": "0x00480321",
       "comment": "Game-complete/congratulations screen init flags for the navigation buttons (Survival/Rush/Typ'o/Main Menu).",
       "name": "game_completed_screen_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00480320",
@@ -2804,25 +2807,29 @@
       "address": "0x00481188",
       "comment": "Credits screen Secret button state (ui_button_update target).",
       "name": "credits_secret_button",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x0048118d",
       "comment": "Credits screen Secret button pressed flag (set by ui_button_update).",
       "name": "credits_secret_button_clicked",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004811a0",
       "comment": "Credits screen Back button state (ui_button_update target).",
       "name": "credits_back_button",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004811a5",
       "comment": "Credits screen Back button pressed flag (set by ui_button_update).",
       "name": "credits_back_button_clicked",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00481180",
@@ -8835,13 +8842,15 @@
       "address": "0x004c3f04",
       "comment": "SFX id for trooper_inPain_02.ogg",
       "name": "sfx_trooper_inpain_02",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3f08",
       "comment": "SFX id for trooper_inPain_03.ogg",
       "name": "sfx_trooper_inpain_03",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3f0c",
@@ -9183,31 +9192,36 @@
       "address": "0x004c3fd0",
       "comment": "SFX id for bullet_hit_02.ogg",
       "name": "sfx_bullet_hit_02",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3fd4",
       "comment": "SFX id for bullet_hit_03.ogg",
       "name": "sfx_bullet_hit_03",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3fd8",
       "comment": "SFX id for bullet_hit_04.ogg",
       "name": "sfx_bullet_hit_04",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3fdc",
       "comment": "SFX id for bullet_hit_05.ogg",
       "name": "sfx_bullet_hit_05",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3fe0",
       "comment": "SFX id for bullet_hit_06.ogg",
       "name": "sfx_bullet_hit_06",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c3fe4",
@@ -9262,7 +9276,8 @@
       "address": "0x004c4000",
       "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)",
       "name": "sfx_trooper_inpain_01_alias_0",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c4004",
@@ -9275,7 +9290,8 @@
       "address": "0x004c4008",
       "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)",
       "name": "sfx_trooper_inpain_01_alias_2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c400c",
@@ -9309,7 +9325,8 @@
       "address": "0x004c401c",
       "comment": "SFX id for ui_typeClick_02.ogg",
       "name": "sfx_ui_typeclick_02",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c4020",
@@ -9336,7 +9353,8 @@
       "address": "0x004c402c",
       "comment": "SFX id for bloodSpill_02.ogg",
       "name": "sfx_bloodspill_02",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c4030",

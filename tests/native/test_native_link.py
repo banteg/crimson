@@ -1970,8 +1970,8 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1551
-    assert payload["summary"]["typed_entries"] == 1524
-    assert payload["summary"]["untyped_entries"] == 27
+    assert payload["summary"]["typed_entries"] == 1542
+    assert payload["summary"]["untyped_entries"] == 9
     assert payload["summary"]["explicit_size_entries"] == 998
     assert payload["summary"]["explicit_alignment_entries"] == 998
     assert payload["summary"]["explicit_initializer_entries"] == 998
