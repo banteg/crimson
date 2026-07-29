@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-31-speed-remainder-lifetime",
+      "find": "                    creature->color.a = 1.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "replacements": [
+        {
+          "name": "direct-remainder-alpha-before-convert",
+          "text": "                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-remainder-alpha-before-convert",
+          "text": "                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-alpha-before-remainder",
+          "text": "                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder;\n                    creature->color.a = 1.0f;\n                    random_speed_remainder = random_speed_roll % 0x12;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-alpha-before-expression",
+          "text": "                    int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_speed_roll % 0x12) * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    },
+    {
+      "name": "template-32-speed-remainder-lifetime",
+      "find": "                    creature->color.a = 1.0f;\n                    RAND_FIELD(creature->move_speed, 0x11, 0.1f, 1.1f);\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "replacements": [
+        {
+          "name": "direct-remainder-alpha-before-convert",
+          "text": "                    int random_speed_remainder = crt_rand() % 0x11;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-remainder-alpha-before-convert",
+          "text": "                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x11;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-alpha-before-remainder",
+          "text": "                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder;\n                    creature->color.a = 1.0f;\n                    random_speed_remainder = random_speed_roll % 0x11;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-alpha-before-expression",
+          "text": "                    int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_speed_roll % 0x11) * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    }
+  ]
+}

@@ -766,6 +766,27 @@ Together the nine retained lifetime seams improve this scratch by
 retained source SHA-256 is
 `3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
 
+## Template 0x31/0x32 speed-remainder negative control
+
+Native scheduling around the adjacent template-`0x31` and template-`0x32`
+speed rolls superficially resembles the productive block-local remainder
+lifetimes above: the alpha store can sit between `rand()` and the floating
+conversion. The recorded
+`templates-31-32-speed-remainder-lifetime-mutations.json` sweep tests four
+natural named-remainder placements at each site, both independently and in
+all pairings.
+
+All 24/24 variants were evaluated without truncation and none improves the
+87.6899% baseline. Every single-site form adds one instruction and loses
+about 91.176 weighted bytes; the least-bad paired form still adds one
+instruction and loses 86.715 weighted bytes. References remain `352/0/1`
+and the 23-instruction prefix does not move. This rules out extending the
+productive remainder-lifetime pattern to these two handlers. The spec
+SHA-256 is
+`44ab94f6f6f1aaefffdf5749480a433fb1872e0a7787fc2cbd9a0c8bd6970ddc`;
+the tested source remains
+`3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
+
 ## Grid-child tint-copy negative control
 
 The five grid loops share a conspicuous scheduling seam around native
