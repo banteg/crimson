@@ -137,7 +137,7 @@ Together the retained changes move the fresh baseline from 82.87% to 99.81%,
 from 522 to 523 candidate instructions, and from `140/0/2` to `157/0/0`
 references. The complete append-only evidence is in
 `experiments.jsonl`
-(`sha256:ae51c4bc3f539e323883eec3ebbc4d6e2c4742fabc5ccdae524a76e499687537`).
+(`sha256:e7e3ab1da70186ffd58ac71d971dde1df2fdf427c9ff34e5da686481d88b37f4`).
 
 ## Unlock-loop mutation audit
 
@@ -165,3 +165,19 @@ sweep is justified and `scratch.cpp` remains unchanged. The compiler already
 recovers the native pointer walks from the current indexed source; spelling the
 cursors explicitly perturbs broader allocation and reference alignment without
 adding native behavior.
+
+## Title-separator dispatch interaction boundary
+
+The remaining four weighted bytes are exactly one scheduler inversion:
+native loads the interface dispatch pointer before converting the measured
+title width, while the candidate performs the `fild` first. A final complete
+19-variant sweep crossed three ordinary `vec2` constructor bodies with four
+pointer/reference dispatch-owner spellings, including every pair. All
+variants are byte-for-byte neutral at 99.8088%, 523/523 instructions, prefix
+74, and audit `157/0/0`.
+
+The current constructor and direct interface call are therefore not hiding a
+recoverable source interaction. Combined with the neutral call-schedule and
+compiler-profile menus, the residual is bounded compiler scheduling debt.
+Recorded spec SHA:
+`8f19a54a08f880ced92ea608dc6349ee8de611beccf3e7dec9dd69e525787be5`.

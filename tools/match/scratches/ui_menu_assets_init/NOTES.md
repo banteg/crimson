@@ -120,3 +120,25 @@ The probe results, including source hashes, are recorded in
 changes the two copied-slot loads without regressing the surrounding 110
 instructions; mere address adjacency, a shared layout, or another compiler
 profile is not evidence for one.
+
+## Copy and helper-boundary experiments
+
+Two final mutation menus test whether the missing constraint lives in an
+implicit special member or a tiny vertical-offset helper:
+
+- `copy-assignment-type-mutations.json` evaluates eleven `vec2` and vertex
+  copy-assignment definitions and interactions. Every user-defined assignment
+  destroys the native `rep movsd` copy shape, falling to 44.01--47.58% with
+  159--176 candidate instructions and at least five reference mismatches.
+  Implicit assignment is therefore required.
+- `vertical-offset-helper-mutations.json` evaluates two natural `add_y`
+  signatures and their call interactions. Definitions alone and both valid
+  calls are byte-for-byte neutral at 110/110 instructions and audit `64/0/2`;
+  the call without a definition correctly fails to compile.
+
+These results bound the unresolved equal-value propagation across both
+implicit assignment and method boundaries without weakening the exact
+instruction match. Recorded spec SHAs:
+`eff1958c90910624530b41deddd0415f953fc272bb98223a3250b5d34a4f95e1`
+and
+`f91146bee0d22e3a2148c1d076c15007fb6744be4e8d452a3f52beb5df65fdd4`.

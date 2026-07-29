@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-copy-assignment",
+      "find": "    ui_menu_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value)\n    {\n    }\n\n    ui_menu_vec2_t &operator+=(const ui_menu_vec2_t &other)",
+      "replacements": [
+        {
+          "name": "direct-members",
+          "text": "    ui_menu_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value)\n    {\n    }\n\n    ui_menu_vec2_t &operator=(const ui_menu_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    ui_menu_vec2_t &operator+=(const ui_menu_vec2_t &other)"
+        },
+        {
+          "name": "staged-members",
+          "text": "    ui_menu_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value)\n    {\n    }\n\n    ui_menu_vec2_t &operator=(const ui_menu_vec2_t &other)\n    {\n        float new_x = other.x;\n        float new_y = other.y;\n        x = new_x;\n        y = new_y;\n        return *this;\n    }\n\n    ui_menu_vec2_t &operator+=(const ui_menu_vec2_t &other)"
+        }
+      ]
+    },
+    {
+      "name": "vertex-copy-assignment",
+      "find": "    ui_menu_vertex_t()\n    {\n    }\n",
+      "replacements": [
+        {
+          "name": "memberwise-position",
+          "text": "    ui_menu_vertex_t()\n    {\n    }\n\n    ui_menu_vertex_t &operator=(const ui_menu_vertex_t &other)\n    {\n        position = other.position;\n        z = other.z;\n        rhw = other.rhw;\n        color = other.color;\n        u = other.u;\n        v = other.v;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "scalar-position",
+          "text": "    ui_menu_vertex_t()\n    {\n    }\n\n    ui_menu_vertex_t &operator=(const ui_menu_vertex_t &other)\n    {\n        position.x = other.position.x;\n        position.y = other.position.y;\n        z = other.z;\n        rhw = other.rhw;\n        color = other.color;\n        u = other.u;\n        v = other.v;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "staged-position",
+          "text": "    ui_menu_vertex_t()\n    {\n    }\n\n    ui_menu_vertex_t &operator=(const ui_menu_vertex_t &other)\n    {\n        float new_x = other.position.x;\n        float new_y = other.position.y;\n        position.x = new_x;\n        position.y = new_y;\n        z = other.z;\n        rhw = other.rhw;\n        color = other.color;\n        u = other.u;\n        v = other.v;\n        return *this;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

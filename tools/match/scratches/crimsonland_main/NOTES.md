@@ -105,3 +105,20 @@ regress by at least 75.25 bytes and can move the first mismatch back from
 instruction 684 to 27. Live native induction remains based at persisted
 `axis_move_x`, but an inline helper does not make supported VC6.5 select that
 base without disturbing earlier allocation. No source change is retained.
+
+## Binding member-anchor boundary
+
+The final eight-variant `binding-member-anchor-mutations.json` sweep isolates
+the source-record spelling from cursor ownership. Typed row pointers,
+references, a staged `axis_move_x` value, and both direct and local
+axis-relative member expressions are byte-for-byte neutral at 98.4375%,
+832/832 instructions, prefix 684, and audit `393/0/2`. In contrast, all three
+forms that make a source cursor own the loop lose 96.57 weighted bytes, move
+the exact prefix back to 27, and regress the audit to `392/0/3`.
+
+Together with the earlier cursor, symbol-anchor, and inline-helper sweeps, this
+bounds the remaining 32-instruction delta to VC6's induction-variable choice:
+natural record/member syntax preserves the `move_key_backward` anchor, while
+forcing the native `axis_move_x` anchor perturbs unrelated allocation. The
+clean typed source remains canonical. Recorded spec SHA:
+`cfa357651e0c1d8c6a98495b0f5abce331e325f32a8732edb67d0114390e8375`.

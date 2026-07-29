@@ -63,3 +63,16 @@ major stages 4 and 5; native retains both comparisons, so that variant is
 rejected. Stock 6.5 and 6.6 with `/GB` or `/G5` are identical, `/G6` regresses,
 and the Processor Pack also regresses. The residual remains compiler block
 placement, with the clean reference-complete source retained.
+
+## Switch-layout falsification
+
+`quest-stage-switch-mutations.json` tests five natural switch reconstructions
+of the major-4/major-5 quest exclusions. Putting either case in the switch
+default is byte-for-byte neutral at 75.93%, 162/162 instructions, and audit
+`20/0/0`. The two nested switch forms lose 2.99 weighted bytes, and the full
+stage switch loses 14.94; none produces the native outlined major-5 block.
+
+Together with the earlier six predicate-layout variants, this falsifies a
+source `switch` as the missing shape. The residual is supported VC6 cold-block
+placement, not unrecovered behavior. Recorded spec SHA:
+`cdeec7b18eb188a4c8fe299d1759d1a876a50a798c42f65c34ccd3b3d1d94351`.

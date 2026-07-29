@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vertical-offset-method",
+      "find": "    ui_menu_vec2_t &operator+=(const ui_menu_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n",
+      "replacements": [
+        {
+          "name": "void-add-y",
+          "text": "    ui_menu_vec2_t &operator+=(const ui_menu_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    void add_y(float offset)\n    {\n        y += offset;\n    }\n"
+        },
+        {
+          "name": "reference-add-y",
+          "text": "    ui_menu_vec2_t &operator+=(const ui_menu_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    ui_menu_vec2_t &add_y(float offset)\n    {\n        y += offset;\n        return *this;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "copied-slot-y-adjustments",
+      "find": "    subtemplates[0].slots[4].position.y += 124.0f;\n    subtemplates[0].slots[5].position.y += 124.0f;\n",
+      "replacements": [
+        {
+          "name": "call-add-y",
+          "text": "    subtemplates[0].slots[4].position.add_y(124.0f);\n    subtemplates[0].slots[5].position.add_y(124.0f);\n"
+        }
+      ]
+    }
+  ]
+}
