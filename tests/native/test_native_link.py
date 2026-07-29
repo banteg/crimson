@@ -24,6 +24,7 @@ from crimson.native_link import (
     NativeObjectSet,
     NativeSymbolCatalog,
     NativeToolchainSnapshot,
+    _native_link_image_options,
     _normalized_coff_sha256,
     _resolve_wibo_path,
     _select_unique_statuses,
@@ -36,6 +37,7 @@ from crimson.native_link import (
     load_native_translation_unit_config,
     native_data_object_bytes,
     native_linker_alias_object_bytes,
+    native_pe_imports,
     native_pe_summary,
     native_provider_coverage,
     native_provider_placeholder_object_bytes,
@@ -650,6 +652,48 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     assert archives["zlib-1.1.3-vc6"].provenance.derived_artifact == "zlib-1.1.3-vc6-provider"
 
 
+def test_default_crimsonland_provider_config_covers_current_non_game_closure() -> None:
+    config = load_native_provider_config(
+        DEFAULT_PROVIDER_CONFIGS["crimsonland.exe"],
+        image="crimsonland.exe",
+    )
+    closure = json.loads(
+        (
+            matchlib.REPO_ROOT
+            / "analysis/native/crimsonland.exe/closure.json"
+        ).read_text(encoding="utf-8"),
+    )
+
+    coverage = native_provider_coverage(config, closure)
+
+    assert coverage["covered_symbols"] == 97
+    assert coverage["import_symbols"] == 34
+    assert coverage["import_exports"] == 34
+    assert coverage["generated_import_symbols"] == 34
+    assert coverage["archive_symbols"] == 59
+    assert coverage["link_dependency_symbols"] == 82
+    assert coverage["closure_placeholder_symbols"] == 4
+    assert coverage["link_dependency_placeholder_symbols"] == 11
+    assert coverage["placeholder_symbols"] == 15
+    assert coverage["runnable"] is False
+    assert len(config.archives) == 1
+    archive = config.archives[0]
+    assert archive.id == "vc6-sp6-libcmt"
+    assert archive.size == 934378
+    assert archive.sha256 == (
+        "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a"
+    )
+    runtime = next(
+        provider
+        for provider in config.providers
+        if provider.name == "msvc6-runtime-static"
+    )
+    aliases = {alias.alias: alias.target for alias in runtime.aliases}
+    assert aliases["_FUN_004623b2"] == "_time"
+    assert aliases["_crt_atof_l"] == "_atof"
+    assert aliases["_strdup_malloc"] == "__strdup"
+
+
 def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
     manifest = json.loads(
         (
@@ -679,6 +723,52 @@ def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
     ]
     assert dependencies["gdi32"]["retained_symbols"] == []
     assert dependencies["advapi32"]["discarded_symbols"] == []
+
+
+def test_default_crimsonland_link_manifest_records_structural_executable() -> None:
+    manifest = json.loads(
+        (
+            matchlib.REPO_ROOT
+            / "analysis/native/crimsonland.exe/link/link.json"
+        ).read_text(encoding="utf-8"),
+    )
+
+    assert manifest["schema"] == 3
+    assert manifest["status"] == "linked"
+    assert manifest["runnable"] is False
+    assert manifest["summary"]["covered_symbols"] == 97
+    assert manifest["summary"]["archive_symbols"] == 59
+    assert manifest["summary"]["import_exports"] == 34
+    assert manifest["summary"]["link_dependency_symbols"] == 82
+    assert manifest["summary"]["closure_placeholder_symbols"] == 4
+    assert manifest["summary"]["link_dependency_placeholder_symbols"] == 11
+    assert manifest["summary"]["placeholder_symbols"] == 15
+    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 58
+    assert manifest["summary"]["validated_output_import_symbols"] == 92
+    assert manifest["placeholder_object"]["symbol_count"] == 15
+    assert manifest["output"]["pe"] == {
+        "characteristics": 271,
+        "dll": False,
+        "entry_point_rva": 166592,
+        "image_base": 0x00400000,
+        "image_size": 794624,
+        "machine": matchlib.IMAGE_FILE_MACHINE_I386,
+        "optional_magic": 0x10B,
+        "section_count": 3,
+        "subsystem": 2,
+        "timestamp": 0,
+    }
+    modules = {
+        row["module"]: row["symbols"]
+        for row in manifest["reference_imports"]["modules"]
+    }
+    assert modules["dsound"] == ["#11"]
+    dependencies = manifest["reference_imports"]["link_dependencies"]
+    assert len(dependencies) == 1
+    assert dependencies[0]["module"] == "kernel32"
+    assert len(dependencies[0]["declared_symbols"]) == 71
+    assert len(dependencies[0]["retained_symbols"]) == 58
+    assert len(dependencies[0]["discarded_symbols"]) == 13
 
 
 def test_provider_archive_can_be_absent_but_present_bytes_are_hash_checked(
@@ -804,6 +894,25 @@ def test_native_provider_import_definitions_preserve_reference_export_names() ->
         providers["directx-8.1-d3dx8-kernel32"],
     )
 
+    crimson_config = load_native_provider_config(
+        DEFAULT_PROVIDER_CONFIGS["crimsonland.exe"],
+        image="crimsonland.exe",
+    )
+    crimson_providers = {
+        provider.name: provider
+        for provider in crimson_config.providers
+    }
+    assert render_native_import_definition(crimson_providers["dsound.dll"]) == (
+        "LIBRARY DSOUND.dll\n"
+        "EXPORTS\n"
+        "    DirectSoundCreate8 @11 NONAME\n"
+    )
+    reference_image = (
+        matchlib.REPO_ROOT
+        / "game_bins/crimsonland/1.9.93-gog/crimsonland.exe"
+    )
+    assert native_pe_imports(reference_image.read_bytes())["dsound"] == ("#11",)
+
 
 def test_native_provider_placeholder_object_is_deterministic() -> None:
     config = load_native_provider_config(
@@ -836,6 +945,33 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
         cxx.value : cxx.value + 3
     ] == b"\x31\xc0\xc3"
     assert "__fltused" not in symbols
+
+
+def test_crimsonland_placeholder_object_records_transitive_archive_shims() -> None:
+    config = load_native_provider_config(
+        DEFAULT_PROVIDER_CONFIGS["crimsonland.exe"],
+        image="crimsonland.exe",
+    )
+    providers = tuple(
+        provider
+        for provider in config.providers
+        if provider.resolution == "placeholder-object"
+    )
+
+    coff = matchlib.parse_coff_object(
+        native_provider_placeholder_object_bytes(providers),
+    )
+    symbols = {
+        symbol.name: symbol
+        for symbol in coff.symbols
+        if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+    }
+
+    assert len(symbols) == 15
+    assert [section.name for section in coff.sections] == [".text", ".data"]
+    assert symbols["_main"].section_number == 1
+    assert symbols["__imp__TlsFree@4"].section_number == 2
+    assert "_RtlUnwind@16" not in symbols
 
 
 def test_coff_archive_timestamp_normalization_is_idempotent() -> None:
@@ -898,6 +1034,39 @@ def test_pe_timestamp_normalization_covers_export_directory() -> None:
     assert summary["dll"] is True
     assert summary["image_base"] == 0x10000000
     assert summary["timestamp"] == 0
+
+
+def test_native_link_image_options_distinguish_dll_and_gui_exe(
+    tmp_path: Path,
+) -> None:
+    export_path = tmp_path / "exports.def"
+    import_library_path = tmp_path / "grim.lib"
+    expected_export_path = "Z:" + str(export_path.resolve()).replace("/", "\\")
+    expected_import_library_path = "Z:" + str(import_library_path.resolve()).replace(
+        "/",
+        "\\",
+    )
+
+    assert _native_link_image_options(
+        "grim.dll",
+        export_path=export_path,
+        import_library_path=import_library_path,
+    ) == [
+        "/dll",
+        f"/implib:{expected_import_library_path}",
+        f"/def:{expected_export_path}",
+    ]
+    assert _native_link_image_options(
+        "crimsonland.exe",
+        export_path=export_path,
+        import_library_path=import_library_path,
+    ) == ["/subsystem:windows"]
+    with pytest.raises(ValueError, match="does not support image kind"):
+        _native_link_image_options(
+            "crimsonland.bin",
+            export_path=export_path,
+            import_library_path=import_library_path,
+        )
 
 
 def test_wibo_resolution_skips_non_executable_repository_copy(

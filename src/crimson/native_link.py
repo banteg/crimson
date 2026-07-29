@@ -98,6 +98,7 @@ DEFAULT_LINKER_ALIAS_CONFIGS = {
     "grim.dll": DEFAULT_LINKER_ALIAS_ROOT / "grim.dll.json",
 }
 DEFAULT_PROVIDER_CONFIGS = {
+    "crimsonland.exe": DEFAULT_PROVIDER_ROOT / "crimsonland.exe.json",
     "grim.dll": DEFAULT_PROVIDER_ROOT / "grim.dll.json",
 }
 
@@ -201,6 +202,7 @@ class NativeProviderSymbol:
     binding: str | None = None
     link_name: str | None = None
     export: str | None = None
+    ordinal: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -226,6 +228,13 @@ class NativeProviderConfig:
     mode: str
     archives: tuple[NativeProviderArchiveSpec, ...]
     providers: tuple[NativeProviderSpec, ...]
+
+
+def _native_provider_import_identity(symbol: NativeProviderSymbol) -> str:
+    if symbol.ordinal is not None:
+        return f"#{symbol.ordinal}"
+    assert symbol.export is not None
+    return symbol.export
 
 
 @dataclass(frozen=True, slots=True)
@@ -801,12 +810,17 @@ def load_native_provider_config(
             raise ValueError(
                 f"{label}: import-library resolution requires reference-import kind",
             )
-        if scope == "link-dependency" and (
-            kind != "reference-import" or resolution != "import-library"
-        ):
+        valid_link_dependency = (
+            kind == "reference-import" and resolution == "import-library"
+        ) or (
+            kind in {"static-library", "toolchain"}
+            and resolution == "placeholder-object"
+        )
+        if scope == "link-dependency" and not valid_link_dependency:
             raise ValueError(
-                f"{label}: link-dependency scope requires a reference-import "
-                "import-library provider",
+                f"{label}: link-dependency scope requires either a "
+                "reference-import import-library provider or an explicit "
+                "static/toolchain placeholder provider",
             )
         if kind == "reference-import":
             if not isinstance(module, str) or not module:
@@ -877,6 +891,8 @@ def load_native_provider_config(
             binding = raw_symbol.get("binding")
             link_name = raw_symbol.get("link_name")
             export = raw_symbol.get("export")
+            raw_ordinal = raw_symbol.get("ordinal")
+            ordinal: int | None = None
             if kind == "reference-import":
                 if binding is not None:
                     raise ValueError(
@@ -886,12 +902,26 @@ def load_native_provider_config(
                     raise ValueError(f"{symbol_label}.link_name must be non-empty")
                 if not isinstance(export, str) or not export:
                     raise ValueError(f"{symbol_label}.export must be non-empty")
+                if raw_ordinal is not None:
+                    if (
+                        not isinstance(raw_ordinal, int)
+                        or isinstance(raw_ordinal, bool)
+                        or not 1 <= raw_ordinal <= 0xFFFF
+                    ):
+                        raise ValueError(
+                            f"{symbol_label}.ordinal must fit a positive 16-bit integer",
+                        )
+                    ordinal = raw_ordinal
             else:
                 if binding not in {"data", "function"}:
                     raise ValueError(
                         f"{symbol_label}.binding must be 'data' or 'function'",
                     )
-                if link_name is not None or export is not None:
+                if (
+                    link_name is not None
+                    or export is not None
+                    or raw_ordinal is not None
+                ):
                     raise ValueError(
                         f"{symbol_label}: non-import symbols cannot declare import names",
                     )
@@ -901,6 +931,7 @@ def load_native_provider_config(
                     binding=cast(str | None, binding),
                     link_name=cast(str | None, link_name),
                     export=cast(str | None, export),
+                    ordinal=ordinal,
                 ),
             )
         raw_aliases = raw_provider.get("aliases", [])
@@ -1129,7 +1160,7 @@ def native_provider_coverage(
         {
             (
                 cast(str, provider.module).casefold().removesuffix(".dll"),
-                cast(str, symbol.export),
+                _native_provider_import_identity(symbol),
             )
             for provider in closure_providers
             if provider.kind == "reference-import"
@@ -1146,21 +1177,33 @@ def native_provider_coverage(
         for provider in closure_providers
         if provider.resolution == "archive-library"
     )
-    placeholder_count = sum(
+    closure_placeholder_count = sum(
         len(provider.symbols)
         for provider in closure_providers
         if provider.resolution == "placeholder-object"
     )
-    if generated_import_count + archive_count + placeholder_count != len(
+    link_dependency_placeholder_count = sum(
+        len(provider.symbols)
+        for provider in dependency_providers
+        if provider.resolution == "placeholder-object"
+    )
+    placeholder_count = (
+        closure_placeholder_count + link_dependency_placeholder_count
+    )
+    if generated_import_count + archive_count + closure_placeholder_count != len(
         provider_symbols,
     ):
         raise ValueError("provider resolution counts do not cover every symbol")
     return {
         "archive_symbols": archive_count,
+        "closure_placeholder_symbols": closure_placeholder_count,
         "covered_symbols": len(provider_symbols),
         "generated_import_symbols": generated_import_count,
         "import_exports": import_export_count,
         "import_symbols": import_count,
+        "link_dependency_placeholder_symbols": (
+            link_dependency_placeholder_count
+        ),
         "link_dependency_symbols": len(dependency_symbols),
         "placeholder_symbols": placeholder_count,
         "providers": provider_rows,
@@ -2496,14 +2539,18 @@ def load_native_symbol_catalog(
                 name = str(row.get("name") or "")
                 if not name:
                     continue
+                ordinal = int(row.get("ordinal") or 0)
+                detail = {
+                    "address": matchlib.parse_int(row["address"]),
+                    "module": module_name,
+                    "name": name,
+                }
+                if ordinal:
+                    detail["ordinal"] = ordinal
                 _add_catalog_name(
                     imports,
                     name,
-                    {
-                        "address": matchlib.parse_int(row["address"]),
-                        "module": module_name,
-                        "name": name,
-                    },
+                    detail,
                 )
 
     return NativeSymbolCatalog(
@@ -4203,9 +4250,12 @@ def render_native_import_definition(provider: NativeProviderSpec) -> str:
     for symbol in provider.symbols:
         assert symbol.link_name is not None
         assert symbol.export is not None
-        entry = symbol.link_name
-        if symbol.export != symbol.link_name:
-            entry = f"{entry}={symbol.export}"
+        if symbol.ordinal is not None:
+            entry = f"{symbol.link_name} @{symbol.ordinal} NONAME"
+        elif symbol.export != symbol.link_name:
+            entry = f"{symbol.link_name}={symbol.export}"
+        else:
+            entry = symbol.link_name
         lines.append(f"    {entry}")
     return "".join(f"{line}\n" for line in lines)
 
@@ -5230,6 +5280,8 @@ def native_pe_imports(data: bytes) -> dict[str, tuple[str, ...]]:
             for imported in descriptor.imports:
                 if imported.name is not None:
                     imports[module].add(imported.name.decode("latin1"))
+                elif imported.import_by_ordinal:
+                    imports[module].add(f"#{int(imported.ordinal)}")
         return {
             module: tuple(sorted(names))
             for module, names in sorted(imports.items())
@@ -5256,7 +5308,10 @@ def _validate_linked_reference_imports(
             if provider.scope == "link-dependency"
             else expected
         )
-        target[module].update(cast(str, symbol.export) for symbol in provider.symbols)
+        target[module].update(
+            _native_provider_import_identity(symbol)
+            for symbol in provider.symbols
+        )
     missing = sorted(
         (module, symbol)
         for module, symbols in expected.items()
@@ -5277,7 +5332,11 @@ def _validate_linked_reference_imports(
     reference = {
         (
             str(row.get("module", "")).casefold().removesuffix(".dll"),
-            str(row.get("name", "")),
+            (
+                f"#{int(row['ordinal'])}"
+                if isinstance(row.get("ordinal"), int) and int(row["ordinal"]) > 0
+                else str(row.get("name", ""))
+            ),
         )
         for row in raw_reference_imports
         if isinstance(row, dict)
@@ -5422,6 +5481,24 @@ def _native_provider_archive_payload(
     }
 
 
+def _native_link_image_options(
+    image: str,
+    *,
+    export_path: Path,
+    import_library_path: Path,
+) -> list[str]:
+    suffix = Path(image).suffix.casefold()
+    if suffix == ".dll":
+        return [
+            "/dll",
+            f"/implib:{_wibo_windows_path(import_library_path)}",
+            f"/def:{_wibo_windows_path(export_path)}",
+        ]
+    if suffix == ".exe":
+        return ["/subsystem:windows"]
+    raise ValueError(f"native link does not support image kind {image!r}")
+
+
 def link_native_image(
     audit: NativeAudit,
     provider_config: NativeProviderConfig,
@@ -5557,10 +5634,7 @@ def link_native_image(
     placeholder_providers = tuple(
         provider
         for provider in provider_config.providers
-        if (
-            provider.scope == "closure"
-            and provider.resolution == "placeholder-object"
-        )
+        if provider.resolution == "placeholder-object"
     )
     placeholder_path: Path | None = None
     placeholder_payload: dict[str, Any] | None = None
@@ -5600,21 +5674,24 @@ def link_native_image(
     map_path = output_directory / f"{audit.objects.image}.map"
     log_path = output_directory / "link.log"
     manifest_path = output_directory / "link.json"
+    is_dll = Path(audit.objects.image).suffix.casefold() == ".dll"
     link_completed = _run_native_tool(
         [
             str(wibo),
             str(linker),
             "/nologo",
-            "/dll",
             "/nodefaultlib",
             "/opt:ref",
             "/machine:ix86",
             f"/entry:{provider_config.entry}",
             f"/base:0x{provider_config.image_base:08x}",
             f"/out:{_wibo_windows_path(image_path)}",
-            f"/implib:{_wibo_windows_path(import_library_path)}",
             f"/map:{_wibo_windows_path(map_path)}",
-            f"/def:{_wibo_windows_path(export_path)}",
+            *_native_link_image_options(
+                audit.objects.image,
+                export_path=export_path,
+                import_library_path=import_library_path,
+            ),
             f"@{_wibo_windows_path(response_path)}",
         ],
         cwd=repo_root,
@@ -5654,8 +5731,9 @@ def link_native_image(
     pe_summary = native_pe_summary(linked_image_data)
     if (
         pe_summary["machine"] != matchlib.IMAGE_FILE_MACHINE_I386
-        or not pe_summary["dll"]
+        or pe_summary["dll"] is not is_dll
         or pe_summary["image_base"] != provider_config.image_base
+        or (not is_dll and pe_summary["subsystem"] != 2)
         or pe_summary["timestamp"] != 0
     ):
         raise ValueError(f"linked PE failed structural validation: {pe_summary}")

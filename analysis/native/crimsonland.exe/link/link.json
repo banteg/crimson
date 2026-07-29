@@ -1,0 +1,1830 @@
+{
+  "archives": [
+    {
+      "file": {
+        "path": "tools/native/providers/build/vc6-sp6/vc98/lib/libcmt.lib",
+        "repository_relative": true,
+        "sha256": "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a"
+      },
+      "id": "vc6-sp6-libcmt",
+      "provenance": {
+        "manifest": {
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+        },
+        "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
+        "source_artifact": "visual-cpp-6-sp6-media"
+      }
+    }
+  ],
+  "audit_digest": "bf7b7b8470d1207d8244e1a88c29f920776213f1094e934f3c2375c5a2466b3c",
+  "image": "crimsonland.exe",
+  "kind": "crimson-native-linked-image",
+  "mode": "structural",
+  "output": {
+    "path": "analysis/native/crimsonland.exe/link/crimsonland.exe",
+    "pe": {
+      "characteristics": 271,
+      "dll": false,
+      "entry_point_rva": 166592,
+      "image_base": 4194304,
+      "image_size": 794624,
+      "machine": 332,
+      "optional_magic": 267,
+      "section_count": 3,
+      "subsystem": 2,
+      "timestamp": 0
+    },
+    "repository_relative": true,
+    "sha256": "fa81635d20a1dd32b3d8ac98e284fbb9ac463b35aae3967db33fa51beb2f00aa"
+  },
+  "placeholder_object": {
+    "path": "analysis/native/crimsonland.exe/link/providers/placeholders.obj",
+    "repository_relative": true,
+    "sha256": "270df81472c5c0b8286657c897e3e6f3e85e02d323f8aa21fb6c2a05d1cd0b9a",
+    "symbol_count": 15
+  },
+  "provider_config": {
+    "declared_sha256": "733a80fa87aacdb9052896ce4a47419be5d5cb6dd9f0682aef41cc23fd93750b",
+    "path": "tools/native/providers/crimsonland.exe.json",
+    "repository_relative": true,
+    "sha256": "733a80fa87aacdb9052896ce4a47419be5d5cb6dd9f0682aef41cc23fd93750b"
+  },
+  "providers": [
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/msvc6-runtime-static-aliases.obj",
+          "repository_relative": true,
+          "sha256": "01512a66a50b706167adb8a3825365ccdb82a89e6f25b917aa992f96c0efe05a"
+        },
+        "symbols": [
+          {
+            "alias": "?crt_fclose@@YAHPAU_iobuf@@@Z",
+            "target": "_fclose"
+          },
+          {
+            "alias": "?crt_fopen@@YAPAU_iobuf@@PAD0@Z",
+            "target": "_fopen"
+          },
+          {
+            "alias": "?crt_fread@@YAIPAXIIPAU_iobuf@@@Z",
+            "target": "_fread"
+          },
+          {
+            "alias": "?crt_fseek@@YAHPAU_iobuf@@JH@Z",
+            "target": "_fseek"
+          },
+          {
+            "alias": "?crt_ftell@@YAJPAU_iobuf@@@Z",
+            "target": "_ftell"
+          },
+          {
+            "alias": "_FUN_004623b2",
+            "target": "_time"
+          },
+          {
+            "alias": "_crt_atexit",
+            "target": "_atexit"
+          },
+          {
+            "alias": "_crt_atof_l",
+            "target": "_atof"
+          },
+          {
+            "alias": "_crt_beginthread",
+            "target": "__beginthread"
+          },
+          {
+            "alias": "_crt_endthread",
+            "target": "__endthread"
+          },
+          {
+            "alias": "_crt_exit",
+            "target": "_exit"
+          },
+          {
+            "alias": "_crt_fclose",
+            "target": "_fclose"
+          },
+          {
+            "alias": "_crt_fflush",
+            "target": "_fflush"
+          },
+          {
+            "alias": "_crt_fgets",
+            "target": "_fgets"
+          },
+          {
+            "alias": "_crt_findclose",
+            "target": "__findclose"
+          },
+          {
+            "alias": "_crt_findfirst",
+            "target": "__findfirst"
+          },
+          {
+            "alias": "_crt_findnext",
+            "target": "__findnext"
+          },
+          {
+            "alias": "_crt_fopen",
+            "target": "_fopen"
+          },
+          {
+            "alias": "_crt_fread",
+            "target": "_fread"
+          },
+          {
+            "alias": "_crt_free",
+            "target": "??3@YAXPAX@Z"
+          },
+          {
+            "alias": "_crt_fseek",
+            "target": "_fseek"
+          },
+          {
+            "alias": "_crt_ftell",
+            "target": "_ftell"
+          },
+          {
+            "alias": "_crt_fwrite",
+            "target": "_fwrite"
+          },
+          {
+            "alias": "_crt_getcwd",
+            "target": "__getcwd"
+          },
+          {
+            "alias": "_crt_isalpha",
+            "target": "_isalpha"
+          },
+          {
+            "alias": "_crt_printf",
+            "target": "_printf"
+          },
+          {
+            "alias": "_crt_rand",
+            "target": "_rand"
+          },
+          {
+            "alias": "_crt_sprintf",
+            "target": "_sprintf"
+          },
+          {
+            "alias": "_crt_srand",
+            "target": "_srand"
+          },
+          {
+            "alias": "_crt_strtok",
+            "target": "_strtok"
+          },
+          {
+            "alias": "_crt_vsprintf",
+            "target": "_vsprintf"
+          },
+          {
+            "alias": "_strdup_malloc",
+            "target": "__strdup"
+          }
+        ]
+      },
+      "archive": "vc6-sp6-libcmt",
+      "evidence": [
+        {
+          "note": "The pinned VC6 SP6 LIBCMT archive matches 299 executable CRT functions byte-for-byte and uniquely identifies 254 of them.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "51e0b809b5f29064ef4098acb7e6de740a88f670e8251a5e35d47a4b9549a305"
+        },
+        {
+          "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+        }
+      ],
+      "kind": "static-library",
+      "name": "msvc6-runtime-static",
+      "resolution": "archive-library",
+      "scope": "closure",
+      "symbols": [
+        "??2@YAPAXI@Z",
+        "??3@YAXPAX@Z",
+        "??_L@YGXPAXIHP6EX0@Z1@Z",
+        "??_M@YGXPAXIHP6EX0@Z@Z",
+        "?crt_fclose@@YAHPAU_iobuf@@@Z",
+        "?crt_fopen@@YAPAU_iobuf@@PAD0@Z",
+        "?crt_fread@@YAIPAXIIPAU_iobuf@@@Z",
+        "?crt_fseek@@YAHPAU_iobuf@@JH@Z",
+        "?crt_ftell@@YAJPAU_iobuf@@@Z",
+        "_FUN_004623b2",
+        "__CIpow",
+        "__alldiv",
+        "__allmul",
+        "__ftol",
+        "__getcwd",
+        "__stricmp",
+        "_atexit",
+        "_crt_atexit",
+        "_crt_atof_l",
+        "_crt_beginthread",
+        "_crt_endthread",
+        "_crt_exit",
+        "_crt_fclose",
+        "_crt_fflush",
+        "_crt_fgets",
+        "_crt_findclose",
+        "_crt_findfirst",
+        "_crt_findnext",
+        "_crt_fopen",
+        "_crt_fread",
+        "_crt_free",
+        "_crt_fseek",
+        "_crt_ftell",
+        "_crt_fwrite",
+        "_crt_getcwd",
+        "_crt_isalpha",
+        "_crt_printf",
+        "_crt_rand",
+        "_crt_sprintf",
+        "_crt_srand",
+        "_crt_strtok",
+        "_crt_vsprintf",
+        "_fclose",
+        "_fflush",
+        "_fgetc",
+        "_fopen",
+        "_fread",
+        "_fseek",
+        "_ftell",
+        "_fwrite",
+        "_qsort",
+        "_rand",
+        "_sprintf",
+        "_strchr",
+        "_strdup_malloc",
+        "_strncmp",
+        "_strstr"
+      ]
+    },
+    {
+      "archive": "vc6-sp6-libcmt",
+      "evidence": [
+        {
+          "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals.",
+          "path": "analysis/native/crimsonland.exe/closure.json",
+          "repository_relative": true,
+          "sha256": "02cf217d9d76ded22ed8a5abd27f3b893c0e7b327c28d77cd667fa22623ba774"
+        },
+        {
+          "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "51e0b809b5f29064ef4098acb7e6de740a88f670e8251a5e35d47a4b9549a305"
+        }
+      ],
+      "kind": "toolchain",
+      "name": "msvc6-toolchain",
+      "resolution": "archive-library",
+      "scope": "closure",
+      "symbols": [
+        "__fltused",
+        "_sscanf"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/d3d8-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "6631f04d29c31c4950dbabdce2658d21b1ca884484f5bcf4826abc261423f139"
+        },
+        "symbols": [
+          {
+            "alias": "_Direct3DCreate8@4",
+            "target": "_Direct3DCreate8"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/d3d8-dll.def",
+        "repository_relative": true,
+        "sha256": "0227602c30809dbe4b4f627e73202f5a628031c7bb60badbb07405959caf2c08"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports Direct3DCreate8 from d3d8.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/d3d8-dll.lib",
+        "repository_relative": true,
+        "sha256": "382d77790badb4877d1c0511e430318c057f2aee2ea10113b6c9d3fcda7e21cf"
+      },
+      "kind": "reference-import",
+      "module": "d3d8.dll",
+      "name": "d3d8.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "_Direct3DCreate8@4"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/dsound-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "45a56fe48969948aca27766fd834be798139ef229869a23789c67394d22c6832"
+        },
+        "symbols": [
+          {
+            "alias": "_DirectSoundCreate8@12",
+            "target": "_DirectSoundCreate8"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/dsound-dll.def",
+        "repository_relative": true,
+        "sha256": "da1e889407e48e3c0f66a4b876ac5feaeed137e213da2a9b9d432ec633b40dd4"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports ordinal 11 under the recovered __imp_DirectSoundCreate8 name.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The import inventory identifies DSOUND ordinal 11 as DirectSoundCreate8.",
+          "path": "docs/re/static/binary-analysis.md",
+          "repository_relative": true,
+          "sha256": "8f56d9b8d9cbe69afe3acd38dc9c20e8c0c2deea66ed0dea8ea375ed7e706c28"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/dsound-dll.lib",
+        "repository_relative": true,
+        "sha256": "51cf35f5942d35e93201d443da5dffd138919b4d9dc716daeb7d6202d455eed8"
+      },
+      "kind": "reference-import",
+      "module": "DSOUND.dll",
+      "name": "dsound.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "_DirectSoundCreate8@12"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/urlmon-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "07d09bf7c618d56d500c0f723e11c3634c434480aebe1c98c7e28fd3d3c35c7c"
+        },
+        "symbols": [
+          {
+            "alias": "_HlinkNavigateString@8",
+            "target": "_HlinkNavigateString"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/urlmon-dll.def",
+        "repository_relative": true,
+        "sha256": "7337351fa87f70b5d2cb9845164eb19fc94217ce61a8815b16e089ac23da8f89"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports HlinkNavigateString from urlmon.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/urlmon-dll.lib",
+        "repository_relative": true,
+        "sha256": "5cca71de8c9f6d5b66f6eaaf592209cf3d1831eb36518ef9e4b24e6b38e4bc6c"
+      },
+      "kind": "reference-import",
+      "module": "urlmon.dll",
+      "name": "urlmon.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "_HlinkNavigateString@8"
+      ]
+    },
+    {
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/vorbisfile-dll.def",
+        "repository_relative": true,
+        "sha256": "d931ea6d194b16a1fc3fa5ebe1dc4623acc50396892c81fd3b53b8993c95e9b8"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports its six Ogg Vorbis decode entry points from vorbisfile.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/vorbisfile-dll.lib",
+        "repository_relative": true,
+        "sha256": "2ee26a5cef86e63163b2861d02ab596f6e13d04dd509353d73ec47dcf05a8936"
+      },
+      "kind": "reference-import",
+      "module": "vorbisfile.dll",
+      "name": "vorbisfile.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "_ov_clear",
+        "_ov_info",
+        "_ov_open_callbacks",
+        "_ov_pcm_seek",
+        "_ov_pcm_total",
+        "_ov_read"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/advapi32-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "aebb1c31569b72da90371f9f9a5e3bfbdd5f6e60c53fa01bacb0e7aadba22a61"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__RegCloseKey@4",
+            "target": "__imp__RegCloseKey"
+          },
+          {
+            "alias": "__imp__RegCreateKeyExA@36",
+            "target": "__imp__RegCreateKeyExA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/advapi32-dll.def",
+        "repository_relative": true,
+        "sha256": "21e8fca16528ee7c26dd76635ec5c3acfb480bf23826eb3af74a21bfefd6a521"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports the configured registry APIs from ADVAPI32.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/advapi32-dll.lib",
+        "repository_relative": true,
+        "sha256": "70c9ce3a28a9cc0979b617290a5153c50299bf49f245c50b0f9c7c0aa62ba0ca"
+      },
+      "kind": "reference-import",
+      "module": "ADVAPI32.dll",
+      "name": "advapi32.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "__imp__RegCloseKey@4",
+        "__imp__RegCreateKeyExA@36"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/kernel32-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "a30398d91a11d69b2330dee9681140364d16326ecdecdfeebc5f56eb35cca2fa"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__CreateDirectoryA@8",
+            "target": "__imp__CreateDirectoryA"
+          },
+          {
+            "alias": "__imp__FreeLibrary@4",
+            "target": "__imp__FreeLibrary"
+          },
+          {
+            "alias": "__imp__GetCommandLineA@0",
+            "target": "__imp__GetCommandLineA"
+          },
+          {
+            "alias": "__imp__GetLastError@0",
+            "target": "__imp__GetLastError"
+          },
+          {
+            "alias": "__imp__GetLocalTime@4",
+            "target": "__imp__GetLocalTime"
+          },
+          {
+            "alias": "__imp__GetProcAddress@8",
+            "target": "__imp__GetProcAddress"
+          },
+          {
+            "alias": "__imp__LoadLibraryA@4",
+            "target": "__imp__LoadLibraryA"
+          },
+          {
+            "alias": "__imp__MultiByteToWideChar@24",
+            "target": "__imp__MultiByteToWideChar"
+          },
+          {
+            "alias": "__imp__OutputDebugStringA@4",
+            "target": "__imp__OutputDebugStringA"
+          },
+          {
+            "alias": "__imp__QueryPerformanceCounter@4",
+            "target": "__imp__QueryPerformanceCounter"
+          },
+          {
+            "alias": "__imp__Sleep@4",
+            "target": "__imp__Sleep"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/kernel32-dll.def",
+        "repository_relative": true,
+        "sha256": "141f26659dd93f6a9f9abed037b9e5e66ce72ec75a33ff2ef12cfebbd3d505ce"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports these directly requested platform APIs from KERNEL32.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/kernel32-dll.lib",
+        "repository_relative": true,
+        "sha256": "2d888d4e23e83f4b88f33ebea5ac2a1e1d99c2b5be19d7df47f5b8de1e9ba613"
+      },
+      "kind": "reference-import",
+      "module": "KERNEL32.dll",
+      "name": "kernel32.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "__imp__CreateDirectoryA@8",
+        "__imp__FreeLibrary@4",
+        "__imp__GetCommandLineA@0",
+        "__imp__GetLastError@0",
+        "__imp__GetLocalTime@4",
+        "__imp__GetProcAddress@8",
+        "__imp__LoadLibraryA@4",
+        "__imp__MultiByteToWideChar@24",
+        "__imp__OutputDebugStringA@4",
+        "__imp__QueryPerformanceCounter@4",
+        "__imp__Sleep@4"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "9581e2b93b73cccec1c30992814835329236fb5bbf491ab361c4968cb7713bb0"
+        },
+        "symbols": [
+          {
+            "alias": "_RtlUnwind@16",
+            "target": "_RtlUnwind"
+          },
+          {
+            "alias": "__imp__CloseHandle@4",
+            "target": "__imp__CloseHandle"
+          },
+          {
+            "alias": "__imp__CompareStringA@24",
+            "target": "__imp__CompareStringA"
+          },
+          {
+            "alias": "__imp__CompareStringW@24",
+            "target": "__imp__CompareStringW"
+          },
+          {
+            "alias": "__imp__CreateFileA@28",
+            "target": "__imp__CreateFileA"
+          },
+          {
+            "alias": "__imp__CreateThread@24",
+            "target": "__imp__CreateThread"
+          },
+          {
+            "alias": "__imp__DeleteCriticalSection@4",
+            "target": "__imp__DeleteCriticalSection"
+          },
+          {
+            "alias": "__imp__EnterCriticalSection@4",
+            "target": "__imp__EnterCriticalSection"
+          },
+          {
+            "alias": "__imp__ExitProcess@4",
+            "target": "__imp__ExitProcess"
+          },
+          {
+            "alias": "__imp__ExitThread@4",
+            "target": "__imp__ExitThread"
+          },
+          {
+            "alias": "__imp__FileTimeToLocalFileTime@8",
+            "target": "__imp__FileTimeToLocalFileTime"
+          },
+          {
+            "alias": "__imp__FileTimeToSystemTime@8",
+            "target": "__imp__FileTimeToSystemTime"
+          },
+          {
+            "alias": "__imp__FindClose@4",
+            "target": "__imp__FindClose"
+          },
+          {
+            "alias": "__imp__FindFirstFileA@8",
+            "target": "__imp__FindFirstFileA"
+          },
+          {
+            "alias": "__imp__FindNextFileA@8",
+            "target": "__imp__FindNextFileA"
+          },
+          {
+            "alias": "__imp__FlushFileBuffers@4",
+            "target": "__imp__FlushFileBuffers"
+          },
+          {
+            "alias": "__imp__FreeEnvironmentStringsA@4",
+            "target": "__imp__FreeEnvironmentStringsA"
+          },
+          {
+            "alias": "__imp__FreeEnvironmentStringsW@4",
+            "target": "__imp__FreeEnvironmentStringsW"
+          },
+          {
+            "alias": "__imp__GetACP@0",
+            "target": "__imp__GetACP"
+          },
+          {
+            "alias": "__imp__GetCPInfo@8",
+            "target": "__imp__GetCPInfo"
+          },
+          {
+            "alias": "__imp__GetCurrentDirectoryA@8",
+            "target": "__imp__GetCurrentDirectoryA"
+          },
+          {
+            "alias": "__imp__GetCurrentProcess@0",
+            "target": "__imp__GetCurrentProcess"
+          },
+          {
+            "alias": "__imp__GetCurrentThreadId@0",
+            "target": "__imp__GetCurrentThreadId"
+          },
+          {
+            "alias": "__imp__GetDriveTypeA@4",
+            "target": "__imp__GetDriveTypeA"
+          },
+          {
+            "alias": "__imp__GetEnvironmentStrings@0",
+            "target": "__imp__GetEnvironmentStrings"
+          },
+          {
+            "alias": "__imp__GetEnvironmentStringsW@0",
+            "target": "__imp__GetEnvironmentStringsW"
+          },
+          {
+            "alias": "__imp__GetEnvironmentVariableA@12",
+            "target": "__imp__GetEnvironmentVariableA"
+          },
+          {
+            "alias": "__imp__GetFileType@4",
+            "target": "__imp__GetFileType"
+          },
+          {
+            "alias": "__imp__GetFullPathNameA@16",
+            "target": "__imp__GetFullPathNameA"
+          },
+          {
+            "alias": "__imp__GetModuleFileNameA@12",
+            "target": "__imp__GetModuleFileNameA"
+          },
+          {
+            "alias": "__imp__GetModuleHandleA@4",
+            "target": "__imp__GetModuleHandleA"
+          },
+          {
+            "alias": "__imp__GetOEMCP@0",
+            "target": "__imp__GetOEMCP"
+          },
+          {
+            "alias": "__imp__GetStartupInfoA@4",
+            "target": "__imp__GetStartupInfoA"
+          },
+          {
+            "alias": "__imp__GetStdHandle@4",
+            "target": "__imp__GetStdHandle"
+          },
+          {
+            "alias": "__imp__GetStringTypeA@20",
+            "target": "__imp__GetStringTypeA"
+          },
+          {
+            "alias": "__imp__GetStringTypeW@16",
+            "target": "__imp__GetStringTypeW"
+          },
+          {
+            "alias": "__imp__GetSystemTime@4",
+            "target": "__imp__GetSystemTime"
+          },
+          {
+            "alias": "__imp__GetTimeZoneInformation@4",
+            "target": "__imp__GetTimeZoneInformation"
+          },
+          {
+            "alias": "__imp__GetVersion@0",
+            "target": "__imp__GetVersion"
+          },
+          {
+            "alias": "__imp__GetVersionExA@4",
+            "target": "__imp__GetVersionExA"
+          },
+          {
+            "alias": "__imp__HeapAlloc@12",
+            "target": "__imp__HeapAlloc"
+          },
+          {
+            "alias": "__imp__HeapCreate@12",
+            "target": "__imp__HeapCreate"
+          },
+          {
+            "alias": "__imp__HeapDestroy@4",
+            "target": "__imp__HeapDestroy"
+          },
+          {
+            "alias": "__imp__HeapFree@12",
+            "target": "__imp__HeapFree"
+          },
+          {
+            "alias": "__imp__HeapReAlloc@16",
+            "target": "__imp__HeapReAlloc"
+          },
+          {
+            "alias": "__imp__HeapSize@12",
+            "target": "__imp__HeapSize"
+          },
+          {
+            "alias": "__imp__InitializeCriticalSection@4",
+            "target": "__imp__InitializeCriticalSection"
+          },
+          {
+            "alias": "__imp__InterlockedDecrement@4",
+            "target": "__imp__InterlockedDecrement"
+          },
+          {
+            "alias": "__imp__InterlockedIncrement@4",
+            "target": "__imp__InterlockedIncrement"
+          },
+          {
+            "alias": "__imp__IsBadWritePtr@8",
+            "target": "__imp__IsBadWritePtr"
+          },
+          {
+            "alias": "__imp__LCMapStringA@24",
+            "target": "__imp__LCMapStringA"
+          },
+          {
+            "alias": "__imp__LCMapStringW@24",
+            "target": "__imp__LCMapStringW"
+          },
+          {
+            "alias": "__imp__LeaveCriticalSection@4",
+            "target": "__imp__LeaveCriticalSection"
+          },
+          {
+            "alias": "__imp__RaiseException@16",
+            "target": "__imp__RaiseException"
+          },
+          {
+            "alias": "__imp__ReadFile@20",
+            "target": "__imp__ReadFile"
+          },
+          {
+            "alias": "__imp__ResumeThread@4",
+            "target": "__imp__ResumeThread"
+          },
+          {
+            "alias": "__imp__SetEndOfFile@4",
+            "target": "__imp__SetEndOfFile"
+          },
+          {
+            "alias": "__imp__SetEnvironmentVariableA@8",
+            "target": "__imp__SetEnvironmentVariableA"
+          },
+          {
+            "alias": "__imp__SetFilePointer@16",
+            "target": "__imp__SetFilePointer"
+          },
+          {
+            "alias": "__imp__SetHandleCount@4",
+            "target": "__imp__SetHandleCount"
+          },
+          {
+            "alias": "__imp__SetLastError@4",
+            "target": "__imp__SetLastError"
+          },
+          {
+            "alias": "__imp__SetStdHandle@8",
+            "target": "__imp__SetStdHandle"
+          },
+          {
+            "alias": "__imp__TerminateProcess@8",
+            "target": "__imp__TerminateProcess"
+          },
+          {
+            "alias": "__imp__TlsAlloc@0",
+            "target": "__imp__TlsAlloc"
+          },
+          {
+            "alias": "__imp__TlsGetValue@4",
+            "target": "__imp__TlsGetValue"
+          },
+          {
+            "alias": "__imp__TlsSetValue@8",
+            "target": "__imp__TlsSetValue"
+          },
+          {
+            "alias": "__imp__UnhandledExceptionFilter@4",
+            "target": "__imp__UnhandledExceptionFilter"
+          },
+          {
+            "alias": "__imp__VirtualAlloc@16",
+            "target": "__imp__VirtualAlloc"
+          },
+          {
+            "alias": "__imp__VirtualFree@12",
+            "target": "__imp__VirtualFree"
+          },
+          {
+            "alias": "__imp__WideCharToMultiByte@32",
+            "target": "__imp__WideCharToMultiByte"
+          },
+          {
+            "alias": "__imp__WriteFile@20",
+            "target": "__imp__WriteFile"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.def",
+        "repository_relative": true,
+        "sha256": "d7bb01aaedc938fb7752958772ec0e81d1f1f59c9ccfdc9e2ff0ddc529b58e4d"
+      },
+      "evidence": [
+        {
+          "note": "Every declared CRT dependency is retained in the reference executable import table.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The pinned VC6 SP6 LIBCMT archive records these decorated KERNEL32 references.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "51e0b809b5f29064ef4098acb7e6de740a88f670e8251a5e35d47a4b9549a305"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/msvc6-runtime-kernel32.lib",
+        "repository_relative": true,
+        "sha256": "08205ba676a77920e49f9273857334a0eee91f34a2cfad01b28aefc443e7bc97"
+      },
+      "kind": "reference-import",
+      "module": "KERNEL32.dll",
+      "name": "msvc6-runtime-kernel32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "_RtlUnwind@16",
+        "__imp__CloseHandle@4",
+        "__imp__CompareStringA@24",
+        "__imp__CompareStringW@24",
+        "__imp__CreateFileA@28",
+        "__imp__CreateThread@24",
+        "__imp__DeleteCriticalSection@4",
+        "__imp__EnterCriticalSection@4",
+        "__imp__ExitProcess@4",
+        "__imp__ExitThread@4",
+        "__imp__FileTimeToLocalFileTime@8",
+        "__imp__FileTimeToSystemTime@8",
+        "__imp__FindClose@4",
+        "__imp__FindFirstFileA@8",
+        "__imp__FindNextFileA@8",
+        "__imp__FlushFileBuffers@4",
+        "__imp__FreeEnvironmentStringsA@4",
+        "__imp__FreeEnvironmentStringsW@4",
+        "__imp__GetACP@0",
+        "__imp__GetCPInfo@8",
+        "__imp__GetCurrentDirectoryA@8",
+        "__imp__GetCurrentProcess@0",
+        "__imp__GetCurrentThreadId@0",
+        "__imp__GetDriveTypeA@4",
+        "__imp__GetEnvironmentStrings@0",
+        "__imp__GetEnvironmentStringsW@0",
+        "__imp__GetEnvironmentVariableA@12",
+        "__imp__GetFileType@4",
+        "__imp__GetFullPathNameA@16",
+        "__imp__GetModuleFileNameA@12",
+        "__imp__GetModuleHandleA@4",
+        "__imp__GetOEMCP@0",
+        "__imp__GetStartupInfoA@4",
+        "__imp__GetStdHandle@4",
+        "__imp__GetStringTypeA@20",
+        "__imp__GetStringTypeW@16",
+        "__imp__GetSystemTime@4",
+        "__imp__GetTimeZoneInformation@4",
+        "__imp__GetVersion@0",
+        "__imp__GetVersionExA@4",
+        "__imp__HeapAlloc@12",
+        "__imp__HeapCreate@12",
+        "__imp__HeapDestroy@4",
+        "__imp__HeapFree@12",
+        "__imp__HeapReAlloc@16",
+        "__imp__HeapSize@12",
+        "__imp__InitializeCriticalSection@4",
+        "__imp__InterlockedDecrement@4",
+        "__imp__InterlockedIncrement@4",
+        "__imp__IsBadWritePtr@8",
+        "__imp__LCMapStringA@24",
+        "__imp__LCMapStringW@24",
+        "__imp__LeaveCriticalSection@4",
+        "__imp__RaiseException@16",
+        "__imp__ReadFile@20",
+        "__imp__ResumeThread@4",
+        "__imp__SetEndOfFile@4",
+        "__imp__SetEnvironmentVariableA@8",
+        "__imp__SetFilePointer@16",
+        "__imp__SetHandleCount@4",
+        "__imp__SetLastError@4",
+        "__imp__SetStdHandle@8",
+        "__imp__TerminateProcess@8",
+        "__imp__TlsAlloc@0",
+        "__imp__TlsGetValue@4",
+        "__imp__TlsSetValue@8",
+        "__imp__UnhandledExceptionFilter@4",
+        "__imp__VirtualAlloc@16",
+        "__imp__VirtualFree@12",
+        "__imp__WideCharToMultiByte@32",
+        "__imp__WriteFile@20"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/shell32-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "fb47f4909ac739410e96f7572b71204f554a9fbaa480b21639861a4be1376914"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__ShellExecuteA@24",
+            "target": "__imp__ShellExecuteA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/shell32-dll.def",
+        "repository_relative": true,
+        "sha256": "afedc99d1c5322522fa115dccb07566c4c10a329621982610c1e1b20ed2f6363"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports ShellExecuteA from SHELL32.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/shell32-dll.lib",
+        "repository_relative": true,
+        "sha256": "53c1cb992bac6a0799b172d4d42ecac14d042c5a9551108de7734faf020029d2"
+      },
+      "kind": "reference-import",
+      "module": "SHELL32.dll",
+      "name": "shell32.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "__imp__ShellExecuteA@24"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/user32-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "039e8e9b9efdc3ad09eb972426d43ce04f8039e1fdfc453a7b25bd972159fdb2"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__GetForegroundWindow@0",
+            "target": "__imp__GetForegroundWindow"
+          },
+          {
+            "alias": "__imp__GetKeyNameTextA@12",
+            "target": "__imp__GetKeyNameTextA"
+          },
+          {
+            "alias": "__imp__MessageBoxA@16",
+            "target": "__imp__MessageBoxA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/user32-dll.def",
+        "repository_relative": true,
+        "sha256": "11c6ea7987f5ee7c5a068fe5c99ab6a079aeb833e3bc4a214005e4e90663a057"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports the configured window APIs from USER32.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/user32-dll.lib",
+        "repository_relative": true,
+        "sha256": "299a6681a0a767b1c7be4fbbc0d22c7074d84246ca26e13ac8de5a9ddd338c6e"
+      },
+      "kind": "reference-import",
+      "module": "USER32.dll",
+      "name": "user32.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "__imp__GetForegroundWindow@0",
+        "__imp__GetKeyNameTextA@12",
+        "__imp__MessageBoxA@16"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/wininet-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "9c7a523259d891efe66d7adce833018aa980802bd3d925a52f5ff99b91ebe7d4"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__HttpOpenRequestA@32",
+            "target": "__imp__HttpOpenRequestA"
+          },
+          {
+            "alias": "__imp__HttpSendRequestA@20",
+            "target": "__imp__HttpSendRequestA"
+          },
+          {
+            "alias": "__imp__InternetCloseHandle@4",
+            "target": "__imp__InternetCloseHandle"
+          },
+          {
+            "alias": "__imp__InternetConnectA@32",
+            "target": "__imp__InternetConnectA"
+          },
+          {
+            "alias": "__imp__InternetGetLastResponseInfoA@12",
+            "target": "__imp__InternetGetLastResponseInfoA"
+          },
+          {
+            "alias": "__imp__InternetOpenA@20",
+            "target": "__imp__InternetOpenA"
+          },
+          {
+            "alias": "__imp__InternetReadFile@16",
+            "target": "__imp__InternetReadFile"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/wininet-dll.def",
+        "repository_relative": true,
+        "sha256": "4ccc3d71048a384b69e2027b0dce01b3ffd19f2a8880c89f0465608050356e25"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports its configured high-score transport APIs from WININET.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/wininet-dll.lib",
+        "repository_relative": true,
+        "sha256": "0b13f94383e8775d56f23d2749e83b6edb3cc287efa74c8a73b704eee3b7d36e"
+      },
+      "kind": "reference-import",
+      "module": "WININET.dll",
+      "name": "wininet.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "__imp__HttpOpenRequestA@32",
+        "__imp__HttpSendRequestA@20",
+        "__imp__InternetCloseHandle@4",
+        "__imp__InternetConnectA@32",
+        "__imp__InternetGetLastResponseInfoA@12",
+        "__imp__InternetOpenA@20",
+        "__imp__InternetReadFile@16"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/winmm-dll-aliases.obj",
+          "repository_relative": true,
+          "sha256": "1d47c66ac7ae7d5af3e3ec4faa05b1a41c0fbf62e01642607aa3d1b800f64dca"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__timeGetTime@0",
+            "target": "__imp__timeGetTime"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/winmm-dll.def",
+        "repository_relative": true,
+        "sha256": "7fbc68f92da9b38f34c093406db3a11fe5a227b357e385f1d37a64dba25daa9f"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports timeGetTime from WINMM.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/winmm-dll.lib",
+        "repository_relative": true,
+        "sha256": "d31e68b5213894e68110577fb4bf1f8f3bc1bd1d32f6657b1f882fc58c98a00b"
+      },
+      "kind": "reference-import",
+      "module": "WINMM.dll",
+      "name": "winmm.dll",
+      "resolution": "import-library",
+      "scope": "closure",
+      "symbols": [
+        "__imp__timeGetTime@0"
+      ]
+    },
+    {
+      "evidence": [
+        {
+          "note": "The first archive-backed executable link identified ten imports and _main that are induced by isolated LIBCMT member selection but absent from the reference boundary.",
+          "path": "docs/re/static/native-linking.md",
+          "repository_relative": true,
+          "sha256": "4aa75b04a330bb0bee8b100ceb96b2e6e5297fb588e60abeda2266e96d936989"
+        },
+        {
+          "note": "None of the ten API names is present in the reference executable import table.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        }
+      ],
+      "kind": "static-library",
+      "name": "msvc6-archive-only-shims",
+      "resolution": "placeholder-object",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__EnumSystemLocalesA@8",
+        "__imp__FatalAppExitA@8",
+        "__imp__GetCurrentThread@0",
+        "__imp__GetLocaleInfoA@16",
+        "__imp__GetLocaleInfoW@16",
+        "__imp__GetUserDefaultLCID@0",
+        "__imp__IsValidCodePage@4",
+        "__imp__IsValidLocale@8",
+        "__imp__SetConsoleCtrlHandler@8",
+        "__imp__TlsFree@4",
+        "_main"
+      ]
+    },
+    {
+      "evidence": [
+        {
+          "note": "The native closure catalog marks these Windows-specific helpers as platform-replaced.",
+          "path": "analysis/native/crimsonland.exe/closure.json",
+          "repository_relative": true,
+          "sha256": "02cf217d9d76ded22ed8a5abd27f3b893c0e7b327c28d77cd667fa22623ba774"
+        },
+        {
+          "note": "The entrypoint analysis records the legacy DirectX probe and registry helpers at the executable boundary.",
+          "path": "docs/re/static/entrypoint.md",
+          "repository_relative": true,
+          "sha256": "26838f5a68ca6a0227bb7c110a89a99dc48e183fdbac4077218a2cbe4e4de078"
+        }
+      ],
+      "kind": "platform-replaced",
+      "name": "platform-replaced",
+      "resolution": "placeholder-object",
+      "scope": "closure",
+      "symbols": [
+        "_dx_get_version",
+        "_reg_read_dword_default",
+        "_reg_write_dword"
+      ]
+    },
+    {
+      "evidence": [
+        {
+          "note": "The lazy vector-normalization dispatch remains explicitly outside the selected port scope.",
+          "path": "analysis/native/crimsonland.exe/closure.json",
+          "repository_relative": true,
+          "sha256": "02cf217d9d76ded22ed8a5abd27f3b893c0e7b327c28d77cd667fa22623ba774"
+        },
+        {
+          "note": "The recovered data map records the lazy implementation pointer and its runtime retargeting behavior.",
+          "path": "analysis/ghidra/maps/data_map.json",
+          "repository_relative": true,
+          "sha256": "258936e7afc90cabb39b5bc098875ae5a4f937d9f4d4796ada3b9c1e0f72349d"
+        }
+      ],
+      "kind": "static-library",
+      "name": "excluded-game-helper",
+      "resolution": "placeholder-object",
+      "scope": "closure",
+      "symbols": [
+        "_vec2_normalize_dispatch@8"
+      ]
+    }
+  ],
+  "reference_imports": {
+    "link_dependencies": [
+      {
+        "declared_symbols": [
+          "CloseHandle",
+          "CompareStringA",
+          "CompareStringW",
+          "CreateFileA",
+          "CreateThread",
+          "DeleteCriticalSection",
+          "EnterCriticalSection",
+          "ExitProcess",
+          "ExitThread",
+          "FileTimeToLocalFileTime",
+          "FileTimeToSystemTime",
+          "FindClose",
+          "FindFirstFileA",
+          "FindNextFileA",
+          "FlushFileBuffers",
+          "FreeEnvironmentStringsA",
+          "FreeEnvironmentStringsW",
+          "GetACP",
+          "GetCPInfo",
+          "GetCurrentDirectoryA",
+          "GetCurrentProcess",
+          "GetCurrentThreadId",
+          "GetDriveTypeA",
+          "GetEnvironmentStrings",
+          "GetEnvironmentStringsW",
+          "GetEnvironmentVariableA",
+          "GetFileType",
+          "GetFullPathNameA",
+          "GetModuleFileNameA",
+          "GetModuleHandleA",
+          "GetOEMCP",
+          "GetStartupInfoA",
+          "GetStdHandle",
+          "GetStringTypeA",
+          "GetStringTypeW",
+          "GetSystemTime",
+          "GetTimeZoneInformation",
+          "GetVersion",
+          "GetVersionExA",
+          "HeapAlloc",
+          "HeapCreate",
+          "HeapDestroy",
+          "HeapFree",
+          "HeapReAlloc",
+          "HeapSize",
+          "InitializeCriticalSection",
+          "InterlockedDecrement",
+          "InterlockedIncrement",
+          "IsBadWritePtr",
+          "LCMapStringA",
+          "LCMapStringW",
+          "LeaveCriticalSection",
+          "RaiseException",
+          "ReadFile",
+          "ResumeThread",
+          "RtlUnwind",
+          "SetEndOfFile",
+          "SetEnvironmentVariableA",
+          "SetFilePointer",
+          "SetHandleCount",
+          "SetLastError",
+          "SetStdHandle",
+          "TerminateProcess",
+          "TlsAlloc",
+          "TlsGetValue",
+          "TlsSetValue",
+          "UnhandledExceptionFilter",
+          "VirtualAlloc",
+          "VirtualFree",
+          "WideCharToMultiByte",
+          "WriteFile"
+        ],
+        "discarded_symbols": [
+          "FreeEnvironmentStringsA",
+          "FreeEnvironmentStringsW",
+          "GetEnvironmentStrings",
+          "GetEnvironmentStringsW",
+          "GetEnvironmentVariableA",
+          "GetStartupInfoA",
+          "GetVersion",
+          "GetVersionExA",
+          "HeapCreate",
+          "HeapDestroy",
+          "IsBadWritePtr",
+          "SetHandleCount",
+          "TlsAlloc"
+        ],
+        "module": "kernel32",
+        "retained_symbols": [
+          "CloseHandle",
+          "CompareStringA",
+          "CompareStringW",
+          "CreateFileA",
+          "CreateThread",
+          "DeleteCriticalSection",
+          "EnterCriticalSection",
+          "ExitProcess",
+          "ExitThread",
+          "FileTimeToLocalFileTime",
+          "FileTimeToSystemTime",
+          "FindClose",
+          "FindFirstFileA",
+          "FindNextFileA",
+          "FlushFileBuffers",
+          "GetACP",
+          "GetCPInfo",
+          "GetCurrentDirectoryA",
+          "GetCurrentProcess",
+          "GetCurrentThreadId",
+          "GetDriveTypeA",
+          "GetFileType",
+          "GetFullPathNameA",
+          "GetModuleFileNameA",
+          "GetModuleHandleA",
+          "GetOEMCP",
+          "GetStdHandle",
+          "GetStringTypeA",
+          "GetStringTypeW",
+          "GetSystemTime",
+          "GetTimeZoneInformation",
+          "HeapAlloc",
+          "HeapFree",
+          "HeapReAlloc",
+          "HeapSize",
+          "InitializeCriticalSection",
+          "InterlockedDecrement",
+          "InterlockedIncrement",
+          "LCMapStringA",
+          "LCMapStringW",
+          "LeaveCriticalSection",
+          "RaiseException",
+          "ReadFile",
+          "ResumeThread",
+          "RtlUnwind",
+          "SetEndOfFile",
+          "SetEnvironmentVariableA",
+          "SetFilePointer",
+          "SetLastError",
+          "SetStdHandle",
+          "TerminateProcess",
+          "TlsGetValue",
+          "TlsSetValue",
+          "UnhandledExceptionFilter",
+          "VirtualAlloc",
+          "VirtualFree",
+          "WideCharToMultiByte",
+          "WriteFile"
+        ]
+      }
+    ],
+    "link_dependency_retained_symbol_count": 58,
+    "modules": [
+      {
+        "module": "advapi32",
+        "symbols": [
+          "RegCloseKey",
+          "RegCreateKeyExA"
+        ]
+      },
+      {
+        "module": "d3d8",
+        "symbols": [
+          "Direct3DCreate8"
+        ]
+      },
+      {
+        "module": "dsound",
+        "symbols": [
+          "#11"
+        ]
+      },
+      {
+        "module": "kernel32",
+        "symbols": [
+          "CreateDirectoryA",
+          "FreeLibrary",
+          "GetCommandLineA",
+          "GetLastError",
+          "GetLocalTime",
+          "GetProcAddress",
+          "LoadLibraryA",
+          "MultiByteToWideChar",
+          "OutputDebugStringA",
+          "QueryPerformanceCounter",
+          "Sleep"
+        ]
+      },
+      {
+        "module": "shell32",
+        "symbols": [
+          "ShellExecuteA"
+        ]
+      },
+      {
+        "module": "urlmon",
+        "symbols": [
+          "HlinkNavigateString"
+        ]
+      },
+      {
+        "module": "user32",
+        "symbols": [
+          "GetForegroundWindow",
+          "GetKeyNameTextA",
+          "MessageBoxA"
+        ]
+      },
+      {
+        "module": "vorbisfile",
+        "symbols": [
+          "ov_clear",
+          "ov_info",
+          "ov_open_callbacks",
+          "ov_pcm_seek",
+          "ov_pcm_total",
+          "ov_read"
+        ]
+      },
+      {
+        "module": "wininet",
+        "symbols": [
+          "HttpOpenRequestA",
+          "HttpSendRequestA",
+          "InternetCloseHandle",
+          "InternetConnectA",
+          "InternetGetLastResponseInfoA",
+          "InternetOpenA",
+          "InternetReadFile"
+        ]
+      },
+      {
+        "module": "winmm",
+        "symbols": [
+          "timeGetTime"
+        ]
+      }
+    ],
+    "output_modules": [
+      {
+        "module": "advapi32",
+        "symbols": [
+          "RegCloseKey",
+          "RegCreateKeyExA"
+        ]
+      },
+      {
+        "module": "d3d8",
+        "symbols": [
+          "Direct3DCreate8"
+        ]
+      },
+      {
+        "module": "dsound",
+        "symbols": [
+          "#11"
+        ]
+      },
+      {
+        "module": "kernel32",
+        "symbols": [
+          "CloseHandle",
+          "CompareStringA",
+          "CompareStringW",
+          "CreateDirectoryA",
+          "CreateFileA",
+          "CreateThread",
+          "DeleteCriticalSection",
+          "EnterCriticalSection",
+          "ExitProcess",
+          "ExitThread",
+          "FileTimeToLocalFileTime",
+          "FileTimeToSystemTime",
+          "FindClose",
+          "FindFirstFileA",
+          "FindNextFileA",
+          "FlushFileBuffers",
+          "FreeLibrary",
+          "GetACP",
+          "GetCPInfo",
+          "GetCommandLineA",
+          "GetCurrentDirectoryA",
+          "GetCurrentProcess",
+          "GetCurrentThreadId",
+          "GetDriveTypeA",
+          "GetFileType",
+          "GetFullPathNameA",
+          "GetLastError",
+          "GetLocalTime",
+          "GetModuleFileNameA",
+          "GetModuleHandleA",
+          "GetOEMCP",
+          "GetProcAddress",
+          "GetStdHandle",
+          "GetStringTypeA",
+          "GetStringTypeW",
+          "GetSystemTime",
+          "GetTimeZoneInformation",
+          "HeapAlloc",
+          "HeapFree",
+          "HeapReAlloc",
+          "HeapSize",
+          "InitializeCriticalSection",
+          "InterlockedDecrement",
+          "InterlockedIncrement",
+          "LCMapStringA",
+          "LCMapStringW",
+          "LeaveCriticalSection",
+          "LoadLibraryA",
+          "MultiByteToWideChar",
+          "OutputDebugStringA",
+          "QueryPerformanceCounter",
+          "RaiseException",
+          "ReadFile",
+          "ResumeThread",
+          "RtlUnwind",
+          "SetEndOfFile",
+          "SetEnvironmentVariableA",
+          "SetFilePointer",
+          "SetLastError",
+          "SetStdHandle",
+          "Sleep",
+          "TerminateProcess",
+          "TlsGetValue",
+          "TlsSetValue",
+          "UnhandledExceptionFilter",
+          "VirtualAlloc",
+          "VirtualFree",
+          "WideCharToMultiByte",
+          "WriteFile"
+        ]
+      },
+      {
+        "module": "shell32",
+        "symbols": [
+          "ShellExecuteA"
+        ]
+      },
+      {
+        "module": "urlmon",
+        "symbols": [
+          "HlinkNavigateString"
+        ]
+      },
+      {
+        "module": "user32",
+        "symbols": [
+          "GetForegroundWindow",
+          "GetKeyNameTextA",
+          "MessageBoxA"
+        ]
+      },
+      {
+        "module": "vorbisfile",
+        "symbols": [
+          "ov_clear",
+          "ov_info",
+          "ov_open_callbacks",
+          "ov_pcm_seek",
+          "ov_pcm_total",
+          "ov_read"
+        ]
+      },
+      {
+        "module": "wininet",
+        "symbols": [
+          "HttpOpenRequestA",
+          "HttpSendRequestA",
+          "InternetCloseHandle",
+          "InternetConnectA",
+          "InternetGetLastResponseInfoA",
+          "InternetOpenA",
+          "InternetReadFile"
+        ]
+      },
+      {
+        "module": "winmm",
+        "symbols": [
+          "timeGetTime"
+        ]
+      }
+    ],
+    "output_symbol_count": 92,
+    "symbol_count": 34
+  },
+  "runnable": false,
+  "schema": 3,
+  "status": "linked",
+  "summary": {
+    "archive_symbols": 59,
+    "closure_placeholder_symbols": 4,
+    "covered_symbols": 97,
+    "generated_import_symbols": 34,
+    "import_exports": 34,
+    "import_symbols": 34,
+    "input_object_count": 687,
+    "link_dependency_placeholder_symbols": 11,
+    "link_dependency_symbols": 82,
+    "placeholder_symbols": 15,
+    "providers": [
+      {
+        "alias_count": 32,
+        "archive": "vc6-sp6-libcmt",
+        "kind": "static-library",
+        "name": "msvc6-runtime-static",
+        "resolution": "archive-library",
+        "scope": "closure",
+        "symbol_count": 57
+      },
+      {
+        "archive": "vc6-sp6-libcmt",
+        "kind": "toolchain",
+        "name": "msvc6-toolchain",
+        "resolution": "archive-library",
+        "scope": "closure",
+        "symbol_count": 2
+      },
+      {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "d3d8.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 1
+      },
+      {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "dsound.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 1
+      },
+      {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "urlmon.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 1
+      },
+      {
+        "kind": "reference-import",
+        "name": "vorbisfile.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 6
+      },
+      {
+        "alias_count": 2,
+        "kind": "reference-import",
+        "name": "advapi32.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 2
+      },
+      {
+        "alias_count": 11,
+        "kind": "reference-import",
+        "name": "kernel32.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 11
+      },
+      {
+        "alias_count": 71,
+        "kind": "reference-import",
+        "name": "msvc6-runtime-kernel32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 71
+      },
+      {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "shell32.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 1
+      },
+      {
+        "alias_count": 3,
+        "kind": "reference-import",
+        "name": "user32.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 3
+      },
+      {
+        "alias_count": 7,
+        "kind": "reference-import",
+        "name": "wininet.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 7
+      },
+      {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "winmm.dll",
+        "resolution": "import-library",
+        "scope": "closure",
+        "symbol_count": 1
+      },
+      {
+        "kind": "static-library",
+        "name": "msvc6-archive-only-shims",
+        "resolution": "placeholder-object",
+        "scope": "link-dependency",
+        "symbol_count": 11
+      },
+      {
+        "kind": "platform-replaced",
+        "name": "platform-replaced",
+        "resolution": "placeholder-object",
+        "scope": "closure",
+        "symbol_count": 3
+      },
+      {
+        "kind": "static-library",
+        "name": "excluded-game-helper",
+        "resolution": "placeholder-object",
+        "scope": "closure",
+        "symbol_count": 1
+      }
+    ],
+    "retained_link_dependency_import_symbols": 58,
+    "runnable": false,
+    "validated_output_import_symbols": 92,
+    "validated_reference_import_symbols": 34
+  },
+  "toolchain": {
+    "library_tool": {
+      "path": "tools/match/compilers/msvc6.5/Bin/LIB.EXE",
+      "repository_relative": true,
+      "sha256": "2a2b5c23b1ca784f6b62fdd2e9d29ce10bc85e95f47117bda03767f02d68f2f6"
+    },
+    "linker": {
+      "path": "tools/match/compilers/msvc6.5/Bin/LINK.EXE",
+      "repository_relative": true,
+      "sha256": "9672e578fdfaa43bdb8e9c16071682988665cb90bba2904bf02f6a5576d8ffbc"
+    },
+    "wibo": {
+      "path": "tools/match/bin/wibo",
+      "repository_relative": true,
+      "sha256": "e81ef773fb511e3780bbd8dcf324ffec2497f52805f10fa20d6e4a29bc0f94bc"
+    }
+  }
+}

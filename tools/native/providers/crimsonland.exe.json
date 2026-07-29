@@ -1,0 +1,1640 @@
+{
+  "schema": 3,
+  "image": "crimsonland.exe",
+  "entry": "crimsonland_main",
+  "image_base": "0x00400000",
+  "mode": "structural",
+  "archives": [
+    {
+      "id": "vc6-sp6-libcmt",
+      "path": "tools/native/providers/build/vc6-sp6/vc98/lib/libcmt.lib",
+      "sha256": "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "source_artifact": "visual-cpp-6-sp6-media",
+        "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib"
+      }
+    }
+  ],
+  "providers": [
+    {
+      "name": "msvc6-runtime-static",
+      "kind": "static-library",
+      "resolution": "archive-library",
+      "archive": "vc6-sp6-libcmt",
+      "evidence": [
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "The pinned VC6 SP6 LIBCMT archive matches 299 executable CRT functions byte-for-byte and uniquely identifies 254 of them."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "?crt_fclose@@YAHPAU_iobuf@@@Z",
+          "target": "_fclose"
+        },
+        {
+          "alias": "?crt_fopen@@YAPAU_iobuf@@PAD0@Z",
+          "target": "_fopen"
+        },
+        {
+          "alias": "?crt_fread@@YAIPAXIIPAU_iobuf@@@Z",
+          "target": "_fread"
+        },
+        {
+          "alias": "?crt_fseek@@YAHPAU_iobuf@@JH@Z",
+          "target": "_fseek"
+        },
+        {
+          "alias": "?crt_ftell@@YAJPAU_iobuf@@@Z",
+          "target": "_ftell"
+        },
+        {
+          "alias": "_FUN_004623b2",
+          "target": "_time"
+        },
+        {
+          "alias": "_crt_atexit",
+          "target": "_atexit"
+        },
+        {
+          "alias": "_crt_atof_l",
+          "target": "_atof"
+        },
+        {
+          "alias": "_crt_beginthread",
+          "target": "__beginthread"
+        },
+        {
+          "alias": "_crt_endthread",
+          "target": "__endthread"
+        },
+        {
+          "alias": "_crt_exit",
+          "target": "_exit"
+        },
+        {
+          "alias": "_crt_fclose",
+          "target": "_fclose"
+        },
+        {
+          "alias": "_crt_fflush",
+          "target": "_fflush"
+        },
+        {
+          "alias": "_crt_fgets",
+          "target": "_fgets"
+        },
+        {
+          "alias": "_crt_findclose",
+          "target": "__findclose"
+        },
+        {
+          "alias": "_crt_findfirst",
+          "target": "__findfirst"
+        },
+        {
+          "alias": "_crt_findnext",
+          "target": "__findnext"
+        },
+        {
+          "alias": "_crt_fopen",
+          "target": "_fopen"
+        },
+        {
+          "alias": "_crt_fread",
+          "target": "_fread"
+        },
+        {
+          "alias": "_crt_free",
+          "target": "??3@YAXPAX@Z"
+        },
+        {
+          "alias": "_crt_fseek",
+          "target": "_fseek"
+        },
+        {
+          "alias": "_crt_ftell",
+          "target": "_ftell"
+        },
+        {
+          "alias": "_crt_fwrite",
+          "target": "_fwrite"
+        },
+        {
+          "alias": "_crt_getcwd",
+          "target": "__getcwd"
+        },
+        {
+          "alias": "_crt_isalpha",
+          "target": "_isalpha"
+        },
+        {
+          "alias": "_crt_printf",
+          "target": "_printf"
+        },
+        {
+          "alias": "_crt_rand",
+          "target": "_rand"
+        },
+        {
+          "alias": "_crt_sprintf",
+          "target": "_sprintf"
+        },
+        {
+          "alias": "_crt_srand",
+          "target": "_srand"
+        },
+        {
+          "alias": "_crt_strtok",
+          "target": "_strtok"
+        },
+        {
+          "alias": "_crt_vsprintf",
+          "target": "_vsprintf"
+        },
+        {
+          "alias": "_strdup_malloc",
+          "target": "__strdup"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "??2@YAPAXI@Z",
+          "binding": "function"
+        },
+        {
+          "name": "??3@YAXPAX@Z",
+          "binding": "function"
+        },
+        {
+          "name": "??_L@YGXPAXIHP6EX0@Z1@Z",
+          "binding": "function"
+        },
+        {
+          "name": "??_M@YGXPAXIHP6EX0@Z@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?crt_fclose@@YAHPAU_iobuf@@@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?crt_fopen@@YAPAU_iobuf@@PAD0@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?crt_fread@@YAIPAXIIPAU_iobuf@@@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?crt_fseek@@YAHPAU_iobuf@@JH@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?crt_ftell@@YAJPAU_iobuf@@@Z",
+          "binding": "function"
+        },
+        {
+          "name": "_FUN_004623b2",
+          "binding": "function"
+        },
+        {
+          "name": "__CIpow",
+          "binding": "function"
+        },
+        {
+          "name": "__alldiv",
+          "binding": "function"
+        },
+        {
+          "name": "__allmul",
+          "binding": "function"
+        },
+        {
+          "name": "__ftol",
+          "binding": "function"
+        },
+        {
+          "name": "__getcwd",
+          "binding": "function"
+        },
+        {
+          "name": "__stricmp",
+          "binding": "function"
+        },
+        {
+          "name": "_atexit",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_atexit",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_atof_l",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_beginthread",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_endthread",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_exit",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_fclose",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_fflush",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_fgets",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_findclose",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_findfirst",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_findnext",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_fopen",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_fread",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_free",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_fseek",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_ftell",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_fwrite",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_getcwd",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_isalpha",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_printf",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_rand",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_sprintf",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_srand",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_strtok",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_vsprintf",
+          "binding": "function"
+        },
+        {
+          "name": "_fclose",
+          "binding": "function"
+        },
+        {
+          "name": "_fflush",
+          "binding": "function"
+        },
+        {
+          "name": "_fgetc",
+          "binding": "function"
+        },
+        {
+          "name": "_fopen",
+          "binding": "function"
+        },
+        {
+          "name": "_fread",
+          "binding": "function"
+        },
+        {
+          "name": "_fseek",
+          "binding": "function"
+        },
+        {
+          "name": "_ftell",
+          "binding": "function"
+        },
+        {
+          "name": "_fwrite",
+          "binding": "function"
+        },
+        {
+          "name": "_qsort",
+          "binding": "function"
+        },
+        {
+          "name": "_rand",
+          "binding": "function"
+        },
+        {
+          "name": "_sprintf",
+          "binding": "function"
+        },
+        {
+          "name": "_strchr",
+          "binding": "function"
+        },
+        {
+          "name": "_strdup_malloc",
+          "binding": "function"
+        },
+        {
+          "name": "_strncmp",
+          "binding": "function"
+        },
+        {
+          "name": "_strstr",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "msvc6-toolchain",
+      "kind": "toolchain",
+      "resolution": "archive-library",
+      "archive": "vc6-sp6-libcmt",
+      "evidence": [
+        {
+          "path": "analysis/native/crimsonland.exe/closure.json",
+          "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals."
+        },
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__fltused",
+          "binding": "data"
+        },
+        {
+          "name": "_sscanf",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "d3d8.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "d3d8.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports Direct3DCreate8 from d3d8."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_Direct3DCreate8@4",
+          "target": "_Direct3DCreate8"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_Direct3DCreate8@4",
+          "link_name": "Direct3DCreate8",
+          "export": "Direct3DCreate8"
+        }
+      ]
+    },
+    {
+      "name": "dsound.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "DSOUND.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports ordinal 11 under the recovered __imp_DirectSoundCreate8 name."
+        },
+        {
+          "path": "docs/re/static/binary-analysis.md",
+          "note": "The import inventory identifies DSOUND ordinal 11 as DirectSoundCreate8."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_DirectSoundCreate8@12",
+          "target": "_DirectSoundCreate8"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_DirectSoundCreate8@12",
+          "link_name": "DirectSoundCreate8",
+          "export": "__imp_DirectSoundCreate8",
+          "ordinal": 11
+        }
+      ]
+    },
+    {
+      "name": "urlmon.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "urlmon.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports HlinkNavigateString from urlmon."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_HlinkNavigateString@8",
+          "target": "_HlinkNavigateString"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_HlinkNavigateString@8",
+          "link_name": "HlinkNavigateString",
+          "export": "HlinkNavigateString"
+        }
+      ]
+    },
+    {
+      "name": "vorbisfile.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "vorbisfile.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports its six Ogg Vorbis decode entry points from vorbisfile."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_ov_clear",
+          "link_name": "ov_clear",
+          "export": "ov_clear"
+        },
+        {
+          "name": "_ov_info",
+          "link_name": "ov_info",
+          "export": "ov_info"
+        },
+        {
+          "name": "_ov_open_callbacks",
+          "link_name": "ov_open_callbacks",
+          "export": "ov_open_callbacks"
+        },
+        {
+          "name": "_ov_pcm_seek",
+          "link_name": "ov_pcm_seek",
+          "export": "ov_pcm_seek"
+        },
+        {
+          "name": "_ov_pcm_total",
+          "link_name": "ov_pcm_total",
+          "export": "ov_pcm_total"
+        },
+        {
+          "name": "_ov_read",
+          "link_name": "ov_read",
+          "export": "ov_read"
+        }
+      ]
+    },
+    {
+      "name": "advapi32.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "ADVAPI32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports the configured registry APIs from ADVAPI32."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__RegCloseKey@4",
+          "target": "__imp__RegCloseKey"
+        },
+        {
+          "alias": "__imp__RegCreateKeyExA@36",
+          "target": "__imp__RegCreateKeyExA"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__RegCloseKey@4",
+          "link_name": "RegCloseKey",
+          "export": "RegCloseKey"
+        },
+        {
+          "name": "__imp__RegCreateKeyExA@36",
+          "link_name": "RegCreateKeyExA",
+          "export": "RegCreateKeyExA"
+        }
+      ]
+    },
+    {
+      "name": "kernel32.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "KERNEL32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports these directly requested platform APIs from KERNEL32."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__CreateDirectoryA@8",
+          "target": "__imp__CreateDirectoryA"
+        },
+        {
+          "alias": "__imp__FreeLibrary@4",
+          "target": "__imp__FreeLibrary"
+        },
+        {
+          "alias": "__imp__GetCommandLineA@0",
+          "target": "__imp__GetCommandLineA"
+        },
+        {
+          "alias": "__imp__GetLastError@0",
+          "target": "__imp__GetLastError"
+        },
+        {
+          "alias": "__imp__GetLocalTime@4",
+          "target": "__imp__GetLocalTime"
+        },
+        {
+          "alias": "__imp__GetProcAddress@8",
+          "target": "__imp__GetProcAddress"
+        },
+        {
+          "alias": "__imp__LoadLibraryA@4",
+          "target": "__imp__LoadLibraryA"
+        },
+        {
+          "alias": "__imp__MultiByteToWideChar@24",
+          "target": "__imp__MultiByteToWideChar"
+        },
+        {
+          "alias": "__imp__OutputDebugStringA@4",
+          "target": "__imp__OutputDebugStringA"
+        },
+        {
+          "alias": "__imp__QueryPerformanceCounter@4",
+          "target": "__imp__QueryPerformanceCounter"
+        },
+        {
+          "alias": "__imp__Sleep@4",
+          "target": "__imp__Sleep"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__CreateDirectoryA@8",
+          "link_name": "CreateDirectoryA",
+          "export": "CreateDirectoryA"
+        },
+        {
+          "name": "__imp__FreeLibrary@4",
+          "link_name": "FreeLibrary",
+          "export": "FreeLibrary"
+        },
+        {
+          "name": "__imp__GetCommandLineA@0",
+          "link_name": "GetCommandLineA",
+          "export": "GetCommandLineA"
+        },
+        {
+          "name": "__imp__GetLastError@0",
+          "link_name": "GetLastError",
+          "export": "GetLastError"
+        },
+        {
+          "name": "__imp__GetLocalTime@4",
+          "link_name": "GetLocalTime",
+          "export": "GetLocalTime"
+        },
+        {
+          "name": "__imp__GetProcAddress@8",
+          "link_name": "GetProcAddress",
+          "export": "GetProcAddress"
+        },
+        {
+          "name": "__imp__LoadLibraryA@4",
+          "link_name": "LoadLibraryA",
+          "export": "LoadLibraryA"
+        },
+        {
+          "name": "__imp__MultiByteToWideChar@24",
+          "link_name": "MultiByteToWideChar",
+          "export": "MultiByteToWideChar"
+        },
+        {
+          "name": "__imp__OutputDebugStringA@4",
+          "link_name": "OutputDebugStringA",
+          "export": "OutputDebugStringA"
+        },
+        {
+          "name": "__imp__QueryPerformanceCounter@4",
+          "link_name": "QueryPerformanceCounter",
+          "export": "QueryPerformanceCounter"
+        },
+        {
+          "name": "__imp__Sleep@4",
+          "link_name": "Sleep",
+          "export": "Sleep"
+        }
+      ]
+    },
+    {
+      "name": "msvc6-runtime-kernel32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "KERNEL32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "Every declared CRT dependency is retained in the reference executable import table."
+        },
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "The pinned VC6 SP6 LIBCMT archive records these decorated KERNEL32 references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_RtlUnwind@16",
+          "target": "_RtlUnwind"
+        },
+        {
+          "alias": "__imp__CloseHandle@4",
+          "target": "__imp__CloseHandle"
+        },
+        {
+          "alias": "__imp__CompareStringA@24",
+          "target": "__imp__CompareStringA"
+        },
+        {
+          "alias": "__imp__CompareStringW@24",
+          "target": "__imp__CompareStringW"
+        },
+        {
+          "alias": "__imp__CreateFileA@28",
+          "target": "__imp__CreateFileA"
+        },
+        {
+          "alias": "__imp__CreateThread@24",
+          "target": "__imp__CreateThread"
+        },
+        {
+          "alias": "__imp__DeleteCriticalSection@4",
+          "target": "__imp__DeleteCriticalSection"
+        },
+        {
+          "alias": "__imp__EnterCriticalSection@4",
+          "target": "__imp__EnterCriticalSection"
+        },
+        {
+          "alias": "__imp__ExitProcess@4",
+          "target": "__imp__ExitProcess"
+        },
+        {
+          "alias": "__imp__ExitThread@4",
+          "target": "__imp__ExitThread"
+        },
+        {
+          "alias": "__imp__FileTimeToLocalFileTime@8",
+          "target": "__imp__FileTimeToLocalFileTime"
+        },
+        {
+          "alias": "__imp__FileTimeToSystemTime@8",
+          "target": "__imp__FileTimeToSystemTime"
+        },
+        {
+          "alias": "__imp__FindClose@4",
+          "target": "__imp__FindClose"
+        },
+        {
+          "alias": "__imp__FindFirstFileA@8",
+          "target": "__imp__FindFirstFileA"
+        },
+        {
+          "alias": "__imp__FindNextFileA@8",
+          "target": "__imp__FindNextFileA"
+        },
+        {
+          "alias": "__imp__FlushFileBuffers@4",
+          "target": "__imp__FlushFileBuffers"
+        },
+        {
+          "alias": "__imp__FreeEnvironmentStringsA@4",
+          "target": "__imp__FreeEnvironmentStringsA"
+        },
+        {
+          "alias": "__imp__FreeEnvironmentStringsW@4",
+          "target": "__imp__FreeEnvironmentStringsW"
+        },
+        {
+          "alias": "__imp__GetACP@0",
+          "target": "__imp__GetACP"
+        },
+        {
+          "alias": "__imp__GetCPInfo@8",
+          "target": "__imp__GetCPInfo"
+        },
+        {
+          "alias": "__imp__GetCurrentDirectoryA@8",
+          "target": "__imp__GetCurrentDirectoryA"
+        },
+        {
+          "alias": "__imp__GetCurrentProcess@0",
+          "target": "__imp__GetCurrentProcess"
+        },
+        {
+          "alias": "__imp__GetCurrentThreadId@0",
+          "target": "__imp__GetCurrentThreadId"
+        },
+        {
+          "alias": "__imp__GetDriveTypeA@4",
+          "target": "__imp__GetDriveTypeA"
+        },
+        {
+          "alias": "__imp__GetEnvironmentStrings@0",
+          "target": "__imp__GetEnvironmentStrings"
+        },
+        {
+          "alias": "__imp__GetEnvironmentStringsW@0",
+          "target": "__imp__GetEnvironmentStringsW"
+        },
+        {
+          "alias": "__imp__GetEnvironmentVariableA@12",
+          "target": "__imp__GetEnvironmentVariableA"
+        },
+        {
+          "alias": "__imp__GetFileType@4",
+          "target": "__imp__GetFileType"
+        },
+        {
+          "alias": "__imp__GetFullPathNameA@16",
+          "target": "__imp__GetFullPathNameA"
+        },
+        {
+          "alias": "__imp__GetModuleFileNameA@12",
+          "target": "__imp__GetModuleFileNameA"
+        },
+        {
+          "alias": "__imp__GetModuleHandleA@4",
+          "target": "__imp__GetModuleHandleA"
+        },
+        {
+          "alias": "__imp__GetOEMCP@0",
+          "target": "__imp__GetOEMCP"
+        },
+        {
+          "alias": "__imp__GetStartupInfoA@4",
+          "target": "__imp__GetStartupInfoA"
+        },
+        {
+          "alias": "__imp__GetStdHandle@4",
+          "target": "__imp__GetStdHandle"
+        },
+        {
+          "alias": "__imp__GetStringTypeA@20",
+          "target": "__imp__GetStringTypeA"
+        },
+        {
+          "alias": "__imp__GetStringTypeW@16",
+          "target": "__imp__GetStringTypeW"
+        },
+        {
+          "alias": "__imp__GetSystemTime@4",
+          "target": "__imp__GetSystemTime"
+        },
+        {
+          "alias": "__imp__GetTimeZoneInformation@4",
+          "target": "__imp__GetTimeZoneInformation"
+        },
+        {
+          "alias": "__imp__GetVersion@0",
+          "target": "__imp__GetVersion"
+        },
+        {
+          "alias": "__imp__GetVersionExA@4",
+          "target": "__imp__GetVersionExA"
+        },
+        {
+          "alias": "__imp__HeapAlloc@12",
+          "target": "__imp__HeapAlloc"
+        },
+        {
+          "alias": "__imp__HeapCreate@12",
+          "target": "__imp__HeapCreate"
+        },
+        {
+          "alias": "__imp__HeapDestroy@4",
+          "target": "__imp__HeapDestroy"
+        },
+        {
+          "alias": "__imp__HeapFree@12",
+          "target": "__imp__HeapFree"
+        },
+        {
+          "alias": "__imp__HeapReAlloc@16",
+          "target": "__imp__HeapReAlloc"
+        },
+        {
+          "alias": "__imp__HeapSize@12",
+          "target": "__imp__HeapSize"
+        },
+        {
+          "alias": "__imp__InitializeCriticalSection@4",
+          "target": "__imp__InitializeCriticalSection"
+        },
+        {
+          "alias": "__imp__InterlockedDecrement@4",
+          "target": "__imp__InterlockedDecrement"
+        },
+        {
+          "alias": "__imp__InterlockedIncrement@4",
+          "target": "__imp__InterlockedIncrement"
+        },
+        {
+          "alias": "__imp__IsBadWritePtr@8",
+          "target": "__imp__IsBadWritePtr"
+        },
+        {
+          "alias": "__imp__LCMapStringA@24",
+          "target": "__imp__LCMapStringA"
+        },
+        {
+          "alias": "__imp__LCMapStringW@24",
+          "target": "__imp__LCMapStringW"
+        },
+        {
+          "alias": "__imp__LeaveCriticalSection@4",
+          "target": "__imp__LeaveCriticalSection"
+        },
+        {
+          "alias": "__imp__RaiseException@16",
+          "target": "__imp__RaiseException"
+        },
+        {
+          "alias": "__imp__ReadFile@20",
+          "target": "__imp__ReadFile"
+        },
+        {
+          "alias": "__imp__ResumeThread@4",
+          "target": "__imp__ResumeThread"
+        },
+        {
+          "alias": "__imp__SetEndOfFile@4",
+          "target": "__imp__SetEndOfFile"
+        },
+        {
+          "alias": "__imp__SetEnvironmentVariableA@8",
+          "target": "__imp__SetEnvironmentVariableA"
+        },
+        {
+          "alias": "__imp__SetFilePointer@16",
+          "target": "__imp__SetFilePointer"
+        },
+        {
+          "alias": "__imp__SetHandleCount@4",
+          "target": "__imp__SetHandleCount"
+        },
+        {
+          "alias": "__imp__SetLastError@4",
+          "target": "__imp__SetLastError"
+        },
+        {
+          "alias": "__imp__SetStdHandle@8",
+          "target": "__imp__SetStdHandle"
+        },
+        {
+          "alias": "__imp__TerminateProcess@8",
+          "target": "__imp__TerminateProcess"
+        },
+        {
+          "alias": "__imp__TlsAlloc@0",
+          "target": "__imp__TlsAlloc"
+        },
+        {
+          "alias": "__imp__TlsGetValue@4",
+          "target": "__imp__TlsGetValue"
+        },
+        {
+          "alias": "__imp__TlsSetValue@8",
+          "target": "__imp__TlsSetValue"
+        },
+        {
+          "alias": "__imp__UnhandledExceptionFilter@4",
+          "target": "__imp__UnhandledExceptionFilter"
+        },
+        {
+          "alias": "__imp__VirtualAlloc@16",
+          "target": "__imp__VirtualAlloc"
+        },
+        {
+          "alias": "__imp__VirtualFree@12",
+          "target": "__imp__VirtualFree"
+        },
+        {
+          "alias": "__imp__WideCharToMultiByte@32",
+          "target": "__imp__WideCharToMultiByte"
+        },
+        {
+          "alias": "__imp__WriteFile@20",
+          "target": "__imp__WriteFile"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_RtlUnwind@16",
+          "link_name": "RtlUnwind",
+          "export": "RtlUnwind"
+        },
+        {
+          "name": "__imp__CloseHandle@4",
+          "link_name": "CloseHandle",
+          "export": "CloseHandle"
+        },
+        {
+          "name": "__imp__CompareStringA@24",
+          "link_name": "CompareStringA",
+          "export": "CompareStringA"
+        },
+        {
+          "name": "__imp__CompareStringW@24",
+          "link_name": "CompareStringW",
+          "export": "CompareStringW"
+        },
+        {
+          "name": "__imp__CreateFileA@28",
+          "link_name": "CreateFileA",
+          "export": "CreateFileA"
+        },
+        {
+          "name": "__imp__CreateThread@24",
+          "link_name": "CreateThread",
+          "export": "CreateThread"
+        },
+        {
+          "name": "__imp__DeleteCriticalSection@4",
+          "link_name": "DeleteCriticalSection",
+          "export": "DeleteCriticalSection"
+        },
+        {
+          "name": "__imp__EnterCriticalSection@4",
+          "link_name": "EnterCriticalSection",
+          "export": "EnterCriticalSection"
+        },
+        {
+          "name": "__imp__ExitProcess@4",
+          "link_name": "ExitProcess",
+          "export": "ExitProcess"
+        },
+        {
+          "name": "__imp__ExitThread@4",
+          "link_name": "ExitThread",
+          "export": "ExitThread"
+        },
+        {
+          "name": "__imp__FileTimeToLocalFileTime@8",
+          "link_name": "FileTimeToLocalFileTime",
+          "export": "FileTimeToLocalFileTime"
+        },
+        {
+          "name": "__imp__FileTimeToSystemTime@8",
+          "link_name": "FileTimeToSystemTime",
+          "export": "FileTimeToSystemTime"
+        },
+        {
+          "name": "__imp__FindClose@4",
+          "link_name": "FindClose",
+          "export": "FindClose"
+        },
+        {
+          "name": "__imp__FindFirstFileA@8",
+          "link_name": "FindFirstFileA",
+          "export": "FindFirstFileA"
+        },
+        {
+          "name": "__imp__FindNextFileA@8",
+          "link_name": "FindNextFileA",
+          "export": "FindNextFileA"
+        },
+        {
+          "name": "__imp__FlushFileBuffers@4",
+          "link_name": "FlushFileBuffers",
+          "export": "FlushFileBuffers"
+        },
+        {
+          "name": "__imp__FreeEnvironmentStringsA@4",
+          "link_name": "FreeEnvironmentStringsA",
+          "export": "FreeEnvironmentStringsA"
+        },
+        {
+          "name": "__imp__FreeEnvironmentStringsW@4",
+          "link_name": "FreeEnvironmentStringsW",
+          "export": "FreeEnvironmentStringsW"
+        },
+        {
+          "name": "__imp__GetACP@0",
+          "link_name": "GetACP",
+          "export": "GetACP"
+        },
+        {
+          "name": "__imp__GetCPInfo@8",
+          "link_name": "GetCPInfo",
+          "export": "GetCPInfo"
+        },
+        {
+          "name": "__imp__GetCurrentDirectoryA@8",
+          "link_name": "GetCurrentDirectoryA",
+          "export": "GetCurrentDirectoryA"
+        },
+        {
+          "name": "__imp__GetCurrentProcess@0",
+          "link_name": "GetCurrentProcess",
+          "export": "GetCurrentProcess"
+        },
+        {
+          "name": "__imp__GetCurrentThreadId@0",
+          "link_name": "GetCurrentThreadId",
+          "export": "GetCurrentThreadId"
+        },
+        {
+          "name": "__imp__GetDriveTypeA@4",
+          "link_name": "GetDriveTypeA",
+          "export": "GetDriveTypeA"
+        },
+        {
+          "name": "__imp__GetEnvironmentStrings@0",
+          "link_name": "GetEnvironmentStrings",
+          "export": "GetEnvironmentStrings"
+        },
+        {
+          "name": "__imp__GetEnvironmentStringsW@0",
+          "link_name": "GetEnvironmentStringsW",
+          "export": "GetEnvironmentStringsW"
+        },
+        {
+          "name": "__imp__GetEnvironmentVariableA@12",
+          "link_name": "GetEnvironmentVariableA",
+          "export": "GetEnvironmentVariableA"
+        },
+        {
+          "name": "__imp__GetFileType@4",
+          "link_name": "GetFileType",
+          "export": "GetFileType"
+        },
+        {
+          "name": "__imp__GetFullPathNameA@16",
+          "link_name": "GetFullPathNameA",
+          "export": "GetFullPathNameA"
+        },
+        {
+          "name": "__imp__GetModuleFileNameA@12",
+          "link_name": "GetModuleFileNameA",
+          "export": "GetModuleFileNameA"
+        },
+        {
+          "name": "__imp__GetModuleHandleA@4",
+          "link_name": "GetModuleHandleA",
+          "export": "GetModuleHandleA"
+        },
+        {
+          "name": "__imp__GetOEMCP@0",
+          "link_name": "GetOEMCP",
+          "export": "GetOEMCP"
+        },
+        {
+          "name": "__imp__GetStartupInfoA@4",
+          "link_name": "GetStartupInfoA",
+          "export": "GetStartupInfoA"
+        },
+        {
+          "name": "__imp__GetStdHandle@4",
+          "link_name": "GetStdHandle",
+          "export": "GetStdHandle"
+        },
+        {
+          "name": "__imp__GetStringTypeA@20",
+          "link_name": "GetStringTypeA",
+          "export": "GetStringTypeA"
+        },
+        {
+          "name": "__imp__GetStringTypeW@16",
+          "link_name": "GetStringTypeW",
+          "export": "GetStringTypeW"
+        },
+        {
+          "name": "__imp__GetSystemTime@4",
+          "link_name": "GetSystemTime",
+          "export": "GetSystemTime"
+        },
+        {
+          "name": "__imp__GetTimeZoneInformation@4",
+          "link_name": "GetTimeZoneInformation",
+          "export": "GetTimeZoneInformation"
+        },
+        {
+          "name": "__imp__GetVersion@0",
+          "link_name": "GetVersion",
+          "export": "GetVersion"
+        },
+        {
+          "name": "__imp__GetVersionExA@4",
+          "link_name": "GetVersionExA",
+          "export": "GetVersionExA"
+        },
+        {
+          "name": "__imp__HeapAlloc@12",
+          "link_name": "HeapAlloc",
+          "export": "HeapAlloc"
+        },
+        {
+          "name": "__imp__HeapCreate@12",
+          "link_name": "HeapCreate",
+          "export": "HeapCreate"
+        },
+        {
+          "name": "__imp__HeapDestroy@4",
+          "link_name": "HeapDestroy",
+          "export": "HeapDestroy"
+        },
+        {
+          "name": "__imp__HeapFree@12",
+          "link_name": "HeapFree",
+          "export": "HeapFree"
+        },
+        {
+          "name": "__imp__HeapReAlloc@16",
+          "link_name": "HeapReAlloc",
+          "export": "HeapReAlloc"
+        },
+        {
+          "name": "__imp__HeapSize@12",
+          "link_name": "HeapSize",
+          "export": "HeapSize"
+        },
+        {
+          "name": "__imp__InitializeCriticalSection@4",
+          "link_name": "InitializeCriticalSection",
+          "export": "InitializeCriticalSection"
+        },
+        {
+          "name": "__imp__InterlockedDecrement@4",
+          "link_name": "InterlockedDecrement",
+          "export": "InterlockedDecrement"
+        },
+        {
+          "name": "__imp__InterlockedIncrement@4",
+          "link_name": "InterlockedIncrement",
+          "export": "InterlockedIncrement"
+        },
+        {
+          "name": "__imp__IsBadWritePtr@8",
+          "link_name": "IsBadWritePtr",
+          "export": "IsBadWritePtr"
+        },
+        {
+          "name": "__imp__LCMapStringA@24",
+          "link_name": "LCMapStringA",
+          "export": "LCMapStringA"
+        },
+        {
+          "name": "__imp__LCMapStringW@24",
+          "link_name": "LCMapStringW",
+          "export": "LCMapStringW"
+        },
+        {
+          "name": "__imp__LeaveCriticalSection@4",
+          "link_name": "LeaveCriticalSection",
+          "export": "LeaveCriticalSection"
+        },
+        {
+          "name": "__imp__RaiseException@16",
+          "link_name": "RaiseException",
+          "export": "RaiseException"
+        },
+        {
+          "name": "__imp__ReadFile@20",
+          "link_name": "ReadFile",
+          "export": "ReadFile"
+        },
+        {
+          "name": "__imp__ResumeThread@4",
+          "link_name": "ResumeThread",
+          "export": "ResumeThread"
+        },
+        {
+          "name": "__imp__SetEndOfFile@4",
+          "link_name": "SetEndOfFile",
+          "export": "SetEndOfFile"
+        },
+        {
+          "name": "__imp__SetEnvironmentVariableA@8",
+          "link_name": "SetEnvironmentVariableA",
+          "export": "SetEnvironmentVariableA"
+        },
+        {
+          "name": "__imp__SetFilePointer@16",
+          "link_name": "SetFilePointer",
+          "export": "SetFilePointer"
+        },
+        {
+          "name": "__imp__SetHandleCount@4",
+          "link_name": "SetHandleCount",
+          "export": "SetHandleCount"
+        },
+        {
+          "name": "__imp__SetLastError@4",
+          "link_name": "SetLastError",
+          "export": "SetLastError"
+        },
+        {
+          "name": "__imp__SetStdHandle@8",
+          "link_name": "SetStdHandle",
+          "export": "SetStdHandle"
+        },
+        {
+          "name": "__imp__TerminateProcess@8",
+          "link_name": "TerminateProcess",
+          "export": "TerminateProcess"
+        },
+        {
+          "name": "__imp__TlsAlloc@0",
+          "link_name": "TlsAlloc",
+          "export": "TlsAlloc"
+        },
+        {
+          "name": "__imp__TlsGetValue@4",
+          "link_name": "TlsGetValue",
+          "export": "TlsGetValue"
+        },
+        {
+          "name": "__imp__TlsSetValue@8",
+          "link_name": "TlsSetValue",
+          "export": "TlsSetValue"
+        },
+        {
+          "name": "__imp__UnhandledExceptionFilter@4",
+          "link_name": "UnhandledExceptionFilter",
+          "export": "UnhandledExceptionFilter"
+        },
+        {
+          "name": "__imp__VirtualAlloc@16",
+          "link_name": "VirtualAlloc",
+          "export": "VirtualAlloc"
+        },
+        {
+          "name": "__imp__VirtualFree@12",
+          "link_name": "VirtualFree",
+          "export": "VirtualFree"
+        },
+        {
+          "name": "__imp__WideCharToMultiByte@32",
+          "link_name": "WideCharToMultiByte",
+          "export": "WideCharToMultiByte"
+        },
+        {
+          "name": "__imp__WriteFile@20",
+          "link_name": "WriteFile",
+          "export": "WriteFile"
+        }
+      ]
+    },
+    {
+      "name": "shell32.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "SHELL32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports ShellExecuteA from SHELL32."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__ShellExecuteA@24",
+          "target": "__imp__ShellExecuteA"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__ShellExecuteA@24",
+          "link_name": "ShellExecuteA",
+          "export": "ShellExecuteA"
+        }
+      ]
+    },
+    {
+      "name": "user32.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "USER32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports the configured window APIs from USER32."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__GetForegroundWindow@0",
+          "target": "__imp__GetForegroundWindow"
+        },
+        {
+          "alias": "__imp__GetKeyNameTextA@12",
+          "target": "__imp__GetKeyNameTextA"
+        },
+        {
+          "alias": "__imp__MessageBoxA@16",
+          "target": "__imp__MessageBoxA"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__GetForegroundWindow@0",
+          "link_name": "GetForegroundWindow",
+          "export": "GetForegroundWindow"
+        },
+        {
+          "name": "__imp__GetKeyNameTextA@12",
+          "link_name": "GetKeyNameTextA",
+          "export": "GetKeyNameTextA"
+        },
+        {
+          "name": "__imp__MessageBoxA@16",
+          "link_name": "MessageBoxA",
+          "export": "MessageBoxA"
+        }
+      ]
+    },
+    {
+      "name": "wininet.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "WININET.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports its configured high-score transport APIs from WININET."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__HttpOpenRequestA@32",
+          "target": "__imp__HttpOpenRequestA"
+        },
+        {
+          "alias": "__imp__HttpSendRequestA@20",
+          "target": "__imp__HttpSendRequestA"
+        },
+        {
+          "alias": "__imp__InternetCloseHandle@4",
+          "target": "__imp__InternetCloseHandle"
+        },
+        {
+          "alias": "__imp__InternetConnectA@32",
+          "target": "__imp__InternetConnectA"
+        },
+        {
+          "alias": "__imp__InternetGetLastResponseInfoA@12",
+          "target": "__imp__InternetGetLastResponseInfoA"
+        },
+        {
+          "alias": "__imp__InternetOpenA@20",
+          "target": "__imp__InternetOpenA"
+        },
+        {
+          "alias": "__imp__InternetReadFile@16",
+          "target": "__imp__InternetReadFile"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__HttpOpenRequestA@32",
+          "link_name": "HttpOpenRequestA",
+          "export": "HttpOpenRequestA"
+        },
+        {
+          "name": "__imp__HttpSendRequestA@20",
+          "link_name": "HttpSendRequestA",
+          "export": "HttpSendRequestA"
+        },
+        {
+          "name": "__imp__InternetCloseHandle@4",
+          "link_name": "InternetCloseHandle",
+          "export": "InternetCloseHandle"
+        },
+        {
+          "name": "__imp__InternetConnectA@32",
+          "link_name": "InternetConnectA",
+          "export": "InternetConnectA"
+        },
+        {
+          "name": "__imp__InternetGetLastResponseInfoA@12",
+          "link_name": "InternetGetLastResponseInfoA",
+          "export": "InternetGetLastResponseInfoA"
+        },
+        {
+          "name": "__imp__InternetOpenA@20",
+          "link_name": "InternetOpenA",
+          "export": "InternetOpenA"
+        },
+        {
+          "name": "__imp__InternetReadFile@16",
+          "link_name": "InternetReadFile",
+          "export": "InternetReadFile"
+        }
+      ]
+    },
+    {
+      "name": "winmm.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "WINMM.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports timeGetTime from WINMM."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__timeGetTime@0",
+          "target": "__imp__timeGetTime"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__timeGetTime@0",
+          "link_name": "timeGetTime",
+          "export": "timeGetTime"
+        }
+      ]
+    },
+    {
+      "name": "msvc6-archive-only-shims",
+      "scope": "link-dependency",
+      "kind": "static-library",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "docs/re/static/native-linking.md",
+          "note": "The first archive-backed executable link identified ten imports and _main that are induced by isolated LIBCMT member selection but absent from the reference boundary."
+        },
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "None of the ten API names is present in the reference executable import table."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__EnumSystemLocalesA@8",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__FatalAppExitA@8",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__GetCurrentThread@0",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__GetLocaleInfoA@16",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__GetLocaleInfoW@16",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__GetUserDefaultLCID@0",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__IsValidCodePage@4",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__IsValidLocale@8",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__SetConsoleCtrlHandler@8",
+          "binding": "data"
+        },
+        {
+          "name": "__imp__TlsFree@4",
+          "binding": "data"
+        },
+        {
+          "name": "_main",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "platform-replaced",
+      "kind": "platform-replaced",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/native/crimsonland.exe/closure.json",
+          "note": "The native closure catalog marks these Windows-specific helpers as platform-replaced."
+        },
+        {
+          "path": "docs/re/static/entrypoint.md",
+          "note": "The entrypoint analysis records the legacy DirectX probe and registry helpers at the executable boundary."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_dx_get_version",
+          "binding": "function"
+        },
+        {
+          "name": "_reg_read_dword_default",
+          "binding": "function"
+        },
+        {
+          "name": "_reg_write_dword",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "excluded-game-helper",
+      "kind": "static-library",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/native/crimsonland.exe/closure.json",
+          "note": "The lazy vector-normalization dispatch remains explicitly outside the selected port scope."
+        },
+        {
+          "path": "analysis/ghidra/maps/data_map.json",
+          "note": "The recovered data map records the lazy implementation pointer and its runtime retargeting behavior."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_vec2_normalize_dispatch@8",
+          "binding": "function"
+        }
+      ]
+    }
+  ]
+}

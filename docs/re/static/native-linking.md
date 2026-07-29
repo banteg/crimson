@@ -218,6 +218,44 @@ The canonical closure report also keeps those 16 references unresolved, so
 linker accept the image. Replacing each placeholder group with its actual
 provider object is the path from a structural image to a runnable one.
 
+## Structural executable link
+
+The executable uses the same provider boundary, with two important
+differences. It is linked as a Windows GUI PE at base `0x00400000`, and its
+runtime is the statically linked VC6 SP6 `LIBCMT.LIB` rather than Grim's
+`MSVCRT.DLL` seam:
+
+```bash
+just native-link crimsonland.exe
+```
+
+`tools/native/providers/crimsonland.exe.json` covers the current 97-symbol
+non-game closure exactly. The pinned archive supplies 57 excluded CRT
+functions plus `__fltused` and `sscanf`; generated import libraries supply 34
+exports that are present in the reference PE; and four project/platform
+helpers remain explicit closure placeholders.
+
+The first real archive-backed link also exposed 82 transitive symbols. Of
+those, 71 map to KERNEL32 exports already retained by the reference image and
+are modeled as ordinary `link-dependency` imports. The other ten archive
+imports (`EnumSystemLocalesA`, `FatalAppExitA`, `GetCurrentThread`,
+`GetLocaleInfoA`, `GetLocaleInfoW`, `GetUserDefaultLCID`, `IsValidCodePage`,
+`IsValidLocale`, `SetConsoleCtrlHandler`, and `TlsFree`) plus `_main` are not
+present in the reference import/function boundary. They arise because pulling
+isolated LIBCMT members cannot reuse the reference image's full already-linked
+CRT graph. They are recorded as eleven transitive placeholders, not silently
+added as new PE imports. This keeps output-import validation strict and keeps
+`runnable` false until the remaining CRT graph is supplied faithfully.
+
+The canonical structural link retains 58 of the 71 reference-backed
+dependencies and discards 13 under `/OPT:REF`. Its 92 output imports are all
+present in the reference table, including DSOUND ordinal 11. The resulting
+794,624-byte PE is i386, is not marked as a DLL, uses the Windows GUI
+subsystem, preserves base `0x00400000`, and has a normalized zero timestamp.
+The checked record is
+`analysis/native/crimsonland.exe/link/link.json`; the PE, map, response, log,
+generated provider libraries, aliases, and placeholder object remain ignored.
+
 ## ABI boundary
 
 Each image assertion unit is compiled by the same 32-bit VC6 toolchain before
