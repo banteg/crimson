@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "edge-wave-condition-expression",
+      "find": "        } while (spawn_count - 2 < config_blob.player_count + 9);\n",
+      "replacements": [
+        {
+          "name": "reversed-relation",
+          "text": "        } while (config_blob.player_count + 9 > spawn_count - 2);\n"
+        },
+        {
+          "name": "negative-two-addition",
+          "text": "        } while (spawn_count + -2 < config_blob.player_count + 9);\n"
+        },
+        {
+          "name": "folded-two-expression",
+          "text": "        } while (spawn_count - (1 + 1) < config_blob.player_count + 9);\n"
+        },
+        {
+          "name": "move-two-to-bound",
+          "text": "        } while (spawn_count < config_blob.player_count + 11);\n"
+        },
+        {
+          "name": "difference-less-than-eleven",
+          "text": "        } while (spawn_count - config_blob.player_count < 11);\n"
+        },
+        {
+          "name": "eleven-greater-than-difference",
+          "text": "        } while (11 > spawn_count - config_blob.player_count);\n"
+        },
+        {
+          "name": "difference-less-than-nine",
+          "text": "        } while ((spawn_count - 2) - config_blob.player_count < 9);\n"
+        },
+        {
+          "name": "negated-greater-equal",
+          "text": "        } while (!(spawn_count - 2 >= config_blob.player_count + 9));\n"
+        },
+        {
+          "name": "explicit-bool-comparison",
+          "text": "        } while ((spawn_count - 2 < config_blob.player_count + 9) != 0);\n"
+        }
+      ]
+    },
+    {
+      "name": "outer-local-declaration-shape",
+      "find": "    int ring_index = 0;\n    int outer_count = config_blob.player_count + 17;\n",
+      "replacements": [
+        {
+          "name": "outer-before-ring",
+          "text": "    int outer_count = config_blob.player_count + 17;\n    int ring_index = 0;\n"
+        },
+        {
+          "name": "combined-ring-first",
+          "text": "    int ring_index = 0, outer_count = config_blob.player_count + 17;\n"
+        },
+        {
+          "name": "combined-outer-first",
+          "text": "    int outer_count = config_blob.player_count + 17, ring_index = 0;\n"
+        },
+        {
+          "name": "deferred-outer-init",
+          "text": "    int ring_index = 0;\n    int outer_count;\n    outer_count = config_blob.player_count + 17;\n"
+        },
+        {
+          "name": "deferred-ring-init",
+          "text": "    int ring_index;\n    int outer_count = config_blob.player_count + 17;\n    ring_index = 0;\n"
+        }
+      ]
+    }
+  ]
+}

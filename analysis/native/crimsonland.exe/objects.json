@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "fdd9be6d86be38172d1001cdacbeb22bf43415e4ecf62fa302b7784a85e4b7ac",
+  "audit_digest": "22ae7c000174e3ac5f1135ca965d7643a0934a7dddd546a8a57c5b8b08d3b8b9",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -64196,7 +64196,7 @@
         {
           "path": "tools/match/scratches/quest_build_gauntlet/scratch.cpp",
           "repository_relative": true,
-          "sha256": "d58c7f15231483a962b152251f5021684470684a0dbdf51f191a20ec1f891748"
+          "sha256": "7e45cd455cff45bf395699664590429ee0f6c11ef0680eb87ca314d070d7e00b"
         },
         {
           "path": "tools/match/scratches/quest_build_gauntlet/scratch.conf",
@@ -64237,17 +64237,17 @@
           "canonical_config_sha256": "50469d6eb716eab516a806c9887b4f1e9a3b9684c94b364b2c63d83dc4e3bba7",
           "canonical_scratch": "tools/match/scratches/quest_build_gauntlet",
           "canonical_source": "tools/match/scratches/quest_build_gauntlet/scratch.cpp",
-          "canonical_source_sha256": "d58c7f15231483a962b152251f5021684470684a0dbdf51f191a20ec1f891748",
+          "canonical_source_sha256": "7e45cd455cff45bf395699664590429ee0f6c11ef0680eb87ca314d070d7e00b",
           "effective_end": 4418566,
           "end": 4418566,
           "function": "quest_build_gauntlet",
           "match": {
             "candidate_instructions": 182,
             "masked_mismatches": 0,
-            "masked_ok": 25,
+            "masked_ok": 26,
             "masked_unresolved": 0,
-            "prefix_instructions": 31,
-            "ratio": 0.8021978021978022,
+            "prefix_instructions": 120,
+            "ratio": 0.9835164835164835,
             "state": "wip",
             "target_instructions": 182
           },
@@ -64258,19 +64258,19 @@
       "match": {
         "candidate_instructions": 182,
         "masked_mismatches": 0,
-        "masked_ok": 25,
+        "masked_ok": 26,
         "masked_unresolved": 0,
-        "prefix_instructions": 31,
-        "ratio": 0.8021978021978022,
+        "prefix_instructions": 120,
+        "ratio": 0.9835164835164835,
         "state": "wip",
         "target_instructions": 182
       },
       "object": "tools/match/scratches/quest_build_gauntlet/build/msvc6.5/3a9fc46a83b2b485/scratch.obj",
       "object_function_symbol": "_quest_build_gauntlet",
-      "object_sha256": "c2dbabe2a6cdf7f489aaafcf1617c07b4c554a1c32b4f944f247890abd5c7b83",
+      "object_sha256": "b7eaf704ce80deeefab04381f77719bd3e0ae1bd36f73a8d4698c9aba6561d4f",
       "scratch": "tools/match/scratches/quest_build_gauntlet",
       "source": "tools/match/scratches/quest_build_gauntlet/scratch.cpp",
-      "source_sha256": "d58c7f15231483a962b152251f5021684470684a0dbdf51f191a20ec1f891748",
+      "source_sha256": "7e45cd455cff45bf395699664590429ee0f6c11ef0680eb87ca314d070d7e00b",
       "target_size": 614,
       "translation_unit": {
         "kind": "isolated",

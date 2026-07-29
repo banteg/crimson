@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "edge-wave-condition-locals",
+      "find": "        int spawn_count = 2;\n        int trigger_time_ms = 4000;\n        do {\n",
+      "replacements": [
+        {
+          "name": "limit-then-index-declarations",
+          "text": "        int spawn_count = 2;\n        int trigger_time_ms = 4000;\n        int wave_limit;\n        int wave_index;\n        do {\n"
+        },
+        {
+          "name": "index-then-limit-declarations",
+          "text": "        int spawn_count = 2;\n        int trigger_time_ms = 4000;\n        int wave_index;\n        int wave_limit;\n        do {\n"
+        }
+      ]
+    },
+    {
+      "name": "edge-wave-condition-assignments",
+      "find": "            trigger_time_ms += 5500;\n            ++spawn_count;\n        } while (spawn_count - 2 < config_blob.player_count + 9);\n",
+      "replacements": [
+        {
+          "name": "limit-then-index-assignments",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            wave_limit = config_blob.player_count + 9;\n            wave_index = spawn_count - 2;\n        } while (wave_index < wave_limit);\n"
+        },
+        {
+          "name": "index-then-limit-assignments",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            wave_index = spawn_count - 2;\n            wave_limit = config_blob.player_count + 9;\n        } while (wave_index < wave_limit);\n"
+        },
+        {
+          "name": "limit-then-index-reversed-relation",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            wave_limit = config_blob.player_count + 9;\n            wave_index = spawn_count - 2;\n        } while (wave_limit > wave_index);\n"
+        },
+        {
+          "name": "index-then-limit-reversed-relation",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            wave_index = spawn_count - 2;\n            wave_limit = config_blob.player_count + 9;\n        } while (wave_limit > wave_index);\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "edge-wave-loop-condition-order",
+      "find": "        } while (spawn_count - 2 < config_blob.player_count + 9);\n",
+      "replacements": [
+        {
+          "name": "player-bound-greater-than-wave-index",
+          "text": "        } while (config_blob.player_count + 9 > spawn_count - 2);\n"
+        }
+      ]
+    },
+    {
+      "name": "outer-ring-update-order",
+      "find": "            ++entry_count;\n            trigger_time_ms += 500;\n            ++ring_index;\n",
+      "replacements": [
+        {
+          "name": "entry-ring-trigger",
+          "text": "            ++entry_count;\n            ++ring_index;\n            trigger_time_ms += 500;\n"
+        },
+        {
+          "name": "ring-entry-trigger",
+          "text": "            ++ring_index;\n            ++entry_count;\n            trigger_time_ms += 500;\n"
+        },
+        {
+          "name": "ring-trigger-entry",
+          "text": "            ++ring_index;\n            trigger_time_ms += 500;\n            ++entry_count;\n"
+        },
+        {
+          "name": "trigger-entry-ring",
+          "text": "            trigger_time_ms += 500;\n            ++entry_count;\n            ++ring_index;\n"
+        },
+        {
+          "name": "trigger-ring-entry",
+          "text": "            trigger_time_ms += 500;\n            ++ring_index;\n            ++entry_count;\n"
+        }
+      ]
+    }
+  ]
+}

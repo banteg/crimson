@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "edge-wave-goto-opening",
+      "find": "        do {\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "labeled-block",
+          "text": "edge_wave_loop:\n        {\n"
+        }
+      ]
+    },
+    {
+      "name": "edge-wave-goto-backedge",
+      "find": "            trigger_time_ms += 5500;\n            ++spawn_count;\n        } while (spawn_count - 2 < config_blob.player_count + 9);\n",
+      "replacements": [
+        {
+          "name": "left-less-than-right",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n        }\n        if (spawn_count - 2 < config_blob.player_count + 9) {\n            goto edge_wave_loop;\n        }\n"
+        },
+        {
+          "name": "right-greater-than-left",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n        }\n        if (config_blob.player_count + 9 > spawn_count - 2) {\n            goto edge_wave_loop;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

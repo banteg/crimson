@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "edge-wave-loop-opening",
+      "find": "        do {\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "infinite-for",
+          "text": "        for (;;) {\n"
+        }
+      ]
+    },
+    {
+      "name": "edge-wave-loop-backedge",
+      "find": "            trigger_time_ms += 5500;\n            ++spawn_count;\n        } while (spawn_count - 2 < config_blob.player_count + 9);\n",
+      "replacements": [
+        {
+          "name": "direct-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            if (spawn_count - 2 >= config_blob.player_count + 9) {\n                break;\n            }\n        }\n"
+        },
+        {
+          "name": "direct-continue-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            if (spawn_count - 2 < config_blob.player_count + 9) {\n                continue;\n            }\n            break;\n        }\n"
+        },
+        {
+          "name": "bound-then-index-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            int wave_limit = config_blob.player_count + 9;\n            int wave_index = spawn_count - 2;\n            if (wave_index >= wave_limit) {\n                break;\n            }\n        }\n"
+        },
+        {
+          "name": "index-then-bound-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            int wave_index = spawn_count - 2;\n            int wave_limit = config_blob.player_count + 9;\n            if (wave_index >= wave_limit) {\n                break;\n            }\n        }\n"
+        },
+        {
+          "name": "bound-only-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            int wave_limit = config_blob.player_count + 9;\n            if (spawn_count - 2 >= wave_limit) {\n                break;\n            }\n        }\n"
+        },
+        {
+          "name": "index-only-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            int wave_index = spawn_count - 2;\n            if (wave_index >= config_blob.player_count + 9) {\n                break;\n            }\n        }\n"
+        },
+        {
+          "name": "bound-then-index-continue-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            int wave_limit = config_blob.player_count + 9;\n            int wave_index = spawn_count - 2;\n            if (wave_index < wave_limit) {\n                continue;\n            }\n            break;\n        }\n"
+        },
+        {
+          "name": "index-then-bound-continue-break",
+          "text": "            trigger_time_ms += 5500;\n            ++spawn_count;\n            int wave_index = spawn_count - 2;\n            int wave_limit = config_blob.player_count + 9;\n            if (wave_index < wave_limit) {\n                continue;\n            }\n            break;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

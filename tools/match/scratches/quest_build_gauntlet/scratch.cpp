@@ -38,22 +38,22 @@ extern "C" void quest_build_gauntlet(
     if (config_blob.player_count + 9 > 0) {
         int trigger_time_ms = 0;
         do {
-            quest_entry_original_t *spawn = &spawns[entry_count];
-            spawn->pos.x =
+            spawns[entry_count].pos.x =
                 (float)cos(
                     (float)entry_count * 6.28318548f /
                     (float)(config_blob.player_count + 9)) *
                     158.0f +
                 512.0f;
-            spawn->pos.y =
+            spawns[entry_count].pos.y =
                 (float)sin(
                     (float)entry_count * 6.28318548f /
                     (float)(config_blob.player_count + 9)) *
                     158.0f +
                 512.0f;
-            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
-            spawn->trigger_time_ms = trigger_time_ms;
-            spawn->count = 1;
+            spawns[entry_count].template_id =
+                SPAWN_ID_DEN_SPIDER_BASIC_0A;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 1;
             ++entry_count;
             trigger_time_ms += 200;
         } while (entry_count < config_blob.player_count + 9);
@@ -63,37 +63,39 @@ extern "C" void quest_build_gauntlet(
         int spawn_count = 2;
         int trigger_time_ms = 4000;
         do {
-            quest_entry_original_t *spawn = &spawns[entry_count];
-            spawn->pos.x = (float)(terrain_texture_width + 64);
-            spawn->pos.y = (float)(terrain_texture_width / 2);
-            spawn->set_spawn(
+            spawns[entry_count].pos.x =
+                (float)(terrain_texture_width + 64);
+            spawns[entry_count].pos.y =
+                (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
                 spawn_count);
             ++entry_count;
 
-            spawn = &spawns[entry_count];
-            spawn->pos.x = -64.0f;
-            spawn->pos.y = (float)(terrain_texture_width / 2);
-            spawn->set_spawn(
+            spawns[entry_count].pos.x = -64.0f;
+            spawns[entry_count].pos.y =
+                (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
                 spawn_count);
             ++entry_count;
 
-            spawn = &spawns[entry_count];
-            spawn->pos.x = (float)(terrain_texture_width / 2);
-            spawn->pos.y = (float)(terrain_texture_width + 64);
-            spawn->set_spawn(
+            spawns[entry_count].pos.x =
+                (float)(terrain_texture_width / 2);
+            spawns[entry_count].pos.y =
+                (float)(terrain_texture_width + 64);
+            spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
                 spawn_count);
             ++entry_count;
 
-            spawn = &spawns[entry_count];
-            spawn->pos.x = (float)(terrain_texture_width / 2);
-            spawn->pos.y = -64.0f;
-            spawn->set_spawn(
+            spawns[entry_count].pos.x =
+                (float)(terrain_texture_width / 2);
+            spawns[entry_count].pos.y = -64.0f;
+            spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
                 spawn_count);
@@ -109,25 +111,25 @@ extern "C" void quest_build_gauntlet(
     if (outer_count > 0) {
         int trigger_time_ms = 42500;
         do {
-            quest_entry_original_t *spawn = &spawns[entry_count];
-            spawn->pos.x =
+            spawns[entry_count].pos.x =
                 (float)cos(
                     (float)ring_index * 6.28318548f /
                     (float)(config_blob.player_count + 17)) *
                     258.0f +
                 512.0f;
-            spawn->pos.y =
+            spawns[entry_count].pos.y =
                 (float)sin(
                     (float)ring_index * 6.28318548f /
                     (float)(config_blob.player_count + 17)) *
                     258.0f +
                 512.0f;
-            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
-            spawn->trigger_time_ms = trigger_time_ms;
-            spawn->count = 1;
+            spawns[entry_count].template_id =
+                SPAWN_ID_DEN_SPIDER_BASIC_0A;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 1;
             ++entry_count;
-            trigger_time_ms += 500;
             ++ring_index;
+            trigger_time_ms += 500;
         } while (ring_index < config_blob.player_count + 17);
     }
 

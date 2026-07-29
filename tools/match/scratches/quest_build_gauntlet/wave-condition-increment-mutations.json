@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "edge-wave-condition-increment-shape",
+      "find": "            trigger_time_ms += 5500;\n            ++spawn_count;\n        } while (spawn_count - 2 < config_blob.player_count + 9);\n",
+      "replacements": [
+        {
+          "name": "preincrement-in-left-expression",
+          "text": "            trigger_time_ms += 5500;\n        } while (++spawn_count - 2 < config_blob.player_count + 9);\n"
+        },
+        {
+          "name": "preincrement-in-reversed-expression",
+          "text": "            trigger_time_ms += 5500;\n        } while (config_blob.player_count + 9 > ++spawn_count - 2);\n"
+        },
+        {
+          "name": "postincrement-minus-one",
+          "text": "            trigger_time_ms += 5500;\n        } while (spawn_count++ - 1 < config_blob.player_count + 9);\n"
+        },
+        {
+          "name": "updates-in-comma-condition",
+          "text": "        } while ((trigger_time_ms += 5500,\n                  ++spawn_count - 2 < config_blob.player_count + 9));\n"
+        },
+        {
+          "name": "updates-in-reversed-comma-condition",
+          "text": "        } while ((trigger_time_ms += 5500,\n                  config_blob.player_count + 9 > ++spawn_count - 2));\n"
+        }
+      ]
+    }
+  ]
+}
