@@ -73,55 +73,64 @@
       "address": "0x004711f8",
       "comment": "Console command string: \"exec\".",
       "name": "console_cmd_exec_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471200",
       "comment": "Console command string: \"minimizeconsole\".",
       "name": "console_cmd_minimize_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[16]"
     },
     {
       "address": "0x00471210",
       "comment": "Console command string: \"extendconsole\".",
       "name": "console_cmd_extend_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[14]"
     },
     {
       "address": "0x00471220",
       "comment": "Console command string: \"clear\".",
       "name": "console_cmd_clear_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[6]"
     },
     {
       "address": "0x00471228",
       "comment": "Console command string: \"quit\".",
       "name": "console_cmd_quit_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471230",
       "comment": "Console command string: \"set\".",
       "name": "console_cmd_set_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00471234",
       "comment": "Console command string: \"echo\".",
       "name": "console_cmd_echo_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x0047123c",
       "comment": "Console command string: \"vars\".",
       "name": "console_cmd_vars_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471244",
       "comment": "Console command string: \"cmdlist\".",
       "name": "console_cmd_cmdlist_str",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[8]"
     },
     {
       "address": "0x0047125c",
@@ -134,7 +143,8 @@
       "address": "0x00471260",
       "comment": "Shared scalar cvar default string (used by cv_aimEnhancementFade and console_init seed state).",
       "name": "console_cvar_default_scalar",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004712b8",
@@ -217,523 +227,610 @@
       "address": "0x004713f8",
       "comment": "Shared default cvar string used for disabled/false-like console vars.",
       "name": "console_cvar_default_false",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471340",
       "comment": "Default cvar string for cv_padAimDistMul (gamepad aiming distance multiplier).",
       "name": "console_cvar_default_pad_aim_dist_mul",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x004714b4",
       "comment": "Fallback key label string returned by input_key_name() for DIK_MAIL (0xec).",
       "name": "input_key_name_mail",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x0047150c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_WAKE (0xe3).",
       "name": "input_key_name_wake",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471524",
       "comment": "Fallback key label string returned by input_key_name() for DIK_APPS (0xdd).",
       "name": "input_key_name_apps",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x0047152c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_RWIN (0xdc).",
       "name": "input_key_name_rwin",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471534",
       "comment": "Fallback key label string returned by input_key_name() for DIK_LWIN (0xdb).",
       "name": "input_key_name_lwin",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x0047154c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_NEXT/PageDown (0xd1).",
       "name": "input_key_name_next",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471554",
       "comment": "Fallback key label string returned by input_key_name() for DIK_DOWN (0xd0).",
       "name": "input_key_name_down",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x0047155c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_END (0xcf).",
       "name": "input_key_name_end",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00471568",
       "comment": "Fallback key label string returned by input_key_name() for DIK_LEFT (0xcb).",
       "name": "input_key_name_left",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471578",
       "comment": "Fallback key label string returned by input_key_name() for DIK_UP (0xc8).",
       "name": "input_key_name_up",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x0047157c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_HOME (0xc7).",
       "name": "input_key_name_home",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x004715f4",
       "comment": "Fallback key label string returned by input_key_name() for DIK_MUTE (0xa0).",
       "name": "input_key_name_mute",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x0047162c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_AX (0x96).",
       "name": "input_key_name_ax",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471630",
       "comment": "Fallback key label string returned by input_key_name() for DIK_STOP (0x95).",
       "name": "input_key_name_stop",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471654",
       "comment": "Fallback key label string returned by input_key_name() for DIK_AT (0x91).",
       "name": "input_key_name_at",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x0047167c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_YEN (0x7d).",
       "name": "input_key_name_yen",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x0047169c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_KANA (0x70).",
       "name": "input_key_name_kana",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x004716a4",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F15 (0x66).",
       "name": "input_key_name_f15",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004716a8",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F14 (0x65).",
       "name": "input_key_name_f14",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004716ac",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F13 (0x64).",
       "name": "input_key_name_f13",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004716b0",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F12 (0x58).",
       "name": "input_key_name_f12",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004716b4",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F11 (0x57).",
       "name": "input_key_name_f11",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004716e8",
       "comment": "Fallback key label string returned by input_key_name() for DIK_ADD (0x4e).",
       "name": "input_key_name_add",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00471738",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F10 (0x44).",
       "name": "input_key_name_f10",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x0047173c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F9 (0x43).",
       "name": "input_key_name_f9",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471740",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F8 (0x42).",
       "name": "input_key_name_f8",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471744",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F7 (0x41).",
       "name": "input_key_name_f7",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471748",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F6 (0x40).",
       "name": "input_key_name_f6",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x0047174c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F5 (0x3f).",
       "name": "input_key_name_f5",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471750",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F4 (0x3e).",
       "name": "input_key_name_f4",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471754",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F3 (0x3d).",
       "name": "input_key_name_f3",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471758",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F2 (0x3c).",
       "name": "input_key_name_f2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x0047175c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F1 (0x3b).",
       "name": "input_key_name_f1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x004717a4",
       "comment": "Fallback key label string returned by input_key_name() for DIK_M (0x32).",
       "name": "input_key_name_m",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717a8",
       "comment": "Fallback key label string returned by input_key_name() for DIK_N (0x31).",
       "name": "input_key_name_n",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717ac",
       "comment": "Fallback key label string returned by input_key_name() for DIK_B (0x30).",
       "name": "input_key_name_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717b0",
       "comment": "Fallback key label string returned by input_key_name() for DIK_V (0x2f).",
       "name": "input_key_name_v",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717b4",
       "comment": "Fallback key label string returned by input_key_name() for DIK_C (0x2e).",
       "name": "input_key_name_c",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717b8",
       "comment": "Fallback key label string returned by input_key_name() for DIK_X (0x2d).",
       "name": "input_key_name_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717bc",
       "comment": "Fallback key label string returned by input_key_name() for DIK_Z (0x2c).",
       "name": "input_key_name_z",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717f4",
       "comment": "Fallback key label string returned by input_key_name() for DIK_L (0x26).",
       "name": "input_key_name_l",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717f8",
       "comment": "Fallback key label string returned by input_key_name() for DIK_K (0x25).",
       "name": "input_key_name_k",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004717fc",
       "comment": "Fallback key label string returned by input_key_name() for DIK_J (0x24).",
       "name": "input_key_name_j",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471800",
       "comment": "Fallback key label string returned by input_key_name() for DIK_H (0x23).",
       "name": "input_key_name_h",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471804",
       "comment": "Fallback key label string returned by input_key_name() for DIK_G (0x22).",
       "name": "input_key_name_g",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471808",
       "comment": "Fallback key label string returned by input_key_name() for DIK_F (0x21).",
       "name": "input_key_name_f",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x0047180c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_D (0x20).",
       "name": "input_key_name_d",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471810",
       "comment": "Fallback key label string returned by input_key_name() for DIK_S (0x1f).",
       "name": "input_key_name_s",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471814",
       "comment": "Fallback key label string returned by input_key_name() for DIK_A (0x1e).",
       "name": "input_key_name_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471844",
       "comment": "Fallback key label string returned by input_key_name() for DIK_P (0x19).",
       "name": "input_key_name_p",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471848",
       "comment": "Fallback key label string returned by input_key_name() for DIK_O (0x18).",
       "name": "input_key_name_o",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x0047184c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_I (0x17).",
       "name": "input_key_name_i",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471850",
       "comment": "Fallback key label string returned by input_key_name() for DIK_U (0x16).",
       "name": "input_key_name_u",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471854",
       "comment": "Fallback key label string returned by input_key_name() for DIK_Y (0x15).",
       "name": "input_key_name_y",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471858",
       "comment": "Fallback key label string returned by input_key_name() for DIK_T (0x14).",
       "name": "input_key_name_t",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x0047185c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_R (0x13).",
       "name": "input_key_name_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471860",
       "comment": "Fallback key label string returned by input_key_name() for DIK_E (0x12).",
       "name": "input_key_name_e",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471864",
       "comment": "Fallback key label string returned by input_key_name() for DIK_W (0x11).",
       "name": "input_key_name_w",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471868",
       "comment": "Fallback key label string returned by input_key_name() for DIK_Q (0x10).",
       "name": "input_key_name_q",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x0047186c",
       "comment": "Fallback key label string returned by input_key_name() for DIK_TAB (0x0f).",
       "name": "input_key_name_tab",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00471870",
       "comment": "Fallback key label string returned by input_key_name() for DIK_BACKSPACE (0x0e).",
       "name": "input_key_name_backspace",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x004718f0",
       "comment": "Fallback key label string returned by input_key_name() for RIM2Btn5 (0x17b).",
       "name": "input_key_name_rim2_btn5",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00471908",
       "comment": "Fallback key label string returned by input_key_name() for RIM2Btn3 (0x179).",
       "name": "input_key_name_rim2_btn3",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00471920",
       "comment": "Fallback key label string returned by input_key_name() for RIM2Btn1 (0x177).",
       "name": "input_key_name_rim2_btn1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00471938",
       "comment": "Fallback key label string returned by input_key_name() for RIM1Btn4 (0x175).",
       "name": "input_key_name_rim1_btn4",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00471950",
       "comment": "Fallback key label string returned by input_key_name() for RIM1Btn2 (0x173).",
       "name": "input_key_name_rim1_btn2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00471968",
       "comment": "Fallback key label string returned by input_key_name() for RIM0Btn5 (0x171).",
       "name": "input_key_name_rim0_btn5",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00471980",
       "comment": "Fallback key label string returned by input_key_name() for RIM0Btn3 (0x16f).",
       "name": "input_key_name_rim0_btn3",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00471998",
       "comment": "Fallback key label string returned by input_key_name() for RIM0Btn1 (0x16d).",
       "name": "input_key_name_rim0_btn1",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x004719b0",
       "comment": "Fallback key label string returned by input_key_name() for RIM1YAxis (0x169).",
       "name": "input_key_name_rim1_y_axis",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[10]"
     },
     {
       "address": "0x004719c8",
       "comment": "Fallback key label string returned by input_key_name() for RIM2XAxis (0x165).",
       "name": "input_key_name_rim2_x_axis",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[10]"
     },
     {
       "address": "0x004719e0",
       "comment": "Fallback key label string returned by input_key_name() for RIM0XAxis (0x163).",
       "name": "input_key_name_rim0_x_axis",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[10]"
     },
     {
       "address": "0x004719f4",
       "comment": "Fallback key label string returned by input_key_name() for JoyRotZ (0x155).",
       "name": "input_key_name_joy_rot_z",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[8]"
     },
     {
       "address": "0x00471a04",
       "comment": "Fallback key label string returned by input_key_name() for JoyRotX (0x153).",
       "name": "input_key_name_joy_rot_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[8]"
     },
     {
       "address": "0x00471a5c",
       "comment": "Fallback key label string returned by input_key_name() for Joys12 (0x12a).",
       "name": "input_key_name_joys12",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x00471a6c",
       "comment": "Fallback key label string returned by input_key_name() for Joys10 (0x128).",
       "name": "input_key_name_joys10",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x00471a7c",
       "comment": "Fallback key label string returned by input_key_name() for Joys8 (0x126).",
       "name": "input_key_name_joys8",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[6]"
     },
     {
       "address": "0x00471a8c",
       "comment": "Fallback key label string returned by input_key_name() for Joys6 (0x124).",
       "name": "input_key_name_joys6",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[6]"
     },
     {
       "address": "0x00471a9c",
       "comment": "Fallback key label string returned by input_key_name() for Joys4 (0x122).",
       "name": "input_key_name_joys4",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[6]"
     },
     {
       "address": "0x00471aac",
       "comment": "Fallback key label string returned by input_key_name() for Joys2 (0x120).",
       "name": "input_key_name_joys2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[6]"
     },
     {
       "address": "0x00471ad4",
       "comment": "Fallback key label string returned by input_key_name() for Mouse5 (0x104).",
       "name": "input_key_name_mouse5",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x00471b38",
       "comment": "ShellExecute operation string \"open\" used by demo purchase/browser-launch paths.",
       "name": "shell_execute_operation_open",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00471f40",
       "comment": "printf-style format string \"%d\" used for integer UI counters.",
       "name": "s_fmt_decimal_int",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00471f44",
       "comment": "printf-style format string \"0%d\" used for leading-zero second fields.",
       "name": "s_fmt_decimal_int_zero_prefixed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00471fc4",
       "comment": "printf-style format string \"%s\" used by grim_draw_text_small_fmt.",
       "name": "s_fmt_percent_s",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00472718",
@@ -746,7 +843,8 @@
       "address": "0x00472998",
       "comment": "CString \"rb\" used for config/status file reads.",
       "name": "file_mode_read_binary",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00472aec",
@@ -779,13 +877,15 @@
       "address": "0x00472e88",
       "comment": "CString \"credits\" used for menu/label text.",
       "name": "menu_label_credits",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[8]"
     },
     {
       "address": "0x00472e90",
       "comment": "CString \"Secret\" used for menu/label text.",
       "name": "menu_label_secret",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x00472ee8",
@@ -833,67 +933,78 @@
       "address": "0x0047365c",
       "comment": "Filename for the status blob (game.cfg).",
       "name": "game_status_filename",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00473668",
       "comment": "CString \"wb\" used for config/status file writes.",
       "name": "file_mode_write_binary",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[3]"
     },
     {
       "address": "0x00473950",
       "name": "dx_dll_path_d3d9",
       "program": "crimsonland.exe",
-      "comment": "System DLL suffix \\d3d9.dll used by dx_get_version_fallback_from_files."
+      "comment": "System DLL suffix \\d3d9.dll used by dx_get_version_fallback_from_files.",
+      "type": "char[10]"
     },
     {
       "address": "0x0047395c",
       "name": "dx_dll_path_dpnet",
       "program": "crimsonland.exe",
-      "comment": "System DLL suffix \\dpnet.dll used by dx_get_version_fallback_from_files."
+      "comment": "System DLL suffix \\dpnet.dll used by dx_get_version_fallback_from_files.",
+      "type": "char[11]"
     },
     {
       "address": "0x00473968",
       "name": "dx_filter_path_mpg2splt",
       "program": "crimsonland.exe",
-      "comment": "System path suffix \\mpg2splt.ax used by dx_get_version_fallback_from_files."
+      "comment": "System path suffix \\mpg2splt.ax used by dx_get_version_fallback_from_files.",
+      "type": "char[13]"
     },
     {
       "address": "0x00473978",
       "name": "dx_dll_path_d3d8",
       "program": "crimsonland.exe",
-      "comment": "System DLL suffix \\d3d8.dll used by dx_get_version_fallback_from_files."
+      "comment": "System DLL suffix \\d3d8.dll used by dx_get_version_fallback_from_files.",
+      "type": "char[10]"
     },
     {
       "address": "0x00473984",
       "name": "dx_dll_path_dinput",
       "program": "crimsonland.exe",
-      "comment": "System DLL suffix \\dinput.dll used by dx_get_version_fallback_from_files."
+      "comment": "System DLL suffix \\dinput.dll used by dx_get_version_fallback_from_files.",
+      "type": "char[12]"
     },
     {
       "address": "0x00473990",
       "name": "dx_dll_path_dplayx",
       "program": "crimsonland.exe",
-      "comment": "System DLL suffix \\dplayx.dll used by dx_get_version_fallback_from_files."
+      "comment": "System DLL suffix \\dplayx.dll used by dx_get_version_fallback_from_files.",
+      "type": "char[12]"
     },
     {
       "address": "0x0047399c",
       "name": "dx_dll_path_d3drg8x",
       "program": "crimsonland.exe",
-      "comment": "System DLL suffix \\d3drg8x.dll used by dx_get_version_fallback_from_files."
+      "comment": "System DLL suffix \\d3drg8x.dll used by dx_get_version_fallback_from_files.",
+      "type": "char[13]"
     },
     {
       "address": "0x004739ac",
       "name": "dx_dll_path_ddraw",
       "program": "crimsonland.exe",
-      "comment": "System DLL suffix \\ddraw.dll used by dx_get_version_fallback_from_files."
+      "comment": "System DLL suffix \\ddraw.dll used by dx_get_version_fallback_from_files.",
+      "type": "char[11]"
     },
     {
       "address": "0x004739b8",
       "name": "dx_version_query_root_path",
       "program": "crimsonland.exe",
-      "comment": "VerQueryValueA root path \"\\\" used by win32_file_get_version_words."
+      "comment": "VerQueryValueA root path \"\\\" used by win32_file_get_version_words.",
+      "type": "char[2]"
     },
     {
       "address": "0x00473a10",
@@ -1011,7 +1122,8 @@
       "address": "0x00473b14",
       "comment": "Secret-hint string: \":D\"Wonder what he's up to now...\"",
       "name": "secret_hint_wonder",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[35]"
     },
     {
       "address": "0x00473b38",
@@ -1066,13 +1178,15 @@
       "address": "0x00473e48",
       "comment": "Filename for the config blob (crimson.cfg).",
       "name": "config_filename",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[12]"
     },
     {
       "address": "0x00474028",
       "comment": "Filename for console log output (console.log).",
       "name": "console_log_filename",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[12]"
     },
     {
       "address": "0x004755e0",
@@ -1126,7 +1240,8 @@
       "address": "0x00477bf4",
       "comment": "Typ-o target name format used for two-part fragment names (\"%s%s\").",
       "name": "s_fmt_typo_target_name_2_parts",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[5]"
     },
     {
       "address": "0x00477d28",
@@ -1174,7 +1289,8 @@
       "address": "0x00478878",
       "comment": "Format string used by highscore_format_date_label (\"%d. %s %d\").",
       "name": "s_fmt_highscore_date_label",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[10]"
     },
     {
       "address": "0x00478884",
@@ -1187,181 +1303,211 @@
       "address": "0x00478888",
       "comment": "Month label used by highscore_format_date_label for month 12.",
       "name": "highscore_month_label_dec",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x0047888c",
       "comment": "Month label used by highscore_format_date_label for month 11.",
       "name": "highscore_month_label_nov",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00478890",
       "comment": "Month label used by highscore_format_date_label for month 10.",
       "name": "highscore_month_label_oct",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00478894",
       "comment": "Month label used by highscore_format_date_label for month 9.",
       "name": "highscore_month_label_sep",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00478898",
       "comment": "Month label used by highscore_format_date_label for month 8.",
       "name": "highscore_month_label_aug",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x0047889c",
       "comment": "Month label used by highscore_format_date_label for month 7.",
       "name": "highscore_month_label_jul",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004788a0",
       "comment": "Month label used by highscore_format_date_label for month 6.",
       "name": "highscore_month_label_jun",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004788a4",
       "comment": "Month label used by highscore_format_date_label for month 5.",
       "name": "highscore_month_label_may",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004788a8",
       "comment": "Month label used by highscore_format_date_label for month 4.",
       "name": "highscore_month_label_apr",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004788ac",
       "comment": "Month label used by highscore_format_date_label for month 3.",
       "name": "highscore_month_label_mar",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004788b0",
       "comment": "Month label used by highscore_format_date_label for month 2.",
       "name": "highscore_month_label_feb",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004788b4",
       "comment": "Month label used by highscore_format_date_label for month 1.",
       "name": "highscore_month_label_jan",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x004788b8",
       "comment": "High-score tooltip text for shot hit percentage.",
       "name": "s_highscore_tooltip_hit_ratio",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[37]"
     },
     {
       "address": "0x004788e0",
       "comment": "High-score tooltip text for total run time.",
       "name": "s_highscore_tooltip_game_time",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[25]"
     },
     {
       "address": "0x004788fc",
       "comment": "High-score tooltip text for most used weapon.",
       "name": "s_highscore_tooltip_weapon_usage",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[33]"
     },
     {
       "address": "0x00478920",
       "comment": "Format string for high-score hit percent label (\"Hit %%: %d%%\").",
       "name": "s_fmt_highscore_hit_percent",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[13]"
     },
     {
       "address": "0x00478930",
       "comment": "Format string for high-score frags label (\"Frags: %d\").",
       "name": "s_fmt_highscore_frags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[10]"
     },
     {
       "address": "0x0047893c",
       "comment": "High-score label text: \"Game time\".",
       "name": "s_highscore_label_game_time",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[10]"
     },
     {
       "address": "0x00478948",
       "comment": "High-score label text: \"Experience\".",
       "name": "s_highscore_label_experience",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[11]"
     },
     {
       "address": "0x00478954",
       "comment": "Format string for high-score rank label (\"Rank: %s\").",
       "name": "s_fmt_highscore_rank",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00478960",
       "comment": "Format string for high-score elapsed seconds label (\"%.2f secs\").",
       "name": "s_fmt_highscore_seconds",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[10]"
     },
     {
       "address": "0x0047896c",
       "comment": "High-score label text: \"Score\".",
       "name": "s_highscore_label_score",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[6]"
     },
     {
       "address": "0x00478974",
       "comment": "High-score label text: \"Local score\".",
       "name": "s_highscore_label_local_score",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[12]"
     },
     {
       "address": "0x00478980",
       "comment": "High-score label text: \"Score from the Internet\".",
       "name": "s_highscore_label_internet_score",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[24]"
     },
     {
       "address": "0x00478998",
       "comment": "Format string used to show internet source tag (\"uni#%d\").",
       "name": "s_fmt_highscore_universe_tag",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x004789a0",
       "comment": "High-score label text: \"Internet score of local origin\".",
       "name": "s_highscore_label_internet_local_origin",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[31]"
     },
     {
       "address": "0x00478e04",
       "comment": "Typ-o fallback source word used when no highscore names are accepted (\"quickbrownfox\").",
       "name": "s_typo_fallback_word",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[14]"
     },
     {
       "address": "0x00478e14",
       "comment": "Console format used when caching unique Typ-o highscore words (\"%d. unique: %s\\n\").",
       "name": "s_fmt_typo_unique_word_log",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[16]"
     },
     {
       "address": "0x00478e24",
       "comment": "Typ-o target name format used for three-part fragment names (\"%s%s%s\").",
       "name": "s_fmt_typo_target_name_3_parts",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x00478e2c",
       "comment": "Typ-o target name format used for four-part fragment names (\"%s%s%s%s\").",
       "name": "s_fmt_typo_target_name_4_parts",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00478e38",
@@ -1402,37 +1548,43 @@
       "address": "0x00478ecc",
       "comment": "Configure-for label: \"Computer\".",
       "name": "input_configure_label_computer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00478ed8",
       "comment": "Configure-for label: \"Dual Action Pad\".",
       "name": "input_configure_label_dual_action_pad",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[16]"
     },
     {
       "address": "0x00478ee8",
       "comment": "Configure-for label: \"Joystick\".",
       "name": "input_configure_label_joystick",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00478ef4",
       "comment": "Configure-for label: \"Keyboard\".",
       "name": "input_configure_label_keyboard",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[9]"
     },
     {
       "address": "0x00478f00",
       "comment": "Configure-for label: \"Mouse relative\".",
       "name": "input_configure_label_mouse_relative",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[15]"
     },
     {
       "address": "0x00478f10",
       "comment": "Configure-for label: \"Mouse\".",
       "name": "input_configure_label_mouse",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[6]"
     },
     {
       "address": "0x0047b1c0",

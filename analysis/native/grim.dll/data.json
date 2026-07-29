@@ -1,5 +1,5 @@
 {
-  "audit_digest": "eaeee956d530486375cbac04eaf113afc02d6229130fbc61cec48d8f628b7750",
+  "audit_digest": "b714a3640188bea4643799fb998038bbd34cdf0da4e0f7fc083ff067d24596fb",
   "entries": [
     {
       "address": 268574996,
@@ -5879,7 +5879,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "4d6064931505f58f147b625c133c6fd014fc4c0ab87a60eb3714a42bc2796438",
+    "data_map_sha256": "3ef6112dd63e4ecfdfc11cb9802c8359b6e1f04701583378ac4c97890f6a0a3e",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd",
     "reference_image": {

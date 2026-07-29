@@ -1970,6 +1970,8 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1551
+    assert payload["summary"]["typed_entries"] == 919
+    assert payload["summary"]["untyped_entries"] == 632
     assert payload["summary"]["explicit_size_entries"] == 998
     assert payload["summary"]["explicit_alignment_entries"] == 998
     assert payload["summary"]["explicit_initializer_entries"] == 998
@@ -2017,6 +2019,7 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     )
     assert defined["demo_time_limit_ms"]["initializer_hex"] == "10270000"
     assert defined["default_player_name"]["size"] == 7
+    assert defined["input_key_name_mail"]["type"] == "char[5]"
     assert defined["input_key_name_mail"]["initializer_hex"] == "4d41494c00"
     assert defined["input_key_name_rim1_y_axis"]["size"] == 10
     assert defined["input_key_name_dik_dispatch_map"]["size"] == 237
@@ -2024,6 +2027,7 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
         defined["input_key_name_dik_dispatch_map"]["initializer_hex"][:16]
         == "0001020304050607"
     )
+    assert defined["console_cmd_exec_str"]["type"] == "char[5]"
     assert defined["console_cmd_exec_str"]["initializer_hex"] == "6578656300"
     assert defined["highscore_month_label_jan"]["size"] == 4
     assert defined["s_highscore_tooltip_hit_ratio"]["size"] == 37

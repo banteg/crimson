@@ -1,5 +1,5 @@
 {
-  "audit_digest": "67e1996fd158321cf302ca784bd74012a24f803672575493854389b40a3a0a60",
+  "audit_digest": "7ed74eee9606da7bb93100c4e6eea30998ef1be5a4b221f9842a51b65823282d",
   "entries": [
     {
       "address": 4211888,
@@ -260,7 +260,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4657664,
@@ -280,7 +280,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 16,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[16]"
     },
     {
       "address": 4657680,
@@ -300,7 +300,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 14,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[14]"
     },
     {
       "address": 4657696,
@@ -320,7 +320,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 6,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[6]"
     },
     {
       "address": 4657704,
@@ -340,7 +340,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4657712,
@@ -360,7 +360,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4657716,
@@ -380,7 +380,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4657724,
@@ -400,7 +400,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4657732,
@@ -420,7 +420,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 8,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[8]"
     },
     {
       "address": 4657756,
@@ -460,7 +460,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4657848,
@@ -700,7 +700,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4658168,
@@ -720,7 +720,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4658356,
@@ -740,7 +740,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658444,
@@ -760,7 +760,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658468,
@@ -780,7 +780,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658476,
@@ -800,7 +800,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658484,
@@ -820,7 +820,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658508,
@@ -840,7 +840,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658516,
@@ -860,7 +860,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658524,
@@ -880,7 +880,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4658536,
@@ -900,7 +900,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658552,
@@ -920,7 +920,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4658556,
@@ -940,7 +940,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658676,
@@ -960,7 +960,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658732,
@@ -980,7 +980,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4658736,
@@ -1000,7 +1000,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658772,
@@ -1020,7 +1020,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4658812,
@@ -1040,7 +1040,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4658844,
@@ -1060,7 +1060,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4658852,
@@ -1080,7 +1080,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4658856,
@@ -1100,7 +1100,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4658860,
@@ -1120,7 +1120,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4658864,
@@ -1140,7 +1140,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4658868,
@@ -1160,7 +1160,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4658920,
@@ -1180,7 +1180,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4659000,
@@ -1200,7 +1200,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4659004,
@@ -1220,7 +1220,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659008,
@@ -1240,7 +1240,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659012,
@@ -1260,7 +1260,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659016,
@@ -1280,7 +1280,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659020,
@@ -1300,7 +1300,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659024,
@@ -1320,7 +1320,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659028,
@@ -1340,7 +1340,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659032,
@@ -1360,7 +1360,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659036,
@@ -1380,7 +1380,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4659108,
@@ -1400,7 +1400,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659112,
@@ -1420,7 +1420,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659116,
@@ -1440,7 +1440,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659120,
@@ -1460,7 +1460,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659124,
@@ -1480,7 +1480,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659128,
@@ -1500,7 +1500,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659132,
@@ -1520,7 +1520,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659188,
@@ -1540,7 +1540,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659192,
@@ -1560,7 +1560,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659196,
@@ -1580,7 +1580,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659200,
@@ -1600,7 +1600,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659204,
@@ -1620,7 +1620,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659208,
@@ -1640,7 +1640,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659212,
@@ -1660,7 +1660,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659216,
@@ -1680,7 +1680,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659220,
@@ -1700,7 +1700,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659268,
@@ -1720,7 +1720,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659272,
@@ -1740,7 +1740,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659276,
@@ -1760,7 +1760,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659280,
@@ -1780,7 +1780,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659284,
@@ -1800,7 +1800,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659288,
@@ -1820,7 +1820,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659292,
@@ -1840,7 +1840,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659296,
@@ -1860,7 +1860,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659300,
@@ -1880,7 +1880,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659304,
@@ -1900,7 +1900,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4659308,
@@ -1920,7 +1920,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4659312,
@@ -1940,7 +1940,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4659440,
@@ -1960,7 +1960,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659464,
@@ -1980,7 +1980,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659488,
@@ -2000,7 +2000,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659512,
@@ -2020,7 +2020,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659536,
@@ -2040,7 +2040,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659560,
@@ -2060,7 +2060,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659584,
@@ -2080,7 +2080,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659608,
@@ -2100,7 +2100,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4659632,
@@ -2120,7 +2120,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4659656,
@@ -2140,7 +2140,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4659680,
@@ -2160,7 +2160,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4659700,
@@ -2180,7 +2180,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 8,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[8]"
     },
     {
       "address": 4659716,
@@ -2200,7 +2200,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 8,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[8]"
     },
     {
       "address": 4659804,
@@ -2220,7 +2220,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 7,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[7]"
     },
     {
       "address": 4659820,
@@ -2240,7 +2240,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 7,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[7]"
     },
     {
       "address": 4659836,
@@ -2260,7 +2260,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 6,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[6]"
     },
     {
       "address": 4659852,
@@ -2280,7 +2280,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 6,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[6]"
     },
     {
       "address": 4659868,
@@ -2300,7 +2300,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 6,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[6]"
     },
     {
       "address": 4659884,
@@ -2320,7 +2320,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 6,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[6]"
     },
     {
       "address": 4659924,
@@ -2340,7 +2340,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 7,
       "size_source": "analysis/ghidra/maps/data_map.json: named input_key_name fallback CString; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[7]"
     },
     {
       "address": 4660024,
@@ -2360,7 +2360,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4661056,
@@ -2380,7 +2380,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4661060,
@@ -2400,7 +2400,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4661188,
@@ -2420,7 +2420,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4663064,
@@ -2460,7 +2460,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4664044,
@@ -2560,7 +2560,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 8,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[8]"
     },
     {
       "address": 4664976,
@@ -2580,7 +2580,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 7,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[7]"
     },
     {
       "address": 4665064,
@@ -2720,7 +2720,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4666984,
@@ -2740,7 +2740,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 3,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[3]"
     },
     {
       "address": 4667728,
@@ -2760,7 +2760,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4667740,
@@ -2780,7 +2780,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 11,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[11]"
     },
     {
       "address": 4667752,
@@ -2800,7 +2800,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 13,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[13]"
     },
     {
       "address": 4667768,
@@ -2820,7 +2820,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4667780,
@@ -2840,7 +2840,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 12,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[12]"
     },
     {
       "address": 4667792,
@@ -2860,7 +2860,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 12,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[12]"
     },
     {
       "address": 4667804,
@@ -2880,7 +2880,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 13,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[13]"
     },
     {
       "address": 4667820,
@@ -2900,7 +2900,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 11,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[11]"
     },
     {
       "address": 4667832,
@@ -2920,7 +2920,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[2]"
     },
     {
       "address": 4667920,
@@ -3276,7 +3276,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 35,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[35]"
     },
     {
       "address": 4668216,
@@ -3429,7 +3429,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 12,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[12]"
     },
     {
       "address": 4669480,
@@ -3449,7 +3449,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 12,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[12]"
     },
     {
       "address": 4675040,
@@ -3607,7 +3607,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 5,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[5]"
     },
     {
       "address": 4685096,
@@ -3747,7 +3747,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4688004,
@@ -3787,7 +3787,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688012,
@@ -3807,7 +3807,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688016,
@@ -3827,7 +3827,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688020,
@@ -3847,7 +3847,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688024,
@@ -3867,7 +3867,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688028,
@@ -3887,7 +3887,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688032,
@@ -3907,7 +3907,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688036,
@@ -3927,7 +3927,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688040,
@@ -3947,7 +3947,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688044,
@@ -3967,7 +3967,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688048,
@@ -3987,7 +3987,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688052,
@@ -4007,7 +4007,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[4]"
     },
     {
       "address": 4688056,
@@ -4027,7 +4027,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 37,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[37]"
     },
     {
       "address": 4688096,
@@ -4047,7 +4047,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 25,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[25]"
     },
     {
       "address": 4688124,
@@ -4067,7 +4067,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 33,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[33]"
     },
     {
       "address": 4688160,
@@ -4087,7 +4087,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 13,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[13]"
     },
     {
       "address": 4688176,
@@ -4107,7 +4107,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4688188,
@@ -4127,7 +4127,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4688200,
@@ -4147,7 +4147,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 11,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[11]"
     },
     {
       "address": 4688212,
@@ -4167,7 +4167,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4688224,
@@ -4187,7 +4187,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[10]"
     },
     {
       "address": 4688236,
@@ -4207,7 +4207,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 6,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[6]"
     },
     {
       "address": 4688244,
@@ -4227,7 +4227,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 12,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[12]"
     },
     {
       "address": 4688256,
@@ -4247,7 +4247,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 24,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[24]"
     },
     {
       "address": 4688280,
@@ -4267,7 +4267,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 7,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[7]"
     },
     {
       "address": 4688288,
@@ -4287,7 +4287,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 31,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[31]"
     },
     {
       "address": 4689044,
@@ -4327,7 +4327,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 14,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[14]"
     },
     {
       "address": 4689428,
@@ -4347,7 +4347,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 16,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[16]"
     },
     {
       "address": 4689444,
@@ -4367,7 +4367,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 7,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[7]"
     },
     {
       "address": 4689452,
@@ -4387,7 +4387,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4689464,
@@ -4507,7 +4507,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4689624,
@@ -4527,7 +4527,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 16,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[16]"
     },
     {
       "address": 4689640,
@@ -4547,7 +4547,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4689652,
@@ -4567,7 +4567,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 9,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[9]"
     },
     {
       "address": 4689664,
@@ -4587,7 +4587,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 15,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[15]"
     },
     {
       "address": 4689680,
@@ -4607,7 +4607,7 @@
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 6,
       "size_source": "analysis/ghidra/maps/data_map.json: named CString identity and semantic comment; reference PE: complete NUL-terminated extent",
-      "type": null
+      "type": "char[6]"
     },
     {
       "address": 4691360,
@@ -31261,9 +31261,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "4d6064931505f58f147b625c133c6fd014fc4c0ab87a60eb3714a42bc2796438",
+    "data_map_sha256": "3ef6112dd63e4ecfdfc11cb9802c8359b6e1f04701583378ac4c97890f6a0a3e",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "c360c1db391c6fa85e6a57ca004073d6ee84e655306e25089d58e17273225ced",
+    "definitions_sha256": "2d22474e03ea184b7ed4fa9a457412ec4a509a01d50eec767ce62bb01e538b74",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -31280,7 +31280,7 @@
     "explicit_alignment_entries": 998,
     "explicit_initializer_entries": 998,
     "explicit_size_entries": 998,
-    "fixed_array_types": 96,
+    "fixed_array_types": 248,
     "fully_specified_entries": 998,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -31293,8 +31293,8 @@
       ".rdata": 4,
       ".text": 4
     },
-    "typed_entries": 767,
+    "typed_entries": 919,
     "unique_addresses": 1547,
-    "untyped_entries": 784
+    "untyped_entries": 632
   }
 }
