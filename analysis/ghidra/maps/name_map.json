@@ -10966,6 +10966,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1004b7e8",
+    "name": "grim_decode_jaz_texture_eh_handler",
+    "signature": "void grim_decode_jaz_texture_eh_handler(void)",
+    "comment": "compiler-generated exception-handler thunk for grim_decode_jaz_texture; loads its FuncInfo record and tail-jumps to __CxxFrameHandler"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004ba33",
     "name": "grim_pixel_format_init_yuv_eh_handler",
     "signature": "void grim_pixel_format_init_yuv_eh_handler(void)",

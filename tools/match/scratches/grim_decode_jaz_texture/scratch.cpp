@@ -97,7 +97,10 @@ unsigned char *grim_decode_jaz_texture(
     GrimJazPayload *payload = (GrimJazPayload *)unpacked;
     unsigned char *jpeg_data = payload->jpeg_data;
     unsigned int jpeg_size = payload->jpeg_size;
-    if (jpeg_data != 0) {
+    do {
+        if (jpeg_data == 0) {
+            break;
+        }
         GrimJpegDecompress context;
         GrimJazJpegError error;
         context.err = jpeg_std_error(&error.base);
@@ -121,18 +124,17 @@ unsigned char *grim_decode_jaz_texture(
         image = new unsigned char[*image_size];
         if (image == 0) {
             jpeg_destroy_decompress(&context);
-            return 0;
+            break;
         }
 
         *width = context.output_width;
-        *height = context.output_height;
         image += sizeof(GrimTgaHeader);
+        *height = context.output_height;
 
+        unsigned int row_samples =
+            context.output_width * context.output_components;
         GrimJpegRows scanline = (*context.mem->alloc_sarray)(
-            &context,
-            1,
-            context.output_width * context.output_components,
-            1);
+            &context, 1, row_samples, 1);
         while (context.output_scanline < context.output_height) {
             jpeg_read_scanlines(&context, scanline, 1);
             unsigned int destination_offset =
@@ -195,7 +197,7 @@ unsigned char *grim_decode_jaz_texture(
             delete unpacked;
         }
         return image;
-    }
+    } while (0);
 
     return 0;
 }

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "payload-failure-entry",
+      "find": "    if (jpeg_data != 0) {\n",
+      "replacements": [
+        {
+          "name": "one-pass-null-break",
+          "text": "    do {\n        if (jpeg_data == 0) {\n            break;\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "setjmp-failure-exit",
+      "find": "        if (setjmp(error.jump_buffer)) {\n            jpeg_destroy_decompress(&context);\n            if (image != 0) {\n                delete image;\n            }\n            return 0;\n        }\n",
+      "replacements": [
+        {
+          "name": "one-pass-break",
+          "text": "        if (setjmp(error.jump_buffer)) {\n            jpeg_destroy_decompress(&context);\n            if (image != 0) {\n                delete image;\n            }\n            break;\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "allocation-failure-exit",
+      "find": "        if (image == 0) {\n            jpeg_destroy_decompress(&context);\n            return 0;\n        }\n",
+      "replacements": [
+        {
+          "name": "one-pass-break",
+          "text": "        if (image == 0) {\n            jpeg_destroy_decompress(&context);\n            break;\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "one-pass-close",
+      "find": "        return image;\n    }\n\n    return 0;\n",
+      "replacements": [
+        {
+          "name": "do-while-close",
+          "text": "        return image;\n    } while (0);\n\n    return 0;\n"
+        }
+      ]
+    }
+  ]
+}

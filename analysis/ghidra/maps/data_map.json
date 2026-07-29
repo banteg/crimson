@@ -12346,6 +12346,13 @@
       "type": "float"
     },
     {
+      "address": "0x100516e8",
+      "comment": "MSVC C++ FuncInfo record referenced by grim_decode_jaz_texture and its exception-handler thunk; annotation-only compiler metadata, not port-owned game data.",
+      "kind": "code_label",
+      "name": "grim_decode_jaz_texture_eh_info",
+      "program": "grim.dll"
+    },
+    {
       "address": "0x1004cb48",
       "comment": "Single-precision reciprocal of 3 used for UNORM2 alpha expansion.",
       "name": "grim_unorm2_scale",

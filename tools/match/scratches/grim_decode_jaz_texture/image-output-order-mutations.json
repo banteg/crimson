@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "image-output-publication-order",
+      "find": "        *width = context.output_width;\n        *height = context.output_height;\n        image += sizeof(GrimTgaHeader);\n",
+      "replacements": [
+        {
+          "name": "width-image-height",
+          "text": "        *width = context.output_width;\n        image += sizeof(GrimTgaHeader);\n        *height = context.output_height;\n"
+        },
+        {
+          "name": "image-width-height",
+          "text": "        image += sizeof(GrimTgaHeader);\n        *width = context.output_width;\n        *height = context.output_height;\n"
+        },
+        {
+          "name": "height-width-image",
+          "text": "        *height = context.output_height;\n        *width = context.output_width;\n        image += sizeof(GrimTgaHeader);\n"
+        },
+        {
+          "name": "height-image-width",
+          "text": "        *height = context.output_height;\n        image += sizeof(GrimTgaHeader);\n        *width = context.output_width;\n"
+        },
+        {
+          "name": "image-height-width",
+          "text": "        image += sizeof(GrimTgaHeader);\n        *height = context.output_height;\n        *width = context.output_width;\n"
+        }
+      ]
+    }
+  ]
+}

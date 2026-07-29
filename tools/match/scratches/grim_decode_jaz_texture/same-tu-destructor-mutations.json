@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scope-destructor-definition",
+      "find": "struct GrimJazDecodeScope {\n    GrimJazDecodeScope();\n    ~GrimJazDecodeScope();\n    unsigned char *unpack(unsigned char *source, unsigned int *unpacked_size);\n};\n",
+      "replacements": [
+        {
+          "name": "same-tu-empty-definition",
+          "text": "struct GrimJazDecodeScope {\n    GrimJazDecodeScope();\n    ~GrimJazDecodeScope();\n    unsigned char *unpack(unsigned char *source, unsigned int *unpacked_size);\n};\n\nGrimJazDecodeScope::~GrimJazDecodeScope()\n{\n}\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "cd9ca081be0b89a3b8060650f29d85110f87950f365666a33133391aea4c34d9",
+  "audit_digest": "1456a322ed5cef13e204838d40841b4054488b0a4401e9664f46a4e2841aac2a",
   "entries": [
     {
       "address": 268574996,
@@ -5879,7 +5879,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "64dc92ecd2550c6e3f30e9d04335c2c10e33ac0ea16bc6fb4a6b204d332191fd",
+    "data_map_sha256": "258936e7afc90cabb39b5bc098875ae5a4f937d9f4d4796ada3b9c1e0f72349d",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd",
     "reference_image": {
@@ -5892,7 +5892,7 @@
   "summary": {
     "alias_names": 6,
     "alias_rows": 6,
-    "code_label_entries": 0,
+    "code_label_entries": 1,
     "definition_group_entries": 107,
     "definition_groups": 34,
     "entry_count": 276,
@@ -5912,7 +5912,7 @@
       ".rdata": 75,
       ".text": 2
     },
-    "source_entry_count": 276,
+    "source_entry_count": 277,
     "typed_entries": 185,
     "unique_addresses": 276,
     "untyped_entries": 91

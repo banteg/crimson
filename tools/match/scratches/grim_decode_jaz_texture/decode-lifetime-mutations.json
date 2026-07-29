@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "decode-entry-lifetimes",
+      "find": "    GrimJazDecodeScope scope;\n    unsigned int unpacked_size;\n    unsigned char *image = 0;\n    unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n",
+      "replacements": [
+        {
+          "name": "image-before-scope",
+          "text": "    unsigned char *image = 0;\n    GrimJazDecodeScope scope;\n    unsigned int unpacked_size;\n    unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n"
+        },
+        {
+          "name": "image-before-scope-staged",
+          "text": "    unsigned char *image;\n    GrimJazDecodeScope scope;\n    unsigned int unpacked_size;\n    image = 0;\n    unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n"
+        },
+        {
+          "name": "image-staged-after-scope",
+          "text": "    GrimJazDecodeScope scope;\n    unsigned int unpacked_size;\n    unsigned char *image;\n    image = 0;\n    unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n"
+        },
+        {
+          "name": "image-after-unpack",
+          "text": "    GrimJazDecodeScope scope;\n    unsigned int unpacked_size;\n    unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n    unsigned char *image = 0;\n"
+        },
+        {
+          "name": "scope-block",
+          "text": "    {\n        GrimJazDecodeScope scope;\n        unsigned int unpacked_size;\n        unsigned char *image = 0;\n        unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n"
+        },
+        {
+          "name": "image-outer-scope-block",
+          "text": "    unsigned char *image = 0;\n    {\n        GrimJazDecodeScope scope;\n        unsigned int unpacked_size;\n        unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n"
+        },
+        {
+          "name": "image-after-unpack-scope-block",
+          "text": "    {\n        GrimJazDecodeScope scope;\n        unsigned int unpacked_size;\n        unsigned char *unpacked = scope.unpack(source, &unpacked_size);\n        unsigned char *image = 0;\n"
+        }
+      ]
+    },
+    {
+      "name": "decode-scope-close",
+      "find": "    } while (0);\n\n    return 0;\n",
+      "replacements": [
+        {
+          "name": "close-scope-block",
+          "text": "    } while (0);\n    }\n\n    return 0;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "width-image-height-publication",
+      "find": "        *width = context.output_width;\n        *height = context.output_height;\n        image += sizeof(GrimTgaHeader);\n",
+      "replacements": [
+        {
+          "name": "width-image-height",
+          "text": "        *width = context.output_width;\n        image += sizeof(GrimTgaHeader);\n        *height = context.output_height;\n"
+        }
+      ]
+    },
+    {
+      "name": "scanline-allocation-schedule",
+      "find": "        GrimJpegRows scanline = (*context.mem->alloc_sarray)(\n            &context,\n            1,\n            context.output_width * context.output_components,\n            1);\n",
+      "replacements": [
+        {
+          "name": "row-samples-local",
+          "text": "        unsigned int row_samples =\n            context.output_width * context.output_components;\n        GrimJpegRows scanline = (*context.mem->alloc_sarray)(\n            &context, 1, row_samples, 1);\n"
+        },
+        {
+          "name": "component-count-local",
+          "text": "        int component_count = context.output_components;\n        GrimJpegRows scanline = (*context.mem->alloc_sarray)(\n            &context,\n            1,\n            context.output_width * component_count,\n            1);\n"
+        },
+        {
+          "name": "memory-local",
+          "text": "        GrimJpegMemoryManager *memory = context.mem;\n        GrimJpegRows scanline = (*memory->alloc_sarray)(\n            &context,\n            1,\n            context.output_width * context.output_components,\n            1);\n"
+        },
+        {
+          "name": "row-samples-then-memory",
+          "text": "        unsigned int row_samples =\n            context.output_width * context.output_components;\n        GrimJpegMemoryManager *memory = context.mem;\n        GrimJpegRows scanline = (*memory->alloc_sarray)(\n            &context, 1, row_samples, 1);\n"
+        },
+        {
+          "name": "memory-then-row-samples",
+          "text": "        GrimJpegMemoryManager *memory = context.mem;\n        unsigned int row_samples =\n            context.output_width * context.output_components;\n        GrimJpegRows scanline = (*memory->alloc_sarray)(\n            &context, 1, row_samples, 1);\n"
+        },
+        {
+          "name": "reversed-product",
+          "text": "        GrimJpegRows scanline = (*context.mem->alloc_sarray)(\n            &context,\n            1,\n            context.output_components * context.output_width,\n            1);\n"
+        },
+        {
+          "name": "decoder-alias",
+          "text": "        GrimJpegDecompress *decoder = &context;\n        GrimJpegRows scanline = (*decoder->mem->alloc_sarray)(\n            decoder,\n            1,\n            decoder->output_width * decoder->output_components,\n            1);\n"
+        }
+      ]
+    }
+  ]
+}

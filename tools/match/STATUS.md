@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**689/808** functions matched exactly, **128666/341963** code bytes (**37.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**690/808** functions matched exactly, **129451/341963** code bytes (**37.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **299771/341963** code bytes (**87.7%**).
+Fuzzy-weighted alignment is **299877/341963** code bytes (**87.7%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -93,7 +93,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279544/320805 | 87.1% | 671/671 | 320805/320805 | 100.0% | 559/671 |
-| grim.dll | 130/137 | 14153/21158 | 66.9% | 20227/21158 | 95.6% | 137/137 | 21159/21158 | 100.0% | 130/137 |
+| grim.dll | 131/137 | 14938/21158 | 70.6% | 20333/21158 | 96.1% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
@@ -775,7 +775,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## grim.dll
 
-**130/137** functions, **14153/21158** bytes (**66.9%**), **20227/21158** fuzzy-weighted bytes (**95.6%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
+**131/137** functions, **14938/21158** bytes (**70.6%**), **20333/21158** fuzzy-weighted bytes (**96.1%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -810,7 +810,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | grim_texture_init | 0x10004a50 | 83 | 83/83 | 0 | 38/38 | 100.00% | 38/38 | 1/0/0 |  | grim-texture-constructor |
 | match | grim_texture_release | 0x10004ab0 | 66 | 66/66 | 0 | 25/25 | 100.00% | 25/25 | 1/0/0 |  | grim-texture-destructor |
 | match | grim_path_has_extension | 0x10004b00 | 99 | 99/99 | 0 | 50/50 | 100.00% | 50/50 | 0/0/0 |  | grim-texture-extension |
-| wip | grim_decode_jaz_texture | 0x10004b70 | 785 | 679/785 | 106 | 252/252 | 86.51% | 32/252 | 18/3/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
+| match | grim_decode_jaz_texture | 0x10004b70 | 785 | 785/785 | 0 | 252/252 | 100.00% | 252/252 | 22/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
 | match | grim_jaz_jpeg_error_exit | 0x10004e90 | 41 | 41/41 | 0 | 14/14 | 100.00% | 14/14 | 1/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-jaz-jpeg-error |
 | wip | grim_texture_load_file | 0x10004ec0 | 591 | 496/591 | 95 | 234/235 | 84.01% | 5/235 | 23/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-texture-file-decode |
 | match | grim_texture_name_equals | 0x10005110 | 93 | 93/93 | 0 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |

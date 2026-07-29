@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "one-pass-wrapper-open",
+      "find": "    do {\n        if (jpeg_data == 0) {\n            break;\n        }\n",
+      "replacements": [
+        {
+          "name": "guard-before-do",
+          "text": "    if (jpeg_data == 0) {\n        return 0;\n    }\n    do {\n"
+        },
+        {
+          "name": "for-ever",
+          "text": "    for (;;) {\n        if (jpeg_data == 0) {\n            break;\n        }\n"
+        },
+        {
+          "name": "while-true",
+          "text": "    while (1) {\n        if (jpeg_data == 0) {\n            break;\n        }\n"
+        },
+        {
+          "name": "while-nonnull",
+          "text": "    while (jpeg_data != 0) {\n"
+        },
+        {
+          "name": "switch-nonnull",
+          "text": "    switch (jpeg_data != 0) {\n    case 1:\n"
+        }
+      ]
+    },
+    {
+      "name": "one-pass-wrapper-close",
+      "find": "    } while (0);\n\n    return 0;\n",
+      "replacements": [
+        {
+          "name": "block-close",
+          "text": "    }\n\n    return 0;\n"
+        }
+      ]
+    }
+  ]
+}

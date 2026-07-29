@@ -1,5 +1,5 @@
 {
-  "audit_digest": "cd9ca081be0b89a3b8060650f29d85110f87950f365666a33133391aea4c34d9",
+  "audit_digest": "1456a322ed5cef13e204838d40841b4054488b0a4401e9664f46a4e2841aac2a",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -1953,7 +1953,7 @@
           "comdat_selection": 1,
           "function": "grim_decode_jaz_texture",
           "kind": "section",
-          "logical_section_size": 784,
+          "logical_section_size": 800,
           "object": "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
           "section": ".text",
           "size": null,
@@ -10885,7 +10885,7 @@
           "comdat_selection": 1,
           "function": "grim_decode_jaz_texture",
           "kind": "section",
-          "logical_section_size": 784,
+          "logical_section_size": 800,
           "object": "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
           "section": ".text",
           "size": null,
@@ -18582,12 +18582,12 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "64dc92ecd2550c6e3f30e9d04335c2c10e33ac0ea16bc6fb4a6b204d332191fd"
+        "sha256": "258936e7afc90cabb39b5bc098875ae5a4f937d9f4d4796ada3b9c1e0f72349d"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
         "repository_relative": true,
-        "sha256": "d18e1a987277c1cbf6a710ed1a4abb1df2879b72569d1c0db60643a9d4f79a91"
+        "sha256": "edb3ac63318a2cfdce1735cd238941d774df9e36eff0d6d9da40c5a8cc546051"
       },
       {
         "path": "analysis/matching_scope.json",

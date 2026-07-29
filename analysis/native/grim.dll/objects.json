@@ -59,7 +59,7 @@
     "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "cd9ca081be0b89a3b8060650f29d85110f87950f365666a33133391aea4c34d9",
+  "audit_digest": "1456a322ed5cef13e204838d40841b4054488b0a4401e9664f46a4e2841aac2a",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7265,12 +7265,12 @@
         {
           "path": "tools/match/scratches/grim_decode_jaz_texture/scratch.cpp",
           "repository_relative": true,
-          "sha256": "3259e56893d4ae20c0127502e29aacb2a53996f182b65d12bb046879c55de26e"
+          "sha256": "21bec78205a884baba9032d460b34b904188436fd182dbc0b21f66fe46fe5609"
         },
         {
           "path": "tools/match/scratches/grim_decode_jaz_texture/scratch.conf",
           "repository_relative": true,
-          "sha256": "f443d5ba85204ee5c67f7db593cdd9a560d3d253c8040d63b236727f806ea6e6"
+          "sha256": "6e1d427f2b20153fd1ecfa85b41595371a0b0aa61bdf977d53c729d6696e337b"
         },
         {
           "path": "tools/match/cl.sh",
@@ -7285,7 +7285,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_decode_jaz_texture/scratch.conf",
-      "config_sha256": "f443d5ba85204ee5c67f7db593cdd9a560d3d253c8040d63b236727f806ea6e6",
+      "config_sha256": "6e1d427f2b20153fd1ecfa85b41595371a0b0aa61bdf977d53c729d6696e337b",
       "effective_end": 268455553,
       "end": 268455553,
       "function": "grim_decode_jaz_texture",
@@ -7293,21 +7293,21 @@
         {
           "address": 268454768,
           "canonical_config": "tools/match/scratches/grim_decode_jaz_texture/scratch.conf",
-          "canonical_config_sha256": "f443d5ba85204ee5c67f7db593cdd9a560d3d253c8040d63b236727f806ea6e6",
+          "canonical_config_sha256": "6e1d427f2b20153fd1ecfa85b41595371a0b0aa61bdf977d53c729d6696e337b",
           "canonical_scratch": "tools/match/scratches/grim_decode_jaz_texture",
           "canonical_source": "tools/match/scratches/grim_decode_jaz_texture/scratch.cpp",
-          "canonical_source_sha256": "3259e56893d4ae20c0127502e29aacb2a53996f182b65d12bb046879c55de26e",
+          "canonical_source_sha256": "21bec78205a884baba9032d460b34b904188436fd182dbc0b21f66fe46fe5609",
           "effective_end": 268455553,
           "end": 268455553,
           "function": "grim_decode_jaz_texture",
           "match": {
             "candidate_instructions": 252,
             "masked_mismatches": 0,
-            "masked_ok": 18,
-            "masked_unresolved": 3,
-            "prefix_instructions": 32,
-            "ratio": 0.8650793650793651,
-            "state": "wip",
+            "masked_ok": 22,
+            "masked_unresolved": 0,
+            "prefix_instructions": 252,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 252
           },
           "object_function_symbol": "?grim_decode_jaz_texture@@YAPAEPAEIPAIPAH2@Z",
@@ -7317,19 +7317,19 @@
       "match": {
         "candidate_instructions": 252,
         "masked_mismatches": 0,
-        "masked_ok": 18,
-        "masked_unresolved": 3,
-        "prefix_instructions": 32,
-        "ratio": 0.8650793650793651,
-        "state": "wip",
+        "masked_ok": 22,
+        "masked_unresolved": 0,
+        "prefix_instructions": 252,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 252
       },
       "object": "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
       "object_function_symbol": "?grim_decode_jaz_texture@@YAPAEPAEIPAIPAH2@Z",
-      "object_sha256": "3d2ede57bda608c343d34f57c72cb10814d3efe38e9a98994f23246ff2876f90",
+      "object_sha256": "6fb7b6f4cb341370b4903f646326eeba81fee48b4f82c31a8bb78297c0bed1a5",
       "scratch": "tools/match/scratches/grim_decode_jaz_texture",
       "source": "tools/match/scratches/grim_decode_jaz_texture/scratch.cpp",
-      "source_sha256": "3259e56893d4ae20c0127502e29aacb2a53996f182b65d12bb046879c55de26e",
+      "source_sha256": "21bec78205a884baba9032d460b34b904188436fd182dbc0b21f66fe46fe5609",
       "target_size": 785,
       "translation_unit": {
         "kind": "isolated",
@@ -17116,7 +17116,7 @@
       {
         "path": "analysis/ghidra/maps/name_map.json",
         "repository_relative": true,
-        "sha256": "d18e1a987277c1cbf6a710ed1a4abb1df2879b72569d1c0db60643a9d4f79a91"
+        "sha256": "edb3ac63318a2cfdce1735cd238941d774df9e36eff0d6d9da40c5a8cc546051"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -17182,8 +17182,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 130,
-    "wip": 7
+    "match": 131,
+    "wip": 6
   },
   "translation_units": {
     "cluster_count": 3,
