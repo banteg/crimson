@@ -598,9 +598,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     assert coverage["covered_symbols"] == 53
     assert coverage["import_symbols"] == 20
     assert coverage["generated_import_symbols"] == 5
-    assert coverage["archive_symbols"] == 23
+    assert coverage["archive_symbols"] == 26
     assert coverage["link_dependency_symbols"] == 24
-    assert coverage["placeholder_symbols"] == 25
+    assert coverage["placeholder_symbols"] == 22
     assert coverage["runnable"] is False
     assert [
         provider.name
@@ -621,10 +621,12 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     ] == [
         "msvcrt.dll",
         "directx-8.1-d3dx8-static",
+        "grim-jaz-libjpeg-6a-vc6-static",
+        "zlib-1.1.3-static",
         "msvc6-runtime-static",
         "msvc6-toolchain",
     ]
-    assert len(config.archives) == 2
+    assert len(config.archives) == 4
     archives = {archive.id: archive for archive in config.archives}
     assert archives["directx-8.1-d3dx8"].size == 2150226
     assert archives["directx-8.1-d3dx8"].sha256 == (
@@ -634,6 +636,17 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     assert archives["vc6-sp6-msvcrt"].sha256 == (
         "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63"
     )
+    assert archives["ijg-libjpeg-6a-vc6-jaz"].sha256 == (
+        "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c"
+    )
+    assert (
+        archives["ijg-libjpeg-6a-vc6-jaz"].provenance.derived_artifact
+        == "ijg-libjpeg-6a-vc6-jaz-provider"
+    )
+    assert archives["zlib-1.1.3-vc6"].sha256 == (
+        "6b44ac2a8a67123b929cb9286c343730af5f6777609a54e12e402e5ac7e503b0"
+    )
+    assert archives["zlib-1.1.3-vc6"].provenance.derived_artifact == "zlib-1.1.3-vc6-provider"
 
 
 def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
@@ -646,6 +659,8 @@ def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
 
     assert manifest["schema"] == 3
     assert manifest["summary"]["link_dependency_symbols"] == 24
+    assert manifest["summary"]["archive_symbols"] == 26
+    assert manifest["summary"]["placeholder_symbols"] == 22
     assert manifest["summary"]["retained_link_dependency_import_symbols"] == 17
     assert manifest["summary"]["validated_output_import_symbols"] == 52
     dependencies = {
@@ -808,7 +823,7 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
 
-    assert len(symbols) == 25
+    assert len(symbols) == 22
     assert [section.name for section in coff.sections] == [".text"]
     assert "_D3DXCreateTexture@32" not in symbols
     assert "_d3dx_copy_texture_filtered@24" not in symbols

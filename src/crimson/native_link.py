@@ -175,8 +175,9 @@ class NativeProviderEvidence:
 @dataclass(frozen=True, slots=True)
 class NativeProviderArchiveProvenance:
     path: Path
-    source_artifact: str
-    member: str
+    source_artifact: str | None = None
+    member: str | None = None
+    derived_artifact: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -642,54 +643,95 @@ def load_native_provider_config(
                 f"{label}.provenance.path does not exist: "
                 f"{raw_provenance.get('path')}",
             )
+        provenance_payload = json.loads(provenance_path.read_text(encoding="utf-8"))
         source_artifact = raw_provenance.get("source_artifact")
         member = raw_provenance.get("member")
-        if not isinstance(source_artifact, str) or not source_artifact:
-            raise ValueError(f"{label}.provenance.source_artifact must be non-empty")
-        if not isinstance(member, str) or not member:
-            raise ValueError(f"{label}.provenance.member must be non-empty")
-        provenance_payload = json.loads(provenance_path.read_text(encoding="utf-8"))
-        source_rows = provenance_payload.get("source_artifacts")
-        if not isinstance(source_rows, list):
-            raise TypeError(
-                f"{label}.provenance.path lacks source_artifacts",
-            )
-        source_row = next(
+        derived_artifact = raw_provenance.get("derived_artifact")
+        provenance_kinds = sum(
             (
-                row
-                for row in source_rows
-                if isinstance(row, dict) and row.get("id") == source_artifact
+                source_artifact is not None or member is not None,
+                derived_artifact is not None,
             ),
-            None,
         )
-        if source_row is None:
+        if provenance_kinds != 1:
             raise ValueError(
-                f"{label}: provenance lacks source artifact {source_artifact!r}",
+                f"{label}.provenance must select one source member or derived artifact",
             )
-        member_row = next(
-            (
+        provenance_row: dict[str, Any]
+        if derived_artifact is not None:
+            if not isinstance(derived_artifact, str) or not derived_artifact:
+                raise ValueError(f"{label}.provenance.derived_artifact must be non-empty")
+            derived_rows = provenance_payload.get("derived_artifacts")
+            if not isinstance(derived_rows, list):
+                raise TypeError(f"{label}.provenance.path lacks derived_artifacts")
+            matched_rows = [
                 row
-                for row in source_row.get("members", [])
-                if isinstance(row, dict) and row.get("path") == member
-            ),
-            None,
-        )
-        if member_row is None:
-            raise ValueError(
-                f"{label}: provenance lacks member {member!r}",
+                for row in derived_rows
+                if isinstance(row, dict) and row.get("id") == derived_artifact
+            ]
+            if len(matched_rows) != 1:
+                raise ValueError(
+                    f"{label}: provenance lacks unique derived artifact {derived_artifact!r}",
+                )
+            provenance_row = matched_rows[0]
+            derived_path = repository_path(
+                provenance_row.get("path"),
+                label=f"{label}.derived_artifact.path",
             )
-        if member_row.get("sha256") != archive_sha256:
+            if derived_path != archive_path:
+                raise ValueError(
+                    f"{label}: archive path disagrees with derived artifact path",
+                )
+            source_artifact = None
+            member = None
+        else:
+            if not isinstance(source_artifact, str) or not source_artifact:
+                raise ValueError(f"{label}.provenance.source_artifact must be non-empty")
+            if not isinstance(member, str) or not member:
+                raise ValueError(f"{label}.provenance.member must be non-empty")
+            source_rows = provenance_payload.get("source_artifacts")
+            if not isinstance(source_rows, list):
+                raise TypeError(
+                    f"{label}.provenance.path lacks source_artifacts",
+                )
+            source_row = next(
+                (
+                    row
+                    for row in source_rows
+                    if isinstance(row, dict) and row.get("id") == source_artifact
+                ),
+                None,
+            )
+            if source_row is None:
+                raise ValueError(
+                    f"{label}: provenance lacks source artifact {source_artifact!r}",
+                )
+            member_row = next(
+                (
+                    row
+                    for row in source_row.get("members", [])
+                    if isinstance(row, dict) and row.get("path") == member
+                ),
+                None,
+            )
+            if member_row is None:
+                raise ValueError(
+                    f"{label}: provenance lacks member {member!r}",
+                )
+            provenance_row = member_row
+            derived_artifact = None
+        if provenance_row.get("sha256") != archive_sha256:
             raise ValueError(
-                f"{label}: archive SHA-256 disagrees with provenance member",
+                f"{label}: archive SHA-256 disagrees with provenance artifact",
             )
         try:
-            archive_size = int(member_row.get("size"))
+            archive_size = int(provenance_row.get("size"))
         except (TypeError, ValueError) as error:
             raise ValueError(
-                f"{label}: provenance member size must be an integer",
+                f"{label}: provenance artifact size must be an integer",
             ) from error
         if archive_size <= 0:
-            raise ValueError(f"{label}: provenance member size must be positive")
+            raise ValueError(f"{label}: provenance artifact size must be positive")
         if archive_path.exists():
             if not archive_path.is_file():
                 raise ValueError(f"{label}.path is not a file: {archive_path}")
@@ -713,6 +755,7 @@ def load_native_provider_config(
                 path=provenance_path,
                 source_artifact=source_artifact,
                 member=member,
+                derived_artifact=derived_artifact,
             ),
         )
         archives.append(archive)
@@ -5340,8 +5383,14 @@ def _native_provider_archive_payload(
                 archive.provenance.path,
                 repo_root=repo_root,
             ),
-            "member": archive.provenance.member,
-            "source_artifact": archive.provenance.source_artifact,
+            **(
+                {"derived_artifact": archive.provenance.derived_artifact}
+                if archive.provenance.derived_artifact is not None
+                else {
+                    "member": archive.provenance.member,
+                    "source_artifact": archive.provenance.source_artifact,
+                }
+            ),
         },
     }
 

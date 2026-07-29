@@ -16,6 +16,15 @@
       }
     },
     {
+      "id": "ijg-libjpeg-6a-vc6-jaz",
+      "path": "tools/native/providers/build/ijg-libjpeg-6a/libjpeg.lib",
+      "sha256": "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "derived_artifact": "ijg-libjpeg-6a-vc6-jaz-provider"
+      }
+    },
+    {
       "id": "vc6-sp6-msvcrt",
       "path": "tools/native/providers/build/vc6-sp6/vc98/lib/msvcrt.lib",
       "sha256": "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63",
@@ -23,6 +32,15 @@
         "path": "analysis/library_provenance.json",
         "source_artifact": "visual-cpp-6-sp6-media",
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib"
+      }
+    },
+    {
+      "id": "zlib-1.1.3-vc6",
+      "path": "tools/native/providers/build/zlib-1.1.3/zlib.lib",
+      "sha256": "6b44ac2a8a67123b929cb9286c343730af5f6777609a54e12e402e5ac7e503b0",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "derived_artifact": "zlib-1.1.3-vc6-provider"
       }
     }
   ],
@@ -320,6 +338,10 @@
         {
           "alias": "_d3dx_copy_texture_filtered@24",
           "target": "_D3DXComputeNormalMap@24"
+        },
+        {
+          "alias": "_jpeg_std_error",
+          "target": "?jpeg_std_error@D3DX@@YAPAUjpeg_error_mgr@1@PAU21@@Z"
         }
       ],
       "symbols": [
@@ -341,6 +363,10 @@
         },
         {
           "name": "_d3dx_copy_texture_filtered@24",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_std_error",
           "binding": "function"
         }
       ]
@@ -625,6 +651,28 @@
       ]
     },
     {
+      "name": "grim-jaz-libjpeg-6a-vc6-static",
+      "kind": "static-library",
+      "resolution": "archive-library",
+      "archive": "ijg-libjpeg-6a-vc6-jaz",
+      "evidence": [
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The deterministic VC6 provider archive reproduces the JAZ jpeg_destroy_decompress entry and its jpeg_destroy dependency byte-for-byte."
+        },
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "The provider recipe, compiler profiles, archive hashes, and exact reference addresses are recorded here."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_jpeg_destroy_decompress",
+          "binding": "function"
+        }
+      ]
+    },
+    {
       "name": "grim-jaz-libjpeg-6a-static",
       "kind": "static-library",
       "resolution": "placeholder-object",
@@ -648,10 +696,6 @@
           "binding": "function"
         },
         {
-          "name": "_jpeg_destroy_decompress",
-          "binding": "function"
-        },
-        {
           "name": "_jpeg_finish_decompress",
           "binding": "function"
         },
@@ -666,21 +710,28 @@
         {
           "name": "_jpeg_start_decompress",
           "binding": "function"
-        },
-        {
-          "name": "_jpeg_std_error",
-          "binding": "function"
         }
       ]
     },
     {
       "name": "zlib-1.1.3-static",
       "kind": "static-library",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "archive": "zlib-1.1.3-vc6",
       "evidence": [
         {
-          "path": "analysis/ghidra/raw/grim.dll_strings.txt",
-          "note": "The reference image identifies the embedded zlib/deflate implementation as 1.1.3."
+          "path": "analysis/library_provenance.json",
+          "note": "The normalized VC6 archive is derived from the pinned zlib 1.1.3 source release and has a reproducible hash."
+        },
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "The stock uncompress entry is a 156-byte exact reference match; the archive contains 24 exact Grim functions."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_zlib_uncompress",
+          "target": "_uncompress"
         }
       ],
       "symbols": [

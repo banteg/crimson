@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -28,14 +28,46 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
       }
+    },
+    {
+      "file": {
+        "path": "tools/native/providers/build/ijg-libjpeg-6a/libjpeg.lib",
+        "repository_relative": true,
+        "sha256": "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c"
+      },
+      "id": "ijg-libjpeg-6a-vc6-jaz",
+      "provenance": {
+        "derived_artifact": "ijg-libjpeg-6a-vc6-jaz-provider",
+        "manifest": {
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
+        }
+      }
+    },
+    {
+      "file": {
+        "path": "tools/native/providers/build/zlib-1.1.3/zlib.lib",
+        "repository_relative": true,
+        "sha256": "6b44ac2a8a67123b929cb9286c343730af5f6777609a54e12e402e5ac7e503b0"
+      },
+      "id": "zlib-1.1.3-vc6",
+      "provenance": {
+        "derived_artifact": "zlib-1.1.3-vc6-provider",
+        "manifest": {
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
+        }
+      }
     }
   ],
-  "audit_digest": "667b55c336304e8d74c6c6dd6ace42f886485a4a80f61faafc86dc31d4bbfcaf",
+  "audit_digest": "6e14fa5cfca89f417f6a2fa76cbd69ee99843f89954b8bf1f2d84b3d5713d526",
   "image": "grim.dll",
   "kind": "crimson-native-linked-image",
   "mode": "structural",
@@ -46,7 +78,7 @@
       "dll": true,
       "entry_point_rva": 24208,
       "image_base": 268435456,
-      "image_size": 282624,
+      "image_size": 299008,
       "machine": 332,
       "optional_magic": 267,
       "section_count": 5,
@@ -54,19 +86,19 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "03b6b017ab462936e5e84b8bdd03e1334a0df88508de3b28b4c5bb5551735f90"
+    "sha256": "12f557e62dc06fa7ade085d0f3538aa5f96bbfc555cd1d12b08ab29ca36bc0b0"
   },
   "placeholder_object": {
     "path": "analysis/native/grim.dll/link/providers/placeholders.obj",
     "repository_relative": true,
-    "sha256": "b5cb2f56256bce022040848aea61af80b8e3c1c30729ec506a0838abf1a63718",
-    "symbol_count": 25
+    "sha256": "458596c461966821a17ae69aef70e1bee9788b816ca053bde15a219876a4d688",
+    "symbol_count": 22
   },
   "provider_config": {
-    "declared_sha256": "a1498af9ef5171f99c814198667ce83a3c52cb06fedd22317d7646a1b3d6284e",
+    "declared_sha256": "4fa8ffed33dd6026f67c154a01e00894504a21a5e1135e1f4a6ddb3722476687",
     "path": "tools/native/providers/grim.dll.json",
     "repository_relative": true,
-    "sha256": "a1498af9ef5171f99c814198667ce83a3c52cb06fedd22317d7646a1b3d6284e"
+    "sha256": "4fa8ffed33dd6026f67c154a01e00894504a21a5e1135e1f4a6ddb3722476687"
   },
   "providers": [
     {
@@ -95,7 +127,7 @@
           "note": "The provenance manifest pins the original VC6 SP6 MSVCRT import archive used by the reference runtime seam.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
         }
       ],
       "kind": "reference-import",
@@ -290,12 +322,16 @@
         "object": {
           "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-static-aliases.obj",
           "repository_relative": true,
-          "sha256": "da463198dbc4893bce696f441dc7035b81e5acab5f366ec2e5a4dc91c62e21ec"
+          "sha256": "e715ddc41b7740d49649c8edd8d3d384dd17633f5bc96327b3a17943e6a7cd0d"
         },
         "symbols": [
           {
             "alias": "_d3dx_copy_texture_filtered@24",
             "target": "_D3DXComputeNormalMap@24"
+          },
+          {
+            "alias": "_jpeg_std_error",
+            "target": "?jpeg_std_error@D3DX@@YAPAUjpeg_error_mgr@1@PAU21@@Z"
           }
         ]
       },
@@ -311,13 +347,13 @@
           "note": "The provenance manifest pins the exact DirectX 8.1 SDK archive whose normalized functions match the reference image.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
         },
         {
           "note": "The archive proof records exact matches for the four public APIs and the internal D3DXComputeNormalMap body.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "4cc5474e9f00bf7210015a8164bf103821ab18420579a99607c36e507011b40b"
+          "sha256": "13303cdf1d6b8d5a54c3a14562f77936697beb2874305aa716deb2a871c0dda9"
         }
       ],
       "kind": "static-library",
@@ -329,7 +365,8 @@
         "_D3DXCreateTextureFromFileExA@56",
         "_D3DXCreateTextureFromFileInMemoryEx@60",
         "_D3DXVec2Normalize@8",
-        "_d3dx_copy_texture_filtered@24"
+        "_d3dx_copy_texture_filtered@24",
+        "_jpeg_std_error"
       ]
     },
     {
@@ -438,7 +475,7 @@
           "note": "The pinned DirectX 8.1 archive records these decorated import references in the selected members.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
         }
       ],
       "import_library": {
@@ -504,7 +541,7 @@
           "note": "The selected D3DX8 resource member records a decorated DeleteObject import reference.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
         }
       ],
       "import_library": {
@@ -559,7 +596,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 import references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
         }
       ],
       "import_library": {
@@ -576,6 +613,30 @@
         "__imp__RegCloseKey@4",
         "__imp__RegOpenKeyA@12",
         "__imp__RegQueryValueExA@24"
+      ]
+    },
+    {
+      "archive": "ijg-libjpeg-6a-vc6-jaz",
+      "evidence": [
+        {
+          "note": "The deterministic VC6 provider archive reproduces the JAZ jpeg_destroy_decompress entry and its jpeg_destroy dependency byte-for-byte.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
+        },
+        {
+          "note": "The provider recipe, compiler profiles, archive hashes, and exact reference addresses are recorded here.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "13303cdf1d6b8d5a54c3a14562f77936697beb2874305aa716deb2a871c0dda9"
+        }
+      ],
+      "kind": "static-library",
+      "name": "grim-jaz-libjpeg-6a-vc6-static",
+      "resolution": "archive-library",
+      "scope": "closure",
+      "symbols": [
+        "_jpeg_destroy_decompress"
       ]
     },
     {
@@ -600,26 +661,44 @@
       "symbols": [
         "_grim_jpeg_memory_src",
         "_jpeg_CreateDecompress",
-        "_jpeg_destroy_decompress",
         "_jpeg_finish_decompress",
         "_jpeg_read_header",
         "_jpeg_read_scanlines",
-        "_jpeg_start_decompress",
-        "_jpeg_std_error"
+        "_jpeg_start_decompress"
       ]
     },
     {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/zlib-1-1-3-static-aliases.obj",
+          "repository_relative": true,
+          "sha256": "4dff7fa84eba2dfef94f60f24bc1c8634573697355bb025f4419d313c392d0b7"
+        },
+        "symbols": [
+          {
+            "alias": "_zlib_uncompress",
+            "target": "_uncompress"
+          }
+        ]
+      },
+      "archive": "zlib-1.1.3-vc6",
       "evidence": [
         {
-          "note": "The reference image identifies the embedded zlib/deflate implementation as 1.1.3.",
-          "path": "analysis/ghidra/raw/grim.dll_strings.txt",
+          "note": "The normalized VC6 archive is derived from the pinned zlib 1.1.3 source release and has a reproducible hash.",
+          "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "6b2f4b08f3e1d441f2d618a6e604ac73de8e3bd1cad6d0458e3ccc654ced3391"
+          "sha256": "2c13313d63703a8ace9dccbea10094e30193e43336e2cb9c4de786146e95d094"
+        },
+        {
+          "note": "The stock uncompress entry is a 156-byte exact reference match; the archive contains 24 exact Grim functions.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "13303cdf1d6b8d5a54c3a14562f77936697beb2874305aa716deb2a871c0dda9"
         }
       ],
       "kind": "static-library",
       "name": "zlib-1.1.3-static",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
       "scope": "closure",
       "symbols": [
         "_zlib_uncompress"
@@ -638,7 +717,7 @@
           "note": "VC6 SP6 atonexit.obj uniquely matches Grim's __onexit and _atexit functions byte-for-byte.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "4cc5474e9f00bf7210015a8164bf103821ab18420579a99607c36e507011b40b"
+          "sha256": "13303cdf1d6b8d5a54c3a14562f77936697beb2874305aa716deb2a871c0dda9"
         }
       ],
       "kind": "static-library",
@@ -656,13 +735,13 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "69562e0ba54b6ec1199d8d4fd7c247112d3309610f90353b48c2ecc319ff290d"
+          "sha256": "a1a3ac0bfde781c892505347b78ed18e5026087d56850c4a2a914f17eace54b2"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "4cc5474e9f00bf7210015a8164bf103821ab18420579a99607c36e507011b40b"
+          "sha256": "13303cdf1d6b8d5a54c3a14562f77936697beb2874305aa716deb2a871c0dda9"
         }
       ],
       "kind": "toolchain",
@@ -885,13 +964,13 @@
   "schema": 3,
   "status": "linked",
   "summary": {
-    "archive_symbols": 23,
+    "archive_symbols": 26,
     "covered_symbols": 53,
     "generated_import_symbols": 5,
     "import_symbols": 20,
-    "input_object_count": 148,
+    "input_object_count": 151,
     "link_dependency_symbols": 24,
-    "placeholder_symbols": 25,
+    "placeholder_symbols": 22,
     "providers": [
       {
         "alias_count": 1,
@@ -934,13 +1013,13 @@
         "symbol_count": 16
       },
       {
-        "alias_count": 1,
+        "alias_count": 2,
         "archive": "directx-8.1-d3dx8",
         "kind": "static-library",
         "name": "directx-8.1-d3dx8-static",
         "resolution": "archive-library",
         "scope": "closure",
-        "symbol_count": 5
+        "symbol_count": 6
       },
       {
         "alias_count": 20,
@@ -967,16 +1046,26 @@
         "symbol_count": 3
       },
       {
+        "archive": "ijg-libjpeg-6a-vc6-jaz",
+        "kind": "static-library",
+        "name": "grim-jaz-libjpeg-6a-vc6-static",
+        "resolution": "archive-library",
+        "scope": "closure",
+        "symbol_count": 1
+      },
+      {
         "kind": "static-library",
         "name": "grim-jaz-libjpeg-6a-static",
         "resolution": "placeholder-object",
         "scope": "closure",
-        "symbol_count": 8
+        "symbol_count": 6
       },
       {
+        "alias_count": 1,
+        "archive": "zlib-1.1.3-vc6",
         "kind": "static-library",
         "name": "zlib-1.1.3-static",
-        "resolution": "placeholder-object",
+        "resolution": "archive-library",
         "scope": "closure",
         "symbol_count": 1
       },

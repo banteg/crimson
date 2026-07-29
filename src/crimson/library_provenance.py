@@ -93,6 +93,42 @@ def load_library_provenance(path: Path = DEFAULT_PROVENANCE_PATH) -> dict[str, A
             if re.fullmatch(r"[0-9a-f]{64}", str(member.get("sha256", ""))) is None:
                 raise ValueError(f"{path}: source member {member.get('path')!r} has invalid sha256")
 
+    derived = payload.get("derived_artifacts", [])
+    if not isinstance(derived, list):
+        raise TypeError(f"{path}: derived_artifacts must be a list")
+    derived_ids = [str(artifact.get("id", "")) for artifact in derived]
+    if any(not artifact_id for artifact_id in derived_ids):
+        raise ValueError(f"{path}: every derived artifact requires an id")
+    if len(derived_ids) != len(set(derived_ids)):
+        raise ValueError(f"{path}: duplicate derived artifact id")
+    for artifact in derived:
+        artifact_id = str(artifact["id"])
+        artifact_path = Path(str(artifact.get("path", "")))
+        if not artifact_path.parts or artifact_path.is_absolute() or ".." in artifact_path.parts:
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} requires a repository-relative path")
+        if int(artifact.get("size", 0)) <= 0:
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} requires a positive size")
+        if re.fullmatch(r"[0-9a-f]{64}", str(artifact.get("sha256", ""))) is None:
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} has invalid sha256")
+        recipe = Path(str(artifact.get("recipe", "")))
+        if not recipe.parts or recipe.is_absolute() or ".." in recipe.parts:
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} requires a repository-relative recipe")
+        derived_sources = artifact.get("source_artifacts")
+        if not isinstance(derived_sources, list) or not derived_sources:
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} requires source_artifacts")
+        if len(derived_sources) != len(set(map(str, derived_sources))):
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} repeats a source artifact")
+        unknown_sources = sorted(set(map(str, derived_sources)) - known_sources)
+        if unknown_sources:
+            raise ValueError(
+                f"{path}: derived artifact {artifact_id!r} has unknown source artifacts {unknown_sources}",
+            )
+        tools = artifact.get("tools")
+        if not isinstance(tools, dict) or not tools:
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} requires tool hashes")
+        if any(re.fullmatch(r"[0-9a-f]{64}", str(value)) is None for value in tools.values()):
+            raise ValueError(f"{path}: derived artifact {artifact_id!r} has invalid tool hashes")
+
     known_artifacts = set(artifact_ids)
     for artifact in artifacts:
         for component in artifact.get("components", []):

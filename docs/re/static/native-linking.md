@@ -156,11 +156,13 @@ from `MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll`. The original
 VC6 SP6 `MSVCRT.LIB` now supplies 15 of those imports plus the exact
 `atonexit.obj` runtime adapter and `dllsupp.obj` toolchain absolutes: 18
 closure symbols total. The original DirectX 8.1 `d3dx8.lib` supplies another
-five closure symbols, including a byte-proven alias from the recovered
+six closure symbols, including byte-proven aliases from the recovered
 `d3dx_copy_texture_filtered` name to the archive's
-`D3DXComputeNormalMap`. Five closure imports still use generated import
-libraries, and 25 static-library or host-replaced symbols remain explicit
-placeholders.
+`D3DXComputeNormalMap` and from `jpeg_std_error` to the archive's namespaced
+IJG body. Deterministic VC6 builds from the pinned IJG 6a and zlib 1.1.3
+sources supply two more closure symbols. Five closure imports still use
+generated import libraries, and 22 static-library or host-replaced symbols
+remain explicit placeholders.
 
 The D3DX archive also needs 24 decorated platform symbols while the linker
 selects and prunes its members. These are modeled as `link-dependency`
@@ -169,8 +171,9 @@ the output and discards seven unused edges, including `FindResourceW`; every
 retained output import is required to exist in the pinned reference PE table.
 Every provider group cites repository evidence.
 
-The archives are ignored proprietary inputs, pinned by size and SHA-256 to
-`analysis/library_provenance.json`. Provision them at the configured paths
+All provider archives are ignored inputs pinned by size and SHA-256 to
+`analysis/library_provenance.json`. Extract the proprietary historical
+archives and rebuild the open-source codec archives at their configured paths
 before linking:
 
 ```bash
@@ -183,17 +186,26 @@ mkdir -p tools/native/providers/build/directx-8.1
 unzip -j /path/to/DX81SDK_FULL.exe \
   DXF/DXSDK/lib/d3dx8.lib \
   -d tools/native/providers/build/directx-8.1
+
+uv run python scripts/build_native_codec_providers.py \
+  --jpeg-tar /path/to/jpegsrc.v6a.tar.gz \
+  --zlib-tar /path/to/zlib-1.1.3.tar.gz
 ```
 
-The command rebuilds the canonical audit, rejects archive drift, synthesizes
-the five remaining closure imports and 24 D3DX link dependencies with the
-recorded VC6 tools, emits deterministic weak COFF aliases where compiler
-decoration differs from the reference export name, and creates an explicitly
-labeled placeholder COFF object for the remaining providers. It then invokes
-the VC6 release linker with the recovered entry point, image base, export
-definition, and dead-code elimination. It verifies all 20 configured closure
-exports plus the complete output import-table subset against the reference
-image. It writes
+The codec recipe verifies its pinned source and tool hashes, normalizes archive
+and COFF timestamps, and requires exact matches for `jpeg_destroy_decompress`,
+its `jpeg_destroy` dependency, and zlib's `uncompress` entry before publishing
+either archive.
+
+The link command rebuilds the canonical audit, rejects archive drift,
+synthesizes the five remaining closure imports and 24 D3DX link dependencies
+with the recorded VC6 tools, emits deterministic weak COFF aliases where
+compiler decoration differs from the reference export name, and creates an
+explicitly labeled placeholder COFF object for the remaining providers. It
+then invokes the VC6 release linker with the recovered entry point, image
+base, export definition, and dead-code elimination. It verifies all 20
+configured closure exports plus the complete output import-table subset
+against the reference image. It writes
 `analysis/native/grim.dll/link/link.json`; bulk PE, map, library, response,
 log, and provider outputs remain ignored. Generated archive, object, PE
 header, and PE export-directory timestamps are normalized, so identical
@@ -201,7 +213,7 @@ inputs produce the same linked-image hash.
 
 This is a structural linker milestone, not a runnable DLL or a byte-match
 claim. `link.json.runnable` stays false while any placeholder symbol remains.
-The canonical closure report also keeps those 25 references unresolved, so
+The canonical closure report also keeps those 22 references unresolved, so
 `all_references_closed` cannot pass merely because a generated stub made the
 linker accept the image. Replacing each placeholder group with its actual
 provider object is the path from a structural image to a runnable one.

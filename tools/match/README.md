@@ -25,7 +25,8 @@ and their existing scratches remain available there as analysis evidence, but
 are omitted from default scores, validation, triage, and worker shards.
 The IJG 6a decompressor entry cluster at `0x10009a50..0x1000a107` is the first
 `third-party` island: it sits between Grim-owned exports and input code despite
-coming from the confirmed `d3dx8.lib`.
+being a separately linked plain-C JAZ decoder copy. The confirmed `d3dx8.lib`
+contains namespaced, byte-distinct entry bodies elsewhere in Grim.
 
 The address-keyed scope deliberately takes precedence over IDA's `library`
 flag, which can change between analysis versions and has produced false

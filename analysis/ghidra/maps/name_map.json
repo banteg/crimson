@@ -7950,63 +7950,63 @@
     "address": "0x10009a50",
     "name": "jpeg_CreateDecompress",
     "signature": "void jpeg_CreateDecompress(void *context, int version, unsigned int struct_size)",
-    "comment": "IJG libjpeg 6a jdapimin entrypoint linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a jdapimin entrypoint in the separately linked plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
     "address": "0x10009b20",
     "name": "jpeg_destroy_decompress",
     "signature": "void jpeg_destroy_decompress(void *context)",
-    "comment": "IJG libjpeg 6a decompressor teardown wrapper linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a decompressor teardown wrapper; exact from the VC6 source-derived JAZ provider"
   },
   {
     "program": "grim.dll",
     "address": "0x10009b30",
     "name": "jpeg_read_header",
     "signature": "int jpeg_read_header(void *context, int require_image)",
-    "comment": "IJG libjpeg 6a header parser entrypoint linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a header parser entrypoint in the separately linked plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
     "address": "0x10009ba0",
     "name": "jpeg_consume_input",
     "signature": "int jpeg_consume_input(void *context)",
-    "comment": "IJG libjpeg 6a input-state dispatcher linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a input-state dispatcher in the separately linked plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
     "address": "0x10009c60",
     "name": "default_decompress_parms",
     "signature": "void default_decompress_parms(void *context)",
-    "comment": "IJG libjpeg 6a jdapimin default output-parameter initializer linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a jdapimin default output-parameter initializer in the plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
     "address": "0x10009e00",
     "name": "jpeg_finish_decompress",
     "signature": "int jpeg_finish_decompress(void *context)",
-    "comment": "IJG libjpeg 6a decompressor completion entrypoint linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a decompressor completion entrypoint in the separately linked plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
     "address": "0x10009ec0",
     "name": "jpeg_start_decompress",
     "signature": "int jpeg_start_decompress(void *context)",
-    "comment": "IJG libjpeg 6a output-pass startup entrypoint linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a output-pass startup entrypoint in the separately linked plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
     "address": "0x10009fa0",
     "name": "output_pass_setup",
     "signature": "int output_pass_setup(void *context)",
-    "comment": "IJG libjpeg 6a jdapistd output-pass helper linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a jdapistd output-pass helper in the separately linked plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
     "address": "0x1000a070",
     "name": "jpeg_read_scanlines",
     "signature": "unsigned int jpeg_read_scanlines(void *context, unsigned char **scanlines, unsigned int max_lines)",
-    "comment": "IJG libjpeg 6a scanline decode entrypoint linked from DirectX 8.1 d3dx8.lib"
+    "comment": "IJG libjpeg 6a scanline decode entrypoint in the separately linked plain-C JAZ decoder copy"
   },
   {
     "program": "grim.dll",
@@ -10778,14 +10778,14 @@
     "address": "0x1003a990",
     "name": "grim_jpeg_memory_src",
     "signature": "void grim_jpeg_memory_src(void *context, unsigned char *data, unsigned int size)",
-    "comment": "D3DX8 custom libjpeg source manager for an in-memory buffer"
+    "comment": "JAZ decoder custom libjpeg source manager for an in-memory buffer"
   },
   {
     "program": "grim.dll",
     "address": "0x1003ab10",
     "name": "jpeg_std_error",
     "signature": "void *jpeg_std_error(void *error_manager)",
-    "comment": "IJG libjpeg 6a standard error-manager initializer linked inside D3DX8"
+    "comment": "IJG libjpeg 6a standard error-manager initializer; exact DirectX 8.1 d3dx8.lib jerror.obj body"
   },
   {
     "program": "grim.dll",
@@ -10843,7 +10843,7 @@
       "sub_10046400"
     ],
     "signature": "int zlib_uncompress(unsigned char *output, unsigned long *output_size, const unsigned char *source, unsigned long source_size)",
-    "comment": "zlib 1.1.3 one-shot decompression routine embedded in d3dx8.lib",
+    "comment": "Plain-C zlib 1.1.3 one-shot decompression routine; exact from the VC6 source-derived provider",
     "create": false
   },
   {

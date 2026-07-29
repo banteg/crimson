@@ -124,6 +124,57 @@
       "sha256": "8ef7507c22aaddb9d99a4341c5b3e720932541f4b75b08f19fce473f054c620f"
     }
   ],
+  "derived_artifacts": [
+    {
+      "id": "ijg-libjpeg-6a-vc6-jaz-provider",
+      "path": "tools/native/providers/build/ijg-libjpeg-6a/libjpeg.lib",
+      "size": 2270,
+      "sha256": "9688779b5646dc973aa2009935163ddc48e411e90288e2774615769c547d3c8c",
+      "recipe": "scripts/build_native_codec_providers.py",
+      "source_artifacts": [
+        "ijg-libjpeg-6a"
+      ],
+      "objects": [
+        {
+          "source": "tools/native/providers/sources/ijg-libjpeg-6a/jpeg_destroy_decompress.c",
+          "cflags": "/O2 /GB /W3 /MD"
+        },
+        {
+          "source_member": "jpeg-6a/jcomapi.c",
+          "cflags": "/O2 /G6 /W3 /MD"
+        }
+      ],
+      "normalization": [
+        "zero archive member timestamps",
+        "zero COFF TimeDateStamp fields"
+      ],
+      "tools": {
+        "cl_sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "lib_sha256": "2a2b5c23b1ca784f6b62fdd2e9d29ce10bc85e95f47117bda03767f02d68f2f6",
+        "wibo_sha256": "e81ef773fb511e3780bbd8dcf324ffec2497f52805f10fa20d6e4a29bc0f94bc"
+      }
+    },
+    {
+      "id": "zlib-1.1.3-vc6-provider",
+      "path": "tools/native/providers/build/zlib-1.1.3/zlib.lib",
+      "size": 80832,
+      "sha256": "6b44ac2a8a67123b929cb9286c343730af5f6777609a54e12e402e5ac7e503b0",
+      "recipe": "scripts/build_native_codec_providers.py",
+      "source_artifacts": [
+        "zlib-1.1.3"
+      ],
+      "cflags": "/O2 /GB /W3 /MD",
+      "normalization": [
+        "zero archive member timestamps",
+        "zero COFF TimeDateStamp fields"
+      ],
+      "tools": {
+        "cl_sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156",
+        "lib_sha256": "2a2b5c23b1ca784f6b62fdd2e9d29ce10bc85e95f47117bda03767f02d68f2f6",
+        "wibo_sha256": "e81ef773fb511e3780bbd8dcf324ffec2497f52805f10fa20d6e4a29bc0f94bc"
+      }
+    }
+  ],
   "artifacts": [
     {
       "id": "crimsonland.exe",
