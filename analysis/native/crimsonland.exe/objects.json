@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "9b33fa71accfad250159e9c71fc1d54334eebbbf655b1bb53fc99478ce888806",
+  "audit_digest": "6fdfef15fc545653fa8483ccd9ed69fe07e3d8a025e57e55fd2917df506fe522",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -65624,7 +65624,7 @@
         {
           "path": "tools/match/scratches/quest_build_the_lizquidation/scratch.cpp",
           "repository_relative": true,
-          "sha256": "9b097df8f0ea606672a3cdb0aca8ef97519de5cbc18dc5bb34c7653d97d3b61a"
+          "sha256": "262f2e2af6b03d552e051f82b5cb1cf08854470348440764df9d33e2cf230f34"
         },
         {
           "path": "tools/match/scratches/quest_build_the_lizquidation/scratch.conf",
@@ -65665,7 +65665,7 @@
           "canonical_config_sha256": "71dae60e3689df0bf53df1585511656523a80a0c6b1b7a8025307c57e67ad3e7",
           "canonical_scratch": "tools/match/scratches/quest_build_the_lizquidation",
           "canonical_source": "tools/match/scratches/quest_build_the_lizquidation/scratch.cpp",
-          "canonical_source_sha256": "9b097df8f0ea606672a3cdb0aca8ef97519de5cbc18dc5bb34c7653d97d3b61a",
+          "canonical_source_sha256": "262f2e2af6b03d552e051f82b5cb1cf08854470348440764df9d33e2cf230f34",
           "effective_end": 4423013,
           "end": 4423013,
           "function": "quest_build_the_lizquidation",
@@ -65675,7 +65675,7 @@
             "masked_ok": 3,
             "masked_unresolved": 0,
             "prefix_instructions": 4,
-            "ratio": 0.5063291139240507,
+            "ratio": 0.5569620253164557,
             "state": "wip",
             "target_instructions": 79
           },
@@ -65689,16 +65689,16 @@
         "masked_ok": 3,
         "masked_unresolved": 0,
         "prefix_instructions": 4,
-        "ratio": 0.5063291139240507,
+        "ratio": 0.5569620253164557,
         "state": "wip",
         "target_instructions": 79
       },
       "object": "tools/match/scratches/quest_build_the_lizquidation/build/msvc6.5/c10a67bd59f3c85b/scratch.obj",
       "object_function_symbol": "_quest_build_the_lizquidation",
-      "object_sha256": "cc74b7ebc0e8faa2b4fed37738eb23fe3a61794ac667681e15ea6d7deb17cf48",
+      "object_sha256": "934018c7555ba62fa40e381c7cfc75776c9ffc975d25c6d0544c2589da2eb027",
       "scratch": "tools/match/scratches/quest_build_the_lizquidation",
       "source": "tools/match/scratches/quest_build_the_lizquidation/scratch.cpp",
-      "source_sha256": "9b097df8f0ea606672a3cdb0aca8ef97519de5cbc18dc5bb34c7653d97d3b61a",
+      "source_sha256": "262f2e2af6b03d552e051f82b5cb1cf08854470348440764df9d33e2cf230f34",
       "target_size": 245,
       "translation_unit": {
         "kind": "isolated",

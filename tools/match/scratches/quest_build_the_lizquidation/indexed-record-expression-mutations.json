@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-wave-record-expression",
+      "find": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n",
+      "replacements": [
+        {
+          "name": "indexed-then-advance",
+          "text": "        quest_entry_original_t *spawn;\n\n        builder.spawns[builder.count].pos.x =\n            (float)(terrain_texture_width + 64);\n        builder.spawns[builder.count].pos.y =\n            (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n        ++builder.count;\n"
+        },
+        {
+          "name": "indexed-preadvance",
+          "text": "        quest_entry_original_t *spawn;\n\n        builder.spawns[builder.count].pos.x =\n            (float)(terrain_texture_width + 64);\n        builder.spawns[builder.count].pos.y =\n            (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[builder.count - 1].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n"
+        }
+      ]
+    },
+    {
+      "name": "left-wave-record-expression",
+      "find": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n",
+      "replacements": [
+        {
+          "name": "indexed-then-advance",
+          "text": "        builder.spawns[builder.count].pos.x = -64.0f;\n        builder.spawns[builder.count].pos.y =\n            (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n        ++builder.count;\n"
+        },
+        {
+          "name": "indexed-preadvance",
+          "text": "        builder.spawns[builder.count].pos.x = -64.0f;\n        builder.spawns[builder.count].pos.y =\n            (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[builder.count - 1].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n"
+        }
+      ]
+    },
+    {
+      "name": "bonus-wave-record-expression",
+      "find": "            spawn = &builder.spawns[builder.count];\n            spawn->pos.x = (float)(terrain_texture_width + 128);\n            spawn->pos.y = (float)(terrain_texture_width / 2);\n            ++builder.count;\n            spawn->set_spawn(\n                SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n",
+      "replacements": [
+        {
+          "name": "indexed-then-advance",
+          "text": "            builder.spawns[builder.count].pos.x =\n                (float)(terrain_texture_width + 128);\n            builder.spawns[builder.count].pos.y =\n                (float)(terrain_texture_width / 2);\n            builder.spawns[builder.count].set_spawn(\n                SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n            ++builder.count;\n"
+        },
+        {
+          "name": "indexed-preadvance",
+          "text": "            builder.spawns[builder.count].pos.x =\n                (float)(terrain_texture_width + 128);\n            builder.spawns[builder.count].pos.y =\n                (float)(terrain_texture_width / 2);\n            ++builder.count;\n            builder.spawns[builder.count - 1].set_spawn(\n                SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        }
+      ]
+    }
+  ]
+}

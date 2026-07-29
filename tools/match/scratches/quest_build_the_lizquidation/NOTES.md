@@ -46,3 +46,35 @@ The validated result improves 120.9493670886076/245 to
 124.0506329113924 to 120.94936708860759 and raising the match from
 49.36708860759494% to 50.63291139240506%. It remains 79/79 instructions,
 prefix four, and references 3/0/0.
+
+## 2026-07-29 indexed-record and register-lifetime pass
+
+The indexed-record shape that improved the related Syntax Terror and Gauntlet
+builders was still untested here. `indexed-record-expression-mutations.json`
+(SHA-256
+`f3f71190bec1c4b6d4036bdb4579c94e756353484d6656a4aa8da12ad46e3cc0`)
+evaluated all 26 single, pair, and triple combinations across the right, left,
+and optional wave-four records. Replacing only the optional alien's retained
+record pointer with separate indexed expressions is the sole win. It adds
+3.1012658227847965 weighted bytes without changing the instruction or
+reference counts; both ordinary waves are byte-neutral and every pre-advance
+form regresses.
+
+That change exposed one useful declaration boundary.
+`register-lifetime-refinement-mutations.json` (SHA-256
+`6a45c923c569a18d6a278abb4c4dc70cf3a96c2de3151a7acfb623916cfcc8c6`)
+evaluated all 14 declaration-order and builder/wave interactions. Moving the
+record pointer declaration between `spawn_count` and `trigger_time_ms` adds
+another 9.303797468354432 weighted bytes and assigns the record pointer to the
+native ESI role. The equivalent pointer-first order compiles identically, so
+the smaller declaration move is retained.
+
+`remaining-local-order-mutations.json` (SHA-256
+`bd46308fe876ce025ff48449e8200b704825378359ea70431001df2be75675dc`)
+records the sixth and final local-order permutation; it is byte-neutral. The
+remaining systematic delta is the compiler's exchange of the wave and trigger
+registers. The validated source SHA-256 is
+`262f2e2af6b03d552e051f82b5cb1cf08854470348440764df9d33e2cf230f34`.
+It now scores 136.45569620253164/245 weighted bytes, or
+55.69620253164557%, with a 108.54430379746836-byte gap, 79/79 instructions,
+prefix four, and references 3/0/0.

@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "builder-wave-declaration",
+      "find": "    int wave = 0;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n\n    for (; wave < 10; ++wave) {\n",
+      "replacements": [
+        {
+          "name": "builder-before-wave",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int wave = 0;\n\n    for (; wave < 10; ++wave) {\n"
+        },
+        {
+          "name": "wave-in-for",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n\n    for (int wave = 0; wave < 10; ++wave) {\n"
+        }
+      ]
+    },
+    {
+      "name": "wave-local-declaration",
+      "find": "        int spawn_count = wave + 6;\n        int trigger_time_ms = wave * 8000 + 1500;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n",
+      "replacements": [
+        {
+          "name": "trigger-count-spawn",
+          "text": "        int trigger_time_ms = wave * 8000 + 1500;\n        int spawn_count = wave + 6;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n"
+        },
+        {
+          "name": "spawn-count-trigger",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        int spawn_count = wave + 6;\n        int trigger_time_ms = wave * 8000 + 1500;\n"
+        },
+        {
+          "name": "count-spawn-trigger",
+          "text": "        int spawn_count = wave + 6;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        int trigger_time_ms = wave * 8000 + 1500;\n"
+        },
+        {
+          "name": "trigger-spawn-count",
+          "text": "        int trigger_time_ms = wave * 8000 + 1500;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        int spawn_count = wave + 6;\n"
+        }
+      ]
+    }
+  ]
+}

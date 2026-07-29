@@ -35,8 +35,8 @@ extern "C" void quest_build_the_lizquidation(
 
     for (; wave < 10; ++wave) {
         int spawn_count = wave + 6;
-        int trigger_time_ms = wave * 8000 + 1500;
         quest_entry_original_t *spawn = &builder.spawns[builder.count];
+        int trigger_time_ms = wave * 8000 + 1500;
 
         spawn->pos.x = (float)(terrain_texture_width + 64);
         spawn->pos.y = (float)(terrain_texture_width / 2);
@@ -52,12 +52,13 @@ extern "C" void quest_build_the_lizquidation(
             SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);
 
         if (wave == 4) {
-            spawn = &builder.spawns[builder.count];
-            spawn->pos.x = (float)(terrain_texture_width + 128);
-            spawn->pos.y = (float)(terrain_texture_width / 2);
-            ++builder.count;
-            spawn->set_spawn(
+            builder.spawns[builder.count].pos.x =
+                (float)(terrain_texture_width + 128);
+            builder.spawns[builder.count].pos.y =
+                (float)(terrain_texture_width / 2);
+            builder.spawns[builder.count].set_spawn(
                 SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+            ++builder.count;
         }
     }
 

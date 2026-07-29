@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "remaining-wave-local-order",
+      "find": "        int spawn_count = wave + 6;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        int trigger_time_ms = wave * 8000 + 1500;\n",
+      "replacements": [
+        {
+          "name": "spawn-trigger-count",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        int trigger_time_ms = wave * 8000 + 1500;\n        int spawn_count = wave + 6;\n"
+        }
+      ]
+    }
+  ]
+}
