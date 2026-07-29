@@ -342,6 +342,15 @@ def _parse_type_string(bv, type_text: str):
     return parsed_type
 
 
+def _data_map_symbol_type(row: dict):
+    kind = row.get("kind") or "data"
+    if kind == "data":
+        return bn.SymbolType.DataSymbol
+    if kind == "code_label":
+        return bn.SymbolType.LocalLabelSymbol
+    raise ValueError(f"unsupported data-map entry kind: {kind!r}")
+
+
 def _get_type_by_name(bv, name: str):
     return bv.get_type_by_name(name)
 
@@ -1155,11 +1164,12 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
         changed = False
         name = row.get("name") or ""
         if name:
+            symbol_type = _data_map_symbol_type(row)
             existing = bv.get_symbol_at(addr)
 
             if existing is None:
                 try:
-                    symbol = bn.Symbol(bn.SymbolType.DataSymbol, addr, name)
+                    symbol = bn.Symbol(symbol_type, addr, name)
                     bv.define_user_symbol(symbol)
                     stats["created"] += 1
                     changed = True
@@ -1167,7 +1177,7 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
                     raise RuntimeError(f"create label failed for {_entry_label(row, addr)}") from exc
             elif existing.name != name:
                 try:
-                    symbol = bn.Symbol(bn.SymbolType.DataSymbol, addr, name)
+                    symbol = bn.Symbol(symbol_type, addr, name)
                     bv.define_user_symbol(symbol)
                     stats["renamed"] += 1
                     changed = True

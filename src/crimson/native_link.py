@@ -2359,6 +2359,13 @@ def _add_catalog_name(
         rows.append(detail)
 
 
+def _data_map_entry_kind(row: dict[str, Any]) -> str:
+    kind = str(row.get("kind") or "data")
+    if kind not in {"code_label", "data"}:
+        raise ValueError(f"unsupported data-map entry kind: {kind!r}")
+    return kind
+
+
 def _freeze_catalog(
     catalog: dict[str, list[dict[str, Any]]],
 ) -> dict[str, tuple[dict[str, Any], ...]]:
@@ -2458,6 +2465,8 @@ def load_native_symbol_catalog(
         payload = json.loads(data_map_path.read_text(encoding="utf-8"))
         for row in payload.get("entries", []):
             if row.get("program") != image:
+                continue
+            if _data_map_entry_kind(row) != "data":
                 continue
             detail = {
                 "address": matchlib.parse_int(row["address"]),
@@ -4729,11 +4738,15 @@ def data_manifest_payload(
         )
         for row in json.loads(segments_path.read_text(encoding="utf-8"))
     ]
-    source_rows = [
+    program_rows = [
         row
         for row in payload.get("entries", [])
         if row.get("program") == image
     ]
+    rows_by_kind: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in program_rows:
+        rows_by_kind[_data_map_entry_kind(row)].append(row)
+    source_rows = rows_by_kind["data"]
 
     entries: list[dict[str, Any]] = []
     addresses: Counter[int] = Counter()
@@ -4909,6 +4922,7 @@ def data_manifest_payload(
         "summary": {
             "alias_names": alias_names,
             "alias_rows": alias_rows,
+            "code_label_entries": len(rows_by_kind["code_label"]),
             "entry_count": len(entries),
             "explicit_alignment_entries": sum(
                 entry["alignment"] is not None
@@ -4954,6 +4968,7 @@ def data_manifest_payload(
                 for entry in entries
             ),
             "section_counts": dict(sorted(section_counts.items())),
+            "source_entry_count": len(program_rows),
             "typed_entries": typed,
             "unique_addresses": len(addresses),
             "untyped_entries": len(entries) - typed,

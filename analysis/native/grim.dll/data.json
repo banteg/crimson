@@ -1,5 +1,5 @@
 {
-  "audit_digest": "5b5106f26f7975c4a9945d7439fc656447f9ac2f9a25afa5e9a5c4a7139fd991",
+  "audit_digest": "b3d8cb5c24cd723d754f30cfca1bc80c08ef6498636cf313ade89f4efc6b0fda",
   "entries": [
     {
       "address": 268574996,
@@ -5873,13 +5873,13 @@
   ],
   "image": "grim.dll",
   "kind": "crimson-native-data-manifest",
-  "notes": "Data label map for globals and tables. Keep names unique per program.",
+  "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program.",
   "overlays": [],
   "priorities": [],
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "1f67558f0e26d27315bb136f47f4f24d87e037e6337f22ee80c1a079366c3e3a",
+    "data_map_sha256": "64dc92ecd2550c6e3f30e9d04335c2c10e33ac0ea16bc6fb4a6b204d332191fd",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd",
     "reference_image": {
@@ -5892,6 +5892,7 @@
   "summary": {
     "alias_names": 6,
     "alias_rows": 6,
+    "code_label_entries": 0,
     "definition_group_entries": 107,
     "definition_groups": 34,
     "entry_count": 276,
@@ -5911,6 +5912,7 @@
       ".rdata": 75,
       ".text": 2
     },
+    "source_entry_count": 276,
     "typed_entries": 185,
     "unique_addresses": 276,
     "untyped_entries": 91

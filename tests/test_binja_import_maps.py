@@ -589,6 +589,46 @@ def test_data_map_preserves_recovered_crt_and_weapon_alias_types():
     } == expected
 
 
+def test_data_map_classifies_instruction_annotations_as_code_labels():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "data_map.json"
+    )
+    rows = json.loads(map_path.read_text())["entries"]
+
+    assert {
+        row["name"]
+        for row in rows
+        if row.get("program") == "crimsonland.exe"
+        and row.get("kind") == "code_label"
+    } == {
+        "game_startup_intro_mute_callsite",
+        "game_startup_theme_play_callsite",
+        "game_startup_intro_play_callsite",
+    }
+
+
+def test_data_map_symbol_type_distinguishes_data_and_code_labels(monkeypatch):
+    importer = _load_importer()
+    symbol_types = SimpleNamespace(DataSymbol=object(), LocalLabelSymbol=object())
+    monkeypatch.setattr(
+        importer,
+        "bn",
+        SimpleNamespace(SymbolType=symbol_types),
+    )
+
+    assert importer._data_map_symbol_type({}) is symbol_types.DataSymbol
+    assert (
+        importer._data_map_symbol_type({"kind": "code_label"})
+        is symbol_types.LocalLabelSymbol
+    )
+    with pytest.raises(ValueError, match="unsupported data-map entry kind"):
+        importer._data_map_symbol_type({"kind": "function"})
+
+
 def test_importer_preserves_ui_element_pointer_table_aggregate():
     importer = _load_importer()
 
