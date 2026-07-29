@@ -171,3 +171,28 @@ values are
 `a2380c499a18611c2b037b0f33c187f26b0c0c4cbf5734ae1c2be26ae744b4e6`
 (name-buffer constructor). The retained source SHA-256 is
 `ba6e8fe7c57c408c554c11f1a2ef417d6f60f05d0ef83491b8951f36681da102`.
+
+## Name-save copy-shape boundary (2026-07-29)
+
+Live Binary Ninja disassembly at `0x00411893` through `0x004118e2` scans the
+name buffer for its terminating byte, snapshots `name_input.cursor`, stores
+`player_name_length`, and performs the inline word/tail copy into the active
+high-score record. The current `strcpy` already produces that inline copy but
+keeps one more instruction than each explicit sized-copy spelling tested.
+
+`name-save-copy-shape-mutations.json` exhausts five source forms covering
+`strlen + 1`, a separately incremented length, integer and `size_t` lengths, a
+named source pointer, and a direct sized `memcpy`. All five compile
+identically: they add 1.840829 weighted bytes and align two more references,
+but reduce the candidate from 1,165 to 1,164 instructions against the native
+1,168. The experiment therefore records
+`instruction-count-further-from-target` for every variant and retains none.
+This bounds the apparent reference gain as a copy-lifetime tradeoff rather
+than honest whole-function progress.
+
+The spec SHA-256 is
+`068c661ee87806d4bd1bbf592d83b9d2cb270bb932623534fe910d75004a9386`.
+The experiment-log SHA-256 after recording the complete five-variant sweep is
+`8cce7fd918f4a13bc047737de98ee36fda32ec508b03076ef8f41d8554f2c388`.
+The retained source and its 88.3841%, 1,165/1,168, `442/0/2` audit are
+unchanged.

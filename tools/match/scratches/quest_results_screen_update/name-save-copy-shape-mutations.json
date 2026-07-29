@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "name-save-copy-shape",
+      "find": "                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                strcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer);",
+      "replacements": [
+        {
+          "name": "sized-memcpy-length-plus-one",
+          "text": "                size_t copy_size =\n                    strlen(quest_results_name_input_buffer) + 1;\n                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                memcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer,\n                    copy_size);"
+        },
+        {
+          "name": "sized-memcpy-incremented-length",
+          "text": "                size_t copy_size =\n                    strlen(quest_results_name_input_buffer);\n                ++copy_size;\n                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                memcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer,\n                    copy_size);"
+        },
+        {
+          "name": "integer-sized-memcpy",
+          "text": "                int copy_size =\n                    strlen(quest_results_name_input_buffer) + 1;\n                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                memcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer,\n                    copy_size);"
+        },
+        {
+          "name": "source-local-sized-memcpy",
+          "text": "                char *source = quest_results_name_input_buffer;\n                size_t copy_size = strlen(source) + 1;\n                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                memcpy(\n                    highscore_active_record.player_name,\n                    source,\n                    copy_size);"
+        },
+        {
+          "name": "direct-sized-memcpy",
+          "text": "                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                memcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer,\n                    strlen(quest_results_name_input_buffer) + 1);"
+        }
+      ]
+    }
+  ]
+}
