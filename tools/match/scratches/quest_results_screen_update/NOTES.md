@@ -241,3 +241,21 @@ permutation as compiler residual. Spec SHA-256 values are
 `d2c9da8146d943b42af8b61bf4dceb20dab01642e682c1ca9f5da9a56c600f4e`
 (opening allocation). The retained source SHA-256 is
 `35a237034c83b23af7742e02b4ca70cbdcd5f42c240f2da9524b051283b46daf`.
+
+## Opening-panel scope boundary (2026-07-30)
+
+The exact sibling uses a short-lived opening panel position, so
+`opening-panel-scope-mutations.json` tests whether making that lifetime
+explicit changes this function's remaining opening stack permutation. Four
+complete panel/record scope arrangements are byte-identical at 94.5205%,
+1,168/1,168 instructions, a 66-instruction prefix, and `460/0/0` references.
+A direct working-position expression instead regresses to 80.5663%, loses five
+instructions and ten resolved references, introduces two reference mismatches,
+and collapses the prefix to one instruction.
+
+The retained source is unchanged. Spec SHA-256 is
+`301ba09da2acdf8424fc01f83016a41bd41adb58d0c0db4df840d9cb08d54d35`;
+the complete 14-sweep, 253-variant ledger has zero errors and SHA-256
+`433ef5f879052545b4b126b66987f422046982154f8cc0c6ff13ef58d1e48444`.
+Together with the 39-variant opening allocation sweep, this closes ordinary
+lexical scope as the missing constraint.

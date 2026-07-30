@@ -33,10 +33,10 @@ first_candidate=sub esp, 0x160
 ```
 
 Recovery is semantic-complete. The remaining differences are compiler lifetime
-and scheduling residue. The
-native function reuses the ended `_finddata_t` metadata area for the later
-16-byte version string and places a vector return temporary eight bytes later;
-the natural candidate retains a frame 28 bytes larger. Recovering the nested
+and scheduling residue. Native and candidate both overlap ended `_finddata_t`
+metadata storage with later locals, but choose different storage offsets; the
+native function also reuses its opening vector-return slot for `button_origin`.
+The natural candidate retains a frame 28 bytes larger. Recovering the nested
 measure/draw expressions and direct filename indexing closes the remaining
 semantic scheduling clusters without manufacturing local layout. The source
 deliberately does not use unions, volatile state, dead expressions, forced
@@ -184,7 +184,7 @@ Together these changes improve the canonical result from 86.09% to **94.29%**,
 reduce the fuzzy gap from 362.642968 to **148.856481 weighted bytes**, reach
 **648/648 instructions**, and improve references from `172/0/0` to
 **`183/0/0`**. Every remaining localized region is either a stack displacement
-caused by the unreused `_finddata_t` storage or the neutral scrollbar load
+from the different local-storage allocation or the neutral scrollbar load
 ordering above. The final frame is `0x160` versus native `0x144`, so the honest
 residual remains `RESIDUAL=compiler`.
 
@@ -193,3 +193,34 @@ zero errors. Final source SHA-256 is
 `74d6204d7290c5c6470ea924eb79b364dd017143530488a50abf219fc333e6e7`;
 ledger SHA-256 is
 `1ca81e6bad2175fafeb8e6e6bc0c11fec92601c0a2befbd6b3fa62a2ae1f3ddd`.
+
+## Local-storage allocation boundary (2026-07-30)
+
+The remaining stack map is more specific than a simple missing lexical scope.
+Native places `_finddata_t` at `esp+0x3c` and its `name` at `esp+0x50`;
+the candidate uses `esp+0x58` and `esp+0x6c`. Later, native places the
+16-byte version text at `esp+0x44`, while the candidate places it at
+`esp+0x50`. Both compilers therefore reuse part of the ended enumeration
+storage, but their global slot assignments differ.
+
+`local-storage-lifetime-mutations.json` evaluates explicit block and
+single-iteration `do` scopes around the enumeration metadata and version text,
+including all four cross-site interactions. All eight variants are
+byte-identical at 94.29%, 648/648 instructions, and `183/0/0` references.
+This falsifies lexical braces as the missing reuse signal. Spec SHA-256 is
+`7de42c038b9d43eb917c09259c270d4f08af3603e3e13c0591a93a335a7c5154`.
+
+Native also writes the opening vector-return temporary and the later
+`button_origin` into the same `esp+0x34..0x3b` slot, while the candidate keeps
+them at `esp+0x30..0x37` and `esp+0x38..0x3f`. The seven complete variants in
+`opening-vector-storage-mutations.json` cover declaration hoisting, split
+initialization, copy/component constructors, and component assignment. Four
+forms are byte-identical and the other three regress by 8.05 to 106.81
+weighted bytes; none changes the frame or improves the match. Spec SHA-256 is
+`85e6d2c1ecced7552e0db7d5ea88a96d1c340a216e4f67a0d24e5bca8e83dbc5`.
+
+The canonical source is unchanged. The ledger now contains 13 sweeps and 170
+evaluated variants with zero errors; its SHA-256 is
+`0c639139588928c444359cc739477de7dc53e7733016e63378702eae99a82431`.
+Further progress needs a recovered shared type/TU constraint or another
+whole-function ownership fact, not more local scope syntax.

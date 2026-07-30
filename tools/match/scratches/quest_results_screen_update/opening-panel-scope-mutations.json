@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-panel-scope",
+      "find": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;",
+      "replacements": [
+        {
+          "name": "scoped-panel",
+          "text": "    quest_results_vec2_t xy;\n    {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_results_vec2_t(180.0f, 40.0f);\n        xy = panel_xy;\n    }\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "scoped-panel-with-record",
+          "text": "    quest_results_vec2_t xy;\n    {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_results_vec2_t(180.0f, 40.0f);\n        quest_results_vec2_t record_xy;\n        xy = panel_xy;\n    }\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "scoped-panel-outer-record",
+          "text": "    quest_results_vec2_t xy;\n    {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_results_vec2_t(180.0f, 40.0f);\n        xy = panel_xy;\n    }\n    quest_results_vec2_t record_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "direct-working-expression",
+          "text": "    quest_results_vec2_t xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "scoped-two-stage-panel",
+          "text": "    quest_results_vec2_t xy;\n    {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position;\n        panel_xy = panel_xy + quest_results_vec2_t(180.0f, 40.0f);\n        xy = panel_xy;\n    }\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        }
+      ]
+    }
+  ]
+}

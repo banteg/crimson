@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-vector-storage",
+      "find": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin = position;",
+      "replacements": [
+        {
+          "name": "hoist-button-after-position",
+          "text": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    mods_vec2_t button_origin;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    button_origin = position;"
+        },
+        {
+          "name": "hoist-button-before-position",
+          "text": "    mods_vec2_t button_origin;\n    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    button_origin = position;"
+        },
+        {
+          "name": "hoist-both-then-assign",
+          "text": "    mods_vec2_t button_origin;\n    mods_vec2_t position;\n    position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    button_origin = position;"
+        },
+        {
+          "name": "split-button-at-use",
+          "text": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin;\n    button_origin = position;"
+        },
+        {
+          "name": "copy-constructor-at-use",
+          "text": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin(position);"
+        },
+        {
+          "name": "component-constructor-at-use",
+          "text": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin(position.x, position.y);"
+        },
+        {
+          "name": "component-assignment-after-hoist",
+          "text": "    mods_vec2_t button_origin;\n    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    button_origin.x = position.x;\n    button_origin.y = position.y;"
+        }
+      ]
+    }
+  ]
+}

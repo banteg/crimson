@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "finddata-inner-scope",
+      "find": "        _finddata_t finddata;\n        long handle = crt_findfirst(\"mods\\\\*.dll\", &finddata);\n        if (handle != -1 && finddata.name != 0) {\n            do {\n                if (mods_menu_entry_count == 31) {\n                    mods_menu_item_labels[31] =\n                        mods_menu_display_names[31];\n                    strcpy(mods_menu_filenames[31], \"+ more\");\n                    strcpy(mods_menu_display_names[31], \"+ more\");\n                } else {\n                    strcpy(\n                        mods_menu_filenames[mods_menu_entry_count],\n                        finddata.name);\n                    strcpy(\n                        mods_menu_display_names[mods_menu_entry_count],\n                        (char *)mod_load_info(finddata.name));\n                    mods_menu_item_labels[mods_menu_entry_count] =\n                        mods_menu_display_names[mods_menu_entry_count];\n                    ++mods_menu_entry_count;\n                }\n            } while (crt_findnext(handle, &finddata) == 0);\n        }\n        crt_findclose(handle);\n        mods_menu_refresh_pending = 0;",
+      "replacements": [
+        {
+          "name": "block-before-refresh-clear",
+          "text": "        {\n            _finddata_t finddata;\n            long handle = crt_findfirst(\"mods\\\\*.dll\", &finddata);\n            if (handle != -1 && finddata.name != 0) {\n                do {\n                    if (mods_menu_entry_count == 31) {\n                        mods_menu_item_labels[31] =\n                            mods_menu_display_names[31];\n                        strcpy(mods_menu_filenames[31], \"+ more\");\n                        strcpy(mods_menu_display_names[31], \"+ more\");\n                    } else {\n                        strcpy(\n                            mods_menu_filenames[mods_menu_entry_count],\n                            finddata.name);\n                        strcpy(\n                            mods_menu_display_names[mods_menu_entry_count],\n                            (char *)mod_load_info(finddata.name));\n                        mods_menu_item_labels[mods_menu_entry_count] =\n                            mods_menu_display_names[mods_menu_entry_count];\n                        ++mods_menu_entry_count;\n                    }\n                } while (crt_findnext(handle, &finddata) == 0);\n            }\n            crt_findclose(handle);\n        }\n        mods_menu_refresh_pending = 0;"
+        },
+        {
+          "name": "do-before-refresh-clear",
+          "text": "        do {\n            _finddata_t finddata;\n            long handle = crt_findfirst(\"mods\\\\*.dll\", &finddata);\n            if (handle != -1 && finddata.name != 0) {\n                do {\n                    if (mods_menu_entry_count == 31) {\n                        mods_menu_item_labels[31] =\n                            mods_menu_display_names[31];\n                        strcpy(mods_menu_filenames[31], \"+ more\");\n                        strcpy(mods_menu_display_names[31], \"+ more\");\n                    } else {\n                        strcpy(\n                            mods_menu_filenames[mods_menu_entry_count],\n                            finddata.name);\n                        strcpy(\n                            mods_menu_display_names[mods_menu_entry_count],\n                            (char *)mod_load_info(finddata.name));\n                        mods_menu_item_labels[mods_menu_entry_count] =\n                            mods_menu_display_names[mods_menu_entry_count];\n                        ++mods_menu_entry_count;\n                    }\n                } while (crt_findnext(handle, &finddata) == 0);\n            }\n            crt_findclose(handle);\n        } while (false);\n        mods_menu_refresh_pending = 0;"
+        }
+      ]
+    },
+    {
+      "name": "version-text-inner-scope",
+      "find": "        char version_text[16];\n        crt_sprintf(\n            version_text,\n            \"v%.2f\",\n            (double)mods_menu_selected_info->version);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    version_text),\n            position.y,\n            \"%s\",\n            version_text);",
+      "replacements": [
+        {
+          "name": "block-after-version-draw",
+          "text": "        {\n            char version_text[16];\n            crt_sprintf(\n                version_text,\n                \"v%.2f\",\n                (double)mods_menu_selected_info->version);\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 192.0f\n                    - (float)grim_interface_ptr->grim_measure_text_width(\n                        version_text),\n                position.y,\n                \"%s\",\n                version_text);\n        }"
+        },
+        {
+          "name": "do-after-version-draw",
+          "text": "        do {\n            char version_text[16];\n            crt_sprintf(\n                version_text,\n                \"v%.2f\",\n                (double)mods_menu_selected_info->version);\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 192.0f\n                    - (float)grim_interface_ptr->grim_measure_text_width(\n                        version_text),\n                position.y,\n                \"%s\",\n                version_text);\n        } while (false);"
+        }
+      ]
+    }
+  ]
+}
