@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **302335/341963** code bytes (**88.4%**).
+Fuzzy-weighted alignment is **302342/341963** code bytes (**88.4%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -16,16 +16,13 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
+| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
 | grim.dll | current | 137 | 131 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=70, game_data=0, import=25, toolchain=2 | 0 | 1548 | 1548 | 1548 | 1548 | 1548 |
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 274 | 224 | 274 | 274 | 274 |
-
-Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +92,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 281601/320805 | 87.8% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 281608/320805 | 87.8% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20734/21158 | 98.0% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **281601/320805** fuzzy-weighted bytes (**87.8%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **281608/320805** fuzzy-weighted bytes (**87.8%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -568,7 +565,7 @@ Artifact freshness issues:
 | wip | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 180/311 | 131 | 95/95 | 57.89% | 2/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |
 | wip | quest_build_lizard_raze | 0x00438840 | 254 | 205/254 | 49 | 77/77 | 80.52% | 16/77 | 3/0/0 |  | quest-lizard-raze-builder |
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 242/242 | 0 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
-| wip | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 734/975 | 241 | 291/291 | 75.26% | 12/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
+| wip | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 740/975 | 235 | 291/291 | 75.95% | 16/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
 | wip | quest_build_the_end_of_all | 0x00438e10 | 692 | 459/692 | 233 | 173/174 | 66.28% | 4/174 | 18/0/0 |  | quest-the-end-of-all-fixed-rings |
 | wip | quest_build_spiders_inc | 0x004390d0 | 346 | 239/346 | 107 | 106/105 | 69.19% | 9/105 | 8/0/0 |  | quest-spiders-inc-staged-spider-waves |
 | match | quest_database_init | 0x00439230 | 5466 | 5466/5466 | 0 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |

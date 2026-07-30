@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "6da9e537ed063a1b61bbf8bdba211d65d782267a1635b16a53f577bb8702e876",
+  "audit_digest": "14bbb16095d0ec476050fa38c07afd96f86375b26199948305e9ebfa695f4d67",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -54824,7 +54824,7 @@
         {
           "path": "tools/match/scratches/projectile_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "c7002fb41ee645d9240e9df53c4c90466ea7f9a2691cb03553f8fd325724c2af"
+          "sha256": "353b8c1b0cc3e7b0d7a4063a9e39a7c2e155011c7e62f8df5c29ad88bb2131d5"
         },
         {
           "path": "tools/match/scratches/projectile_update/scratch.conf",
@@ -54865,17 +54865,17 @@
           "canonical_config_sha256": "17c730d0b814a88c89cbced1b543f0af719c92c5b6737444d43a3ebb9b7db82c",
           "canonical_scratch": "tools/match/scratches/projectile_update",
           "canonical_source": "tools/match/scratches/projectile_update/scratch.cpp",
-          "canonical_source_sha256": "c7002fb41ee645d9240e9df53c4c90466ea7f9a2691cb03553f8fd325724c2af",
+          "canonical_source_sha256": "353b8c1b0cc3e7b0d7a4063a9e39a7c2e155011c7e62f8df5c29ad88bb2131d5",
           "effective_end": 4336745,
           "end": 4336745,
           "function": "projectile_update",
           "match": {
-            "candidate_instructions": 2148,
-            "masked_mismatches": 24,
+            "candidate_instructions": 2150,
+            "masked_mismatches": 23,
             "masked_ok": 397,
             "masked_unresolved": 0,
             "prefix_instructions": 0,
-            "ratio": 0.5676855895196506,
+            "ratio": 0.5743165632896853,
             "state": "wip",
             "target_instructions": 2203
           },
@@ -54884,21 +54884,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 2148,
-        "masked_mismatches": 24,
+        "candidate_instructions": 2150,
+        "masked_mismatches": 23,
         "masked_ok": 397,
         "masked_unresolved": 0,
         "prefix_instructions": 0,
-        "ratio": 0.5676855895196506,
+        "ratio": 0.5743165632896853,
         "state": "wip",
         "target_instructions": 2203
       },
       "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
       "object_function_symbol": "_projectile_update",
-      "object_sha256": "5ccbc00b9ed201c5728afc068851d5c0b1c257b0c31badd2d197c6a28da7143f",
+      "object_sha256": "34445c78d54394b261f76ae92c011eaa93c7fbaa6c1f4763ec7d1b5385f5c242",
       "scratch": "tools/match/scratches/projectile_update",
       "source": "tools/match/scratches/projectile_update/scratch.cpp",
-      "source_sha256": "c7002fb41ee645d9240e9df53c4c90466ea7f9a2691cb03553f8fd325724c2af",
+      "source_sha256": "353b8c1b0cc3e7b0d7a4063a9e39a7c2e155011c7e62f8df5c29ad88bb2131d5",
       "target_size": 8409,
       "translation_unit": {
         "kind": "isolated",
@@ -54926,7 +54926,7 @@
         {
           "path": "tools/match/scratches/projectile_render/scratch.cpp",
           "repository_relative": true,
-          "sha256": "42ab3c4c4db525b99d67b1528fb8ab91d898bf3bcd42f6194fd20fe2e62602f8"
+          "sha256": "63d0bbbce7a45ed03be5b9615764d9ba9cc65fd3b0f5498cda74be6ac8ea6afd"
         },
         {
           "path": "tools/match/scratches/projectile_render/scratch.conf",
@@ -54972,17 +54972,17 @@
           "canonical_config_sha256": "b2fc8e809521fbd8a9d7cb3d2cef6799c0114ef8b2f214707f3e3a6f84281979",
           "canonical_scratch": "tools/match/scratches/projectile_render",
           "canonical_source": "tools/match/scratches/projectile_render/scratch.cpp",
-          "canonical_source_sha256": "42ab3c4c4db525b99d67b1528fb8ab91d898bf3bcd42f6194fd20fe2e62602f8",
+          "canonical_source_sha256": "63d0bbbce7a45ed03be5b9615764d9ba9cc65fd3b0f5498cda74be6ac8ea6afd",
           "effective_end": 4349303,
           "end": 4349303,
           "function": "projectile_render",
           "match": {
-            "candidate_instructions": 2856,
-            "masked_mismatches": 13,
-            "masked_ok": 407,
+            "candidate_instructions": 2865,
+            "masked_mismatches": 12,
+            "masked_ok": 424,
             "masked_unresolved": 0,
             "prefix_instructions": 0,
-            "ratio": 0.5169304066700697,
+            "ratio": 0.5433231396534148,
             "state": "wip",
             "target_instructions": 3021
           },
@@ -54991,21 +54991,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 2856,
-        "masked_mismatches": 13,
-        "masked_ok": 407,
+        "candidate_instructions": 2865,
+        "masked_mismatches": 12,
+        "masked_ok": 424,
         "masked_unresolved": 0,
         "prefix_instructions": 0,
-        "ratio": 0.5169304066700697,
+        "ratio": 0.5433231396534148,
         "state": "wip",
         "target_instructions": 3021
       },
       "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
       "object_function_symbol": "_projectile_render",
-      "object_sha256": "900e364d29ab4b0a9525db85b429b098536877253ae24b5f015855074d1afc39",
+      "object_sha256": "3d6508656075fa30b513382ca11bda81ee81e961b27ee6daffbb602ff75ff873",
       "scratch": "tools/match/scratches/projectile_render",
       "source": "tools/match/scratches/projectile_render/scratch.cpp",
-      "source_sha256": "42ab3c4c4db525b99d67b1528fb8ab91d898bf3bcd42f6194fd20fe2e62602f8",
+      "source_sha256": "63d0bbbce7a45ed03be5b9615764d9ba9cc65fd3b0f5498cda74be6ac8ea6afd",
       "target_size": 12551,
       "translation_unit": {
         "kind": "isolated",
@@ -67244,7 +67244,7 @@
         {
           "path": "tools/match/scratches/quest_build_the_unblitzkrieg/scratch.cpp",
           "repository_relative": true,
-          "sha256": "8c77f3bb0ef9031fc5bbd08c536a34eff881021e929eee2ecf0a2dc90fc0156f"
+          "sha256": "8dd69e7b72a1fcf3c2df073297d5d87745b3fbdaf632cdf25238561c09792de4"
         },
         {
           "path": "tools/match/scratches/quest_build_the_unblitzkrieg/scratch.conf",
@@ -67285,7 +67285,7 @@
           "canonical_config_sha256": "73e0915c2155365bc3a4db6678a42941d356dd59a4aaf32faa8e142fb03acbb4",
           "canonical_scratch": "tools/match/scratches/quest_build_the_unblitzkrieg",
           "canonical_source": "tools/match/scratches/quest_build_the_unblitzkrieg/scratch.cpp",
-          "canonical_source_sha256": "8c77f3bb0ef9031fc5bbd08c536a34eff881021e929eee2ecf0a2dc90fc0156f",
+          "canonical_source_sha256": "8dd69e7b72a1fcf3c2df073297d5d87745b3fbdaf632cdf25238561c09792de4",
           "effective_end": 4427279,
           "end": 4427279,
           "function": "quest_build_the_unblitzkrieg",
@@ -67294,8 +67294,8 @@
             "masked_mismatches": 0,
             "masked_ok": 0,
             "masked_unresolved": 0,
-            "prefix_instructions": 12,
-            "ratio": 0.7525773195876289,
+            "prefix_instructions": 16,
+            "ratio": 0.7594501718213058,
             "state": "wip",
             "target_instructions": 291
           },
@@ -67308,17 +67308,17 @@
         "masked_mismatches": 0,
         "masked_ok": 0,
         "masked_unresolved": 0,
-        "prefix_instructions": 12,
-        "ratio": 0.7525773195876289,
+        "prefix_instructions": 16,
+        "ratio": 0.7594501718213058,
         "state": "wip",
         "target_instructions": 291
       },
       "object": "tools/match/scratches/quest_build_the_unblitzkrieg/build/msvc6.5/8a67f610c7cbe888/scratch.obj",
       "object_function_symbol": "_quest_build_the_unblitzkrieg",
-      "object_sha256": "d53d699c89106678604cf3b87072d54b9e1be8fc8efedb6806661f7e18dc891b",
+      "object_sha256": "e62e398b9f7dfcf485abf0d33f01fb5e86e2c993e3c43a8674d292a7996b66fa",
       "scratch": "tools/match/scratches/quest_build_the_unblitzkrieg",
       "source": "tools/match/scratches/quest_build_the_unblitzkrieg/scratch.cpp",
-      "source_sha256": "8c77f3bb0ef9031fc5bbd08c536a34eff881021e929eee2ecf0a2dc90fc0156f",
+      "source_sha256": "8dd69e7b72a1fcf3c2df073297d5d87745b3fbdaf632cdf25238561c09792de4",
       "target_size": 975,
       "translation_unit": {
         "kind": "isolated",

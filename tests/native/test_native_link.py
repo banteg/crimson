@@ -670,11 +670,11 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
     assert coverage["import_symbols"] == 34
     assert coverage["import_exports"] == 34
     assert coverage["generated_import_symbols"] == 34
-    assert coverage["archive_symbols"] == 60
-    assert coverage["link_dependency_symbols"] == 87
-    assert coverage["closure_placeholder_symbols"] == 3
+    assert coverage["archive_symbols"] == 62
+    assert coverage["link_dependency_symbols"] == 88
+    assert coverage["closure_placeholder_symbols"] == 1
     assert coverage["link_dependency_placeholder_symbols"] == 10
-    assert coverage["placeholder_symbols"] == 13
+    assert coverage["placeholder_symbols"] == 11
     assert coverage["runnable"] is False
     assert config.entry == "WinMainCRTStartup"
     assert [
@@ -683,8 +683,16 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
     ] == [
         ("_WinMain@16", "_crimsonland_main@16"),
     ]
-    assert len(config.archives) == 2
+    assert len(config.archives) == 3
     archives = {archive.id: archive for archive in config.archives}
+    assert archives["crimsonland-recovered-platform-vc6"].size == 9102
+    assert archives["crimsonland-recovered-platform-vc6"].sha256 == (
+        "1b7ec35ba2df97598590baceec29a7ffe58eead774105118861c5045c6155914"
+    )
+    assert (
+        archives["crimsonland-recovered-platform-vc6"].provenance.derived_artifact
+        == "crimsonland-recovered-platform-vc6-provider"
+    )
     assert archives["directx-8.1-d3dx8"].size == 2150226
     assert archives["directx-8.1-d3dx8"].sha256 == (
         "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
@@ -765,19 +773,19 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["status"] == "linked"
     assert manifest["runnable"] is False
     assert manifest["summary"]["covered_symbols"] == 97
-    assert manifest["summary"]["archive_symbols"] == 60
+    assert manifest["summary"]["archive_symbols"] == 62
     assert manifest["summary"]["import_exports"] == 34
-    assert manifest["summary"]["link_dependency_symbols"] == 87
-    assert manifest["summary"]["closure_placeholder_symbols"] == 3
+    assert manifest["summary"]["link_dependency_symbols"] == 88
+    assert manifest["summary"]["closure_placeholder_symbols"] == 1
     assert manifest["summary"]["link_dependency_placeholder_symbols"] == 10
-    assert manifest["summary"]["placeholder_symbols"] == 13
+    assert manifest["summary"]["placeholder_symbols"] == 11
     assert manifest["summary"]["discarded_placeholder_symbols"] == 10
-    assert manifest["summary"]["retained_closure_placeholder_symbols"] == 3
+    assert manifest["summary"]["retained_closure_placeholder_symbols"] == 1
     assert manifest["summary"]["retained_link_dependency_placeholder_symbols"] == 0
-    assert manifest["summary"]["retained_placeholder_symbols"] == 3
-    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 77
-    assert manifest["summary"]["validated_output_import_symbols"] == 111
-    assert manifest["summary"]["input_object_count"] == 694
+    assert manifest["summary"]["retained_placeholder_symbols"] == 1
+    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 78
+    assert manifest["summary"]["validated_output_import_symbols"] == 112
+    assert manifest["summary"]["input_object_count"] == 697
     assert manifest["entry"]["symbol"] == "WinMainCRTStartup"
     assert manifest["entry"]["aliases"]["symbols"] == [
         {
@@ -785,11 +793,9 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
             "target": "_crimsonland_main@16",
         },
     ]
-    assert manifest["placeholder_object"]["symbol_count"] == 13
+    assert manifest["placeholder_object"]["symbol_count"] == 11
     assert manifest["placeholder_object"]["retained_symbols"] == [
         "_dx_get_version",
-        "_reg_read_dword_default",
-        "_reg_write_dword",
     ]
     assert manifest["placeholder_object"]["discarded_symbols"] == [
         "__imp__EnumSystemLocalesA@8",
@@ -806,7 +812,7 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["output"]["pe"] == {
         "characteristics": 271,
         "dll": False,
-        "entry_point_rva": 323744,
+        "entry_point_rva": 323792,
         "image_base": 0x00400000,
         "image_size": 864256,
         "machine": matchlib.IMAGE_FILE_MACHINE_I386,
@@ -827,10 +833,12 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert dependencies["advapi32"]["declared_symbols"] == [
         "RegOpenKeyA",
         "RegQueryValueExA",
+        "RegSetValueExA",
     ]
     assert dependencies["advapi32"]["retained_symbols"] == [
         "RegOpenKeyA",
         "RegQueryValueExA",
+        "RegSetValueExA",
     ]
     assert dependencies["advapi32"]["discarded_symbols"] == []
     assert len(dependencies["kernel32"]["declared_symbols"]) == 75
@@ -1054,11 +1062,11 @@ def test_crimsonland_placeholder_object_records_transitive_archive_shims() -> No
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
 
-    assert len(symbols) == 13
-    assert len(coff.sections) == 13
+    assert len(symbols) == 11
+    assert len(coff.sections) == 11
     assert [section.name for section in coff.sections] == [
         ".data",
-    ] * 10 + [".text"] * 3
+    ] * 10 + [".text"]
     assert {
         (section.comdat_key, section.comdat_selection)
         for section in coff.sections

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "6da9e537ed063a1b61bbf8bdba211d65d782267a1635b16a53f577bb8702e876",
+  "audit_digest": "14bbb16095d0ec476050fa38c07afd96f86375b26199948305e9ebfa695f4d67",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -11227,6 +11227,19 @@
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/6095a61fa01e9b15/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3ff583126f0000000000",
+          "comdat_selection": 2,
+          "function": "projectile_render",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -61207,6 +61220,19 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff583126f0000000000",
           "comdat_selection": 2,
+          "function": "projectile_render",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3ff583126f0000000000",
+          "comdat_selection": 2,
           "function": "rush_mode_update",
           "kind": "section",
           "logical_section_size": 4,
@@ -61646,24 +61672,6 @@
         }
       ],
       "name": "__real@4@3ff7a3d70a0000000000"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@3ff89374bce000000000",
-          "comdat_selection": 2,
-          "function": "projectile_render",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "__real@4@3ff89374bce000000000"
     },
     {
       "definitions": [
@@ -95487,7 +95495,7 @@
           "comdat_selection": 1,
           "function": "projectile_render",
           "kind": "section",
-          "logical_section_size": 11664,
+          "logical_section_size": 11712,
           "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
           "section": ".text",
           "size": null,
@@ -95565,7 +95573,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8112,
+          "logical_section_size": 8096,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "section": ".text",
           "size": null,
@@ -133938,11 +133946,6 @@
           "weak": false
         },
         {
-          "function": "projectile_render",
-          "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "quest_failed_screen_update",
           "object": "tools/match/scratches/quest_failed_screen_update/build/msvc6.5/49a71cd62b38330a/scratch.obj",
           "weak": false
@@ -144182,7 +144185,7 @@
           "comdat_selection": 1,
           "function": "projectile_render",
           "kind": "section",
-          "logical_section_size": 11664,
+          "logical_section_size": 11712,
           "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
           "section": ".text",
           "size": null,
@@ -144323,7 +144326,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8112,
+          "logical_section_size": 8096,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "section": ".text",
           "size": null,
@@ -152994,6 +152997,11 @@
         {
           "function": "highscore_rank_index",
           "object": "tools/match/scratches/highscore_rank_index/build/msvc6.5/b73720a14011d72f/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "projectile_render",
+          "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
           "weak": false
         },
         {
@@ -164829,7 +164837,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3150,
+    "defined_symbols": 3149,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},

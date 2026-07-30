@@ -11,10 +11,26 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
+      }
+    },
+    {
+      "file": {
+        "path": "tools/native/providers/build/crimsonland-platform/crimsonland-platform.lib",
+        "repository_relative": true,
+        "sha256": "1b7ec35ba2df97598590baceec29a7ffe58eead774105118861c5045c6155914"
+      },
+      "id": "crimsonland-recovered-platform-vc6",
+      "provenance": {
+        "derived_artifact": "crimsonland-recovered-platform-vc6-provider",
+        "manifest": {
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+        }
       }
     },
     {
@@ -28,14 +44,14 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
       }
     }
   ],
-  "audit_digest": "40812d013d43629c1710a8a7e13b031fdb0f97b0a7a484525bb5f9b930da9574",
+  "audit_digest": "14bbb16095d0ec476050fa38c07afd96f86375b26199948305e9ebfa695f4d67",
   "entry": {
     "aliases": {
       "object": {
@@ -60,7 +76,7 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 323744,
+      "entry_point_rva": 323792,
       "image_base": 4194304,
       "image_size": 864256,
       "machine": 332,
@@ -70,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "99d33a0017dd2b739238c863365f8c0b0c77ce3d891331cfa26193b8198005c0"
+    "sha256": "5cdd7b41e1113c03f342a8b560999c8a74b6886467c22e754a941325b96612c2"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -88,18 +104,16 @@
     "path": "analysis/native/crimsonland.exe/link/providers/placeholders.obj",
     "repository_relative": true,
     "retained_symbols": [
-      "_dx_get_version",
-      "_reg_read_dword_default",
-      "_reg_write_dword"
+      "_dx_get_version"
     ],
-    "sha256": "0d007993af5732e5a4bfa6dc1f6c093e7a4f298343995016ef52f95fde3184a2",
-    "symbol_count": 13
+    "sha256": "890ae6657c88d2844ab174fcfd7c58b56b98bedad61a7f9eb024ea8e247758a5",
+    "symbol_count": 11
   },
   "provider_config": {
-    "declared_sha256": "91714cddc733b82f6682633bd87a875a86f16ed3ece4c897cffe8c14d79da494",
+    "declared_sha256": "a6d282f2f6816133c0e0dfd37d93be37bdc839eb422ffc02404283c428f8e2cb",
     "path": "tools/native/providers/crimsonland.exe.json",
     "repository_relative": true,
-    "sha256": "91714cddc733b82f6682633bd87a875a86f16ed3ece4c897cffe8c14d79da494"
+    "sha256": "a6d282f2f6816133c0e0dfd37d93be37bdc839eb422ffc02404283c428f8e2cb"
   },
   "providers": [
     {
@@ -252,7 +266,7 @@
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
         }
       ],
       "kind": "static-library",
@@ -326,7 +340,7 @@
           "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "8d0156bc580d32a75116527b84629040d386f4e8605bfe2aae0c78b41680b9b5"
+          "sha256": "dc608ae8d01838263881fda8aa40cd9ad6e7f92aac3876946c9b37d3708c8eec"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions.",
@@ -1074,7 +1088,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
         }
       ],
       "import_library": {
@@ -1090,6 +1104,53 @@
       "symbols": [
         "__imp__RegOpenKeyA@12",
         "__imp__RegQueryValueExA@24"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-registry-advapi32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "9375b1e8f1f3a43092f79984e6ff40d6d75253f75ee1e6ae94c09f68870ac880"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__RegSetValueExA@24",
+            "target": "__imp__RegSetValueExA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-registry-advapi32.def",
+        "repository_relative": true,
+        "sha256": "eea0067db2fcdee579744d4ed7f4c726d71e14adfbc4a9e1196b4195784ed32e"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports RegSetValueExA from ADVAPI32.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The exact recovered registry writer has one aligned RegSetValueExA reference.",
+          "path": "tools/match/scratches/reg_write_dword/NOTES.md",
+          "repository_relative": true,
+          "sha256": "609a1baec17779938b90607cf9a8793724fce31477acbabad21a08cea0272b83"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-registry-advapi32.lib",
+        "repository_relative": true,
+        "sha256": "bbdbffcc1ddc0233e1ec48aaf4d34f4542875534e8065232f8558a0be1b29cf8"
+      },
+      "kind": "reference-import",
+      "module": "ADVAPI32.dll",
+      "name": "recovered-platform-registry-advapi32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__RegSetValueExA@24"
       ]
     },
     {
@@ -1134,7 +1195,7 @@
           "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
         }
       ],
       "import_library": {
@@ -1376,7 +1437,7 @@
           "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF.",
           "path": "docs/re/static/native-linking.md",
           "repository_relative": true,
-          "sha256": "e2baaf4f77dee0dfdf755f761b89063f5abc3f1e1944c0a4e39a2839655efba4"
+          "sha256": "d4609dcf672c28d0354fe74724ef8cf6d47f887625c5bd2743c83930361ff8e3"
         },
         {
           "note": "None of the ten API names is present in the reference executable import table.",
@@ -1404,34 +1465,61 @@
       ]
     },
     {
+      "archive": "crimsonland-recovered-platform-vc6",
+      "evidence": [
+        {
+          "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+        },
+        {
+          "note": "The registry reader is an exact 23-instruction match with its Win32 import reference aligned.",
+          "path": "tools/match/scratches/reg_read_dword_default/NOTES.md",
+          "repository_relative": true,
+          "sha256": "4d5c70980d01aebf00def3d35f63b3eb42b14de8422250b155e132fc0c6fbe3e"
+        },
+        {
+          "note": "The registry writer is an exact 14-instruction match with its Win32 import reference aligned.",
+          "path": "tools/match/scratches/reg_write_dword/NOTES.md",
+          "repository_relative": true,
+          "sha256": "609a1baec17779938b90607cf9a8793724fce31477acbabad21a08cea0272b83"
+        }
+      ],
+      "kind": "platform-replaced",
+      "name": "recovered-platform-registry",
+      "resolution": "archive-library",
+      "scope": "closure",
+      "symbols": [
+        "_reg_read_dword_default",
+        "_reg_write_dword"
+      ]
+    },
+    {
       "discarded_symbols": [],
       "evidence": [
         {
-          "note": "The native closure catalog marks these Windows-specific helpers as platform-replaced.",
+          "note": "The native closure catalog marks the legacy DirectX version gate as platform-replaced.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "8d0156bc580d32a75116527b84629040d386f4e8605bfe2aae0c78b41680b9b5"
+          "sha256": "dc608ae8d01838263881fda8aa40cd9ad6e7f92aac3876946c9b37d3708c8eec"
         },
         {
-          "note": "The entrypoint analysis records the legacy DirectX probe and registry helpers at the executable boundary.",
+          "note": "The entrypoint analysis records the legacy DirectX probe at the executable boundary.",
           "path": "docs/re/static/entrypoint.md",
           "repository_relative": true,
           "sha256": "26838f5a68ca6a0227bb7c110a89a99dc48e183fdbac4077218a2cbe4e4de078"
         }
       ],
       "kind": "platform-replaced",
-      "name": "platform-replaced",
+      "name": "platform-replaced-directx-version",
       "resolution": "placeholder-object",
       "retained_symbols": [
-        "_dx_get_version",
-        "_reg_read_dword_default",
-        "_reg_write_dword"
+        "_dx_get_version"
       ],
       "scope": "closure",
       "symbols": [
-        "_dx_get_version",
-        "_reg_read_dword_default",
-        "_reg_write_dword"
+        "_dx_get_version"
       ]
     },
     {
@@ -1454,7 +1542,7 @@
           "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "ee9fc200b34f6bb45970f74f119f03ed5a6262d51b8670aed8f2361d2fff783f"
+          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
         },
         {
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",
@@ -1477,13 +1565,15 @@
       {
         "declared_symbols": [
           "RegOpenKeyA",
-          "RegQueryValueExA"
+          "RegQueryValueExA",
+          "RegSetValueExA"
         ],
         "discarded_symbols": [],
         "module": "advapi32",
         "retained_symbols": [
           "RegOpenKeyA",
-          "RegQueryValueExA"
+          "RegQueryValueExA",
+          "RegSetValueExA"
         ]
       },
       {
@@ -1645,7 +1735,7 @@
         ]
       }
     ],
-    "link_dependency_retained_symbol_count": 77,
+    "link_dependency_retained_symbol_count": 78,
     "modules": [
       {
         "module": "advapi32",
@@ -1739,7 +1829,8 @@
           "RegCloseKey",
           "RegCreateKeyExA",
           "RegOpenKeyA",
-          "RegQueryValueExA"
+          "RegQueryValueExA",
+          "RegSetValueExA"
         ]
       },
       {
@@ -1895,24 +1986,24 @@
         ]
       }
     ],
-    "output_symbol_count": 111,
+    "output_symbol_count": 112,
     "symbol_count": 34
   },
   "runnable": false,
   "schema": 3,
   "status": "linked",
   "summary": {
-    "archive_symbols": 60,
-    "closure_placeholder_symbols": 3,
+    "archive_symbols": 62,
+    "closure_placeholder_symbols": 1,
     "covered_symbols": 97,
     "discarded_placeholder_symbols": 10,
     "generated_import_symbols": 34,
     "import_exports": 34,
     "import_symbols": 34,
-    "input_object_count": 694,
+    "input_object_count": 697,
     "link_dependency_placeholder_symbols": 10,
-    "link_dependency_symbols": 87,
-    "placeholder_symbols": 13,
+    "link_dependency_symbols": 88,
+    "placeholder_symbols": 11,
     "providers": [
       {
         "alias_count": 32,
@@ -1995,6 +2086,14 @@
         "symbol_count": 2
       },
       {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "recovered-platform-registry-advapi32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 1
+      },
+      {
         "alias_count": 4,
         "kind": "reference-import",
         "name": "directx-8.1-d3dx8-kernel32",
@@ -2042,11 +2141,19 @@
         "symbol_count": 10
       },
       {
+        "archive": "crimsonland-recovered-platform-vc6",
         "kind": "platform-replaced",
-        "name": "platform-replaced",
+        "name": "recovered-platform-registry",
+        "resolution": "archive-library",
+        "scope": "closure",
+        "symbol_count": 2
+      },
+      {
+        "kind": "platform-replaced",
+        "name": "platform-replaced-directx-version",
         "resolution": "placeholder-object",
         "scope": "closure",
-        "symbol_count": 3
+        "symbol_count": 1
       },
       {
         "alias_count": 1,
@@ -2058,12 +2165,12 @@
         "symbol_count": 1
       }
     ],
-    "retained_closure_placeholder_symbols": 3,
-    "retained_link_dependency_import_symbols": 77,
+    "retained_closure_placeholder_symbols": 1,
+    "retained_link_dependency_import_symbols": 78,
     "retained_link_dependency_placeholder_symbols": 0,
-    "retained_placeholder_symbols": 3,
+    "retained_placeholder_symbols": 1,
     "runnable": false,
-    "validated_output_import_symbols": 111,
+    "validated_output_import_symbols": 112,
     "validated_reference_import_symbols": 34
   },
   "toolchain": {
