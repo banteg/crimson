@@ -92,3 +92,34 @@ metadata spellings, and every pair interaction. All 17 variants were
 byte-identical to the retained source. This closes the declaration-order and
 east/south cursor-shape interaction hypothesis without changing the 63.6771%
 scratch.
+
+## Fixed-reservation scheduling audit
+
+Fresh live disassembly shows a sharper opening invariant than the earlier
+reservation sweep captured. Neither of the first two six-entry loops updates
+the later entry/path registers. Immediately before the south loop, native
+materializes entry index 12 in EAX and copies it to path index ECX; the south
+loop leaves both registers untouched. Its entry cursor is rooted directly at
+entry six.
+
+`opening-fixed-reservation-mutations.json` (SHA-256
+`8a59bc5a91e699ad0825d6bc5dc59a5d0e21341a200fc725059fd3503aafc037`)
+tested fixed, builder-backed, shared-index, and six-plus-six spellings for
+that invariant. All four exposed the constant early enough for VC6 to
+specialize the later route phases, producing only 173 instructions and
+regressing from 63.6771% to 11.9701%.
+
+Native schedules the two index loads before the south loop even though that
+loop does not use them, so `opening-post-loop-indices-mutations.json`
+(SHA-256 `02baf7a6073f836147153bc0d38335964f7acd3e5b647bca9ac178adf087c787`)
+also tested declarations and assignments after the loop, plus a dead builder
+induction intended to inhibit early propagation. The three direct forms
+compiled to the same 173-instruction cliff; retaining the dead induction
+produced 174 instructions and 13.2982%, still a large regression.
+
+The semantic invariant is therefore confirmed but not safely expressible as
+a visible fixed reservation in the current reconstructed builder shape.
+The retained 218-instruction scratch remains the honest best result. The next
+useful revisit needs a recovered original helper or object boundary that
+explains why VC6 emits the immediate 12 without specializing the later loops;
+more scalar reservation or declaration-order variants are exhausted.

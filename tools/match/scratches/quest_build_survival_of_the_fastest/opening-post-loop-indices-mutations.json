@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-post-loop-indices",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int x = 256;\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->set_spawn(\n            SPAWN_ID_DEN_SPIDER_WEAK_10,\n            trigger_time_ms,\n            1);\n        ++builder.count;\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n\n    int path_index = builder.count;\n    int y = 256;\n    trigger_time_ms = 5900;\n    spawn = &builder.spawns[builder.count];\n    while (y < 688) {\n        ++spawn;\n        spawn[-1].pos = quest_vec2_t(688.0f, (float)y);\n        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n        ++builder.count;\n        ++path_index;\n        y += 72;\n        trigger_time_ms += 900;\n    }\n\n    int entry_count = builder.count;\n",
+      "replacements": [
+        {
+          "name": "entry-then-path",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int x = 256;\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->set_spawn(\n            SPAWN_ID_DEN_SPIDER_WEAK_10,\n            trigger_time_ms,\n            1);\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n\n    int y = 256;\n    trigger_time_ms = 5900;\n    spawn = &builder.spawns[6];\n    while (y < 688) {\n        ++spawn;\n        spawn[-1].pos = quest_vec2_t(688.0f, (float)y);\n        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n        y += 72;\n        trigger_time_ms += 900;\n    }\n\n    int entry_count = 12;\n    int path_index = entry_count;\n"
+        },
+        {
+          "name": "path-then-entry",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int x = 256;\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->set_spawn(\n            SPAWN_ID_DEN_SPIDER_WEAK_10,\n            trigger_time_ms,\n            1);\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n\n    int y = 256;\n    trigger_time_ms = 5900;\n    spawn = &builder.spawns[6];\n    while (y < 688) {\n        ++spawn;\n        spawn[-1].pos = quest_vec2_t(688.0f, (float)y);\n        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n        y += 72;\n        trigger_time_ms += 900;\n    }\n\n    int path_index = 12;\n    int entry_count = path_index;\n"
+        },
+        {
+          "name": "split-assignments",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int x = 256;\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->set_spawn(\n            SPAWN_ID_DEN_SPIDER_WEAK_10,\n            trigger_time_ms,\n            1);\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n\n    int y = 256;\n    trigger_time_ms = 5900;\n    spawn = &builder.spawns[6];\n    while (y < 688) {\n        ++spawn;\n        spawn[-1].pos = quest_vec2_t(688.0f, (float)y);\n        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n        y += 72;\n        trigger_time_ms += 900;\n    }\n\n    int entry_count;\n    int path_index;\n    entry_count = 12;\n    path_index = entry_count;\n"
+        },
+        {
+          "name": "dead-builder-induction",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int x = 256;\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->set_spawn(\n            SPAWN_ID_DEN_SPIDER_WEAK_10,\n            trigger_time_ms,\n            1);\n        ++builder.count;\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n\n    int y = 256;\n    trigger_time_ms = 5900;\n    spawn = &builder.spawns[6];\n    while (y < 688) {\n        ++spawn;\n        spawn[-1].pos = quest_vec2_t(688.0f, (float)y);\n        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n        ++builder.count;\n        y += 72;\n        trigger_time_ms += 900;\n    }\n\n    int entry_count = 12;\n    int path_index = entry_count;\n"
+        }
+      ]
+    }
+  ]
+}
