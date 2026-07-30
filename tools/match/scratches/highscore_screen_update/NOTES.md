@@ -410,3 +410,25 @@ references. Current source SHA-256 is
 `c4f7a34a755702aff1eae62242f691296de8bd7ceca6a10f72e1cba3d2ecb784`;
 the complete append-only experiment ledger SHA-256 is
 `f1ed07afc0cb6a1a483ba439931ff646da4cf5e9389b8bef5c6220b67462bc46`.
+
+## Score-row ownership and play-gate controls
+
+Three bounded sweeps classify conspicuous residuals without retaining a source
+change. `score-row-clear-destination-mutations.json` (SHA-256
+`35a8eb19137e95e37baac62ccd207f1c510451cc7230e5a6a307b88858b47c9d`)
+shows that item-cursor, fixed-size buffer-cursor, and named buffer-cursor
+clears compile byte-identically. `score-row-mode-current-mutations.json`
+(SHA-256
+`83a95a857d0acdc5562dafdca8f4acc25b36d330260006a15c7431e703c11f18`)
+shows that both direct and captured `if` chains lose 2.266 fuzzy-weighted
+bytes and add four instructions, so the switch remains. Finally,
+`quest-play-gate-mutations.json` (SHA-256
+`76c39edc8b1fffa73d2ab99866c92b3e89454ba4468fdb225e7761d4f050ac82`)
+shows that the positive gate, explicit `else`, and combined reject guards are
+byte-identical.
+
+The apparent native/candidate differences at these sites are therefore
+compiler lowering or control-layout boundaries, not source-precision leads.
+The scratch remains at 78.0770199%, 1,969/2,004 instructions, and `589/0/7`
+references. The complete experiment ledger SHA-256 is
+`9dc677a5a86b9472a33fcd27c5fa502d31d8ea852362ab0e67e333bcc61636d4`.

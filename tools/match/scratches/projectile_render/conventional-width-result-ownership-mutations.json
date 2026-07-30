@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pistol-width-result-ownership",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;",
+      "replacements": [
+        {
+          "name": "assigned-result",
+          "text": "            projectile_render_vec2_t half_width;\n            half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;"
+        },
+        {
+          "name": "aggregate-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;\n            projectile_render_vec2_t half_width = half_width_result;"
+        },
+        {
+          "name": "assigned-aggregate-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;\n            projectile_render_vec2_t half_width;\n            half_width = half_width_result;"
+        },
+        {
+          "name": "member-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;\n            projectile_render_vec2_t half_width;\n            half_width.x = half_width_result.x;\n            half_width.y = half_width_result.y;"
+        },
+        {
+          "name": "reverse-member-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;\n            projectile_render_vec2_t half_width;\n            half_width.y = half_width_result.y;\n            half_width.x = half_width_result.x;"
+        }
+      ]
+    },
+    {
+      "name": "gauss-width-result-ownership",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;",
+      "replacements": [
+        {
+          "name": "assigned-result",
+          "text": "            projectile_render_vec2_t half_width;\n            half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;"
+        },
+        {
+          "name": "aggregate-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;\n            projectile_render_vec2_t half_width = half_width_result;"
+        },
+        {
+          "name": "assigned-aggregate-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;\n            projectile_render_vec2_t half_width;\n            half_width = half_width_result;"
+        },
+        {
+          "name": "member-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;\n            projectile_render_vec2_t half_width;\n            half_width.x = half_width_result.x;\n            half_width.y = half_width_result.y;"
+        },
+        {
+          "name": "reverse-member-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;\n            projectile_render_vec2_t half_width;\n            half_width.y = half_width_result.y;\n            half_width.x = half_width_result.x;"
+        }
+      ]
+    },
+    {
+      "name": "remaining-width-result-ownership",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;",
+      "replacements": [
+        {
+          "name": "assigned-result",
+          "text": "            projectile_render_vec2_t half_width;\n            half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;"
+        },
+        {
+          "name": "aggregate-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;\n            projectile_render_vec2_t half_width = half_width_result;"
+        },
+        {
+          "name": "assigned-aggregate-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;\n            projectile_render_vec2_t half_width;\n            half_width = half_width_result;"
+        },
+        {
+          "name": "member-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;\n            projectile_render_vec2_t half_width;\n            half_width.x = half_width_result.x;\n            half_width.y = half_width_result.y;"
+        },
+        {
+          "name": "reverse-member-result-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;\n            projectile_render_vec2_t half_width;\n            half_width.y = half_width_result.y;\n            half_width.x = half_width_result.x;"
+        }
+      ]
+    }
+  ]
+}

@@ -860,3 +860,19 @@ The retained source has SHA-256
 The two complete records bring `experiments.jsonl` to 51 sweeps and 1,662
 evaluated variants with zero malformed records and SHA-256
 `ccea677de13bc41e6787015957bd51949c4e0bd6ec2f084848f8d9cc8d675786`.
+
+## Conventional width-result ownership boundary
+
+`conventional-width-result-ownership-mutations.json` (SHA-256
+`7a11c97dfe7e51eb0b8394e23a6463521f1a4d98540932f346aec5f8ef55924b`)
+tests all fifteen single-site result-copy spellings at the pistol, Gauss, and
+remaining conventional-projectile width calculations. Default assignment,
+aggregate-result assignment, and an assigned aggregate result are
+byte-identical at every site. Member and reverse-member copies consistently
+regress by 350.097 fuzzy-weighted bytes, add one candidate instruction, and
+lose 23 resolved references without fixing a mismatch.
+
+No source change is retained. The scratch remains at 57.4334633%,
+2,878/3,021 instructions, and `442/0/10` references. The complete record brings
+`experiments.jsonl` to 52 sweeps and 1,677 evaluated variants with SHA-256
+`05cfef9a2396ffc6b12ad05a4fa9027061b403fa5d0885277a96e278ba4096d6`.

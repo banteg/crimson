@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-play-gate",
+      "find": "            if (config_blob.hardcore) {\n                if (quest_unlock_index_full < quest_index) {\n                    goto play_game_done;\n                }\n            } else if (quest_unlock_index < quest_index) {\n                goto play_game_done;\n            }\n            render_pass_mode = 0;",
+      "replacements": [
+        {
+          "name": "hardcore-allowed-goto",
+          "text": "            if (config_blob.hardcore) {\n                if (quest_unlock_index_full >= quest_index) {\n                    goto play_game_allowed;\n                }\n                goto play_game_done;\n            }\n            if (quest_unlock_index < quest_index) {\n                goto play_game_done;\n            }\nplay_game_allowed:\n            render_pass_mode = 0;"
+        },
+        {
+          "name": "hardcore-explicit-else",
+          "text": "            if (config_blob.hardcore) {\n                if (quest_unlock_index_full >= quest_index) {\n                    goto play_game_allowed;\n                } else {\n                    goto play_game_done;\n                }\n            } else if (quest_unlock_index < quest_index) {\n                goto play_game_done;\n            }\nplay_game_allowed:\n            render_pass_mode = 0;"
+        },
+        {
+          "name": "combined-reject-guards",
+          "text": "            if ((config_blob.hardcore\n                    && quest_unlock_index_full < quest_index)\n                || (!config_blob.hardcore\n                    && quest_unlock_index < quest_index)) {\n                goto play_game_done;\n            }\n            render_pass_mode = 0;"
+        }
+      ]
+    }
+  ]
+}

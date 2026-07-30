@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "score-row-clear-destination",
+      "find": "        *score_line_item = *score_line_buffer;\n        memset(*score_line_item, 0, sizeof(*score_line_buffer));",
+      "replacements": [
+        {
+          "name": "buffer-cursor-sizeof",
+          "text": "        *score_line_item = *score_line_buffer;\n        memset(*score_line_buffer, 0, sizeof(*score_line_buffer));"
+        },
+        {
+          "name": "buffer-cursor-fixed-size",
+          "text": "        *score_line_item = *score_line_buffer;\n        memset(*score_line_buffer, 0, 164);"
+        },
+        {
+          "name": "named-buffer-cursor",
+          "text": "        char *score_line = *score_line_buffer;\n        *score_line_item = score_line;\n        memset(score_line, 0, sizeof(*score_line_buffer));"
+        }
+      ]
+    }
+  ]
+}
