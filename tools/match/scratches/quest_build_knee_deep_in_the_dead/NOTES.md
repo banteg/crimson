@@ -43,6 +43,16 @@ The 95.74% baseline remains best. The complete result is recorded in
 `experiments.jsonl` (spec
 `0925043af860b29e4188ee7d85c81c28d2beb137cd807d35f7fbb2cd08a6ebf8`).
 
+`vector-helper-mutations.json` then evaluated all six honest constructor and
+assignment-helper shapes. Constructor body and inline annotations are
+byte-neutral. Explicit assignment operators collapse the compiler-generated
+temporary schedule and regress by 234.60 weighted bytes and 30 instructions.
+No helper shape improves the baseline; the complete result is recorded in
+`experiments.jsonl` (spec
+`3345a931147cba67328d3a8fa60d9ada42e5b5669cba0e3c77ce624535bf1f30`).
+Together with the opening-lifetime sweep, this bounds both the call-site and
+type-helper levers for the localized residual.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
