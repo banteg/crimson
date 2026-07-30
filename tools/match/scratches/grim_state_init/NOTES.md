@@ -218,3 +218,19 @@ row-end comparison and advances the row pointer after the inner loop. The
 uniform cursor spelling still triggers the documented whole-function
 allocation cliff. The remaining residual is therefore a bounded backend
 induction choice rather than missing state, type, or referenced data.
+
+## Shared row-cursor identity audit
+
+`shared-row-cursor-lifetime-interactions.json` tests the last plausible way to
+obtain the uniform final-grid cursor without adding a fifth compiler local. It
+declares one function-scoped row cursor and exhaustively crosses its reuse in
+the font, 2x2, 4x4, 8x8, and 16x16 loops.
+
+All **63/63** combinations were evaluated. The declaration and every
+combination limited to the first four loops are byte-identical to the retained
+**98.35%**, **425/425**, `refs=166/0/0` object. Every combination that also
+uses the cursor in the final 16x16 loop falls to the same **64.71%**,
+`refs=103/0/21` allocation cliff, including the full six-site reuse. Cursor
+identity and compiler-local count therefore do not explain the final induction
+choice; the source-shape route is saturated pending new compiler or
+translation-unit provenance.
