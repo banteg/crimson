@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "955642f3efbbbf7f5b8f3eeb71fb45a31c1297105a67ef91d91f1df3ac7dabc6",
+  "audit_digest": "b7705f62f23130cec05dd5d34555189868e9d3c661ca698cf83418ce062c13b8",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -8036,15 +8036,15 @@
         },
         {
           "address": 4833120,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "creature_max_health",
           "section_number": 399,
           "section_offset": 40,
-          "size": null,
-          "storage_address": 4833080,
-          "storage_name": "creature_pool",
+          "size": 4,
+          "storage_address": 4833120,
+          "storage_name": "creature_max_health",
           "symbols": [
             "_creature_max_health"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "43f97710eacb656a3e9100c0fc2cd64e4e6083f578865a83bde84feb19dc34c9"
+        "sha256": "a9e5403a21ed2dac19bc8fa18db55cfa663115d842ad5b921926bf8c12835fdc"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -17693,6 +17693,10 @@
             {
               "address": 4833080,
               "name": "creature_pool"
+            },
+            {
+              "address": 4833120,
+              "name": "creature_max_health"
             }
           ],
           "relocations": [],
@@ -87659,7 +87663,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "43f97710eacb656a3e9100c0fc2cd64e4e6083f578865a83bde84feb19dc34c9"
+        "sha256": "a9e5403a21ed2dac19bc8fa18db55cfa663115d842ad5b921926bf8c12835fdc"
       }
     ],
     "toolchain": {

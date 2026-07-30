@@ -2246,12 +2246,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert payload["summary"]["entry_count"] == 1548
     assert payload["summary"]["typed_entries"] == 1548
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1151
-    assert payload["summary"]["explicit_alignment_entries"] == 1151
-    assert payload["summary"]["explicit_initializer_entries"] == 1151
-    assert payload["summary"]["fully_specified_entries"] == 1151
-    assert payload["summary"]["definition_group_entries"] == 1067
-    assert payload["summary"]["definition_groups"] == 122
+    assert payload["summary"]["explicit_size_entries"] == 1202
+    assert payload["summary"]["explicit_alignment_entries"] == 1202
+    assert payload["summary"]["explicit_initializer_entries"] == 1202
+    assert payload["summary"]["fully_specified_entries"] == 1202
+    assert payload["summary"]["definition_group_entries"] == 1118
+    assert payload["summary"]["definition_groups"] == 124
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2287,6 +2287,15 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["player_reload_active"]["size"] == 1
     assert defined["player_alt_fire_key"]["size"] == 4
     assert defined["creature_pool"]["size"] == 0xE400
+    assert defined["creature_health"]["size"] == 4
+    assert defined["creature_target_player"]["size"] == 1
+    assert defined["creature_orbit_radius"]["definition_group"] == (
+        "creature-state-zero-orbit-radius-00004"
+    )
+    assert defined["creature_type_lizard"]["size"] == 0x44
+    assert defined["creature_type_lizard"]["definition_group"] == (
+        "creature-type-zero-record-00044"
+    )
     assert defined["highscore_table"]["size"] == 0x1C20
     assert defined["ui_element_table_end"]["size"] == 0xA4
     assert defined["effect_template"]["size"] == 0x3C
