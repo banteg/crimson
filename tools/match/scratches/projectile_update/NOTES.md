@@ -804,3 +804,31 @@ source SHA-256 is
 `353b8c1b0cc3e7b0d7a4063a9e39a7c2e155011c7e62f8df5c29ad88bb2131d5`;
 the 53-record `experiments.jsonl` SHA-256 is
 `3919343e81673f26683751ec18cdb633a8f06f9598380c3887dd6ed19b5af2b1`.
+
+## Particle steering allocator boundary
+
+The three style-specific steering arms at `0x00422775..0x0042283d` share one
+remaining native/candidate lifetime difference: native retains each updated
+angle on x87 for `fcos`, stores it directly to the particle, and reloads the
+field for `fsin`; the candidate also materializes a stack copy. Two complete
+sweeps bound the natural source controls:
+
+- `particle-steering-assignment-mutations.json`
+  (`403314614eb539f9587e6d73f2c22393ad5f4f7a2d206e3b3084895d6dede224`)
+  evaluates all 7/7 single, paired, and triple compound-versus-direct
+  subtraction assignments. Every combination is byte-identical.
+- `particle-style-eight-steering-lifetime-mutations.json`
+  (`5ae1a9ef3d4d9d533715de53f846127097773d72165088b751bfd9d160a76523`)
+  evaluates all 6/6 explicit float, pointer/reference owner, named-angle, and
+  inline-turn lifetimes on the unique speed-62 arm. The nominal 3.8635-byte
+  forms lose aligned references and add four to seven mismatches. The
+  reference-clean owner forms remove two candidate instructions, moving the
+  already-short candidate farther from native, so none is retained.
+
+The spill is therefore coupled to whole-function allocation rather than the
+local assignment spelling. Source and metrics remain unchanged at
+57.4316563%, 2,150/2,203 instructions, and `397/0/23` references, with source
+SHA-256
+`353b8c1b0cc3e7b0d7a4063a9e39a7c2e155011c7e62f8df5c29ad88bb2131d5`.
+The 55-record `experiments.jsonl` SHA-256 is
+`89ee2569be476e9261ae68f00563d761be1b14858b498f95f5dbc08e5b0991c4`.

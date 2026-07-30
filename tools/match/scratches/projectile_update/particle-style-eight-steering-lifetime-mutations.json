@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "style-eight-steering-lifetime",
+      "find": "                        int turn = crt_rand() % 100 - 50;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.1f;\n                        particle->velocity.x =\n                            (float)cos(particle->angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(particle->angle) * 62.0f;",
+      "replacements": [
+        {
+          "name": "explicit-float-assignment",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        particle->angle = (float)(particle->angle\n                            - (float)turn * 0.06f\n                                * particle->intensity * frame_dt * 1.1f);\n                        particle->velocity.x =\n                            (float)cos(particle->angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(particle->angle) * 62.0f;"
+        },
+        {
+          "name": "pointer-angle-owner",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float *steering_angle = &particle->angle;\n                        *steering_angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.1f;\n                        particle->velocity.x =\n                            (float)cos(*steering_angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(*steering_angle) * 62.0f;"
+        },
+        {
+          "name": "reference-angle-owner",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float &steering_angle = particle->angle;\n                        steering_angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.1f;\n                        particle->velocity.x =\n                            (float)cos(steering_angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(steering_angle) * 62.0f;"
+        },
+        {
+          "name": "named-next-angle-field-reads",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float next_angle = particle->angle\n                            - (float)turn * 0.06f\n                                * particle->intensity * frame_dt * 1.1f;\n                        particle->angle = next_angle;\n                        particle->velocity.x =\n                            (float)cos(particle->angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(particle->angle) * 62.0f;"
+        },
+        {
+          "name": "named-next-angle-local-reads",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float next_angle = particle->angle\n                            - (float)turn * 0.06f\n                                * particle->intensity * frame_dt * 1.1f;\n                        particle->angle = next_angle;\n                        particle->velocity.x =\n                            (float)cos(next_angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(next_angle) * 62.0f;"
+        },
+        {
+          "name": "inline-turn-expression",
+          "text": "                        particle->angle -=\n                            (float)(crt_rand() % 100 - 50) * 0.06f\n                                * particle->intensity * frame_dt * 1.1f;\n                        particle->velocity.x =\n                            (float)cos(particle->angle) * 62.0f;\n                        particle->velocity.y =\n                            (float)sin(particle->angle) * 62.0f;"
+        }
+      ]
+    }
+  ]
+}

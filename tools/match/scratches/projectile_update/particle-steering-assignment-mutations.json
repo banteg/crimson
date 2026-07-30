@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "style-zero-steering-assignment",
+      "find": "                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.96f;",
+      "replacements": [
+        {
+          "name": "direct-subtraction-assignment",
+          "text": "                        particle->angle = particle->angle\n                            - (float)turn * 0.06f\n                                * particle->intensity * frame_dt * 1.96f;"
+        }
+      ]
+    },
+    {
+      "name": "style-eight-steering-assignment",
+      "find": "                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.1f;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-subtraction-assignment",
+          "text": "                        particle->angle = particle->angle\n                            - (float)turn * 0.06f\n                                * particle->intensity * frame_dt * 1.1f;"
+        }
+      ]
+    },
+    {
+      "name": "default-steering-assignment",
+      "find": "                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.1f;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-subtraction-assignment",
+          "text": "                        particle->angle = particle->angle\n                            - (float)turn * 0.06f\n                                * particle->intensity * frame_dt * 1.1f;"
+        }
+      ]
+    }
+  ]
+}
