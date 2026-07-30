@@ -82,6 +82,9 @@ CRIMSON_ABI_ASSERT(
 CRIMSON_ABI_ASSERT(
     pointer_array_32_is_0x80,
     sizeof(char *[32]) == 0x80);
+CRIMSON_ABI_ASSERT(
+    pointer_array_57_is_0xe4,
+    sizeof(void *[57]) == 0xe4);
 CRIMSON_ABI_ASSERT(char_array_128_is_0x80, sizeof(char[128]) == 0x80);
 CRIMSON_ABI_ASSERT(
     highscore_line_buffers_are_0x668,
@@ -121,6 +124,7 @@ CRIMSON_ABI_ASSERT(
     crt_onexit_cursor_is_32_bit,
     sizeof(crt_onexit_fn_t *) == 4);
 CRIMSON_ABI_ASSERT_ALIGN4(crt_dosmaperr_entry, crt_dosmaperr_entry_t);
+CRIMSON_ABI_ASSERT_ALIGN4(guid, GUID);
 
 CRIMSON_ABI_ASSERT(
     default_char_alignment_is_one,
@@ -417,6 +421,8 @@ CRIMSON_ABI_ASSERT(
     console_queue_open_is_at_0x28,
     offsetof(console_queue_t, open) == 0x28);
 
+CRIMSON_ABI_ASSERT(mod_api_vtable_is_0x88, sizeof(mod_api_vtbl_t) == 0x88);
+CRIMSON_ABI_ASSERT_ALIGN4(mod_api_vtable, mod_api_vtbl_t);
 CRIMSON_ABI_ASSERT(mod_api_cpp_is_0x6c, sizeof(mod_api_cpp_t) == 0x6c);
 CRIMSON_ABI_ASSERT(mod_api_is_0x68, sizeof(mod_api_t) == 0x68);
 CRIMSON_ABI_ASSERT(mod_info_is_0x48, sizeof(mod_info_t) == 0x48);

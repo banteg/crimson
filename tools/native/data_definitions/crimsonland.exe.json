@@ -51,6 +51,7 @@
         ["0x00473a30", "key_char_buffer_size", "fe010000"],
         ["0x00473a5c", "startup_texture_load_stage_count", "01000000"],
         ["0x00473a64", "startup_integrity_cookie", "92440500"],
+        ["0x004755f4", "effect_id_frame", "02000000"],
         ["0x00477d28", "sfx_rate_scale", "44ac0000"],
         ["0x00478668", "ui_segmented_slider_tex_on", "ffffffff"],
         ["0x0047866c", "ui_segmented_slider_tex_off", "ffffffff"],
@@ -59,6 +60,20 @@
         ["0x00478e58", "quest_select_stage_major", "01000000"],
         ["0x00478e64", "controls_rebind_slot_index", "ffffffff"],
         ["0x00479770", "renderer_backend_kind", "ffff0000"]
+      ]
+    },
+    {
+      "name": "literal-guid-00010",
+      "types": ["GUID"],
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: GUID; tools/native/abi/crimsonland.exe/abi_assertions.cpp: guid_is_0x10",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: guid_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .rdata reference bytes at each member VA",
+      "members": [
+        ["0x0046f5b8", "IID_IDxDiagProvider", "b04c6b9cf823cc49a3ed45a55000a6d2"],
+        ["0x0046f5c8", "CLSID_DxDiagProvider", "71805ba6fe3b13429a5b491da4461ca7"]
       ]
     },
     {
@@ -578,6 +593,8 @@
         ["0x004c2c2c", "perk_id_fire_caugh"],
         ["0x004c2c30", "perk_id_tough_reloader"],
         ["0x004c3f00", "sfx_trooper_inpain_01"],
+        ["0x004c3f04", "sfx_trooper_inpain_02"],
+        ["0x004c3f08", "sfx_trooper_inpain_03"],
         ["0x004c3f0c", "sfx_trooper_die_01"],
         ["0x004c3f10", "sfx_trooper_die_02"],
         ["0x004c3f14", "sfx_trooper_die_03"],
@@ -626,6 +643,11 @@
         ["0x004c3fc4", "sfx_rocketmini_fire"],
         ["0x004c3fc8", "sfx_autorifle_reload_alt"],
         ["0x004c3fcc", "sfx_bullet_hit_01"],
+        ["0x004c3fd0", "sfx_bullet_hit_02"],
+        ["0x004c3fd4", "sfx_bullet_hit_03"],
+        ["0x004c3fd8", "sfx_bullet_hit_04"],
+        ["0x004c3fdc", "sfx_bullet_hit_05"],
+        ["0x004c3fe0", "sfx_bullet_hit_06"],
         ["0x004c3fe4", "sfx_shock_hit_01"],
         ["0x004c3fe8", "sfx_explosion_small"],
         ["0x004c3fec", "sfx_explosion_medium"],
@@ -633,14 +655,18 @@
         ["0x004c3ff4", "sfx_shockwave"],
         ["0x004c3ff8", "sfx_questhit"],
         ["0x004c3ffc", "sfx_ui_bonus"],
+        ["0x004c4000", "sfx_trooper_inpain_01_alias_0"],
         ["0x004c4004", "sfx_trooper_inpain_01_alias_1"],
+        ["0x004c4008", "sfx_trooper_inpain_01_alias_2"],
         ["0x004c400c", "sfx_ui_buttonclick"],
         ["0x004c4010", "sfx_ui_panelclick"],
         ["0x004c4014", "sfx_ui_levelup"],
         ["0x004c4018", "sfx_ui_typeclick_01"],
+        ["0x004c401c", "sfx_ui_typeclick_02"],
         ["0x004c4020", "sfx_ui_typeenter"],
         ["0x004c4024", "sfx_ui_clink_01"],
         ["0x004c4028", "sfx_bloodspill_01"],
+        ["0x004c402c", "sfx_bloodspill_02"],
         ["0x004c4030", "music_track_intro_id"],
         ["0x004c4040", "music_track_extra_1"],
         ["0x004c4044", "music_track_crimsonquest_id"]
@@ -758,7 +784,12 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
         ["0x00486fe8", "survival_recent_death_pos"],
+        ["0x004d75a0", "play_game_menu_button_rush"],
         ["0x004d75b8", "controls_back_button"],
+        ["0x004d75d0", "play_game_menu_button_tutorial"],
+        ["0x004d75f8", "play_game_menu_button_quests"],
+        ["0x004d7610", "play_game_menu_button_typo"],
+        ["0x004d76c8", "play_game_menu_button_survival"],
         ["0x004d7708", "controls_redefine_button"]
       ]
     },
@@ -1387,6 +1418,7 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
         ["0x0047ea54", "console_input_cursor"],
+        ["0x0047eeb8", "console_height_px"],
         ["0x0047f4cc", "console_cmd_argc"],
         ["0x00480848", "game_time_ms"],
         ["0x0048084c", "demo_trial_elapsed_ms"],
@@ -1578,7 +1610,7 @@
     },
     {
       "name": "zero-pointer32",
-      "types": ["FILE *", "char *", "char*", "cvar_float_t *", "effect_entry_t *", "float *", "int *", "mod_info_t *", "mod_interface_binja_t *", "quest_builder_fn_t", "quest_meta_t *", "tutorial_bonus_carrier_binja_t *", "ui_element_callback_t", "ui_element_t *", "void *"],
+      "types": ["FILE *", "char *", "char*", "console_command_entry_t *", "console_log_node_t *", "cvar_float_t *", "effect_entry_t *", "float *", "int *", "mod_info_t *", "mod_interface_binja_t *", "quest_builder_fn_t", "quest_meta_t *", "tutorial_bonus_carrier_binja_t *", "ui_element_callback_t", "ui_element_t *", "void *"],
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: pointer types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "alignment": 4,
@@ -1587,6 +1619,8 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
         ["0x0047ea60", "console_cmd_name"],
+        ["0x0047eea4", "console_command_list_head"],
+        ["0x0047eea8", "console_log_head"],
         ["0x00480854", "cv_silentloads"],
         ["0x00480858", "cv_terrainFilter"],
         ["0x0048085c", "cv_bodiesFade"],
@@ -1686,6 +1720,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
+        ["0x0047eeac", "console_echo_enabled"],
         ["0x0048294c", "bonus_state"],
         ["0x004853dc", "bonus_meta_enabled"],
         ["0x00486fa9", "survival_reward_handout_aux_enabled"],
@@ -2584,6 +2619,7 @@
         ["0x004d7730", "play_game_menu_init_flags"],
         ["0x004d79a0", "options_menu_init_flags"],
         ["0x004d79d4", "quest_select_screen_flags"],
+        ["0x004da3a8", "crt_heap_mode"],
         ["0x004da4c0", "crt_nhandle"],
         ["0x004db4e0", "crt_stream_count"]
       ]
@@ -2602,6 +2638,8 @@
         ["0x0048029c", "perk_selection_choice_color_idle_g"],
         ["0x004802a0", "perk_selection_choice_color_idle_b"],
         ["0x004802a4", "perk_selection_choice_color_idle_a"],
+        ["0x004802a8", "aim_screen_x"],
+        ["0x004802ac", "aim_screen_y"],
         ["0x00480310", "perk_selection_choice_color_hover_r"],
         ["0x00480314", "perk_selection_choice_color_hover_g"],
         ["0x00480318", "perk_selection_choice_color_hover_b"],
@@ -2721,6 +2759,7 @@
       "members": [
         ["0x0047f62c", "demo_trial_overlay_init_flags"],
         ["0x00480320", "demo_purchase_screen_init_flags"],
+        ["0x00480321", "game_completed_screen_flags"],
         ["0x00480340", "ui_aim_indicators_init_flags"],
         ["0x004819c8", "mod_info_static_guard"],
         ["0x00481c10", "credits_secret_flags"],
@@ -2762,6 +2801,8 @@
         ["0x004807b4", "config_violence_disabled"],
         ["0x004807b5", "config_score_load_gate"],
         ["0x004807b6", "config_safe_mode_backend_enabled"],
+        ["0x0048118d", "credits_secret_button_clicked"],
+        ["0x004811a5", "credits_back_button_clicked"],
         ["0x00481bb8", "mods_menu_init_flags"],
         ["0x004908b9", "player_plaguebearer_active"],
         ["0x00490b78", "player_reload_active"],
@@ -2778,7 +2819,7 @@
     },
     {
       "name": "mapped-bss-zero-pointer32",
-      "types": ["char*", "char **", "HANDLE", "void **", "FILE **"],
+      "types": ["char*", "char **", "crt_onexit_fn_t *", "HANDLE", "void **", "FILE **"],
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: recovered pointer declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "alignment": 4,
@@ -2791,7 +2832,9 @@
         ["0x004d99a0", "crt_environ"],
         ["0x004da3a4", "crt_heap_handle"],
         ["0x004da3c0", "crt_pioinfo_table"],
-        ["0x004da4c4", "crt_stream_table"]
+        ["0x004da4c4", "crt_stream_table"],
+        ["0x004db4f0", "crt_onexit_table_end"],
+        ["0x004db4f4", "crt_onexit_table_begin"]
       ]
     },
     {
@@ -2817,6 +2860,8 @@
         ["0x004807d0", "tutorial_prompt_primary_button"],
         ["0x00480808", "ui_button_maybe_later"],
         ["0x00480820", "perk_selection_select_button"],
+        ["0x00481188", "credits_secret_button"],
+        ["0x004811a0", "credits_back_button"],
         ["0x004819d0", "credits_secret_reset_button"],
         ["0x00481af0", "mods_menu_main_menu_button"],
         ["0x00481b88", "mods_menu_launch_button"],
@@ -3010,6 +3055,51 @@
     }
   ],
   "entries": [
+    {
+      "address": "0x0046f3e4",
+      "name": "mod_api_vtable",
+      "size": 136,
+      "size_source": "third_party/headers/crimsonland_types.h: mod_api_vtbl_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: mod_api_vtable_is_0x88",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: mod_api_vtable_alignment_is_four",
+      "initializer_symbols": [
+        ["0x0", "0x0040dfc0", "?mod_api_core_printf@mod_api_cpp_t@@UAAXPADZZ"],
+        ["0x4", "0x0040e040", "?mod_api_core_get_var@mod_api_cpp_t@@UAEPAUmod_var_t@@PAD@Z"],
+        ["0x8", "0x0040e080", "?mod_api_core_del_var@mod_api_cpp_t@@UAEEPAD@Z"],
+        ["0xc", "0x0040e0a0", "?mod_api_core_execute@mod_api_cpp_t@@UAEXPAD@Z"],
+        ["0x10", "0x0040e0c0", "?mod_api_core_add_command@mod_api_cpp_t@@UAEXPADP6AXXZ@Z"],
+        ["0x14", "0x0040e0e0", "?mod_api_core_del_command@mod_api_cpp_t@@UAEEPAD@Z"],
+        ["0x18", "0x0040e100", "?mod_api_core_get_extension@mod_api_cpp_t@@UAEPAXPAD@Z"],
+        ["0x1c", "0x0040e1f0", "?mod_api_gfx_clear@mod_api_cpp_t@@UAEXMMMM@Z"],
+        ["0x20", "0x0040e220", "?mod_api_gfx_get_string_width@mod_api_cpp_t@@UAEHPAD@Z"],
+        ["0x24", "0x0040e240", "?mod_api_gfx_printf@mod_api_cpp_t@@UAAXMMPADZZ"],
+        ["0x28", "0x0040e280", "?mod_api_gfx_load_texture@mod_api_cpp_t@@UAEHPAD@Z"],
+        ["0x2c", "0x0040e2e0", "?mod_api_gfx_free_texture@mod_api_cpp_t@@UAEEH@Z"],
+        ["0x30", "0x0040e300", "?mod_api_gfx_set_texture@mod_api_cpp_t@@UAEXH@Z"],
+        ["0x34", "0x0040e380", "?mod_api_gfx_set_texture_filter@mod_api_cpp_t@@UAEXH@Z"],
+        ["0x38", "0x0040e3a0", "?mod_api_gfx_set_blend_mode@mod_api_cpp_t@@UAEXHH@Z"],
+        ["0x3c", "0x0040e320", "?mod_api_gfx_set_color@mod_api_cpp_t@@UAEXMMMM@Z"],
+        ["0x40", "0x0040e350", "?mod_api_gfx_set_subset@mod_api_cpp_t@@UAEXMMMM@Z"],
+        ["0x44", "0x0040e3e0", "?mod_api_gfx_begin@mod_api_cpp_t@@UAEXXZ"],
+        ["0x48", "0x0040e400", "?mod_api_gfx_end@mod_api_cpp_t@@UAEXXZ"],
+        ["0x4c", "0x0040e420", "?mod_api_gfx_quad@mod_api_cpp_t@@UAEXMMMM@Z"],
+        ["0x50", "0x0040e470", "?mod_api_gfx_quad_rot@mod_api_cpp_t@@UAEXMMMMM@Z"],
+        ["0x54", "0x0040e4c0", "?mod_api_gfx_draw_quads@mod_api_cpp_t@@UAEXPAUmod_vertex2_t@@H@Z"],
+        ["0x58", "0x0040e530", "?mod_api_sfx_load_sample@mod_api_cpp_t@@UAEHPAD@Z"],
+        ["0x5c", "0x0040e560", "?mod_api_sfx_free_sample@mod_api_cpp_t@@UAEEH@Z"],
+        ["0x60", "0x0040e570", "?mod_api_sfx_play_sample@mod_api_cpp_t@@UAEXHMM@Z"],
+        ["0x64", "0x0040e5b0", "?mod_api_sfx_load_tune@mod_api_cpp_t@@UAEHPAD@Z"],
+        ["0x68", "0x0040e5e0", "?mod_api_sfx_free_tune@mod_api_cpp_t@@UAEEH@Z"],
+        ["0x6c", "0x0040e5f0", "?mod_api_sfx_play_tune@mod_api_cpp_t@@UAEXH@Z"],
+        ["0x70", "0x0040e600", "?mod_api_sfx_stop_tune@mod_api_cpp_t@@UAEXH@Z"],
+        ["0x74", "0x0040e660", "?mod_api_inp_key_down@mod_api_cpp_t@@UAEEH@Z"],
+        ["0x78", "0x0040e620", "?mod_api_inp_get_analog@mod_api_cpp_t@@UAEMH@Z"],
+        ["0x7c", "0x0040e610", "?mod_api_inp_get_pressed_char@mod_api_cpp_t@@UAEDXZ"],
+        ["0x80", "0x0040e680", "?mod_api_inp_get_key_name@mod_api_cpp_t@@UAEPADH@Z"],
+        ["0x84", "0x0040e690", "?mod_api_cl_enter_menu@mod_api_cpp_t@@UAEXPAD@Z"]
+      ],
+      "initializer_source": "analysis/native/crimsonland.exe/objects.json: exact recovered function symbols; game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .rdata pointer slots at VA 0x0046f3e4..0x0046f46c"
+    },
     {
       "address": "0x00471158",
       "name": "console_empty_arg",
@@ -3209,6 +3299,56 @@
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
       "initializer_hex": "8000000002000000800000000300000020000000000000002000000001000000200000000200000020000000030000002000000004000000200000000500000020000000080000002000000009000000200000000a000000200000000b0000004000000005000000400000000300000040000000040000004000000005000000400000000600000040000000070000001000000026000000",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004755f0..0x00475688"
+    },
+    {
+      "address": "0x004795a0",
+      "name": "renderer_dispatch_table",
+      "size": 228,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[57]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_array_57_is_0xe4",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "33314500cc334500d4384500573a4500203d45004d314500773445005a31450009364500403145006434450080394500e75345002c544500ea344500fb3445000c354500302f4500633f4500cd4c4500764d4500815245003853450059494500034a4500c04b45008d4345003f4945004c494500444b450017444500ad4445004445450003434500db54450028504500c7514500a03c4500fe46450021484500f347450032484500dc454500355145003c4e4500b65145001d2f4500e82f4500c13045006d314500453245004033450016364500113745002e3845000000000000000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: opaque legacy renderer-provider pointer bytes at VA 0x004795a0..0x00479684"
+    },
+    {
+      "address": "0x00479658",
+      "name": "vec2_normalize_impl",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: function pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "1d2f4500",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: renderer_dispatch_table slot 46 at VA 0x00479658 points to vec2_normalize_dispatch_init"
+    },
+    {
+      "address": "0x00479688",
+      "name": "renderer_dispatch_defaults",
+      "size": 228,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[57]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_array_57_is_0xe4",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "14564500d9334500e13845006a3a45002d3d4500ff564500843445003b574500cd5b45007f564500db5745008d394500f4534500395445009a584500275a4500193545005a2f4500763f4500e04c4500834d4500945245004553450066494500104a4500f44b4500bb434500735f45004d604500644b450033444500c94445006045450031434500e854450052504500f6514500b33c450011474500bf5c4500865c450059484500fc4545005f5145004f4e45000c6145008755450012304500f0304500973145006f3245006f334500403645003b3745005d384500094f45008d4f4500",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: opaque legacy renderer-provider pointer bytes at VA 0x00479688..0x0047976c"
+    },
+    {
+      "address": "0x0047b1c0",
+      "name": "crt_ctype_table",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: unsigned short pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "cab14700",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: opaque VC6 CRT internal pointer bytes at VA 0x0047b1c0"
+    },
+    {
+      "address": "0x0047b7c0",
+      "name": "crt_dosmaperr_table",
+      "size": 360,
+      "size_source": "third_party/headers/crimsonland_types.h: crt_dosmaperr_entry_t[45]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: crt_dosmaperr_table_is_0x168",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: crt_dosmaperr_entry_alignment_is_four",
+      "initializer_hex": "0100000016000000020000000200000003000000020000000400000018000000050000000d0000000600000009000000070000000c000000080000000c000000090000000c0000000a000000070000000b000000080000000c000000160000000d000000160000000f00000002000000100000000d00000011000000120000001200000002000000210000000d0000003500000002000000410000000d00000043000000020000005000000011000000520000000d000000530000000d0000005700000016000000590000000b0000006c0000000d0000006d00000020000000700000001c00000072000000090000000600000016000000800000000a000000810000000a00000082000000090000008300000016000000840000000d00000091000000290000009e0000000d000000a100000002000000a40000000b000000a70000000d000000b700000011000000ce00000002000000d70000000b000000180700000c000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: VC6 CRT _dosmaperr table bytes at VA 0x0047b7c0..0x0047b928"
     },
     {
       "address": "0x0047eea0",

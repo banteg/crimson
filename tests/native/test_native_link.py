@@ -2246,12 +2246,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert payload["summary"]["entry_count"] == 1548
     assert payload["summary"]["typed_entries"] == 1548
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1509
-    assert payload["summary"]["explicit_alignment_entries"] == 1509
-    assert payload["summary"]["explicit_initializer_entries"] == 1509
-    assert payload["summary"]["fully_specified_entries"] == 1509
-    assert payload["summary"]["definition_group_entries"] == 1425
-    assert payload["summary"]["definition_groups"] == 131
+    assert payload["summary"]["explicit_size_entries"] == 1548
+    assert payload["summary"]["explicit_alignment_entries"] == 1548
+    assert payload["summary"]["explicit_initializer_entries"] == 1548
+    assert payload["summary"]["fully_specified_entries"] == 1548
+    assert payload["summary"]["definition_group_entries"] == 1458
+    assert payload["summary"]["definition_groups"] == 132
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2328,6 +2328,30 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     )
     assert defined["local_system_day"]["definition_group"] == "zero-ushort16"
     assert defined["sfx_entry_table_state"]["definition_group"] == "zero-pointer32"
+    assert defined["effect_id_frame"]["initializer_hex"] == "02000000"
+    assert defined["console_command_list_head"]["definition_group"] == "zero-pointer32"
+    assert defined["console_echo_enabled"]["definition_group"] == "zero-uchar"
+    assert defined["console_height_px"]["definition_group"] == "zero-int32"
+    assert defined["IID_IDxDiagProvider"]["initializer_hex"] == (
+        "b04c6b9cf823cc49a3ed45a55000a6d2"
+    )
+    assert defined["aim_screen_x"]["definition_group"] == "mapped-bss-zero-float32"
+    assert defined["credits_secret_button"]["definition_group"] == (
+        "mapped-bss-zero-ui-button"
+    )
+    assert defined["sfx_bullet_hit_06"]["definition_group"] == "source-zero-int32"
+    assert defined["play_game_menu_button_survival"]["definition_group"] == (
+        "zero-abi-00018"
+    )
+    assert defined["crt_onexit_table_begin"]["definition_group"] == (
+        "mapped-bss-zero-pointer32"
+    )
+    assert len(defined["mod_api_vtable"]["initializer_symbols"]) == 34
+    assert defined["renderer_dispatch_table"]["size"] == 57 * 4
+    assert defined["vec2_normalize_impl"]["initializer_hex"] == "1d2f4500"
+    assert defined["renderer_dispatch_defaults"]["size"] == 57 * 4
+    assert defined["crt_ctype_table"]["initializer_hex"] == "cab14700"
+    assert defined["crt_dosmaperr_table"]["size"] == 45 * 8
     assert defined["ui_perk_prompt_on_activate"]["definition_group"] == (
         "zero-pointer32"
     )

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "84372898c56b6a4a0a76cc1e9cb9ff7dc4dd78c66192c0a4c68bfa29ed2d689c",
+  "audit_digest": "78f1cb4bba60e66a81bf65e2a4fe3d88c762974cd75daaf32109af8ba293baf6",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -82329,22 +82329,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4714168,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "console_height_px",
-          "data_storage_address": 4714144,
-          "data_storage_name": "console_log_queue",
+          "data_storage_address": 4714168,
+          "data_storage_name": "console_height_px",
           "function": null,
           "kind": "section",
           "logical_section_size": 44,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -124229,22 +124229,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4714168,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "console_height_px",
-          "data_storage_address": 4714144,
-          "data_storage_name": "console_log_queue",
+          "data_storage_address": 4714168,
+          "data_storage_name": "console_height_px",
           "function": null,
           "kind": "section",
           "logical_section_size": 44,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
