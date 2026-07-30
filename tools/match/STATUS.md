@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **694/808** functions matched exactly, **130906/341963** code bytes (**38.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303286/341963** code bytes (**88.7%**).
+Fuzzy-weighted alignment is **303288/341963** code bytes (**88.7%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 563/671 | 115968/320805 | 36.1% | 282485/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 563/671 |
+| crimsonland.exe | 563/671 | 115968/320805 | 36.1% | 282487/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 563/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20801/21158 | 98.3% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**563/671** functions, **115968/320805** bytes (**36.1%**), **282485/320805** fuzzy-weighted bytes (**88.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **563/671** scratches verified.
+**563/671** functions, **115968/320805** bytes (**36.1%**), **282487/320805** fuzzy-weighted bytes (**88.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **563/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -548,7 +548,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | quest_build_spideroids | 0x004373c0 | 224 | 220/224 | 4 | 62/62 | 98.39% | 5/62 | 3/0/0 |  | quest-spideroids-builder |
 | match | quest_build_evil_zombies_at_large | 0x004374a0 | 244 | 244/244 | 0 | 81/81 | 100.00% | 81/81 | 6/0/0 |  | quest-evil-zombies-at-large-builder |
 | wip | quest_build_everred_pastures | 0x004375a0 | 367 | 341/367 | 26 | 114/114 | 92.98% | 30/114 | 7/0/0 |  | quest-everred-pastures-cardinal-waves |
-| wip | quest_build_lizard_kings | 0x00437710 | 254 | 199/254 | 55 | 67/66 | 78.20% | 7/66 | 6/0/0 |  | quest-lizard-kings-builder |
+| wip | quest_build_lizard_kings | 0x00437710 | 254 | 200/254 | 54 | 66/66 | 78.79% | 7/66 | 6/0/0 |  | quest-lizard-kings-builder |
 | wip | quest_build_sweep_stakes | 0x00437810 | 258 | 198/258 | 60 | 75/76 | 76.82% | 6/76 | 7/0/0 |  | quest-sweep-stakes-builder |
 | wip | quest_build_deja_vu | 0x00437920 | 209 | 176/209 | 33 | 63/63 | 84.13% | 7/63 | 4/0/0 |  | quest-deja-vu-radial-waves |
 | wip | quest_build_target_practice | 0x00437a00 | 240 | 216/240 | 24 | 69/69 | 89.86% | 23/69 | 8/0/0 |  | quest-target-practice-radial-builder |

@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "f14dc93591869bbfe06f17409e5d6d9cb19138dde62a07ec2931fb385c721e12",
+  "audit_digest": "9896caf2c74c16bbaf61a7c5ca54d558697ccce4a9f0da9e24e4ca1bb7581752",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -65510,7 +65510,7 @@
         {
           "path": "tools/match/scratches/quest_build_lizard_kings/scratch.cpp",
           "repository_relative": true,
-          "sha256": "2b91494fb25e05756dfd4beb367f179021a2248ca686b093dea9c1f5bf3265ec"
+          "sha256": "fb6a655e181465a4cdb07211f7c558e387190c2b193e75de987d95c4e8273a55"
         },
         {
           "path": "tools/match/scratches/quest_build_lizard_kings/scratch.conf",
@@ -65551,17 +65551,17 @@
           "canonical_config_sha256": "d07686dadfcae67f943a841129bccc74825d5b22b39ee8b2c0fee474869c7364",
           "canonical_scratch": "tools/match/scratches/quest_build_lizard_kings",
           "canonical_source": "tools/match/scratches/quest_build_lizard_kings/scratch.cpp",
-          "canonical_source_sha256": "2b91494fb25e05756dfd4beb367f179021a2248ca686b093dea9c1f5bf3265ec",
+          "canonical_source_sha256": "fb6a655e181465a4cdb07211f7c558e387190c2b193e75de987d95c4e8273a55",
           "effective_end": 4421646,
           "end": 4421646,
           "function": "quest_build_lizard_kings",
           "match": {
-            "candidate_instructions": 67,
+            "candidate_instructions": 66,
             "masked_mismatches": 0,
             "masked_ok": 6,
             "masked_unresolved": 0,
             "prefix_instructions": 7,
-            "ratio": 0.7819548872180451,
+            "ratio": 0.7878787878787878,
             "state": "wip",
             "target_instructions": 66
           },
@@ -65570,21 +65570,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 67,
+        "candidate_instructions": 66,
         "masked_mismatches": 0,
         "masked_ok": 6,
         "masked_unresolved": 0,
         "prefix_instructions": 7,
-        "ratio": 0.7819548872180451,
+        "ratio": 0.7878787878787878,
         "state": "wip",
         "target_instructions": 66
       },
       "object": "tools/match/scratches/quest_build_lizard_kings/build/msvc6.5/906c61efa4ecb9d5/scratch.obj",
       "object_function_symbol": "_quest_build_lizard_kings",
-      "object_sha256": "3654bfdfddb4ba7bc32d0e5bd95329280763a867912d573a32955efbddff8920",
+      "object_sha256": "4783c62945f90e1bf7f1a4e98adbfe74a1b1d98c135e52634be625ac91d0817b",
       "scratch": "tools/match/scratches/quest_build_lizard_kings",
       "source": "tools/match/scratches/quest_build_lizard_kings/scratch.cpp",
-      "source_sha256": "2b91494fb25e05756dfd4beb367f179021a2248ca686b093dea9c1f5bf3265ec",
+      "source_sha256": "fb6a655e181465a4cdb07211f7c558e387190c2b193e75de987d95c4e8273a55",
       "target_size": 254,
       "translation_unit": {
         "kind": "isolated",
