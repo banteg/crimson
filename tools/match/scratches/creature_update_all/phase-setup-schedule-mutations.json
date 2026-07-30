@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "phase-setup-schedule",
+      "find": "                        creature_pool[creature_index].force_target = 0;\n                        move_scale = 1.0f;\n                        float phase_angle =\n                            (float)creature_pool[creature_index].phase_seed * 3.7f;\n                        phase_angle = phase_angle * 3.1415927f;\n\n                        if (creature_index",
+      "replacements": [
+        {
+          "name": "seed-conversion-before-setup",
+          "text": "                        float phase_angle =\n                            (float)creature_pool[creature_index].phase_seed;\n                        creature_pool[creature_index].force_target = 0;\n                        move_scale = 1.0f;\n                        phase_angle = phase_angle * 3.7f;\n                        phase_angle = phase_angle * 3.1415927f;\n\n                        if (creature_index"
+        },
+        {
+          "name": "phase-before-force-and-move",
+          "text": "                        float phase_angle =\n                            (float)creature_pool[creature_index].phase_seed * 3.7f;\n                        phase_angle = phase_angle * 3.1415927f;\n                        creature_pool[creature_index].force_target = 0;\n                        move_scale = 1.0f;\n\n                        if (creature_index"
+        },
+        {
+          "name": "phase-before-move-and-force",
+          "text": "                        float phase_angle =\n                            (float)creature_pool[creature_index].phase_seed * 3.7f;\n                        phase_angle = phase_angle * 3.1415927f;\n                        move_scale = 1.0f;\n                        creature_pool[creature_index].force_target = 0;\n\n                        if (creature_index"
+        },
+        {
+          "name": "force-then-seed-conversion",
+          "text": "                        creature_pool[creature_index].force_target = 0;\n                        float phase_angle =\n                            (float)creature_pool[creature_index].phase_seed;\n                        move_scale = 1.0f;\n                        phase_angle = phase_angle * 3.7f;\n                        phase_angle = phase_angle * 3.1415927f;\n\n                        if (creature_index"
+        },
+        {
+          "name": "move-then-seed-conversion",
+          "text": "                        move_scale = 1.0f;\n                        float phase_angle =\n                            (float)creature_pool[creature_index].phase_seed;\n                        creature_pool[creature_index].force_target = 0;\n                        phase_angle = phase_angle * 3.7f;\n                        phase_angle = phase_angle * 3.1415927f;\n\n                        if (creature_index"
+        },
+        {
+          "name": "named-seed-before-setup",
+          "text": "                        int phase_seed =\n                            creature_pool[creature_index].phase_seed;\n                        float phase_angle = (float)phase_seed;\n                        creature_pool[creature_index].force_target = 0;\n                        move_scale = 1.0f;\n                        phase_angle = phase_angle * 3.7f;\n                        phase_angle = phase_angle * 3.1415927f;\n\n                        if (creature_index"
+        }
+      ]
+    }
+  ]
+}

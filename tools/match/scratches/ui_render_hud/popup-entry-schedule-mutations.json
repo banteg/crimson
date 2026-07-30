@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "popup-entry-schedule",
+      "find": "    int text_y = (int)bonus_y + 1;\n    int icon_y = (int)bonus_y - 5;\n    render_overlay_player_index = 0;\n    if (config_player_count > 0) {",
+      "replacements": [
+        {
+          "name": "staged-increment-with-count-snapshot",
+          "text": "    int text_y = (int)bonus_y;\n    int popup_player_count = config_player_count;\n    ++text_y;\n    render_overlay_player_index = 0;\n    if (popup_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "staged-add-with-count-snapshot",
+          "text": "    int text_y = (int)bonus_y;\n    int popup_player_count = config_player_count;\n    text_y += 1;\n    render_overlay_player_index = 0;\n    if (popup_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "direct-text-with-count-snapshot",
+          "text": "    int text_y = (int)bonus_y + 1;\n    int popup_player_count = config_player_count;\n    render_overlay_player_index = 0;\n    if (popup_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "snapshot-before-staged-increment",
+          "text": "    int popup_player_count = config_player_count;\n    int text_y = (int)bonus_y;\n    ++text_y;\n    render_overlay_player_index = 0;\n    if (popup_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "zero-before-staged-increment",
+          "text": "    int text_y = (int)bonus_y;\n    int popup_player_count = config_player_count;\n    render_overlay_player_index = 0;\n    ++text_y;\n    if (popup_player_count > 0) {\n        int icon_y = text_y - 6;"
+        },
+        {
+          "name": "count-snapshot-with-independent-icon",
+          "text": "    int text_y = (int)bonus_y;\n    int popup_player_count = config_player_count;\n    ++text_y;\n    int icon_y = (int)bonus_y - 5;\n    render_overlay_player_index = 0;\n    if (popup_player_count > 0) {"
+        }
+      ]
+    }
+  ]
+}

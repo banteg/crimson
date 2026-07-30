@@ -487,3 +487,30 @@ weighted bytes over this wave's 52.355623100304% baseline. Candidate
 instructions remain 1,294/1,338, the prefix remains zero, and references are
 `225/0/2`. The retained source SHA-256 is
 `6418804572316ca99c8d7928d0b3f2810e32d89468ac7b982f80372db2bff5b2`.
+
+## Interaction-distance and phase-setup saturation
+
+Two fresh native-bounded sweeps test the highest-value unsaturated lifetimes
+left outside the already-covered corpse queue, tethered link, movement/spawn,
+and animation regions. Native `0x00426f65` computes the interaction distance
+from the creature/player deltas. The schema-1
+`interaction-distance-lifetime-mutations.json` plan has SHA-256
+`92fd3bc86bca531c086c5fba198561e39b209a026e96308822987f685889d75f`
+and evaluates all 7/7 scoped, product-order, direct-field, and named-copy
+spellings. Five variants compile byte-identically. The direct-field form loses
+8.100303951368 weighted bytes, and copying the X delta loses
+16.200607902736; neither changes instruction or reference counts.
+
+Native `0x0042664b..0x00426679` establishes the phase seed, forced target, and
+movement scale. The schema-1 `phase-setup-schedule-mutations.json` plan has
+SHA-256
+`75510e34b3e745eac0e9ba70b5509cdbe9d490ad9744b34ec3bf4a5eb85b7573`
+and evaluates all 6/6 ordinary statement schedules. Every variant compiles
+byte-identically to the retained source.
+
+Neither sweep has a winner, so the canonical source and metrics remain
+unchanged. Together these results close the strongest remaining local
+lifetime hypotheses in those two regions and leave the larger `0x7c` native
+versus `0x6c` candidate frame allocation and scaled-index scheduling as
+compiler/TU constraints rather than justification for another ordering-only
+rewrite.

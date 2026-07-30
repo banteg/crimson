@@ -114,3 +114,36 @@ cursor advance and return before `push edi` at `0x0041a97d`; a scoped
 render-only Y-cursor alias compiled byte-identically, confirming that the
 remaining prologue delta is compiler shrink-wrapping rather than missing
 behavior.
+
+## Compact-tail placement and pointer-lifetime bound
+
+Live native control flow makes the compact two-bar arm fall through to the
+shared color/cursor/return tail at `0x0041ac79`, while the single-bar arm at
+`0x0041acb1` jumps backward into it. The available compiler instead places
+the single-bar body before the shared tail. Two semantically equivalent
+early-return plans test both source-side tail placements:
+
+| plan | SHA-256 | evaluated |
+| --- | --- | ---: |
+| `compact-tail-placement-mutations.json` | `a680642e2b8120a99bddb22da61384049717a9d22d5a4617b801b72f6576d7d0` | 2/2 |
+| `compact-single-tail-placement-mutations.json` | `f00176abdea00b303ec29526daf1f2c7003ba4503fa681d8a16d44cfdddc45c1` | 1/1 |
+
+VC6 canonicalizes all three variants to the same object. They remove one
+candidate instruction and gain 9.264752510129 weighted bytes, but introduce
+one mismatched audited call reference. The reference-clean baseline is
+therefore retained; a nominal fuzzy gain is not accepted as progress when it
+adds native-reference debt.
+
+The compact primary-bar schedule was then bounded independently.
+`compact-primary-pointer-lifetime-mutations.json` has SHA-256
+`6bf7bb4502dd346237dbde76de227b20f7e91c33cc5ef698a54623117113270a`
+and evaluates all 9/9 named timer, position, color-pointer, and ratio
+lifetimes. All seven pointer-only forms compile byte-identically. The two
+named-ratio forms add 15 instructions, lose 280.195543271722 weighted bytes,
+and lose sixteen aligned references. No variant wins.
+
+These results leave the native tail placement, delayed color stores, and
+render-only `edi` save classified as backend block-layout, scheduling, and
+shrink-wrapping behavior. The canonical source remains reference-clean at
+1,249.714285714286/1,566 weighted bytes (`79.80295566502463%`),
+407/405 instructions, prefix 5, and `72/0/0` references.

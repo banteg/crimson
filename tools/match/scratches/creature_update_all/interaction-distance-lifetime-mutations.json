@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "interaction-distance-lifetime",
+      "find": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        dx = position->x - player_state_table[current_player_index].position.x;\n                        dy = position->y - player_state_table[current_player_index].position.y;\n                        distance = (float)sqrt(dx * dx + dy * dy);\n\n                        if (distance < 100.0f",
+      "replacements": [
+        {
+          "name": "commuted-products",
+          "text": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        dx = position->x - player_state_table[current_player_index].position.x;\n                        dy = position->y - player_state_table[current_player_index].position.y;\n                        distance = (float)sqrt(dy * dy + dx * dx);\n\n                        if (distance < 100.0f"
+        },
+        {
+          "name": "named-squared-sum",
+          "text": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        dx = position->x - player_state_table[current_player_index].position.x;\n                        dy = position->y - player_state_table[current_player_index].position.y;\n                        float distance_squared = dx * dx + dy * dy;\n                        distance = (float)sqrt(distance_squared);\n\n                        if (distance < 100.0f"
+        },
+        {
+          "name": "named-products",
+          "text": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        dx = position->x - player_state_table[current_player_index].position.x;\n                        dy = position->y - player_state_table[current_player_index].position.y;\n                        float dx_squared = dx * dx;\n                        float dy_squared = dy * dy;\n                        distance = (float)sqrt(dx_squared + dy_squared);\n\n                        if (distance < 100.0f"
+        },
+        {
+          "name": "named-dx-copy",
+          "text": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        dx = position->x - player_state_table[current_player_index].position.x;\n                        dy = position->y - player_state_table[current_player_index].position.y;\n                        float distance_dx = dx;\n                        distance = (float)sqrt(distance_dx * dx + dy * dy);\n\n                        if (distance < 100.0f"
+        },
+        {
+          "name": "named-dy-copy",
+          "text": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        dx = position->x - player_state_table[current_player_index].position.x;\n                        dy = position->y - player_state_table[current_player_index].position.y;\n                        float distance_dy = dy;\n                        distance = (float)sqrt(dx * dx + distance_dy * dy);\n\n                        if (distance < 100.0f"
+        },
+        {
+          "name": "scoped-delta-scalars",
+          "text": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        float interaction_dx =\n                            position->x - player_state_table[current_player_index].position.x;\n                        float interaction_dy =\n                            position->y - player_state_table[current_player_index].position.y;\n                        distance = (float)sqrt(\n                            interaction_dx * interaction_dx\n                            + interaction_dy * interaction_dy);\n\n                        if (distance < 100.0f"
+        },
+        {
+          "name": "direct-field-expression",
+          "text": "                        signed char *target_player =\n                            &creature_pool[creature_index].target_player;\n                        current_player_index = (int)*target_player;\n                        distance = (float)sqrt(\n                            (position->x - player_state_table[current_player_index].position.x)\n                                * (position->x - player_state_table[current_player_index].position.x)\n                            + (position->y - player_state_table[current_player_index].position.y)\n                                * (position->y - player_state_table[current_player_index].position.y));\n\n                        if (distance < 100.0f"
+        }
+      ]
+    }
+  ]
+}

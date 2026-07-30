@@ -259,3 +259,26 @@ scope source change is retained. The recorded spec SHA-256 values are
 for the stage-label sweep and
 `2b0ddc7c84308d1903c783fbee23ca839ae4b1c8fc3286e2bab0616b4ea60820`
 for the popup-scope sweep.
+
+## Popup entry schedule and quest-banner stack coloring
+
+The only one-instruction differential around native
+`0x0041c7b0..0x0041c817` occurs as the bonus-popup loop converts and advances
+its row origin, snapshots `config_player_count`, and derives the icon row.
+`popup-entry-schedule-mutations.json` has SHA-256
+`ff2e1b1b5471ba0355f8a72bb68576b084644b94889b09584515b0bbce0a1da9`
+and evaluates all 6/6 combinations of staged conversion, increment, count
+snapshot, and icon derivation. The independent count snapshot is
+byte-identical. Four staged icon forms each lose
+7.766383328763368 weighted bytes and one aligned reference; moving the zero
+initialization earlier loses 42.715108308198 weighted bytes and eight aligned
+references. No source change is retained.
+
+The adjacent quest-banner region at `0x0041c01c..0x0041c0c6` has identical
+normalized operations and branches. Its remaining differences are only
+temporary stack slots (`[esp+0x30]` versus `[esp+0x20]` and
+`[esp+0x3c]` versus `[esp+0x34]`). The bounded popup result and this exact
+operation sequence leave no native-backed row or banner rewrite to pursue;
+the canonical result remains 6,251.93857965451/7,081
+(`88.29174664107485%`), 1,823/1,824 instructions, and `390/0/0`
+references.

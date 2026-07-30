@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "compact-single-tail-placement",
+      "find": "            ui_draw_progress_bar(\n                (float *)&bar_pos,\n                32.0f,\n                *slot->slide.timer_ptr * 0.05f,\n                (float *)&bar_color);\n        }\n        grim_interface_ptr->grim_set_color(\n            1.0f, 1.0f, 1.0f, panel_alpha);\n        *y += 52.0f;\n        return;",
+      "replacements": [
+        {
+          "name": "single-arm-early-return",
+          "text": "            ui_draw_progress_bar(\n                (float *)&bar_pos,\n                32.0f,\n                *slot->slide.timer_ptr * 0.05f,\n                (float *)&bar_color);\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, panel_alpha);\n            *y += 52.0f;\n            return;\n        }\n        grim_interface_ptr->grim_set_color(\n            1.0f, 1.0f, 1.0f, panel_alpha);\n        *y += 52.0f;\n        return;"
+        }
+      ]
+    }
+  ]
+}

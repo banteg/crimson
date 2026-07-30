@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "compact-alt-tail-placement",
+      "find": "            }\n        } else {",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "early-return-without-else",
+          "text": "            }\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, panel_alpha);\n            *y += 52.0f;\n            return;\n        }\n        {"
+        },
+        {
+          "name": "early-return-retain-else",
+          "text": "            }\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, panel_alpha);\n            *y += 52.0f;\n            return;\n        } else {"
+        }
+      ]
+    }
+  ]
+}
