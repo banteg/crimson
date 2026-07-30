@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-copy-assignment",
+      "find": "    projectile_render_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    projectile_render_vec2_t operator+(",
+      "replacements": [
+        {
+          "name": "direct-members",
+          "text": "    projectile_render_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    projectile_render_vec2_t &operator=(\n        const projectile_render_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    projectile_render_vec2_t operator+("
+        },
+        {
+          "name": "y-first-members",
+          "text": "    projectile_render_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    projectile_render_vec2_t &operator=(\n        const projectile_render_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n        return *this;\n    }\n\n    projectile_render_vec2_t operator+("
+        },
+        {
+          "name": "staged-members",
+          "text": "    projectile_render_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    projectile_render_vec2_t &operator=(\n        const projectile_render_vec2_t &other)\n    {\n        float new_x = other.x;\n        float new_y = other.y;\n        x = new_x;\n        y = new_y;\n        return *this;\n    }\n\n    projectile_render_vec2_t operator+("
+        }
+      ]
+    },
+    {
+      "name": "arc-result-copy",
+      "find": "                    projectile_render_vec2_t arc =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t arc;\n                    arc = *(projectile_render_vec2_t *)\n                              &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "                    projectile_render_vec2_t arc_result =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t arc = arc_result;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "                    projectile_render_vec2_t arc_result =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t arc;\n                    arc.x = arc_result.x;\n                    arc.y = arc_result.y;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
+        }
+      ]
+    },
+    {
+      "name": "start-result-copy",
+      "find": "                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t side = arc * effect_scale;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t start;\n                    start = camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t side = arc * effect_scale;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t start = start_result;\n                    projectile_render_vec2_t side = arc * effect_scale;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t start;\n                    start.x = start_result.x;\n                    start.y = start_result.y;\n                    projectile_render_vec2_t side = arc * effect_scale;"
+        }
+      ]
+    },
+    {
+      "name": "end-result-copy",
+      "find": "                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 =",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t end;\n                    end = camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 ="
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "                    projectile_render_vec2_t end_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t end = end_result;\n                    projectile_render_vec2_t strip2 ="
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "                    projectile_render_vec2_t end_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t end;\n                    end.x = end_result.x;\n                    end.y = end_result.y;\n                    projectile_render_vec2_t strip2 ="
+        }
+      ]
+    }
+  ]
+}

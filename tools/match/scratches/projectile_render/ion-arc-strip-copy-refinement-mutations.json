@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "start-result-copy",
+      "find": "                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t start;\n                    start = camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t start = start_result;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "                    projectile_render_vec2_t start_result =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t start;\n                    start.x = start_result.x;\n                    start.y = start_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "side-result-copy",
+      "find": "                    projectile_render_vec2_t side = arc * effect_scale;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t side;\n                    side = arc * effect_scale;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "                    projectile_render_vec2_t side_result =\n                        arc * effect_scale;\n                    projectile_render_vec2_t side = side_result;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "                    projectile_render_vec2_t side_result =\n                        arc * effect_scale;\n                    projectile_render_vec2_t side;\n                    side.x = side_result.x;\n                    side.y = side_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "start-strip-copies",
+      "find": "                    projectile_render_vec2_t strip0 =\n                        start - side * 10.0f;\n                    projectile_render_vec2_t strip1 =\n                        start + side * 10.0f;",
+      "replacements": [
+        {
+          "name": "copy-then-mutate",
+          "text": "                    projectile_render_vec2_t strip0 = start;\n                    projectile_render_vec2_t strip1 = start;\n                    strip0 -= side * 10.0f;\n                    strip1 += side * 10.0f;"
+        },
+        {
+          "name": "named-width-copy-then-mutate",
+          "text": "                    projectile_render_vec2_t width = side * 10.0f;\n                    projectile_render_vec2_t strip0 = start;\n                    projectile_render_vec2_t strip1 = start;\n                    strip0 -= width;\n                    strip1 += width;"
+        },
+        {
+          "name": "named-results-then-copy",
+          "text": "                    projectile_render_vec2_t strip0_result =\n                        start - side * 10.0f;\n                    projectile_render_vec2_t strip0 = strip0_result;\n                    projectile_render_vec2_t strip1_result =\n                        start + side * 10.0f;\n                    projectile_render_vec2_t strip1 = strip1_result;"
+        },
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t strip0;\n                    strip0 = start - side * 10.0f;\n                    projectile_render_vec2_t strip1;\n                    strip1 = start + side * 10.0f;"
+        }
+      ]
+    },
+    {
+      "name": "end-strip-copies",
+      "find": "                    projectile_render_vec2_t strip2 =\n                        end + side * 10.0f;\n                    projectile_render_vec2_t strip3 =\n                        end - side * 10.0f;",
+      "replacements": [
+        {
+          "name": "copy-then-mutate",
+          "text": "                    projectile_render_vec2_t strip2 = end;\n                    projectile_render_vec2_t strip3 = end;\n                    strip2 += side * 10.0f;\n                    strip3 -= side * 10.0f;"
+        },
+        {
+          "name": "named-width-copy-then-mutate",
+          "text": "                    projectile_render_vec2_t width = side * 10.0f;\n                    projectile_render_vec2_t strip2 = end;\n                    projectile_render_vec2_t strip3 = end;\n                    strip2 += width;\n                    strip3 -= width;"
+        },
+        {
+          "name": "named-results-then-copy",
+          "text": "                    projectile_render_vec2_t strip2_result =\n                        end + side * 10.0f;\n                    projectile_render_vec2_t strip2 = strip2_result;\n                    projectile_render_vec2_t strip3_result =\n                        end - side * 10.0f;\n                    projectile_render_vec2_t strip3 = strip3_result;"
+        },
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t strip2;\n                    strip2 = end + side * 10.0f;\n                    projectile_render_vec2_t strip3;\n                    strip3 = end - side * 10.0f;"
+        }
+      ]
+    },
+    {
+      "name": "widen-result-copy",
+      "find": "                    projectile_render_vec2_t widen = side * 4.0f;\n                    strip0 -= widen;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "                    projectile_render_vec2_t widen;\n                    widen = side * 4.0f;\n                    strip0 -= widen;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "                    projectile_render_vec2_t widen_result =\n                        side * 4.0f;\n                    projectile_render_vec2_t widen = widen_result;\n                    strip0 -= widen;"
+        },
+        {
+          "name": "arc-chain-named-result",
+          "text": "                    projectile_render_vec2_t widen_result =\n                        arc * effect_scale * 4.0f;\n                    projectile_render_vec2_t widen = widen_result;\n                    strip0 -= widen;"
+        }
+      ]
+    }
+  ]
+}

@@ -855,27 +855,32 @@ extern "C" void projectile_render(float transition_alpha)
                     grim_interface_ptr->grim_set_uv_point(2, 0.6f, 0.25f);
                     grim_interface_ptr->grim_set_uv_point(3, 0.6f, 0.0f);
 
-                    projectile_render_vec2_t arc =
+                    projectile_render_vec2_t arc_result =
                         *(projectile_render_vec2_t *)
                              &creature_pool[creature_index].pos_x
                         - *(projectile_render_vec2_t *)&projectile->position;
+                    projectile_render_vec2_t arc = arc_result;
                     vec2_normalize_dispatch(
                         (vec2f_t *)&arc, (const vec2f_t *)&arc);
                     float old_arc_x = arc.x;
                     arc.x = -arc.y;
                     arc.y = old_arc_x;
-                    projectile_render_vec2_t start =
+                    projectile_render_vec2_t start_result =
                         camera_offset
                         + *(projectile_render_vec2_t *)&projectile->position;
+                    projectile_render_vec2_t start;
+                    start.x = start_result.x;
+                    start.y = start_result.y;
                     projectile_render_vec2_t side = arc * effect_scale;
                     projectile_render_vec2_t strip0 =
                         start - side * 10.0f;
                     projectile_render_vec2_t strip1 =
                         start + side * 10.0f;
-                    projectile_render_vec2_t end =
+                    projectile_render_vec2_t end_result =
                         camera_offset
                         + *(projectile_render_vec2_t *)
                              &creature_pool[creature_index].pos_x;
+                    projectile_render_vec2_t end = end_result;
                     projectile_render_vec2_t strip2 =
                         end + side * 10.0f;
                     projectile_render_vec2_t strip3 =
@@ -890,7 +895,9 @@ extern "C" void projectile_render(float transition_alpha)
                         strip2.y,
                         strip3.x,
                         strip3.y);
-                    projectile_render_vec2_t widen = side * 4.0f;
+                    projectile_render_vec2_t widen_result =
+                        arc * effect_scale * 4.0f;
+                    projectile_render_vec2_t widen = widen_result;
                     strip0 -= widen;
                     strip1 += widen;
                     strip2 += widen;

@@ -699,3 +699,52 @@ The retained source has SHA-256
 The two complete records bring `experiments.jsonl` to 42 sweeps and 818
 evaluated variants with SHA-256
 `ae60fd2af8b5b2c6f6951a4d44f2683be56dbf988be5bcb98fdedade92f46098`.
+
+## Ion arc result-ownership wave
+
+Fresh inspection of the largest remaining ion-chain region identifies real
+vector result boundaries that the previous compact source had elided. Native
+computes the creature-minus-projectile displacement at
+`0x00424bcc-0x00424bee` into one pair of stack slots, copies that pair into the
+vector normalized at `0x00424bfb`, and preserves the normalized vector while
+rotating it perpendicular in place. Native likewise materializes the
+camera-plus-projectile and camera-plus-creature results before fanning each
+result into the two strip points. The later four-unit widening pass recomputes
+`arc * effect_scale * 4.0f`, rather than multiplying the already named side
+vector.
+
+Three complete bounded sweeps recover and bound those ownership details:
+
+- `ion-arc-copy-boundary-mutations.json` (SHA-256
+  `65c38663c78f86fb5b267e18f0deae301fb7368f2c88a5a849d5ae01c4292605`)
+  exhausts all 66 single- and two-site combinations across copy assignment,
+  arc, start, and end result boundaries. Named arc and end results are the
+  clean winner, adding 100.002 weighted bytes while removing two aligned
+  reference mismatches.
+- `ion-arc-strip-copy-refinement-mutations.json` (SHA-256
+  `d3468b02c39b69537941f36590316ae52448f57ea776dc57ccb88f17cde0fa59`)
+  exhausts all 132 single- and two-site combinations across the remaining
+  start, side, strip, and widen boundaries. A named start result copied by
+  members, together with the native recomputed widen chain, adds another
+  14.251 weighted bytes and five proven references. Direct copy-then-mutate
+  strip spellings do not improve and remain rejected.
+- `vector-copy-constructor-mutations.json` (SHA-256
+  `7a2740f07b7804590ec312658dd3428f131809a2ca18cb5aa28f9b952b8519e6`)
+  tests all four natural x/y construction orders. Every user-defined copy
+  constructor loses 148.716 to 159.540 weighted bytes, drops four proven
+  references, and adds a mismatch. The vector therefore keeps its implicit
+  copy constructor; the recovered boundaries are local expression ownership,
+  not a function-wide type property.
+
+Together the retained changes raise the weighted match from 6,819.249 to
+6,933.501 bytes, reduce the gap from 5,731.751 to 5,617.499 bytes, and move
+the ratio from 54.3323140% to 55.2426196%. The candidate grows from 2,865 to
+2,873 instructions against 3,021 native instructions. References improve from
+`424/0/12` to `430/0/10`, with no unresolved references or new reference
+debt.
+
+The retained source has SHA-256
+`cb9e5d01f55b3f2c4fc4b59cd0b81c0cc7eb5472268575780d49860609c1458f`.
+The three complete records bring `experiments.jsonl` to 45 sweeps and 1,020
+evaluated variants with SHA-256
+`64d26eddafd5d0ea28f41df03ec4344577ae245e7faa8cfd61991167bf5d7fd6`.
