@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "zero-final-time-correction",
+      "find": "        if (final_time == 0) {\n            highscore_active_record.survival_elapsed_ms = 1;\n        }",
+      "replacements": [
+        {
+          "name": "preincrement-record-time",
+          "text": "        if (final_time == 0) {\n            ++highscore_active_record.survival_elapsed_ms;\n        }"
+        },
+        {
+          "name": "compound-increment-record-time",
+          "text": "        if (final_time == 0) {\n            highscore_active_record.survival_elapsed_ms += 1;\n        }"
+        },
+        {
+          "name": "final-time-plus-one",
+          "text": "        if (final_time == 0) {\n            highscore_active_record.survival_elapsed_ms =\n                final_time + 1;\n        }"
+        },
+        {
+          "name": "record-time-plus-one",
+          "text": "        if (final_time == 0) {\n            highscore_active_record.survival_elapsed_ms =\n                highscore_active_record.survival_elapsed_ms + 1;\n        }"
+        },
+        {
+          "name": "logical-not-final-time",
+          "text": "        if (final_time == 0) {\n            highscore_active_record.survival_elapsed_ms = !final_time;\n        }"
+        },
+        {
+          "name": "record-zero-guard",
+          "text": "        if (highscore_active_record.survival_elapsed_ms == 0) {\n            highscore_active_record.survival_elapsed_ms = 1;\n        }"
+        }
+      ]
+    },
+    {
+      "name": "name-phase-vector-reuse",
+      "find": "        record_xy.x = xy.x + 26.0f;\n        record_xy.y = xy.y + 16.0f;\n        ui_text_input_render(\n            (float *)&record_xy,",
+      "replacements": [
+        {
+          "name": "reuse-button-vector",
+          "text": "        button_xy.x = xy.x + 26.0f;\n        button_xy.y = xy.y + 16.0f;\n        ui_text_input_render(\n            (float *)&button_xy,"
+        }
+      ]
+    }
+  ]
+}

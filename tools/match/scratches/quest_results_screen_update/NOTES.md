@@ -196,3 +196,48 @@ The experiment-log SHA-256 after recording the complete five-variant sweep is
 `8cce7fd918f4a13bc047737de98ee36fda32ec508b03076ef8f41d8554f2c388`.
 The retained source and its 88.3841%, 1,165/1,168, `442/0/2` audit are
 unchanged.
+
+## Working-position ownership recovery (2026-07-30)
+
+Live Binary Ninja stack recovery proves that native reserves three reusable
+8-byte vector slots (`sub esp, 0x18`), preserves the post-banner working
+position in `edi`/`ebp`, and rematerializes that position at
+`show_results`. The former reconstruction reserved four slots, kept the
+position on the stack, and instead carried the integer one and name-buffer
+address in those registers.
+
+`register-lifetime-mutations.json` first recovers the native frame without
+storage overlays: the phase-1 submit-button position is dead before the
+high-score record position, so reusing that vector extends the exact prefix
+from 1 to 66 instructions in the final allocation context. All six
+zero-final-time correction spellings compile identically, ruling out the
+distant literal-one assignment as the allocation cause.
+
+`working-base-lifetime-mutations.json` then evaluates all 19 bounded
+base-position and results-label interactions. Snapshotting the post-banner
+working position and restoring it at `show_results` raises similarity from
+88.5555% to 94.3945%, adds 283.600957 weighted bytes, aligns 15 more
+references, and clears both remaining reference mismatches. The retained
+`results_base_xy` spelling is byte-identical to reusing `panel_xy` and states
+the recovered ownership directly.
+
+That allocation adds four instructions against a native three-instruction
+restore, which changes the previously rejected name-save copy tradeoff.
+Rerunning `name-save-copy-shape-mutations.json` makes all five sized-copy
+forms clean improvements: the retained `strlen + 1` byte count and `memcpy`
+remove one instruction, align three more references, and produce an exact
+1,168/1,168 instruction count.
+
+The current source is **94.5205%**, has a 66-instruction exact prefix, and
+audits all `460/0/0` normalized references. A final 39-variant
+`opening-register-allocation-mutations.json` sweep covers vector operand
+order, declaration order, copy ownership, and render-offset spelling; every
+non-regressing form is byte-identical, bounding the opening stack-slot
+permutation as compiler residual. Spec SHA-256 values are
+`0e5247007fd4d5338a4cc4bde1e06c76c86a02d9067515a1b719083d3c482aa8`
+(register lifetime),
+`347d75d7b5d4ce96f48f0ca3064354688e07c4944e862c8e2a8e7912e55aa637`
+(working base), and
+`d2c9da8146d943b42af8b61bf4dceb20dab01642e682c1ca9f5da9a56c600f4e`
+(opening allocation). The retained source SHA-256 is
+`35a237034c83b23af7742e02b4ca70cbdcd5f42c240f2da9524b051283b46daf`.

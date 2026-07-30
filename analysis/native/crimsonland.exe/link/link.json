@@ -51,7 +51,7 @@
       }
     }
   ],
-  "audit_digest": "14bbb16095d0ec476050fa38c07afd96f86375b26199948305e9ebfa695f4d67",
+  "audit_digest": "62241632f14c8f0bfe0bbb456c8262e8f11ea5cd642ef68ac39919f2014b8bd6",
   "entry": {
     "aliases": {
       "object": {
@@ -76,7 +76,7 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 323806,
+      "entry_point_rva": 323838,
       "image_base": 4194304,
       "image_size": 868352,
       "machine": 332,
@@ -86,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "f93c6e7be324ba6b32e826dd976b8daccf60d3293717381e7e9de5ac029ebe91"
+    "sha256": "3bb34481c0c546c2d33dde1017585256de336c4a4718d96f8d56fa2cb560ebbf"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -338,7 +338,7 @@
           "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "dc608ae8d01838263881fda8aa40cd9ad6e7f92aac3876946c9b37d3708c8eec"
+          "sha256": "0780306ea75faa8e8b553a15e1556c123a4feb8fadf8f4a960e7199285674ee3"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions.",
@@ -1690,7 +1690,7 @@
           "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF.",
           "path": "docs/re/static/native-linking.md",
           "repository_relative": true,
-          "sha256": "d4609dcf672c28d0354fe74724ef8cf6d47f887625c5bd2743c83930361ff8e3"
+          "sha256": "b306705cb2e8e869ca3eef5d214f67a0aadb1dd81e1140a016ebe63bf69d9d69"
         },
         {
           "note": "None of the ten API names is present in the reference executable import table.",

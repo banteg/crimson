@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-add-operand-order",
+      "find": "    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "native-y-order",
+          "text": "    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(x + other.x, other.y + y);\n    }"
+        },
+        {
+          "name": "other-first",
+          "text": "    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(other.x + x, other.y + y);\n    }"
+        },
+        {
+          "name": "other-first-x",
+          "text": "    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(other.x + x, y + other.y);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "opening-vector-ownership",
+      "find": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;",
+      "replacements": [
+        {
+          "name": "drop-unused-record",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "record-after-working",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;\n    quest_results_vec2_t record_xy;"
+        },
+        {
+          "name": "working-declared-before-panel",
+          "text": "    quest_results_vec2_t xy;\n    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "working-first-no-record",
+          "text": "    quest_results_vec2_t xy;\n    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "working-expression-then-panel-copy",
+          "text": "    quest_results_vec2_t xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t panel_xy = xy;\n    quest_results_vec2_t record_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "default-assign-both",
+          "text": "    quest_results_vec2_t panel_xy;\n    panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy;\n    xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "render-offset-first-expression",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x = ui_element_slot_35.render_offset_x + xy.x + 40.0f;"
+        },
+        {
+          "name": "combined-compound-offset",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x + 40.0f;"
+        },
+        {
+          "name": "two-stage-panel-offset",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position;\n    panel_xy = panel_xy + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        }
+      ]
+    }
+  ]
+}

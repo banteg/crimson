@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "working-base-ownership",
+      "find": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;\n    ui_draw_textured_quad(\n        (int)(xy.x - 18.0f),\n        (int)(xy.y - 4.0f),\n        256,\n        64,\n        ui_text_well_done_texture);\n    xy.y += 56.0f;",
+      "replacements": [
+        {
+          "name": "panel-is-base-working-copy-after-banner",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    panel_xy.x += ui_element_slot_35.render_offset_x;\n    panel_xy.x += 40.0f;\n    ui_draw_textured_quad(\n        (int)(panel_xy.x - 18.0f),\n        (int)(panel_xy.y - 4.0f),\n        256,\n        64,\n        ui_text_well_done_texture);\n    panel_xy.y += 56.0f;\n    quest_results_vec2_t xy = panel_xy;"
+        },
+        {
+          "name": "snapshot-working-into-panel",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;\n    ui_draw_textured_quad(\n        (int)(xy.x - 18.0f),\n        (int)(xy.y - 4.0f),\n        256,\n        64,\n        ui_text_well_done_texture);\n    xy.y += 56.0f;\n    panel_xy = xy;"
+        },
+        {
+          "name": "named-results-base-vector",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;\n    ui_draw_textured_quad(\n        (int)(xy.x - 18.0f),\n        (int)(xy.y - 4.0f),\n        256,\n        64,\n        ui_text_well_done_texture);\n    xy.y += 56.0f;\n    quest_results_vec2_t results_base_xy = xy;"
+        },
+        {
+          "name": "named-results-base-components",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t record_xy;\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;\n    ui_draw_textured_quad(\n        (int)(xy.x - 18.0f),\n        (int)(xy.y - 4.0f),\n        256,\n        64,\n        ui_text_well_done_texture);\n    xy.y += 56.0f;\n    float results_base_x = xy.x;\n    float results_base_y = xy.y;"
+        }
+      ]
+    },
+    {
+      "name": "show-results-base-restore",
+      "find": "show_results:\n        if (quest_results_anim_timer < 500) {",
+      "replacements": [
+        {
+          "name": "restore-from-panel",
+          "text": "show_results:\n        xy = panel_xy;\n        if (quest_results_anim_timer < 500) {"
+        },
+        {
+          "name": "restore-from-results-vector",
+          "text": "show_results:\n        xy = results_base_xy;\n        if (quest_results_anim_timer < 500) {"
+        },
+        {
+          "name": "restore-from-results-components",
+          "text": "show_results:\n        xy.x = results_base_x;\n        xy.y = results_base_y;\n        if (quest_results_anim_timer < 500) {"
+        }
+      ]
+    }
+  ]
+}

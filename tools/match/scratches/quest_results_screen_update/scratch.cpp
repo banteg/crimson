@@ -166,6 +166,7 @@ extern "C" void quest_results_screen_update(void)
         64,
         ui_text_well_done_texture);
     xy.y += 56.0f;
+    quest_results_vec2_t results_base_xy = xy;
     grim_interface_ptr->grim_set_color(
         1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -448,11 +449,14 @@ extern "C" void quest_results_screen_update(void)
                     != 0) {
                 ui_screen_phase = 2;
                 sfx_play(sfx_ui_typeenter, 1.0f);
+                size_t copy_size =
+                    strlen(quest_results_name_input_buffer) + 1;
                 int cursor = name_input.cursor;
                 player_name_length = cursor;
-                strcpy(
+                memcpy(
                     highscore_active_record.player_name,
-                    quest_results_name_input_buffer);
+                    quest_results_name_input_buffer,
+                    copy_size);
                 name_input.cursor = 0;
                 name_input.max_chars = 0;
                 highscore_active_record.player_name[cursor] = 0;
@@ -468,10 +472,10 @@ extern "C" void quest_results_screen_update(void)
         xy.y += 30.0f;
         grim_interface_ptr->grim_set_color_ptr(
             &render_tint_color_r);
-        record_xy.x = xy.x + 26.0f;
-        record_xy.y = xy.y + 16.0f;
+        button_xy.x = xy.x + 26.0f;
+        button_xy.y = xy.y + 16.0f;
         ui_text_input_render(
-            (float *)&record_xy,
+            (float *)&button_xy,
             &highscore_active_record,
             alpha,
             quest_results_highscore_rank_index + 1);
@@ -480,6 +484,7 @@ extern "C" void quest_results_screen_update(void)
 
     if (phase == 2) {
 show_results:
+        xy = results_base_xy;
         if (quest_results_anim_timer < 500) {
             quest_results_anim_timer += frame_dt_ms;
         } else {
