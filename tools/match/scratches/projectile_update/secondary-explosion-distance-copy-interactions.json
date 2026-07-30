@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-explosion-distance-copy-order",
+      "find": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dx = dx;\n                        float distance =\n                            (float)sqrt(distance_dx * dx + dy * dy);\n",
+      "replacements": [
+        {
+          "name": "commuted-named-dx",
+          "text": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dx = dx;\n                        float distance =\n                            (float)sqrt(dy * dy + distance_dx * dx);\n"
+        },
+        {
+          "name": "reverse-dx-operands",
+          "text": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dx = dx;\n                        float distance =\n                            (float)sqrt(dx * distance_dx + dy * dy);\n"
+        },
+        {
+          "name": "named-dx-self-product",
+          "text": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dx = dx;\n                        float distance = (float)sqrt(\n                            distance_dx * distance_dx + dy * dy);\n"
+        },
+        {
+          "name": "both-copies-dx-first",
+          "text": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dx = dx;\n                        float distance_dy = dy;\n                        float distance = (float)sqrt(\n                            distance_dx * dx + distance_dy * dy);\n"
+        },
+        {
+          "name": "both-copies-dy-first",
+          "text": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dy = dy;\n                        float distance_dx = dx;\n                        float distance = (float)sqrt(\n                            distance_dx * dx + distance_dy * dy);\n"
+        },
+        {
+          "name": "both-copies-reverse-dy-operands",
+          "text": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dx = dx;\n                        float distance_dy = dy;\n                        float distance = (float)sqrt(\n                            distance_dx * dx + dy * distance_dy);\n"
+        },
+        {
+          "name": "both-self-products",
+          "text": "                        float dx = creature->position.x - secondary->position.x;\n                        float dy = creature->position.y - secondary->position.y;\n                        float distance_dx = dx;\n                        float distance_dy = dy;\n                        float distance = (float)sqrt(\n                            distance_dx * distance_dx\n                            + distance_dy * distance_dy);\n"
+        }
+      ]
+    }
+  ]
+}

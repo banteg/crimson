@@ -672,3 +672,45 @@ The final source SHA-256 is
 `9167b70853189b69596734e8f7cd7d981989846ff8286cc6a45923015cf8e14f`;
 the 42-record `experiments.jsonl` SHA-256 is
 `a243427f9fd9e3fad30978a7d25e272a0c37a73d37950279c3ba9c31ed7d9be9`.
+
+## Secondary-explosion x87 lifetime and cursor audit
+
+Live disassembly of `0x00421a0d-0x00421b9d` exposed two native induction
+variables and an x87 lifetime difference in the secondary-projectile
+explosion path. Four complete sweeps separate the independently useful source
+shape from attractive but audit-regressive interactions:
+
+- The seven-variant distance-lifetime sweep found one clean correction.
+  Copying `dx` before the squared-distance expression makes MSVC duplicate the
+  x87 value as native does, adds 6.6670 fuzzy-weighted bytes and one candidate
+  instruction, and preserves all `384/22/0` ok/mismatched/unresolved
+  references. Its spec SHA is
+  `e4cb6c063fbbe2694cfdd9ad268a28a4495ae686f4cd4a0085e1d8b04e00691b`.
+- The seven-variant follow-up closed alternate copy and operand orders.
+  Commuting the retained operands is byte-neutral; adding another explicit
+  copy removes the recovered instruction or worsens reference alignment. Its
+  spec SHA is
+  `33c9c35a3a1093716f0f1095b28c2884881317ddf9432b792caa735889f14704`.
+- Native carries the secondary cursor at `velocity.y` and the creature cursor
+  at `position.y`, so the exhaustive 15-variant cursor interaction tested both
+  interior cursors with their required record strides. The fully valid
+  interaction gains 95.9090 weighted bytes but removes ten candidate
+  instructions and changes references from `384/22/0` to `373/23/0`; it is
+  rejected. The nominal 133.5529-byte winner is semantically invalid because
+  its creature cursor never advances, so its score is not actionable. The
+  interaction spec SHA is
+  `9e7fd43a5e8015a70b21ebe4282c9a1d7f732e7f26c56666021743db85bbb2fe`.
+- Native also loads `frame_dt` once and duplicates it across the secondary
+  movement update. All three equivalent named-`dt` forms gain 3.8653 weighted
+  bytes but change references from `384/22/0` to `381/25/0`; none is retained.
+  The five-variant spec SHA is
+  `bad3e20f79f2fe0c03b4303fb079e66298fd2067c110f1f579dc55cb11c6eb15`.
+
+The retained lifetime correction raises `projectile_update` from
+`4627.8497/8409` to `4634.5167/8409` fuzzy-weighted bytes
+(`55.0344828%` to `55.1137670%`), reduces the gap to `3774.4833`, and moves
+the candidate from 2,147 to 2,148 of 2,203 target instructions without
+reference debt. The final source SHA-256 is
+`605d117e2a187047317a78498b8b050be4ddf781a340ef38ec76e9fb1d47b584`;
+the 46-record `experiments.jsonl` SHA-256 is
+`ecd0768ac21e0442c156d222499716f309417fede665ebd4eb5c474808a28057`.

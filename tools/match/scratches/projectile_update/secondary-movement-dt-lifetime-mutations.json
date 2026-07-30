@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-movement-dt-lifetime",
+      "find": "                vec2f_t movement = {\n                    frame_dt * secondary->pos.vx.vel_x,\n                    frame_dt * secondary->pos.vx.vy.vel_y,\n                };\n                vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);",
+      "replacements": [
+        {
+          "name": "named-dt-aggregate",
+          "text": "                float move_dt = frame_dt;\n                vec2f_t movement = {\n                    move_dt * secondary->pos.vx.vel_x,\n                    move_dt * secondary->pos.vx.vy.vel_y,\n                };\n                vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);"
+        },
+        {
+          "name": "const-dt-aggregate",
+          "text": "                const float move_dt = frame_dt;\n                vec2f_t movement = {\n                    move_dt * secondary->pos.vx.vel_x,\n                    move_dt * secondary->pos.vx.vy.vel_y,\n                };\n                vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);"
+        },
+        {
+          "name": "named-dt-component-assignments",
+          "text": "                float move_dt = frame_dt;\n                vec2f_t movement;\n                movement.x = move_dt * secondary->pos.vx.vel_x;\n                movement.y = move_dt * secondary->pos.vx.vy.vel_y;\n                vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);"
+        },
+        {
+          "name": "named-components-aggregate",
+          "text": "                float move_x =\n                    frame_dt * secondary->pos.vx.vel_x;\n                float move_y =\n                    frame_dt * secondary->pos.vx.vy.vel_y;\n                vec2f_t movement = {move_x, move_y};\n                vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);"
+        },
+        {
+          "name": "velocity-copy-then-scale",
+          "text": "                vec2f_t movement = secondary->pos.vx.velocity;\n                movement.x *= frame_dt;\n                movement.y *= frame_dt;\n                vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);"
+        }
+      ]
+    }
+  ]
+}

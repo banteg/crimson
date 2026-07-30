@@ -747,8 +747,9 @@ extern "C" void projectile_update(void)
                     if (creature->active && creature->health > 0.0f) {
                         float dx = creature->position.x - secondary->position.x;
                         float dy = creature->position.y - secondary->position.y;
+                        float distance_dx = dx;
                         float distance =
-                            (float)sqrt(dx * dx + dy * dy);
+                            (float)sqrt(distance_dx * dx + dy * dy);
                         if (distance < radius) {
                             vec2f_t impulse = {dx, dy};
                             vec2_normalize_dispatch(&impulse, &impulse);

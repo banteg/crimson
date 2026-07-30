@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-interior-cursor",
+      "find": "    secondary_projectile_t *secondary = secondary_projectile_pool;\n    do {\n",
+      "replacements": [
+        {
+          "name": "vel-y-induction-owner-derived",
+          "text": "    secondary_projectile_vel_y_block_t *secondary_cursor =\n        &secondary_projectile_pool[0].pos.vx.vy;\n    do {\n        secondary_projectile_t *secondary =\n            (secondary_projectile_t *)((char *)secondary_cursor - 0x18);\n"
+        }
+      ]
+    },
+    {
+      "name": "secondary-interior-stride",
+      "find": "        ++secondary;\n    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);\n",
+      "replacements": [
+        {
+          "name": "record-stride-vel-y-bound",
+          "text": "        secondary_cursor = (secondary_projectile_vel_y_block_t *)(\n            (char *)secondary_cursor + sizeof(secondary_projectile_t));\n    } while ((int)secondary_cursor\n        < (int)&secondary_projectile_pool[0x40].pos.vx.vy);\n"
+        }
+      ]
+    },
+    {
+      "name": "explosion-creature-interior-cursor",
+      "find": "                int creature_id = 0;\n                do {\n                    creature_t *creature = &creature_pool[creature_id];\n",
+      "replacements": [
+        {
+          "name": "pos-y-induction-owner-derived",
+          "text": "                int creature_id = 0;\n                float *creature_pos_y_cursor =\n                    &creature_pool[0].position.y;\n                do {\n                    creature_t *creature = (creature_t *)(\n                        (char *)creature_pos_y_cursor - 0x18);\n"
+        }
+      ]
+    },
+    {
+      "name": "explosion-creature-interior-stride",
+      "find": "                    ++creature_id;\n                } while (creature_id < 0x180);\n",
+      "replacements": [
+        {
+          "name": "record-stride-pos-y-bound",
+          "text": "                    creature_pos_y_cursor = (float *)(\n                        (char *)creature_pos_y_cursor + sizeof(creature_t));\n                    ++creature_id;\n                } while ((int)creature_pos_y_cursor\n                    < (int)&creature_pool[0x180].position.y);\n"
+        }
+      ]
+    }
+  ]
+}
