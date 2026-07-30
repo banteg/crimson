@@ -603,3 +603,64 @@ The retained source has SHA-256
 errors across 37 complete sweeps and 768 variants. `experiments.jsonl` now has
 SHA-256
 `6cd9a11ce8e873d962c98796bd4e7482879d4b3522e6e137bc7720cb2de95e52`.
+
+## Primary type alias and Plague life-branch wave
+
+The native primary-projectile walk does not preserve one scalar type value
+through all of its Pulse, Splitter, Blade, ion, and Fire Bullets arms. It
+repeatedly reads the live `type_id` field from the induction record. The
+previous source copied that field into a value local, which let VC6 keep the
+copy in a callee-saved register through the entire iteration and displaced
+the native cursor, creature-index, and transition-alpha register owners.
+
+The complete four-variant
+`primary-type-alias-lifetime-mutations.json` sweep (SHA-256
+`85f05d87f1e3c530d9592f881d36162cea73e2abd6ada307732c0ea6c7b79b17`)
+tests mutable, const, right-const, and volatile C++ reference aliases. The
+three nonvolatile forms compile identically: VC6 now reloads the field at the
+native decision points, adds nine proven references, and gains 152.320
+fuzzy-weighted bytes. The mutable reference is retained because it honestly
+models an alias to the mutable record field. The volatile form scores another
+24.433 bytes by forcing thirteen extra instructions, but neither the binary
+nor the game semantics support volatile storage, so that higher-scoring
+fakematch is explicitly rejected.
+
+Two bounded Plague sweeps close the adjacent life branch:
+
+- `plague-life-condition-lifetime-mutations.json` (SHA-256
+  `ce0e4a0aef7c41efdd093594e022ca07a4d52bbabee4eab013eb7bb6acf923d7`)
+  covers all five condition/reload combinations. Reloading
+  `life_timer` directly in the fade arm is the only positive retained
+  lifetime, adding 4.263 weighted bytes. It lets the comparison consume its
+  x87 value and makes the fade path reload the field at candidate offset
+  `0x233c`, matching native `0x0042523c`. The condition-only dependent
+  mutation intentionally fails to compile because it removes the value still
+  used by the unchanged fade arm; every planned combination was nevertheless
+  evaluated and recorded.
+- `plague-life-condition-source-shapes.json` (SHA-256
+  `8d05f8491c297347dc35ed0f9964aa8d0caf0f8d734f14c22160f399c13aa734`)
+  covers six float and raw-bit comparison spellings after the primary alias
+  repair. Named raw-bit comparisons score 4.263 bytes higher but require
+  unjustified type-punning. The retained direct float-field comparison is the
+  best natural source form and still gains 3.472 bytes. VC6 now emits an
+  integer field comparison, with the constant hoisted into `ebp`; native uses
+  the same bit comparison as an immediate at `0x0042504f`. The remaining
+  register difference is therefore isolated to the broader primary-loop
+  allocation rather than the Plague condition semantics.
+
+Against the prior source, this wave raises the weighted match from 6,654.929
+to 6,814.984 bytes, reduces the gap from 5,896.071 to 5,736.016 bytes, and
+moves the ratio from 53.0230978% to 54.2983350%. The candidate is now
+2,865/3,021 instructions. Proven references rise from 415 to 424 with none
+unresolved. The mismatch counter moves from 11 to 12 because the new global
+alignment pairs both correct candidate `4.0f` ion-widen constants against the
+earlier native `10.0f` strip constants at `0x00424c71` and `0x00424c7e`;
+the source contains both native constants, so this is an exposed alignment
+residual rather than a new wrong data reference.
+
+The retained source has SHA-256
+`f1d546c79eab8d85211421b597dd8c5ad030ae86c740b0f5c05aa87bf8b72826`.
+`crimson match validate` accepts it, and the experiment-ledger check reports
+no malformed records across 40 complete sweeps and 783 evaluated variants.
+`experiments.jsonl` now has SHA-256
+`755cb9bbbf197e5d6b4bc5e0a2ba7810728a554d88a503f31e7113cc9100eda9`.

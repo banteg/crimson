@@ -607,7 +607,7 @@ extern "C" void projectile_render(float transition_alpha)
         if (!projectile->active) {
             continue;
         }
-        projectile_type_id_t type_id = primary->vy.type_id;
+        projectile_type_id_t &type_id = primary->vy.type_id;
         float life = primary->vy.life_timer;
 
         if (type_id == PROJECTILE_TYPE_PULSE_GUN) {
@@ -936,8 +936,7 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        float life = projectile->pos.tail.vy.life_timer;
-        if (life == 0.4f) {
+        if (projectile->pos.tail.vy.life_timer == 0.4f) {
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, transition_alpha);
             grim_interface_ptr->grim_draw_quad(
@@ -992,7 +991,8 @@ extern "C" void projectile_render(float transition_alpha)
                 62.0f,
                 62.0f);
         } else {
-            float fade = projectile_render_clamp(life * 2.5f);
+            float fade = projectile_render_clamp(
+                projectile->pos.tail.vy.life_timer * 2.5f);
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, fade * transition_alpha);
             float size = fade * 40.0f + 32.0f;

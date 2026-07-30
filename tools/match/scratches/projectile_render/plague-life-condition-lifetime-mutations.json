@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plague-life-condition",
+      "find": "        float life = projectile->pos.tail.vy.life_timer;\n        if (life == 0.4f) {\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-field-condition",
+          "text": "        if (projectile->pos.tail.vy.life_timer == 0.4f) {\n"
+        }
+      ]
+    },
+    {
+      "name": "plague-fade-life-source",
+      "find": "        } else {\n            float fade = projectile_render_clamp(life * 2.5f);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "branch-local-life",
+          "text": "        } else {\n            float life = projectile->pos.tail.vy.life_timer;\n            float fade = projectile_render_clamp(life * 2.5f);\n"
+        },
+        {
+          "name": "direct-field-fade",
+          "text": "        } else {\n            float fade = projectile_render_clamp(\n                projectile->pos.tail.vy.life_timer * 2.5f);\n"
+        }
+      ]
+    }
+  ]
+}

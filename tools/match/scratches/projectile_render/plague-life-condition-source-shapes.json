@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plague-life-condition-source",
+      "find": "        float life = projectile->pos.tail.vy.life_timer;\n        if (life == 0.4f) {\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-nested-float-field",
+          "text": "        if (projectile->pos.tail.vy.life_timer == 0.4f) {\n"
+        },
+        {
+          "name": "direct-flat-float-field",
+          "text": "        if (projectile->fields.life_timer == 0.4f) {\n"
+        },
+        {
+          "name": "named-life-unsigned-bits",
+          "text": "        float life = projectile->pos.tail.vy.life_timer;\n        if (*(const unsigned int *)&life == 0x3ecccccdU) {\n"
+        },
+        {
+          "name": "direct-nested-unsigned-bits",
+          "text": "        if (*(const unsigned int *)&projectile->pos.tail.vy.life_timer\n            == 0x3ecccccdU) {\n"
+        },
+        {
+          "name": "named-life-signed-bits",
+          "text": "        float life = projectile->pos.tail.vy.life_timer;\n        if (*(const int *)&life == 0x3ecccccd) {\n"
+        },
+        {
+          "name": "direct-nested-signed-bits",
+          "text": "        if (*(const int *)&projectile->pos.tail.vy.life_timer\n            == 0x3ecccccd) {\n"
+        }
+      ]
+    }
+  ]
+}
