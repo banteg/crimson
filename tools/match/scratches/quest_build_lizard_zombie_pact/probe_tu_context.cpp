@@ -1,0 +1,11 @@
+#define quest_spawn_builder_t quest_killing_spawn_builder_t
+#include "quest_build_the_killing/scratch.cpp"
+#undef quest_spawn_builder_t
+
+#define quest_spawn_builder_t quest_lizard_zombie_pact_spawn_builder_t
+#include "quest_build_lizard_zombie_pact/scratch.cpp"
+#undef quest_spawn_builder_t
+
+#define quest_spawn_builder_t quest_surrounded_spawn_builder_t
+#include "quest_build_surrounded_by_reptiles/scratch.cpp"
+#undef quest_spawn_builder_t

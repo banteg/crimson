@@ -10,29 +10,18 @@ spawners at x 356. Their y coordinates are `wave / 5 * 180 + 256` and
 `wave / 5 * 180 + 384`, with counts `wave / 5 + 1` and `wave / 5 + 2`.
 The final count is 40.
 
-The candidate preserves the native pointer-plus-count builder, signed width
-halving, x87 integer-to-float conversions, 24-byte entry stride, signed
+The retained source preserves the native pointer-plus-count builder, signed
+width halving, x87 integer-to-float conversions, 24-byte entry stride, signed
 division for the five-wave predicate, separately lowered quotient for the
-spawner group, loop arithmetic, and output count. It compiles to the same 95
-instructions and resolves all three constant references.
-
-The residual is a VC6 register-allocation cycle: native keeps the entry base in
-EBP, wave in EDI, and trigger in EBX, while the candidate assigns those values
-to EBX, EBP, and EDI. Independent metadata stores are consequently scheduled
-around the x87 conversions differently. Pointer aliases, declaration and loop
-forms, explicit quotient/remainder locals, direct y expressions, vector
-setters, reversed builder fields, raw pointer/count storage, `msvc6.5pp`,
-`msvc6.6`, `msvc7.0`, and `/G6` were checked. The exact-length default-profile
-candidate remains an honest WIP without volatile state, dummy dependencies, or
-forced-register constructs.
+spawner group, loop arithmetic, and output count. Under the default VC6 profile
+it matches all 311 bytes and all 95 instructions, with all three constant
+references resolved.
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, constant,
+record-store, and output-count policy. The candidate is byte-exact, so no
+recovery or residual classification is needed.
 
 ## 2026-07-27 focused profile and mutation pass
 
@@ -43,9 +32,9 @@ Pack and MSVC 7.0 regressed to 43.24%. `/GB`, `/G5`, `/G7`, `/Ox`, and
 `local-declaration-order-mutations.json` (SHA-256
 `7bcdd17056bc032b017c333b71f20bc1ebf1ad6f3dda5b97206675cbbbf5db79`)
 recorded five complete variants. Three local-order spellings produced the
-same winning bytes; the retained wave-trigger-builder order is the smallest
-source-only representation of the native wave and trigger lifetimes. No
-behavior, entry layout, or arithmetic changed.
+same winning bytes; the then-retained wave-trigger-builder order was the
+smallest source-only representation of the native wave and trigger lifetimes.
+No behavior, entry layout, or arithmetic changed.
 
 Fresh scratch recomputation improved 176.77894736842106/311 to
 180.05263157894737/311 weighted bytes: 56.84210526315789% to
@@ -63,3 +52,32 @@ wave/trigger order. Four were byte-neutral and constructing the builder before
 the induction locals lost 3.274 weighted bytes. The alias is fully folded by
 VC6 and does not break the remaining allocation cycle, so no source change is
 retained.
+
+## 2026-07-30 exact recovery
+
+A fresh boundary-first pass replaced the apparent global register-allocation
+cycle with a sequence of local source-shape constraints:
+
+- Direct indexing with count updates after metadata on the two edge records
+  and two spawner records added 22.916 weighted bytes, moving the candidate
+  from 57.895% to 65.263%.
+- Preserving the upper spawner pointer and index before lowering `wave / 5`
+  added 88.389 weighted bytes and moved the candidate to 93.684%.
+- Re-evaluating declaration order after those source changes selected
+  builder-wave-trigger and moved the candidate to 96.842%.
+- Giving the upper count store its own typed pointer boundary moved the
+  candidate to 97.895%.
+- Reusing the exact two-field metadata helper idiom from
+  `quest_build_nesting_grounds`, followed by the separate count store, closed
+  the final 6.547 weighted bytes.
+
+The final source matches 311/311 bytes and 95/95 instructions, has a 95
+instruction prefix, and resolves references 3/0/0. Nine recorded experiment
+entries cover 119 evaluated variants and one exact winner. Exact source
+SHA-256: `42f349ea57e7cf57763212f80aae65746bd265f58b0dd7be7c8f3dd36549248d`.
+Experiment ledger SHA-256:
+`2a020d1eb210585a6059cbdce12cb858ff2ca464bafc5e41b1eeaaef74365cdf`.
+
+The exact-neighbor TU probe was byte-neutral. Raw storage and alternate loop
+forms regressed or were neutral, bounding those hypotheses without retaining
+artificial dependencies or forced-register constructs.

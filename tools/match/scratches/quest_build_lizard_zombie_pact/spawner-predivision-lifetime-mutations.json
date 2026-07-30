@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "upper-spawner-predivision-lifetime",
+      "find": "        if (wave % 5 == 0) {\n            int group = wave / 5;\n            int y_offset = group * 180;\n\n            builder.spawns[builder.count].pos.x = 356.0f;\n            builder.spawns[builder.count].pos.y =\n                (float)(y_offset + 256);\n            builder.spawns[builder.count].set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms,\n                group + 1);\n            ++builder.count;\n",
+      "replacements": [
+        {
+          "name": "record-before-group",
+          "text": "        if (wave % 5 == 0) {\n            quest_entry_original_t *upper_spawn =\n                &builder.spawns[builder.count];\n            int group = wave / 5;\n            int y_offset = group * 180;\n\n            upper_spawn->pos.x = 356.0f;\n            upper_spawn->pos.y = (float)(y_offset + 256);\n            upper_spawn->set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms,\n                group + 1);\n            ++builder.count;\n"
+        },
+        {
+          "name": "record-after-group",
+          "text": "        if (wave % 5 == 0) {\n            int group = wave / 5;\n            quest_entry_original_t *upper_spawn =\n                &builder.spawns[builder.count];\n            int y_offset = group * 180;\n\n            upper_spawn->pos.x = 356.0f;\n            upper_spawn->pos.y = (float)(y_offset + 256);\n            upper_spawn->set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms,\n                group + 1);\n            ++builder.count;\n"
+        },
+        {
+          "name": "position-before-group",
+          "text": "        if (wave % 5 == 0) {\n            int upper_spawn_index = builder.count;\n            quest_vec2_t *upper_spawn_pos =\n                &builder.spawns[upper_spawn_index].pos;\n            int group = wave / 5;\n            int y_offset = group * 180;\n\n            upper_spawn_pos->x = 356.0f;\n            upper_spawn_pos->y = (float)(y_offset + 256);\n            builder.spawns[upper_spawn_index].set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms,\n                group + 1);\n            ++builder.count;\n"
+        },
+        {
+          "name": "record-position-direct-metadata",
+          "text": "        if (wave % 5 == 0) {\n            int upper_spawn_index = builder.count;\n            quest_entry_original_t *upper_spawn =\n                &builder.spawns[upper_spawn_index];\n            int group = wave / 5;\n            int y_offset = group * 180;\n\n            upper_spawn->pos.x = 356.0f;\n            upper_spawn->pos.y = (float)(y_offset + 256);\n            builder.spawns[upper_spawn_index].set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms,\n                group + 1);\n            ++builder.count;\n"
+        },
+        {
+          "name": "index-before-group",
+          "text": "        if (wave % 5 == 0) {\n            int upper_spawn_index = builder.count;\n            int group = wave / 5;\n            int y_offset = group * 180;\n\n            builder.spawns[upper_spawn_index].pos.x = 356.0f;\n            builder.spawns[upper_spawn_index].pos.y =\n                (float)(y_offset + 256);\n            builder.spawns[upper_spawn_index].set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms,\n                group + 1);\n            ++builder.count;\n"
+        },
+        {
+          "name": "position-reference-before-group",
+          "text": "        if (wave % 5 == 0) {\n            int upper_spawn_index = builder.count;\n            quest_vec2_t &upper_spawn_pos =\n                builder.spawns[upper_spawn_index].pos;\n            int group = wave / 5;\n            int y_offset = group * 180;\n\n            upper_spawn_pos.x = 356.0f;\n            upper_spawn_pos.y = (float)(y_offset + 256);\n            builder.spawns[upper_spawn_index].set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms,\n                group + 1);\n            ++builder.count;\n"
+        }
+      ]
+    }
+  ]
+}

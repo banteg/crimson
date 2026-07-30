@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "two-field-metadata-overload",
+      "find": "    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n",
+      "replacements": [
+        {
+          "name": "add-two-field-overload",
+          "text": "    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n\n    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "upper-two-field-metadata-use",
+      "find": "            int *upper_spawn_count = &upper_spawn->count;\n            upper_spawn->template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;\n            upper_spawn->trigger_time_ms = trigger_time_ms;\n            *upper_spawn_count = group + 1;\n",
+      "replacements": [
+        {
+          "name": "pointer-then-helper",
+          "text": "            int *upper_spawn_count = &upper_spawn->count;\n            upper_spawn->set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms);\n            *upper_spawn_count = group + 1;\n"
+        },
+        {
+          "name": "helper-then-pointer",
+          "text": "            upper_spawn->set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms);\n            int *upper_spawn_count = &upper_spawn->count;\n            *upper_spawn_count = group + 1;\n"
+        },
+        {
+          "name": "helper-direct-count",
+          "text": "            upper_spawn->set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms);\n            upper_spawn->count = group + 1;\n"
+        },
+        {
+          "name": "pointer-indexed-helper",
+          "text": "            int *upper_spawn_count = &upper_spawn->count;\n            builder.spawns[upper_spawn_index].set_spawn(\n                SPAWN_ID_DEN_LIZARD_WEAK_0C,\n                trigger_time_ms);\n            *upper_spawn_count = group + 1;\n"
+        }
+      ]
+    }
+  ]
+}
