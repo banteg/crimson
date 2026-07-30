@@ -2,6 +2,15 @@
 
 #include "grim2d_cpp.h"
 
+struct GrimDepth {
+    float z;
+    float rhw;
+
+    GrimDepth() {}
+    GrimDepth(float z_value, float rhw_value)
+        : z(z_value), rhw(rhw_value) {}
+};
+
 struct GrimUV {
     float u;
     float v;
@@ -16,11 +25,8 @@ extern grim_config_value_t grim_config_values[128];
 extern "C" bool grim_missing_frame_callback(void);
 extern "C" bool grim_default_device_callback(void);
 
-extern GrimUV grim_vertex_z;
-extern GrimUV grim_uv_u0;
-extern GrimUV grim_uv_u1;
-extern GrimUV grim_uv_u2;
-extern GrimUV grim_uv_u3;
+extern GrimDepth grim_vertex_z;
+extern GrimUV grim_uv_u0[4];
 
 extern float grim_joystick_deadzone;
 extern float grim_joystick_center_x;
@@ -86,11 +92,7 @@ void grim_state_init(void)
     grim_config_values[0x13] = (unsigned int)5;
     grim_config_values[0x14] = (unsigned int)6;
 
-    grim_vertex_z = GrimUV(0.5f, 1.0f);
-    grim_uv_u0 = GrimUV(0.0f, 0.0f);
-    grim_uv_u1 = GrimUV(1.0f, 0.0f);
-    grim_uv_u2 = GrimUV(1.0f, 1.0f);
-    grim_uv_u3 = GrimUV(0.0f, 1.0f);
+    grim_vertex_z = GrimDepth(0.5f, 1.0f);
 
     grim_joystick_deadzone = 100.0f;
     grim_joystick_center_x = 0.0f;
@@ -109,8 +111,14 @@ void grim_state_init(void)
     grim_color_slot3 = 0xffffffff;
     grim_color_slot2 = 0xffffffff;
     grim_color_slot1 = 0xffffffff;
-    grim_mouse_button_latch[0] = 0;
-    grim_mouse_button_latch[1] = 0;
+    grim_uv_u0[0] = GrimUV(0.0f, 0.0f);
+    grim_uv_u0[1] = GrimUV(1.0f, 0.0f);
+    grim_uv_u0[2] = GrimUV(1.0f, 1.0f);
+    grim_uv_u0[3] = GrimUV(0.0f, 1.0f);
+    memset(
+        grim_mouse_button_latch,
+        0,
+        sizeof(grim_mouse_button_latch));
 
     char *default_title = "Grim - No Title";
     grim_window_title = new char[strlen(default_title) + 1];
@@ -125,15 +133,16 @@ void grim_state_init(void)
 
     memset(grim_font2_glyph_widths, 0, sizeof(grim_font2_glyph_widths));
     {
-        GrimUV *row = grim_font2_uv_u;
-        for (int y = 0; y < 16; ++y) {
+        int y = 0;
+        float *row_v_cursor = &grim_font2_uv_u[0].v;
+        for (; y < 16; ++y) {
             float row_v = (float)y * 0.0625f;
             int x = 0;
-            GrimUV *entry = row;
-            row += 16;
-            for (; x < 16; ++x, ++entry) {
-                entry->u = (float)x * 0.0625f;
-                entry->v = row_v;
+            float *entry_v = row_v_cursor;
+            row_v_cursor += 32;
+            for (; x < 16; entry_v += 2, ++x) {
+                entry_v[-1] = (float)x * 0.0625f;
+                entry_v[0] = row_v;
             }
         }
     }
@@ -155,28 +164,44 @@ void grim_state_init(void)
     grim_subrect_ptr_table[16] = grim_subrect_table;
 
     {
-        for (int y = 0; y < 2; ++y) {
-            for (int x = 0; x < 2; ++x) {
-                grim_subrect_table_0[y * 2 + x].u = (float)x * 0.5f;
-                grim_subrect_table_0[y * 2 + x].v = (float)y * 0.5f;
+        int y = 0;
+        float *row_v_cursor = &grim_subrect_table_0[0].v;
+        for (; y < 2; ++y) {
+            float row_v = (float)y * 0.5f;
+            int x = 0;
+            float *entry_v = row_v_cursor;
+            row_v_cursor += 4;
+            for (; x < 2; entry_v += 2, ++x) {
+                entry_v[-1] = (float)x * 0.5f;
+                entry_v[0] = row_v;
             }
         }
     }
     {
-        for (int y = 0; y < 4; ++y) {
-            for (int x = 0; x < 4; ++x) {
-                grim_subrect_table_1[y * 4 + x].u = (float)x * 0.25f;
-                grim_subrect_table_1[y * 4 + x].v = (float)y * 0.25f;
+        int y = 0;
+        float *row_v_cursor = &grim_subrect_table_1[0].v;
+        for (; y < 4; ++y) {
+            float row_v = (float)y * 0.25f;
+            int x = 0;
+            float *entry_v = row_v_cursor;
+            row_v_cursor += 8;
+            for (; x < 4; entry_v += 2, ++x) {
+                entry_v[-1] = (float)x * 0.25f;
+                entry_v[0] = row_v;
             }
         }
     }
     {
-        for (int y = 0; y < 8; ++y) {
-            for (int x = 0; x < 8; ++x) {
-                grim_subrect_table_2[y * 8 + x].u =
-                    (float)x * 0.125f;
-                grim_subrect_table_2[y * 8 + x].v =
-                    (float)y * 0.125f;
+        int y = 0;
+        float *row_v_cursor = &grim_subrect_table_2[0].v;
+        for (; y < 8; ++y) {
+            float row_v = (float)y * 0.125f;
+            int x = 0;
+            float *entry_v = row_v_cursor;
+            row_v_cursor += 16;
+            for (; x < 8; entry_v += 2, ++x) {
+                entry_v[-1] = (float)x * 0.125f;
+                entry_v[0] = row_v;
             }
         }
     }

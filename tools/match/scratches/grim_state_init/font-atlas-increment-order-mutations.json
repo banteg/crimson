@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "font-atlas-increment-order",
+      "find": "            for (; x < 16; ++x, entry_v += 2) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n",
+      "replacements": [
+        {
+          "name": "entry-before-counter",
+          "text": "            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n"
+        },
+        {
+          "name": "postincrement-entry-before-counter",
+          "text": "            for (; x < 16; entry_v += 2, x++) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n"
+        },
+        {
+          "name": "explicit-body-increments",
+          "text": "            for (; x < 16;) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n                entry_v += 2;\n                ++x;\n            }\n"
+        },
+        {
+          "name": "named-column-entry-before-counter",
+          "text": "            for (; x < 16; entry_v += 2, ++x) {\n                float column_u = (float)x * 0.0625f;\n                entry_v[-1] = column_u;\n                entry_v[0] = row_v;\n            }\n"
+        }
+      ]
+    }
+  ]
+}

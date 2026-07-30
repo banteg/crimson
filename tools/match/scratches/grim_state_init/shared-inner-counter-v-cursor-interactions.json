@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-inner-counter-declaration",
+      "find": "void grim_state_init(void)\n{\n",
+      "replacements": [
+        {
+          "name": "function-scoped-x",
+          "text": "void grim_state_init(void)\n{\n    int x;\n"
+        }
+      ]
+    },
+    {
+      "name": "font-grid-shared-inner-counter",
+      "find": "            int x = 0;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "reuse-function-x",
+          "text": "            x = 0;\n"
+        }
+      ]
+    },
+    {
+      "name": "two-grid-shared-inner-counter",
+      "find": "            int x = 0;\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "reuse-function-x",
+          "text": "            x = 0;\n"
+        }
+      ]
+    },
+    {
+      "name": "four-grid-shared-inner-counter",
+      "find": "            int x = 0;\n",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "reuse-function-x",
+          "text": "            x = 0;\n"
+        }
+      ]
+    },
+    {
+      "name": "eight-grid-shared-inner-counter",
+      "find": "            int x = 0;\n",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "reuse-function-x",
+          "text": "            x = 0;\n"
+        }
+      ]
+    }
+  ]
+}

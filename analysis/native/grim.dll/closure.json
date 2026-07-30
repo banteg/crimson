@@ -1,5 +1,5 @@
 {
-  "audit_digest": "7c1497f3d25f956fd564de0559f710a582eedb1f4ee8b7ce8945751ff1fa8dda",
+  "audit_digest": "d075891ee85a64efe59002a5f32b16bdcc5faceffd5bbee3f0c745f050531ad7",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -6036,102 +6036,6 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
-          "data_address": 268808848,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u0",
-          "data_storage_address": 268808848,
-          "data_storage_name": "grim_uv_u0",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 32,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u0@@3UGrimUV@@A"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808856,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u1",
-          "data_storage_address": 268808856,
-          "data_storage_name": "grim_uv_u1",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 8,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u1@@3UGrimUV@@A"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808864,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u2",
-          "data_storage_address": 268808864,
-          "data_storage_name": "grim_uv_u2",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 8,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u2@@3UGrimUV@@A"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808872,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u3",
-          "data_storage_address": 268808872,
-          "data_storage_name": "grim_uv_u3",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 8,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u3@@3UGrimUV@@A"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
           "data_address": 268808852,
           "data_binding_kind": "definition",
           "data_name": "grim_uv_v0",
@@ -6411,30 +6315,6 @@
         }
       ],
       "name": "?grim_vertex_z@@3UGrimDepth@@A"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808840,
-          "data_binding_kind": "definition",
-          "data_name": "grim_vertex_z",
-          "data_storage_address": 268808840,
-          "data_storage_name": "grim_vertex_z",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "?grim_vertex_z@@3UGrimUV@@A"
     },
     {
       "definitions": [
@@ -16831,126 +16711,7 @@
           "function": "grim_set_uv_point",
           "object": "tools/match/scratches/grim_set_uv_point/build/msvc6.5/a1e33802bc43712a/scratch.obj",
           "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808848,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u0",
-          "data_storage_address": 268808848,
-          "data_storage_name": "grim_uv_u0",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 32,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u0@@3UGrimUV@@A",
-      "referenced_by": [
-        {
-          "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808856,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u1",
-          "data_storage_address": 268808856,
-          "data_storage_name": "grim_uv_u1",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 8,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u1@@3UGrimUV@@A",
-      "referenced_by": [
-        {
-          "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808864,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u2",
-          "data_storage_address": 268808864,
-          "data_storage_name": "grim_uv_u2",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 8,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u2@@3UGrimUV@@A",
-      "referenced_by": [
-        {
-          "function": "grim_state_init",
-          "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808872,
-          "data_binding_kind": "definition",
-          "data_name": "grim_uv_u3",
-          "data_storage_address": 268808872,
-          "data_storage_name": "grim_uv_u3",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 8,
-          "weak": false
-        }
-      ],
-      "name": "?grim_uv_u3@@3UGrimUV@@A",
-      "referenced_by": [
+        },
         {
           "function": "grim_state_init",
           "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
@@ -17522,33 +17283,7 @@
           "function": "grim_draw_quad_rotated_matrix",
           "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/2c22f6677f07597b/scratch.obj",
           "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268808840,
-          "data_binding_kind": "definition",
-          "data_name": "grim_vertex_z",
-          "data_storage_address": 268808840,
-          "data_storage_name": "grim_vertex_z",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "?grim_vertex_z@@3UGrimUV@@A",
-      "referenced_by": [
+        },
         {
           "function": "grim_state_init",
           "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
@@ -18599,7 +18334,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 12,
-    "defined_symbols": 336,
+    "defined_symbols": 331,
     "function_closure": true,
     "function_count": 137,
     "game_function_debt": {},
@@ -18608,7 +18343,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 131,
     "reference_exports_closed": true,
-    "resolved_symbols": 273,
+    "resolved_symbols": 268,
     "unresolved_by_category": {
       "excluded_function": 39,
       "import": 13,

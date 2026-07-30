@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "font-atlas-v-cursor",
+      "find": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 16;\n            for (; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "v-field-row-and-entry-cursors",
+          "text": "    {\n        float *row_v_cursor = &grim_font2_uv_u[0].v;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; ++x, entry_v += 2) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "outer-counter-before-v-cursor",
+          "text": "    {\n        int y = 0;\n        float *row_v_cursor = &grim_font2_uv_u[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; ++x, entry_v += 2) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "both-counters-before-v-cursor",
+          "text": "    {\n        int y = 0;\n        int x;\n        float *row_v_cursor = &grim_font2_uv_u[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; ++x, entry_v += 2) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "v-field-cursors-v-store-first",
+          "text": "    {\n        float *row_v_cursor = &grim_font2_uv_u[0].v;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; ++x, entry_v += 2) {\n                entry_v[0] = row_v;\n                entry_v[-1] = (float)x * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "uv-default-state-interleaving",
+      "find": "    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n\n    grim_joystick_deadzone = 100.0f;\n    grim_joystick_center_x = 0.0f;\n    grim_joystick_center_y = 0.0f;\n    grim_error_text = &grim_empty_string;\n    grim_reserved_d3ac = 0;\n    grim_lookup_blob_loaded = 0;\n    grim_lookup_blob = 0;\n    grim_lookup_blob_size = 0;\n    grim_backbuffer_width = 640;\n    grim_backbuffer_height = 480;\n    grim_texture_format = 23;\n    grim_preferred_texture_format = 0;\n    grim_main_window_hwnd = 0;\n    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n",
+      "replacements": [
+        {
+          "name": "all-uv-after-colors",
+          "text": "    grim_joystick_deadzone = 100.0f;\n    grim_joystick_center_x = 0.0f;\n    grim_joystick_center_y = 0.0f;\n    grim_error_text = &grim_empty_string;\n    grim_reserved_d3ac = 0;\n    grim_lookup_blob_loaded = 0;\n    grim_lookup_blob = 0;\n    grim_lookup_blob_size = 0;\n    grim_backbuffer_width = 640;\n    grim_backbuffer_height = 480;\n    grim_texture_format = 23;\n    grim_preferred_texture_format = 0;\n    grim_main_window_hwnd = 0;\n    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n"
+        },
+        {
+          "name": "all-uv-after-mouse",
+          "text": "    grim_joystick_deadzone = 100.0f;\n    grim_joystick_center_x = 0.0f;\n    grim_joystick_center_y = 0.0f;\n    grim_error_text = &grim_empty_string;\n    grim_reserved_d3ac = 0;\n    grim_lookup_blob_loaded = 0;\n    grim_lookup_blob = 0;\n    grim_lookup_blob_size = 0;\n    grim_backbuffer_width = 640;\n    grim_backbuffer_height = 480;\n    grim_texture_format = 23;\n    grim_preferred_texture_format = 0;\n    grim_main_window_hwnd = 0;\n    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "uv01-before-state-uv23-after-colors",
+          "text": "    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_joystick_deadzone = 100.0f;\n    grim_joystick_center_x = 0.0f;\n    grim_joystick_center_y = 0.0f;\n    grim_error_text = &grim_empty_string;\n    grim_reserved_d3ac = 0;\n    grim_lookup_blob_loaded = 0;\n    grim_lookup_blob = 0;\n    grim_lookup_blob_size = 0;\n    grim_backbuffer_width = 640;\n    grim_backbuffer_height = 480;\n    grim_texture_format = 23;\n    grim_preferred_texture_format = 0;\n    grim_main_window_hwnd = 0;\n    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n"
+        },
+        {
+          "name": "uv012-before-state-uv3-after-colors",
+          "text": "    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_joystick_deadzone = 100.0f;\n    grim_joystick_center_x = 0.0f;\n    grim_joystick_center_y = 0.0f;\n    grim_error_text = &grim_empty_string;\n    grim_reserved_d3ac = 0;\n    grim_lookup_blob_loaded = 0;\n    grim_lookup_blob = 0;\n    grim_lookup_blob_size = 0;\n    grim_backbuffer_width = 640;\n    grim_backbuffer_height = 480;\n    grim_texture_format = 23;\n    grim_preferred_texture_format = 0;\n    grim_main_window_hwnd = 0;\n    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n"
+        },
+        {
+          "name": "uv23-temporaries-across-state",
+          "text": "    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    GrimUV uv_u2_value(1.0f, 1.0f);\n    GrimUV uv_u3_value(0.0f, 1.0f);\n    grim_joystick_deadzone = 100.0f;\n    grim_joystick_center_x = 0.0f;\n    grim_joystick_center_y = 0.0f;\n    grim_error_text = &grim_empty_string;\n    grim_reserved_d3ac = 0;\n    grim_lookup_blob_loaded = 0;\n    grim_lookup_blob = 0;\n    grim_lookup_blob_size = 0;\n    grim_backbuffer_width = 640;\n    grim_backbuffer_height = 480;\n    grim_texture_format = 23;\n    grim_preferred_texture_format = 0;\n    grim_main_window_hwnd = 0;\n    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n    grim_uv_u2 = uv_u2_value;\n    grim_uv_u3 = uv_u3_value;\n    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n"
+        },
+        {
+          "name": "all-uv-temporaries-across-state",
+          "text": "    GrimUV uv_u0_value(0.0f, 0.0f);\n    GrimUV uv_u1_value(1.0f, 0.0f);\n    GrimUV uv_u2_value(1.0f, 1.0f);\n    GrimUV uv_u3_value(0.0f, 1.0f);\n    grim_joystick_deadzone = 100.0f;\n    grim_joystick_center_x = 0.0f;\n    grim_joystick_center_y = 0.0f;\n    grim_error_text = &grim_empty_string;\n    grim_reserved_d3ac = 0;\n    grim_lookup_blob_loaded = 0;\n    grim_lookup_blob = 0;\n    grim_lookup_blob_size = 0;\n    grim_backbuffer_width = 640;\n    grim_backbuffer_height = 480;\n    grim_texture_format = 23;\n    grim_preferred_texture_format = 0;\n    grim_main_window_hwnd = 0;\n    grim_color_slot0 = 0xffffffff;\n    grim_color_slot3 = 0xffffffff;\n    grim_color_slot2 = 0xffffffff;\n    grim_color_slot1 = 0xffffffff;\n    grim_uv_u0 = uv_u0_value;\n    grim_uv_u1 = uv_u1_value;\n    grim_uv_u2 = uv_u2_value;\n    grim_uv_u3 = uv_u3_value;\n    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n"
+        }
+      ]
+    }
+  ]
+}

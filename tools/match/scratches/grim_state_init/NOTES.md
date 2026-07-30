@@ -14,18 +14,20 @@ The byte at `0x1005d3ac` has only the initializer write as a static xref, so it
 is retained under the evidence-limited name `grim_reserved_d3ac`.
 
 Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR- /MD` currently produces a
-`79.67%` match with a `167/425` exact instruction prefix, `425/416`
-target/candidate instructions, and references `135/0/9`. All references
-resolve. The font atlas uses a typed row/entry cursor with separate outer and
-inner counter lifetimes; the four subrect tables retain direct row-major
-indexing. Both forms preserve the recovered interleaved `GrimUV` layout
-without padding or byte-level match constructs.
+`94.81%` match with a `293/425` exact instruction prefix, `425/423`
+target/candidate instructions, and references `165/0/0`. All references
+resolve. The exact prefix now covers every configuration constructor, default
+state store, current-UV initializer, title allocation/copy, callback store,
+and `_strdup` call before entering the font-atlas loop.
 
-The remaining diff is compiler-shaped: scheduling of the configuration-value
-constructor temporaries and current-UV stores, plus counter-versus-end-pointer
-forms for the atlas loops. Every
-observed state store, callback assignment, allocation/copy, and table loop is
-represented, so the recovery is marked semantic-complete rather than exact.
+The remaining diff is confined to atlas loop allocation. Four recovered
+V-field row/entry cursor loops reuse `[esp+0xc]` for the inner integer-to-float
+conversion where the native compiler keeps a distinct `[esp+0x10]` slot. The
+final 16x16 subrect grid still uses the semantically equivalent direct-index
+form because adding a fourth long-lived row cursor changes whole-function
+register allocation. Every observed state store, callback assignment,
+allocation/copy, and table loop is represented, so the recovery remains
+semantic-complete rather than exact.
 
 A focused atlas-loop source-shape check originally rejected simple row locals
 and explicit row-pointer increments. Reusing shared `x`/`y` counters and
@@ -135,3 +137,50 @@ variant adds 20.38 fuzzy-weighted bytes but moves references from `135/0/9` to
 `134/0/11`; the isolated 16x16-grid improvement adds 14.23 bytes while losing
 one resolved reference. No combination preserves reference fidelity, so no
 source change is retained.
+
+## Default-state and atlas interior-pointer recovery
+
+The earlier configuration/UV residual was not missing data. Live relocation
+inspection showed that the native compiler holds the four current-UV values
+across the fixed default-state and color stores. The exhaustive
+`uv-default-state-interleaving-mutations.json` sweep recovered that source
+order by placing the four aggregate UV assignments after the color defaults.
+The retained variant adds 142.46 fuzzy-weighted bytes, advances the exact
+prefix from 167 to 245 instructions, eliminates all nine reference
+mismatches, and raises resolved references from 135 to 158 without changing
+the 416-instruction candidate size.
+
+The next native sequence clears both mouse-button latches through a distinct
+zero register. `mouse-latch-store-shape-mutations.json` identifies an inlined
+two-word `memset` as the only improving source shape. It adds the native
+`xor` instruction, 29.19 fuzzy-weighted bytes, three resolved references, and
+advances the exact prefix from 245 to 288. Chained and named-zero assignments
+are byte-identical to the weaker baseline.
+
+Exact `grim_draw_quad` and `grim_draw_quad_points` scratches establish that
+the depth pair is a distinct `GrimDepth` aggregate and that the four current
+UVs are one `GrimUV[4]` array. The recorded
+`vertex-depth-type-recovery-mutations.json` and
+`current-uv-array-recovery-mutations.json` sweeps show that adopting those
+shared types is byte- and reference-neutral at the improved baseline, so the
+source now uses the evidence-backed types rather than four synthetic scalar
+aliases.
+
+Live native disassembly initializes the font atlas through the interior
+`v`-field address and stores each `u` at the preceding float. The retained
+`font-atlas-v-cursor-mutations.json` variant models that directly with a
+V-field row cursor, advances the prefix by five instructions, adds 13.34
+fuzzy-weighted bytes, and resolves the interior `grim_font2_uv_v` reference.
+`font-atlas-increment-order-mutations.json` then recovers the native
+pointer-before-counter update order for another 4.45 bytes.
+
+The same V-field cursor pattern repeats in the subrect tables.
+`subrect-v-cursor-interactions.json` exhaustively evaluates all 15
+combinations. Retaining the 2x2, 4x4, and 8x8 cursor loops adds six native
+instructions, 94.07 fuzzy-weighted bytes, and three resolved references,
+reaching the current `94.81%`, `423/425`, `165/0/0` result. Adding the fourth
+16x16 cursor changes whole-function register allocation and falls to 64.71%;
+every smaller final-grid cursor variant hits the same cliff. The shared-inner
+counter, counter-identity, and final-grid control-shape sweeps are negative.
+The honest remaining boundary is therefore four repeated conversion-spill
+slot choices plus the final grid's equivalent end-pointer loop.

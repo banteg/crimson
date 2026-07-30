@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-uv-storage-type",
+      "find": "extern GrimUV grim_uv_u0;\nextern GrimUV grim_uv_u1;\nextern GrimUV grim_uv_u2;\nextern GrimUV grim_uv_u3;\n",
+      "replacements": [
+        {
+          "name": "four-entry-array",
+          "text": "extern GrimUV grim_uv_u0[4];\n"
+        }
+      ]
+    },
+    {
+      "name": "current-uv-initializers",
+      "find": "    grim_uv_u0 = GrimUV(0.0f, 0.0f);\n    grim_uv_u1 = GrimUV(1.0f, 0.0f);\n    grim_uv_u2 = GrimUV(1.0f, 1.0f);\n    grim_uv_u3 = GrimUV(0.0f, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "indexed-aggregate",
+          "text": "    grim_uv_u0[0] = GrimUV(0.0f, 0.0f);\n    grim_uv_u0[1] = GrimUV(1.0f, 0.0f);\n    grim_uv_u0[2] = GrimUV(1.0f, 1.0f);\n    grim_uv_u0[3] = GrimUV(0.0f, 1.0f);\n"
+        },
+        {
+          "name": "indexed-direct-fields",
+          "text": "    grim_uv_u0[0].u = 0.0f;\n    grim_uv_u0[0].v = 0.0f;\n    grim_uv_u0[1].u = 1.0f;\n    grim_uv_u0[1].v = 0.0f;\n    grim_uv_u0[2].u = 1.0f;\n    grim_uv_u0[2].v = 1.0f;\n    grim_uv_u0[3].u = 0.0f;\n    grim_uv_u0[3].v = 1.0f;\n"
+        }
+      ]
+    }
+  ]
+}

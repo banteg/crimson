@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vertex-depth-type-definition",
+      "find": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n};\n",
+      "replacements": [
+        {
+          "name": "distinct-depth-aggregate",
+          "text": "struct GrimDepth {\n    float z;\n    float rhw;\n\n    GrimDepth() {}\n    GrimDepth(float z_value, float rhw_value)\n        : z(z_value), rhw(rhw_value) {}\n};\n\nstruct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n};\n"
+        }
+      ]
+    },
+    {
+      "name": "vertex-depth-storage-type",
+      "find": "extern GrimUV grim_vertex_z;\n",
+      "replacements": [
+        {
+          "name": "distinct-depth-global",
+          "text": "extern GrimDepth grim_vertex_z;\n"
+        }
+      ]
+    },
+    {
+      "name": "vertex-depth-initializer",
+      "find": "    grim_vertex_z = GrimUV(0.5f, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "depth-aggregate",
+          "text": "    grim_vertex_z = GrimDepth(0.5f, 1.0f);\n"
+        },
+        {
+          "name": "depth-direct-fields",
+          "text": "    grim_vertex_z.z = 0.5f;\n    grim_vertex_z.rhw = 1.0f;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "7c1497f3d25f956fd564de0559f710a582eedb1f4ee8b7ce8945751ff1fa8dda",
+  "audit_digest": "d075891ee85a64efe59002a5f32b16bdcc5faceffd5bbee3f0c745f050531ad7",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -1227,8 +1227,7 @@
           "storage_name": "grim_vertex_z",
           "symbols": [
             "?grim_vertex_z@@3MA",
-            "?grim_vertex_z@@3UGrimDepth@@A",
-            "?grim_vertex_z@@3UGrimUV@@A"
+            "?grim_vertex_z@@3UGrimDepth@@A"
           ]
         },
         {
@@ -1259,8 +1258,7 @@
           "storage_name": "grim_uv_u0",
           "symbols": [
             "?grim_uv_u0@@3MA",
-            "?grim_uv_u0@@3PAUGrimUV@@A",
-            "?grim_uv_u0@@3UGrimUV@@A"
+            "?grim_uv_u0@@3PAUGrimUV@@A"
           ]
         },
         {
@@ -1276,51 +1274,6 @@
           "storage_name": "grim_uv_v0",
           "symbols": [
             "?grim_uv_v0@@3MA"
-          ]
-        },
-        {
-          "address": 268808856,
-          "alignment": 4,
-          "initializer_target": null,
-          "kind": "definition",
-          "name": "grim_uv_u1",
-          "section_number": 50,
-          "section_offset": 8,
-          "size": 8,
-          "storage_address": 268808856,
-          "storage_name": "grim_uv_u1",
-          "symbols": [
-            "?grim_uv_u1@@3UGrimUV@@A"
-          ]
-        },
-        {
-          "address": 268808864,
-          "alignment": 4,
-          "initializer_target": null,
-          "kind": "definition",
-          "name": "grim_uv_u2",
-          "section_number": 50,
-          "section_offset": 16,
-          "size": 8,
-          "storage_address": 268808864,
-          "storage_name": "grim_uv_u2",
-          "symbols": [
-            "?grim_uv_u2@@3UGrimUV@@A"
-          ]
-        },
-        {
-          "address": 268808872,
-          "alignment": 4,
-          "initializer_target": null,
-          "kind": "definition",
-          "name": "grim_uv_u3",
-          "section_number": 50,
-          "section_offset": 24,
-          "size": 8,
-          "storage_address": 268808872,
-          "storage_name": "grim_uv_u3",
-          "symbols": [
-            "?grim_uv_u3@@3UGrimUV@@A"
           ]
         },
         {
@@ -2393,9 +2346,9 @@
         "repository_relative": true,
         "sha256": "7f1bfaeceb02d391a52bb4ba65aaf6fbe9da05fa00a9dd0498e343809ba79a31"
       },
-      "emitted_symbol_count": 154,
+      "emitted_symbol_count": 149,
       "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-      "object_sha256": "1cf015b47c6061eeebd3e5833547da801cb4ed1b56c2b2ce0c1514c8440d1487",
+      "object_sha256": "19e109400ab6cdc1f9881ce752a9f1d2548dbc8afbf003ae41037eb5fd4e3d52",
       "regions": [
         {
           "address": 268747320,
@@ -3484,18 +3437,6 @@
             {
               "address": 268808852,
               "name": "grim_uv_v0"
-            },
-            {
-              "address": 268808856,
-              "name": "grim_uv_u1"
-            },
-            {
-              "address": 268808864,
-              "name": "grim_uv_u2"
-            },
-            {
-              "address": 268808872,
-              "name": "grim_uv_u3"
             }
           ],
           "relocations": [],
@@ -8000,7 +7941,7 @@
         {
           "path": "tools/match/scratches/grim_state_init/scratch.cpp",
           "repository_relative": true,
-          "sha256": "58aca416f92358f9bb807ce2766bb244ec66572797a8120e7bd114d7ee837e22"
+          "sha256": "83eef503ad195e0c894e3c80f7080ebe2480405e872995356e317213193f0f48"
         },
         {
           "path": "tools/match/scratches/grim_state_init/scratch.conf",
@@ -8036,17 +7977,17 @@
           "canonical_config_sha256": "9b0423bf8ad2a0ab4102efd49aa9ae288543c0b6d8dc2dc17daafc508e057b45",
           "canonical_scratch": "tools/match/scratches/grim_state_init",
           "canonical_source": "tools/match/scratches/grim_state_init/scratch.cpp",
-          "canonical_source_sha256": "58aca416f92358f9bb807ce2766bb244ec66572797a8120e7bd114d7ee837e22",
+          "canonical_source_sha256": "83eef503ad195e0c894e3c80f7080ebe2480405e872995356e317213193f0f48",
           "effective_end": 268458560,
           "end": 268458560,
           "function": "grim_state_init",
           "match": {
-            "candidate_instructions": 416,
-            "masked_mismatches": 9,
-            "masked_ok": 135,
+            "candidate_instructions": 423,
+            "masked_mismatches": 0,
+            "masked_ok": 165,
             "masked_unresolved": 0,
-            "prefix_instructions": 167,
-            "ratio": 0.7966706302021404,
+            "prefix_instructions": 293,
+            "ratio": 0.9481132075471698,
             "state": "wip",
             "target_instructions": 425
           },
@@ -8055,21 +7996,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 416,
-        "masked_mismatches": 9,
-        "masked_ok": 135,
+        "candidate_instructions": 423,
+        "masked_mismatches": 0,
+        "masked_ok": 165,
         "masked_unresolved": 0,
-        "prefix_instructions": 167,
-        "ratio": 0.7966706302021404,
+        "prefix_instructions": 293,
+        "ratio": 0.9481132075471698,
         "state": "wip",
         "target_instructions": 425
       },
       "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
       "object_function_symbol": "?grim_state_init@@YAXXZ",
-      "object_sha256": "b1b3f18b504b10e115c7097167090acff6480a830ca53ad1795511bcee30d7ba",
+      "object_sha256": "044c801a863be2994d18eedb51e75efcd54d26ba501a4b0fc4b5a24dea2669f0",
       "scratch": "tools/match/scratches/grim_state_init",
       "source": "tools/match/scratches/grim_state_init/scratch.cpp",
-      "source_sha256": "58aca416f92358f9bb807ce2766bb244ec66572797a8120e7bd114d7ee837e22",
+      "source_sha256": "83eef503ad195e0c894e3c80f7080ebe2480405e872995356e317213193f0f48",
       "target_size": 1872,
       "translation_unit": {
         "kind": "isolated",

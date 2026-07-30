@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sixteen-grid-v-cursor-lifetime",
+      "find": "    {\n        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_subrect_table[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_subrect_table[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "fresh-outer-counter-v-field-cursors",
+          "text": "    {\n        int y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "reuse-outer-counter-v-field-cursors",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "reuse-both-counters-v-field-cursors",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "distinct-counter-names-v-field-cursors",
+          "text": "    {\n        int row_index = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; row_index < 16; ++row_index) {\n            float row_v = (float)row_index * 0.0625f;\n            int column_index = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; column_index < 16; entry_v += 2, ++column_index) {\n                entry_v[-1] = (float)column_index * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-before-reused-outer-counter",
+          "text": "    {\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        y = 0;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

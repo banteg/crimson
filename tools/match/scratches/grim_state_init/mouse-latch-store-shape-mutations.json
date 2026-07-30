@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mouse-latch-store-shape",
+      "find": "    grim_mouse_button_latch[0] = 0;\n    grim_mouse_button_latch[1] = 0;\n",
+      "replacements": [
+        {
+          "name": "chain-index0-then-index1",
+          "text": "    grim_mouse_button_latch[1] =\n        grim_mouse_button_latch[0] = 0;\n"
+        },
+        {
+          "name": "chain-index1-then-index0",
+          "text": "    grim_mouse_button_latch[0] =\n        grim_mouse_button_latch[1] = 0;\n"
+        },
+        {
+          "name": "named-zero",
+          "text": "    unsigned int mouse_latch = 0;\n    grim_mouse_button_latch[0] = mouse_latch;\n    grim_mouse_button_latch[1] = mouse_latch;\n"
+        },
+        {
+          "name": "const-named-zero",
+          "text": "    const unsigned int mouse_latch = 0;\n    grim_mouse_button_latch[0] = mouse_latch;\n    grim_mouse_button_latch[1] = mouse_latch;\n"
+        },
+        {
+          "name": "zero-with-memset",
+          "text": "    memset(\n        grim_mouse_button_latch,\n        0,\n        sizeof(grim_mouse_button_latch));\n"
+        }
+      ]
+    }
+  ]
+}
