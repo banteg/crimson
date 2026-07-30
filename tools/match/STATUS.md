@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **301504/341963** code bytes (**88.2%**).
+Fuzzy-weighted alignment is **301526/341963** code bytes (**88.2%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 281053/320805 | 87.6% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 281075/320805 | 87.6% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20451/21158 | 96.7% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **281053/320805** fuzzy-weighted bytes (**87.6%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **281075/320805** fuzzy-weighted bytes (**87.6%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -456,7 +456,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
 | wip | player_render_overlays | 0x00428390 | 4582 | 3904/4582 | 678 | 1136/1148 | 85.20% | 9/1148 | 325/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
-| wip | bonus_render | 0x004295f0 | 4088 | 3620/4088 | 468 | 1089/1088 | 88.56% | 14/1088 | 220/0/9 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
+| wip | bonus_render | 0x004295f0 | 4088 | 3643/4088 | 445 | 1087/1088 | 89.10% | 14/1088 | 221/0/8 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | audio_suspend_all | 0x0042a630 | 52 | 52/52 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | texture_get_or_load | 0x0042a670 | 133 | 133/133 | 0 | 44/44 | 100.00% | 44/44 | 11/0/0 |  | texture-cache-load |

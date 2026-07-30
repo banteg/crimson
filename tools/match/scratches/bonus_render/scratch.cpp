@@ -1,5 +1,4 @@
 #include <math.h>
-#include <stddef.h>
 
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
@@ -230,11 +229,9 @@ extern "C" void bonus_render(void)
 
     if (player_index < config_player_count) {
         int *hover_timer = telekinetic_bonus_hover_timer_ms;
-        vec2f_t *player_aim = &player_state_table[0].aim;
+        player_state_t *player = player_state_table;
         int nearby_bonus_index;
         while (1) {
-            player_state_t *player = (player_state_t *)(
-                (char *)player_aim - offsetof(player_state_t, aim_x));
             if (player->health > 0.0f) {
                 nearby_bonus_index = 0;
                 bonus_entry_t *nearby_bonus = bonus_pool;
@@ -242,7 +239,7 @@ extern "C" void bonus_render(void)
                 while (1) {
                     if (nearby_bonus->bonus_id != BONUS_ID_NONE
                         && bonus_render_distance(
-                               player_aim,
+                               &player->aim,
                                &nearby_bonus->time.position)
                             < 24.0f) {
                         nearby_bonus_found = 1;
@@ -264,9 +261,9 @@ extern "C" void bonus_render(void)
                     char *label = bonus_label_for_entry(
                         &bonus_pool[nearby_bonus_index]);
                     float label_x =
-                        camera_offset_x + player_aim->x + 16.0f;
+                        camera_offset_x + player->aim.x + 16.0f;
                     float label_y =
-                        camera_offset_y + player_aim->y - 7.0f;
+                        camera_offset_y + player->aim.y - 7.0f;
                     float label_width =
                         (float)grim_interface_ptr
                             ->grim_measure_text_width(label);
@@ -282,25 +279,22 @@ extern "C" void bonus_render(void)
                 if (*hover_timer > 650
                     && perk_count_get(perk_id_telekinetic)
                     && bonus_pool[nearby_bonus_index].state == 0) {
+                    bonus_entry_t *entry =
+                        &bonus_pool[nearby_bonus_index];
+                    bonus_apply(player_index, entry);
+                    entry->state = 1;
+                    entry->time.time_left = 0.5f;
+                    telekinetic_bonus_hover_timer_ms[player_index] = 0;
                     break;
                 }
             }
 
             ++player_index;
-            player_aim = (vec2f_t *)(
-                (char *)player_aim + sizeof(player_state_t));
+            ++player;
             ++hover_timer;
             if (player_index >= config_player_count) {
                 break;
             }
-        }
-
-        if (player_index < config_player_count) {
-            bonus_entry_t *entry = &bonus_pool[nearby_bonus_index];
-            bonus_apply(player_index, entry);
-            entry->state = 1;
-            entry->time.time_left = 0.5f;
-            telekinetic_bonus_hover_timer_ms[player_index] = 0;
         }
     }
 

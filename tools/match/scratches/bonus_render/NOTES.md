@@ -14,9 +14,9 @@ fade envelopes and that the icon size pulse is `pow(sin(phase), 2.0)`, not a
 fourth power. The modern renderer parity fix is tracked separately from this
 matching scratch.
 
-The complete VC6 scratch currently matches 88.56% (1,088 target instructions,
-1,089 candidate instructions, 14-instruction exact prefix). Reference auditing
-reports 220 aligned references, no unresolved references, and 9 mismatches.
+The complete VC6 scratch currently matches 89.10% (1,088 target instructions,
+1,087 candidate instructions, 14-instruction exact prefix). Reference auditing
+reports 221 aligned references, no unresolved references, and 8 mismatches.
 The remaining reference mismatches are instruction-alignment or strength-
 reduced field-anchor differences such as `particle_style_id` versus the same
 record's `intensity` field; no reference aliases are used.
@@ -28,12 +28,12 @@ and 0x2c field-pointer strides. Removing cached secondary-projectile phase and
 scale temporaries likewise recovers the native repeated field loads. The glow
 pass uses the exact native 0.065 alpha constant and signed `% 2` parity test.
 
-The Telekinetic walk retains its native aim-field induction pointer but now
-types it as `vec2f_t`. An `offsetof(player_state_t, aim_x)` container recovery
-provides the named player `health` field instead of the former `aim[-11]`
-alias, while aim and bonus positions use named vector components. A shadow
-probe verified byte-for-byte identical candidate output and unchanged
-reference agreement.
+The Telekinetic walk now uses an ordinary aggregate `player_state_t` cursor.
+VC6 strength-reduces it to the native aim-field induction register: native EBP
+addresses `aim_x`, with `health` at EBP-0x2c and `aim_y` at EBP+4, while each
+source increment advances one 0x360-byte player record. This removes the prior
+`offsetof` container recovery without inventing a field alias and improves
+both the byte score and reference agreement.
 
 The nearby-bonus search now uses a natural `nearby_bonus_found` flag instead of
 a reconstruction-only `goto`. VC6 optimizes the flag away and emits
@@ -135,8 +135,50 @@ An earlier scaffolding sweep is retained in `experiments.jsonl` because it
 establishes that the direct `player_aim_x` symbol spelling is byte-neutral.
 Its shared-threshold alternative contained a spec-label typo and is not
 semantic evidence; the corrected 2/2 exit-shape sweep above supersedes it.
-The final seven-line experiment log has SHA-256
-`4442d3601955a03895a0b60d7c86f5f427ddb9a3404d3c66beea36185ac90009`.
+
+## Telekinetic ownership and aggregate-cursor wave
+
+Live native disassembly at `0x00429d87..0x00429f32` fixes the player walk's
+ownership. Search exhaustion resets the current hover timer and joins the
+threshold test; a found bonus first renders its label and then joins the same
+test. A successful threshold test calls `bonus_apply`, publishes state and
+time, resets that player's timer, and exits the player walk directly.
+
+`telekinetic-loop-ownership-mutations.json` (SHA-256
+`b635fe4646afae577d74260708b66377db9c1cdb376abdac4a5801a48eedccd5`)
+evaluated all 5/5 planned variants. Moving the apply and publication stores
+inside the threshold condition was the sole winner. It raises the match from
+88.5622% to 88.6437%, adds 3.329 fuzzy-weighted bytes, and removes two
+candidate instructions while preserving the `220/0/9` reference audit.
+Keeping the label-render block inside the search was neutral or worse.
+
+A direct aggregate-player probe then replaced the aim pointer plus container
+recovery with `player_state_t *player`. It raises the match from 88.6437% to
+89.1034%, adds another 18.795 fuzzy-weighted bytes, and improves the reference
+audit from `220/0/9` to `221/0/8` without changing the 1,087 candidate
+instructions. The retained source SHA-256 is
+`8b6caab0e2f17480cd8e6de223e484bae9f05c3e4ec595cc1e4aaf1220b8954c`.
+Cumulatively, the two retained changes add 22.125 weighted bytes over the
+post-beam baseline and reduce the fuzzy gap from 467.576 to 445.451 bytes.
+
+Three complete follow-up sweeps bound the remaining nearby residual:
+
+- `telekinetic-search-sentinel-mutations.json` (SHA-256
+  `d14394683898b048e80c8635abc9becbfbe60ef2601c15c478a135037214b4ab`)
+  evaluated all 3/3 flag, pointer, and index sentinels; none improved.
+- `telekinetic-shared-threshold-mutations.json` (SHA-256
+  `b8f4bd284e4ce74bd8e5d3199836429a6a867a2208a9efe155620ce5cf2a966f`)
+  evaluated all 3/3 typed and signed shared-threshold spellings. Every variant
+  compiled byte-identically to the retained natural found-flag form.
+- `particle-loop-aggregate-mutations.json` (SHA-256
+  `16d3345c9397adc343867ddc1ae91719a7bf1e5f86951f2ed3cdaa32d5a01a1b`)
+  evaluated all 6/6 ordinary aggregate-pointer loop forms. Every variant lost
+  byte score; the least-negative sprite and beam forms each lost 5.431
+  weighted bytes and added one instruction despite removing one reference
+  mismatch. The existing index loops therefore remain the honest source.
+
+The complete 12-line experiment log has SHA-256
+`2d2ecd79a6d5c09174439a891a5a50f8530eec8664e4a9f111ef203b60183625`.
 
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output confirms the ordinary and weapon
@@ -145,7 +187,7 @@ secondary-projectile and sprite-effect passes, and the final `effects_render`
 call through `0x004295f0..0x0042a5e8`. IDA and Ghidra independently retain the
 same signature and six named helper calls. The first localized regions differ
 only in branch displacement, zero materialization (`EBX` versus literal zero),
-and x87 scheduling. All their scoped references resolve; the nine whole-function
+and x87 scheduling. All their scoped references resolve; the eight whole-function
 audit mismatches remain visible as alignment or strength-reduced field-anchor
 effects rather than being aliased away. Each candidate cursor is an evidenced
 interior of the same player, particle, secondary-projectile, camera, or sprite

@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "a8f4a730b884aefa9d1c98a7df01023e39f19c365de03aa5de72536e9f957a3a",
+  "audit_digest": "40812d013d43629c1710a8a7e13b031fdb0f97b0a7a484525bb5f9b930da9574",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -56349,7 +56349,7 @@
         {
           "path": "tools/match/scratches/bonus_render/scratch.cpp",
           "repository_relative": true,
-          "sha256": "0815cae05ff7539e64c66f8731bf92f1e36cc486e46ab45ce5e1402963d21de0"
+          "sha256": "8b6caab0e2f17480cd8e6de223e484bae9f05c3e4ec595cc1e4aaf1220b8954c"
         },
         {
           "path": "tools/match/scratches/bonus_render/scratch.conf",
@@ -56395,17 +56395,17 @@
           "canonical_config_sha256": "eb13aaa9973d13d6fec9de2bde2362f47714dc61e9da0a443c99bf56da26f77e",
           "canonical_scratch": "tools/match/scratches/bonus_render",
           "canonical_source": "tools/match/scratches/bonus_render/scratch.cpp",
-          "canonical_source_sha256": "0815cae05ff7539e64c66f8731bf92f1e36cc486e46ab45ce5e1402963d21de0",
+          "canonical_source_sha256": "8b6caab0e2f17480cd8e6de223e484bae9f05c3e4ec595cc1e4aaf1220b8954c",
           "effective_end": 4367848,
           "end": 4367848,
           "function": "bonus_render",
           "match": {
-            "candidate_instructions": 1089,
-            "masked_mismatches": 9,
-            "masked_ok": 220,
+            "candidate_instructions": 1087,
+            "masked_mismatches": 8,
+            "masked_ok": 221,
             "masked_unresolved": 0,
             "prefix_instructions": 14,
-            "ratio": 0.8856224161690399,
+            "ratio": 0.8910344827586207,
             "state": "wip",
             "target_instructions": 1088
           },
@@ -56414,21 +56414,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 1089,
-        "masked_mismatches": 9,
-        "masked_ok": 220,
+        "candidate_instructions": 1087,
+        "masked_mismatches": 8,
+        "masked_ok": 221,
         "masked_unresolved": 0,
         "prefix_instructions": 14,
-        "ratio": 0.8856224161690399,
+        "ratio": 0.8910344827586207,
         "state": "wip",
         "target_instructions": 1088
       },
       "object": "tools/match/scratches/bonus_render/build/msvc6.5/a9ece713b590d81c/scratch.obj",
       "object_function_symbol": "_bonus_render",
-      "object_sha256": "cc81e5b552a2d6aba04d9f707566df6057c58d284e9e1cc69993f446bf6ac0ad",
+      "object_sha256": "6817077aa8e9f8569290a8cc16f6f38a24fe8b6822c54e9235d8a16fd489b496",
       "scratch": "tools/match/scratches/bonus_render",
       "source": "tools/match/scratches/bonus_render/scratch.cpp",
-      "source_sha256": "0815cae05ff7539e64c66f8731bf92f1e36cc486e46ab45ce5e1402963d21de0",
+      "source_sha256": "8b6caab0e2f17480cd8e6de223e484bae9f05c3e4ec595cc1e4aaf1220b8954c",
       "target_size": 4088,
       "translation_unit": {
         "kind": "isolated",

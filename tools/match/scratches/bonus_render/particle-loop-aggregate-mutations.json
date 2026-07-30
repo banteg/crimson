@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "glow-aggregate-cursor",
+      "find": "        for (int particle_index = 0;\n             particle_index < 0x80;\n             ++particle_index) {\n            particle_t *glow =\n                &particle[particle_index];",
+      "replacements": [
+        {
+          "name": "index-bound-pointer-cursor",
+          "text": "        particle_t *glow = particle;\n        for (int particle_index = 0;\n             particle_index < 0x80;\n             ++particle_index, ++glow) {"
+        },
+        {
+          "name": "pointer-bound-index-cursor",
+          "text": "        int particle_index = 0;\n        for (particle_t *glow = particle;\n             glow < &particle[0x80];\n             ++glow, ++particle_index) {"
+        }
+      ]
+    },
+    {
+      "name": "sprite-aggregate-cursor",
+      "find": "    for (int sprite_index = 0;\n         sprite_index < 0x80;\n         ++sprite_index) {\n            particle_t *sprite =\n                &particle[sprite_index];",
+      "replacements": [
+        {
+          "name": "index-bound-pointer-cursor",
+          "text": "    particle_t *sprite = particle;\n    for (int sprite_index = 0;\n         sprite_index < 0x80;\n         ++sprite_index, ++sprite) {"
+        },
+        {
+          "name": "pointer-bound-for",
+          "text": "    for (particle_t *sprite = particle;\n         sprite < &particle[0x80];\n         ++sprite) {"
+        }
+      ]
+    },
+    {
+      "name": "beam-aggregate-cursor",
+      "find": "    for (int beam_index = 0;\n         beam_index < 0x80;\n         ++beam_index) {\n            particle_t *beam =\n                &particle[beam_index];",
+      "replacements": [
+        {
+          "name": "index-bound-pointer-cursor",
+          "text": "    particle_t *beam = particle;\n    for (int beam_index = 0;\n         beam_index < 0x80;\n         ++beam_index, ++beam) {"
+        },
+        {
+          "name": "pointer-bound-for",
+          "text": "    for (particle_t *beam = particle;\n         beam < &particle[0x80];\n         ++beam) {"
+        }
+      ]
+    }
+  ]
+}
