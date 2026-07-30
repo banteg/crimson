@@ -1173,7 +1173,8 @@ extern "C" void projectile_update(void)
             if ((style_id != 0 && particle->intensity <= 0.8f)
                 || (style_id == 0 && particle->intensity <= 0.0f)) {
                 particle->active = 0;
-                if (style_id == 8 && particle->target_id != -1) {
+                if (particle->style_id == 8
+                    && particle->target_id != -1) {
                     int target_id = particle->target_id;
                     if (creature_pool[target_id].active) {
                         int sfx_id = creature_type_table[
@@ -1229,7 +1230,7 @@ extern "C" void projectile_update(void)
                         0);
                     if (hit_id != -1) {
                         particle->render_flag = 0;
-                        if (style_id == 8) {
+                        if (particle->style_id == 8) {
                             particle->position.x = creature_pool[hit_id].position.x;
                             particle->position.y = creature_pool[hit_id].position.y;
                             particle->velocity.x = 0.0f;

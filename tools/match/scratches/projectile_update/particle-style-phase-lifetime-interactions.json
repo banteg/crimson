@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "movement-scoped-style",
+      "find": "            unsigned char style_id = particle->style_id;\n            if (style_id == 8) {",
+      "replacements": [
+        {
+          "name": "separate-movement-owner",
+          "text": "            unsigned char movement_style_id = particle->style_id;\n            if (movement_style_id == 8) {"
+        }
+      ]
+    },
+    {
+      "name": "expiry-steering-style-reload",
+      "find": "            }\n\n            if ((style_id != 0 && particle->intensity <= 0.8f)\n                || (style_id == 0 && particle->intensity <= 0.0f)) {",
+      "replacements": [
+        {
+          "name": "reload-after-movement",
+          "text": "            }\n\n            unsigned char style_id = particle->style_id;\n            if ((style_id != 0 && particle->intensity <= 0.8f)\n                || (style_id == 0 && particle->intensity <= 0.0f)) {"
+        }
+      ]
+    },
+    {
+      "name": "expiry-death-style-reload",
+      "find": "                if (style_id == 8 && particle->target_id != -1) {",
+      "replacements": [
+        {
+          "name": "direct-field-read",
+          "text": "                if (particle->style_id == 8\n                    && particle->target_id != -1) {"
+        }
+      ]
+    },
+    {
+      "name": "collision-style-reload",
+      "find": "                        if (style_id == 8) {",
+      "replacements": [
+        {
+          "name": "direct-field-read",
+          "text": "                        if (particle->style_id == 8) {"
+        }
+      ]
+    }
+  ]
+}

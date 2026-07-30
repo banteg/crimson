@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "movement-style-owner",
+      "find": "            if (style_id == 8) {",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-field-read",
+          "text": "            if (particle->style_id == 8) {"
+        }
+      ]
+    },
+    {
+      "name": "expiry-threshold-style-owner",
+      "find": "            if ((style_id != 0 && particle->intensity <= 0.8f)\n                || (style_id == 0 && particle->intensity <= 0.0f)) {",
+      "replacements": [
+        {
+          "name": "direct-field-reads",
+          "text": "            if ((particle->style_id != 0\n                    && particle->intensity <= 0.8f)\n                || (particle->style_id == 0\n                    && particle->intensity <= 0.0f)) {"
+        }
+      ]
+    },
+    {
+      "name": "expiry-death-style-owner",
+      "find": "                if (style_id == 8 && particle->target_id != -1) {",
+      "replacements": [
+        {
+          "name": "direct-field-read",
+          "text": "                if (particle->style_id == 8\n                    && particle->target_id != -1) {"
+        }
+      ]
+    },
+    {
+      "name": "steering-style-owner",
+      "find": "                    if (style_id == 0) {\n                        int turn = crt_rand() % 100 - 50;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.96f;\n                        particle->velocity.x =\n                            (float)cos(particle->angle) * 82.0f;\n                        particle->velocity.y =\n                            (float)sin(particle->angle) * 82.0f;\n                    } else if (style_id == 8) {",
+      "replacements": [
+        {
+          "name": "direct-field-reads",
+          "text": "                    if (particle->style_id == 0) {\n                        int turn = crt_rand() % 100 - 50;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.96f;\n                        particle->velocity.x =\n                            (float)cos(particle->angle) * 82.0f;\n                        particle->velocity.y =\n                            (float)sin(particle->angle) * 82.0f;\n                    } else if (particle->style_id == 8) {"
+        }
+      ]
+    },
+    {
+      "name": "collision-style-owner",
+      "find": "                        if (style_id == 8) {",
+      "replacements": [
+        {
+          "name": "direct-field-read",
+          "text": "                        if (particle->style_id == 8) {"
+        }
+      ]
+    }
+  ]
+}

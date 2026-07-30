@@ -832,3 +832,52 @@ SHA-256
 `353b8c1b0cc3e7b0d7a4063a9e39a7c2e155011c7e62f8df5c29ad88bb2131d5`.
 The 55-record `experiments.jsonl` SHA-256 is
 `89ee2569be476e9261ae68f00563d761be1b14858b498f95f5dbc08e5b0991c4`.
+
+## Particle style phase-boundary reloads
+
+The remaining movement residual at `0x00422500..0x004226af` was separated
+from the already-bounded expiry and steering suffixes with five complete
+sweeps covering 79 variants. Native reloads the style byte at the death gate
+(`0x004226e8`) and again after the radius query at the collision gate
+(`0x004228a7`), while the candidate had kept the original cached byte live
+across both phase boundaries.
+
+Two direct field reads are retained together:
+
+- `particle-style-phase-lifetime-interactions.json`
+  (`e0339ad0f59b511ed47fe51f5d42fe0fa5541113c0beebe98801ac6bbc76818d`)
+  evaluates all 15/15 movement, expiry/steering, death, and collision
+  lifetime interactions. Reloading only the death and collision gates is the
+  unique clean improvement: it adds 1.6439 weighted bytes and two candidate
+  instructions without changing the `397/0/23` reference audit. Splitting
+  the movement and expiry/steering owners instead loses 59.6252 weighted
+  bytes, six aligned references, and two instructions.
+- `particle-style-owner-phase-mutations.json`
+  (`1a643bf671b609d8a2d97bba4d0d34d9480cb5e4de761f824b49ad9e7f142e5d`)
+  independently evaluates all 31/31 combinations of direct field reads
+  across the five style-use phases. Its nominal 22.0667-byte winner loses
+  three aligned references and adds four mismatches, so the broader rewrite
+  is rejected.
+
+Three movement-shape controls are also rejected:
+
+- `particle-movement-threshold-order-mutations.json`
+  (`3aece617353e5c3718f0998a85d69d54867710502c9bf57f9ce6e99ec07a9b29`)
+  evaluates all 3/3 high-intensity-first branch interactions. The style-eight
+  rewrite is byte-identical; the default-arm rewrite gains 7.7271 weighted
+  bytes but adds two reference mismatches.
+- `particle-low-movement-staging-mutations.json`
+  (`f31a0468b9b7300dea7e8d51e243f896c5a19c18a85ba92b550b315209dfe31d`)
+  evaluates all 15/15 scalar and vector staging forms, then repeats all 15
+  after the accepted reload pair. The repeat's nominal 60.6650-byte winner
+  adds five reference mismatches. The reference-clean forms are all neutral
+  or negative, so no displacement staging is retained.
+
+The accepted pair raises `projectile_update` from `4829.4280/8409` to
+`4831.0719/8409` weighted bytes (`57.4316563%` to `57.4512055%`), reduces
+the gap to 3,577.9281 bytes, and moves the candidate from 2,150 to 2,152 of
+2,203 native instructions with references unchanged at `397/0/23`. The
+retained source SHA-256 is
+`4eaf3f0b9ac959a68d5858a2e8364557b0f81c5e37a7629603ad235bfd754f23`;
+the 60-record `experiments.jsonl` SHA-256 is
+`56a567e472231377ef164a39e5aa230b619ebef651aafb3be630483cfea5eca9`.
