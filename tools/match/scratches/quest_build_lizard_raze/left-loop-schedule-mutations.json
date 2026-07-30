@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "two-field-metadata-overload",
+      "find": "    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n",
+      "replacements": [
+        {
+          "name": "add-two-field-overload",
+          "text": "    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n\n    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "left-loop-metadata-schedule",
+      "find": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n\n        trigger_time_ms += 6000;\n",
+      "replacements": [
+        {
+          "name": "two-field-count-then-update",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms);\n        builder.spawns[left_spawn_index].count = wave_count;\n\n        trigger_time_ms += 6000;\n"
+        },
+        {
+          "name": "two-field-update-before-count",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms);\n        trigger_time_ms += 6000;\n        builder.spawns[left_spawn_index].count = wave_count;\n"
+        },
+        {
+          "name": "count-pointer-update-before-store",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        int *left_spawn_count = &spawn->count;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms);\n        trigger_time_ms += 6000;\n        *left_spawn_count = wave_count;\n"
+        },
+        {
+          "name": "count-pointer-store-before-update",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        int *left_spawn_count = &spawn->count;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms);\n        *left_spawn_count = wave_count;\n        trigger_time_ms += 6000;\n"
+        },
+        {
+          "name": "direct-fields-update-before-count",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        trigger_time_ms += 6000;\n        spawn->count = wave_count;\n"
+        },
+        {
+          "name": "indexed-fields-update-before-count",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].template_id =\n            SPAWN_ID_LIZARD_RANDOM_2E;\n        builder.spawns[left_spawn_index].trigger_time_ms = trigger_time_ms;\n        trigger_time_ms += 6000;\n        builder.spawns[left_spawn_index].count = wave_count;\n"
+        }
+      ]
+    }
+  ]
+}

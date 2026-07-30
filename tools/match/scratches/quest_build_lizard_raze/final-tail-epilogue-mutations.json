@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-tail-entry-boundary",
+      "find": "    spawn = &builder.spawns[builder.count];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 512.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n    ++builder.count;\n",
+      "replacements": [
+        {
+          "name": "direct-index-fields-count-last",
+          "text": "    int final_spawn_index = builder.count;\n    builder.spawns[final_spawn_index].pos.x = 128.0f;\n    builder.spawns[final_spawn_index].pos.y = 512.0f;\n    builder.spawns[final_spawn_index].template_id = spawner_template_id;\n    builder.spawns[final_spawn_index].trigger_time_ms =\n        spawner_trigger_time_ms;\n    builder.spawns[final_spawn_index].count = one;\n    ++builder.count;\n"
+        },
+        {
+          "name": "typed-position-indexed-helper",
+          "text": "    int final_spawn_index = builder.count;\n    spawn = &builder.spawns[final_spawn_index];\n    quest_vec2_t *final_spawn_pos = &spawn->pos;\n    final_spawn_pos->x = 128.0f;\n    final_spawn_pos->y = 512.0f;\n    builder.spawns[final_spawn_index].set_spawn(\n        spawner_template_id, spawner_trigger_time_ms, one);\n    ++builder.count;\n"
+        },
+        {
+          "name": "typed-position-pointer-helper",
+          "text": "    spawn = &builder.spawns[builder.count];\n    quest_vec2_t *final_spawn_pos = &spawn->pos;\n    final_spawn_pos->x = 128.0f;\n    final_spawn_pos->y = 512.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n    ++builder.count;\n"
+        },
+        {
+          "name": "named-index-reference",
+          "text": "    int final_spawn_index = builder.count;\n    quest_entry_original_t &final_spawn = builder.spawns[final_spawn_index];\n    final_spawn.pos.x = 128.0f;\n    final_spawn.pos.y = 512.0f;\n    final_spawn.set_spawn(\n        spawner_template_id, spawner_trigger_time_ms, one);\n    ++builder.count;\n"
+        },
+        {
+          "name": "index-postincrement",
+          "text": "    int final_spawn_index = builder.count++;\n    spawn = &builder.spawns[final_spawn_index];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 512.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n"
+        },
+        {
+          "name": "pointer-count-before-fields",
+          "text": "    spawn = &builder.spawns[builder.count];\n    ++builder.count;\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 512.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n"
+        },
+        {
+          "name": "position-pointer-direct-metadata",
+          "text": "    int final_spawn_index = builder.count;\n    spawn = &builder.spawns[final_spawn_index];\n    quest_vec2_t *final_spawn_pos = &spawn->pos;\n    final_spawn_pos->x = 128.0f;\n    final_spawn_pos->y = 512.0f;\n    spawn->template_id = spawner_template_id;\n    spawn->trigger_time_ms = spawner_trigger_time_ms;\n    spawn->count = one;\n    ++builder.count;\n"
+        }
+      ]
+    },
+    {
+      "name": "output-count-boundary",
+      "find": "    *count = builder.count;",
+      "replacements": [
+        {
+          "name": "named-final-count",
+          "text": "    int final_count = builder.count;\n    *count = final_count;"
+        },
+        {
+          "name": "named-output-pointer",
+          "text": "    int *output_count = count;\n    *output_count = builder.count;"
+        },
+        {
+          "name": "named-count-and-output",
+          "text": "    int final_count = builder.count;\n    int *output_count = count;\n    *output_count = final_count;"
+        }
+      ]
+    }
+  ]
+}

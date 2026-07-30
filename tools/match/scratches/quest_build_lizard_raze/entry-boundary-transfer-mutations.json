@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-wave-entry-boundary",
+      "find": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n",
+      "replacements": [
+        {
+          "name": "direct-index-count-before-metadata",
+          "text": "        quest_entry_original_t *spawn;\n        int right_spawn_index = builder.count;\n        builder.spawns[right_spawn_index].pos.x =\n            (float)(terrain_texture_width + 64);\n        builder.spawns[right_spawn_index].pos.y =\n            (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[right_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n"
+        },
+        {
+          "name": "direct-index-count-last",
+          "text": "        quest_entry_original_t *spawn;\n        builder.spawns[builder.count].pos.x =\n            (float)(terrain_texture_width + 64);\n        builder.spawns[builder.count].pos.y =\n            (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n        ++builder.count;\n"
+        },
+        {
+          "name": "named-index-pointer",
+          "text": "        int right_spawn_index = builder.count;\n        quest_entry_original_t *spawn = &builder.spawns[right_spawn_index];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n"
+        },
+        {
+          "name": "typed-position-indexed-metadata",
+          "text": "        int right_spawn_index = builder.count;\n        quest_entry_original_t *spawn = &builder.spawns[right_spawn_index];\n        quest_vec2_t *right_spawn_pos = &spawn->pos;\n        right_spawn_pos->x = (float)(terrain_texture_width + 64);\n        right_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[right_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n"
+        },
+        {
+          "name": "direct-fields-after-count",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = wave_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "left-wave-entry-boundary",
+      "find": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n",
+      "replacements": [
+        {
+          "name": "direct-index-count-before-metadata",
+          "text": "        int left_spawn_index = builder.count;\n        builder.spawns[left_spawn_index].pos.x = -64.0f;\n        builder.spawns[left_spawn_index].pos.y =\n            (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n"
+        },
+        {
+          "name": "direct-index-count-last",
+          "text": "        builder.spawns[builder.count].pos.x = -64.0f;\n        builder.spawns[builder.count].pos.y =\n            (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n        ++builder.count;\n"
+        },
+        {
+          "name": "named-index-pointer",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n"
+        },
+        {
+          "name": "typed-position-indexed-metadata",
+          "text": "        int left_spawn_index = builder.count;\n        spawn = &builder.spawns[left_spawn_index];\n        quest_vec2_t *left_spawn_pos = &spawn->pos;\n        left_spawn_pos->x = -64.0f;\n        left_spawn_pos->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        builder.spawns[left_spawn_index].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);\n"
+        },
+        {
+          "name": "direct-fields-after-count",
+          "text": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = wave_count;\n"
+        }
+      ]
+    }
+  ]
+}
