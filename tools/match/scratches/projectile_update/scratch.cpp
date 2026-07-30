@@ -1170,8 +1170,8 @@ extern "C" void projectile_update(void)
                 }
             }
 
-            if ((style_id == 0 && particle->intensity <= 0.0f)
-                || (style_id != 0 && particle->intensity <= 0.8f)) {
+            if ((style_id != 0 && particle->intensity <= 0.8f)
+                || (style_id == 0 && particle->intensity <= 0.0f)) {
                 particle->active = 0;
                 if (style_id == 8 && particle->target_id != -1) {
                     int target_id = particle->target_id;
@@ -1184,7 +1184,7 @@ extern "C" void projectile_update(void)
                             &creature_pool[target_id].position,
                             1.0f);
                     }
-                    creature_handle_death(target_id, 0);
+                    creature_handle_death(particle->target_id, 0);
                 }
             } else {
                 if (particle->render_flag == 1) {

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-expiry-target-lifetime",
+      "find": "                    int target_id = particle->target_id;\n                    if (creature_pool[target_id].active) {\n                        int sfx_id = creature_type_table[\n                            creature_pool[target_id].type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }\n                    creature_handle_death(target_id, 0);",
+      "replacements": [
+        {
+          "name": "direct-particle-owner",
+          "text": "                    if (creature_pool[particle->target_id].active) {\n                        int sfx_id = creature_type_table[\n                            creature_pool[particle->target_id].type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[particle->target_id].position,\n                            1.0f);\n                    }\n                    creature_handle_death(particle->target_id, 0);"
+        },
+        {
+          "name": "reload-after-rand-and-for-death",
+          "text": "                    int target_id = particle->target_id;\n                    if (creature_pool[target_id].active) {\n                        int random_sfx_index = crt_rand() % 3;\n                        target_id = particle->target_id;\n                        int sfx_id = creature_type_table[\n                            creature_pool[target_id].type_id]\n                            .sfx_bank_a[random_sfx_index];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }\n                    target_id = particle->target_id;\n                    creature_handle_death(target_id, 0);"
+        },
+        {
+          "name": "direct-after-rand",
+          "text": "                    int target_id = particle->target_id;\n                    if (creature_pool[target_id].active) {\n                        int random_sfx_index = crt_rand() % 3;\n                        int sfx_id = creature_type_table[\n                            creature_pool[particle->target_id].type_id]\n                            .sfx_bank_a[random_sfx_index];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[particle->target_id].position,\n                            1.0f);\n                    }\n                    creature_handle_death(particle->target_id, 0);"
+        },
+        {
+          "name": "reload-for-death-only",
+          "text": "                    int target_id = particle->target_id;\n                    if (creature_pool[target_id].active) {\n                        int sfx_id = creature_type_table[\n                            creature_pool[target_id].type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }\n                    creature_handle_death(particle->target_id, 0);"
+        },
+        {
+          "name": "reload-after-rand-only",
+          "text": "                    int target_id = particle->target_id;\n                    if (creature_pool[target_id].active) {\n                        int random_sfx_index = crt_rand() % 3;\n                        target_id = particle->target_id;\n                        int sfx_id = creature_type_table[\n                            creature_pool[target_id].type_id]\n                            .sfx_bank_a[random_sfx_index];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }\n                    creature_handle_death(target_id, 0);"
+        },
+        {
+          "name": "named-creature-owner",
+          "text": "                    int target_id = particle->target_id;\n                    creature_t *target_creature = &creature_pool[target_id];\n                    if (target_creature->active) {\n                        int sfx_id = creature_type_table[\n                            target_creature->type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &target_creature->position,\n                            1.0f);\n                    }\n                    creature_handle_death(target_id, 0);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-expiry-sfx-evaluation",
+      "find": "                    if (creature_pool[target_id].active) {\n                        int sfx_id = creature_type_table[\n                            creature_pool[target_id].type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }",
+      "replacements": [
+        {
+          "name": "inline-sfx-expression",
+          "text": "                    if (creature_pool[target_id].active) {\n                        sfx_play_panned(\n                            creature_type_table[\n                                creature_pool[target_id].type_id]\n                                .sfx_bank_a[crt_rand() % 3],\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "inline-direct-particle-owner",
+          "text": "                    if (creature_pool[target_id].active) {\n                        sfx_play_panned(\n                            creature_type_table[\n                                creature_pool[particle->target_id].type_id]\n                                .sfx_bank_a[crt_rand() % 3],\n                            &creature_pool[particle->target_id].position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "inline-named-creature-owner",
+          "text": "                    creature_t *target_creature =\n                        &creature_pool[target_id];\n                    if (target_creature->active) {\n                        sfx_play_panned(\n                            creature_type_table[target_creature->type_id]\n                                .sfx_bank_a[crt_rand() % 3],\n                            &target_creature->position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "inline-named-random-index",
+          "text": "                    if (creature_pool[target_id].active) {\n                        int random_sfx_index = crt_rand() % 3;\n                        sfx_play_panned(\n                            creature_type_table[\n                                creature_pool[target_id].type_id]\n                                .sfx_bank_a[random_sfx_index],\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }"
+        }
+      ]
+    }
+  ]
+}

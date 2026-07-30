@@ -760,3 +760,47 @@ SHA-256 is
 `c7002fb41ee645d9240e9df53c4c90466ea7f9a2691cb03553f8fd325724c2af`;
 the 49-record `experiments.jsonl` SHA-256 is
 `63ce3461dd936953b0160a02a3c148b10402333a67a3dd16198eb4ee75fab6b8`.
+
+## Particle expiry control and owner lifetimes
+
+The next pass returned to the low-alignment particle movement/expiry region at
+`0x0042241c..0x00422782`, but selected the previously untested expiry suffix at
+`0x004226af`. Native tests the cached style before choosing the `0.0f` or
+`0.8f` intensity comparison, then reloads the attached target only at the
+death call boundary.
+
+Two source corrections are retained:
+
+- `particle-expiry-control-mutations.json`
+  (`dcdee8e5a036888953e42c414b48bb5d1f9a6f85c5978e544d7cbb291fe5d025`)
+  evaluates all 8/8 equivalent predicate and threshold shapes. Putting the
+  nonzero-style arm first is the unique clean winner: it adds 45.2763 weighted
+  bytes, adds one candidate instruction toward the 55-instruction native
+  deficit, and removes one reference mismatch.
+- `particle-expiry-target-lifetime-mutations.json`
+  (`89251c6b768555f5cc84e8e60c4ebced25fd3ee6ad94f602b185cdd186118ec1`)
+  evaluates all 6/6 direct, reloaded, and creature-owner lifetimes. Reloading
+  `particle->target_id` only for `creature_handle_death` adds another 10.4836
+  weighted bytes and one native-shaped instruction with no reference
+  regression. Reloading across the preceding SFX path is measurably worse.
+
+Two follow-up matrices bound the tempting SFX call-evaluation interpretation:
+
+- `particle-expiry-sfx-evaluation-mutations.json`
+  (`2b357e972704b732d113b7507deefad221b0fa2abc887ed44c3a17b73db4f6e2`)
+  evaluates all 4/4 inline/local call shapes. The nominal 43.0045-byte winner
+  adds four reference mismatches, so it is rejected.
+- `particle-expiry-sfx-owner-mutations.json`
+  (`da84fa69d77435c8f19f01043e724b6fb454855fc3cd2d83911c84a189008047`)
+  evaluates all 6/6 retained/reloaded type and position owners. Its nominal
+  39.1436-byte winner still adds three mismatches; no SFX form is retained.
+
+Together the two accepted changes raise `projectile_update` from
+`4773.6681/8409` to `4829.4280/8409` weighted bytes
+(`56.7685590%` to `57.4316563%`), reduce the gap by 55.7599 bytes to
+3,579.5720, and move the candidate from 2,148 to 2,150 of 2,203 native
+instructions. References improve from `397/0/24` to `397/0/23`. The retained
+source SHA-256 is
+`353b8c1b0cc3e7b0d7a4063a9e39a7c2e155011c7e62f8df5c29ad88bb2131d5`;
+the 53-record `experiments.jsonl` SHA-256 is
+`3919343e81673f26683751ec18cdb633a8f06f9598380c3887dd6ed19b5af2b1`.

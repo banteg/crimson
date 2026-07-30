@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-expiry-control",
+      "find": "            if ((style_id == 0 && particle->intensity <= 0.0f)\n                || (style_id != 0 && particle->intensity <= 0.8f)) {",
+      "replacements": [
+        {
+          "name": "nonzero-arm-first",
+          "text": "            if ((style_id != 0 && particle->intensity <= 0.8f)\n                || (style_id == 0 && particle->intensity <= 0.0f)) {"
+        },
+        {
+          "name": "zero-first-ternary",
+          "text": "            if (style_id == 0\n                    ? particle->intensity <= 0.0f\n                    : particle->intensity <= 0.8f) {"
+        },
+        {
+          "name": "nonzero-first-ternary",
+          "text": "            if (style_id != 0\n                    ? particle->intensity <= 0.8f\n                    : particle->intensity <= 0.0f) {"
+        },
+        {
+          "name": "ternary-threshold",
+          "text": "            if (particle->intensity\n+                <= (style_id == 0 ? 0.0f : 0.8f)) {"
+        },
+        {
+          "name": "named-ternary-threshold",
+          "text": "            float expiry_threshold =\n+                style_id == 0 ? 0.0f : 0.8f;\n+            if (particle->intensity <= expiry_threshold) {"
+        },
+        {
+          "name": "branched-threshold",
+          "text": "            float expiry_threshold;\n+            if (style_id == 0) {\n+                expiry_threshold = 0.0f;\n+            } else {\n+                expiry_threshold = 0.8f;\n+            }\n+            if (particle->intensity <= expiry_threshold) {"
+        },
+        {
+          "name": "named-expiry-boolean",
+          "text": "            bool particle_expired;\n+            if (style_id == 0) {\n+                particle_expired = particle->intensity <= 0.0f;\n+            } else {\n+                particle_expired = particle->intensity <= 0.8f;\n+            }\n+            if (particle_expired) {"
+        },
+        {
+          "name": "direct-style-field",
+          "text": "            if ((particle->style_id == 0\n+                    && particle->intensity <= 0.0f)\n+                || (particle->style_id != 0\n+                    && particle->intensity <= 0.8f)) {"
+        }
+      ]
+    }
+  ]
+}

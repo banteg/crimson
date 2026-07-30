@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-expiry-sfx-owner",
+      "find": "                    if (creature_pool[target_id].active) {\n                        int sfx_id = creature_type_table[\n                            creature_pool[target_id].type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }",
+      "replacements": [
+        {
+          "name": "inline-reloaded-type-retained-position",
+          "text": "                    if (creature_pool[target_id].active) {\n                        sfx_play_panned(\n                            creature_type_table[\n                                creature_pool[particle->target_id].type_id]\n                                .sfx_bank_a[crt_rand() % 3],\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "inline-retained-type-reloaded-position",
+          "text": "                    if (creature_pool[target_id].active) {\n                        sfx_play_panned(\n                            creature_type_table[\n                                creature_pool[target_id].type_id]\n                                .sfx_bank_a[crt_rand() % 3],\n                            &creature_pool[particle->target_id].position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "local-sfx-reloaded-type",
+          "text": "                    if (creature_pool[target_id].active) {\n                        int sfx_id = creature_type_table[\n                            creature_pool[particle->target_id].type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[target_id].position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "local-sfx-reloaded-position",
+          "text": "                    if (creature_pool[target_id].active) {\n                        int sfx_id = creature_type_table[\n                            creature_pool[target_id].type_id]\n                            .sfx_bank_a[crt_rand() % 3];\n                        sfx_play_panned(\n                            sfx_id,\n                            &creature_pool[particle->target_id].position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "inline-reloaded-type-named-position",
+          "text": "                    if (creature_pool[target_id].active) {\n                        const vec2f_t *target_position =\n                            &creature_pool[target_id].position;\n                        sfx_play_panned(\n                            creature_type_table[\n                                creature_pool[particle->target_id].type_id]\n                                .sfx_bank_a[crt_rand() % 3],\n                            target_position,\n                            1.0f);\n                    }"
+        },
+        {
+          "name": "inline-reloaded-type-reloaded-target-local",
+          "text": "                    if (creature_pool[target_id].active) {\n                        const vec2f_t *target_position =\n                            &creature_pool[target_id].position;\n                        int random_sfx_index = crt_rand() % 3;\n                        target_id = particle->target_id;\n                        sfx_play_panned(\n                            creature_type_table[\n                                creature_pool[target_id].type_id]\n                                .sfx_bank_a[random_sfx_index],\n                            target_position,\n                            1.0f);\n                    }"
+        }
+      ]
+    }
+  ]
+}
