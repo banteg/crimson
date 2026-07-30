@@ -274,6 +274,7 @@
         ["0x1005d158", "grim_joystick_center_y", "00000000"],
         ["0x1005d3b0", "grim_ms_to_seconds_scale", "00000000"],
         ["0x1005d3b8", "grim_mouse_wheel_delta_cached", "00000000"],
+        ["0x1005db4c", "grim_mouse_wheel", "00000000"],
         ["0x1005db58", "grim_mouse_wheel_delta", "00000000"]
       ]
     },
@@ -298,6 +299,8 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "members": [
         ["0x10053050", "grim_key_char_buffer_size", "fe010000"],
+        ["0x10053054", "grim_config_selected_width", "80020000"],
+        ["0x10053058", "grim_config_selected_height", "e0010000"],
         ["0x1005305c", "grim_texture_slot_max_index", "ffffffff"],
         ["0x10059dc4", "grim_tick_prev_ms", "00000000"],
         ["0x10059dfc", "grim_present_height", "00000000"],
@@ -320,6 +323,7 @@
         ["0x1005ceb8", "grim_config_backbuffer_count", "00000000"],
         ["0x1005d3e4", "grim_key_char_queue_count", "00000000"],
         ["0x1005d3e8", "grim_selected_adapter_index", "00000000"],
+        ["0x1005d808", "grim_device_reset_retry_count", "00000000"],
         ["0x1005d814", "grim_fps_sample_frames", "00000000"],
         ["0x1005d818", "grim_fps_sample_elapsed_ms", "00000000"],
         ["0x1005d834", "grim_joystick_axis_y", "00000000"],
@@ -338,7 +342,10 @@
       "members": [
         ["0x10059bb4", "grim_draw_line_init_flag"],
         ["0x1005a470", "grim_timing_frozen"],
+        ["0x1005b280", "grim_config_dialog_windowed_selected"],
+        ["0x1005b2b8", "grim_config_dialog_bpp16_selected"],
         ["0x1005bc14", "grim_lookup_blob_loaded"],
+        ["0x1005befc", "grim_config_dialog_has_supported_adapter"],
         ["0x1005cc08", "grim_windowed_mode_enabled"],
         ["0x1005cc38", "grim_keyboard_enabled"],
         ["0x1005cc48", "grim_mouse_enabled"],
@@ -350,7 +357,12 @@
         ["0x1005d0c8", "grim_config_dialog_option_3ef_checked"],
         ["0x1005d3ac", "grim_reserved_d3ac"],
         ["0x1005d3bc", "grim_config_dialog_canceled"],
-        ["0x1005d828", "grim_empty_string"]
+        ["0x1005d400", "grim_config_option_54_value"],
+        ["0x1005d804", "grim_dc_mode_active"],
+        ["0x1005d810", "grim_texture_backup_pending"],
+        ["0x1005d811", "grim_device_restore_callback_pending"],
+        ["0x1005d828", "grim_empty_string"],
+        ["0x1005d948", "grim_joystick_found"]
       ]
     },
     {
@@ -360,14 +372,20 @@
         "GrimUV *",
         "GrimInputProvider *",
         "HICON",
+        "HINSTANCE",
+        "HMODULE",
         "HWND",
         "HWND *",
         "IGrim2D *",
+        "LPCSTR",
         "LPDIRECT3D8",
         "LPDIRECT3DDEVICE8",
         "LPDIRECT3DINDEXBUFFER8",
         "LPDIRECT3DSURFACE8",
+        "LPDIRECT3DTEXTURE8",
+        "LPDIRECTINPUT8A",
         "LPDIRECTINPUTDEVICE8A",
+        "WORD *",
         "char *",
         "int (*)(void)",
         "void *",
@@ -383,10 +401,15 @@
         ["0x10059770", "grim_on_device_restore"],
         ["0x10059778", "grim_window_icon_handle"],
         ["0x1005977c", "grim_frame_callback"],
+        ["0x10059780", "grim_process_hinstance"],
         ["0x10059bb8", "grim_index_buffer"],
+        ["0x10059ddc", "grim_window_class_hinstance"],
+        ["0x10059df0", "grim_window_class_name"],
         ["0x10059e10", "grim_present_device_window"],
         ["0x1005a48c", "grim_render_target_surface"],
         ["0x1005a670", "grim_lookup_blob"],
+        ["0x1005b2b0", "grim_config_dialog_hwnd"],
+        ["0x1005b2c0", "grim_index_write_ptr"],
         ["0x1005b2c4", "grim_d3d8_probe"],
         ["0x1005bac8", "grim_window_title"],
         ["0x1005bc80", "grim_subrect_ptr0"],
@@ -401,10 +424,108 @@
         ["0x1005d0b4", "grim_main_window_hwnd_ref"],
         ["0x1005d3a8", "grim_on_device_lost"],
         ["0x1005d3b4", "grim_input_provider"],
+        ["0x1005d3f0", "grim_splash_texture"],
         ["0x1005d3f8", "grim_main_window_hwnd"],
         ["0x1005d3fc", "grim_device_window_override"],
         ["0x1005d81c", "grim_interface_instance"],
-        ["0x1005da24", "grim_keyboard_device"]
+        ["0x1005d940", "grim_dinput_joystick"],
+        ["0x1005d944", "grim_joystick_device"],
+        ["0x1005da20", "grim_dinput_keyboard"],
+        ["0x1005da24", "grim_keyboard_device"],
+        ["0x1005db28", "grim_dinput_mouse"],
+        ["0x1005db2c", "grim_mouse_device"]
+      ]
+    },
+    {
+      "name": "literal-byte8",
+      "types": ["char"],
+      "size": 1,
+      "size_source": "analysis/ghidra/maps/data_map.json: recovered one-byte capability flags; tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x10053064", "grim_caps_can_render_windowed", "01"],
+        ["0x10053065", "grim_caps_x8r8g8b8_supported", "01"]
+      ]
+    },
+    {
+      "name": "literal-float-array-00080",
+      "types": ["float[32]"],
+      "size": 128,
+      "size_source": "analysis/ghidra/maps/data_map.json: 32-entry neutral dither pattern; tools/native/abi/grim.dll/abi_assertions.cpp: dither_pattern_is_0x80",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at the member VA",
+      "members": [
+        ["0x10054398", "grim_dither_half_pattern", "0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f0000003f"]
+      ]
+    },
+    {
+      "name": "zero-window-class-00030",
+      "types": ["WNDCLASSEXA"],
+      "size": 48,
+      "size_source": "analysis/ghidra/maps/data_map.json: WNDCLASSEXA; tools/native/abi/grim.dll/abi_assertions.cpp: window_class_is_0x30",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_window_class_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10059dc8",
+      "members": [
+        ["0x10059dc8", "grim_window_class"]
+      ]
+    },
+    {
+      "name": "zero-device-caps-000d4",
+      "types": ["D3DCAPS8"],
+      "size": 212,
+      "size_source": "analysis/ghidra/maps/data_map.json: D3DCAPS8; tools/native/abi/grim.dll/abi_assertions.cpp: device_caps_is_0xd4",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_device_caps_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005a498",
+      "members": [
+        ["0x1005a498", "grim_device_caps"]
+      ]
+    },
+    {
+      "name": "zero-system-time-00010",
+      "types": ["SYSTEMTIME"],
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: SYSTEMTIME; tools/native/abi/grim.dll/abi_assertions.cpp: system_time_is_0x10",
+      "alignment": 2,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_system_time_alignment_is_two",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005c408",
+      "members": [
+        ["0x1005c408", "grim_config_dialog_system_time"]
+      ]
+    },
+    {
+      "name": "zero-mouse-state-00014",
+      "types": ["DIMOUSESTATE2"],
+      "size": 20,
+      "size_source": "analysis/ghidra/maps/data_map.json: DIMOUSESTATE2; tools/native/abi/grim.dll/abi_assertions.cpp: mouse_state_is_0x14",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_mouse_state_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005db30",
+      "members": [
+        ["0x1005db30", "grim_mouse_state"]
+      ]
+    },
+    {
+      "name": "zero-uchar-array-00008",
+      "types": ["unsigned char[8]"],
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: DIMOUSESTATE2 rgbButtons field; tools/native/abi/grim.dll/abi_assertions.cpp: mouse_buttons_are_0x08",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005db3c",
+      "members": [
+        ["0x1005db3c", "grim_mouse_buttons"]
       ]
     },
     {

@@ -1,4 +1,5 @@
 #include "grim_d3d8.h"
+
 #include "grim2d_abi.h"
 #include "crimsonland_types.h"
 #include "grim_joystick_state.h"
@@ -88,6 +89,33 @@ struct grim_client_rect_alignment_probe_t {
     grim_client_rect_layout_t value;
 };
 
+struct grim_window_class_alignment_probe_t {
+    char prefix;
+    WNDCLASSEXA value;
+};
+
+struct grim_device_caps_alignment_probe_t {
+    char prefix;
+    D3DCAPS8 value;
+};
+
+struct grim_system_time_alignment_probe_t {
+    char prefix;
+    SYSTEMTIME value;
+};
+
+struct grim_mouse_state_layout_t {
+    LONG x;
+    LONG y;
+    LONG z;
+    BYTE buttons[8];
+};
+
+struct grim_mouse_state_alignment_probe_t {
+    char prefix;
+    grim_mouse_state_layout_t value;
+};
+
 struct grim_config_value_alignment_probe_t {
     char prefix;
     grim_config_value_t value;
@@ -144,6 +172,21 @@ GRIM_ABI_ASSERT(my_app_is_0x2c, sizeof(grim_my_app_layout_t) == 0x2c);
 GRIM_ABI_ASSERT(
     client_rect_is_0x10,
     sizeof(grim_client_rect_layout_t) == 0x10);
+GRIM_ABI_ASSERT(window_class_is_0x30, sizeof(WNDCLASSEXA) == 0x30);
+GRIM_ABI_ASSERT(device_caps_is_0xd4, sizeof(D3DCAPS8) == 0xd4);
+GRIM_ABI_ASSERT(system_time_is_0x10, sizeof(SYSTEMTIME) == 0x10);
+GRIM_ABI_ASSERT(
+    mouse_state_is_0x14,
+    sizeof(grim_mouse_state_layout_t) == 0x14);
+GRIM_ABI_ASSERT(
+    mouse_buttons_are_0x08,
+    sizeof(((grim_mouse_state_layout_t *)0)->buttons) == 0x08);
+GRIM_ABI_ASSERT(
+    mouse_buttons_start_at_0x0c,
+    offsetof(grim_mouse_state_layout_t, buttons) == 0x0c);
+GRIM_ABI_ASSERT(
+    dither_pattern_is_0x80,
+    sizeof(float[32]) == 0x80);
 GRIM_ABI_ASSERT(
     joystick_buttons_are_0x80,
     sizeof(((GrimJoystickState *)0)->rgbButtons) == 0x80);
@@ -226,6 +269,18 @@ GRIM_ABI_ASSERT(
 GRIM_ABI_ASSERT(
     default_client_rect_alignment_is_four,
     offsetof(grim_client_rect_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_window_class_alignment_is_four,
+    offsetof(grim_window_class_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_device_caps_alignment_is_four,
+    offsetof(grim_device_caps_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_system_time_alignment_is_two,
+    offsetof(grim_system_time_alignment_probe_t, value) == 2);
+GRIM_ABI_ASSERT(
+    default_mouse_state_alignment_is_four,
+    offsetof(grim_mouse_state_alignment_probe_t, value) == 4);
 GRIM_ABI_ASSERT(
     default_config_value_alignment_is_four,
     offsetof(grim_config_value_alignment_probe_t, value) == 4);
