@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "aea665d957d6540fd70b896bf644982a87d73578332fb014a772e412f32b3b6e",
+  "audit_digest": "f14dc93591869bbfe06f17409e5d6d9cb19138dde62a07ec2931fb385c721e12",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -67040,12 +67040,12 @@
         {
           "path": "tools/match/scratches/quest_build_lizard_raze/scratch.cpp",
           "repository_relative": true,
-          "sha256": "e8d525c4a62605a34caba4ff1e88baf3290c81a8887046ac639a8128ef86b58b"
+          "sha256": "d197bb88f40cc29b4bab6dca465cbcdbdeeebf130b426c6886f8205a5f54a239"
         },
         {
           "path": "tools/match/scratches/quest_build_lizard_raze/scratch.conf",
           "repository_relative": true,
-          "sha256": "5e64615f731f4868dd741710a9393a680e4fc1f6672642fd794dc09ea34bd7c6"
+          "sha256": "006f1784b806d45774dc3333dcfefe8bf69c589b208641c3c40027e3b72cffee"
         },
         {
           "path": "tools/match/cl.sh",
@@ -67070,7 +67070,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_lizard_raze/scratch.conf",
-      "config_sha256": "5e64615f731f4868dd741710a9393a680e4fc1f6672642fd794dc09ea34bd7c6",
+      "config_sha256": "006f1784b806d45774dc3333dcfefe8bf69c589b208641c3c40027e3b72cffee",
       "effective_end": 4426046,
       "end": 4426046,
       "function": "quest_build_lizard_raze",
@@ -67078,10 +67078,10 @@
         {
           "address": 4425792,
           "canonical_config": "tools/match/scratches/quest_build_lizard_raze/scratch.conf",
-          "canonical_config_sha256": "5e64615f731f4868dd741710a9393a680e4fc1f6672642fd794dc09ea34bd7c6",
+          "canonical_config_sha256": "006f1784b806d45774dc3333dcfefe8bf69c589b208641c3c40027e3b72cffee",
           "canonical_scratch": "tools/match/scratches/quest_build_lizard_raze",
           "canonical_source": "tools/match/scratches/quest_build_lizard_raze/scratch.cpp",
-          "canonical_source_sha256": "e8d525c4a62605a34caba4ff1e88baf3290c81a8887046ac639a8128ef86b58b",
+          "canonical_source_sha256": "d197bb88f40cc29b4bab6dca465cbcdbdeeebf130b426c6886f8205a5f54a239",
           "effective_end": 4426046,
           "end": 4426046,
           "function": "quest_build_lizard_raze",
@@ -67090,9 +67090,9 @@
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
-            "prefix_instructions": 16,
-            "ratio": 0.8051948051948052,
-            "state": "wip",
+            "prefix_instructions": 77,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 77
           },
           "object_function_symbol": "_quest_build_lizard_raze",
@@ -67104,17 +67104,17 @@
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
-        "prefix_instructions": 16,
-        "ratio": 0.8051948051948052,
-        "state": "wip",
+        "prefix_instructions": 77,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 77
       },
       "object": "tools/match/scratches/quest_build_lizard_raze/build/msvc6.5/f7419e776c2119c0/scratch.obj",
       "object_function_symbol": "_quest_build_lizard_raze",
-      "object_sha256": "c58acdd33870202ea62f6cd2158bae6140e9d2c1295ce1039e6fd3d9f7358b95",
+      "object_sha256": "58c1e31493c1e22e4f01a88570fa6cfdcd6937b456e141841ab31b757e3d46d5",
       "scratch": "tools/match/scratches/quest_build_lizard_raze",
       "source": "tools/match/scratches/quest_build_lizard_raze/scratch.cpp",
-      "source_sha256": "e8d525c4a62605a34caba4ff1e88baf3290c81a8887046ac639a8128ef86b58b",
+      "source_sha256": "d197bb88f40cc29b4bab6dca465cbcdbdeeebf130b426c6886f8205a5f54a239",
       "target_size": 254,
       "translation_unit": {
         "kind": "isolated",
@@ -88097,8 +88097,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 562,
-    "wip": 109
+    "match": 563,
+    "wip": 108
   },
   "translation_units": {
     "cluster_count": 3,
