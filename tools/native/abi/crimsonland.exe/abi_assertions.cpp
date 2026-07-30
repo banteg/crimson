@@ -100,6 +100,7 @@ CRIMSON_ABI_ASSERT(
 CRIMSON_ABI_ASSERT(
     secondary_projectile_type_id_is_32_bit,
     sizeof(secondary_projectile_type_id_t) == 4);
+CRIMSON_ABI_ASSERT(unsigned_short_is_16_bit, sizeof(unsigned short) == 2);
 CRIMSON_ABI_ASSERT(u16_is_16_bit, sizeof(u16_t) == 2);
 CRIMSON_ABI_ASSERT(guid_is_0x10, sizeof(GUID) == 0x10);
 CRIMSON_ABI_ASSERT(systemtime_is_0x10, sizeof(SYSTEMTIME) == 0x10);

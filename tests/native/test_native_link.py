@@ -2246,12 +2246,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert payload["summary"]["entry_count"] == 1548
     assert payload["summary"]["typed_entries"] == 1548
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1462
-    assert payload["summary"]["explicit_alignment_entries"] == 1462
-    assert payload["summary"]["explicit_initializer_entries"] == 1462
-    assert payload["summary"]["fully_specified_entries"] == 1462
-    assert payload["summary"]["definition_group_entries"] == 1378
-    assert payload["summary"]["definition_groups"] == 130
+    assert payload["summary"]["explicit_size_entries"] == 1509
+    assert payload["summary"]["explicit_alignment_entries"] == 1509
+    assert payload["summary"]["explicit_initializer_entries"] == 1509
+    assert payload["summary"]["fully_specified_entries"] == 1509
+    assert payload["summary"]["definition_group_entries"] == 1425
+    assert payload["summary"]["definition_groups"] == 131
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2321,6 +2321,13 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["game_over_name_input_state_alpha"]["definition_group"] == (
         "mapped-bss-zero-float32"
     )
+    assert defined["credits_line_table_flags"]["size"] == 4
+    assert defined["survival_recent_death_pos_1"]["size"] == 8
+    assert defined["player_overlay_torso_uv8"]["definition_group"] == (
+        "zero-abi-00008"
+    )
+    assert defined["local_system_day"]["definition_group"] == "zero-ushort16"
+    assert defined["sfx_entry_table_state"]["definition_group"] == "zero-pointer32"
     assert defined["ui_perk_prompt_on_activate"]["definition_group"] == (
         "zero-pointer32"
     )

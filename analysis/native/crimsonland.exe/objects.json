@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "47c56f8553d1d8439bc58773c19f9da2801d3029d801966cd7c34b9384e810ce"
+        "sha256": "8bcb7192a38182bf6742cf5f8d65c0fe5a5763c72361c3949932c4dd53613934"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/eaef563a2d5aae74/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "47c56f8553d1d8439bc58773c19f9da2801d3029d801966cd7c34b9384e810ce",
+    "source_sha256": "8bcb7192a38182bf6742cf5f8d65c0fe5a5763c72361c3949932c4dd53613934",
     "status": "passed"
   },
-  "audit_digest": "4db3ace3ad8f34fc994cc785506657987edc36b930a7a589642e5c25a9f0139d",
+  "audit_digest": "84372898c56b6a4a0a76cc1e9cb9ff7dc4dd78c66192c0a4c68bfa29ed2d689c",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4985,15 +4985,15 @@
         },
         {
           "address": 4747922,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "ui_sign_crimson_update_disabled",
           "section_number": 268,
           "section_offset": 2,
-          "size": null,
-          "storage_address": 4747920,
-          "storage_name": "ui_sign_crimson",
+          "size": 1,
+          "storage_address": 4747922,
+          "storage_name": "ui_sign_crimson_update_disabled",
           "symbols": [
             "_ui_sign_crimson_update_disabled"
           ]
@@ -7646,15 +7646,15 @@
         },
         {
           "address": 4788368,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_overlay_torso_uv8",
           "section_number": 378,
           "section_offset": 128,
-          "size": null,
-          "storage_address": 4788240,
-          "storage_name": "effect_uv8",
+          "size": 8,
+          "storage_address": 4788368,
+          "storage_name": "player_overlay_torso_uv8",
           "symbols": [
             "_player_overlay_torso_uv8"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "e7d0946d9a91ff42e7b71c62cd42898efd39554fa3ed0570802cfacd492762bb"
+        "sha256": "e200dd56d48bf2b6ca84e4db7fadde5369cb0a1ec6f4891ce1bf80399b5c27b7"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -16034,6 +16034,10 @@
             {
               "address": 4747920,
               "name": "ui_sign_crimson"
+            },
+            {
+              "address": 4747922,
+              "name": "ui_sign_crimson_update_disabled"
             }
           ],
           "relocations": [],
@@ -17728,6 +17732,10 @@
             {
               "address": 4788240,
               "name": "effect_uv8"
+            },
+            {
+              "address": 4788368,
+              "name": "player_overlay_torso_uv8"
             }
           ],
           "relocations": [],
@@ -88039,7 +88047,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "e7d0946d9a91ff42e7b71c62cd42898efd39554fa3ed0570802cfacd492762bb"
+        "sha256": "e200dd56d48bf2b6ca84e4db7fadde5369cb0a1ec6f4891ce1bf80399b5c27b7"
       }
     ],
     "toolchain": {

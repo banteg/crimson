@@ -1,5 +1,5 @@
 {
-  "audit_digest": "4db3ace3ad8f34fc994cc785506657987edc36b930a7a589642e5c25a9f0139d",
+  "audit_digest": "84372898c56b6a4a0a76cc1e9cb9ff7dc4dd78c66192c0a4c68bfa29ed2d689c",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -94869,22 +94869,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788368,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_overlay_torso_uv8",
-          "data_storage_address": 4788240,
-          "data_storage_name": "effect_uv8",
+          "data_storage_address": 4788368,
+          "data_storage_name": "player_overlay_torso_uv8",
           "function": null,
           "kind": "section",
           "logical_section_size": 512,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 8,
           "weak": false
         }
       ],
@@ -107067,22 +107067,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4747922,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "ui_sign_crimson_update_disabled",
-          "data_storage_address": 4747920,
-          "data_storage_name": "ui_sign_crimson",
+          "data_storage_address": 4747922,
+          "data_storage_name": "ui_sign_crimson_update_disabled",
           "function": null,
           "kind": "section",
           "logical_section_size": 792,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -143013,22 +143013,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788368,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_overlay_torso_uv8",
-          "data_storage_address": 4788240,
-          "data_storage_name": "effect_uv8",
+          "data_storage_address": 4788368,
+          "data_storage_name": "player_overlay_torso_uv8",
           "function": null,
           "kind": "section",
           "logical_section_size": 512,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 8,
           "weak": false
         }
       ],
@@ -162452,22 +162452,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4747922,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "ui_sign_crimson_update_disabled",
-          "data_storage_address": 4747920,
-          "data_storage_name": "ui_sign_crimson",
+          "data_storage_address": 4747922,
+          "data_storage_name": "ui_sign_crimson_update_disabled",
           "function": null,
           "kind": "section",
           "logical_section_size": 792,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
