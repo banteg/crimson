@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "title-separator-call-schedule",
+      "find": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n",
+      "replacements": [
+        {
+          "name": "interface-owner-before-construction",
+          "text": "    {\n        IGrim2D_cpp *interface_owner = grim_interface_ptr;\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        interface_owner->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "interface-owner-after-construction",
+          "text": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        IGrim2D_cpp *interface_owner = grim_interface_ptr;\n        interface_owner->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "integer-width-copy",
+          "text": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        int separator_width = title_width;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)separator_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "float-width-before-construction",
+          "text": "    {\n        float separator_width = (float)title_width;\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, separator_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "float-width-after-construction",
+          "text": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        float separator_width = (float)title_width;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, separator_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "owner-then-float-width",
+          "text": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        IGrim2D_cpp *interface_owner = grim_interface_ptr;\n        float separator_width = (float)title_width;\n        interface_owner->grim_draw_rect_outline(\n            (float *)&separator_position, separator_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "float-width-then-owner",
+          "text": "    {\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n        float separator_width = (float)title_width;\n        IGrim2D_cpp *interface_owner = grim_interface_ptr;\n        interface_owner->grim_draw_rect_outline(\n            (float *)&separator_position, separator_width, 1.0f);\n    }\n"
+        },
+        {
+          "name": "local-half-width",
+          "text": "    {\n        int title_half_width = title_width / 2;\n        database_vec2_t separator_position(\n            position.x + (float)(132 - title_half_width),\n            position.y + 13.0f);\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

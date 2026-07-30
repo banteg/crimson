@@ -120,9 +120,41 @@ Bounded mutation sweeps document the current source-shape recovery:
   two-site combinations of the native final-adjustment order and eight
   title-separator ownership forms. Neither change wins alone, but their
   constructed-temporary interaction adds 4.04 weighted bytes, extends the
-  exact prefix from 29 to 74 instructions, and aligns one more reference.
+  exact prefix from 29 to 74 instructions, and aligns one more reference;
+- `title-separator-call-schedule-mutations.json` evaluates eight ordinary
+  interface-owner, width-local, and half-width spellings against the final
+  four-byte gap. All compile byte-identically; and
+- `title-separator-dispatch-interaction-mutations.json` crosses three ordinary
+  `vec2` constructor bodies with four pointer/reference dispatch-owner
+  spellings, including every single-site and two-site combination. All 19
+  variants are byte-identical to the baseline.
 
 Together these retained changes move the fresh baseline from 85.38% to 99.80%,
 from 508 to 511 candidate instructions, and from `135/0/2` to `148/0/0`
 references. The complete append-only evidence is in `experiments.jsonl`
-(`sha256:9a221ab3fc9d21b04b62b78f7fe3dd8f00995cf5ffb2b6347d6ca863193ecd4f`).
+(`sha256:3565d3d645eddbdd8937aeac7e2da012f8eab097be17eb6c5b8c3517260c9786`).
+
+## Title-separator dispatch interaction boundary
+
+The final 4.04 weighted bytes are exactly one scheduler inversion shared with
+`unlocked_weapons_database_update`: native loads the interface dispatch
+pointer before converting the measured title width, while the candidate
+performs the `fild` first. The complete 8-variant call-schedule sweep and
+19-variant constructor/dispatch interaction sweep leave the candidate
+byte-for-byte unchanged at 99.8043%, 511/511 instructions, prefix 74, and
+audit `148/0/0`.
+
+The installed compiler matrix reinforces that boundary: stock MSVC 6.0, 6.5,
+and 6.6 reproduce the same four-byte gap, while the Processor Pack falls to
+89.96% and VC7 to 75.39%. Under VC6.5, `/G5`, `/Ob1`, and `/Ob2` are
+byte-neutral; `/G6`, `/Oy-`, and `/O1` regress to 85.32%, 74.36%, and 32.25%
+respectively.
+
+The current constructor and direct interface call are therefore not hiding a
+recoverable source interaction. The independently recovered weapons sibling
+reaches the same single inversion and remains neutral under the same specs, so
+this residual is bounded compiler scheduling debt rather than missing gameplay
+behavior. Recorded spec SHAs:
+`ff1ff64a773f7c6930d593a0bd19b8487383d023c5c6ccd913dcb81ff8743e39`
+and
+`8f19a54a08f880ced92ea608dc6349ee8de611beccf3e7dec9dd69e525787be5`.
