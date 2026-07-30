@@ -96,3 +96,28 @@ the only failing variant intentionally references the helper without its
 declaration. The helper abstraction therefore cannot move VC6.5's common
 threshold tail, and the surviving axis/provider delta remains a compiler
 layout residual rather than missing source behavior.
+
+## Provider lifetime saturation
+
+Live disassembly at `0x10007153..0x10007199` assigns the provider loop's
+`player`, `base`, `action`, and `mapped` values to `ebx`, `esi`, `eax`, and
+`edx`, and terminates the inner loop on `action < 5`.
+`provider-scoped-lifetime-mutations.json` tests six natural block-scoped
+translations of that structure, including nested `for`, `while`, and
+post-tested forms. Every action-count variant moves the first mismatch from
+byte 243 to byte 2 and loses 93 exact prefix instructions; even the scoped
+mapped-end form falls to prefix 5. The retained function-scoped lifetimes are
+therefore code-generation evidence rather than incidental declarations.
+
+`provider-declaration-interactions.json` exhaustively crosses six
+function-scope declaration orders with three native action-count loop forms
+(27/27 variants). Declaration order is byte-neutral on the retained loop and
+cannot rescue any action-count form: every interaction repeats the 73.93%,
+prefix-2 result. Stock VC6 `/G5`, `/G6`, `/Ot`, and `/Ob1` profiles are
+byte-identical to canonical `/GB`; disabling intrinsics regresses to 73.02%
+and prefix 5.
+
+The experiment ledger now contains 100 evaluated variants across 13 mutation
+sweeps and three consecutive no-improvement sweeps, so the scratch is formally
+stalled. Further work should require new compiler/TU provenance rather than
+more local source permutations.

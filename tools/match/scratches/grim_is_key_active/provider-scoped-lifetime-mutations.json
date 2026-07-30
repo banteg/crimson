@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "provider-scoped-lifetimes",
+      "find": "        provider = grim_input_provider;\n        if (provider == 0) {\n            return 0;\n        }\n\n        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            for (action = 0, mapped = base;\n                 mapped < mapped_end;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base = mapped;\n            ++player;\n        }\n        return 0;",
+      "replacements": [
+        {
+          "name": "nested-for-action-count",
+          "text": "        GrimInputProvider *provider = grim_input_provider;\n        if (provider == 0) {\n            return 0;\n        }\n\n        for (int player = 0, base = 0x16d;\n             base < 0x17c;\n             base += 5, ++player) {\n            for (int action = 0, mapped = base;\n                 action < 5;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n        }\n        return 0;"
+        },
+        {
+          "name": "while-action-count",
+          "text": "        GrimInputProvider *provider = grim_input_provider;\n        if (provider == 0) {\n            return 0;\n        }\n\n        int player = 0;\n        int base = 0x16d;\n        while (base < 0x17c) {\n            for (int action = 0, mapped = base;\n                 action < 5;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base += 5;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "while-inner-do-action-count",
+          "text": "        GrimInputProvider *provider = grim_input_provider;\n        if (provider == 0) {\n            return 0;\n        }\n\n        int player = 0;\n        int base = 0x16d;\n        while (base < 0x17c) {\n            int action = 0;\n            int mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (action < 5);\n            base += 5;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "outer-do-inner-for-action-count",
+          "text": "        GrimInputProvider *provider = grim_input_provider;\n        if (provider == 0) {\n            return 0;\n        }\n\n        int player = 0;\n        int base = 0x16d;\n        do {\n            for (int action = 0, mapped = base;\n                 action < 5;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base += 5;\n            ++player;\n        } while (base < 0x17c);\n        return 0;"
+        },
+        {
+          "name": "while-mapped-end",
+          "text": "        GrimInputProvider *provider = grim_input_provider;\n        if (provider == 0) {\n            return 0;\n        }\n\n        int player = 0;\n        int base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            for (int action = 0, mapped = base;\n                 mapped < mapped_end;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base += 5;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "nested-for-action-count-mapped-first",
+          "text": "        GrimInputProvider *provider = grim_input_provider;\n        if (provider == 0) {\n            return 0;\n        }\n\n        for (int player = 0, base = 0x16d;\n             base < 0x17c;\n             ++player, base += 5) {\n            for (int mapped = base, action = 0;\n                 action < 5;\n                 ++mapped, ++action) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n        }\n        return 0;"
+        }
+      ]
+    }
+  ]
+}

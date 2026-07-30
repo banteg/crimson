@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "loop-local-order",
+      "find": "    int button;\n    int player;\n    int base;\n    int action;\n    int mapped;\n    GrimInputProvider *provider;",
+      "replacements": [
+        {
+          "name": "base-player-action-mapped",
+          "text": "    int button;\n    int base;\n    int player;\n    int action;\n    int mapped;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "base-action-mapped-player",
+          "text": "    int button;\n    int base;\n    int action;\n    int mapped;\n    int player;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "player-base-mapped-action",
+          "text": "    int button;\n    int player;\n    int base;\n    int mapped;\n    int action;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "action-mapped-player-base",
+          "text": "    int button;\n    int action;\n    int mapped;\n    int player;\n    int base;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "provider-before-loop-locals",
+          "text": "    int button;\n    GrimInputProvider *provider;\n    int player;\n    int base;\n    int action;\n    int mapped;"
+        },
+        {
+          "name": "provider-between-outer-and-inner",
+          "text": "    int button;\n    int player;\n    int base;\n    GrimInputProvider *provider;\n    int action;\n    int mapped;"
+        }
+      ]
+    },
+    {
+      "name": "provider-action-count-loop",
+      "find": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            for (action = 0, mapped = base;\n                 mapped < mapped_end;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base = mapped;\n            ++player;\n        }\n        return 0;",
+      "replacements": [
+        {
+          "name": "while-inner-do",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (action < 5);\n            base += 5;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "nested-for",
+          "text": "        for (player = 0, base = 0x16d;\n             base < 0x17c;\n             base += 5, ++player) {\n            for (action = 0, mapped = base;\n                 action < 5;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n        }\n        return 0;"
+        },
+        {
+          "name": "outer-for-inner-do",
+          "text": "        for (player = 0, base = 0x16d;\n             base < 0x17c;\n             base += 5, ++player) {\n            action = 0;\n            mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (action < 5);\n        }\n        return 0;"
+        }
+      ]
+    }
+  ]
+}

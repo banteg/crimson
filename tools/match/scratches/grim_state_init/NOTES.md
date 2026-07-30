@@ -126,3 +126,12 @@ add up to 24.80 fuzzy-weighted bytes, but every improvement reduces resolved
 references or adds mismatch debt. The earlier
 `subrect-row-cursor-interactions.json` reaches the same conclusion. Those
 tradeoffs fail the no-regression gate and remain negative evidence.
+
+`subrect-shared-counter-cursor-interactions.json` closes the remaining
+cross-grid lifetime hypothesis. It exhaustively evaluates all 31 combinations
+of function-scoped atlas counters and typed row/entry cursors across the four
+subrect grids. Shared counters alone are byte-neutral. The best weighted
+variant adds 20.38 fuzzy-weighted bytes but moves references from `135/0/9` to
+`134/0/11`; the isolated 16x16-grid improvement adds 14.23 bytes while losing
+one resolved reference. No combination preserves reference fidelity, so no
+source change is retained.

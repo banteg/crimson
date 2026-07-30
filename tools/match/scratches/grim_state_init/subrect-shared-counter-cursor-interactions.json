@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-atlas-counters",
+      "find": "void grim_state_init(void)\n{\n",
+      "replacements": [
+        {
+          "name": "function-scope",
+          "text": "void grim_state_init(void)\n{\n    int atlas_x;\n    int atlas_y;\n"
+        }
+      ]
+    },
+    {
+      "name": "two-grid-shared-cursor",
+      "find": "    {\n        for (int y = 0; y < 2; ++y) {\n            for (int x = 0; x < 2; ++x) {\n                grim_subrect_table_0[y * 2 + x].u = (float)x * 0.5f;\n                grim_subrect_table_0[y * 2 + x].v = (float)y * 0.5f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "shared-counters-row-entry",
+          "text": "    {\n        GrimUV *row = grim_subrect_table_0;\n        for (atlas_y = 0; atlas_y < 2; ++atlas_y) {\n            float row_v = (float)atlas_y * 0.5f;\n            atlas_x = 0;\n            GrimUV *entry = row;\n            row += 2;\n            for (; atlas_x < 2; ++atlas_x, ++entry) {\n                entry->u = (float)atlas_x * 0.5f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "four-grid-shared-cursor",
+      "find": "    {\n        for (int y = 0; y < 4; ++y) {\n            for (int x = 0; x < 4; ++x) {\n                grim_subrect_table_1[y * 4 + x].u = (float)x * 0.25f;\n                grim_subrect_table_1[y * 4 + x].v = (float)y * 0.25f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "shared-counters-row-entry",
+          "text": "    {\n        GrimUV *row = grim_subrect_table_1;\n        for (atlas_y = 0; atlas_y < 4; ++atlas_y) {\n            float row_v = (float)atlas_y * 0.25f;\n            atlas_x = 0;\n            GrimUV *entry = row;\n            row += 4;\n            for (; atlas_x < 4; ++atlas_x, ++entry) {\n                entry->u = (float)atlas_x * 0.25f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "eight-grid-shared-cursor",
+      "find": "    {\n        for (int y = 0; y < 8; ++y) {\n            for (int x = 0; x < 8; ++x) {\n                grim_subrect_table_2[y * 8 + x].u =\n                    (float)x * 0.125f;\n                grim_subrect_table_2[y * 8 + x].v =\n                    (float)y * 0.125f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "shared-counters-row-entry",
+          "text": "    {\n        GrimUV *row = grim_subrect_table_2;\n        for (atlas_y = 0; atlas_y < 8; ++atlas_y) {\n            float row_v = (float)atlas_y * 0.125f;\n            atlas_x = 0;\n            GrimUV *entry = row;\n            row += 8;\n            for (; atlas_x < 8; ++atlas_x, ++entry) {\n                entry->u = (float)atlas_x * 0.125f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "sixteen-grid-shared-cursor",
+      "find": "    {\n        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_subrect_table[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_subrect_table[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "shared-counters-row-entry",
+          "text": "    {\n        GrimUV *row = grim_subrect_table;\n        for (atlas_y = 0; atlas_y < 16; ++atlas_y) {\n            float row_v = (float)atlas_y * 0.0625f;\n            atlas_x = 0;\n            GrimUV *entry = row;\n            row += 16;\n            for (; atlas_x < 16; ++atlas_x, ++entry) {\n                entry->u = (float)atlas_x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}
