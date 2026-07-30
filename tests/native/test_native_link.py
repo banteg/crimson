@@ -2188,13 +2188,13 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert payload["summary"]["source_entry_count"] == 277
     assert payload["summary"]["code_label_entries"] == 3
     assert payload["summary"]["entry_count"] == 274
-    assert payload["summary"]["typed_entries"] == 212
-    assert payload["summary"]["explicit_size_entries"] == 199
-    assert payload["summary"]["explicit_alignment_entries"] == 199
-    assert payload["summary"]["explicit_initializer_entries"] == 199
-    assert payload["summary"]["fully_specified_entries"] == 199
-    assert payload["summary"]["definition_group_entries"] == 184
-    assert payload["summary"]["definition_groups"] == 48
+    assert payload["summary"]["typed_entries"] == 224
+    assert payload["summary"]["explicit_size_entries"] == 228
+    assert payload["summary"]["explicit_alignment_entries"] == 228
+    assert payload["summary"]["explicit_initializer_entries"] == 228
+    assert payload["summary"]["fully_specified_entries"] == 228
+    assert payload["summary"]["definition_group_entries"] == 213
+    assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
     )
@@ -2221,6 +2221,13 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_config_dialog_system_time"]["size"] == 0x10
     assert defined["grim_mouse_state"]["size"] == 0x14
     assert defined["grim_mouse_buttons"]["size"] == 8
+    assert defined["grim_uint32_float_bias"]["initializer_hex"] == "0000804f"
+    assert defined["grim_dxt5_alpha_weights_max_8"]["size"] == 0x20
+    assert defined["grim_dxt1_color_weights_min_3"]["size"] == 0x0C
+    assert defined["grim_dxt5_alpha_index_map_6"]["size"] == 0x18
+    assert defined["IID_IDirectInput8A"]["initializer_hex"] == (
+        "308079bf3a48a24daa995d64ed369700"
+    )
     assert defined["grim_config_blob"]["size"] == 0x480
     assert defined["grim_config_values"]["size"] == 128 * 0x10
     assert defined["grim_joystick_state"]["size"] == 0x110
