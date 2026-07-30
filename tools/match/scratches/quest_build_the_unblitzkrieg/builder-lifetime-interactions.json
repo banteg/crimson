@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "exact-neighbor-builder-type",
+      "find": "struct quest_entry_original_t {\n    quest_vec2_t pos;\n    float heading;\n    int template_id;\n    int trigger_time_ms;\n    int count;\n\n    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n};\n",
+      "replacements": [
+        {
+          "name": "cursor-then-count",
+          "text": "struct quest_entry_original_t {\n    quest_vec2_t pos;\n    float heading;\n    int template_id;\n    int trigger_time_ms;\n    int count;\n\n    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n};\n\nstruct quest_spawn_builder_t {\n    quest_entry_original_t *cursor;\n    int count;\n\n    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)\n        : cursor(spawn_entries), count(0) {}\n};\n"
+        },
+        {
+          "name": "count-then-cursor",
+          "text": "struct quest_entry_original_t {\n    quest_vec2_t pos;\n    float heading;\n    int template_id;\n    int trigger_time_ms;\n    int count;\n\n    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n};\n\nstruct quest_spawn_builder_t {\n    int count;\n    quest_entry_original_t *cursor;\n\n    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)\n        : count(0), cursor(spawn_entries) {}\n};\n"
+        }
+      ]
+    },
+    {
+      "name": "builder-backed-locals",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 500;\n    int entry_count = 0;\n    int offset = 0;\n    quest_entry_original_t *spawn = spawns;\n",
+      "replacements": [
+        {
+          "name": "count-then-cursor-aliases",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    quest_spawn_builder_t builder(spawns);\n    int trigger_time_ms = 500;\n    int offset = 0;\n    int &entry_count = builder.count;\n    quest_entry_original_t *&spawn = builder.cursor;\n"
+        },
+        {
+          "name": "cursor-then-count-aliases",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    quest_spawn_builder_t builder(spawns);\n    int trigger_time_ms = 500;\n    int offset = 0;\n    quest_entry_original_t *&spawn = builder.cursor;\n    int &entry_count = builder.count;\n"
+        }
+      ]
+    }
+  ]
+}

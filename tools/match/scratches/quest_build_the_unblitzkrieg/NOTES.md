@@ -108,3 +108,21 @@ tested reversed field order, integer and float axis temporaries, and advancing
 the offset between calculation and stores. The three integer forms were
 byte-neutral; the float temporary lost 3.351 weighted bytes. This rules out a
 missing position-materialization idiom at the first mismatch.
+
+## Exact-neighbor builder and later-axis audit
+
+`builder-lifetime-interactions.json` imports the cursor/count builder recovered
+exactly in neighboring `quest_build_two_fronts`, tests both field orders, and
+backs the existing `spawn` and `entry_count` lifetimes with its fields through
+ordinary references. The builder type alone is eliminated; the exact-neighbor
+field order loses 60.31 weighted bytes when used, while the reverse order loses
+75.92 bytes and one instruction. No builder-backed form improves the retained
+direct lifetimes.
+
+`second-sweep-axis-materialization.json` independently tests integer, float,
+quotient, and pre-advance temporaries around the first computed-X perimeter
+sweep. All four variants compile byte-identically. Together these sweeps add
+12 bounded variants without a gain or tradeoff, bringing the ledger to 21
+variants and four consecutive non-improving sweeps. The scratch is now
+formally stalled: its residual is independent-store scheduling, not the shared
+builder ABI or a missing coordinate lifetime.

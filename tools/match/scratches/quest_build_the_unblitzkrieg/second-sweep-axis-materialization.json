@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-sweep-computed-x",
+      "find": "    while (offset < 0x1860) {\n        spawn->pos.x = (float)(0x338 - offset / 10);\n        spawn->pos.y = 824.0f;\n        offset += 0x270;\n        spawn->set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n        spawn->count = 1;\n        trigger_time_ms += 1500;\n        ++toggle;\n        ++spawn;\n    }\n",
+      "replacements": [
+        {
+          "name": "integer-coordinate",
+          "text": "    while (offset < 0x1860) {\n        int coordinate = 0x338 - offset / 10;\n        spawn->pos.x = (float)coordinate;\n        spawn->pos.y = 824.0f;\n        offset += 0x270;\n        spawn->set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n        spawn->count = 1;\n        trigger_time_ms += 1500;\n        ++toggle;\n        ++spawn;\n    }\n"
+        },
+        {
+          "name": "float-coordinate",
+          "text": "    while (offset < 0x1860) {\n        float coordinate = (float)(0x338 - offset / 10);\n        spawn->pos.x = coordinate;\n        spawn->pos.y = 824.0f;\n        offset += 0x270;\n        spawn->set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n        spawn->count = 1;\n        trigger_time_ms += 1500;\n        ++toggle;\n        ++spawn;\n    }\n"
+        },
+        {
+          "name": "quotient-then-coordinate",
+          "text": "    while (offset < 0x1860) {\n        int quotient = offset / 10;\n        spawn->pos.x = (float)(0x338 - quotient);\n        spawn->pos.y = 824.0f;\n        offset += 0x270;\n        spawn->set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n        spawn->count = 1;\n        trigger_time_ms += 1500;\n        ++toggle;\n        ++spawn;\n    }\n"
+        },
+        {
+          "name": "coordinate-before-offset-advance",
+          "text": "    while (offset < 0x1860) {\n        int coordinate = 0x338 - offset / 10;\n        offset += 0x270;\n        spawn->pos.x = (float)coordinate;\n        spawn->pos.y = 824.0f;\n        spawn->set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n        spawn->count = 1;\n        trigger_time_ms += 1500;\n        ++toggle;\n        ++spawn;\n    }\n"
+        }
+      ]
+    }
+  ]
+}
