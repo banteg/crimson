@@ -208,28 +208,36 @@ extern "C" void projectile_render(float transition_alpha)
         projectile_render_vec2_t point2;
         projectile_render_vec2_t point3;
         if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {
-            projectile_render_vec2_t current =
+            projectile_render_vec2_t current_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t origin =
-                camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos.origin;
+            projectile_render_vec2_t current;
+            current.x = current_result.x;
+            current.y = current_result.y;
             projectile_render_vec2_t half_width =
                 *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;
             point0 = current - half_width;
             point1 = current + half_width;
+            projectile_render_vec2_t origin_result =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos.origin;
+            projectile_render_vec2_t origin;
+            origin.x = origin_result.x;
+            origin.y = origin_result.y;
             point2 = origin + half_width;
             point3 = origin - half_width;
         } else if (type_id == PROJECTILE_TYPE_PISTOL) {
             projectile_render_vec2_t half_width =
                 *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 1.2f;
-            projectile_render_vec2_t current =
+            projectile_render_vec2_t current_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t origin =
+            projectile_render_vec2_t current = current_result;
+            projectile_render_vec2_t origin_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->pos.origin;
+            projectile_render_vec2_t origin = origin_result;
             point0 = current - half_width;
             point1 = current + half_width;
             point2 = origin + half_width;
@@ -242,12 +250,14 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t half_width =
                 *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 1.1f;
-            projectile_render_vec2_t current =
+            projectile_render_vec2_t current_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t origin =
+            projectile_render_vec2_t current = current_result;
+            projectile_render_vec2_t origin_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->pos.origin;
+            projectile_render_vec2_t origin = origin_result;
             point0 = current - half_width;
             point1 = current + half_width;
             point2 = origin + half_width;
@@ -256,14 +266,16 @@ extern "C" void projectile_render(float transition_alpha)
             projectile_render_vec2_t half_width =
                 *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 0.7f;
-            projectile_render_vec2_t current =
+            projectile_render_vec2_t current_result =
                 camera_offset
                 + *(projectile_render_vec2_t *)&projectile->position;
-            projectile_render_vec2_t origin =
-                camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos.origin;
+            projectile_render_vec2_t current = current_result;
             point0 = current - half_width;
             point1 = current + half_width;
+            projectile_render_vec2_t origin_result =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos.origin;
+            projectile_render_vec2_t origin = origin_result;
             point2 = origin + half_width;
             point3 = origin - half_width;
         }

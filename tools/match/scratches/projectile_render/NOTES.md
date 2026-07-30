@@ -785,3 +785,39 @@ The retained source has SHA-256
 The two records bring `experiments.jsonl` to 47 sweeps and 1,068 evaluated
 variants with SHA-256
 `269cec72f2a3f5c8fd2c9769f4a600110ba269ab939f974f75f14d92075b2ac6`.
+
+## Conventional projectile result-ownership wave
+
+The four conventional trail arms expose the same missing expression-result
+boundary as the ion paths. In the Assault Rifle and catch-all arms, native
+finishes the camera-plus-current result and its first two strip points before
+materializing the camera-plus-origin result and the final two points. The
+Pistol and Gauss arms preserve both results across their four point
+calculations. The previous source collapsed each camera addition directly
+into its long-lived vector and obscured both the result copy and the native
+branch-local ordering.
+
+`conventional-result-ownership-mutations.json` (SHA-256
+`8fd4eda06fb7c654bad33b69605df530befa0456eb9f4631ab80ff40a819f819`)
+tests aggregate copies, member copies, and sequential result lifetimes at all
+four arms. A 66-variant single- and two-site pilot first found the sequential
+Assault and catch-all ownership pattern. The subsequent exhaustive run
+evaluates all 255 nonempty combinations, including every three- and four-site
+interaction.
+
+The retained winner uses an explicit member copy for the Assault result,
+aggregate result copies for Pistol and Gauss, and sequential aggregate result
+copies for the catch-all arm. It adds 34.649 fuzzy-weighted bytes without
+changing the `442/0/10` reference audit. VC6 emits four fewer instructions,
+moving the aggregate instruction count from 2,882 to 2,878 against 3,021
+native instructions; that count-distance tradeoff is recorded rather than
+hidden. The local alignment improvement and native-supported ownership and
+ordering are the retention evidence.
+
+The weighted match rises from 7,169.570 to 7,204.219 bytes, the gap falls from
+5,381.430 to 5,346.781 bytes, and the ratio moves from 57.1234965% to
+57.3995592%. The retained source has SHA-256
+`608898f73842f070a152fe47fd0595aa9b0f6eec8bcaf4e36ed086338026091c`.
+The two complete records bring `experiments.jsonl` to 49 sweeps and 1,389
+evaluated variants with SHA-256
+`d3bcbf9797ae8eb5d76d9d0655ed859b3005f2ba09c7324960afe5acf197f176`.
