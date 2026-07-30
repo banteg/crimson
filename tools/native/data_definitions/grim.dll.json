@@ -261,8 +261,13 @@
         ["0x1005a464", "grim_rotation_m01", "00000000"],
         ["0x1005a468", "grim_rotation_m10", "00000000"],
         ["0x1005a46c", "grim_rotation_m11", "00000000"],
+        ["0x1005a490", "grim_line_dx", "00000000"],
+        ["0x1005a494", "grim_line_dy", "00000000"],
         ["0x1005b288", "grim_vertex_z", "00000000"],
         ["0x1005b28c", "grim_vertex_rhw", "00000000"],
+        ["0x1005b29c", "grim_uv_v1", "00000000"],
+        ["0x1005b2a4", "grim_uv_v2", "00000000"],
+        ["0x1005b2ac", "grim_uv_v3", "00000000"],
         ["0x1005cd08", "grim_font_scale", "00000000"],
         ["0x1005d138", "grim_joystick_deadzone", "00000000"],
         ["0x1005d148", "grim_joystick_center_x", "00000000"],
@@ -274,7 +279,17 @@
     },
     {
       "name": "literal-int32",
-      "types": ["DWORD", "UINT", "int", "uint"],
+      "types": [
+        "BOOL",
+        "D3DFORMAT",
+        "D3DMULTISAMPLE_TYPE",
+        "D3DSWAPEFFECT",
+        "DWORD",
+        "UINT",
+        "int",
+        "long",
+        "uint"
+      ],
       "size": 4,
       "size_source": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
       "alignment": 4,
@@ -285,18 +300,35 @@
         ["0x10053050", "grim_key_char_buffer_size", "fe010000"],
         ["0x1005305c", "grim_texture_slot_max_index", "ffffffff"],
         ["0x10059dc4", "grim_tick_prev_ms", "00000000"],
+        ["0x10059dfc", "grim_present_height", "00000000"],
+        ["0x10059e00", "grim_present_backbuffer_format", "00000000"],
+        ["0x10059e04", "grim_present_backbuffer_count", "00000000"],
+        ["0x10059e08", "grim_present_multisample_type", "00000000"],
+        ["0x10059e0c", "grim_present_swap_effect", "00000000"],
+        ["0x10059e14", "grim_present_windowed", "00000000"],
+        ["0x10059e18", "grim_present_enable_auto_depth_stencil", "00000000"],
+        ["0x10059e1c", "grim_present_auto_depth_stencil_format", "00000000"],
+        ["0x10059e20", "grim_present_flags", "00000000"],
+        ["0x10059e24", "grim_present_refresh_rate_hz", "00000000"],
+        ["0x10059e28", "grim_present_interval", "00000000"],
         ["0x1005a458", "grim_lookup_blob_size", "00000000"],
         ["0x1005bad0", "grim_tick_now_ms", "00000000"],
         ["0x1005bad4", "grim_timing_epoch_ms", "00000000"],
+        ["0x1005ce18", "grim_config_mode_width", "00000000"],
+        ["0x1005ce28", "grim_config_mode_height", "00000000"],
+        ["0x1005ce38", "grim_config_mode_bpp", "00000000"],
+        ["0x1005ceb8", "grim_config_backbuffer_count", "00000000"],
         ["0x1005d3e4", "grim_key_char_queue_count", "00000000"],
         ["0x1005d3e8", "grim_selected_adapter_index", "00000000"],
         ["0x1005d814", "grim_fps_sample_frames", "00000000"],
-        ["0x1005d818", "grim_fps_sample_elapsed_ms", "00000000"]
+        ["0x1005d818", "grim_fps_sample_elapsed_ms", "00000000"],
+        ["0x1005d834", "grim_joystick_axis_y", "00000000"],
+        ["0x1005d838", "grim_joystick_axis_z", "00000000"]
       ]
     },
     {
       "name": "zero-byte",
-      "types": ["bool", "char"],
+      "types": ["bool", "char", "unsigned char"],
       "size": 1,
       "size_source": "tools/match/scratches: recovered bool and char declarations; tools/native/abi/grim.dll/abi_assertions.cpp: bool_is_one_byte",
       "alignment": 1,
@@ -304,24 +336,35 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "members": [
+        ["0x10059bb4", "grim_draw_line_init_flag"],
         ["0x1005a470", "grim_timing_frozen"],
         ["0x1005bc14", "grim_lookup_blob_loaded"],
+        ["0x1005cc08", "grim_windowed_mode_enabled"],
         ["0x1005cc38", "grim_keyboard_enabled"],
         ["0x1005cc48", "grim_mouse_enabled"],
+        ["0x1005cc58", "grim_input_cached"],
         ["0x1005cc68", "grim_joystick_enabled"],
+        ["0x1005ccf8", "grim_font_texture_bound"],
+        ["0x1005cec8", "grim_use_ref_device"],
+        ["0x1005ced8", "grim_enable_auto_depth_stencil"],
+        ["0x1005d0c8", "grim_config_dialog_option_3ef_checked"],
         ["0x1005d3ac", "grim_reserved_d3ac"],
+        ["0x1005d3bc", "grim_config_dialog_canceled"],
         ["0x1005d828", "grim_empty_string"]
       ]
     },
     {
       "name": "zero-pointer32",
       "types": [
+        "DIJOYSTATE2 *",
+        "GrimUV *",
         "GrimInputProvider *",
         "HICON",
         "HWND",
         "HWND *",
         "IGrim2D *",
         "LPDIRECT3D8",
+        "LPDIRECT3DDEVICE8",
         "LPDIRECT3DINDEXBUFFER8",
         "LPDIRECT3DSURFACE8",
         "LPDIRECTINPUTDEVICE8A",
@@ -341,12 +384,20 @@
         ["0x10059778", "grim_window_icon_handle"],
         ["0x1005977c", "grim_frame_callback"],
         ["0x10059bb8", "grim_index_buffer"],
+        ["0x10059e10", "grim_present_device_window"],
         ["0x1005a48c", "grim_render_target_surface"],
         ["0x1005a670", "grim_lookup_blob"],
         ["0x1005b2c4", "grim_d3d8_probe"],
         ["0x1005bac8", "grim_window_title"],
+        ["0x1005bc80", "grim_subrect_ptr0"],
+        ["0x1005bc88", "grim_subrect_ptr1"],
+        ["0x1005bc98", "grim_subrect_ptr2"],
+        ["0x1005bcb8", "grim_subrect_ptr3"],
         ["0x1005c8fc", "grim_d3d8"],
         ["0x1005c900", "grim_backbuffer_surface"],
+        ["0x1005cf14", "grim_joystick_state_ptr"],
+        ["0x1005d094", "grim_active_d3d8"],
+        ["0x1005d0a4", "grim_active_d3d_device"],
         ["0x1005d0b4", "grim_main_window_hwnd_ref"],
         ["0x1005d3a8", "grim_on_device_lost"],
         ["0x1005d3b4", "grim_input_provider"],
@@ -354,6 +405,98 @@
         ["0x1005d3fc", "grim_device_window_override"],
         ["0x1005d81c", "grim_interface_instance"],
         ["0x1005da24", "grim_keyboard_device"]
+      ]
+    },
+    {
+      "name": "zero-adapter-identifier-0042c",
+      "types": ["D3DADAPTER_IDENTIFIER8"],
+      "size": 1068,
+      "size_source": "analysis/ghidra/maps/data_map.json: D3DADAPTER_IDENTIFIER8; tools/native/abi/grim.dll/abi_assertions.cpp: adapter_identifier_is_0x42c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_adapter_identifier_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10059788",
+      "members": [
+        ["0x10059788", "grim_adapter_identifier"]
+      ]
+    },
+    {
+      "name": "zero-char-array-00200",
+      "types": ["char[512]"],
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: char[512] Description field inside D3DADAPTER_IDENTIFIER8",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10059988",
+      "members": [
+        ["0x10059988", "grim_adapter_description"]
+      ]
+    },
+    {
+      "name": "zero-present-parameters-00034",
+      "types": ["D3DPRESENT_PARAMETERS"],
+      "size": 52,
+      "size_source": "analysis/ghidra/maps/data_map.json: D3DPRESENT_PARAMETERS; tools/native/abi/grim.dll/abi_assertions.cpp: present_parameters_is_0x34",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_present_parameters_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10059df8",
+      "members": [
+        ["0x10059df8", "grim_present_width"]
+      ]
+    },
+    {
+      "name": "zero-my-app-0002c",
+      "types": ["MyApp"],
+      "size": 44,
+      "size_source": "tools/match/scratches/grim_app_init/scratch.cpp: recovered MyApp layout; tools/native/abi/grim.dll/abi_assertions.cpp: my_app_is_0x2c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_my_app_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005bbd8",
+      "members": [
+        ["0x1005bbd8", "grim_app"]
+      ]
+    },
+    {
+      "name": "zero-client-rect-00010",
+      "types": ["GrimClientRect"],
+      "size": 16,
+      "size_source": "tools/match/scratches/grim_app_init/scratch.cpp: recovered GrimClientRect overlay; tools/native/abi/grim.dll/abi_assertions.cpp: client_rect_is_0x10",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_client_rect_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005d1c8",
+      "members": [
+        ["0x1005d1c8", "grim_client_rect"]
+      ]
+    },
+    {
+      "name": "zero-uchar-array-00080",
+      "types": ["unsigned char[128]"],
+      "size": 128,
+      "size_source": "analysis/ghidra/maps/data_map.json: DIJOYSTATE2 rgbButtons field; tools/native/abi/grim.dll/abi_assertions.cpp: joystick_buttons_are_0x80",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005d860",
+      "members": [
+        ["0x1005d860", "grim_joystick_buttons"]
+      ]
+    },
+    {
+      "name": "zero-ushort16",
+      "types": ["unsigned short"],
+      "size": 2,
+      "size_source": "analysis/ghidra/maps/data_map.json: recovered unsigned-short FPU control words; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_short_is_16_bit",
+      "alignment": 2,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_short_alignment_is_two",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "members": [
+        ["0x1005db6c", "fpu_control_word_saved_ftol"],
+        ["0x1005db70", "fpu_control_word_saved_dxt"]
       ]
     },
     {

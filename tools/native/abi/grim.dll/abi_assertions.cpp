@@ -1,3 +1,4 @@
+#include "grim_d3d8.h"
 #include "grim2d_abi.h"
 #include "crimsonland_types.h"
 #include "grim_joystick_state.h"
@@ -33,6 +34,58 @@ struct grim_int_alignment_probe_t {
 struct grim_bool_alignment_probe_t {
     char prefix;
     bool value;
+};
+
+struct grim_unsigned_short_alignment_probe_t {
+    char prefix;
+    unsigned short value;
+};
+
+struct grim_adapter_identifier_alignment_probe_t {
+    char prefix;
+    D3DADAPTER_IDENTIFIER8 value;
+};
+
+struct grim_present_parameters_alignment_probe_t {
+    char prefix;
+    D3DPRESENT_PARAMETERS value;
+};
+
+struct grim_my_app_layout_t {
+    bool active;
+    unsigned char padding_01[3];
+    int last_tick_ms;
+    int tick_remainder_ms;
+    int height;
+    int width;
+    void *field_14;
+    void *field_18;
+    HGDIOBJ bitmap;
+    void *field_20;
+    void *field_24;
+    bool field_28;
+    bool field_29;
+};
+
+struct grim_my_app_alignment_probe_t {
+    char prefix;
+    grim_my_app_layout_t value;
+};
+
+union grim_client_rect_layout_t {
+    RECT rect;
+    struct {
+        bool enabled;
+        unsigned char padding[3];
+        LONG top;
+        LONG right;
+        LONG bottom;
+    } state;
+};
+
+struct grim_client_rect_alignment_probe_t {
+    char prefix;
+    grim_client_rect_layout_t value;
 };
 
 struct grim_config_value_alignment_probe_t {
@@ -78,8 +131,25 @@ GRIM_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 GRIM_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
 GRIM_ABI_ASSERT(long_is_32_bit, sizeof(long) == 4);
 GRIM_ABI_ASSERT(unsigned_long_is_32_bit, sizeof(unsigned long) == 4);
+GRIM_ABI_ASSERT(unsigned_short_is_16_bit, sizeof(unsigned short) == 2);
 GRIM_ABI_ASSERT(float_is_32_bit, sizeof(float) == 4);
 GRIM_ABI_ASSERT(bool_is_one_byte, sizeof(bool) == 1);
+GRIM_ABI_ASSERT(
+    adapter_identifier_is_0x42c,
+    sizeof(D3DADAPTER_IDENTIFIER8) == 0x42c);
+GRIM_ABI_ASSERT(
+    present_parameters_is_0x34,
+    sizeof(D3DPRESENT_PARAMETERS) == 0x34);
+GRIM_ABI_ASSERT(my_app_is_0x2c, sizeof(grim_my_app_layout_t) == 0x2c);
+GRIM_ABI_ASSERT(
+    client_rect_is_0x10,
+    sizeof(grim_client_rect_layout_t) == 0x10);
+GRIM_ABI_ASSERT(
+    joystick_buttons_are_0x80,
+    sizeof(((GrimJoystickState *)0)->rgbButtons) == 0x80);
+GRIM_ABI_ASSERT(
+    joystick_buttons_start_at_0x30,
+    offsetof(GrimJoystickState, rgbButtons) == 0x30);
 
 GRIM_ABI_ASSERT(config_value_is_16_bytes, sizeof(grim_config_value_t) == 0x10);
 GRIM_ABI_ASSERT(
@@ -141,6 +211,21 @@ GRIM_ABI_ASSERT(
 GRIM_ABI_ASSERT(
     default_bool_alignment_is_one,
     offsetof(grim_bool_alignment_probe_t, value) == 1);
+GRIM_ABI_ASSERT(
+    default_unsigned_short_alignment_is_two,
+    offsetof(grim_unsigned_short_alignment_probe_t, value) == 2);
+GRIM_ABI_ASSERT(
+    default_adapter_identifier_alignment_is_four,
+    offsetof(grim_adapter_identifier_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_present_parameters_alignment_is_four,
+    offsetof(grim_present_parameters_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_my_app_alignment_is_four,
+    offsetof(grim_my_app_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_client_rect_alignment_is_four,
+    offsetof(grim_client_rect_alignment_probe_t, value) == 4);
 GRIM_ABI_ASSERT(
     default_config_value_alignment_is_four,
     offsetof(grim_config_value_alignment_probe_t, value) == 4);

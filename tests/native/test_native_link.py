@@ -2185,14 +2185,16 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["entry_count"] == 276
-    assert payload["summary"]["typed_entries"] == 185
-    assert payload["summary"]["explicit_size_entries"] == 122
-    assert payload["summary"]["explicit_alignment_entries"] == 122
-    assert payload["summary"]["explicit_initializer_entries"] == 122
-    assert payload["summary"]["fully_specified_entries"] == 122
-    assert payload["summary"]["definition_group_entries"] == 107
-    assert payload["summary"]["definition_groups"] == 34
+    assert payload["summary"]["source_entry_count"] == 277
+    assert payload["summary"]["code_label_entries"] == 3
+    assert payload["summary"]["entry_count"] == 274
+    assert payload["summary"]["typed_entries"] == 212
+    assert payload["summary"]["explicit_size_entries"] == 168
+    assert payload["summary"]["explicit_alignment_entries"] == 168
+    assert payload["summary"]["explicit_initializer_entries"] == 168
+    assert payload["summary"]["fully_specified_entries"] == 168
+    assert payload["summary"]["definition_group_entries"] == 153
+    assert payload["summary"]["definition_groups"] == 41
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
     )
@@ -2205,6 +2207,12 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_d3d_device"]["initializer_hex"] == "00000000"
     assert defined["grim_render_disabled"]["size"] == 1
     assert defined["grim_render_disabled"]["initializer_hex"] == "00"
+    assert defined["grim_adapter_identifier"]["size"] == 0x42C
+    assert defined["grim_present_width"]["size"] == 0x34
+    assert defined["grim_app"]["size"] == 0x2C
+    assert defined["grim_client_rect"]["size"] == 0x10
+    assert defined["grim_joystick_buttons"]["size"] == 0x80
+    assert defined["fpu_control_word_saved_ftol"]["size"] == 2
     assert defined["grim_config_blob"]["size"] == 0x480
     assert defined["grim_config_values"]["size"] == 128 * 0x10
     assert defined["grim_joystick_state"]["size"] == 0x110
@@ -2213,6 +2221,7 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_interface_instance"]["definition_group"] == (
         "zero-pointer32"
     )
+    assert defined["grim_subrect_ptr3"]["definition_group"] == "zero-pointer32"
     assert defined["grim_vertex_write_ptr"]["size"] == 4
     assert defined["grim_uv_u0"]["size"] == 4 * 8
     assert defined["grim_font2_uv_u"]["size"] == 256 * 8
@@ -2236,6 +2245,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_lookup_blob_magic_text"]["initializer_hex"] == "70617100"
     assert defined["grim_key_char_default_buffer"]["size"] == 510
     assert defined["grim_key_char_default_count"]["size"] == 4
+    names = {entry["name"] for entry in payload["entries"]}
+    assert "grim_dxt2_decode_block" not in names
+    assert "grim_dxt4_decode_block" not in names
 
 
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:

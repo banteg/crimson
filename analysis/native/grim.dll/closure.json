@@ -1,5 +1,5 @@
 {
-  "audit_digest": "8ad0d64785273806e4338abd81191f219f318dcd28e5668751f1aedb34120340",
+  "audit_digest": "7bca060998fdfd27238cded218d4e54752d87b57c326965a42a5071a22e74793",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -2649,22 +2649,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815608,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_font_texture_bound",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815608,
+          "data_storage_name": "grim_font_texture_bound",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -3155,22 +3155,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815448,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_input_cached",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815448,
+          "data_storage_name": "grim_input_cached",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -3179,22 +3179,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815448,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_input_cached",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815448,
+          "data_storage_name": "grim_input_cached",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -7626,22 +7626,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815448,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_input_cached",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815448,
+          "data_storage_name": "grim_input_cached",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -11924,22 +11924,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815608,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_font_texture_bound",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815608,
+          "data_storage_name": "grim_font_texture_bound",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -12625,22 +12625,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815448,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_input_cached",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815448,
+          "data_storage_name": "grim_input_cached",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -12661,22 +12661,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815448,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_input_cached",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815448,
+          "data_storage_name": "grim_input_cached",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -18036,22 +18036,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 268815448,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "grim_input_cached",
-          "data_storage_address": 268815240,
-          "data_storage_name": "grim_config_values",
+          "data_storage_address": 268815448,
+          "data_storage_name": "grim_input_cached",
           "function": null,
           "kind": "section",
           "logical_section_size": 2048,
           "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -18582,7 +18582,7 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "202b2d667a704c49b1f39ce1ff1eeffc155592db8777638f49cca895d45a5438"
+        "sha256": "068fc6c520c21e492e9442c086da1ea2930c7a48b183aff8f4ccbee412bd25b1"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",

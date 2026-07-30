@@ -10860,12 +10860,14 @@
     {
       "address": "0x10022114",
       "comment": "DXT2 decode wrapper (premultiplied alpha); paired with grim_dxt2_encode_block.",
+      "kind": "code_label",
       "name": "grim_dxt2_decode_block",
       "program": "grim.dll"
     },
     {
       "address": "0x10022137",
       "comment": "DXT4 decode wrapper (premultiplied alpha); paired with grim_dxt4_encode_block.",
+      "kind": "code_label",
       "name": "grim_dxt4_decode_block",
       "program": "grim.dll"
     },
@@ -11144,7 +11146,8 @@
       "address": "0x10059988",
       "comment": "Adapter description text field inside grim_adapter_identifier (used for combo labels).",
       "name": "grim_adapter_description",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "char[512]"
     },
     {
       "address": "0x10059bb4",
@@ -11153,7 +11156,8 @@
       ],
       "comment": "One-time flag used by grim_draw_line to register its shutdown hook.",
       "name": "grim_draw_line_init_flag",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char"
     },
     {
       "address": "0x10059bb8",
@@ -11224,31 +11228,36 @@
       "address": "0x10059dfc",
       "comment": "D3D present parameters height.",
       "name": "grim_present_height",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "UINT"
     },
     {
       "address": "0x10059e00",
       "comment": "D3DPRESENT_PARAMETERS.BackBufferFormat.",
       "name": "grim_present_backbuffer_format",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "D3DFORMAT"
     },
     {
       "address": "0x10059e04",
       "comment": "D3DPRESENT_PARAMETERS.BackBufferCount.",
       "name": "grim_present_backbuffer_count",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "UINT"
     },
     {
       "address": "0x10059e08",
       "comment": "D3DPRESENT_PARAMETERS.MultiSampleType (D3D8).",
       "name": "grim_present_multisample_type",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "D3DMULTISAMPLE_TYPE"
     },
     {
       "address": "0x10059e0c",
       "comment": "D3DPRESENT_PARAMETERS.SwapEffect.",
       "name": "grim_present_swap_effect",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "D3DSWAPEFFECT"
     },
     {
       "address": "0x10059e10",
@@ -11275,7 +11284,8 @@
       "address": "0x10059e1c",
       "comment": "D3DPRESENT_PARAMETERS.AutoDepthStencilFormat.",
       "name": "grim_present_auto_depth_stencil_format",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "D3DFORMAT"
     },
     {
       "address": "0x10059e20",
@@ -11427,13 +11437,15 @@
       ],
       "comment": "Line delta X used by draw helpers.",
       "name": "grim_line_dx",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "float"
     },
     {
       "address": "0x1005a494",
       "comment": "Line delta Y used by draw helpers.",
       "name": "grim_line_dy",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "float"
     },
     {
       "address": "0x1005a498",
@@ -11534,7 +11546,8 @@
       "address": "0x1005b29c",
       "comment": "Current UV v1 for quad draws.",
       "name": "grim_uv_v1",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "float"
     },
     {
       "address": "0x1005b2a0",
@@ -11546,7 +11559,8 @@
       "address": "0x1005b2a4",
       "comment": "Current UV v2 for quad draws.",
       "name": "grim_uv_v2",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "float"
     },
     {
       "address": "0x1005b2a8",
@@ -11558,7 +11572,8 @@
       "address": "0x1005b2ac",
       "comment": "Current UV v3 for quad draws.",
       "name": "grim_uv_v3",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "float"
     },
     {
       "address": "0x1005b2b0",
@@ -11652,7 +11667,8 @@
       ],
       "comment": "Singleton runtime object initialized before the Win32 message loop.",
       "name": "grim_app",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "MyApp"
     },
     {
       "address": "0x1005bc04",
@@ -11695,25 +11711,29 @@
       "address": "0x1005bc80",
       "comment": "Atlas sub-rect table pointer 0.",
       "name": "grim_subrect_ptr0",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV *"
     },
     {
       "address": "0x1005bc88",
       "comment": "Atlas sub-rect table pointer 1.",
       "name": "grim_subrect_ptr1",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV *"
     },
     {
       "address": "0x1005bc98",
       "comment": "Atlas sub-rect table pointer 2.",
       "name": "grim_subrect_ptr2",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV *"
     },
     {
       "address": "0x1005bcb8",
       "comment": "Atlas sub-rect table pointer 3.",
       "name": "grim_subrect_ptr3",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimUV *"
     },
     {
       "address": "0x1005befc",
@@ -11844,7 +11864,8 @@
       "address": "0x1005cc58",
       "comment": "Input cache flag (uses cached mouse state when nonzero).",
       "name": "grim_input_cached",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char"
     },
     {
       "address": "0x1005cc68",
@@ -11857,7 +11878,8 @@
       "address": "0x1005ccf8",
       "comment": "Font texture bound flag (nonzero skips SetTexture in draw_text).",
       "name": "grim_font_texture_bound",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char"
     },
     {
       "address": "0x1005cd08",
@@ -11974,7 +11996,8 @@
       ],
       "comment": "Win32 client rectangle overlaid with a low-byte enabled flag and published by MyApp initialization.",
       "name": "grim_client_rect",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "GrimClientRect"
     },
     {
       "address": "0x1005d400",
@@ -12049,7 +12072,8 @@
       "address": "0x1005d3bc",
       "comment": "Config dialog canceled flag (1 when dialog dismissed).",
       "name": "grim_config_dialog_canceled",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "bool"
     },
     {
       "address": "0x1005d3bd",
@@ -12176,19 +12200,22 @@
       "address": "0x1005d834",
       "comment": "Joystick axis Y (DIJOYSTATE2.lY).",
       "name": "grim_joystick_axis_y",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "long"
     },
     {
       "address": "0x1005d838",
       "comment": "Joystick axis Z (DIJOYSTATE2.lZ).",
       "name": "grim_joystick_axis_z",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "long"
     },
     {
       "address": "0x1005d860",
       "comment": "Joystick button byte array (DIJOYSTATE2.rgbButtons, offset +0x30).",
       "name": "grim_joystick_buttons",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char[128]"
     },
     {
       "address": "0x1005d940",
@@ -12309,13 +12336,15 @@
       "address": "0x1005db6c",
       "comment": "Saved x87 FPU control word used by fpu_set_round_trunc/ftol helpers.",
       "name": "fpu_control_word_saved_ftol",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned short"
     },
     {
       "address": "0x1005db70",
       "comment": "Saved x87 FPU control word used by DXT encode helpers (fnstcw/fldcw).",
       "name": "fpu_control_word_saved_dxt",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned short"
     },
     {
       "address": "0x0042b556",

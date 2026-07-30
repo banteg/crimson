@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/grim.dll/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13"
+        "sha256": "bc75f88f94ca1a9a00f3e029e6aa3ddefe22d1042c7c1630a8a936537d46890d"
       },
       {
         "path": "tools/native/abi/grim.dll/scratch.conf",
@@ -46,6 +46,11 @@
         "sha256": "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
       },
       {
+        "path": "tools/match/include/grim_d3d8.h",
+        "repository_relative": true,
+        "sha256": "6732d55da92dfb16b3b251faed82393a6f000ea48cbf51efa6a8150a8997842a"
+      },
+      {
         "path": "tools/match/include/grim_joystick_state.h",
         "repository_relative": true,
         "sha256": "fcdbafb7c62910864670464cfd3c576c23e7dd27c4399a66d59dc947db396824"
@@ -54,12 +59,12 @@
     "config": "tools/native/abi/grim.dll/scratch.conf",
     "config_sha256": "5e76d0e969b2a775b73d701b7301d305629f61ca5eb9a8c5c4bc393d8751f30c",
     "object": "tools/native/abi/grim.dll/build/msvc6.5/528f168a972345bf/abi_assertions.obj",
-    "object_sha256": "f337d520b587647e4e3e496f5176a6f7e845ff341e36a3e22c34dc741acc86fd",
+    "object_sha256": "323e77dd04cd87886eae26d4a13eb1b06bfc7f94f8ea7740cb446d70e6e59a5c",
     "source": "tools/native/abi/grim.dll/abi_assertions.cpp",
-    "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
+    "source_sha256": "bc75f88f94ca1a9a00f3e029e6aa3ddefe22d1042c7c1630a8a936537d46890d",
     "status": "passed"
   },
-  "audit_digest": "8ad0d64785273806e4338abd81191f219f318dcd28e5668751f1aedb34120340",
+  "audit_digest": "7bca060998fdfd27238cded218d4e54752d87b57c326965a42a5071a22e74793",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -1810,15 +1815,15 @@
         },
         {
           "address": 268815448,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "grim_input_cached",
           "section_number": 76,
           "section_offset": 208,
-          "size": null,
-          "storage_address": 268815240,
-          "storage_name": "grim_config_values",
+          "size": 1,
+          "storage_address": 268815448,
+          "storage_name": "grim_input_cached",
           "symbols": [
             "?grim_input_cached@@3EA",
             "?grim_input_cached@@3_NA",
@@ -1842,15 +1847,15 @@
         },
         {
           "address": 268815608,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "grim_font_texture_bound",
           "section_number": 76,
           "section_offset": 368,
-          "size": null,
-          "storage_address": 268815240,
-          "storage_name": "grim_config_values",
+          "size": 1,
+          "storage_address": 268815608,
+          "storage_name": "grim_font_texture_bound",
           "symbols": [
             "?grim_font_texture_bound@@3EA"
           ]
@@ -2386,7 +2391,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd"
+        "sha256": "67bcebd61fd75fff5e53725103ebfde04e4b0746f2741d904b61e89029284382"
       },
       "emitted_symbol_count": 154,
       "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
@@ -3855,8 +3860,16 @@
               "name": "grim_mouse_enabled"
             },
             {
+              "address": 268815448,
+              "name": "grim_input_cached"
+            },
+            {
               "address": 268815464,
               "name": "grim_joystick_enabled"
+            },
+            {
+              "address": 268815608,
+              "name": "grim_font_texture_bound"
             },
             {
               "address": 268815624,
@@ -17131,7 +17144,7 @@
       {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd"
+        "sha256": "67bcebd61fd75fff5e53725103ebfde04e4b0746f2741d904b61e89029284382"
       },
       {
         "path": "tools/native/linker_aliases/grim.dll.json",

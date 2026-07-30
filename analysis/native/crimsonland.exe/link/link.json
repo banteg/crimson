@@ -35,7 +35,7 @@
       }
     }
   ],
-  "audit_digest": "78f1cb4bba60e66a81bf65e2a4fe3d88c762974cd75daaf32109af8ba293baf6",
+  "audit_digest": "251f936f5834b6731b8594ddc48be5c9c0bcc33eac21d14a686fad2016e26df4",
   "entry": {
     "aliases": {
       "object": {
@@ -326,7 +326,7 @@
           "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "07eb01d59fc0aa2ecbce94a47f6782afdb1d3255fd8fdf4abc5a918549e8e8cb"
+          "sha256": "4e2106dd5fec413bca2ea409da555e2653d9f2433fc0f533a8386fe03cd12a37"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions.",
@@ -1410,7 +1410,7 @@
           "note": "The native closure catalog marks these Windows-specific helpers as platform-replaced.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "07eb01d59fc0aa2ecbce94a47f6782afdb1d3255fd8fdf4abc5a918549e8e8cb"
+          "sha256": "4e2106dd5fec413bca2ea409da555e2653d9f2433fc0f533a8386fe03cd12a37"
         },
         {
           "note": "The entrypoint analysis records the legacy DirectX probe and registry helpers at the executable boundary.",
