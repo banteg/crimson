@@ -14,12 +14,10 @@ struct quest_entry_original_t {
 
     void set_spawn(
         int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
+        int spawn_trigger_time_ms)
     {
         template_id = spawn_template_id;
         trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
     }
 };
 
@@ -40,8 +38,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (entry_count & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 1800;
         ++entry_count;
         ++spawn;
@@ -59,8 +57,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 1500;
         ++toggle;
         ++spawn;
@@ -71,8 +69,8 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn->pos.y = 512.0f;
     spawn->set_spawn(
         SPAWN_ID_DEN_ALIEN_BASIC_07,
-        trigger_time_ms,
-        1);
+        trigger_time_ms);
+    spawn->count = 1;
     ++entry_count;
 
     offset = 0;
@@ -87,8 +85,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 1200;
         ++toggle;
         ++spawn;
@@ -106,8 +104,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 800;
         ++toggle;
         ++spawn;
@@ -125,8 +123,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 800;
         ++toggle;
         ++spawn;
@@ -144,8 +142,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 700;
         ++toggle;
         ++spawn;
@@ -163,8 +161,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 700;
         ++toggle;
         ++spawn;
@@ -182,8 +180,8 @@ extern "C" void quest_build_the_unblitzkrieg(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            1);
+            trigger_time_ms);
+        spawn->count = 1;
         trigger_time_ms += 800;
         ++toggle;
         ++spawn;

@@ -19,7 +19,7 @@ with `0x07` in every sweep.
 - x=200, y=`824 - offset/10`, triggers 68500 through 74800 by 700;
 - y=200, x=`200 + offset/10`, triggers 75500 through 82700 by 800.
 
-The candidate scores 75.26% with a twelve-instruction exact prefix, exactly
+The candidate scores 75.95% with a sixteen-instruction exact prefix, exactly
 291 candidate and native instructions, and no static-reference debt. It
 reproduces the signed division-by-ten lowering, parity-to-template arithmetic,
 24-byte stride, loop limits, count reservation, trigger increments, register
@@ -33,12 +33,14 @@ schedule in most sweeps, improving the fuzzy gap from 291.49 to 241.24 bytes.
 The repeated residual is legal independent-store scheduling. Native VC6 uses
 the `template_id` field as its cursor base, advances that cursor before storing
 template/time/count through negative offsets, and leaves those metadata stores
-until after the x87 coordinate conversion. The candidate still hoists some
-constant count and trigger stores around that conversion. A metadata-only
-setter and direct field stores compile identically; a post-incremented spawn
-cursor regresses to 52.97%, and encoding a negative-field cursor would describe
-the optimizer rather than plausible game source. No volatile state, dummy
-dependencies, or register-forcing constructs are used.
+until after the x87 coordinate conversion. Moving the constant count assignment
+out of the metadata helper recovers four exact prefix instructions and 6.70
+fuzzy-weighted bytes; the candidate still hoists some trigger stores around
+that conversion. Other metadata helper bodies and direct field stores tested
+against the earlier three-argument form compile identically. A post-incremented
+spawn cursor regresses to 52.97%, and encoding a negative-field cursor would
+describe the optimizer rather than plausible game source. No volatile state,
+dummy dependencies, or register-forcing constructs are used.
 
 ## Semantic-completion audit
 
@@ -70,6 +72,25 @@ Reversing metadata stores lost 23.4536 weighted bytes and three prefix
 instructions, so no variant was retained. The validated source remains at
 733.7628865979382/975 weighted bytes, a 241.23711340206182 gap, 291/291
 instructions, prefix twelve, and references 0/0/0.
+
+## Two-argument metadata helper provenance
+
+The exact neighboring `quest_build_two_fronts` reconstruction uses a
+two-argument `set_spawn(template_id, trigger_time_ms)` helper and assigns the
+constant entry count separately. Replaying that same recovered class boundary
+here is the first improvement after the 2026-07-27 stopping audit. The recorded
+`two-argument-helper-count-after` probe raises the score from 75.26% to
+**75.95%**, adds **6.70 fuzzy-weighted bytes**, and extends the exact prefix
+from **12 to 16 instructions** while preserving **291/291 instructions** and
+`0/0/0` references. The two-argument helper plus direct `count = 1` assignment
+is retained because it is both cross-function source evidence and a strictly
+better tradeoff-free build.
+
+The new first mismatch is the independent trigger store and offset increment
+still moving ahead of the signed coordinate conversion. Count now remains at
+the native metadata tail. This narrows the remaining search to trigger/offset
+lifetime scheduling rather than the already-recovered entry layout or helper
+ABI.
 
 ## First-sweep position-materialization audit
 
