@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "failure-message-local",
+      "find": "    DWORD response_error;\n",
+      "replacements": [
+        {
+          "name": "declare",
+          "text": "    DWORD response_error;\n    const char *failure_message;\n"
+        }
+      ]
+    },
+    {
+      "name": "internet-open-failure",
+      "find": "    if (!internet) {\n        console_printf(\n            &console_log_queue,\n            \"Version Check: InternetOpen failed.\\n\");\n        goto cleanup;\n    }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "    if (!internet) {\n        failure_message = \"Version Check: InternetOpen failed.\\n\";\n        goto network_failure;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "internet-connect-failure",
+      "find": "        if (!connection) {\n            console_printf(\n                &console_log_queue,\n                \"Version Check: InternetConnect failed.\\n\");\n            goto cleanup;\n        }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "        if (!connection) {\n            failure_message = \"Version Check: InternetConnect failed.\\n\";\n            goto network_failure;\n        }"
+        }
+      ]
+    },
+    {
+      "name": "http-open-failure",
+      "find": "    if (!request) {\n        console_printf(\n            &console_log_queue,\n            \"Version Check: HttpOpenRequest failed.\\n\");\n        goto cleanup;\n    }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "    if (!request) {\n        failure_message = \"Version Check: HttpOpenRequest failed.\\n\";\n        goto network_failure;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "http-send-failure",
+      "find": "    if (!request_ok) {\n        console_printf(\n            &console_log_queue,\n            \"Version Check: HttpSendRequest failed.\\n\");\n        goto cleanup;\n    }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "    if (!request_ok) {\n        failure_message = \"Version Check: HttpSendRequest failed.\\n\";\n        goto network_failure;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "shared-failure-tail",
+      "find": "    console_log_queue.flush_log(\"console.log\");\n    goto cleanup;\n\ncleanup:",
+      "replacements": [
+        {
+          "name": "add-tail",
+          "text": "    console_log_queue.flush_log(\"console.log\");\n    goto cleanup;\n\nnetwork_failure:\n    console_printf(&console_log_queue, failure_message);\n\ncleanup:"
+        }
+      ]
+    }
+  ]
+}

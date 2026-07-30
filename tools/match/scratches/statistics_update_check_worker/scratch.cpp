@@ -23,7 +23,6 @@ extern "C" void statistics_update_check_worker(void *)
     char *headers =
         "Content-Disposition: inline; filename=\"test\"\r\n"
         "Content-type: application/octet-stream";
-    DWORD headers_length = strlen(headers);
     bool parsed = false;
     HINTERNET internet = 0;
     HINTERNET connection = 0;
@@ -35,19 +34,7 @@ extern "C" void statistics_update_check_worker(void *)
     int major;
     int minor;
     int patch;
-    const char *accept_types[] = {
-        "image/gif",
-        "image/x-xbitmap",
-        "image/jpeg",
-        "image/pjpeg",
-        "application/vnd.ms-powerpoint",
-        "application/vnd.ms-excel",
-        "application/msword",
-        "application/x-comet",
-        "application/octet-stream",
-        "*/*",
-        0,
-    };
+    DWORD headers_length = strlen(headers);
     DWORD response_error;
 
     char *data = new char[0x8000];
@@ -77,6 +64,19 @@ extern "C" void statistics_update_check_worker(void *)
     }
 
     {
+        const char *accept_types[] = {
+            "image/gif",
+            "image/x-xbitmap",
+            "image/jpeg",
+            "image/pjpeg",
+            "application/vnd.ms-powerpoint",
+            "application/vnd.ms-excel",
+            "application/msword",
+            "application/x-comet",
+            "application/octet-stream",
+            "*/*",
+            0,
+        };
         char request_path[64] = "/ra_version.php";
         if (!connection) {
             console_printf(

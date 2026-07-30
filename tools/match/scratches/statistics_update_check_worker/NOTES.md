@@ -2,7 +2,7 @@
 
 Native target: `crimsonland.exe` at `0x0042d8a0` (1364 bytes).
 
-Work in progress: 76.84% normalized match, 21/361-instruction exact prefix,
+Work in progress: 77.38% normalized match, 22/361-instruction exact prefix,
 373 candidate instructions, and 106/0/0 reference audit.
 
 Live Binary Ninja evidence and the MSVC candidate recover the complete worker:
@@ -72,15 +72,57 @@ both status-transition tails. Address-matched IDA and Ghidra snapshots agree
 on the worker signature and all 18 direct callees. The retained candidate is
 reference-clean at `106/0/0`.
 
-Moving the MIME array beside the request-path slot and permuting the three
-version-output declarations were byte-identical. An explicit shared
-host/request-path buffer instead regressed from 69.95% to 66.04%, removed the
-21-instruction exact prefix, and introduced a reference mismatch. The
-remaining stack-slot order, literal lowering, tail merging, and scan-output
-allocation are therefore compiler residuals. The scratch is classified
-`semantic-complete` with a `compiler` residual.
+Earlier isolated MIME-array and version-output declaration moves were
+byte-identical. An explicit shared host/request-path buffer instead regressed
+from 69.95% to 66.04%, removed the then-current exact prefix, and introduced a
+reference mismatch. The scratch remains classified `semantic-complete` with a
+`compiler` residual.
 
 `request-path-initializer-mutations.json` evaluated three direct, aggregate,
 and staged request-path initializers. Every alternative regressed by at least
 57.76 fuzzy-weighted bytes and lost native-prefix or reference agreement. The
 existing initializer is retained.
+
+## Native-grounded declaration and lifetime wave
+
+Fresh normalized target/candidate listings localized the earliest residual to
+the prologue. Native evaluates the header length before allocating the response
+buffer but stores it after other scalar setup, places the reused 64-byte
+host/path slot below the MIME array, and later closes the connection and
+internet handles through the opposite pair of stack slots from the candidate.
+
+`scalar-declaration-order-mutations.json` evaluated ten complete declaration
+orders. All ten forms that moved the already-computed header length after the
+scan-output declarations compiled identically and improved by
+`3.716621253405947` weighted bytes, extended the prefix from 21 to 22
+instructions, and moved the first mismatch from byte `0x4b` to `0x50`.
+The retained source makes only that minimal declaration move.
+
+`accept-array-lifetime-mutations.json` then evaluated all five single and
+paired forms for moving the MIME list into the request scope. Declaring the
+list immediately before `request_path`, with or without retaining the dead
+outer declaration, improved by another `3.716621253406174` weighted bytes.
+The retained source uses the non-duplicated scoped form. Candidate/native
+instruction counts remain 373/361, the prefix remains 22, and the reference
+audit remains clean at 106/0/0.
+
+Four follow-up hypotheses reached bounded stopping points:
+
+| plan | variants | result | SHA-256 |
+| --- | ---: | --- | --- |
+| `network-stack-lifetime-mutations.json` | 5 | scoped form neutral; shared or simultaneous buffers worse | `3c8c1ccbb4bf2638fe0d89812e78684bf94fe69157de964bd60a8a1d83e5778c` |
+| `network-failure-tail-mutations.json` | 63 | declaration neutral; shared-tail interactions invalid or non-improving | `2e992997ab568d6da6488bb126de5cf4e9f04a1a7fd9cda16a180bb9bcc27c4f` |
+| `server-address-lifetime-mutations.json` | 3 | outer lifetime neutral alone and worse when active | `9fe3c700d7fa18cee0150f656399fd9ef0f4d4464a9fcd55c4124304a2079226` |
+| `read-loop-second-wave-mutations.json` | 8 | two byte-neutral spellings; six worse | `420d15c8e340bc8a59a53e3473f94a56675811f7a8f45df174c1429e1d302716` |
+
+The two improving plans have SHA-256
+`31c176e6ed793bbb015fad5cd8616f24e9caa08858728510f8ac1eaaa5eab0a5`
+and
+`d80b786d5812c7ab6e49c1328042ce60be95d8084f4d8d2c44720249aae0b059`.
+Together the wave evaluated 94 new variants and reduced the gap from
+`315.9128065395096` to `308.47956403269745` weighted bytes. The complete
+nine-plan corpus now contains 102 unique variants with no repeated
+evaluations. The retained source SHA-256 is
+`fbcccb4047061ffcc135469c9d4db4f5df475fd424a4456258d36e2a466d642c`;
+`experiments.jsonl` is
+`7a2afd319355c070ab2636aa9acc48cc669a13c43aa6bbf0c16f1836f9a287e8`.

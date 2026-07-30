@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outer-server-address",
+      "find": "    DWORD response_error;\n",
+      "replacements": [
+        {
+          "name": "declare",
+          "text": "    DWORD response_error;\n    char server_address[64];\n"
+        }
+      ]
+    },
+    {
+      "name": "remove-inner-server-address",
+      "find": "        char server_address[64];\n",
+      "replacements": [
+        {
+          "name": "remove",
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

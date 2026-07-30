@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scalar-declaration-order",
+      "find": "    DWORD headers_length = strlen(headers);\n    bool parsed = false;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD response_error;",
+      "replacements": [
+        {
+          "name": "header-before-accept-types",
+          "text": "    bool parsed = false;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    DWORD headers_length = strlen(headers);\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD response_error;"
+        },
+        {
+          "name": "header-after-accept-types",
+          "text": "    bool parsed = false;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        },
+        {
+          "name": "header-after-response-error",
+          "text": "    bool parsed = false;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD response_error;\n    DWORD headers_length = strlen(headers);"
+        },
+        {
+          "name": "reverse-handles-header-after-accept-types",
+          "text": "    bool parsed = false;\n    HINTERNET request = 0;\n    HINTERNET connection = 0;\n    HINTERNET internet = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        },
+        {
+          "name": "connection-internet-request-header-after-accept-types",
+          "text": "    bool parsed = false;\n    HINTERNET connection = 0;\n    HINTERNET internet = 0;\n    HINTERNET request = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        },
+        {
+          "name": "request-internet-connection-header-after-accept-types",
+          "text": "    bool parsed = false;\n    HINTERNET request = 0;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        },
+        {
+          "name": "bytes-before-handles-header-after-accept-types",
+          "text": "    bool parsed = false;\n    DWORD bytes_read = 0;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        },
+        {
+          "name": "outputs-before-handles-header-after-accept-types",
+          "text": "    bool parsed = false;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    int major;\n    int minor;\n    int patch;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        },
+        {
+          "name": "scan-outputs-before-handles-header-after-accept-types",
+          "text": "    bool parsed = false;\n    int major;\n    int minor;\n    int patch;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        },
+        {
+          "name": "native-slot-hypothesis",
+          "text": "    bool parsed = false;\n    HINTERNET connection = 0;\n    DWORD bytes_read = 0;\n    HINTERNET internet = 0;\n    BOOL request_ok;\n    HINTERNET request = 0;\n    BOOL read_ok;\n    DWORD received;\n    int patch;\n    int minor;\n    int major;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD headers_length = strlen(headers);\n    DWORD response_error;"
+        }
+      ]
+    }
+  ]
+}
