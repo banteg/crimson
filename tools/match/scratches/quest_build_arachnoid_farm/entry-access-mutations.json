@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "top-entry-access",
+      "find": "            spawns[spawn_count].pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n",
+      "replacements": [
+        {
+          "name": "local-pointer",
+          "text": "            quest_entry_original_t *entry = spawns + spawn_count;\n            entry->pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            entry->set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "local-reference",
+          "text": "            quest_entry_original_t &entry = spawns[spawn_count];\n            entry.pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            entry.set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "direct-pointer-expression",
+          "text": "            (spawns + spawn_count)->pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            (spawns + spawn_count)->set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "snapshot-index",
+          "text": "            int entry_index = spawn_count;\n            spawns[entry_index].pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            spawns[entry_index].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        }
+      ]
+    },
+    {
+      "name": "bottom-entry-access",
+      "find": "            spawns[spawn_count].pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n",
+      "replacements": [
+        {
+          "name": "local-pointer",
+          "text": "            quest_entry_original_t *entry = spawns + spawn_count;\n            entry->pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            entry->set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "local-reference",
+          "text": "            quest_entry_original_t &entry = spawns[spawn_count];\n            entry.pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            entry.set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "direct-pointer-expression",
+          "text": "            (spawns + spawn_count)->pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            (spawns + spawn_count)->set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "snapshot-index",
+          "text": "            int entry_index = spawn_count;\n            spawns[entry_index].pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            spawns[entry_index].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        }
+      ]
+    },
+    {
+      "name": "middle-entry-access",
+      "find": "            spawns[spawn_count].pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n",
+      "replacements": [
+        {
+          "name": "local-pointer",
+          "text": "            quest_entry_original_t *entry = spawns + spawn_count;\n            entry->pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            entry->set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "local-reference",
+          "text": "            quest_entry_original_t &entry = spawns[spawn_count];\n            entry.pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            entry.set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "direct-pointer-expression",
+          "text": "            (spawns + spawn_count)->pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            (spawns + spawn_count)->set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n"
+        },
+        {
+          "name": "snapshot-index",
+          "text": "            int entry_index = spawn_count;\n            spawns[entry_index].pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            spawns[entry_index].set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n"
+        }
+      ]
+    }
+  ]
+}

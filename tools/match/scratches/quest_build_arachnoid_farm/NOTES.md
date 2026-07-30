@@ -36,6 +36,18 @@ the final destructive `add edx, 7` allocation. The complete negative matrix is
 recorded in `experiments.jsonl` (spec
 `c0701e97213920a151df1226955167aabd43ef2cf0ebb18eedc1fbab9f00e944`).
 
+## Entry-access lifetime audit
+
+`entry-access-mutations.json` evaluated all 12 single-site pointer, reference,
+direct-expression, and index-snapshot spellings across the three line-entry
+writes. Direct pointer expressions and index snapshots are byte-identical to
+the canonical source. Local pointer and reference lifetimes regress by 20.46
+weighted bytes for the middle line, 27.29 for the bottom line, and 103.46 plus
+one instruction for the top line. No variant improves the baseline, so the
+canonical whole-vector indexing remains the strongest supported source shape.
+The complete negative matrix is recorded in `experiments.jsonl` (spec
+`4c085e3b5c859c454d2dc3864d9cb55f7b1e8d7db4235c3aefc22a1e5518344d`).
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
