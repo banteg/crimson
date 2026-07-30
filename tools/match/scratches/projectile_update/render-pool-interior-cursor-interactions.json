@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sprite-position-y-interior-cursor",
+      "find": "    sprite_effect_t *sprite = sprite_effect_pool;\n    do {\n",
+      "replacements": [
+        {
+          "name": "owner-derived-from-position-y",
+          "text": "    float *sprite_position_y_cursor =\n        &sprite_effect_pool[0].position.y;\n    do {\n        sprite_effect_t *sprite = (sprite_effect_t *)(\n            (char *)sprite_position_y_cursor - 0x1c);\n"
+        }
+      ]
+    },
+    {
+      "name": "sprite-position-y-interior-stride",
+      "find": "        ++sprite;\n    } while ((int)sprite < (int)&sprite_effect_pool[0x180]);\n",
+      "replacements": [
+        {
+          "name": "record-stride-position-y-bound",
+          "text": "        sprite_position_y_cursor = (float *)(\n            (char *)sprite_position_y_cursor + sizeof(sprite_effect_t));\n    } while ((int)sprite_position_y_cursor\n        < (int)&sprite_effect_pool[0x180].position.y);\n"
+        }
+      ]
+    },
+    {
+      "name": "particle-velocity-y-interior-cursor",
+      "find": "    int particle_index = 0;\n    particle_t *particle = particle_pool;\n    do {\n",
+      "replacements": [
+        {
+          "name": "owner-derived-from-velocity-y",
+          "text": "    int particle_index = 0;\n    float *particle_velocity_y_cursor =\n        &particle_pool[0].velocity.y;\n    do {\n        particle_t *particle = (particle_t *)(\n            (char *)particle_velocity_y_cursor - 0x10);\n"
+        }
+      ]
+    },
+    {
+      "name": "particle-velocity-y-interior-stride",
+      "find": "        ++particle;\n        ++particle_index;\n    } while ((int)particle < (int)&particle_pool[0x80]);\n",
+      "replacements": [
+        {
+          "name": "record-stride-velocity-y-bound",
+          "text": "        particle_velocity_y_cursor = (float *)(\n            (char *)particle_velocity_y_cursor + sizeof(particle_t));\n        ++particle_index;\n    } while ((int)particle_velocity_y_cursor\n        < (int)&particle_pool[0x80].velocity.y);\n"
+        }
+      ]
+    }
+  ]
+}

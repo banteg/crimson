@@ -955,3 +955,30 @@ instructions, and `403/0/20` references, with source SHA-256
 `d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`.
 The 63-record, 945-variant `experiments.jsonl` SHA-256 is
 `19f6533e1ec29c0de4c57865e530f33462392baff258915598b2da09e3521919`.
+
+## Render-pool induction-anchor boundary
+
+Live native disassembly identifies two later pool anchors precisely. The
+sprite-effect loop loads `sprite_effect_pool[0].position.y` at `0x0042246a`
+and uses 0x2c-byte strides; the particle loop loads
+`particle_pool[0].velocity.y` at `0x004224f0` and uses 0x38-byte strides.
+The canonical candidate instead lets VC6 choose nearby interior anchors.
+
+`render-pool-interior-cursor-interactions.json` (SHA-256
+`51b7ab5f7d6b3d6f09ba2f94afd7ef782446ca4db456ca81e365d80e839128bc`)
+evaluates all 15 declaration, stride, loop, and cross-loop combinations.
+Forcing the exact sprite position-y cursor is byte-neutral but loses three
+aligned references and adds three mismatches (`400/0/23`). Forcing the exact
+particle velocity-y cursor adds four candidate instructions but loses
+54.5601 weighted bytes, nine aligned references, and four mismatches
+(`394/0/24`). Combining the two loops does not recover either regression.
+No form is retained.
+
+The remaining pool-address audit entries therefore reflect whole-function
+register allocation and SequenceMatcher alignment, not incorrect record
+ownership or bounds. Canonical metrics and source remain unchanged at
+`4839.3235/8409` weighted bytes (`57.5493346%`), 2,155/2,203
+instructions, and `403/0/20` references, with source SHA-256
+`d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`.
+The 64-record, 960-variant `experiments.jsonl` SHA-256 is
+`eb7bcc6263b1e24baef730a3f0bae4441032e953df59fc4dead52059007c4c3a`.
