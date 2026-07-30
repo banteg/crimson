@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "two-grid-counter-cursor",
+      "find": "    {\n        for (int y = 0; y < 2; ++y) {\n            for (int x = 0; x < 2; ++x) {\n                grim_subrect_table_0[y * 2 + x].u = (float)x * 0.5f;\n                grim_subrect_table_0[y * 2 + x].v = (float)y * 0.5f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "counters-before-row-entry",
+          "text": "    {\n        int y = 0;\n        GrimUV *row = grim_subrect_table_0;\n        for (; y < 2; ++y) {\n            float row_v = (float)y * 0.5f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 2;\n            for (; x < 2; ++x, ++entry) {\n                entry->u = (float)x * 0.5f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "four-grid-counter-cursor",
+      "find": "    {\n        for (int y = 0; y < 4; ++y) {\n            for (int x = 0; x < 4; ++x) {\n                grim_subrect_table_1[y * 4 + x].u = (float)x * 0.25f;\n                grim_subrect_table_1[y * 4 + x].v = (float)y * 0.25f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "counters-before-row-entry",
+          "text": "    {\n        int y = 0;\n        GrimUV *row = grim_subrect_table_1;\n        for (; y < 4; ++y) {\n            float row_v = (float)y * 0.25f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 4;\n            for (; x < 4; ++x, ++entry) {\n                entry->u = (float)x * 0.25f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "eight-grid-counter-cursor",
+      "find": "    {\n        for (int y = 0; y < 8; ++y) {\n            for (int x = 0; x < 8; ++x) {\n                grim_subrect_table_2[y * 8 + x].u =\n                    (float)x * 0.125f;\n                grim_subrect_table_2[y * 8 + x].v =\n                    (float)y * 0.125f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "counters-before-row-entry",
+          "text": "    {\n        int y = 0;\n        GrimUV *row = grim_subrect_table_2;\n        for (; y < 8; ++y) {\n            float row_v = (float)y * 0.125f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 8;\n            for (; x < 8; ++x, ++entry) {\n                entry->u = (float)x * 0.125f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "sixteen-grid-counter-cursor",
+      "find": "    {\n        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_subrect_table[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_subrect_table[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "counters-before-row-entry",
+          "text": "    {\n        int y = 0;\n        GrimUV *row = grim_subrect_table;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 16;\n            for (; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

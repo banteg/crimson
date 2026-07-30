@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "font-atlas-counter-cursor-order",
+      "find": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "outer-counter-before-row",
+          "text": "    {\n        int y = 0;\n        GrimUV *row = grim_font2_uv_u;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "inner-counter-before-entry",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 16;\n            for (; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "both-counters-before-cursors",
+          "text": "    {\n        int y = 0;\n        GrimUV *row = grim_font2_uv_u;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 16;\n            for (; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "both-counters-function-style",
+          "text": "    {\n        int x;\n        int y;\n        GrimUV *row = grim_font2_uv_u;\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "both-counters-before-cursors-v-first",
+          "text": "    {\n        int y = 0;\n        GrimUV *row = grim_font2_uv_u;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            GrimUV *entry = row;\n            row += 16;\n            for (; x < 16; ++x, ++entry) {\n                entry->v = row_v;\n                entry->u = (float)x * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

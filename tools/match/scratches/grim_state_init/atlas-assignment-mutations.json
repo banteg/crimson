@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "font-atlas-assignment",
+      "find": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "row-entry-aggregate",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                *entry = GrimUV((float)x * 0.0625f, row_v);\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-entry-named-aggregate",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                GrimUV uv((float)x * 0.0625f, row_v);\n                *entry = uv;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "indexed-aggregate-named-v",
+          "text": "    {\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            for (int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x] =\n                    GrimUV((float)x * 0.0625f, row_v);\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "indexed-aggregate-inline-v",
+          "text": "    {\n        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x] = GrimUV(\n                    (float)x * 0.0625f,\n                    (float)y * 0.0625f);\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "linear-entry-aggregate",
+          "text": "    {\n        GrimUV *entry = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                *entry = GrimUV((float)x * 0.0625f, row_v);\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

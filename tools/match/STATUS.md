@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **301269/341963** code bytes (**88.1%**).
+Fuzzy-weighted alignment is **301283/341963** code bytes (**88.1%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -93,7 +93,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280832/320805 | 87.5% | 671/671 | 320805/320805 | 100.0% | 560/671 |
-| grim.dll | 131/137 | 14938/21158 | 70.6% | 20436/21158 | 96.6% | 137/137 | 21159/21158 | 100.0% | 131/137 |
+| grim.dll | 131/137 | 14938/21158 | 70.6% | 20451/21158 | 96.7% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
@@ -775,7 +775,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## grim.dll
 
-**131/137** functions, **14938/21158** bytes (**70.6%**), **20436/21158** fuzzy-weighted bytes (**96.6%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
+**131/137** functions, **14938/21158** bytes (**70.6%**), **20451/21158** fuzzy-weighted bytes (**96.7%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -817,7 +817,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | grim_find_texture_by_name | 0x10005170 | 68 | 68/68 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | grim-texture-name-lookup |
 | match | grim_find_free_texture_slot | 0x100051c0 | 28 | 28/28 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | grim-texture-slot-allocation |
 | match | grim_load_texture_internal | 0x100051e0 | 265 | 265/265 | 0 | 80/80 | 100.00% | 80/80 | 14/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | grim-texture-file-load |
-| wip | grim_state_init | 0x100052f0 | 1872 | 1477/1872 | 395 | 414/425 | 78.90% | 167/425 | 135/0/9 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-global-state-and-atlas-defaults |
+| wip | grim_state_init | 0x100052f0 | 1872 | 1491/1872 | 381 | 416/425 | 79.67% | 167/425 | 135/0/9 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-global-state-and-atlas-defaults |
 | match | grim_lookup_blob_load | 0x10005a40 | 146 | 146/146 | 0 | 51/51 | 100.00% | 51/51 | 15/0/0 |  | grim-lookup-blob-lifecycle |
 | match | grim_lookup_blob_find | 0x10005ae0 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-search |
 | match | grim_lookup_blob_size_for_path | 0x10005b80 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-size |

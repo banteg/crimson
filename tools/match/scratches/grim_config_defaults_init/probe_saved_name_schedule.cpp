@@ -19,6 +19,12 @@ extern "C" void grim_config_defaults_init(void)
     char (*saved_name)[27];
 #elif CRIMSON_SAVED_NAME_SCHEDULE >= 8 && CRIMSON_SAVED_NAME_SCHEDULE <= 9
     char *saved_name;
+#elif CRIMSON_SAVED_NAME_SCHEDULE >= 11 && CRIMSON_SAVED_NAME_SCHEDULE <= 15
+    char (*saved_names)[27];
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 16
+    char (&saved_names)[8][27] = grim_config_blob.saved_names;
+#elif CRIMSON_SAVED_NAME_SCHEDULE >= 17 && CRIMSON_SAVED_NAME_SCHEDULE <= 20
+    char *saved_names;
 #endif
 
     grim_config_blob.hardcore = 0;
@@ -68,6 +74,48 @@ extern "C" void grim_config_defaults_init(void)
     saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
     saved_name = &grim_config_blob.saved_names[0][0];
     i = 0;
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 10
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+    i = 0;
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 11
+    saved_names = grim_config_blob.saved_names;
+    i = 0;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 12
+    i = 0;
+    saved_names = grim_config_blob.saved_names;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 13
+    i = 0;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+    saved_names = grim_config_blob.saved_names;
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 14
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+    saved_names = grim_config_blob.saved_names;
+    i = 0;
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 15
+    saved_names = grim_config_blob.saved_names;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+    i = 0;
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 16
+    i = 0;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 17
+    saved_names = &grim_config_blob.saved_names[0][0];
+    i = 0;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 18
+    i = 0;
+    saved_names = &grim_config_blob.saved_names[0][0];
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 19
+    i = 0;
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+    saved_names = &grim_config_blob.saved_names[0][0];
+#elif CRIMSON_SAVED_NAME_SCHEDULE == 20
+    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
+    saved_names = &grim_config_blob.saved_names[0][0];
+    i = 0;
 #else
     i = 0;
     saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
@@ -85,6 +133,12 @@ extern "C" void grim_config_defaults_init(void)
 #elif CRIMSON_SAVED_NAME_SCHEDULE >= 8 && CRIMSON_SAVED_NAME_SCHEDULE <= 9
         strcpy(saved_name, "default");
         saved_name += sizeof(grim_config_blob.saved_names[0]);
+#elif CRIMSON_SAVED_NAME_SCHEDULE >= 11 && CRIMSON_SAVED_NAME_SCHEDULE <= 16
+        strcpy(saved_names[i], "default");
+#elif CRIMSON_SAVED_NAME_SCHEDULE >= 17 && CRIMSON_SAVED_NAME_SCHEDULE <= 20
+        strcpy(
+            saved_names + i * sizeof(grim_config_blob.saved_names[0]),
+            "default");
 #else
         strcpy(grim_config_blob.saved_names[i], "default");
 #endif

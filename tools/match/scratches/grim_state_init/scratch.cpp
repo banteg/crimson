@@ -125,12 +125,15 @@ void grim_state_init(void)
 
     memset(grim_font2_glyph_widths, 0, sizeof(grim_font2_glyph_widths));
     {
+        GrimUV *row = grim_font2_uv_u;
         for (int y = 0; y < 16; ++y) {
-            for (int x = 0; x < 16; ++x) {
-                grim_font2_uv_u[y * 16 + x].u =
-                    (float)x * 0.0625f;
-                grim_font2_uv_u[y * 16 + x].v =
-                    (float)y * 0.0625f;
+            float row_v = (float)y * 0.0625f;
+            int x = 0;
+            GrimUV *entry = row;
+            row += 16;
+            for (; x < 16; ++x, ++entry) {
+                entry->u = (float)x * 0.0625f;
+                entry->v = row_v;
             }
         }
     }

@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "direct-index-schedule",
+      "find": "#define CRIMSON_SAVED_NAME_SCHEDULE 0",
+      "replacements": [
+        {
+          "name": "offset-before-index",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 10"
+        },
+        {
+          "name": "fixed-typed-base-before-index",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 11"
+        },
+        {
+          "name": "fixed-typed-base-between-index-offset",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 12"
+        },
+        {
+          "name": "fixed-typed-base-after-offset",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 13"
+        },
+        {
+          "name": "fixed-typed-offset-base-index",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 14"
+        },
+        {
+          "name": "fixed-typed-base-offset-index",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 15"
+        },
+        {
+          "name": "fixed-array-reference",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 16"
+        },
+        {
+          "name": "fixed-raw-base-before-index",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 17"
+        },
+        {
+          "name": "fixed-raw-base-between-index-offset",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 18"
+        },
+        {
+          "name": "fixed-raw-base-after-offset",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 19"
+        },
+        {
+          "name": "fixed-raw-offset-base-index",
+          "text": "#define CRIMSON_SAVED_NAME_SCHEDULE 20"
+        }
+      ]
+    }
+  ]
+}

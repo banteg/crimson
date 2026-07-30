@@ -120,3 +120,18 @@ None changes the compiler's preferred setup order without perturbing the
 otherwise exact body. The canonical direct-index form therefore remains the
 honest optimum at 99.29%; all nine negative results are recorded in
 `experiments.jsonl`.
+
+The recorded `direct-index-schedule-mutations.json` sweep closes the remaining
+fixed-base alternative without changing the canonical source. All **11/11**
+variants were evaluated: the direct-index initializer reversal, fixed typed
+array bases placed on every side of the index/offset setup, an array reference,
+and the equivalent fixed raw bases. Seven variants are byte-identical to the
+canonical 99.29% object; the other four keep the same fuzzy score and clean
+`83/0/0` references while moving the first mismatch one instruction earlier.
+
+This is a stronger negative result than the advancing-cursor matrix because
+the fixed bases preserve the native instruction count and the otherwise exact
+loop. VC6 still schedules the independent `0x88` load before the saved-name
+base spill. The residual is therefore saturated as a backend scheduling tie,
+not a missing source lifetime; larger Grim closure targets should take
+priority unless new compiler/TU provenance changes that constraint.

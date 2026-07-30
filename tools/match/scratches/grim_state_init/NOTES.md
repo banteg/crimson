@@ -14,10 +14,12 @@ The byte at `0x1005d3ac` has only the initializer write as a static xref, so it
 is retained under the evidence-limited name `grim_reserved_d3ac`.
 
 Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR- /MD` currently produces a
-`78.90%` match with a `167/425` exact instruction prefix, `425/414`
+`79.67%` match with a `167/425` exact instruction prefix, `425/416`
 target/candidate instructions, and references `135/0/9`. All references
-resolve. Direct row-major indexing reproduces the native interleaved UV
-field references without layout padding or byte-level match constructs.
+resolve. The font atlas uses a typed row/entry cursor with separate outer and
+inner counter lifetimes; the four subrect tables retain direct row-major
+indexing. Both forms preserve the recovered interleaved `GrimUV` layout
+without padding or byte-level match constructs.
 
 The remaining diff is compiler-shaped: scheduling of the configuration-value
 constructor temporaries and current-UV stores, plus counter-versus-end-pointer
@@ -25,11 +27,14 @@ forms for the atlas loops. Every
 observed state store, callback assignment, allocation/copy, and table loop is
 represented, so the recovery is marked semantic-complete rather than exact.
 
-A focused atlas-loop source-shape check rejected row locals and explicit
-row-pointer increments (both fell to 78.19%). Reusing shared `x`/`y` counters
-and spelling the grids as two-dimensional arrays compile byte-identically to
-the retained flat row-major form. These variants therefore do not recover the
-native outer-counter allocation and are not retained.
+A focused atlas-loop source-shape check originally rejected simple row locals
+and explicit row-pointer increments. Reusing shared `x`/`y` counters and
+spelling the grids as two-dimensional arrays compile byte-identically to the
+flat row-major form. A later native-schedule pass separated the two missing
+ingredients: advancing row/entry cursors plus declaring the inner counter
+before those cursors. That combination is retained for the font table; the
+same change on the subrect tables loses resolved-reference coverage and is not
+retained.
 
 The recorded config-tail ordering sweep covers eleven permutations of the
 adjacent `0x64`, `0x12`, `0x13`, and `0x14` assignments that contain all nine
@@ -93,3 +98,31 @@ Forcing the four color stores through volatile lvalues improves 8.92
 fuzzy-weighted bytes, but there is no xref or type evidence that these globals
 were volatile. That source changes the program's observable semantics and is
 rejected as a scheduling-only fakematch.
+
+## Atlas cursor and counter lifetime recovery
+
+Live disassembly at `0x10005856..0x100058a2` shows a persistent outer counter
+in `esi`, a row cursor in `edx`, an entry cursor in `eax`, and a separately
+initialized inner counter in `ecx`. `atlas-row-cursor-mutations.json`
+recovered the row and entry lifetimes: the retained named-row-value variant
+adds 5.39 fuzzy-weighted bytes and two instructions without changing the
+`167`-instruction prefix or `135/0/9` reference result.
+
+`atlas-counter-cursor-order-mutations.json` then tested the declaration order
+predicted by that instruction schedule. Declaring the inner counter before
+copying and advancing the row cursor adds another 8.90 fuzzy-weighted bytes
+with no reference, prefix, or instruction-count tradeoff. Declaring both
+counters before their cursors reaches 79.90%, but creates a tenth reference
+mismatch, so the reference-clean inner-only improvement is retained. Reversing
+the source field-store order is byte-neutral, while aggregate `GrimUV`
+assignment materially regresses and perturbs constructor scheduling near the
+function entry.
+
+The same native cursor shape repeats at `0x10005914..0x10005a37` for the 2x2,
+4x4, 8x8, and 16x16 subrect tables. Two exhaustive 15-combination sweeps,
+`subrect-counter-cursor-interactions.json` and
+`subrect-inner-counter-interactions.json`, confirm that the cursor shapes can
+add up to 24.80 fuzzy-weighted bytes, but every improvement reduces resolved
+references or adds mismatch debt. The earlier
+`subrect-row-cursor-interactions.json` reaches the same conclusion. Those
+tradeoffs fail the no-regression gate and remain negative evidence.

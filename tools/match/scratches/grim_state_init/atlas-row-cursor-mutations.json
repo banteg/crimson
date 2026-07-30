@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "font-atlas-row-cursor",
+      "find": "    {\n        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "advancing-entry-cursor",
+          "text": "    {\n        GrimUV *entry = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-and-entry-cursors",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-increment-in-for",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y, row += 16) {\n            GrimUV *entry = row;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-entry-cursors-named-v",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-entry-cursors-named-uv",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            row += 16;\n            for (int x = 0; x < 16; ++x, ++entry) {\n                float column_u = (float)x * 0.0625f;\n                entry->u = column_u;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-entry-cursors-do-while",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        int y = 0;\n        do {\n            GrimUV *entry = row;\n            row += 16;\n            int x = 0;\n            do {\n                entry->u = (float)x * 0.0625f;\n                entry->v = (float)y * 0.0625f;\n                ++entry;\n                ++x;\n            } while (x < 16);\n            ++y;\n        } while (y < 16);\n    }\n"
+        },
+        {
+          "name": "row-index-named-v",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y, row += 16) {\n            float row_v = (float)y * 0.0625f;\n            for (int x = 0; x < 16; ++x) {\n                row[x].u = (float)x * 0.0625f;\n                row[x].v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "indexed-row-local-named-v",
+          "text": "    {\n        for (int y = 0; y < 16; ++y) {\n            GrimUV *row = &grim_font2_uv_u[y * 16];\n            float row_v = (float)y * 0.0625f;\n            for (int x = 0; x < 16; ++x) {\n                row[x].u = (float)x * 0.0625f;\n                row[x].v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}
