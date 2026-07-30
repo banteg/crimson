@@ -14,7 +14,7 @@
     {
       "id": "crimsonland-recovered-platform-vc6",
       "path": "tools/native/providers/build/crimsonland-platform/crimsonland-platform.lib",
-      "sha256": "1b7ec35ba2df97598590baceec29a7ffe58eead774105118861c5045c6155914",
+      "sha256": "8b2cc07c8c4fbbcc7728b34674221593112dfbe5ec41a159acebd56869131fb3",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "crimsonland-recovered-platform-vc6-provider"
@@ -1447,6 +1447,210 @@
       ]
     },
     {
+      "name": "recovered-platform-kernel32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "KERNEL32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports GetSystemDirectoryA from KERNEL32."
+        },
+        {
+          "path": "tools/match/scratches/dx_get_version_fallback_from_files/NOTES.md",
+          "note": "The exact recovered DirectX file-version fallback has one aligned GetSystemDirectoryA reference."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__GetSystemDirectoryA@8",
+          "target": "__imp__GetSystemDirectoryA"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__GetSystemDirectoryA@8",
+          "link_name": "GetSystemDirectoryA",
+          "export": "GetSystemDirectoryA"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-ole32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "ole32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports the three retained COM lifecycle APIs from OLE32."
+        },
+        {
+          "path": "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
+          "note": "The exact recovered DxDiag probe records the decorated COM references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__CoCreateInstance@20",
+          "target": "__imp__CoCreateInstance"
+        },
+        {
+          "alias": "__imp__CoInitialize@4",
+          "target": "__imp__CoInitialize"
+        },
+        {
+          "alias": "__imp__CoUninitialize@0",
+          "target": "__imp__CoUninitialize"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__CoCreateInstance@20",
+          "link_name": "CoCreateInstance",
+          "export": "CoCreateInstance"
+        },
+        {
+          "name": "__imp__CoInitialize@4",
+          "link_name": "CoInitialize",
+          "export": "CoInitialize"
+        },
+        {
+          "name": "__imp__CoUninitialize@0",
+          "link_name": "CoUninitialize",
+          "export": "CoUninitialize"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-oleaut32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "OLEAUT32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports VariantInit and VariantClear by OLEAUT32 ordinals 8 and 9."
+        },
+        {
+          "path": "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
+          "note": "The exact recovered DxDiag probe records the decorated VARIANT helper references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__VariantClear@4",
+          "target": "__imp__VariantClear"
+        },
+        {
+          "alias": "__imp__VariantInit@4",
+          "target": "__imp__VariantInit"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__VariantClear@4",
+          "link_name": "VariantClear",
+          "export": "VariantClear",
+          "ordinal": 9
+        },
+        {
+          "name": "__imp__VariantInit@4",
+          "link_name": "VariantInit",
+          "export": "VariantInit",
+          "ordinal": 8
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-version",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "VERSION.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "note": "The reference executable imports its three file-version APIs from VERSION."
+        },
+        {
+          "path": "tools/match/scratches/win32_file_get_version_words/scratch.cpp",
+          "note": "The exact recovered file-version helper records the three decorated VERSION references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_GetFileVersionInfoA@16",
+          "target": "_GetFileVersionInfoA"
+        },
+        {
+          "alias": "_GetFileVersionInfoSizeA@8",
+          "target": "_GetFileVersionInfoSizeA"
+        },
+        {
+          "alias": "_VerQueryValueA@16",
+          "target": "_VerQueryValueA"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_GetFileVersionInfoA@16",
+          "link_name": "GetFileVersionInfoA",
+          "export": "GetFileVersionInfoA"
+        },
+        {
+          "name": "_GetFileVersionInfoSizeA@8",
+          "link_name": "GetFileVersionInfoSizeA",
+          "export": "GetFileVersionInfoSizeA"
+        },
+        {
+          "name": "_VerQueryValueA@16",
+          "link_name": "VerQueryValueA",
+          "export": "VerQueryValueA"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-msvc6-runtime",
+      "scope": "link-dependency",
+      "kind": "static-library",
+      "resolution": "archive-library",
+      "archive": "vc6-sp6-libcmt",
+      "evidence": [
+        {
+          "path": "tools/match/scratches/dx_get_version/scratch.cpp",
+          "note": "The exact recovered DirectX wrapper records the two renamed CRT leaf references."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned VC6 SP6 LIBCMT archive defines __snprintf and _tolower."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_crt_snprintf",
+          "target": "__snprintf"
+        },
+        {
+          "alias": "_crt_tolower",
+          "target": "_tolower"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_crt_snprintf",
+          "binding": "function"
+        },
+        {
+          "name": "_crt_tolower",
+          "binding": "function"
+        }
+      ]
+    },
+    {
       "name": "directx-8.1-d3dx8-kernel32",
       "scope": "link-dependency",
       "kind": "reference-import",
@@ -1734,7 +1938,7 @@
       ]
     },
     {
-      "name": "recovered-platform-registry",
+      "name": "recovered-platform",
       "kind": "platform-replaced",
       "resolution": "archive-library",
       "archive": "crimsonland-recovered-platform-vc6",
@@ -1742,6 +1946,10 @@
         {
           "path": "analysis/library_provenance.json",
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member."
+        },
+        {
+          "path": "tools/match/scratches/dx_get_version_fallback_from_files/NOTES.md",
+          "note": "The final missing DirectX member is an exact 1,014-instruction match with all 61 references aligned."
         },
         {
           "path": "tools/match/scratches/reg_read_dword_default/NOTES.md",
@@ -1754,32 +1962,15 @@
       ],
       "symbols": [
         {
+          "name": "_dx_get_version",
+          "binding": "function"
+        },
+        {
           "name": "_reg_read_dword_default",
           "binding": "function"
         },
         {
           "name": "_reg_write_dword",
-          "binding": "function"
-        }
-      ]
-    },
-    {
-      "name": "platform-replaced-directx-version",
-      "kind": "platform-replaced",
-      "resolution": "placeholder-object",
-      "evidence": [
-        {
-          "path": "analysis/native/crimsonland.exe/closure.json",
-          "note": "The native closure catalog marks the legacy DirectX version gate as platform-replaced."
-        },
-        {
-          "path": "docs/re/static/entrypoint.md",
-          "note": "The entrypoint analysis records the legacy DirectX probe at the executable boundary."
-        }
-      ],
-      "symbols": [
-        {
-          "name": "_dx_get_version",
           "binding": "function"
         }
       ]

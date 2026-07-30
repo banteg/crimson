@@ -36,8 +36,18 @@ struct dxdiag_container_t : IUnknown {
         VARIANT *value) = 0;
 };
 
-extern "C" const GUID IID_IDxDiagProvider;
-extern "C" const GUID CLSID_DxDiagProvider;
+extern "C" const GUID IID_IDxDiagProvider = {
+    0x9c6b4cb0,
+    0x23f8,
+    0x49cc,
+    {0xa3, 0xed, 0x45, 0xa5, 0x50, 0x00, 0xa6, 0xd2},
+};
+extern "C" const GUID CLSID_DxDiagProvider = {
+    0xa65b8071,
+    0x3bfe,
+    0x4213,
+    {0x9a, 0x5b, 0x49, 0x1d, 0xa4, 0x46, 0x1c, 0xa7},
+};
 
 extern "C" HRESULT dx_get_version_from_dxdiag(
     int *major_out,

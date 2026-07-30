@@ -128,8 +128,8 @@
     {
       "id": "crimsonland-recovered-platform-vc6-provider",
       "path": "tools/native/providers/build/crimsonland-platform/crimsonland-platform.lib",
-      "size": 9102,
-      "sha256": "1b7ec35ba2df97598590baceec29a7ffe58eead774105118861c5045c6155914",
+      "size": 15334,
+      "sha256": "8b2cc07c8c4fbbcc7728b34674221593112dfbe5ec41a159acebd56869131fb3",
       "recipe": "scripts/build_native_recovered_providers.py",
       "source_artifacts": [
         "visual-cpp-6-sp6-media"
@@ -137,6 +137,7 @@
       "tracked_sources": [
         "tools/match/scratches/dx_get_version/scratch.cpp",
         "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
+        "tools/match/scratches/dx_get_version_fallback_from_files/scratch.cpp",
         "tools/match/scratches/win32_file_get_version_words/scratch.cpp",
         "tools/match/scratches/dx_version_pack_4x16/scratch.cpp",
         "tools/match/scratches/dx_version_compare_4x16/scratch.cpp",

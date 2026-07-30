@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -21,7 +21,7 @@
       "file": {
         "path": "tools/native/providers/build/crimsonland-platform/crimsonland-platform.lib",
         "repository_relative": true,
-        "sha256": "1b7ec35ba2df97598590baceec29a7ffe58eead774105118861c5045c6155914"
+        "sha256": "8b2cc07c8c4fbbcc7728b34674221593112dfbe5ec41a159acebd56869131fb3"
       },
       "id": "crimsonland-recovered-platform-vc6",
       "provenance": {
@@ -29,7 +29,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
         }
       }
     },
@@ -44,7 +44,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -76,9 +76,9 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 323792,
+      "entry_point_rva": 323806,
       "image_base": 4194304,
-      "image_size": 864256,
+      "image_size": 868352,
       "machine": 332,
       "optional_magic": 267,
       "section_count": 4,
@@ -86,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "5cdd7b41e1113c03f342a8b560999c8a74b6886467c22e754a941325b96612c2"
+    "sha256": "f93c6e7be324ba6b32e826dd976b8daccf60d3293717381e7e9de5ac029ebe91"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -103,17 +103,15 @@
     ],
     "path": "analysis/native/crimsonland.exe/link/providers/placeholders.obj",
     "repository_relative": true,
-    "retained_symbols": [
-      "_dx_get_version"
-    ],
-    "sha256": "890ae6657c88d2844ab174fcfd7c58b56b98bedad61a7f9eb024ea8e247758a5",
-    "symbol_count": 11
+    "retained_symbols": [],
+    "sha256": "a73f1e3befc8f2f6c052040c288964f407b60489ee0e5df29df2d010fe33366a",
+    "symbol_count": 10
   },
   "provider_config": {
-    "declared_sha256": "a6d282f2f6816133c0e0dfd37d93be37bdc839eb422ffc02404283c428f8e2cb",
+    "declared_sha256": "25b3deaea4577ef26f4d6e74c829a73ad643d1a00629dd90b05562faa9df0897",
     "path": "tools/native/providers/crimsonland.exe.json",
     "repository_relative": true,
-    "sha256": "a6d282f2f6816133c0e0dfd37d93be37bdc839eb422ffc02404283c428f8e2cb"
+    "sha256": "25b3deaea4577ef26f4d6e74c829a73ad643d1a00629dd90b05562faa9df0897"
   },
   "providers": [
     {
@@ -266,7 +264,7 @@
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
         }
       ],
       "kind": "static-library",
@@ -1088,7 +1086,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
         }
       ],
       "import_library": {
@@ -1156,6 +1154,261 @@
     {
       "aliases": {
         "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-kernel32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "db045a54ff661f9043a5988585fe6b9b5fe97efa333fc5eaf9c5a529fea91648"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__GetSystemDirectoryA@8",
+            "target": "__imp__GetSystemDirectoryA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-kernel32.def",
+        "repository_relative": true,
+        "sha256": "d9a1ba107cb41ff9f4a9876a6b644262541c69e8a0dfbfdb333c6feaae199aa1"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports GetSystemDirectoryA from KERNEL32.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The exact recovered DirectX file-version fallback has one aligned GetSystemDirectoryA reference.",
+          "path": "tools/match/scratches/dx_get_version_fallback_from_files/NOTES.md",
+          "repository_relative": true,
+          "sha256": "4be23f683bdbe3f94010d9193116a54fb1e56d0e1ffa52e3b44109cbb947069b"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-kernel32.lib",
+        "repository_relative": true,
+        "sha256": "01bfaf17485249da834d14e8d2567c5d6f20cb637b503e250d41cab0f2fc566c"
+      },
+      "kind": "reference-import",
+      "module": "KERNEL32.dll",
+      "name": "recovered-platform-kernel32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__GetSystemDirectoryA@8"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-ole32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "999900fc562101986937b8a3d0b3db8a7a1b525e18926219c10e7c5d4b9c6b4a"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__CoCreateInstance@20",
+            "target": "__imp__CoCreateInstance"
+          },
+          {
+            "alias": "__imp__CoInitialize@4",
+            "target": "__imp__CoInitialize"
+          },
+          {
+            "alias": "__imp__CoUninitialize@0",
+            "target": "__imp__CoUninitialize"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-ole32.def",
+        "repository_relative": true,
+        "sha256": "7c6dc7e13af4cb7e7846dfeafecf316739c6efc1bcebb144819f135345c3f6a8"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports the three retained COM lifecycle APIs from OLE32.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The exact recovered DxDiag probe records the decorated COM references.",
+          "path": "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
+          "repository_relative": true,
+          "sha256": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-ole32.lib",
+        "repository_relative": true,
+        "sha256": "5ed07b218edc0247bf0e97017b959f50db34d9ab901fa7ca8d43bdb37645a8b0"
+      },
+      "kind": "reference-import",
+      "module": "ole32.dll",
+      "name": "recovered-platform-ole32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__CoCreateInstance@20",
+        "__imp__CoInitialize@4",
+        "__imp__CoUninitialize@0"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-oleaut32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "e9599b3e251219875fd25630bc7b5b56845a2cc6d92c89e8d6728c287ba67322"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__VariantClear@4",
+            "target": "__imp__VariantClear"
+          },
+          {
+            "alias": "__imp__VariantInit@4",
+            "target": "__imp__VariantInit"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-oleaut32.def",
+        "repository_relative": true,
+        "sha256": "5388322bdb06be760873a15167c30ac9b2676ee173528479c1be64188da1f9cb"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports VariantInit and VariantClear by OLEAUT32 ordinals 8 and 9.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The exact recovered DxDiag probe records the decorated VARIANT helper references.",
+          "path": "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
+          "repository_relative": true,
+          "sha256": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-oleaut32.lib",
+        "repository_relative": true,
+        "sha256": "42f5c4e1a4ae669ffb1c4b5fe4311cbfb840f93cf5746ec384d9a796a12a0e96"
+      },
+      "kind": "reference-import",
+      "module": "OLEAUT32.dll",
+      "name": "recovered-platform-oleaut32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__VariantClear@4",
+        "__imp__VariantInit@4"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-version-aliases.obj",
+          "repository_relative": true,
+          "sha256": "24e71eb3a43d9eb1c1580bafbf3c144bd6276d7e7a1c068fd9f4fb4b0edc3366"
+        },
+        "symbols": [
+          {
+            "alias": "_GetFileVersionInfoA@16",
+            "target": "_GetFileVersionInfoA"
+          },
+          {
+            "alias": "_GetFileVersionInfoSizeA@8",
+            "target": "_GetFileVersionInfoSizeA"
+          },
+          {
+            "alias": "_VerQueryValueA@16",
+            "target": "_VerQueryValueA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-version.def",
+        "repository_relative": true,
+        "sha256": "15ebedaf4c6272f4056947834ca3e1579fc32242b2bac791a9f73dedd666845a"
+      },
+      "evidence": [
+        {
+          "note": "The reference executable imports its three file-version APIs from VERSION.",
+          "path": "analysis/ida/raw/crimsonland.exe/imports.json",
+          "repository_relative": true,
+          "sha256": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed"
+        },
+        {
+          "note": "The exact recovered file-version helper records the three decorated VERSION references.",
+          "path": "tools/match/scratches/win32_file_get_version_words/scratch.cpp",
+          "repository_relative": true,
+          "sha256": "80a4abac36b367da33498778b903051855e3af4a783afe63df0c2a19591816d8"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-version.lib",
+        "repository_relative": true,
+        "sha256": "6406a843ae45e50613620ffaba70fbcfecbae630aa30c3501f350c0fc6f47369"
+      },
+      "kind": "reference-import",
+      "module": "VERSION.dll",
+      "name": "recovered-platform-version",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "_GetFileVersionInfoA@16",
+        "_GetFileVersionInfoSizeA@8",
+        "_VerQueryValueA@16"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/crimsonland.exe/link/providers/recovered-platform-msvc6-runtime-aliases.obj",
+          "repository_relative": true,
+          "sha256": "beee5150c333f73d54e1d21c1c5eda9e8dc4fa4dbd7d23a322137f83444d8e37"
+        },
+        "symbols": [
+          {
+            "alias": "_crt_snprintf",
+            "target": "__snprintf"
+          },
+          {
+            "alias": "_crt_tolower",
+            "target": "_tolower"
+          }
+        ]
+      },
+      "archive": "vc6-sp6-libcmt",
+      "evidence": [
+        {
+          "note": "The exact recovered DirectX wrapper records the two renamed CRT leaf references.",
+          "path": "tools/match/scratches/dx_get_version/scratch.cpp",
+          "repository_relative": true,
+          "sha256": "b89d1d3f894e4fa1a60f97e74b7232d0368c11089bc94bd46fb5ee420e68f777"
+        },
+        {
+          "note": "The pinned VC6 SP6 LIBCMT archive defines __snprintf and _tolower.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+        }
+      ],
+      "kind": "static-library",
+      "name": "recovered-platform-msvc6-runtime",
+      "resolution": "archive-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "_crt_snprintf",
+        "_crt_tolower"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
           "path": "analysis/native/crimsonland.exe/link/providers/directx-8-1-d3dx8-kernel32-aliases.obj",
           "repository_relative": true,
           "sha256": "92771609e403699985b2ef55c5f188847d9a6935105f68643cb371ab42cc3e14"
@@ -1195,7 +1448,7 @@
           "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
         }
       ],
       "import_library": {
@@ -1471,7 +1724,13 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+        },
+        {
+          "note": "The final missing DirectX member is an exact 1,014-instruction match with all 61 references aligned.",
+          "path": "tools/match/scratches/dx_get_version_fallback_from_files/NOTES.md",
+          "repository_relative": true,
+          "sha256": "4be23f683bdbe3f94010d9193116a54fb1e56d0e1ffa52e3b44109cbb947069b"
         },
         {
           "note": "The registry reader is an exact 23-instruction match with its Win32 import reference aligned.",
@@ -1487,39 +1746,13 @@
         }
       ],
       "kind": "platform-replaced",
-      "name": "recovered-platform-registry",
+      "name": "recovered-platform",
       "resolution": "archive-library",
       "scope": "closure",
       "symbols": [
+        "_dx_get_version",
         "_reg_read_dword_default",
         "_reg_write_dword"
-      ]
-    },
-    {
-      "discarded_symbols": [],
-      "evidence": [
-        {
-          "note": "The native closure catalog marks the legacy DirectX version gate as platform-replaced.",
-          "path": "analysis/native/crimsonland.exe/closure.json",
-          "repository_relative": true,
-          "sha256": "dc608ae8d01838263881fda8aa40cd9ad6e7f92aac3876946c9b37d3708c8eec"
-        },
-        {
-          "note": "The entrypoint analysis records the legacy DirectX probe at the executable boundary.",
-          "path": "docs/re/static/entrypoint.md",
-          "repository_relative": true,
-          "sha256": "26838f5a68ca6a0227bb7c110a89a99dc48e183fdbac4077218a2cbe4e4de078"
-        }
-      ],
-      "kind": "platform-replaced",
-      "name": "platform-replaced-directx-version",
-      "resolution": "placeholder-object",
-      "retained_symbols": [
-        "_dx_get_version"
-      ],
-      "scope": "closure",
-      "symbols": [
-        "_dx_get_version"
       ]
     },
     {
@@ -1542,7 +1775,7 @@
           "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "5e26d66b5fe177bc74b88a4ae5c8f67cddc4f50ee40c0f53e667839ed546a3d5"
+          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
         },
         {
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",
@@ -1613,6 +1846,7 @@
           "GetStdHandle",
           "GetStringTypeA",
           "GetStringTypeW",
+          "GetSystemDirectoryA",
           "GetSystemTime",
           "GetTimeZoneInformation",
           "GetVersion",
@@ -1692,6 +1926,7 @@
           "GetStdHandle",
           "GetStringTypeA",
           "GetStringTypeW",
+          "GetSystemDirectoryA",
           "GetSystemTime",
           "GetTimeZoneInformation",
           "GetVersion",
@@ -1733,9 +1968,49 @@
           "WideCharToMultiByte",
           "WriteFile"
         ]
+      },
+      {
+        "declared_symbols": [
+          "CoCreateInstance",
+          "CoInitialize",
+          "CoUninitialize"
+        ],
+        "discarded_symbols": [],
+        "module": "ole32",
+        "retained_symbols": [
+          "CoCreateInstance",
+          "CoInitialize",
+          "CoUninitialize"
+        ]
+      },
+      {
+        "declared_symbols": [
+          "#8",
+          "#9"
+        ],
+        "discarded_symbols": [],
+        "module": "oleaut32",
+        "retained_symbols": [
+          "#8",
+          "#9"
+        ]
+      },
+      {
+        "declared_symbols": [
+          "GetFileVersionInfoA",
+          "GetFileVersionInfoSizeA",
+          "VerQueryValueA"
+        ],
+        "discarded_symbols": [],
+        "module": "version",
+        "retained_symbols": [
+          "GetFileVersionInfoA",
+          "GetFileVersionInfoSizeA",
+          "VerQueryValueA"
+        ]
       }
     ],
-    "link_dependency_retained_symbol_count": 78,
+    "link_dependency_retained_symbol_count": 87,
     "modules": [
       {
         "module": "advapi32",
@@ -1889,6 +2164,7 @@
           "GetStdHandle",
           "GetStringTypeA",
           "GetStringTypeW",
+          "GetSystemDirectoryA",
           "GetSystemTime",
           "GetTimeZoneInformation",
           "GetVersion",
@@ -1937,6 +2213,21 @@
         ]
       },
       {
+        "module": "ole32",
+        "symbols": [
+          "CoCreateInstance",
+          "CoInitialize",
+          "CoUninitialize"
+        ]
+      },
+      {
+        "module": "oleaut32",
+        "symbols": [
+          "#8",
+          "#9"
+        ]
+      },
+      {
         "module": "shell32",
         "symbols": [
           "ShellExecuteA"
@@ -1954,6 +2245,14 @@
           "GetForegroundWindow",
           "GetKeyNameTextA",
           "MessageBoxA"
+        ]
+      },
+      {
+        "module": "version",
+        "symbols": [
+          "GetFileVersionInfoA",
+          "GetFileVersionInfoSizeA",
+          "VerQueryValueA"
         ]
       },
       {
@@ -1986,24 +2285,24 @@
         ]
       }
     ],
-    "output_symbol_count": 112,
+    "output_symbol_count": 121,
     "symbol_count": 34
   },
-  "runnable": false,
+  "runnable": true,
   "schema": 3,
   "status": "linked",
   "summary": {
-    "archive_symbols": 62,
-    "closure_placeholder_symbols": 1,
+    "archive_symbols": 63,
+    "closure_placeholder_symbols": 0,
     "covered_symbols": 97,
     "discarded_placeholder_symbols": 10,
     "generated_import_symbols": 34,
     "import_exports": 34,
     "import_symbols": 34,
-    "input_object_count": 697,
+    "input_object_count": 706,
     "link_dependency_placeholder_symbols": 10,
-    "link_dependency_symbols": 88,
-    "placeholder_symbols": 11,
+    "link_dependency_symbols": 99,
+    "placeholder_symbols": 10,
     "providers": [
       {
         "alias_count": 32,
@@ -2094,6 +2393,46 @@
         "symbol_count": 1
       },
       {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "recovered-platform-kernel32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 1
+      },
+      {
+        "alias_count": 3,
+        "kind": "reference-import",
+        "name": "recovered-platform-ole32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 3
+      },
+      {
+        "alias_count": 2,
+        "kind": "reference-import",
+        "name": "recovered-platform-oleaut32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 2
+      },
+      {
+        "alias_count": 3,
+        "kind": "reference-import",
+        "name": "recovered-platform-version",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 3
+      },
+      {
+        "alias_count": 2,
+        "kind": "static-library",
+        "name": "recovered-platform-msvc6-runtime",
+        "resolution": "archive-library",
+        "scope": "link-dependency",
+        "symbol_count": 2
+      },
+      {
         "alias_count": 4,
         "kind": "reference-import",
         "name": "directx-8.1-d3dx8-kernel32",
@@ -2143,17 +2482,10 @@
       {
         "archive": "crimsonland-recovered-platform-vc6",
         "kind": "platform-replaced",
-        "name": "recovered-platform-registry",
+        "name": "recovered-platform",
         "resolution": "archive-library",
         "scope": "closure",
-        "symbol_count": 2
-      },
-      {
-        "kind": "platform-replaced",
-        "name": "platform-replaced-directx-version",
-        "resolution": "placeholder-object",
-        "scope": "closure",
-        "symbol_count": 1
+        "symbol_count": 3
       },
       {
         "alias_count": 1,
@@ -2165,12 +2497,12 @@
         "symbol_count": 1
       }
     ],
-    "retained_closure_placeholder_symbols": 1,
-    "retained_link_dependency_import_symbols": 78,
+    "retained_closure_placeholder_symbols": 0,
+    "retained_link_dependency_import_symbols": 87,
     "retained_link_dependency_placeholder_symbols": 0,
-    "retained_placeholder_symbols": 1,
-    "runnable": false,
-    "validated_output_import_symbols": 112,
+    "retained_placeholder_symbols": 0,
+    "runnable": true,
+    "validated_output_import_symbols": 121,
     "validated_reference_import_symbols": 34
   },
   "toolchain": {

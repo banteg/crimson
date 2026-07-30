@@ -23,6 +23,7 @@ IMAGE = "crimsonland.exe"
 SCRATCHES = (
     "dx_get_version",
     "dx_get_version_from_dxdiag",
+    "dx_get_version_fallback_from_files",
     "win32_file_get_version_words",
     "dx_version_pack_4x16",
     "dx_version_compare_4x16",

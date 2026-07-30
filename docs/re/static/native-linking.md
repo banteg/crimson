@@ -237,15 +237,15 @@ non-game closure exactly. The pinned VC6 archive supplies 57 excluded CRT
 functions plus `__fltused` and `sscanf`; the pinned DirectX 8.1 archive
 supplies `D3DXVec2Normalize`; generated import libraries supply 34 exports
 that are present in the reference PE; a deterministic recovered-source archive
-supplies the exact registry read and write helpers; and the legacy DirectX
-version gate remains the sole explicit closure placeholder.
+supplies the exact registry helpers and the complete legacy DirectX version
+island. No closure symbol remains a placeholder.
 
-The recovered-source recipe compiles seven exact all-scope platform functions:
-the DirectX wrapper, its DxDiag query, three version-resource leaves, and the
-two registry helpers. It rejects any instruction or reference regression
-before publishing the normalized archive. The five recovered DirectX members
-remain unselected until the one missing 2,920-byte file-version fallback is
-recovered, so the current link does not hide that dependency behind a stub.
+The recovered-source recipe compiles eight exact all-scope platform functions:
+the DirectX wrapper, its DxDiag query, the 2,920-byte file-version fallback,
+three version-resource leaves, and the two registry helpers. It rejects any
+instruction or reference regression before publishing the normalized archive.
+The DxDiag member also carries the two byte-proven GUID definitions from its
+original translation unit.
 
 The executable now enters through VC6's authentic `WinMainCRTStartup` member
 from `wincrt0.obj`. A deterministic weak alias maps the CRT's `_WinMain@16`
@@ -259,9 +259,10 @@ are D3DX8's `init_D3DXVec2Normalize` and `_D3DXVec2Normalize@8` in
 `d3dxmath.obj`. A weak alias now resolves the recovered
 `_vec2_normalize_dispatch@8` name to that original archive symbol.
 
-The combined archive-backed graph declares 88 transitive symbols. Seventy-eight
-map to KERNEL32 or ADVAPI32 exports retained by the reference image and are
-modeled as ordinary `link-dependency` imports. The other ten archive imports
+The combined archive-backed graph declares 99 transitive symbols. Eighty-seven
+map to reference-backed KERNEL32, ADVAPI32, OLE32, OLEAUT32, or VERSION imports,
+and two more resolve to `__snprintf` and `_tolower` in the pinned VC6 archive.
+The other ten archive imports
 (`EnumSystemLocalesA`, `FatalAppExitA`, `GetCurrentThread`, `GetLocaleInfoA`,
 `GetLocaleInfoW`, `GetUserDefaultLCID`, `IsValidCodePage`, `IsValidLocale`,
 `SetConsoleCtrlHandler`, and `TlsFree`) are absent from the reference import
@@ -269,15 +270,14 @@ boundary. They remain explicitly configured as link-only placeholders, but
 per-symbol COMDATs let `/OPT:REF` prove that all ten are discarded and do not
 survive in the produced PE.
 
-The canonical structural link retains all 78 reference-backed dependencies.
-Its 112 output imports are all present in the reference table, including
-DSOUND ordinal 11. One of 11 configured placeholders survives: the intentional
-DirectX-version platform replacement. The CLI therefore reports
-`placeholders=1/11`, and
-`runnable` remains false. The resulting PE file is 851,968 bytes with an
-864,256-byte in-memory image, entry RVA `0x4f0d0`, i386 machine type, Windows
-GUI subsystem, base `0x00400000`, and normalized zero timestamp. The checked
-record is
+The canonical structural link retains all 87 reference-backed dependencies.
+Its 121 output imports are all present in the reference table, including
+DSOUND ordinal 11 and OLEAUT32 ordinals 8 and 9. All ten configured
+link-only placeholders are discarded, so the CLI reports
+`placeholders=0/10 runnable=True`. The resulting PE file is 856,064 bytes with
+an 868,352-byte in-memory image, entry RVA `0x4f0de`, i386 machine type,
+Windows GUI subsystem, base `0x00400000`, and normalized zero timestamp. The
+checked record is
 `analysis/native/crimsonland.exe/link/link.json`; the PE, map, response, log,
 generated provider libraries, aliases, and placeholder object remain ignored.
 

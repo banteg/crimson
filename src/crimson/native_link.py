@@ -846,13 +846,13 @@ def load_native_provider_config(
             kind == "reference-import" and resolution == "import-library"
         ) or (
             kind in {"static-library", "toolchain"}
-            and resolution == "placeholder-object"
+            and resolution in {"archive-library", "placeholder-object"}
         )
         if scope == "link-dependency" and not valid_link_dependency:
             raise ValueError(
                 f"{label}: link-dependency scope requires either a "
                 "reference-import import-library provider or an explicit "
-                "static/toolchain placeholder provider",
+                "static/toolchain archive or placeholder provider",
             )
         if kind == "reference-import":
             if not isinstance(module, str) or not module:
@@ -5323,10 +5323,10 @@ def native_pe_imports(data: bytes) -> dict[str, tuple[str, ...]]:
         for descriptor in getattr(pe, "DIRECTORY_ENTRY_IMPORT", ()):
             module = descriptor.dll.decode("latin1").casefold().removesuffix(".dll")
             for imported in descriptor.imports:
-                if imported.name is not None:
-                    imports[module].add(imported.name.decode("latin1"))
-                elif imported.import_by_ordinal:
+                if imported.import_by_ordinal:
                     imports[module].add(f"#{int(imported.ordinal)}")
+                elif imported.name is not None:
+                    imports[module].add(imported.name.decode("latin1"))
         return {
             module: tuple(sorted(names))
             for module, names in sorted(imports.items())
