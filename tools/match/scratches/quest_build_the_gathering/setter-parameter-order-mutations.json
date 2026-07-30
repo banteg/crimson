@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "setter-parameter-order",
+      "find": "        count = spawn_count;\n    }\n};\n\nextern \"C\" void quest_build_the_gathering(",
+      "replacements": [
+        {
+          "name": "template-trigger-count-position",
+          "text": "        count = spawn_count;\n    }\n\n    void set_reordered(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count,\n        const quest_vec2_t &position)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n};\n\n#define set(position, template_id, trigger, spawn_count) \\\n    set_reordered(template_id, trigger, spawn_count, position)\n\nextern \"C\" void quest_build_the_gathering("
+        },
+        {
+          "name": "template-position-trigger-count",
+          "text": "        count = spawn_count;\n    }\n\n    void set_reordered(\n        int spawn_template_id,\n        const quest_vec2_t &position,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n};\n\n#define set(position, template_id, trigger, spawn_count) \\\n    set_reordered(template_id, position, trigger, spawn_count)\n\nextern \"C\" void quest_build_the_gathering("
+        },
+        {
+          "name": "template-trigger-position-count",
+          "text": "        count = spawn_count;\n    }\n\n    void set_reordered(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        const quest_vec2_t &position,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n};\n\n#define set(position, template_id, trigger, spawn_count) \\\n    set_reordered(template_id, trigger, position, spawn_count)\n\nextern \"C\" void quest_build_the_gathering("
+        },
+        {
+          "name": "position-trigger-template-count",
+          "text": "        count = spawn_count;\n    }\n\n    void set_reordered(\n        const quest_vec2_t &position,\n        int spawn_trigger_time_ms,\n        int spawn_template_id,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n};\n\n#define set(position, template_id, trigger, spawn_count) \\\n    set_reordered(position, trigger, template_id, spawn_count)\n\nextern \"C\" void quest_build_the_gathering("
+        },
+        {
+          "name": "position-template-count-trigger",
+          "text": "        count = spawn_count;\n    }\n\n    void set_reordered(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_count,\n        int spawn_trigger_time_ms)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n};\n\n#define set(position, template_id, trigger, spawn_count) \\\n    set_reordered(position, template_id, spawn_count, trigger)\n\nextern \"C\" void quest_build_the_gathering("
+        },
+        {
+          "name": "trigger-count-template-position",
+          "text": "        count = spawn_count;\n    }\n\n    void set_reordered(\n        int spawn_trigger_time_ms,\n        int spawn_count,\n        int spawn_template_id,\n        const quest_vec2_t &position)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n};\n\n#define set(position, template_id, trigger, spawn_count) \\\n    set_reordered(trigger, spawn_count, template_id, position)\n\nextern \"C\" void quest_build_the_gathering("
+        }
+      ]
+    }
+  ]
+}

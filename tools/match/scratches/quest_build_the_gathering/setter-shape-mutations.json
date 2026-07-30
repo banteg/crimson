@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "combined-setter-shape",
+      "find": "    void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }",
+      "replacements": [
+        {
+          "name": "position-by-value",
+          "text": "    void set(\n        quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        },
+        {
+          "name": "const-position-by-value",
+          "text": "    void set(\n        const quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        },
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        },
+        {
+          "name": "return-reference",
+          "text": "    quest_entry_original_t &set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return *this;\n    }"
+        },
+        {
+          "name": "scalar-position-copy",
+          "text": "    void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos.x = position.x;\n        pos.y = position.y;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "vector-constructor-shape",
+      "find": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "constructor-body",
+          "text": "    quest_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        },
+        {
+          "name": "explicit-inline",
+          "text": "    __inline quest_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline quest_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}"
+        }
+      ]
+    }
+  ]
+}

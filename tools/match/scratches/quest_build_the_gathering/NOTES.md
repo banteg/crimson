@@ -60,3 +60,29 @@ loses 48.69 to 167.72 weighted bytes, confirming the existing position-first,
 template-trigger-count form. No source change is retained. Validation remains
 649.2537313432836/725 weighted bytes, a 75.74626865671644 gap, 134/134
 instructions, prefix twelve, and references 0/0/0.
+
+## 2026-07-29 whole-table setter bound
+
+Three complete sweeps close the remaining natural fixed-table helper families.
+`whole-table-boundary-mutations.json` evaluates the exact sibling shape across
+all thirteen entries, not just one call at a time. Position assignment followed
+by a metadata helper regresses by 10.791044776119406 weighted bytes to 88.06%;
+fully direct metadata regresses by 97.01492537313425 bytes to 76.12%. Its plan
+SHA-256 is
+`dd18586acaacdaac4040d542f2477c0e9c04047e03c8a7775525c2f6599949fb`.
+
+`setter-shape-mutations.json` exhausts 27 single and paired constructor/setter
+forms. Position by value, const value, explicit or forced inline, a returned
+reference, and all constructor spellings are byte-identical; scalar position
+copying regresses. Its plan SHA-256 is
+`777abf41e950af6da03e0ae841111af57590ebb5ba6b3973e47f2b8e80ffb5c0`.
+
+Finally, `setter-parameter-order-mutations.json` uses six semantically exact
+call-signature permutations, including position-last and all relevant integer
+orders. VC6 canonicalizes every one to the baseline byte stream. Its plan
+SHA-256 is
+`5d4db88df0c094aad8efc26a12a15606b07cbbf290b8ee8d7fc431cc8622d7cd`.
+Together with the earlier store-order sweep, this bounds the constructor,
+aggregate-copy, helper-boundary, parameter-order, and metadata-order source
+families. The remaining legal store swaps are therefore retained as an honest
+compiler residual.
