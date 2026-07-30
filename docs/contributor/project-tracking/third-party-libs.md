@@ -121,10 +121,18 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   records; neither occurs in the EXE. This supports VC6 SP6 code-generator
   ancestry rather than a hidden per-object Processor Pack split.
 
-- Evidence: `grim.dll` contains product-10/11 C/C++ records from both builds
-  9782 and 8047. Mixed compiler inputs are therefore proven for Grim at the
-  image level, but the aggregate Rich data does not map either build to an
-  individual engine function.
+- Evidence: `MSVCRT.LIB` itself contains build-8047 Rich inputs: 3 product-4
+  linker members, 26 product-10 C members, and 4 product-11 C++ members. A
+  structural Grim relink through the pinned archive reproduces the reference's
+  exact product-4/build-8047 count of 2 and product-11/build-8047 count of 2,
+  plus 1 of its 4 product-10/build-8047 records. The aggregate 8047 records
+  therefore demonstrate provider ancestry, not a second engine compiler.
+
+- Evidence: authentic June 1998 Visual Studio 6 Enterprise RTM media
+  (`VSE600ENU1.ISO`, SHA-256
+  `a670cfb0a5ba6c89c2aa32fd884f21fa348e72cad9d4378b63d08e9da1708f15`)
+  emits `@comp.id=0x000b1fe8` for a controlled C++ object, identifying the
+  RTM frontend as build 8168 rather than 8047.
 
 - Status: the EXE's static CRT archive and Grim's DLL CRT provider are
   archive-confirmed. The Grim provider now participates in the structural

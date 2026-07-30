@@ -47,6 +47,40 @@
       ]
     },
     {
+      "id": "visual-studio-6-enterprise-rtm-devdays98",
+      "url": "https://archive.org/download/ms-vs60ent-devdays98/VSE600ENU1.ISO",
+      "size": 643289088,
+      "sha256": "a670cfb0a5ba6c89c2aa32fd884f21fa348e72cad9d4378b63d08e9da1708f15",
+      "sha1": "fc2f568db490d4115e301a400e15082888bf7296",
+      "members": [
+        {
+          "path": "VC98/BIN/CL.EXE",
+          "size": 65536,
+          "sha256": "d9220fdfaf355c81f26e7b03c5dc628ec72ff81c99dc38ed98b1ad4bdbbb309c"
+        },
+        {
+          "path": "VC98/BIN/C1.DLL",
+          "size": 667697,
+          "sha256": "ee14a2603a1339f95db2e396751f7e51b50e421731229fb2416a01f974689d80"
+        },
+        {
+          "path": "VC98/BIN/C1XX.DLL",
+          "size": 1183795,
+          "sha256": "4095e9e8de5ac4b13dbfe310abb8de711475b1a92c5f94375919947937f3237e"
+        },
+        {
+          "path": "VC98/BIN/C2.DLL",
+          "size": 737329,
+          "sha256": "45187b0b6288240f73272a7c61e6329c50048a76e57db3bb87b6f0229e09e27d"
+        },
+        {
+          "path": "COMMON/MSDEV98/BIN/MSPDB60.DLL",
+          "size": 180276,
+          "sha256": "7c90b80d42914562332e28c253415e72a80c6651003d08a9ffdc4ba6e27fc37c"
+        }
+      ]
+    },
+    {
       "id": "xiph-ogg-vorbis-win32sdk-1.0",
       "url": "https://web.archive.org/web/20030403114946id_/http://www.vorbis.com/files/1.0/windows/OggVorbis-win32sdk-1.0.zip",
       "size": 1666042,

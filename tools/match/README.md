@@ -57,11 +57,13 @@ Current PE evidence points to a VC6-family final link for
 - the image has a 2011-02-01 PE timestamp, so this looks like an old-code
   toolchain used for a later packaged/relinked binary.
 
-The Rich headers also contain some VC7-era import-library/static-object records,
-so treat that as mixed-library ancestry rather than the primary compiler.
-`grim.dll` separately contains C/C++ records from builds 9782 and 8047, proving
-an aggregate compiler mixture for that image. It does not establish which
-individual Grim functions came from each build.
+The Rich headers also contain import-library and static-object records, so do
+not treat every C/C++ product record as game-code compiler provenance. In
+particular, the pinned VC6 SP6 `msvcrt.lib` contains product 10/11 build-8047
+members. A structural Grim relink through that archive reproduces the
+reference's exact product-4/build-8047 count of 2 and
+product-11/build-8047 count of 2. Grim's aggregate 8047 records therefore do
+not prove that any engine translation unit used an 8047 frontend.
 
 ```sh
 MSVC_VER=msvc6.5
@@ -103,12 +105,11 @@ decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
 `msvc7.0` archives. The default dashboard profile is `msvc6.5 /O2 /GB`;
 alternate archives remain available for controlled shape experiments.
 
-### Grim build-8047 experiment gate
+### Grim build-8047 attribution control
 
-The image-wide build-8047 hypothesis cannot yet be tested honestly. The
-published decomp.me VC6 inventory and every compiler bundle available in the
-local Crimson/Snail Mail workspaces were fingerprinted from the version strings
-embedded in `C1XX.DLL` and `C2.DLL`:
+The published decomp.me VC6 inventory and every compiler bundle available in
+the local Crimson/Snail Mail workspaces were fingerprinted from the version
+strings embedded in `C1XX.DLL` and `C2.DLL`:
 
 | profile | C++ frontend | optimizer |
 | --- | ---: | ---: |
@@ -119,24 +120,40 @@ embedded in `C1XX.DLL` and `C2.DLL`:
 | `msvc6.5pp` | 8964 | 9044 |
 | `msvc6.6` | 9782 | 9782 |
 
-None contains an 8047 frontend or optimizer. The two otherwise-uninstalled
-published archives checked here were `msvc6.3.tar.gz` at SHA-256
+None contains an 8047 frontend or optimizer. An additional compile with the
+authentic June 1998 Visual Studio 6 Enterprise RTM media
+`VSE600ENU1.ISO` (SHA-256
+`a670cfb0a5ba6c89c2aa32fd884f21fa348e72cad9d4378b63d08e9da1708f15`)
+stamps a C++ object as `@comp.id=0x000b1fe8`, or build 8168, confirming
+that 8047 is not the RTM frontend under a different profile name. The two
+otherwise-uninstalled published archives checked here were `msvc6.3.tar.gz`
+at SHA-256
 `84f73e718b3671bfd5de3b7764622b07633b572ee826ca3b77602d224c128608`
 and `msvc6.4.tar.gz` at SHA-256
 `6d4ef930390ca7481ae5b63ea3bf00d62e0993cd95f1d6f42ba06bb30f993c57`.
 Do not substitute 8168 or another nearby build and label the result 8047.
 
-A corpus-wide Grim comparison between the available 8966 and 9782 optimizers
-is still useful as a control. Across all 137 Grim scratches it produced
-`0` wins, `0` losses, and `137` ties under the canonical state/ratio/reference
-rank. Both profiles report 130 matches, seven WIPs, 20,104.442 fuzzy-weighted
-bytes, and total reference debt 13, so there is no 9782-preference island.
+The pinned VC6 SP6 `msvcrt.lib` explains why 8047 appears without such a
+compiler bundle. Its COFF members contain 3 product-4, 26 product-10, and
+4 product-11 records with build 8047. The current structural Grim relink,
+which resolves the DLL's CRT seam through that archive, carries 2 product-4,
+1 product-10, and 2 product-11 build-8047 records. The product-4 and
+product-11 counts exactly equal the reference image, while the partial
+product-10 reproduction is sufficient to falsify the inference that the
+aggregate C record count belongs to engine code.
 
-To unblock the proposed two-build experiment, provide a provenance-hashed
-bundle whose compiler components actually identify build 8047. Then compare
-the complete Grim corpus under 9782 and 8047 and accept compiler provenance
-only for address-contiguous preference runs; scattered wins remain
-source-shape evidence.
+Corpus-wide controls also reject a hidden SP6 backend split. Across the current
+137-function Grim corpus, the available 8966 and 9782 optimizers produce
+`0` wins, `0` losses, and `137` ties: both report 131 exact functions,
+14,938 exact bytes, six WIPs, 20,800.513 fuzzy-weighted bytes, and total
+reference debt 1. Across all 671 executable scratches the same comparison is
+also byte-for-byte tied: 561 exact functions, 115,403 exact bytes, 110 WIPs,
+282,305.057 fuzzy-weighted bytes, and reference debt 103.
+
+Do not spend matching time searching for an 8047 game compiler unless new
+object-local evidence separates an engine translation unit from the confirmed
+import-library contribution. Rich-header aggregate counts alone are provider
+ancestry, not a compiler-selection target.
 
 Run the compiler through `wibo`. Put `wibo` on `PATH`, set
 `WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple
