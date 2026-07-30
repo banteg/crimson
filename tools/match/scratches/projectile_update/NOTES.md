@@ -907,3 +907,25 @@ The canonical result rises to `4839.3235/8409` weighted bytes
 `d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`;
 the 61-record, 718-variant `experiments.jsonl` SHA-256 is
 `48dc4299a1b09391622837b8ab75c61da8ca07688eb19195c3a986b7cc8d6728`.
+
+## Particle age selection boundary
+
+Native `0x0042283f..0x0042285a` keeps the selected age value on x87 across
+the intensity comparison and performs one final store. The canonical
+if/else instead materializes the intensity arm with an integer move.
+
+`particle-age-selection-mutations.json` (SHA-256
+`4c91fe94730ef563c37ebd2a1c204afb8853bd82206bc35abd0a057806094de1`)
+exhausts all 12 ordinary direct-ternary, named-result, cached-intensity, and
+assign-then-clamp spellings. The five result-selection forms each gain
+3.8591 fuzzy-weighted bytes locally, but all add three reference mismatches
+and lose two aligned references. Clamp forms also move the candidate one or
+two instructions farther below native. No form is retained.
+
+This bounds the age residual as coupled to the whole-function allocator
+rather than the local selection spelling. Canonical metrics and source remain
+unchanged at `4839.3235/8409` weighted bytes (`57.5493346%`),
+2,155/2,203 instructions, and `403/0/20` references, with source SHA-256
+`d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`.
+The 62-record, 730-variant `experiments.jsonl` SHA-256 is
+`1e7a926922fe8d60fae916048e14a04d75633cf836e926a5def3efedb8a20ca3`.

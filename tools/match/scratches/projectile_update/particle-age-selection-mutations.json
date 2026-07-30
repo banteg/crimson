@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-age-selection",
+      "find": "                if (particle->intensity <= 1.0f) {\n                    particle->age = particle->intensity;\n                } else {\n                    particle->age = 1.0f;\n                }",
+      "replacements": [
+        {
+          "name": "direct-ternary",
+          "text": "                particle->age = particle->intensity <= 1.0f\n                    ? particle->intensity\n                    : 1.0f;"
+        },
+        {
+          "name": "reversed-direct-ternary",
+          "text": "                particle->age = particle->intensity > 1.0f\n                    ? 1.0f\n                    : particle->intensity;"
+        },
+        {
+          "name": "named-branch-result",
+          "text": "                float particle_age;\n                if (particle->intensity <= 1.0f) {\n                    particle_age = particle->intensity;\n                } else {\n                    particle_age = 1.0f;\n                }\n                particle->age = particle_age;"
+        },
+        {
+          "name": "named-reversed-branch-result",
+          "text": "                float particle_age;\n                if (particle->intensity > 1.0f) {\n                    particle_age = 1.0f;\n                } else {\n                    particle_age = particle->intensity;\n                }\n                particle->age = particle_age;"
+        },
+        {
+          "name": "named-ternary-result",
+          "text": "                float particle_age = particle->intensity <= 1.0f\n                    ? particle->intensity\n                    : 1.0f;\n                particle->age = particle_age;"
+        },
+        {
+          "name": "cached-intensity-branch-result",
+          "text": "                float particle_intensity = particle->intensity;\n                float particle_age;\n                if (particle_intensity <= 1.0f) {\n                    particle_age = particle_intensity;\n                } else {\n                    particle_age = 1.0f;\n                }\n                particle->age = particle_age;"
+        },
+        {
+          "name": "cached-intensity-ternary-result",
+          "text": "                float particle_intensity = particle->intensity;\n                particle->age = particle_intensity <= 1.0f\n                    ? particle_intensity\n                    : 1.0f;"
+        },
+        {
+          "name": "assign-intensity-then-clamp",
+          "text": "                particle->age = particle->intensity;\n                if (particle->age > 1.0f) {\n                    particle->age = 1.0f;\n                }"
+        },
+        {
+          "name": "assign-one-then-lower",
+          "text": "                particle->age = 1.0f;\n                if (particle->intensity <= 1.0f) {\n                    particle->age = particle->intensity;\n                }"
+        },
+        {
+          "name": "named-intensity-then-clamp",
+          "text": "                float particle_age = particle->intensity;\n                if (particle_age > 1.0f) {\n                    particle_age = 1.0f;\n                }\n                particle->age = particle_age;"
+        },
+        {
+          "name": "named-one-then-lower",
+          "text": "                float particle_age = 1.0f;\n                if (particle->intensity <= 1.0f) {\n                    particle_age = particle->intensity;\n                }\n                particle->age = particle_age;"
+        },
+        {
+          "name": "register-branch-result",
+          "text": "                register float particle_age;\n                if (particle->intensity <= 1.0f) {\n                    particle_age = particle->intensity;\n                } else {\n                    particle_age = 1.0f;\n                }\n                particle->age = particle_age;"
+        }
+      ]
+    }
+  ]
+}
