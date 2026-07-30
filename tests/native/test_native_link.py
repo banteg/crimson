@@ -2189,10 +2189,10 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert payload["summary"]["code_label_entries"] == 3
     assert payload["summary"]["entry_count"] == 274
     assert payload["summary"]["typed_entries"] == 224
-    assert payload["summary"]["explicit_size_entries"] == 268
-    assert payload["summary"]["explicit_alignment_entries"] == 268
-    assert payload["summary"]["explicit_initializer_entries"] == 268
-    assert payload["summary"]["fully_specified_entries"] == 268
+    assert payload["summary"]["explicit_size_entries"] == 274
+    assert payload["summary"]["explicit_alignment_entries"] == 274
+    assert payload["summary"]["explicit_initializer_entries"] == 274
+    assert payload["summary"]["fully_specified_entries"] == 274
     assert payload["summary"]["definition_group_entries"] == 213
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2235,6 +2235,18 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_dxt5_alpha_weights_max_8"]["size"] == 0x20
     assert defined["grim_dxt1_color_weights_min_3"]["size"] == 0x0C
     assert defined["grim_dxt5_alpha_index_map_6"]["size"] == 0x18
+    assert defined["grim_format_info_default"]["size"] == 0x24
+    assert defined["grim_format_info_entries"]["size"] == 43 * 0x24
+    assert defined["grim_format_info_end"]["initializer_hex"] == "bcc90410"
+    assert defined["c_dfDIJoystick2"]["initializer_hex"] == (
+        "18000000100000000100000010010000a4000000808e0310"
+    )
+    assert defined["c_dfDIKeyboard"]["initializer_hex"] == (
+        "1800000010000000020000000001000000010000d0980310"
+    )
+    assert defined["c_dfDIMouse2"]["initializer_hex"] == (
+        "180000001000000002000000140000000b000000d0a80310"
+    )
     assert defined["IID_IDirectInput8A"]["initializer_hex"] == (
         "308079bf3a48a24daa995d64ed369700"
     )

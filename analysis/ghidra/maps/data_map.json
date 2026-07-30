@@ -12755,7 +12755,7 @@
       "comment": "Start of the 36-byte D3D pixel-format descriptor table.",
       "name": "grim_format_info_entries",
       "program": "grim.dll",
-      "type": "grim_format_info_t[]"
+      "type": "grim_format_info_t[43]"
     },
     {
       "address": "0x10053c50",

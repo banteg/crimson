@@ -1,5 +1,7 @@
 #include "grim_d3d8.h"
 
+#include <dinput.h>
+
 #include "grim2d_abi.h"
 #include "crimsonland_types.h"
 #include "grim_joystick_state.h"
@@ -159,6 +161,20 @@ struct grim_uv_alignment_probe_t {
     grim_uv_layout_t value;
 };
 
+struct grim_format_info_layout_t {
+    unsigned int words[9];
+};
+
+struct grim_format_info_alignment_probe_t {
+    char prefix;
+    grim_format_info_layout_t value;
+};
+
+struct grim_di_data_format_alignment_probe_t {
+    char prefix;
+    DIDATAFORMAT value;
+};
+
 GRIM_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 GRIM_ABI_ASSERT(codec_vtable_is_four_slots, sizeof(void *[4]) == 0x10);
 GRIM_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
@@ -210,6 +226,18 @@ GRIM_ABI_ASSERT(
 GRIM_ABI_ASSERT(
     dxt_uint_table_3_is_0x0c,
     sizeof(unsigned int[3]) == 0x0c);
+GRIM_ABI_ASSERT(
+    format_info_is_0x24,
+    sizeof(grim_format_info_layout_t) == 0x24);
+GRIM_ABI_ASSERT(
+    format_info_table_43_is_0x60c,
+    sizeof(grim_format_info_layout_t[43]) == 0x60c);
+GRIM_ABI_ASSERT(
+    di_object_data_format_is_0x10,
+    sizeof(DIOBJECTDATAFORMAT) == 0x10);
+GRIM_ABI_ASSERT(
+    di_data_format_is_0x18,
+    sizeof(DIDATAFORMAT) == 0x18);
 GRIM_ABI_ASSERT(
     joystick_buttons_are_0x80,
     sizeof(((GrimJoystickState *)0)->rgbButtons) == 0x80);
@@ -322,6 +350,12 @@ GRIM_ABI_ASSERT(
 GRIM_ABI_ASSERT(
     default_uv_alignment_is_four,
     offsetof(grim_uv_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_format_info_alignment_is_four,
+    offsetof(grim_format_info_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_di_data_format_alignment_is_four,
+    offsetof(grim_di_data_format_alignment_probe_t, value) == 4);
 
 GRIM_ABI_ASSERT(factory_pointer_is_32_bit, sizeof(grim_get_interface_fn) == 4);
 GRIM_ABI_ASSERT(member_pointer_is_32_bit, sizeof(grim_apply_settings_fn) == 4);
