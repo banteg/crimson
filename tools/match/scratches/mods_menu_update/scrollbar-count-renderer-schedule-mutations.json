@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scrollbar-count-renderer-schedule",
+      "find": "    IGrim2D_cpp *renderer = grim_interface_ptr;\n    scrollbar.items = mods_menu_item_labels;\n    scrollbar.item_count = mods_menu_entry_count;\n    scrollbar.visible_rows = 5;",
+      "replacements": [
+        {
+          "name": "count-before-renderer",
+          "text": "    int entry_count = mods_menu_entry_count;\n    IGrim2D_cpp *renderer = grim_interface_ptr;\n    scrollbar.items = mods_menu_item_labels;\n    scrollbar.item_count = entry_count;\n    scrollbar.visible_rows = 5;"
+        },
+        {
+          "name": "count-after-renderer",
+          "text": "    IGrim2D_cpp *renderer = grim_interface_ptr;\n    int entry_count = mods_menu_entry_count;\n    scrollbar.items = mods_menu_item_labels;\n    scrollbar.item_count = entry_count;\n    scrollbar.visible_rows = 5;"
+        },
+        {
+          "name": "items-before-renderer",
+          "text": "    scrollbar.items = mods_menu_item_labels;\n    IGrim2D_cpp *renderer = grim_interface_ptr;\n    scrollbar.item_count = mods_menu_entry_count;\n    scrollbar.visible_rows = 5;"
+        },
+        {
+          "name": "count-and-items-before-renderer",
+          "text": "    int entry_count = mods_menu_entry_count;\n    scrollbar.items = mods_menu_item_labels;\n    IGrim2D_cpp *renderer = grim_interface_ptr;\n    scrollbar.item_count = entry_count;\n    scrollbar.visible_rows = 5;"
+        }
+      ]
+    }
+  ]
+}

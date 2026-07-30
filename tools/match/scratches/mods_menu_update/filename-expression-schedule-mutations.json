@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "filename-expression-schedule",
+      "find": "        char *filename =\n            mods_menu_filenames[scrollbar.selected_index];\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    filename),\n            position.y,\n            \"%s\",\n            filename);",
+      "replacements": [
+        {
+          "name": "direct-indexed-expression",
+          "text": "        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    mods_menu_filenames[scrollbar.selected_index]),\n            position.y,\n            \"%s\",\n            mods_menu_filenames[scrollbar.selected_index]);"
+        },
+        {
+          "name": "direct-first-element-expression",
+          "text": "        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    &mods_menu_filenames[scrollbar.selected_index][0]),\n            position.y,\n            \"%s\",\n            &mods_menu_filenames[scrollbar.selected_index][0]);"
+        },
+        {
+          "name": "named-index-expression",
+          "text": "        int selected_index = scrollbar.selected_index;\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    mods_menu_filenames[selected_index]),\n            position.y,\n            \"%s\",\n            mods_menu_filenames[selected_index]);"
+        },
+        {
+          "name": "named-index-pointer",
+          "text": "        int selected_index = scrollbar.selected_index;\n        char *filename = mods_menu_filenames[selected_index];\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    filename),\n            position.y,\n            \"%s\",\n            filename);"
+        }
+      ]
+    }
+  ]
+}

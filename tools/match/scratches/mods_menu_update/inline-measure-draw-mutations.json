@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "version-inline-measure",
+      "find": "        IGrim2D_cpp *version_renderer = grim_interface_ptr;\n        int text_width =\n            version_renderer->grim_measure_text_width(version_text);\n        version_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            version_text);",
+      "replacements": [
+        {
+          "name": "nested-measure-call",
+          "text": "        IGrim2D_cpp *version_renderer = grim_interface_ptr;\n        int text_width;\n        version_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)version_renderer->grim_measure_text_width(\n                    version_text),\n            position.y,\n            \"%s\",\n            version_text);"
+        }
+      ]
+    },
+    {
+      "name": "version-label-inline-measure",
+      "find": "        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;\n        text_width =\n            version_label_renderer->grim_measure_text_width(\"version\");\n        version_label_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"version\");",
+      "replacements": [
+        {
+          "name": "nested-measure-call",
+          "text": "        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;\n        version_label_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)version_label_renderer->grim_measure_text_width(\n                    \"version\"),\n            position.y,\n            \"version\");"
+        }
+      ]
+    },
+    {
+      "name": "author-inline-measure",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(\n                mods_menu_selected_info->author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            mods_menu_selected_info->author);",
+      "replacements": [
+        {
+          "name": "nested-measure-call",
+          "text": "        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    mods_menu_selected_info->author),\n            position.y,\n            \"%s\",\n            mods_menu_selected_info->author);"
+        }
+      ]
+    },
+    {
+      "name": "filename-inline-measure",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(filename);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            filename);",
+      "replacements": [
+        {
+          "name": "nested-measure-call",
+          "text": "        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    filename),\n            position.y,\n            \"%s\",\n            filename);"
+        }
+      ]
+    }
+  ]
+}

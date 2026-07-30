@@ -214,11 +214,10 @@ extern "C" void mods_menu_update(void)
             version_text,
             "v%.2f",
             (double)mods_menu_selected_info->version);
-        IGrim2D_cpp *version_renderer = grim_interface_ptr;
-        int text_width =
-            version_renderer->grim_measure_text_width(version_text);
-        version_renderer->grim_draw_text_small_fmt(
-            position.x + 192.0f - (float)text_width,
+        grim_interface_ptr->grim_draw_text_small_fmt(
+            position.x + 192.0f
+                - (float)grim_interface_ptr->grim_measure_text_width(
+                    version_text),
             position.y,
             "%s",
             version_text);
@@ -236,11 +235,10 @@ extern "C" void mods_menu_update(void)
             1.0f, 1.0f, 1.0f, 0.34f);
         grim_interface_ptr->grim_draw_text_small_fmt(
             position.x, position.y, "name");
-        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;
-        text_width =
-            version_label_renderer->grim_measure_text_width("version");
-        version_label_renderer->grim_draw_text_small_fmt(
-            position.x + 192.0f - (float)text_width,
+        grim_interface_ptr->grim_draw_text_small_fmt(
+            position.x + 192.0f
+                - (float)grim_interface_ptr->grim_measure_text_width(
+                    "version"),
             position.y,
             "version");
 
@@ -252,11 +250,10 @@ extern "C" void mods_menu_update(void)
 
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 0.96f);
-        text_width =
-            grim_interface_ptr->grim_measure_text_width(
-                mods_menu_selected_info->author);
         grim_interface_ptr->grim_draw_text_small_fmt(
-            position.x + 192.0f - (float)text_width,
+            position.x + 192.0f
+                - (float)grim_interface_ptr->grim_measure_text_width(
+                    mods_menu_selected_info->author),
             position.y,
             "%s",
             mods_menu_selected_info->author);
@@ -269,15 +266,13 @@ extern "C" void mods_menu_update(void)
 
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 0.96f);
-        char *filename =
-            mods_menu_filenames[scrollbar.selected_index];
-        text_width =
-            grim_interface_ptr->grim_measure_text_width(filename);
         grim_interface_ptr->grim_draw_text_small_fmt(
-            position.x + 192.0f - (float)text_width,
+            position.x + 192.0f
+                - (float)grim_interface_ptr->grim_measure_text_width(
+                    mods_menu_filenames[scrollbar.selected_index]),
             position.y,
             "%s",
-            filename);
+            mods_menu_filenames[scrollbar.selected_index]);
 
         position.y += 15.0f;
         if (mods_menu_selected_info->usesApiVersion != 3) {

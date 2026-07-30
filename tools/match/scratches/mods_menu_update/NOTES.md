@@ -27,20 +27,20 @@ matching the native load at `0x0040ec74` and its use at `0x0040ecbc`.
 Current MSVC 6.5 `/O2 /GB` result:
 
 ```txt
-match=86.09% prefix=0/648 target_insns=648 candidate_insns=646 refs=172/0/0
+match=94.29% prefix=0/648 target_insns=648 candidate_insns=648 refs=183/0/0
 first_target=sub esp, 0x144
-first_candidate=sub esp, 0x15c
+first_candidate=sub esp, 0x160
 ```
 
 Recovery is semantic-complete. The remaining differences are compiler lifetime
 and scheduling residue. The
 native function reuses the ended `_finddata_t` metadata area for the later
 16-byte version string and places a vector return temporary eight bytes later;
-the natural candidate retains a frame 24 bytes larger. Capturing the renderer
-at its recovered source lifetime removes the prior static-scrollbar scheduling
-mismatch and reduces the fuzzy gap by 12.10 bytes. The source deliberately does
-not use unions, volatile state, dead expressions, forced addresses, inline
-assembly, or fake aliases to manufacture native local layout.
+the natural candidate retains a frame 28 bytes larger. Recovering the nested
+measure/draw expressions and direct filename indexing closes the remaining
+semantic scheduling clusters without manufacturing local layout. The source
+deliberately does not use unions, volatile state, dead expressions, forced
+addresses, inline assembly, or fake aliases to manufacture native local layout.
 
 The function-local scrollbar, Main Menu button, Launch button, shared
 constructor guard, and all three `atexit` cleanup thunks are mapped. Each
@@ -146,3 +146,50 @@ the complete experiment ledger SHA-256 is
 `64ce1cf1b3cfbb4fe5accc57cfb9b3ab77647990cc81cebca10f24fa2adacfc4`.
 The frame remains `0x15c` versus native `0x144`; the remaining gap is still
 classified `RESIDUAL=compiler`.
+
+## Nested measure/draw recovery (2026-07-30)
+
+Live disassembly showed that all four right-aligned metadata values evaluate
+`grim_measure_text_width(...)` as a nested argument of
+`grim_draw_text_small_fmt(...)`. That source shape lets VC6 prebuild the draw
+arguments, retain the shared vtable in `esi`, call the measurement slot, and
+then finish the x87 subtraction before the draw slot. The named `text_width`
+temporary used by the prior source prevented that schedule.
+
+Four complete bounded sweeps recovered the natural source shape:
+
+- `inline-measure-draw-mutations.json` evaluated all 15 combinations of the
+  four render pairs. Inlining the author and filename measurements together
+  gains 40.293663 weighted bytes and four resolved references without debt.
+  The version pairs require a different interface lifetime. Spec SHA-256 is
+  `db3a0c12b9b728f99f865542ab8dadf5b2b891a61ce2d88b153b4e3d49ab85b9`.
+- `nested-measure-interface-mutations.json` evaluated all 15 direct and mixed
+  interface-lifetime combinations for the version value and label. Direct use
+  of `grim_interface_ptr` for both outer draws and nested measurements is the
+  clean winner: +113.145601 weighted bytes, +2 instructions, and +5 resolved
+  references. This reaches the native 648-instruction count. Spec SHA-256 is
+  `c63f02bc1b8fd3e26652928a67f32c7048f8f0db41bef4b7a2b3a989c2821b28`.
+- `filename-expression-schedule-mutations.json` evaluated four pointer/index
+  spellings. Direct indexed expressions, first-element expressions, and a
+  named index compile identically; the simplest direct form is retained. It
+  gains 60.347222 weighted bytes and two resolved references without changing
+  the exact instruction count. Spec SHA-256 is
+  `a432cd6061782da35ef34388502454422d0117841c514b175e324bbb58040837`.
+- `scrollbar-count-renderer-schedule-mutations.json` evaluated four natural
+  orderings for the only remaining non-stack-looking load pair. All four are
+  compiler-identical and score-neutral, bounding that residual. Spec SHA-256
+  is `a0086b22c2db8ca631a1c84f98f43c7a62c266517d945e8a3c30a42b9f80af7d`.
+
+Together these changes improve the canonical result from 86.09% to **94.29%**,
+reduce the fuzzy gap from 362.642968 to **148.856481 weighted bytes**, reach
+**648/648 instructions**, and improve references from `172/0/0` to
+**`183/0/0`**. Every remaining localized region is either a stack displacement
+caused by the unreused `_finddata_t` storage or the neutral scrollbar load
+ordering above. The final frame is `0x160` versus native `0x144`, so the honest
+residual remains `RESIDUAL=compiler`.
+
+The complete ledger now contains 11 sweeps and 155 evaluated variants with
+zero errors. Final source SHA-256 is
+`74d6204d7290c5c6470ea924eb79b364dd017143530488a50abf219fc333e6e7`;
+ledger SHA-256 is
+`1ca81e6bad2175fafeb8e6e6bc0c11fec92601c0a2befbd6b3fa62a2ae1f3ddd`.

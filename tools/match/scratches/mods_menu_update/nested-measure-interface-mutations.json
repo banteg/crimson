@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "version-nested-interface",
+      "find": "        IGrim2D_cpp *version_renderer = grim_interface_ptr;\n        int text_width =\n            version_renderer->grim_measure_text_width(version_text);\n        version_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            version_text);",
+      "replacements": [
+        {
+          "name": "global-outer-global-measure",
+          "text": "        int text_width;\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    version_text),\n            position.y,\n            \"%s\",\n            version_text);"
+        },
+        {
+          "name": "local-outer-global-measure",
+          "text": "        IGrim2D_cpp *version_renderer = grim_interface_ptr;\n        int text_width;\n        version_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    version_text),\n            position.y,\n            \"%s\",\n            version_text);"
+        },
+        {
+          "name": "global-outer-local-measure",
+          "text": "        IGrim2D_cpp *version_renderer = grim_interface_ptr;\n        int text_width;\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)version_renderer->grim_measure_text_width(\n                    version_text),\n            position.y,\n            \"%s\",\n            version_text);"
+        }
+      ]
+    },
+    {
+      "name": "version-label-nested-interface",
+      "find": "        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;\n        text_width =\n            version_label_renderer->grim_measure_text_width(\"version\");\n        version_label_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"version\");",
+      "replacements": [
+        {
+          "name": "global-outer-global-measure",
+          "text": "        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    \"version\"),\n            position.y,\n            \"version\");"
+        },
+        {
+          "name": "local-outer-global-measure",
+          "text": "        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;\n        version_label_renderer->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)grim_interface_ptr->grim_measure_text_width(\n                    \"version\"),\n            position.y,\n            \"version\");"
+        },
+        {
+          "name": "global-outer-local-measure",
+          "text": "        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f\n                - (float)version_label_renderer->grim_measure_text_width(\n                    \"version\"),\n            position.y,\n            \"version\");"
+        }
+      ]
+    }
+  ]
+}
