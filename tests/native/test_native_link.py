@@ -806,7 +806,7 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["output"]["pe"] == {
         "characteristics": 271,
         "dll": False,
-        "entry_point_rva": 323696,
+        "entry_point_rva": 323712,
         "image_base": 0x00400000,
         "image_size": 864256,
         "machine": matchlib.IMAGE_FILE_MACHINE_I386,
@@ -2246,12 +2246,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert payload["summary"]["entry_count"] == 1548
     assert payload["summary"]["typed_entries"] == 1548
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 998
-    assert payload["summary"]["explicit_alignment_entries"] == 998
-    assert payload["summary"]["explicit_initializer_entries"] == 998
-    assert payload["summary"]["fully_specified_entries"] == 998
-    assert payload["summary"]["definition_group_entries"] == 914
-    assert payload["summary"]["definition_groups"] == 115
+    assert payload["summary"]["explicit_size_entries"] == 1069
+    assert payload["summary"]["explicit_alignment_entries"] == 1069
+    assert payload["summary"]["explicit_initializer_entries"] == 1069
+    assert payload["summary"]["fully_specified_entries"] == 1069
+    assert payload["summary"]["definition_group_entries"] == 985
+    assert payload["summary"]["definition_groups"] == 121
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2272,6 +2272,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     }
     assert defined["config_blob"]["size"] == 0x480
     assert defined["config_blob"]["initializer_fill"] == "00"
+    assert defined["config_direction_arrow_flags"]["size"] == 2
+    assert defined["config_player_mode_flags"]["size"] == 4 * 4
+    assert defined["config_saved_name_0"]["size"] == 27
+    assert defined["config_key_reload"]["definition_group"] == (
+        "mapped-bss-zero-int32"
+    )
     assert defined["player_state_table"]["size"] == 0x6C0
     assert defined["creature_pool"]["size"] == 0xE400
     assert defined["highscore_table"]["size"] == 0x1C20

@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "8573bf272f5ea0551e1e125e63ff9ab1430aab0db46af78142adc01c7178dd9d",
+  "audit_digest": "ac83f2a8663fe145f34d413a234e24f2b18a1d10acc6e31c780f86a454d19bf0",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -1442,15 +1442,15 @@
         },
         {
           "address": 4719434,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_highscore_date_mode",
           "section_number": 89,
           "section_offset": 2,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4719434,
+          "storage_name": "config_highscore_date_mode",
           "symbols": [
             "?config_highscore_date_mode@@3EA",
             "_config_highscore_date_mode"
@@ -1458,75 +1458,75 @@
         },
         {
           "address": 4719435,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_highscore_duplicate_mode",
           "section_number": 89,
           "section_offset": 3,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4719435,
+          "storage_name": "config_highscore_duplicate_mode",
           "symbols": [
             "_config_highscore_duplicate_mode"
           ]
         },
         {
           "address": 4719436,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_direction_arrow_flags",
           "section_number": 89,
           "section_offset": 4,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 2,
+          "storage_address": 4719436,
+          "storage_name": "config_direction_arrow_flags",
           "symbols": [
             "_config_direction_arrow_flags"
           ]
         },
         {
           "address": 4719446,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_fx_detail_flag0",
           "section_number": 89,
           "section_offset": 14,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4719446,
+          "storage_name": "config_fx_detail_flag0",
           "symbols": [
             "_config_fx_detail_flag0"
           ]
         },
         {
           "address": 4719448,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_fx_detail_flag1",
           "section_number": 89,
           "section_offset": 16,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4719448,
+          "storage_name": "config_fx_detail_flag1",
           "symbols": [
             "_config_fx_detail_flag1"
           ]
         },
         {
           "address": 4719449,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_fx_detail_flag2",
           "section_number": 89,
           "section_offset": 17,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4719449,
+          "storage_name": "config_fx_detail_flag2",
           "symbols": [
             "_config_fx_detail_flag2"
           ]
@@ -1565,60 +1565,60 @@
         },
         {
           "address": 4719460,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_player_mode_flags",
           "section_number": 89,
           "section_offset": 28,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 16,
+          "storage_address": 4719460,
+          "storage_name": "config_player_mode_flags",
           "symbols": [
             "_config_player_mode_flags"
           ]
         },
         {
           "address": 4719500,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_aim_scheme",
           "section_number": 89,
           "section_offset": 68,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 16,
+          "storage_address": 4719500,
+          "storage_name": "config_aim_scheme",
           "symbols": [
             "_config_aim_scheme"
           ]
         },
         {
           "address": 4719544,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_texture_scale",
           "section_number": 89,
           "section_offset": 112,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 4,
+          "storage_address": 4719544,
+          "storage_name": "config_texture_scale",
           "symbols": [
             "_config_texture_scale"
           ]
         },
         {
           "address": 4719560,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_selected_saved_name_slot",
           "section_number": 89,
           "section_offset": 128,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 4,
+          "storage_address": 4719560,
+          "storage_name": "config_selected_saved_name_slot",
           "symbols": [
             "?config_selected_saved_name_slot@@3HA",
             "_config_selected_saved_name_slot"
@@ -1626,15 +1626,15 @@
         },
         {
           "address": 4719600,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_saved_name_0",
           "section_number": 89,
           "section_offset": 168,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 27,
+          "storage_address": 4719600,
+          "storage_name": "config_saved_name_0",
           "symbols": [
             "?config_saved_name_0@@3PAY0BL@DA"
           ]
@@ -1656,30 +1656,30 @@
         },
         {
           "address": 4719880,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_screen_height",
           "section_number": 89,
           "section_offset": 448,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 4,
+          "storage_address": 4719880,
+          "storage_name": "config_screen_height",
           "symbols": [
             "_config_screen_height"
           ]
         },
         {
           "address": 4719888,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_p1_move_forward",
           "section_number": 89,
           "section_offset": 456,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 4,
+          "storage_address": 4719888,
+          "storage_name": "config_p1_move_forward",
           "symbols": [
             "_config_p1_move_forward"
           ]
@@ -1702,45 +1702,45 @@
         },
         {
           "address": 4720529,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_ui_info_texts",
           "section_number": 89,
           "section_offset": 1097,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4720529,
+          "storage_name": "config_ui_info_texts",
           "symbols": [
             "_config_ui_info_texts"
           ]
         },
         {
           "address": 4720564,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_violence_disabled",
           "section_number": 89,
           "section_offset": 1132,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4720564,
+          "storage_name": "config_violence_disabled",
           "symbols": [
             "_config_violence_disabled"
           ]
         },
         {
           "address": 4720565,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_score_load_gate",
           "section_number": 89,
           "section_offset": 1133,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 1,
+          "storage_address": 4720565,
+          "storage_name": "config_score_load_gate",
           "symbols": [
             "?config_score_load_gate@@3EA",
             "_config_score_load_gate"
@@ -1748,45 +1748,45 @@
         },
         {
           "address": 4720568,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_detail_preset",
           "section_number": 89,
           "section_offset": 1136,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 4,
+          "storage_address": 4720568,
+          "storage_name": "config_detail_preset",
           "symbols": [
             "_config_detail_preset"
           ]
         },
         {
           "address": 4720576,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_key_pick_perk",
           "section_number": 89,
           "section_offset": 1144,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 4,
+          "storage_address": 4720576,
+          "storage_name": "config_key_pick_perk",
           "symbols": [
             "_config_key_pick_perk"
           ]
         },
         {
           "address": 4720580,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "config_key_reload",
           "section_number": 89,
           "section_offset": 1148,
-          "size": null,
-          "storage_address": 4719432,
-          "storage_name": "config_blob",
+          "size": 4,
+          "storage_address": 4720580,
+          "storage_name": "config_key_reload",
           "symbols": [
             "_config_key_reload"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "0635e22cc154cb7cd447e3e4bd3ba7bed3ea635cb86a81c17829527e11aed066"
+        "sha256": "00462b9b8892befa136a9e113ac1af0d77d4322fcbd134445c22da243ca73b3d"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -13485,6 +13485,30 @@
               "name": "config_blob"
             },
             {
+              "address": 4719434,
+              "name": "config_highscore_date_mode"
+            },
+            {
+              "address": 4719435,
+              "name": "config_highscore_duplicate_mode"
+            },
+            {
+              "address": 4719436,
+              "name": "config_direction_arrow_flags"
+            },
+            {
+              "address": 4719446,
+              "name": "config_fx_detail_flag0"
+            },
+            {
+              "address": 4719448,
+              "name": "config_fx_detail_flag1"
+            },
+            {
+              "address": 4719449,
+              "name": "config_fx_detail_flag2"
+            },
+            {
               "address": 4719452,
               "name": "config_player_count"
             },
@@ -13493,12 +13517,64 @@
               "name": "config_game_mode"
             },
             {
+              "address": 4719460,
+              "name": "config_player_mode_flags"
+            },
+            {
+              "address": 4719500,
+              "name": "config_aim_scheme"
+            },
+            {
+              "address": 4719544,
+              "name": "config_texture_scale"
+            },
+            {
+              "address": 4719560,
+              "name": "config_selected_saved_name_slot"
+            },
+            {
+              "address": 4719600,
+              "name": "config_saved_name_0"
+            },
+            {
               "address": 4719876,
               "name": "config_screen_width"
             },
             {
+              "address": 4719880,
+              "name": "config_screen_height"
+            },
+            {
+              "address": 4719888,
+              "name": "config_p1_move_forward"
+            },
+            {
               "address": 4720528,
               "name": "config_hardcore"
+            },
+            {
+              "address": 4720529,
+              "name": "config_ui_info_texts"
+            },
+            {
+              "address": 4720564,
+              "name": "config_violence_disabled"
+            },
+            {
+              "address": 4720565,
+              "name": "config_score_load_gate"
+            },
+            {
+              "address": 4720568,
+              "name": "config_detail_preset"
+            },
+            {
+              "address": 4720576,
+              "name": "config_key_pick_perk"
+            },
+            {
+              "address": 4720580,
+              "name": "config_key_reload"
             }
           ],
           "relocations": [],
@@ -87551,7 +87627,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "0635e22cc154cb7cd447e3e4bd3ba7bed3ea635cb86a81c17829527e11aed066"
+        "sha256": "00462b9b8892befa136a9e113ac1af0d77d4322fcbd134445c22da243ca73b3d"
       }
     ],
     "toolchain": {
