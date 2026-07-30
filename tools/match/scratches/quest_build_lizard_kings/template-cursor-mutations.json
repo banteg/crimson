@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ring-template-cursor",
+      "find": "    quest_entry_original_t *cursor = &spawns[3];\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        cursor->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        cursor->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_31,\n            trigger_time_ms,\n            1);\n        cursor->heading = (float)angle_index * -0.34906587f;\n        ++cursor;\n        trigger_time_ms += 900;\n    }\n",
+      "replacements": [
+        {
+          "name": "template-cursor-current-record",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        float *record_fields = (float *)template_cursor;\n        record_fields[-3] =\n            (float)cos(angle) * 256.0f + 512.0f;\n        record_fields[-2] =\n            (float)sin(angle) * 256.0f + 512.0f;\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[1] = trigger_time_ms;\n        template_cursor[2] = 1;\n        record_fields[-1] = (float)angle_index * -0.34906587f;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "template-cursor-preincrement",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        template_cursor += 6;\n        float *next_template_fields = (float *)template_cursor;\n        next_template_fields[-9] =\n            (float)cos(angle) * 256.0f + 512.0f;\n        next_template_fields[-8] =\n            (float)sin(angle) * 256.0f + 512.0f;\n        template_cursor[-6] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[-5] = trigger_time_ms;\n        template_cursor[-4] = 1;\n        next_template_fields[-7] =\n            (float)angle_index * -0.34906587f;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "template-cursor-entry-cast",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        quest_entry_original_t *ring_entry =\n            (quest_entry_original_t *)(template_cursor - 3);\n        ring_entry->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[1] = trigger_time_ms;\n        template_cursor[2] = 1;\n        ring_entry->heading =\n            (float)angle_index * -0.34906587f;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "template-cursor-entry-direct-fields",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        quest_entry_original_t *ring_entry =\n            (quest_entry_original_t *)(template_cursor - 3);\n        ring_entry->pos.x =\n            (float)cos(angle) * 256.0f + 512.0f;\n        ring_entry->pos.y =\n            (float)sin(angle) * 256.0f + 512.0f;\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[1] = trigger_time_ms;\n        template_cursor[2] = 1;\n        ring_entry->heading =\n            (float)angle_index * -0.34906587f;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "template-and-position-cursors",
+          "text": "    quest_vec2_t *position_cursor = &spawns[3].pos;\n    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        position_cursor->set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[1] = trigger_time_ms;\n        template_cursor[2] = 1;\n        ((float *)template_cursor)[-1] =\n            (float)angle_index * -0.34906587f;\n        position_cursor = (quest_vec2_t *)((char *)position_cursor + 24);\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

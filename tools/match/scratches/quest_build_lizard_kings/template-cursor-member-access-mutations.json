@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-cursor-member-access",
+      "find": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        float *record_fields = (float *)template_cursor;\n        record_fields[-3] =\n            (float)cos(angle) * 256.0f + 512.0f;\n        record_fields[-2] =\n            (float)sin(angle) * 256.0f + 512.0f;\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[1] = trigger_time_ms;\n        template_cursor[2] = 1;\n        record_fields[-1] =\n            (float)angle_index * -0.34906587f;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n",
+      "replacements": [
+        {
+          "name": "entry-member-fields",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        quest_entry_original_t *ring_entry =\n            (quest_entry_original_t *)(template_cursor - 3);\n        ring_entry->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        ring_entry->template_id = SPAWN_ID_LIZARD_RANDOM_31;\n        ring_entry->trigger_time_ms = trigger_time_ms;\n        ring_entry->count = 1;\n        ring_entry->heading =\n            (float)angle_index * -0.34906587f;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "entry-member-setter",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        quest_entry_original_t *ring_entry =\n            (quest_entry_original_t *)(template_cursor - 3);\n        ring_entry->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        ring_entry->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_31,\n            trigger_time_ms,\n            1);\n        ring_entry->heading =\n            (float)angle_index * -0.34906587f;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "direct-template-member-rest",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        quest_entry_original_t *ring_entry =\n            (quest_entry_original_t *)(template_cursor - 3);\n        ring_entry->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        ring_entry->trigger_time_ms = trigger_time_ms;\n        ring_entry->count = 1;\n        ring_entry->heading =\n            (float)angle_index * -0.34906587f;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "advance-after-position",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        float *record_fields = (float *)template_cursor;\n        record_fields[-3] =\n            (float)cos(angle) * 256.0f + 512.0f;\n        record_fields[-2] =\n            (float)sin(angle) * 256.0f + 512.0f;\n        template_cursor += 6;\n        template_cursor[-6] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[-5] = trigger_time_ms;\n        template_cursor[-4] = 1;\n        record_fields[-1] =\n            (float)angle_index * -0.34906587f;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "advance-before-entry-metadata",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        quest_entry_original_t *ring_entry =\n            (quest_entry_original_t *)(template_cursor - 3);\n        ring_entry->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        template_cursor += 6;\n        ring_entry->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_31,\n            trigger_time_ms,\n            1);\n        ring_entry->heading =\n            (float)angle_index * -0.34906587f;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "heading-before-metadata",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        float *record_fields = (float *)template_cursor;\n        record_fields[-3] =\n            (float)cos(angle) * 256.0f + 512.0f;\n        record_fields[-2] =\n            (float)sin(angle) * 256.0f + 512.0f;\n        record_fields[-1] =\n            (float)angle_index * -0.34906587f;\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[1] = trigger_time_ms;\n        template_cursor[2] = 1;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "heading-between-trigger-and-count",
+          "text": "    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;\n    for (int angle_index = 0; angle_index < 28; ++angle_index) {\n        float angle = (float)angle_index * 0.34906587f;\n        float *record_fields = (float *)template_cursor;\n        record_fields[-3] =\n            (float)cos(angle) * 256.0f + 512.0f;\n        record_fields[-2] =\n            (float)sin(angle) * 256.0f + 512.0f;\n        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;\n        template_cursor[1] = trigger_time_ms;\n        record_fields[-1] =\n            (float)angle_index * -0.34906587f;\n        template_cursor[2] = 1;\n        template_cursor += 6;\n        trigger_time_ms += 900;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

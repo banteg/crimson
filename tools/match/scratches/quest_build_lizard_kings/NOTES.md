@@ -12,16 +12,18 @@ recomputed negative ring angle. The final count is 31.
 The candidate reproduces the fixed-entry vector temporaries and the complete
 native x87 ring stack: the integer index remains live below the positive angle,
 cosine and sine consume the duplicated angle, and the original index is then
-multiplied by the negative step for heading. `pos.set(x, y)` avoids a dynamic
-vector temporary and raises the candidate to 78.20%, with 67 instructions
-against 66 and all six constant references resolved.
+multiplied by the negative step for heading. The retained source models the
+native template-field induction pointer directly and emits the same 66
+instructions, with all six constant references resolved. Its current weighted
+match is 78.79%.
 
-The residual is one loop-invariant `mov edi, 0x31`. The native instead stores
-the template as an immediate and consequently chooses the template field as
-its pointer induction base. Direct position fields, an all-fields setter, a
-metadata-only setter, `msvc6.5pp`, and `/G6` were checked. None removes that
-allocation without degrading the proven x87 shape or adding an artificial
-dependency, so this remains an honest WIP.
+The remaining residual is independent-store scheduling across the three fixed
+entries and the x87 ring body. The template cursor removes the former
+loop-invariant `mov edi, 0x31`, but VC6 still schedules fixed-entry saves and
+ring metadata around the x87 work differently. Direct position fields,
+all-fields and metadata-only setters, compiler profiles, cursor views, member
+access, pointer-advance placements, fixed-value lifetimes, and helper orders
+are bounded without artificial dependencies, so this remains an honest WIP.
 
 ## Binary Ninja loop recovery
 
@@ -45,10 +47,10 @@ claiming the remaining decompiler artifacts are source structure.
 
 The live Binary Ninja loop and fixed prefix account for all 31 entries, ring
 constants, trigger recurrence, heading computation, and final count. The
-candidate emits 67 instructions against 66 native instructions with `6/0/0`
-references. `--regions` attributes the remaining delta to VC6's loop-invariant
-template register and related allocation/scheduling, not missing quest policy.
-Recovery is `semantic-complete` with a `compiler` residual.
+candidate emits 66 instructions against 66 native instructions with `6/0/0`
+references. `--regions` attributes the remaining delta to VC6
+allocation/scheduling, not missing quest policy. Recovery is
+`semantic-complete` with a `compiler` residual.
 
 ## Exact-tail follow-up (2026-07-27)
 
@@ -59,4 +61,29 @@ versus `pos.set` ring stores, metadata fields, loop-update order, index scope,
 and independent fixed/ring helper permutations. None improves the
 `198.61654135338344/254` weighted bytes, 67/66 instructions,
 seven-instruction prefix, or `6/0/0` references. The remaining extra
-loop-invariant template register is therefore still a compiler residual.
+loop-invariant template register was therefore still a compiler residual at
+that checkpoint.
+
+## Template-cursor boundary audit (2026-07-30)
+
+Live inspection identifies the native induction value as a
+`quest_spawn_entry_template_cursor_t *`. Three new bounded sweeps test that
+constraint after the adjacent lizard-builder recoveries:
+
+- `template-cursor-mutations.json` evaluates five cursor views. The
+  current-record template cursor is the sole improvement: it removes the extra
+  invariant template instruction and moves weighted bytes from
+  198.617/254 to 200.121/254 (78.788%). One-ahead, entry-cast, and dual-cursor
+  views regress.
+- `template-cursor-member-access-mutations.json` evaluates seven struct-member,
+  setter, pointer-advance, heading, and count placements. Four are byte-neutral
+  and three regress, so no additional source change is retained.
+- `post-template-fixed-lifetime-mutations.json` evaluates 41 combinations of
+  fixed-value lifetimes and fixed-helper store order. All are neutral or worse.
+
+The ledger now contains five records and 106 evaluated unique variants, with
+one improving variant and no exact winner. The retained source has 66/66
+instructions, a seven-instruction prefix, and references 6/0/0. Source
+SHA-256: `fb6a655e181465a4cdb07211f7c558e387190c2b193e75de987d95c4e8273a55`.
+Experiment ledger SHA-256:
+`ea064d53f789c16d9ec1f0004dacc24221941c739b32341c1284cbebfaec5d29`.

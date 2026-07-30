@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fixed-value-lifetimes",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        1500,\n        1);\n    spawns[1].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        1500,\n        1);\n    spawns[2].set(\n        quest_vec2_t(1152.0f, 896.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        1500,\n        1);\n\n    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;",
+      "replacements": [
+        {
+          "name": "trigger-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 1500;\n\n    spawns[0].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        trigger_time_ms,\n        1);\n    spawns[1].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        trigger_time_ms,\n        1);\n    spawns[2].set(\n        quest_vec2_t(1152.0f, 896.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        trigger_time_ms,\n        1);\n\n    int *template_cursor = &spawns[3].template_id;"
+        },
+        {
+          "name": "trigger-one-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 1500;\n    int spawn_count = 1;\n\n    spawns[0].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        trigger_time_ms,\n        spawn_count);\n    spawns[1].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        trigger_time_ms,\n        spawn_count);\n    spawns[2].set(\n        quest_vec2_t(1152.0f, 896.0f),\n        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,\n        trigger_time_ms,\n        spawn_count);\n\n    int *template_cursor = &spawns[3].template_id;"
+        },
+        {
+          "name": "template-trigger-one-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int fixed_template_id = SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11;\n    int trigger_time_ms = 1500;\n    int spawn_count = 1;\n\n    spawns[0].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n    spawns[1].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n    spawns[2].set(\n        quest_vec2_t(1152.0f, 896.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n\n    int *template_cursor = &spawns[3].template_id;"
+        },
+        {
+          "name": "trigger-template-one-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 1500;\n    int fixed_template_id = SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11;\n    int spawn_count = 1;\n\n    spawns[0].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n    spawns[1].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n    spawns[2].set(\n        quest_vec2_t(1152.0f, 896.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n\n    int *template_cursor = &spawns[3].template_id;"
+        },
+        {
+          "name": "one-template-trigger-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int spawn_count = 1;\n    int fixed_template_id = SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11;\n    int trigger_time_ms = 1500;\n\n    spawns[0].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n    spawns[1].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n    spawns[2].set(\n        quest_vec2_t(1152.0f, 896.0f),\n        fixed_template_id,\n        trigger_time_ms,\n        spawn_count);\n\n    int *template_cursor = &spawns[3].template_id;"
+        },
+        {
+          "name": "template-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int fixed_template_id = SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11;\n\n    spawns[0].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        fixed_template_id,\n        1500,\n        1);\n    spawns[1].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        fixed_template_id,\n        1500,\n        1);\n    spawns[2].set(\n        quest_vec2_t(1152.0f, 896.0f),\n        fixed_template_id,\n        1500,\n        1);\n\n    int *template_cursor = &spawns[3].template_id;\n    int trigger_time_ms = 1500;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-helper-store-order",
+      "find": "        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;",
+      "replacements": [
+        {
+          "name": "position-template-count-trigger",
+          "text": "        pos = position;\n        template_id = spawn_template_id;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;"
+        },
+        {
+          "name": "position-trigger-template-count",
+          "text": "        pos = position;\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n        count = spawn_count;"
+        },
+        {
+          "name": "position-trigger-count-template",
+          "text": "        pos = position;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        template_id = spawn_template_id;"
+        },
+        {
+          "name": "position-count-template-trigger",
+          "text": "        pos = position;\n        count = spawn_count;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;"
+        },
+        {
+          "name": "position-count-trigger-template",
+          "text": "        pos = position;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;"
+        }
+      ]
+    }
+  ]
+}

@@ -65,19 +65,21 @@ extern "C" void quest_build_lizard_kings(
         1500,
         1);
 
-    quest_entry_original_t *cursor = &spawns[3];
+    int *template_cursor = &spawns[3].template_id;
     int trigger_time_ms = 1500;
     for (int angle_index = 0; angle_index < 28; ++angle_index) {
         float angle = (float)angle_index * 0.34906587f;
-        cursor->pos.set(
-            (float)cos(angle) * 256.0f + 512.0f,
-            (float)sin(angle) * 256.0f + 512.0f);
-        cursor->set_spawn(
-            SPAWN_ID_LIZARD_RANDOM_31,
-            trigger_time_ms,
-            1);
-        cursor->heading = (float)angle_index * -0.34906587f;
-        ++cursor;
+        float *record_fields = (float *)template_cursor;
+        record_fields[-3] =
+            (float)cos(angle) * 256.0f + 512.0f;
+        record_fields[-2] =
+            (float)sin(angle) * 256.0f + 512.0f;
+        template_cursor[0] = SPAWN_ID_LIZARD_RANDOM_31;
+        template_cursor[1] = trigger_time_ms;
+        template_cursor[2] = 1;
+        record_fields[-1] =
+            (float)angle_index * -0.34906587f;
+        template_cursor += 6;
         trigger_time_ms += 900;
     }
 
