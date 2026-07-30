@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-grid-storage-type",
+      "find": "extern GrimUV grim_subrect_table[256];\n",
+      "replacements": [
+        {
+          "name": "sixteen-by-sixteen",
+          "text": "extern GrimUV grim_subrect_table[16][16];\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-pointer-publication",
+      "find": "    grim_subrect_ptr_table[16] = grim_subrect_table;\n",
+      "replacements": [
+        {
+          "name": "first-matrix-row",
+          "text": "    grim_subrect_ptr_table[16] = grim_subrect_table[0];\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-matrix-initializer",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "matrix-v-field-row",
+          "text": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y][0].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "matrix-direct-index",
+          "text": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            for (x = 0; x < 16; ++x) {\n                grim_subrect_table[y][x].u = (float)x * 0.0625f;\n                grim_subrect_table[y][x].v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "matrix-typed-row",
+          "text": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *row = grim_subrect_table[y];\n            for (x = 0; x < 16; ++x) {\n                row[x].u = (float)x * 0.0625f;\n                row[x].v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-counter-declarations",
+      "find": "    int x;\n    int y;\n",
+      "replacements": [
+        {
+          "name": "register-x",
+          "text": "    register int x;\n    int y;\n"
+        },
+        {
+          "name": "register-y",
+          "text": "    int x;\n    register int y;\n"
+        },
+        {
+          "name": "register-x-y",
+          "text": "    register int x;\n    register int y;\n"
+        },
+        {
+          "name": "y-before-x",
+          "text": "    int y;\n    int x;\n"
+        },
+        {
+          "name": "long-x",
+          "text": "    long x;\n    int y;\n"
+        },
+        {
+          "name": "long-y",
+          "text": "    int x;\n    long y;\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-control",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "v-field-cursors-preincrement-row",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "v-field-cursors-indexed-next-row",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor = &grim_subrect_table[(y + 1) * 16].v;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-from-index-explicit-init",
+          "text": "    {\n        y = 0;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            x = 0;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "typed-row-from-index",
+          "text": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *row = &grim_subrect_table[y * 16];\n            for (x = 0; x < 16; ++x) {\n                row[x].u = (float)x * 0.0625f;\n                row[x].v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-counter-final-grid",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            for (x = 0; x < 16; ++x) {\n                grim_subrect_table[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_subrect_table[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "v-field-cursors-preincrement-row",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "v-field-cursors-outer-increment",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y, row_v_cursor += 32) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "v-field-row-from-index",
+          "text": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "typed-row-cursor",
+          "text": "    {\n        GrimUV *row = grim_subrect_table;\n        for (y = 0; y < 16; ++y, row += 16) {\n            float row_v = (float)y * 0.0625f;\n            GrimUV *entry = row;\n            for (x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "single-v-field-cursor",
+          "text": "    {\n        float *entry_v = &grim_subrect_table[0].v;\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "direct-index-hoisted-row-value",
+          "text": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            for (x = 0; x < 16; ++x) {\n                grim_subrect_table[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_subrect_table[y * 16 + x].v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "typed-row-index",
+          "text": "    {\n        GrimUV *row = grim_subrect_table;\n        for (y = 0; y < 16; ++y, row += 16) {\n            float row_v = (float)y * 0.0625f;\n            for (x = 0; x < 16; ++x) {\n                row[x].u = (float)x * 0.0625f;\n                row[x].v = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "typed-entry-cursor",
+          "text": "    {\n        GrimUV *entry = grim_subrect_table;\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            for (x = 0; x < 16; ++x, ++entry) {\n                entry->u = (float)x * 0.0625f;\n                entry->v = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

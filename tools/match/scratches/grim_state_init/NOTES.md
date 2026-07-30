@@ -182,5 +182,39 @@ reaching the current `94.81%`, `423/425`, `165/0/0` result. Adding the fourth
 16x16 cursor changes whole-function register allocation and falls to 64.71%;
 every smaller final-grid cursor variant hits the same cliff. The shared-inner
 counter, counter-identity, and final-grid control-shape sweeps are negative.
-The honest remaining boundary is therefore four repeated conversion-spill
-slot choices plus the final grid's equivalent end-pointer loop.
+
+## Shared atlas counters and final-grid row recovery
+
+The four repeated conversion-spill differences were one shared lifetime
+constraint, not independent compiler noise. Native consistently uses
+`[esp+0xc]` for the outer row counter and `[esp+0x10]` for the inner column
+counter across the font atlas and every subrect grid. Declaring `x` and `y`
+once at function scope and reusing them in the already-retained V-field loops
+prevents VC6 from coalescing those slots. That source-backed interaction raises
+the scratch from **94.81%** to **97.64%**, advances the exact prefix from
+**293** to **397** instructions, and preserves references **165/0/0**.
+
+`shared-counter-final-grid-mutations.json` then evaluates eight ordinary
+translations of the remaining 16x16 initializer. Deriving the V-field entry
+cursor from `&grim_subrect_table[y * 16].v` is the only clean improvement. It
+recovers the native **425/425** instruction count, adds one resolved reference,
+and raises the result to **98.35%** with references **166/0/0** and a
+30.83-byte fuzzy gap. The flat row expression is a direct view of the recovered
+256-entry `GrimUV` storage and retains the exact 397-instruction prefix.
+
+Two bounded follow-ups close the obvious remaining distinctions.
+`final-grid-counter-allocation-mutations.json` crosses four final-loop forms
+with `register`, declaration-order, and signed 32-bit `long` counter variants;
+none of its 34 variants improves the retained object.
+`final-grid-array-shape-mutations.json` jointly tests the equivalent
+`GrimUV[16][16]` declaration, pointer publication, and three matrix
+initializers; the complete matrix V-field form is byte-identical, while the
+other forms regress.
+
+Only the final outer induction remains different. Native initializes `y` in
+`ESI`, advances a separate row cursor before the inner loop, and tests
+`y < 16`; VC6 strength-reduces the retained row-from-index source to a
+row-end comparison and advances the row pointer after the inner loop. The
+uniform cursor spelling still triggers the documented whole-function
+allocation cliff. The remaining residual is therefore a bounded backend
+induction choice rather than missing state, type, or referenced data.

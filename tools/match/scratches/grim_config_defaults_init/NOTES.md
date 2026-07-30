@@ -135,3 +135,12 @@ loop. VC6 still schedules the independent `0x88` load before the saved-name
 base spill. The residual is therefore saturated as a backend scheduling tie,
 not a missing source lifetime; larger Grim closure targets should take
 priority unless new compiler/TU provenance changes that constraint.
+
+The adjacent-TU hypothesis is now closed as well. `probe_tu_context.cpp`
+compiles `grim_config_defaults_init_thunk` immediately after the canonical
+initializer under the same VC6 profile. The initializer is byte-identical to
+its isolated object: **99.29%**, **140/140** instructions, prefix **21**, and
+references **83/0/0**, with the same first mismatch at byte 107. This proves
+that merely restoring the observed tail thunk to the translation unit does
+not affect the scheduler inversion, so the production TU map should not grow
+a no-op cluster for these two functions.
