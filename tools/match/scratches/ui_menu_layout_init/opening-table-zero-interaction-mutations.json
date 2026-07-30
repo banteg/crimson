@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-table-zero-shape",
+      "find": "    memset(ui_element_table, 0, 41 * sizeof(ui_element_t *));\n    ui_layout_element_t **table = ui_element_table;",
+      "replacements": [
+        {
+          "name": "local-before-global-memset",
+          "text": "    ui_layout_element_t **table = ui_element_table;\n    memset(ui_element_table, 0, 41 * sizeof(ui_element_t *));"
+        },
+        {
+          "name": "local-before-table-memset",
+          "text": "    ui_layout_element_t **table = ui_element_table;\n    memset(table, 0, 41 * sizeof(*table));"
+        },
+        {
+          "name": "const-local-before-table-memset",
+          "text": "    ui_layout_element_t **const table = ui_element_table;\n    memset(table, 0, 41 * sizeof(*table));"
+        },
+        {
+          "name": "indexed-table-memset",
+          "text": "    ui_layout_element_t **table = ui_element_table;\n    memset(&table[0], 0, 41 * sizeof(*table));"
+        },
+        {
+          "name": "literal-size-table-memset",
+          "text": "    ui_layout_element_t **table = ui_element_table;\n    memset(table, 0, 164);"
+        },
+        {
+          "name": "separate-zero-owner",
+          "text": "    ui_layout_element_t **table = ui_element_table;\n    ui_layout_element_t **table_zero = table;\n    memset(table_zero, 0, 41 * sizeof(*table_zero));"
+        }
+      ]
+    },
+    {
+      "name": "first-config-call-shape",
+      "find": "    if (!grim_interface_ptr->grim_get_config_var(100)) {",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "explicit-zero",
+          "text": "    if (grim_interface_ptr->grim_get_config_var(100) == 0) {"
+        },
+        {
+          "name": "scoped-interface-local",
+          "text": "    IGrim2D_cpp *grim = grim_interface_ptr;\n    if (!grim->grim_get_config_var(100)) {"
+        },
+        {
+          "name": "scoped-interface-local-explicit-zero",
+          "text": "    IGrim2D_cpp *grim = grim_interface_ptr;\n    if (grim->grim_get_config_var(100) == 0) {"
+        },
+        {
+          "name": "config-result-local",
+          "text": "    int config_var_100 = grim_interface_ptr->grim_get_config_var(100);\n    if (!config_var_100) {"
+        }
+      ]
+    }
+  ]
+}

@@ -277,3 +277,29 @@ conversion-lifetime variants; the only nominal weighted improvement
 stack-local branch dataflow, so it was rejected. All 24 main-menu position
 lifetime variants regressed, with the best losing 25.57 weighted bytes. Every
 ranking, including these negative results, is recorded in `experiments.jsonl`.
+
+## Opening and prompt loop saturation
+
+Two final bounded sweeps challenged the remaining earliest mismatch without
+changing the retained source. `prompt-transform-pointer-bound-mutations.json`
+covered six independent pointer-bound loop spellings for the prompt and
+level-up transforms. All six compiled and regressed; the least-bad variant
+lost 3.92 fuzzy-weighted bytes and one resolved reference. Its recorded spec
+SHA-256 is
+`3020c4c080e74b0b1fd631071e70c51e657869a2f2ec544ad1942911ffd47e95`.
+
+`opening-table-zero-interaction-mutations.json` then crossed six table-zeroing
+and local-ownership shapes with four first-config-call lifetime shapes. Of 34
+planned variants, 29 compiled: nine were byte- and reference-neutral and 20
+regressed. The five failures all used an invalid const pointer-table owner and
+are retained as explicit negative evidence. Neither the standalone table
+spellings nor any interaction with the interface/config result produced a
+positive result. Its spec SHA-256 is
+`8a1362a9a73aa18e65e14f59fe08824e99eae17b0d94f407e6bc2f999339b3be`.
+
+The baseline remains **88.40989%**, 1,408/1,422 instructions, prefix 10, audit
+**`482/0/5`**, and an **838.78-byte** fuzzy gap. Together with the prior
+opening-order and prompt-schedule matrices, these results bound the opening
+residual as compiler scheduling rather than a missing semantic recovery. The
+experiment log SHA-256 after both records is
+`63a1482b3607f1190440b76acca15a9baf8eab88b8aeea182ee85b37b03b792b`.
