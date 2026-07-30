@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "menu-offset-application",
+      "find": "    position = position + play_game_vec2_t(330.0f, 50.0f);",
+      "replacements": [
+        {
+          "name": "explicit-operator-call",
+          "text": "    position = position.operator+(play_game_vec2_t(330.0f, 50.0f));"
+        },
+        {
+          "name": "parenthesized-addition",
+          "text": "    position = (position + play_game_vec2_t(330.0f, 50.0f));"
+        },
+        {
+          "name": "direct-components-x-first",
+          "text": "    position.x += 330.0f;\n    position.y += 50.0f;"
+        },
+        {
+          "name": "direct-components-y-first",
+          "text": "    position.y += 50.0f;\n    position.x += 330.0f;"
+        },
+        {
+          "name": "reconstruct-position",
+          "text": "    position = play_game_vec2_t(\n        position.x + 330.0f, position.y + 50.0f);"
+        },
+        {
+          "name": "named-offset",
+          "text": "    play_game_vec2_t menu_offset(330.0f, 50.0f);\n    position = position + menu_offset;"
+        },
+        {
+          "name": "named-updated-position",
+          "text": "    play_game_vec2_t updated_position =\n        position + play_game_vec2_t(330.0f, 50.0f);\n    position = updated_position;"
+        },
+        {
+          "name": "default-updated-position",
+          "text": "    play_game_vec2_t updated_position;\n    updated_position = position + play_game_vec2_t(330.0f, 50.0f);\n    position = updated_position;"
+        },
+        {
+          "name": "offset-plus-position",
+          "text": "    position = play_game_vec2_t(330.0f, 50.0f) + position;"
+        },
+        {
+          "name": "component-assignment-expressions",
+          "text": "    position.x = position.x + 330.0f;\n    position.y = position.y + 50.0f;"
+        }
+      ]
+    }
+  ]
+}

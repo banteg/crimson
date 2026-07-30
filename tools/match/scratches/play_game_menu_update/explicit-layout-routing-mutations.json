@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "explicit-layout-entry",
+      "find": "    if (quest_unlock_index < 0x28 || config_player_count > 1) {",
+      "replacements": [
+        {
+          "name": "split-native-routing",
+          "text": "    if (quest_unlock_index < 0x28) {\n        goto play_game_roomy_layout;\n    }\n    if (config_player_count <= 1) {\n        goto play_game_tight_layout;\n    }\nplay_game_roomy_layout:\n    {"
+        }
+      ]
+    },
+    {
+      "name": "explicit-layout-boundary",
+      "find": "        }\n    } else {\n        position.y += 26.0f;",
+      "replacements": [
+        {
+          "name": "route-to-tight-layout",
+          "text": "        }\n    }\n    goto play_game_layout_done;\nplay_game_tight_layout:\n    {\n        position.y += 26.0f;"
+        }
+      ]
+    },
+    {
+      "name": "explicit-layout-exit",
+      "find": "        }\n    }\n\n    char *player_count_labels[4] = {",
+      "replacements": [
+        {
+          "name": "join-layout-arms",
+          "text": "        }\n    }\nplay_game_layout_done:\n\n    char *player_count_labels[4] = {"
+        }
+      ]
+    }
+  ]
+}

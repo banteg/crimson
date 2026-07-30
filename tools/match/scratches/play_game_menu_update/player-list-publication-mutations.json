@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "player-list-publication",
+      "find": "    static play_game_list_t player_count_list;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);",
+      "replacements": [
+        {
+          "name": "selected-count-items",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.item_count = 2;\n    player_count_list.items = player_count_labels;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "items-selected-count",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.items = player_count_labels;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.item_count = 2;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "items-count-selected",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n    player_count_list.selected_index = config_player_count - 1;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "count-selected-items",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.item_count = 2;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.items = player_count_labels;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "count-items-selected",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.item_count = 2;\n    player_count_list.items = player_count_labels;\n    player_count_list.selected_index = config_player_count - 1;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "interface-after-selected",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.selected_index = config_player_count - 1;\n    IGrim2D_cpp *list_interface = grim_interface_ptr;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n\n    list_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "interface-before-selected",
+          "text": "    static play_game_list_t player_count_list;\n    IGrim2D_cpp *list_interface = grim_interface_ptr;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n\n    list_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "interface-after-items",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.items = player_count_labels;\n    IGrim2D_cpp *list_interface = grim_interface_ptr;\n    player_count_list.item_count = 2;\n\n    list_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "interface-after-count",
+          "text": "    static play_game_list_t player_count_list;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n    IGrim2D_cpp *list_interface = grim_interface_ptr;\n\n    list_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "named-selected-index",
+          "text": "    static play_game_list_t player_count_list;\n    int selected_index = config_player_count - 1;\n    player_count_list.selected_index = selected_index;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "named-player-count",
+          "text": "    static play_game_list_t player_count_list;\n    int player_count = config_player_count;\n    player_count_list.selected_index = player_count - 1;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "named-selected-and-interface",
+          "text": "    static play_game_list_t player_count_list;\n    int selected_index = config_player_count - 1;\n    IGrim2D_cpp *list_interface = grim_interface_ptr;\n    player_count_list.selected_index = selected_index;\n    player_count_list.items = player_count_labels;\n    player_count_list.item_count = 2;\n\n    list_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "named-label-pointer",
+          "text": "    static play_game_list_t player_count_list;\n    char **list_items = player_count_labels;\n    player_count_list.selected_index = config_player_count - 1;\n    player_count_list.items = list_items;\n    player_count_list.item_count = 2;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        },
+        {
+          "name": "named-fields-and-interface",
+          "text": "    static play_game_list_t player_count_list;\n    int selected_index = config_player_count - 1;\n    char **list_items = player_count_labels;\n    IGrim2D_cpp *list_interface = grim_interface_ptr;\n    player_count_list.selected_index = selected_index;\n    player_count_list.items = list_items;\n    player_count_list.item_count = 2;\n\n    list_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);"
+        }
+      ]
+    }
+  ]
+}

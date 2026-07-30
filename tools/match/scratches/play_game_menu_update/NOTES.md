@@ -110,3 +110,56 @@ at `2831.4256278171283/3238` weighted bytes (`87.44365743721829%`), gap
 `406.5743721828717`, 776/777 instructions, prefix 120, and `275/0/28`
 references. Its SHA-256 is
 `0074e502ced913f132686122ec0e158ed032f17c79c69ea1c483e27bc5d6c1ff`.
+
+## Opening and player-list source-shape tranche
+
+A second bounded pass recorded 73 variants across seven schema-1 mutation
+sweeps and one standalone probe. It retained three semantic source-order
+improvements:
+
+- applying the render-offset X adjustment before copying `base_position`
+  gained `10.169733007614013` weighted bytes and one exact reference;
+- spelling the `(330, 50)` update as `position = position + ...` gained a
+  further `44.49338515596537` weighted bytes and one exact reference; and
+- publishing the player-list `items` pointer before `selected_index` and
+  `item_count` gained another `16.658520900321037` weighted bytes, converted
+  three references to exact, and removed two aligned mismatches.
+
+Together these changes move the scratch from
+`2831.4256278171283/3238` (`87.44365743721829%`) to
+`2902.7472668810287/3238` (`89.64630225080386%`), shrinking the weighted
+gap by `71.3216390639004` bytes. The candidate is now 778/777 instructions,
+keeps the 120-instruction exact prefix, and reports `280/0/26` references.
+The retained source SHA-256 is
+`7c8efd940719789c60cce6a015e6a6776aa1f37a1b8af26351a57404c88e0dc7`.
+
+The recorded spec SHA-256 values are:
+
+- `adjusted-x-copyback-mutations.json`:
+  `ca3fbe4d9daf681bd7b74446792caf32bc135c6bd1868abf7d7217c7093b2c93`;
+- `opening-vector-owner-mutations.json`:
+  `4b5dc9651bfb8ce75f568bd40d9f61dc9b07635173470a065d8c4cf7c775cb7e`;
+- `layout-predicate-mutations.json`:
+  `c2a190c96aebd4adf0b1545fbcd8e92d4cd6be3135b75ff9bba597048dc570a9`;
+- `explicit-layout-routing-mutations.json`:
+  `27eef41285964a510ce0c446ce3b285be2ad377bf3642a1fcfa0afd3d227daa7`;
+- `vector-special-member-mutations.json`:
+  `210187baeb39526d2ebc6839a6c831f2575d06e80217d53d741f2caefc27347a`;
+- `player-list-publication-mutations.json`:
+  `d5130b30c99e11185737063f87d15f602cf2e30bce635d210d313e2d0090baaa`;
+  and
+- `menu-offset-application-mutations.json`:
+  `a1098b631d71637a255eed62dc74f921db1c3f4f53b4e6fda43e92645e93d05f`.
+
+Live target disassembly places the roomy layout block before the tight block,
+opposite the candidate's physical order. Direct structured control flow, the
+complete explicit-goto reconstruction, and physically inverted source arms
+all compile byte-identically; the latter probe has source SHA-256
+`fadbc02f4246278c79c260f62affce813744da0ff2f7e69645e74f53c706be7e`.
+Using bitwise OR for the layout predicate gained `11.069148756134382`
+weighted bytes and improved the reference alignment, but added three more
+instructions while the candidate was already one instruction long, so it was
+not retained. Vector special-member spellings and menu-offset aliases were
+neutral or regressive. This bounds the remaining opening/layout residual to
+compiler block ordering, stack-slot ownership, and register allocation rather
+than a missing semantic operation.

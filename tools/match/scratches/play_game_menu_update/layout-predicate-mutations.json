@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "layout-predicate",
+      "find": "    if (quest_unlock_index < 0x28 || config_player_count > 1) {",
+      "replacements": [
+        {
+          "name": "demorgan-negated-and",
+          "text": "    if (!(quest_unlock_index >= 0x28 && config_player_count <= 1)) {"
+        },
+        {
+          "name": "player-count-first",
+          "text": "    if (config_player_count > 1 || quest_unlock_index < 0x28) {"
+        },
+        {
+          "name": "inclusive-thresholds",
+          "text": "    if (quest_unlock_index <= 0x27 || config_player_count >= 2) {"
+        },
+        {
+          "name": "inclusive-player-count-first",
+          "text": "    if (config_player_count >= 2 || quest_unlock_index <= 0x27) {"
+        },
+        {
+          "name": "negated-player-limit",
+          "text": "    if (quest_unlock_index < 0x28 || !(config_player_count <= 1)) {"
+        },
+        {
+          "name": "negated-quest-limit",
+          "text": "    if (!(quest_unlock_index >= 0x28) || config_player_count > 1) {"
+        },
+        {
+          "name": "bitwise-or",
+          "text": "    if ((quest_unlock_index < 0x28) | (config_player_count > 1)) {"
+        },
+        {
+          "name": "explicit-bool-comparisons",
+          "text": "    if ((quest_unlock_index < 0x28) != false\n        || (config_player_count > 1) != false) {"
+        }
+      ]
+    }
+  ]
+}

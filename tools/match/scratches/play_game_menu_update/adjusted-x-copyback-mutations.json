@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "adjusted-x-copyback",
+      "find": "    play_game_vec2_t base_position = position;\n    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    base_position.x = position.x;",
+      "replacements": [
+        {
+          "name": "chain-position-from-base",
+          "text": "    play_game_vec2_t base_position = position;\n    position.x = (base_position.x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x);"
+        },
+        {
+          "name": "chain-base-from-position",
+          "text": "    play_game_vec2_t base_position = position;\n    base_position.x = (position.x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x);"
+        },
+        {
+          "name": "compound-result-to-base",
+          "text": "    play_game_vec2_t base_position = position;\n    base_position.x = (position.x +=\n        ui_element_slot_11.render_offset_x - 64.0f);"
+        },
+        {
+          "name": "base-first-named-adjusted-x",
+          "text": "    play_game_vec2_t base_position = position;\n    float adjusted_x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x;\n    base_position.x = adjusted_x;\n    position.x = adjusted_x;"
+        },
+        {
+          "name": "position-first-named-adjusted-x",
+          "text": "    play_game_vec2_t base_position = position;\n    float adjusted_x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x;\n    position.x = adjusted_x;\n    base_position.x = adjusted_x;"
+        },
+        {
+          "name": "adjust-before-whole-copy",
+          "text": "    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    play_game_vec2_t base_position = position;"
+        },
+        {
+          "name": "default-copy-then-chain-position-from-base",
+          "text": "    play_game_vec2_t base_position;\n    base_position = position;\n    position.x = (base_position.x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x);"
+        },
+        {
+          "name": "default-component-copy-then-chain",
+          "text": "    play_game_vec2_t base_position;\n    base_position.x = position.x;\n    base_position.y = position.y;\n    position.x = (base_position.x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x);"
+        },
+        {
+          "name": "copy-y-then-chain-x",
+          "text": "    play_game_vec2_t base_position;\n    base_position.y = position.y;\n    position.x = (base_position.x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x);"
+        },
+        {
+          "name": "copy-y-then-compound-x",
+          "text": "    play_game_vec2_t base_position;\n    base_position.y = position.y;\n    base_position.x = (position.x +=\n        ui_element_slot_11.render_offset_x - 64.0f);"
+        },
+        {
+          "name": "base-expression-then-position-copy",
+          "text": "    play_game_vec2_t base_position = position;\n    base_position.x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x;\n    position.x = base_position.x;"
+        },
+        {
+          "name": "position-expression-then-base-copy",
+          "text": "    play_game_vec2_t base_position = position;\n    position.x =\n        ui_element_slot_11.render_offset_x - 64.0f + position.x;\n    base_position.x = position.x;"
+        }
+      ]
+    }
+  ]
+}

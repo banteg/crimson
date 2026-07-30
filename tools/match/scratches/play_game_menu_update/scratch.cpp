@@ -155,10 +155,9 @@ extern "C" void play_game_menu_update(void)
         *(play_game_vec2_t *)&ui_element_slot_11.pos_x
         + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;
     tutorial_button.label = "Tutorial";
-    position += play_game_vec2_t(330.0f, 50.0f);
-    play_game_vec2_t base_position = position;
+    position = position + play_game_vec2_t(330.0f, 50.0f);
     position.x += ui_element_slot_11.render_offset_x - 64.0f;
-    base_position.x = position.x;
+    play_game_vec2_t base_position = position;
 
     grim_interface_ptr->grim_bind_texture(ui_item_texts_texture, 0);
     grim_interface_ptr->grim_set_uv(0.0f, 0.125f, 1.0f, 0.25f);
@@ -289,8 +288,8 @@ extern "C" void play_game_menu_update(void)
         "1 player", "2 players", "3 players", "4 players"
     };
     static play_game_list_t player_count_list;
-    player_count_list.selected_index = config_player_count - 1;
     player_count_list.items = player_count_labels;
+    player_count_list.selected_index = config_player_count - 1;
     player_count_list.item_count = 2;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);
