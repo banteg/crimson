@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quests-hover-alpha-scale",
+      "find": "0.0009f",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "scientific-9e-4",
+          "text": "9e-4f"
+        },
+        {
+          "name": "scientific-0_9e-3",
+          "text": "0.9e-3f"
+        },
+        {
+          "name": "nine-hundredths-times-one-hundredth",
+          "text": "(0.09f * 0.01f)"
+        },
+        {
+          "name": "nine-thousandths-times-one-tenth",
+          "text": "(0.009f * 0.1f)"
+        },
+        {
+          "name": "short-roundtrip-upper-f32",
+          "text": "0.00090000002f"
+        },
+        {
+          "name": "display-roundtrip-upper-f32",
+          "text": "0.00090000004f"
+        },
+        {
+          "name": "nine-over-ten-thousand",
+          "text": "(9.0f / 10000.0f)"
+        }
+      ]
+    }
+  ]
+}

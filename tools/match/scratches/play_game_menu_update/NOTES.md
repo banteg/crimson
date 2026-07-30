@@ -163,3 +163,22 @@ not retained. Vector special-member spellings and menu-offset aliases were
 neutral or regressive. This bounds the remaining opening/layout residual to
 compiler block ordering, stack-slot ownership, and register allocation rather
 than a missing semantic operation.
+
+## Tooltip alpha f32 recovery
+
+The reference audit exposed five genuine constant mismatches that were hidden
+among the layout-alignment pairs. Native uses f32 bits `0x3a6bedfb`
+(`0.0009000000427477062`) for every tooltip fade; the former `0.0009f`
+literal compiled to the adjacent lower value `0x3a6bedfa`. The exact
+`0.000900000043f` round-trip is also used by the recovered high-score tooltip
+path and is retained at all five sites.
+
+`hover-alpha-literal-spellings.json` confirms that both the exact decimal and
+the natural constant-folded expression `0.09f * 0.01f` produce the native
+value, while the shorter scientific spellings remain on the lower f32.
+`hover-alpha-exact-f32-interactions.json` evaluates all 31 site combinations;
+each corrected site resolves one reference independently and the five-site
+winner improves the audit from `280/0/26` to **`285/0/21`** with unchanged
+89.65% instruction score, 778/777 instruction counts, and 120-instruction
+prefix. The remaining 21 mismatches are the documented block-scheduling
+alignment pairs rather than literal-value debt.

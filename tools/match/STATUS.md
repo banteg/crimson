@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 274 | 224 | 274 | 274 | 274 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 1 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -756,7 +756,7 @@ Artifact freshness issues:
 | match | nullsub_93 | 0x0044ed50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_94 | 0x0044ed60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_95 | 0x0044ed70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| wip | play_game_menu_update | 0x0044ed80 | 3238 | 2903/3238 | 335 | 778/777 | 89.65% | 120/777 | 280/0/26 |  | play-game-mode-buttons-player-count-and-routing |
+| wip | play_game_menu_update | 0x0044ed80 | 3238 | 2903/3238 | 335 | 778/777 | 89.65% | 120/777 | 285/0/21 |  | play-game-mode-buttons-player-count-and-routing |
 | match | play_game_player_count_list_destroy | 0x0044fa30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-player-count-list-empty-destructor |
 | match | play_game_tutorial_button_destroy | 0x0044fa40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-tutorial-button-empty-destructor |
 | match | play_game_hardcore_checkbox_destroy | 0x0044fa50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-hardcore-checkbox-empty-destructor |

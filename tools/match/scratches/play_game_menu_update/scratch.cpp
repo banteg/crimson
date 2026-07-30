@@ -327,7 +327,7 @@ extern "C" void play_game_menu_update(void)
             1.0f,
             1.0f,
             1.0f,
-            (float)quests_button.hover_anim * 0.0009f);
+            (float)quests_button.hover_anim * 0.000900000043f);
         grim_interface_ptr->grim_draw_text_small(
             position.x - 8.0f,
             position.y,
@@ -338,7 +338,7 @@ extern "C" void play_game_menu_update(void)
             1.0f,
             1.0f,
             1.0f,
-            (float)rush_button.hover_anim * 0.0009f);
+            (float)rush_button.hover_anim * 0.000900000043f);
         grim_interface_ptr->grim_draw_text_small(
             position.x + 32.0f,
             position.y,
@@ -349,7 +349,7 @@ extern "C" void play_game_menu_update(void)
             1.0f,
             1.0f,
             1.0f,
-            (float)survival_button.hover_anim * 0.0009f);
+            (float)survival_button.hover_anim * 0.000900000043f);
         grim_interface_ptr->grim_draw_text_small(
             position.x + 20.0f,
             position.y,
@@ -360,7 +360,7 @@ extern "C" void play_game_menu_update(void)
             1.0f,
             1.0f,
             1.0f,
-            (float)typo_button.hover_anim * 0.0009f);
+            (float)typo_button.hover_anim * 0.000900000043f);
         grim_interface_ptr->grim_draw_text_small(
             position.x,
             position.y - 12.0f,
@@ -371,7 +371,7 @@ extern "C" void play_game_menu_update(void)
             1.0f,
             1.0f,
             1.0f,
-            (float)tutorial_button.hover_anim * 0.0009f);
+            (float)tutorial_button.hover_anim * 0.000900000043f);
         grim_interface_ptr->grim_draw_text_small(
             position.x + 38.0f,
             position.y,

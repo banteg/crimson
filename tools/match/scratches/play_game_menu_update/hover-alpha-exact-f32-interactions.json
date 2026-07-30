@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quests-hover-alpha-scale",
+      "find": "0.0009f",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "native-upper-f32",
+          "text": "0.00090000004f"
+        }
+      ]
+    },
+    {
+      "name": "rush-hover-alpha-scale",
+      "find": "0.0009f",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "native-upper-f32",
+          "text": "0.00090000004f"
+        }
+      ]
+    },
+    {
+      "name": "survival-hover-alpha-scale",
+      "find": "0.0009f",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "native-upper-f32",
+          "text": "0.00090000004f"
+        }
+      ]
+    },
+    {
+      "name": "typo-hover-alpha-scale",
+      "find": "0.0009f",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "native-upper-f32",
+          "text": "0.00090000004f"
+        }
+      ]
+    },
+    {
+      "name": "tutorial-hover-alpha-scale",
+      "find": "0.0009f",
+      "occurrence": 5,
+      "replacements": [
+        {
+          "name": "native-upper-f32",
+          "text": "0.00090000004f"
+        }
+      ]
+    }
+  ]
+}
