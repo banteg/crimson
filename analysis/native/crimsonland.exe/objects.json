@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "ed40bd4be1388b385b7f8fffcf747a65982fc8d00b70c540763d5c685cfd8a23",
+  "audit_digest": "f11f18fe2cee9e371c33af2335b9539d45fa84748f8b81923d8ae996e9086a3f",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -51961,7 +51961,7 @@
         {
           "path": "tools/match/scratches/fx_queue_add/scratch.conf",
           "repository_relative": true,
-          "sha256": "d27133085b15cac38f5b1920424e5da45f8e47c889b48a0fd633366e6196d32f"
+          "sha256": "8a9baf0db55770aeda9f612698456b31d03b05edfd767acedbb78f3081b0760a"
         },
         {
           "path": "tools/match/cl.sh",
@@ -51986,7 +51986,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/fx_queue_add/scratch.conf",
-      "config_sha256": "d27133085b15cac38f5b1920424e5da45f8e47c889b48a0fd633366e6196d32f",
+      "config_sha256": "8a9baf0db55770aeda9f612698456b31d03b05edfd767acedbb78f3081b0760a",
       "effective_end": 4319436,
       "end": 4319436,
       "function": "fx_queue_add",
@@ -51994,7 +51994,7 @@
         {
           "address": 4319296,
           "canonical_config": "tools/match/scratches/fx_queue_add/scratch.conf",
-          "canonical_config_sha256": "d27133085b15cac38f5b1920424e5da45f8e47c889b48a0fd633366e6196d32f",
+          "canonical_config_sha256": "8a9baf0db55770aeda9f612698456b31d03b05edfd767acedbb78f3081b0760a",
           "canonical_scratch": "tools/match/scratches/fx_queue_add",
           "canonical_source": "tools/match/scratches/fx_queue_add/scratch.cpp",
           "canonical_source_sha256": "eb8fda4a59eb3ed9b9689a739d0810140741b348aaad8a4ff080c9a2fbb3ac13",
@@ -61348,7 +61348,7 @@
         {
           "path": "tools/match/scratches/perks_rebuild_available/scratch.conf",
           "repository_relative": true,
-          "sha256": "08f0f37953da4e7a49e0cf0238f8ab48e3d5323650cf652125d0408894bf377d"
+          "sha256": "682597c96c6ae22eb3ff4d4c07d729a65fdf499114aa6c1a256bf042d109b9e6"
         },
         {
           "path": "tools/match/cl.sh",
@@ -61373,7 +61373,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/perks_rebuild_available/scratch.conf",
-      "config_sha256": "08f0f37953da4e7a49e0cf0238f8ab48e3d5323650cf652125d0408894bf377d",
+      "config_sha256": "682597c96c6ae22eb3ff4d4c07d729a65fdf499114aa6c1a256bf042d109b9e6",
       "effective_end": 4390117,
       "end": 4390117,
       "function": "perks_rebuild_available",
@@ -61381,7 +61381,7 @@
         {
           "address": 4389936,
           "canonical_config": "tools/match/scratches/perks_rebuild_available/scratch.conf",
-          "canonical_config_sha256": "08f0f37953da4e7a49e0cf0238f8ab48e3d5323650cf652125d0408894bf377d",
+          "canonical_config_sha256": "682597c96c6ae22eb3ff4d4c07d729a65fdf499114aa6c1a256bf042d109b9e6",
           "canonical_scratch": "tools/match/scratches/perks_rebuild_available",
           "canonical_source": "tools/match/scratches/perks_rebuild_available/scratch.c",
           "canonical_source_sha256": "85b8d7abb487858ea8c598b3f0c6cbb446ed4c0546a0f8bc30efbbe9d28caf11",

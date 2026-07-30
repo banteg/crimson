@@ -54,3 +54,12 @@ copy falls to 41.46% and moves the first mismatch into the prologue. Live
 native disassembly still places `fx_queue_count` between the final color load
 and store, so an inline source boundary cannot reproduce the Processor Pack
 schedule under supported VC6.5. No source change is retained.
+
+## Residual classification
+
+The combined stock-VC6 counter-lifetime, publication-order, color-copy, alpha,
+and helper sweeps exhaust the natural source boundaries around the sole
+remaining instruction-order mismatch. Processor Pack reproduces the native
+schedule, but the executable's Rich records reject that compiler profile.
+The retained source is therefore semantic-complete with a `compiler` residual,
+not an open analysis residual.

@@ -50,8 +50,8 @@ reusing earlier counter locals does not change that allocation. Forms that
 retain the native 38-instruction prefix rotate the initial bound check instead.
 The clean WIP remains preferable.
 
-Recovery is classified `semantic-complete` with an `analysis` residual for the
-unknown source shape.
+Recovery is classified `semantic-complete`; the bounded stock-VC6 source-shape
+sweeps below close the remaining mismatch as a `compiler` residual.
 
 ## Recorded loop-shape boundary
 
@@ -92,3 +92,12 @@ The three nested forms perturb the prologue and register allocation much more
 severely. This confirms the native control-flow meaning but rules out the
 ordinary C spellings under the supported compiler profile; the cleaner
 52-instruction candidate remains retained.
+
+## Residual classification
+
+The loop-shape, boundary-identity, combined-condition, and one-time-entry-bound
+sweeps exhaust the natural stock-VC6 spellings of the native control-flow
+meaning. Processor Pack makes the function exact, but the executable's Rich
+records reject that compiler profile. The retained source is therefore
+semantic-complete with a `compiler` residual rather than an unbounded analysis
+question.
