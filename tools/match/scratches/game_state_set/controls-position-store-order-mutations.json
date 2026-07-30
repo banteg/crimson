@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "controls-position-store-order",
+      "find": "        *(game_state_vec2_t *)&ui_element_slot_13.pos =\n            game_state_vec2_t(-180.0f, 139.0f);\n        ui_sign_crimson.active = 1;\n",
+      "replacements": [
+        {
+          "name": "y-sign-x",
+          "text": "        ui_element_slot_13.pos.y = 139.0f;\n        ui_sign_crimson.active = 1;\n        ui_element_slot_13.pos.x = -180.0f;\n"
+        },
+        {
+          "name": "x-sign-y",
+          "text": "        ui_element_slot_13.pos.x = -180.0f;\n        ui_sign_crimson.active = 1;\n        ui_element_slot_13.pos.y = 139.0f;\n"
+        },
+        {
+          "name": "x-y-sign",
+          "text": "        ui_element_slot_13.pos.x = -180.0f;\n        ui_element_slot_13.pos.y = 139.0f;\n        ui_sign_crimson.active = 1;\n"
+        },
+        {
+          "name": "y-x-sign",
+          "text": "        ui_element_slot_13.pos.y = 139.0f;\n        ui_element_slot_13.pos.x = -180.0f;\n        ui_sign_crimson.active = 1;\n"
+        }
+      ]
+    }
+  ]
+}

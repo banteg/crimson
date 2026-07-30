@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "game-paused-type",
+      "find": "extern unsigned char game_paused_flag;",
+      "replacements": [
+        {
+          "name": "bool",
+          "text": "extern bool game_paused_flag;"
+        }
+      ]
+    },
+    {
+      "name": "gameplay-transition-type",
+      "find": "extern unsigned char gameplay_transition_latch;",
+      "replacements": [
+        {
+          "name": "bool",
+          "text": "extern bool gameplay_transition_latch;"
+        }
+      ]
+    },
+    {
+      "name": "highscore-return-type",
+      "find": "extern unsigned char highscore_return_latch;",
+      "replacements": [
+        {
+          "name": "bool",
+          "text": "extern bool highscore_return_latch;"
+        }
+      ]
+    },
+    {
+      "name": "screen-fade-ramp-type",
+      "find": "extern unsigned char screen_fade_ramp_flag;",
+      "replacements": [
+        {
+          "name": "bool",
+          "text": "extern bool screen_fade_ramp_flag;"
+        }
+      ]
+    },
+    {
+      "name": "typo-reset-type",
+      "find": "extern unsigned char typo_mode_reset_flag;",
+      "replacements": [
+        {
+          "name": "bool",
+          "text": "extern bool typo_mode_reset_flag;"
+        }
+      ]
+    },
+    {
+      "name": "plugin-runtime-type",
+      "find": "extern unsigned char plugin_runtime_active_latch;",
+      "replacements": [
+        {
+          "name": "bool",
+          "text": "extern bool plugin_runtime_active_latch;"
+        }
+      ]
+    },
+    {
+      "name": "ui-transition-direction-type",
+      "find": "extern unsigned char ui_transition_direction;",
+      "replacements": [
+        {
+          "name": "bool",
+          "text": "extern bool ui_transition_direction;"
+        }
+      ]
+    }
+  ]
+}

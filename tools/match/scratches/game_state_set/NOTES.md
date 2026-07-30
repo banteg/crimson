@@ -94,3 +94,29 @@ guarded mode blocks. Every variant compiles byte-for-byte identically to the
 baseline. This bounds ordinary CFG and local-lifetime spelling as explanations
 for VC6's native repeated load/flag/increment/flag/store sequence; no artificial
 dependency is justified.
+
+## Mode-dispatch and UI-latch stopping audit
+
+The recovered `Crimson.h` identifies the flattened UI state members behind
+this dispatcher as one-byte `bool` fields and the persisted play counters as
+signed `int` fields. `ui-latch-type-mutations.json` tests all seven local
+latch declarations independently as `bool`; every variant is byte-identical
+to the `85.35%`, 393/399-instruction, `162/0/0` baseline. A separate signed
+branch-local counter spelling is likewise byte-neutral. The declaration types
+therefore do not account for the final mode-tail cross-jump.
+
+`mode-dispatch-source-shape-mutations.json` also tests the previously
+unexamined full-switch family. VC6 emits a dense jump table for both complete
+switch variants. That shape is contradicted by the native comparison chain,
+even though the matcher assigns it 5.35 additional fuzzy-weighted bytes and
+six more aligned references. The switch is intentionally not retained:
+localized disassembly is stronger source evidence than the incidental
+alignment score.
+
+Finally, `controls-position-store-order-mutations.json` tests all four scalar
+orders for the Controls panel's `(-180, 139)` position and sign activation.
+Every scalar form shortens the candidate to 388 instructions, loses 22.93
+fuzzy-weighted bytes, and changes the audit to `156/0/3`. The aggregate
+assignment remains the only reference-clean natural form. Together these
+complete sweeps leave the six-instruction Typ-o/default cross-jump as an
+honest compiler residual rather than an untested source-shape lead.
