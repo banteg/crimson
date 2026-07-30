@@ -95,6 +95,16 @@ baseline. This bounds ordinary CFG and local-lifetime spelling as explanations
 for VC6's native repeated load/flag/increment/flag/store sequence; no artificial
 dependency is justified.
 
+`mode-counter-helper-interactions-mutations.json` closes the remaining natural
+source-boundary hypothesis. The complete 19-variant sweep crosses three
+return-value helper bodies (`__inline`, `__forceinline`, and a named result)
+with four call placements: the final two arms, all four counters, Typ-o only,
+and the default arm only. All 12 valid two-site interactions are byte-for-byte
+identical to the baseline; the four call-only variants fail as expected because
+the helper is absent. An ordinary inlined lifecycle helper therefore does not
+inhibit VC6's final-arm tail folding, so the six-instruction deficit remains a
+bounded compiler residual.
+
 ## Mode-dispatch and UI-latch stopping audit
 
 The recovered `Crimson.h` identifies the flattened UI state members behind
