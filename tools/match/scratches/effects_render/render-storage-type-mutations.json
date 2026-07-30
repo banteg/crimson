@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-storage-type",
+      "find": "    unsigned long color;\n",
+      "replacements": [
+        {
+          "name": "dword-alias",
+          "text": "    DWORD color;\n"
+        },
+        {
+          "name": "packed-union-reference",
+          "text": "    EffectPackedColor color_storage;\n    unsigned long &color = color_storage.value;\n"
+        },
+        {
+          "name": "word-struct-reference",
+          "text": "    struct EffectColorWord {\n        unsigned long value;\n    } color_storage;\n    unsigned long &color = color_storage.value;\n"
+        },
+        {
+          "name": "one-word-array-reference",
+          "text": "    unsigned long color_storage[1];\n    unsigned long &color = color_storage[0];\n"
+        }
+      ]
+    },
+    {
+      "name": "rotation-storage-type",
+      "find": "    float rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n\n    rotation = entry->rotation;\n",
+      "replacements": [
+        {
+          "name": "const-value",
+          "text": "    const float rotation = entry->rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n"
+        },
+        {
+          "name": "value-const-spelling",
+          "text": "    float const rotation = entry->rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n"
+        },
+        {
+          "name": "const-reference",
+          "text": "    const float &rotation = entry->rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n"
+        }
+      ]
+    }
+  ]
+}

@@ -69,3 +69,27 @@ helper ABIs. Both complete definition/call pairings are also byte-identical;
 the six deliberately incomplete or cross-paired combinations fail
 compilation. No variant is retained. A fresh stock-VC6 matrix also leaves
 `/G5`, `/Ob1`, and `/Ot` byte-identical to `/GB`; `/G6` and `/Oy-` regress.
+
+## Recovered storage-type saturation
+
+`render-storage-type-mutations.json` (SHA-256
+`4908dab5bdd8f54aec989cbbb1a507a86798a6fd08fec1f61b4332b1d5e0420d`)
+tests 19 complete single and pair variants around the two swapped four-byte
+locals. Keeping packed color through its recovered union, an equivalent
+one-word struct or array, qualifying rotation as a const value, and every
+pair interaction are byte-identical to the canonical 92.82% object. A const
+reference instead removes the native rotation spill and regresses to 41.45%;
+it is not the recovered source shape.
+
+`packed-color-output-mutations.json` (SHA-256
+`36039e05e38c597f0cbabe9a7184cf62841f5eaae206e5b4e52c89de880002da`)
+then carries the union type through the helper output, caller local, and final
+Grim argument as one three-site interaction. The complete form is also
+byte-identical at 195/195 instructions with references `38/0/0`; incomplete
+type combinations correctly fail compilation.
+
+These sweeps close the remaining aggregate-type and cv-lifetime explanations
+without coercing stack layout. The repeated `rotation esp+0xc` versus packed
+color `esp+0x8` native assignment is now saturated as a VC6 local-slot
+allocator tie. A revisit needs new compiler or original-TU provenance rather
+than further declaration, helper, or recovered-type permutations.

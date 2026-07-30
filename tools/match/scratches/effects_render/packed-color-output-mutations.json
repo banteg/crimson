@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "packed-color-helper-output",
+      "find": "static inline void effect_pack_color(\n    effect_color_t *source,\n    unsigned long *result)\n{\n    EffectPackedColor packed;\n    packed.channel[3] = (unsigned char)(source->a * 255.0f);\n    packed.channel[2] = (unsigned char)(source->r * 255.0f);\n    packed.channel[1] = (unsigned char)(source->g * 255.0f);\n    packed.channel[0] = (unsigned char)(source->b * 255.0f);\n    *result = packed.value;\n}\n",
+      "replacements": [
+        {
+          "name": "union-output",
+          "text": "static inline void effect_pack_color(\n    effect_color_t *source,\n    EffectPackedColor *result)\n{\n    EffectPackedColor packed;\n    packed.channel[3] = (unsigned char)(source->a * 255.0f);\n    packed.channel[2] = (unsigned char)(source->r * 255.0f);\n    packed.channel[1] = (unsigned char)(source->g * 255.0f);\n    packed.channel[0] = (unsigned char)(source->b * 255.0f);\n    result->value = packed.value;\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "packed-color-local",
+      "find": "    unsigned long color;\n",
+      "replacements": [
+        {
+          "name": "union-local",
+          "text": "    EffectPackedColor color;\n"
+        }
+      ]
+    },
+    {
+      "name": "packed-color-submit",
+      "find": "        &color);\n",
+      "replacements": [
+        {
+          "name": "union-value-address",
+          "text": "        &color.value);\n"
+        }
+      ]
+    }
+  ]
+}
