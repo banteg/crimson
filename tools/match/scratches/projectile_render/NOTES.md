@@ -748,3 +748,40 @@ The retained source has SHA-256
 The three complete records bring `experiments.jsonl` to 45 sweeps and 1,020
 evaluated variants with SHA-256
 `64d26eddafd5d0ea28f41df03ec4344577ae245e7faa8cfd61991167bf5d7fd6`.
+
+## Ion direction-result ownership wave
+
+The live and fading ion arms contain the same higher-level ownership boundary
+as the recovered chain arc. At `0x00424500-0x0042455d` and
+`0x00424838-0x00424895`, native computes the unnormalized two-component
+displacement into one pair of locals, calculates its length from that pair,
+copies both components into a second vector, and normalizes the copy. The
+previous source wrote the displacement directly into the normalized vector,
+erasing the result object and its copy boundary.
+
+`ion-direction-result-ownership-mutations.json` (SHA-256
+`ecfca2b793c87910cd926766f6832e5062d4926c084bf37b16e7acf50480e6d1`)
+exhausts all 24 single- and two-arm combinations across constructor,
+subtraction, assigned-member, aggregate-copy, and member-copy spellings. The
+corrected complete sweep has no compile errors. A preliminary run exposed an
+invalid exploratory union-member spelling; the spec was corrected and the
+entire matrix rerun before retention.
+
+The live constructor result followed by an aggregate copy and the fading
+constructor result followed by a member copy are the clean winner. Several
+fading result spellings compile identically on the winning live baseline; the
+member copy is retained because it expresses the observed two-object boundary
+without an extra type-punning subtraction expression.
+
+The retained source adds 236.069 fuzzy-weighted bytes, reduces the gap from
+5,617.499 to 5,381.430 bytes, and moves the ratio from 55.2426196% to
+57.1234965%. The candidate grows from 2,873 to 2,882 instructions against
+3,021 native instructions. Proven references rise from 430 to 442 while the
+audit remains `442/0/10`, so the improvement adds neither unresolved
+references nor mismatch debt.
+
+The retained source has SHA-256
+`d2c1d9ab1fb31dac509e2c082c7a9ab8cb8661a171f1db7f7c0dac12bd6d3c72`.
+The two records bring `experiments.jsonl` to 47 sweeps and 1,068 evaluated
+variants with SHA-256
+`269cec72f2a3f5c8fd2c9769f4a600110ba269ab939f974f75f14d92075b2ac6`.

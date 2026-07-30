@@ -709,13 +709,11 @@ extern "C" void projectile_render(float transition_alpha)
             }
 
             grim_interface_ptr->grim_set_atlas_frame(2, 2);
-            vec2f_t direction;
-            direction.x = projectile->pos.origin_x - projectile->pos_x;
-            direction.y = primary->origin_y
-                - projectile->pos.pos_y;
-            float distance = (float)sqrt(
-                direction.x * direction.x
-                + direction.y * direction.y);
+            projectile_render_vec2_t direction_result(
+                projectile->pos.origin_x - projectile->pos_x,
+                primary->origin_y - projectile->pos.pos_y);
+            vec2f_t direction = *(vec2f_t *)&direction_result;
+            float distance = direction_result.length();
             vec2_normalize_dispatch(&direction, &direction);
             if (primary->vy.type_id
                 == PROJECTILE_TYPE_FIRE_BULLETS) {
@@ -775,13 +773,13 @@ extern "C" void projectile_render(float transition_alpha)
             grim_interface_ptr->grim_set_atlas_frame(4, 2);
             float fade = projectile_render_clamp(life * 2.5f);
 
+            projectile_render_vec2_t direction_result(
+                projectile->pos.origin_x - projectile->pos_x,
+                primary->origin_y - projectile->pos.pos_y);
             vec2f_t direction;
-            direction.x = projectile->pos.origin_x - projectile->pos_x;
-            direction.y = primary->origin_y
-                - projectile->pos.pos_y;
-            float distance = (float)sqrt(
-                direction.x * direction.x
-                + direction.y * direction.y);
+            direction.x = direction_result.x;
+            direction.y = direction_result.y;
+            float distance = direction_result.length();
             vec2_normalize_dispatch(&direction, &direction);
 
             float effect_scale;
