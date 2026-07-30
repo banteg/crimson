@@ -10,6 +10,10 @@ struct bonus_hud_vec2_t {
     float x;
     float y;
 
+    bonus_hud_vec2_t()
+    {
+    }
+
     bonus_hud_vec2_t(float x_value, float y_value)
         : x(x_value), y(y_value)
     {
@@ -21,6 +25,10 @@ struct bonus_hud_color_t {
     float g;
     float b;
     float a;
+
+    bonus_hud_color_t()
+    {
+    }
 
     bonus_hud_color_t(
         float r_value,
@@ -135,11 +143,14 @@ extern "C" void bonus_hud_slot_update_and_render(
     if (cv_uiSmallIndicators->value != 0.0f) {
         if (slot->slide.alt_timer_ptr) {
             {
-                bonus_hud_color_t bar_color(
-                    0.1f, 0.3f, 0.6f, panel_alpha);
-                bonus_hud_vec2_t bar_pos(
-                    slot->slide.slide_x + 36.0f,
-                    *y + 21.0f - 4.0f - 4.0f);
+                bonus_hud_color_t bar_color;
+                bonus_hud_vec2_t bar_pos;
+                bar_pos.x = slot->slide.slide_x + 36.0f;
+                bar_pos.y = *y + 21.0f - 4.0f - 4.0f;
+                bar_color.r = 0.1f;
+                bar_color.g = 0.3f;
+                bar_color.b = 0.6f;
+                bar_color.a = panel_alpha;
                 ui_draw_progress_bar(
                     (float *)&bar_pos,
                     32.0f,
@@ -190,11 +201,14 @@ extern "C" void bonus_hud_slot_update_and_render(
                 (float *)&bar_color);
         }
         {
-            bonus_hud_color_t bar_color(
-                0.1f, 0.3f, 0.6f, panel_alpha);
-            bonus_hud_vec2_t bar_pos(
-                slot->slide.slide_x + 36.0f,
-                *y + 23.0f);
+            bonus_hud_color_t bar_color;
+            bonus_hud_vec2_t bar_pos;
+            bar_pos.x = slot->slide.slide_x + 36.0f;
+            bar_pos.y = *y + 23.0f;
+            bar_color.r = 0.1f;
+            bar_color.g = 0.3f;
+            bar_color.b = 0.6f;
+            bar_color.a = panel_alpha;
             ui_draw_progress_bar(
                 (float *)&bar_pos,
                 100.0f,
@@ -208,11 +222,14 @@ extern "C" void bonus_hud_slot_update_and_render(
             *y + 2.0f,
             slot->slide.label);
     } else {
-        bonus_hud_color_t bar_color(
-            0.1f, 0.3f, 0.6f, panel_alpha);
-        bonus_hud_vec2_t bar_pos(
-            slot->slide.slide_x + 36.0f,
-            *y + 21.0f);
+        bonus_hud_color_t bar_color;
+        bonus_hud_vec2_t bar_pos;
+        bar_pos.x = slot->slide.slide_x + 36.0f;
+        bar_pos.y = *y + 21.0f;
+        bar_color.r = 0.1f;
+        bar_color.g = 0.3f;
+        bar_color.b = 0.6f;
+        bar_color.a = panel_alpha;
         ui_draw_progress_bar(
             (float *)&bar_pos,
             100.0f,

@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "acf343b379e90ca69bc323bd1ce8466e7939c0e445fbcdac7333ac91f7bad505",
+  "audit_digest": "850c4dcf8ed3170556f485169834aa66d9efc604bae6e5406cc1338f836626de",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -45169,7 +45169,7 @@
         {
           "path": "tools/match/scratches/bonus_hud_slot_update_and_render/scratch.cpp",
           "repository_relative": true,
-          "sha256": "f858c47e12c5f7782f67fc606d0c0fe7ea0ec064ce778a79bf83d3af06ed37d1"
+          "sha256": "1ded7121317cee59418e6bce73809b847d6daea91e55f8871266b45b32a59267"
         },
         {
           "path": "tools/match/scratches/bonus_hud_slot_update_and_render/scratch.conf",
@@ -45215,17 +45215,17 @@
           "canonical_config_sha256": "49eec04ab3eb5385eece9652899ccfa4369d43caa134a1cb259718f659abef15",
           "canonical_scratch": "tools/match/scratches/bonus_hud_slot_update_and_render",
           "canonical_source": "tools/match/scratches/bonus_hud_slot_update_and_render/scratch.cpp",
-          "canonical_source_sha256": "f858c47e12c5f7782f67fc606d0c0fe7ea0ec064ce778a79bf83d3af06ed37d1",
+          "canonical_source_sha256": "1ded7121317cee59418e6bce73809b847d6daea91e55f8871266b45b32a59267",
           "effective_end": 4304590,
           "end": 4304590,
           "function": "bonus_hud_slot_update_and_render",
           "match": {
             "candidate_instructions": 407,
             "masked_mismatches": 0,
-            "masked_ok": 69,
+            "masked_ok": 72,
             "masked_unresolved": 0,
             "prefix_instructions": 5,
-            "ratio": 0.7783251231527094,
+            "ratio": 0.7980295566502463,
             "state": "wip",
             "target_instructions": 405
           },
@@ -45236,19 +45236,19 @@
       "match": {
         "candidate_instructions": 407,
         "masked_mismatches": 0,
-        "masked_ok": 69,
+        "masked_ok": 72,
         "masked_unresolved": 0,
         "prefix_instructions": 5,
-        "ratio": 0.7783251231527094,
+        "ratio": 0.7980295566502463,
         "state": "wip",
         "target_instructions": 405
       },
       "object": "tools/match/scratches/bonus_hud_slot_update_and_render/build/msvc6.5/dc0ee10f9b345d26/scratch.obj",
       "object_function_symbol": "_bonus_hud_slot_update_and_render",
-      "object_sha256": "45903c52ae193388706a0b5bc268fedd0e6650881e9745ad7945d3891f21726d",
+      "object_sha256": "b7fcdcd7388ff5ac833f83324f2976b6a2a78d2ad9fb3180aa5f850be79a08f6",
       "scratch": "tools/match/scratches/bonus_hud_slot_update_and_render",
       "source": "tools/match/scratches/bonus_hud_slot_update_and_render/scratch.cpp",
-      "source_sha256": "f858c47e12c5f7782f67fc606d0c0fe7ea0ec064ce778a79bf83d3af06ed37d1",
+      "source_sha256": "1ded7121317cee59418e6bce73809b847d6daea91e55f8871266b45b32a59267",
       "target_size": 1566,
       "translation_unit": {
         "kind": "isolated",

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "default-constructible-bar-types",
+      "find": "struct bonus_hud_vec2_t {\n    float x;\n    float y;\n\n    bonus_hud_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value)\n    {\n    }\n};\n\nstruct bonus_hud_color_t {\n    float r;\n    float g;\n    float b;\n    float a;\n\n    bonus_hud_color_t(\n        float r_value,\n        float g_value,\n        float b_value,\n        float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value)\n    {\n    }\n};",
+      "replacements": [
+        {
+          "name": "add-default-constructors",
+          "text": "struct bonus_hud_vec2_t {\n    float x;\n    float y;\n\n    bonus_hud_vec2_t()\n    {\n    }\n\n    bonus_hud_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value)\n    {\n    }\n};\n\nstruct bonus_hud_color_t {\n    float r;\n    float g;\n    float b;\n    float a;\n\n    bonus_hud_color_t()\n    {\n    }\n\n    bonus_hud_color_t(\n        float r_value,\n        float g_value,\n        float b_value,\n        float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value)\n    {\n    }\n};"
+        }
+      ]
+    },
+    {
+      "name": "normal-secondary-typed-components",
+      "find": "        {\n            bonus_hud_color_t bar_color(\n                0.1f, 0.3f, 0.6f, panel_alpha);\n            bonus_hud_vec2_t bar_pos(\n                slot->slide.slide_x + 36.0f,\n                *y + 23.0f);\n            ui_draw_progress_bar(\n                (float *)&bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                (float *)&bar_color);\n        }",
+      "replacements": [
+        {
+          "name": "color-before-position",
+          "text": "        {\n            bonus_hud_color_t bar_color;\n            bonus_hud_vec2_t bar_pos;\n            bar_color.r = 0.1f;\n            bar_color.g = 0.3f;\n            bar_color.b = 0.6f;\n            bar_color.a = panel_alpha;\n            bar_pos.x = slot->slide.slide_x + 36.0f;\n            bar_pos.y = *y + 23.0f;\n            ui_draw_progress_bar(\n                (float *)&bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                (float *)&bar_color);\n        }"
+        },
+        {
+          "name": "position-before-color",
+          "text": "        {\n            bonus_hud_color_t bar_color;\n            bonus_hud_vec2_t bar_pos;\n            bar_pos.x = slot->slide.slide_x + 36.0f;\n            bar_pos.y = *y + 23.0f;\n            bar_color.r = 0.1f;\n            bar_color.g = 0.3f;\n            bar_color.b = 0.6f;\n            bar_color.a = panel_alpha;\n            ui_draw_progress_bar(\n                (float *)&bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                (float *)&bar_color);\n        }"
+        },
+        {
+          "name": "native-lifetime-order",
+          "text": "        {\n            bonus_hud_color_t bar_color;\n            bonus_hud_vec2_t bar_pos;\n            bar_pos.x = slot->slide.slide_x + 36.0f;\n            bar_color.a = panel_alpha;\n            bar_pos.y = *y + 23.0f;\n            bar_color.r = 0.1f;\n            bar_color.g = 0.3f;\n            bar_color.b = 0.6f;\n            ui_draw_progress_bar(\n                (float *)&bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                (float *)&bar_color);\n        }"
+        }
+      ]
+    }
+  ]
+}

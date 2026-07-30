@@ -15,11 +15,12 @@ later slot remains active, draws the normal or compact indicator panel and icon,
 then renders one or two timer bars. Normal indicators also draw the slot label;
 compact indicators intentionally omit it.
 
-The recovered source compiles to 77.83% with the calibrated
+The recovered source compiles to 79.80% with the calibrated
 `msvc6.5 /O2 /GB` profile: 407 candidate instructions against 405 native,
-an exact 0x18-byte local frame, and 69/0/0 audited references. Declaring the
-bar color before its position is supported by the native branch placement and
-raises the score without adding artificial dependencies.
+an exact 0x18-byte local frame, and 72/0/0 audited references. Explicit
+component construction for the compact primary, normal secondary, and normal
+single bars improves the native store and address schedule without adding
+artificial dependencies.
 
 The remaining delta is compiler-shaped. Native VC6 shrink-wraps the `edi` save
 until the render path after the off-screen retirement return, while the
@@ -72,10 +73,43 @@ SHA-256 is
 This local canonicalization strengthens the compiler-scheduling
 classification without adding artificial dependencies.
 
+## Recorded remaining-bar construction sweeps
+
+The other five progress-bar construction regions were then tested against the
+live native schedules with ordinary typed and raw-array spellings. Four
+schema-1 plans cover the initial raw-array probe, a typed default-constructor
+control, all remaining one-site typed variants, and the complete interaction
+matrix for the independently improving sites:
+
+| plan | SHA-256 | evaluated / possible | best weighted delta |
+| --- | --- | ---: | ---: |
+| `secondary-bar-construction-mutations.json` | `443b6b87e17710e44040f13946386db156c4b75180fdf6630b4e2249e61fdb95` | 10 / 10 | +7.7143 |
+| `normal-secondary-typed-construction-mutations.json` | `ef816fdfdfc92c573a79ac6658f3bbba2ec2c582c5c22b085ccaabce7ef364c7` | 7 / 7 | +7.7143 |
+| `remaining-bar-construction-mutations.json` | `99746d53fc91a5a87f19a943a49dc9b80c264beea14dab708248d9f95133cd91` | 15 / 15 | +15.4286 |
+| `improving-bar-interactions.json` | `54f225bf77f1caf121b5f95352465f7ba7ff0bff910f65d0be98857d983fb436` | 7 / 7 | +23.1429 |
+
+The raw-array probe first showed that explicit construction of the normal
+secondary bar gains one exact audited reference. Adding unused default
+constructors is byte-neutral, and the typed component-assignment form produces
+the identical improvement, so the typed form is retained. From that improved
+baseline, normal single gains 15.4286 weighted bytes while normal primary and
+compact primary each gain 7.7143; compact single is byte-neutral and compact
+secondary regresses by 3.8571.
+
+The complete three-site interaction matrix is not additive. Normal primary
+combined with normal single changes stack-slot coalescing, drops two candidate
+instructions, and regresses the score. The retained winner therefore combines
+compact primary with normal single, gaining 23.1429 weighted bytes and two
+exact references over the already-improved normal-secondary baseline. The
+final source SHA-256 is
+`1ded7121317cee59418e6bce73809b847d6daea91e55f8871266b45b32a59267`;
+the complete append-only experiment log SHA-256 is
+`29db752486c8787c2971b26d31c5e96d80b7d8f039e315051af839d62d2c30a0`.
+
 Recovery is classified `semantic-complete` with a `compiler` residual. The
 candidate preserves the native 0x18-byte frame, emits 407 instructions against
-405 native instructions, and resolves all `69/0/0` audited references at
-77.83%. Live instructions `0x0041a963..0x0041a976` perform the off-screen
+405 native instructions, and resolves all `72/0/0` audited references at
+79.80%. Live instructions `0x0041a963..0x0041a976` perform the off-screen
 cursor advance and return before `push edi` at `0x0041a97d`; a scoped
 render-only Y-cursor alias compiled byte-identically, confirming that the
 remaining prologue delta is compiler shrink-wrapping rather than missing

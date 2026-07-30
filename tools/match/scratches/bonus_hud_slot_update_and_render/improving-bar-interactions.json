@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "compact-primary-components",
+      "find": "                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos(\n                    slot->slide.slide_x + 36.0f,\n                    *y + 21.0f - 4.0f - 4.0f);",
+      "replacements": [
+        {
+          "name": "position-before-color",
+          "text": "                bonus_hud_color_t bar_color;\n                bonus_hud_vec2_t bar_pos;\n                bar_pos.x = slot->slide.slide_x + 36.0f;\n                bar_pos.y = *y + 21.0f - 4.0f - 4.0f;\n                bar_color.r = 0.1f;\n                bar_color.g = 0.3f;\n                bar_color.b = 0.6f;\n                bar_color.a = panel_alpha;"
+        }
+      ]
+    },
+    {
+      "name": "normal-primary-components",
+      "find": "            bonus_hud_color_t bar_color(\n                0.1f, 0.3f, 0.6f, panel_alpha);\n            bonus_hud_vec2_t bar_pos(\n                slot->slide.slide_x + 36.0f,\n                *y + 21.0f - 4.0f);",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "position-before-color",
+          "text": "            bonus_hud_color_t bar_color;\n            bonus_hud_vec2_t bar_pos;\n            bar_pos.x = slot->slide.slide_x + 36.0f;\n            bar_pos.y = *y + 21.0f - 4.0f;\n            bar_color.r = 0.1f;\n            bar_color.g = 0.3f;\n            bar_color.b = 0.6f;\n            bar_color.a = panel_alpha;"
+        }
+      ]
+    },
+    {
+      "name": "normal-single-components",
+      "find": "        bonus_hud_color_t bar_color(\n            0.1f, 0.3f, 0.6f, panel_alpha);\n        bonus_hud_vec2_t bar_pos(\n            slot->slide.slide_x + 36.0f,\n            *y + 21.0f);",
+      "replacements": [
+        {
+          "name": "position-before-color",
+          "text": "        bonus_hud_color_t bar_color;\n        bonus_hud_vec2_t bar_pos;\n        bar_pos.x = slot->slide.slide_x + 36.0f;\n        bar_pos.y = *y + 21.0f;\n        bar_color.r = 0.1f;\n        bar_color.g = 0.3f;\n        bar_color.b = 0.6f;\n        bar_color.a = panel_alpha;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "compact-secondary-bar-construction",
+      "find": "            {\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos(\n                    slot->slide.slide_x + 36.0f,\n                    *y + 23.0f - 4.0f);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *slot->slide.alt_timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }",
+      "replacements": [
+        {
+          "name": "arrays-color-before-position",
+          "text": "            {\n                float bar_color[4] = {\n                    0.1f, 0.3f, 0.6f, panel_alpha};\n                float bar_pos[2] = {\n                    slot->slide.slide_x + 36.0f,\n                    *y + 23.0f - 4.0f};\n                ui_draw_progress_bar(\n                    bar_pos,\n                    32.0f,\n                    *slot->slide.alt_timer_ptr * 0.05f,\n                    bar_color);\n            }"
+        },
+        {
+          "name": "arrays-position-before-color",
+          "text": "            {\n                float bar_pos[2] = {\n                    slot->slide.slide_x + 36.0f,\n                    *y + 23.0f - 4.0f};\n                float bar_color[4] = {\n                    0.1f, 0.3f, 0.6f, panel_alpha};\n                ui_draw_progress_bar(\n                    bar_pos,\n                    32.0f,\n                    *slot->slide.alt_timer_ptr * 0.05f,\n                    bar_color);\n            }"
+        },
+        {
+          "name": "component-color-before-position",
+          "text": "            {\n                float bar_color[4];\n                float bar_pos[2];\n                bar_color[0] = 0.1f;\n                bar_color[1] = 0.3f;\n                bar_color[2] = 0.6f;\n                bar_color[3] = panel_alpha;\n                bar_pos[0] = slot->slide.slide_x + 36.0f;\n                bar_pos[1] = *y + 23.0f - 4.0f;\n                ui_draw_progress_bar(\n                    bar_pos,\n                    32.0f,\n                    *slot->slide.alt_timer_ptr * 0.05f,\n                    bar_color);\n            }"
+        },
+        {
+          "name": "component-position-before-color",
+          "text": "            {\n                float bar_color[4];\n                float bar_pos[2];\n                bar_pos[0] = slot->slide.slide_x + 36.0f;\n                bar_pos[1] = *y + 23.0f - 4.0f;\n                bar_color[0] = 0.1f;\n                bar_color[1] = 0.3f;\n                bar_color[2] = 0.6f;\n                bar_color[3] = panel_alpha;\n                ui_draw_progress_bar(\n                    bar_pos,\n                    32.0f,\n                    *slot->slide.alt_timer_ptr * 0.05f,\n                    bar_color);\n            }"
+        },
+        {
+          "name": "component-native-lifetime-order",
+          "text": "            {\n                float bar_color[4];\n                float bar_pos[2];\n                bar_pos[0] = slot->slide.slide_x + 36.0f;\n                bar_color[3] = panel_alpha;\n                bar_pos[1] = *y + 23.0f - 4.0f;\n                bar_color[0] = 0.1f;\n                bar_color[1] = 0.3f;\n                bar_color[2] = 0.6f;\n                ui_draw_progress_bar(\n                    bar_pos,\n                    32.0f,\n                    *slot->slide.alt_timer_ptr * 0.05f,\n                    bar_color);\n            }"
+        }
+      ]
+    },
+    {
+      "name": "normal-secondary-bar-construction",
+      "find": "        {\n            bonus_hud_color_t bar_color(\n                0.1f, 0.3f, 0.6f, panel_alpha);\n            bonus_hud_vec2_t bar_pos(\n                slot->slide.slide_x + 36.0f,\n                *y + 23.0f);\n            ui_draw_progress_bar(\n                (float *)&bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                (float *)&bar_color);\n        }",
+      "replacements": [
+        {
+          "name": "arrays-color-before-position",
+          "text": "        {\n            float bar_color[4] = {\n                0.1f, 0.3f, 0.6f, panel_alpha};\n            float bar_pos[2] = {\n                slot->slide.slide_x + 36.0f,\n                *y + 23.0f};\n            ui_draw_progress_bar(\n                bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                bar_color);\n        }"
+        },
+        {
+          "name": "arrays-position-before-color",
+          "text": "        {\n            float bar_pos[2] = {\n                slot->slide.slide_x + 36.0f,\n                *y + 23.0f};\n            float bar_color[4] = {\n                0.1f, 0.3f, 0.6f, panel_alpha};\n            ui_draw_progress_bar(\n                bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                bar_color);\n        }"
+        },
+        {
+          "name": "component-color-before-position",
+          "text": "        {\n            float bar_color[4];\n            float bar_pos[2];\n            bar_color[0] = 0.1f;\n            bar_color[1] = 0.3f;\n            bar_color[2] = 0.6f;\n            bar_color[3] = panel_alpha;\n            bar_pos[0] = slot->slide.slide_x + 36.0f;\n            bar_pos[1] = *y + 23.0f;\n            ui_draw_progress_bar(\n                bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                bar_color);\n        }"
+        },
+        {
+          "name": "component-position-before-color",
+          "text": "        {\n            float bar_color[4];\n            float bar_pos[2];\n            bar_pos[0] = slot->slide.slide_x + 36.0f;\n            bar_pos[1] = *y + 23.0f;\n            bar_color[0] = 0.1f;\n            bar_color[1] = 0.3f;\n            bar_color[2] = 0.6f;\n            bar_color[3] = panel_alpha;\n            ui_draw_progress_bar(\n                bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                bar_color);\n        }"
+        },
+        {
+          "name": "component-native-lifetime-order",
+          "text": "        {\n            float bar_color[4];\n            float bar_pos[2];\n            bar_pos[0] = slot->slide.slide_x + 36.0f;\n            bar_color[3] = panel_alpha;\n            bar_pos[1] = *y + 23.0f;\n            bar_color[0] = 0.1f;\n            bar_color[1] = 0.3f;\n            bar_color[2] = 0.6f;\n            ui_draw_progress_bar(\n                bar_pos,\n                100.0f,\n                *slot->slide.alt_timer_ptr * 0.05f,\n                bar_color);\n        }"
+        }
+      ]
+    }
+  ]
+}
