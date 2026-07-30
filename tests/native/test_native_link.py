@@ -2189,10 +2189,10 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert payload["summary"]["code_label_entries"] == 3
     assert payload["summary"]["entry_count"] == 274
     assert payload["summary"]["typed_entries"] == 224
-    assert payload["summary"]["explicit_size_entries"] == 228
-    assert payload["summary"]["explicit_alignment_entries"] == 228
-    assert payload["summary"]["explicit_initializer_entries"] == 228
-    assert payload["summary"]["fully_specified_entries"] == 228
+    assert payload["summary"]["explicit_size_entries"] == 268
+    assert payload["summary"]["explicit_alignment_entries"] == 268
+    assert payload["summary"]["explicit_initializer_entries"] == 268
+    assert payload["summary"]["fully_specified_entries"] == 268
     assert payload["summary"]["definition_group_entries"] == 213
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2208,6 +2208,16 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_render_disabled"]["size"] == 1
     assert defined["grim_render_disabled"]["initializer_hex"] == "00"
     assert defined["grim_adapter_identifier"]["size"] == 0x42C
+    assert defined["grim_pixel_format_vtable_dxt"]["size"] == 0x10
+    assert [
+        (slot["offset"], slot["address"])
+        for slot in defined["grim_pixel_format_vtable_dxt"]["initializer_symbols"]
+    ] == [
+        (0x0, 0x1001AEC8),
+        (0x4, 0x1001B0FD),
+        (0x8, 0x10016CDC),
+        (0xC, 0x1001AF00),
+    ]
     assert defined["grim_present_width"]["size"] == 0x34
     assert defined["grim_app"]["size"] == 0x2C
     assert defined["grim_client_rect"]["size"] == 0x10

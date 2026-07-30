@@ -1,5 +1,5 @@
 {
-  "audit_digest": "1bb6466da742745218c6fd002144c90bed123d4f67908017f0a4576ec45e2422",
+  "audit_digest": "cb0c8d393d9dab49ef98d240f5247a2431909bca9bea9455998e6a6abe61cd26",
   "entries": [
     {
       "address": 268747320,
@@ -503,21 +503,43 @@
     {
       "address": 268749540,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table restored by the vertex-space converter destructor and base pixel-format initializer.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cae4; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268530501,
+          "offset": 0,
+          "symbol": "FUN_10017345"
+        },
+        {
+          "address": 268527937,
+          "offset": 4,
+          "symbol": "nullsub_6"
+        },
+        {
+          "address": 268527937,
+          "offset": 8,
+          "symbol": "nullsub_6"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_vertex_space_converter_vtable",
       "section": ".rdata",
       "section_offset": 2344,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749556,
@@ -542,21 +564,43 @@
     {
       "address": 268749560,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the shared DXT1-DXT5 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004caf8; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies every target in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545736,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_dxt_base"
+        },
+        {
+          "address": 268546301,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_dxt_cache"
+        },
+        {
+          "address": 268528860,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_dxt_cache"
+        },
+        {
+          "address": 268545792,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_dxt"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_dxt",
       "section": ".rdata",
       "section_offset": 2364,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749628,
@@ -801,724 +845,1560 @@
     {
       "address": 268749676,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the R8G8B8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cb6c; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268538535,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_r8g8b8"
+        },
+        {
+          "address": 268530968,
+          "offset": 8,
+          "symbol": "FUN_10017518"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_r8g8b8",
       "section": ".rdata",
       "section_offset": 2480,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749692,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the shared UYVY/YUY2 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cb7c; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268549224,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_yuv_base"
+        },
+        {
+          "address": 268544959,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_yuv_cache"
+        },
+        {
+          "address": 268544790,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_yuv_cache"
+        },
+        {
+          "address": 268528699,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_yuv"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_yuv",
       "section": ".rdata",
       "section_offset": 2496,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749708,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A8R8G8B8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cb8c; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268538675,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a8r8g8b8"
+        },
+        {
+          "address": 268531204,
+          "offset": 8,
+          "symbol": "FUN_10017604"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a8r8g8b8",
       "section": ".rdata",
       "section_offset": 2512,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749724,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the X8R8G8B8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cb9c; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268538841,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_x8r8g8b8"
+        },
+        {
+          "address": 268531495,
+          "offset": 8,
+          "symbol": "FUN_10017727"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_x8r8g8b8",
       "section": ".rdata",
       "section_offset": 2528,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749740,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the R5G6B5 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cbac; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268538997,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_r5g6b5"
+        },
+        {
+          "address": 268531752,
+          "offset": 8,
+          "symbol": "FUN_10017828"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_r5g6b5",
       "section": ".rdata",
       "section_offset": 2544,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749788,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the X1R5G5B5 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cbdc; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268539162,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_x1r5g5b5"
+        },
+        {
+          "address": 268532009,
+          "offset": 8,
+          "symbol": "FUN_10017929"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_x1r5g5b5",
       "section": ".rdata",
       "section_offset": 2592,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749804,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A1R5G5B5 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cbec; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268539324,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a1r5g5b5"
+        },
+        {
+          "address": 268532266,
+          "offset": 8,
+          "symbol": "FUN_10017a2a"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a1r5g5b5",
       "section": ".rdata",
       "section_offset": 2608,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749840,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A4R4G4B4 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc10; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268539500,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a4r4g4b4"
+        },
+        {
+          "address": 268532551,
+          "offset": 8,
+          "symbol": "FUN_10017b47"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a4r4g4b4",
       "section": ".rdata",
       "section_offset": 2644,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749856,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the R3G3B2 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc20; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540035,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_r3g3b2"
+        },
+        {
+          "address": 268532842,
+          "offset": 8,
+          "symbol": "FUN_10017c6a"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_r3g3b2",
       "section": ".rdata",
       "section_offset": 2660,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749872,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc30; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540197,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a8"
+        },
+        {
+          "address": 268533096,
+          "offset": 8,
+          "symbol": "FUN_10017d68"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a8",
       "section": ".rdata",
       "section_offset": 2676,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749888,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A8R3G3B2 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc40; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540311,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a8r3g3b2"
+        },
+        {
+          "address": 268533265,
+          "offset": 8,
+          "symbol": "FUN_10017e11"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a8r3g3b2",
       "section": ".rdata",
       "section_offset": 2692,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749904,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the X4R4G4B4 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc50; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540489,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_x4r4g4b4"
+        },
+        {
+          "address": 268533556,
+          "offset": 8,
+          "symbol": "FUN_10017f34"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_x4r4g4b4",
       "section": ".rdata",
       "section_offset": 2708,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749920,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A2B10G10R10 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc60; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268539675,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a2b10g10r10"
+        },
+        {
+          "address": 268533813,
+          "offset": 8,
+          "symbol": "FUN_10018035"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a2b10g10r10",
       "section": ".rdata",
       "section_offset": 2724,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749936,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the G16R16 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc70; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268539889,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_g16r16"
+        },
+        {
+          "address": 268534104,
+          "offset": 8,
+          "symbol": "FUN_10018158"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_g16r16",
       "section": ".rdata",
       "section_offset": 2740,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749952,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A8P8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc80; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540648,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a8p8"
+        },
+        {
+          "address": 268534312,
+          "offset": 8,
+          "symbol": "FUN_10018228"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a8p8",
       "section": ".rdata",
       "section_offset": 2756,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749968,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the P8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc90; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540783,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_p8"
+        },
+        {
+          "address": 268534592,
+          "offset": 8,
+          "symbol": "FUN_10018340"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_p8",
       "section": ".rdata",
       "section_offset": 2772,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268749984,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the L8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cca0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540883,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_l8"
+        },
+        {
+          "address": 268534789,
+          "offset": 8,
+          "symbol": "FUN_10018405"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_l8",
       "section": ".rdata",
       "section_offset": 2788,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750000,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A8L8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccb0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268540993,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a8l8"
+        },
+        {
+          "address": 268534986,
+          "offset": 8,
+          "symbol": "FUN_100184ca"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a8l8",
       "section": ".rdata",
       "section_offset": 2804,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750016,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A4L4 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccc0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268541130,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a4l4"
+        },
+        {
+          "address": 268535232,
+          "offset": 8,
+          "symbol": "FUN_100185c0"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a4l4",
       "section": ".rdata",
       "section_offset": 2820,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750032,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the V8U8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccd0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268541267,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_v8u8"
+        },
+        {
+          "address": 268535467,
+          "offset": 8,
+          "symbol": "FUN_100186ab"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_v8u8",
       "section": ".rdata",
       "section_offset": 2836,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750048,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the L6V5U5 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cce0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268541397,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_l6v5u5"
+        },
+        {
+          "address": 268535680,
+          "offset": 8,
+          "symbol": "FUN_10018780"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_l6v5u5",
       "section": ".rdata",
       "section_offset": 2852,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750064,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the X8L8V8U8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccf0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268541574,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_x8l8v8u8"
+        },
+        {
+          "address": 268535941,
+          "offset": 8,
+          "symbol": "FUN_10018885"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_x8l8v8u8",
       "section": ".rdata",
       "section_offset": 2868,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750080,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the Q8W8V8U8 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd00; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268541719,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_q8w8v8u8"
+        },
+        {
+          "address": 268536208,
+          "offset": 8,
+          "symbol": "FUN_10018990"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_q8w8v8u8",
       "section": ".rdata",
       "section_offset": 2884,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750096,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the V16U16 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd10; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268541870,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_v16u16"
+        },
+        {
+          "address": 268536522,
+          "offset": 8,
+          "symbol": "FUN_10018aca"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_v16u16",
       "section": ".rdata",
       "section_offset": 2900,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750112,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the W11V11U10 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd20; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268542001,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_w11v11u10"
+        },
+        {
+          "address": 268536736,
+          "offset": 8,
+          "symbol": "FUN_10018ba0"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_w11v11u10",
       "section": ".rdata",
       "section_offset": 2916,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750128,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the A2W10V10U10 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd30; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268542187,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_a2w10v10u10"
+        },
+        {
+          "address": 268537002,
+          "offset": 8,
+          "symbol": "FUN_10018caa"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_a2w10v10u10",
       "section": ".rdata",
       "section_offset": 2932,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750144,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the D16_LOCKABLE pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd40; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268542398,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_unorm16"
+        },
+        {
+          "address": 268537312,
+          "offset": 8,
+          "symbol": "FUN_10018de0"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_d16_lockable",
       "section": ".rdata",
       "section_offset": 2948,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750160,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the L16 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd50; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268542398,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_unorm16"
+        },
+        {
+          "address": 268537511,
+          "offset": 8,
+          "symbol": "FUN_10018ea7"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_l16",
       "section": ".rdata",
       "section_offset": 2964,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750176,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the AL16 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd60; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268542510,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_al16"
+        },
+        {
+          "address": 268537710,
+          "offset": 8,
+          "symbol": "FUN_10018f6e"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_al16",
       "section": ".rdata",
       "section_offset": 2980,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750192,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the R16 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd70; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268542652,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_r16"
+        },
+        {
+          "address": 268537948,
+          "offset": 8,
+          "symbol": "FUN_1001905c"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_r16",
       "section": ".rdata",
       "section_offset": 2996,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750208,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the AR16 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd80; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268545624,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy"
+        },
+        {
+          "address": 268542792,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_ar16"
+        },
+        {
+          "address": 268538187,
+          "offset": 8,
+          "symbol": "FUN_1001914b"
+        },
+        {
+          "address": 268530652,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_ar16",
       "section": ".rdata",
       "section_offset": 3012,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750224,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the DXT1 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd90; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268547186,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_dxt"
+        },
+        {
+          "address": 268546301,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_dxt_cache"
+        },
+        {
+          "address": 268528860,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_dxt_cache"
+        },
+        {
+          "address": 268545792,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_dxt"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_dxt1",
       "section": ".rdata",
       "section_offset": 3028,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750240,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the DXT2 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cda0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268547186,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_dxt"
+        },
+        {
+          "address": 268546301,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_dxt_cache"
+        },
+        {
+          "address": 268528860,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_dxt_cache"
+        },
+        {
+          "address": 268545792,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_dxt"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_dxt2",
       "section": ".rdata",
       "section_offset": 3044,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750256,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the DXT3 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cdb0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268547186,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_dxt"
+        },
+        {
+          "address": 268546301,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_dxt_cache"
+        },
+        {
+          "address": 268528860,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_dxt_cache"
+        },
+        {
+          "address": 268545792,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_dxt"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_dxt3",
       "section": ".rdata",
       "section_offset": 3060,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750272,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the DXT4 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cdc0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268547186,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_dxt"
+        },
+        {
+          "address": 268546301,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_dxt_cache"
+        },
+        {
+          "address": 268528860,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_dxt_cache"
+        },
+        {
+          "address": 268545792,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_dxt"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_dxt4",
       "section": ".rdata",
       "section_offset": 3076,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750288,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the DXT5 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cdd0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268547186,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_dxt"
+        },
+        {
+          "address": 268546301,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_dxt_cache"
+        },
+        {
+          "address": 268528860,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_dxt_cache"
+        },
+        {
+          "address": 268545792,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_dxt"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_dxt5",
       "section": ".rdata",
       "section_offset": 3092,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750304,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the UYVY pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cde0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268549252,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_yuv"
+        },
+        {
+          "address": 268544959,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_yuv_cache"
+        },
+        {
+          "address": 268544790,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_yuv_cache"
+        },
+        {
+          "address": 268528699,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_yuv"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_uyvy",
       "section": ".rdata",
       "section_offset": 3108,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268750320,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "Virtual method table installed by the YUY2 pixel-format constructor.",
-      "definition_state": "unknown",
+      "definition_state": "fully-specified",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cdf0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes",
+      "initializer_symbols": [
+        {
+          "address": 268549252,
+          "offset": 0,
+          "symbol": "grim_pixel_format_scalar_deleting_destroy_yuv"
+        },
+        {
+          "address": 268544959,
+          "offset": 4,
+          "symbol": "grim_pixel_format_read_yuv_cache"
+        },
+        {
+          "address": 268544790,
+          "offset": 8,
+          "symbol": "grim_pixel_format_write_yuv_cache"
+        },
+        {
+          "address": 268528699,
+          "offset": 12,
+          "symbol": "grim_pixel_format_quantize_color_key_yuv"
+        }
+      ],
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "grim_pixel_format_vtable_yuy2",
       "section": ".rdata",
       "section_offset": 3124,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "void *[]"
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
+      "type": "void *[4]"
     },
     {
       "address": 268756316,
@@ -5995,9 +6875,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "6127e9c4a40aefddffd0083223a1acee8f0c659f5f204771ee5337fd28dd630f",
+    "data_map_sha256": "dc29bcf7ea5a8465fed290dc5e7bd98abdf05109725ab65befe84ec3f868c1f3",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "11fbaeaff6764d07b273368396c768112bc22943921ea70294406d554acdf4f9",
+    "definitions_sha256": "b5fe10d88833c12e958b8e2089820ea23df442f3002ee5b5a5831f469a1d76c9",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -6012,13 +6892,13 @@
     "definition_group_entries": 213,
     "definition_groups": 57,
     "entry_count": 274,
-    "explicit_alignment_entries": 228,
-    "explicit_initializer_entries": 228,
-    "explicit_size_entries": 228,
-    "fixed_array_types": 28,
-    "fully_specified_entries": 228,
+    "explicit_alignment_entries": 268,
+    "explicit_initializer_entries": 268,
+    "explicit_size_entries": 268,
+    "fixed_array_types": 68,
+    "fully_specified_entries": 268,
     "game_data_reference_count": 0,
-    "incomplete_array_types": 41,
+    "incomplete_array_types": 1,
     "multidimensional_array_types": 0,
     "overlay_addresses": 0,
     "priority_entries": 0,

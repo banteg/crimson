@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/grim.dll/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "eb4334fd649cb90804dae03c2495578955e4876fde92b7fd9142e86a56355e81"
+        "sha256": "7eaa18c410ad9f30a9bac70b42511aec116c8f7b3014da8722e4a8f9b07ec129"
       },
       {
         "path": "tools/native/abi/grim.dll/scratch.conf",
@@ -61,10 +61,10 @@
     "object": "tools/native/abi/grim.dll/build/msvc6.5/528f168a972345bf/abi_assertions.obj",
     "object_sha256": "323e77dd04cd87886eae26d4a13eb1b06bfc7f94f8ea7740cb446d70e6e59a5c",
     "source": "tools/native/abi/grim.dll/abi_assertions.cpp",
-    "source_sha256": "eb4334fd649cb90804dae03c2495578955e4876fde92b7fd9142e86a56355e81",
+    "source_sha256": "7eaa18c410ad9f30a9bac70b42511aec116c8f7b3014da8722e4a8f9b07ec129",
     "status": "passed"
   },
-  "audit_digest": "1bb6466da742745218c6fd002144c90bed123d4f67908017f0a4576ec45e2422",
+  "audit_digest": "cb0c8d393d9dab49ef98d240f5247a2431909bca9bea9455998e6a6abe61cd26",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -2391,7 +2391,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "11fbaeaff6764d07b273368396c768112bc22943921ea70294406d554acdf4f9"
+        "sha256": "b5fe10d88833c12e958b8e2089820ea23df442f3002ee5b5a5831f469a1d76c9"
       },
       "emitted_symbol_count": 154,
       "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
@@ -17144,7 +17144,7 @@
       {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "11fbaeaff6764d07b273368396c768112bc22943921ea70294406d554acdf4f9"
+        "sha256": "b5fe10d88833c12e958b8e2089820ea23df442f3002ee5b5a5831f469a1d76c9"
       },
       {
         "path": "tools/native/linker_aliases/grim.dll.json",

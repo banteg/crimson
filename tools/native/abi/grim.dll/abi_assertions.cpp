@@ -160,6 +160,7 @@ struct grim_uv_alignment_probe_t {
 };
 
 GRIM_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
+GRIM_ABI_ASSERT(codec_vtable_is_four_slots, sizeof(void *[4]) == 0x10);
 GRIM_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 GRIM_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
 GRIM_ABI_ASSERT(long_is_32_bit, sizeof(long) == 4);
