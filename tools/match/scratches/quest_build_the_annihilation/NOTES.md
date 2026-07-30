@@ -57,3 +57,10 @@ recorded both direct-field singles and their pair; all are byte-neutral.
 No source change is retained. Validation remains 205.7922077922078/278
 weighted bytes, a 72.20779220779221 gap, 77/77 instructions, prefix fifteen,
 and references 1/0/0.
+
+The `quest_build_the_unblitzkrieg` two-argument metadata helper was also
+replayed across both running columns. Moving `count = 1` after the helper is
+byte-for-byte neutral at 74.03%, 77/77 instructions, prefix fifteen, and
+`1/0/0` references. This confirms that its improvement is tied to
+Unblitzkrieg's longer metadata schedule rather than a missing shared helper ABI
+in every looped quest builder.

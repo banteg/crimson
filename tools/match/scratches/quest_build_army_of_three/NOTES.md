@@ -49,3 +49,11 @@ Only entry-zero direct metadata is byte-neutral; all other variants lose
 No source change is retained. Validation remains 524.1379310344827/608
 weighted bytes, an 83.86206896551732 gap, 116/116 instructions, prefix ten,
 and references 0/0/0.
+
+The two-argument metadata helper plus separate count assignment that improves
+the looped `quest_build_the_unblitzkrieg` sibling does not transfer to this
+fully unrolled table. The recorded `two-argument-helper-count-after` probe
+preserves 116/116 instructions and the ten-instruction prefix but loses 68.14
+fuzzy-weighted bytes, falling from 86.21% to 75.00%. The native overlap between
+neighboring vector temporaries and complete metadata stores requires the
+three-argument helper boundary here, so the canonical source is unchanged.
