@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "texture-stage-tail-entry",
+      "find": "    case 26:\n        if (!grim_set_texture_stage_ops(value.words[0])) {\n            return;\n        }\n        grim_config_values[id].words[0] = value.words[0];\n        goto copy_config_tail;\n",
+      "replacements": [
+        {
+          "name": "plain-break",
+          "text": "    case 26:\n        if (!grim_set_texture_stage_ops(value.words[0])) {\n            return;\n        }\n        break;\n"
+        },
+        {
+          "name": "word-zero-then-break",
+          "text": "    case 26:\n        if (!grim_set_texture_stage_ops(value.words[0])) {\n            return;\n        }\n        grim_config_values[id].words[0] = value.words[0];\n        break;\n"
+        },
+        {
+          "name": "named-mode-word-zero-then-break",
+          "text": "    case 26: {\n        unsigned int mode = value.words[0];\n        if (!grim_set_texture_stage_ops(mode)) {\n            return;\n        }\n        grim_config_values[id].words[0] = mode;\n        break;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "generic-copy-tail",
+      "find": "    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[1] = value.words[1];\n        config->words[2] = value.words[2];\n        config->words[3] = value.words[3];\n    }\n",
+      "replacements": [
+        {
+          "name": "aggregate-copy",
+          "text": "    grim_config_values[id] = value;\n"
+        },
+        {
+          "name": "direct-scalar-copy",
+          "text": "    grim_config_values[id].words[0] = value.words[0];\n    grim_config_values[id].words[1] = value.words[1];\n    grim_config_values[id].words[2] = value.words[2];\n    grim_config_values[id].words[3] = value.words[3];\n"
+        },
+        {
+          "name": "named-scalar-copy",
+          "text": "    grim_config_value_t *config = &grim_config_values[id];\n    config->words[0] = value.words[0];\n    config->words[1] = value.words[1];\n    config->words[2] = value.words[2];\n    config->words[3] = value.words[3];\n"
+        }
+      ]
+    }
+  ]
+}

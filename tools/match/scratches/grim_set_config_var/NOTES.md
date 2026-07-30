@@ -131,3 +131,23 @@ instructions**, and prefix **7/443**, while the reference audit improves from
 recognition and linked-image comparison, including an extra duplicate jump
 entry with different byte indices. The remaining residual is therefore
 instruction-layout/codegen only.
+
+## Dynamic-CRT source interaction audit
+
+The native body imports `_strdup`, so the remaining source menus were replayed
+under `/MD` rather than judging the ABI profile from the canonical source
+alone. The `/MD` baseline is **93.57%**, **443/443** instructions, prefix
+**7/443**, and `refs=70/0/0`, below the retained static-profile **94.36%**.
+
+Three existing menus cover the four case-16 ownership/call lifetimes, six
+shared-tail destination forms, and six source-load orders. All 16 variants are
+byte-neutral or worse under `/MD`. The new
+`md-shared-copy-tail-interactions.json` exhaustively crosses three case-26
+entries with aggregate, direct-scalar, and named-scalar generic tails. All
+**15/15** variants are worse; the best reaches only **90.02%** and drops the
+exact prefix to four instructions.
+
+Across **31** evaluated variants, dynamic-CRT lowering never interacts
+profitably with the recovered source shapes. The native import form is real,
+but `/MD` cannot recover the remaining block placement and shared-tail
+allocation under the available VC6 toolchain.
