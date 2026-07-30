@@ -612,9 +612,10 @@ extern "C" void projectile_render(float transition_alpha)
 
         if (type_id == PROJECTILE_TYPE_PULSE_GUN) {
             if (primary->vy.life_timer == 0.4f) {
-                float dx = primary->vel_x;
-                float dy = primary->vy.vel_y;
-                float pulse_scale = (float)sqrt(dx * dx + dy * dy) * 0.01f;
+                float pulse_scale = projectile_render_vec2_t(
+                    projectile->pos.origin_x - projectile->pos_x,
+                    primary->origin_y - projectile->pos.pos_y).length()
+                    * 0.01f;
                 grim_interface_ptr->grim_set_rotation(projectile->angle);
                 grim_interface_ptr->grim_set_atlas_frame(2, 0);
                 grim_interface_ptr->grim_set_color(
@@ -645,9 +646,9 @@ extern "C" void projectile_render(float transition_alpha)
             if (primary->vy.life_timer != 0.4f) {
                 continue;
             }
-            float dx = primary->vel_x;
-            float dy = primary->vy.vel_y;
-            float size = (float)sqrt(dx * dx + dy * dy);
+            float size = projectile_render_vec2_t(
+                projectile->pos.origin_x - projectile->pos_x,
+                primary->origin_y - projectile->pos.pos_y).length();
             if (size > 20.0f) {
                 size = 20.0f;
             }
@@ -667,9 +668,9 @@ extern "C" void projectile_render(float transition_alpha)
             if (primary->vy.life_timer != 0.4f) {
                 continue;
             }
-            float dx = primary->vel_x;
-            float dy = primary->vy.vel_y;
-            float size = (float)sqrt(dx * dx + dy * dy);
+            float size = projectile_render_vec2_t(
+                projectile->pos.origin_x - projectile->pos_x,
+                primary->origin_y - projectile->pos.pos_y).length();
             if (size > 20.0f) {
                 size = 20.0f;
             }

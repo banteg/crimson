@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pulse-displacement-distance",
+      "find": "                float dx = primary->vel_x;\n                float dy = primary->vy.vel_y;\n                float pulse_scale = (float)sqrt(dx * dx + dy * dy) * 0.01f;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "scalar-origin-minus-position",
+          "text": "                float dx = projectile->pos.origin_x\n                    - projectile->pos_x;\n                float dy = primary->origin_y\n                    - projectile->pos.pos_y;\n                float pulse_scale = (float)sqrt(dx * dx + dy * dy) * 0.01f;\n"
+        },
+        {
+          "name": "temporary-vector-length",
+          "text": "                float pulse_scale = projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    primary->origin_y - projectile->pos.pos_y).length()\n                    * 0.01f;\n"
+        },
+        {
+          "name": "named-vector-length",
+          "text": "                projectile_render_vec2_t displacement(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    primary->origin_y - projectile->pos.pos_y);\n                float pulse_scale = displacement.length() * 0.01f;\n"
+        },
+        {
+          "name": "direct-vector-difference-length",
+          "text": "                float pulse_scale = (\n                    projectile_render_vec2_t(\n                        projectile->pos.origin_x, primary->origin_y)\n                    - projectile_render_vec2_t(\n                        projectile->pos_x, projectile->pos.pos_y)).length()\n                    * 0.01f;\n"
+        }
+      ]
+    },
+    {
+      "name": "splitter-displacement-distance",
+      "find": "            float dx = primary->vel_x;\n            float dy = primary->vy.vel_y;\n            float size = (float)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "scalar-origin-minus-position",
+          "text": "            float dx = projectile->pos.origin_x\n                - projectile->pos_x;\n            float dy = primary->origin_y\n                - projectile->pos.pos_y;\n            float size = (float)sqrt(dx * dx + dy * dy);\n"
+        },
+        {
+          "name": "temporary-vector-length",
+          "text": "            float size = projectile_render_vec2_t(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y).length();\n"
+        },
+        {
+          "name": "named-vector-length",
+          "text": "            projectile_render_vec2_t displacement(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            float size = displacement.length();\n"
+        },
+        {
+          "name": "direct-vector-difference-length",
+          "text": "            float size = (\n                projectile_render_vec2_t(\n                    projectile->pos.origin_x, primary->origin_y)\n                - projectile_render_vec2_t(\n                    projectile->pos_x, projectile->pos.pos_y)).length();\n"
+        }
+      ]
+    },
+    {
+      "name": "blade-displacement-distance",
+      "find": "            float dx = primary->vel_x;\n            float dy = primary->vy.vel_y;\n            float size = (float)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "scalar-origin-minus-position",
+          "text": "            float dx = projectile->pos.origin_x\n                - projectile->pos_x;\n            float dy = primary->origin_y\n                - projectile->pos.pos_y;\n            float size = (float)sqrt(dx * dx + dy * dy);\n"
+        },
+        {
+          "name": "temporary-vector-length",
+          "text": "            float size = projectile_render_vec2_t(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y).length();\n"
+        },
+        {
+          "name": "named-vector-length",
+          "text": "            projectile_render_vec2_t displacement(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            float size = displacement.length();\n"
+        },
+        {
+          "name": "direct-vector-difference-length",
+          "text": "            float size = (\n                projectile_render_vec2_t(\n                    projectile->pos.origin_x, primary->origin_y)\n                - projectile_render_vec2_t(\n                    projectile->pos_x, projectile->pos.pos_y)).length();\n"
+        }
+      ]
+    }
+  ]
+}

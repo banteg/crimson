@@ -524,3 +524,38 @@ from 6,520.445 to 6,614.774 bytes, and reduces the gap from 6,030.555 to
 experiment audit has no errors. The six complete records bring
 `experiments.jsonl` to 34 records with SHA-256
 `3dc768269aa02cad61a66363983a744c6cc7672aa9c3f2b8d469a5f95e7d6a37`.
+
+## Primary displacement-distance semantic and lifetime wave
+
+The live native primary-projectile pass exposed a semantic recovery error in
+three adjacent branches. Pulse Gun at `0x004241b4`, Splitter Gun at
+`0x0042435e`, and Blade Gun at `0x004243eb` all subtract current position from
+origin position before measuring their billboard size. The previous source
+measured velocity magnitude instead. Each native branch also uses the same
+inlined two-component `length()` x87 kernel recovered for the Plasma Cannon:
+load and subtract both components, square the first while preserving the
+second, square the second, add, and take the square root.
+
+The complete 124-variant, one- through three-site sweep in
+`primary-displacement-distance-shapes.json` (SHA-256
+`0fde46a672e42e4db6a557b79974531c7466b55c8b97f64de05a22a655b8e291`)
+bounds four scalar and vector spellings at each site. Every isolated semantic
+repair regresses the global alignment score, but the three recovered
+lifetimes compose positively. All combinations of the temporary and named
+vector spellings at all three sites compile identically and tie for first.
+The simpler temporary-vector spelling is retained.
+
+The normalized candidate dump now reproduces the target displacement loads,
+subtractions, x87 product order, square root, and Pulse scale multiply. The
+three-site interaction adds nine candidate instructions toward native, raises
+the weighted match by 15.461 bytes, reduces the gap from 5,936.226 to
+5,920.765 bytes, and moves the ratio from 52.7031622% to 52.8263453%.
+References improve from `412/0/13` to `413/0/11`, and the candidate is now
+2,870/3,021 instructions.
+
+The retained source has SHA-256
+`d0eb9aa6d486f01aa014963b314d6d7cbff4bb490bbd2cd3a082b8e628bd8a09`.
+`crimson match validate` accepts it, and the experiment audit reports zero
+errors across 35 complete sweeps and 758 variants. `experiments.jsonl` now has
+SHA-256
+`77c1af0215d8a780900ddaa46c55f7a0f9edd2d606966ce2d4ac526f73c28239`.
