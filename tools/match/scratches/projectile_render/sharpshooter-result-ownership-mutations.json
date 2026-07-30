@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "end-position-result-copy",
+      "find": "            projectile_render_vec2_t end_pos =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "            projectile_render_vec2_t end_pos;\n            end_pos = player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "            projectile_render_vec2_t end_pos_result =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;\n            projectile_render_vec2_t end_pos = end_pos_result;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "            projectile_render_vec2_t end_pos_result =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;\n            projectile_render_vec2_t end_pos;\n            end_pos.x = end_pos_result.x;\n            end_pos.y = end_pos_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "start-position-result-copy",
+      "find": "            projectile_render_vec2_t start_pos =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(start_heading), (float)sin(start_heading))\n                    * 15.0f;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "            projectile_render_vec2_t start_pos;\n            start_pos = player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(start_heading), (float)sin(start_heading))\n                    * 15.0f;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "            projectile_render_vec2_t start_pos_result =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(start_heading), (float)sin(start_heading))\n                    * 15.0f;\n            projectile_render_vec2_t start_pos = start_pos_result;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "            projectile_render_vec2_t start_pos_result =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(start_heading), (float)sin(start_heading))\n                    * 15.0f;\n            projectile_render_vec2_t start_pos;\n            start_pos.x = start_pos_result.x;\n            start_pos.y = start_pos_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "half-width-result-copy",
+      "find": "            projectile_render_vec2_t half_width =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "            projectile_render_vec2_t half_width;\n            half_width = projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;\n            projectile_render_vec2_t half_width = half_width_result;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "            projectile_render_vec2_t half_width_result =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;\n            projectile_render_vec2_t half_width;\n            half_width.x = half_width_result.x;\n            half_width.y = half_width_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "start-screen-result-copy",
+      "find": "            projectile_render_vec2_t start_screen =\n                camera_offset + start_pos;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "            projectile_render_vec2_t start_screen;\n            start_screen = camera_offset + start_pos;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "            projectile_render_vec2_t start_screen_result =\n                camera_offset + start_pos;\n            projectile_render_vec2_t start_screen = start_screen_result;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "            projectile_render_vec2_t start_screen_result =\n                camera_offset + start_pos;\n            projectile_render_vec2_t start_screen;\n            start_screen.x = start_screen_result.x;\n            start_screen.y = start_screen_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "start-point-result-copies",
+      "find": "            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "            projectile_render_vec2_t point0;\n            point0 = start_screen - half_width;\n            projectile_render_vec2_t point1;\n            point1 = start_screen + half_width;"
+        },
+        {
+          "name": "named-results-then-copy",
+          "text": "            projectile_render_vec2_t point0_result =\n                start_screen - half_width;\n            projectile_render_vec2_t point0 = point0_result;\n            projectile_render_vec2_t point1_result =\n                start_screen + half_width;\n            projectile_render_vec2_t point1 = point1_result;"
+        },
+        {
+          "name": "named-results-member-copy",
+          "text": "            projectile_render_vec2_t point0_result =\n                start_screen - half_width;\n            projectile_render_vec2_t point0;\n            point0.x = point0_result.x;\n            point0.y = point0_result.y;\n            projectile_render_vec2_t point1_result =\n                start_screen + half_width;\n            projectile_render_vec2_t point1;\n            point1.x = point1_result.x;\n            point1.y = point1_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "end-screen-result-copy",
+      "find": "            projectile_render_vec2_t end_screen =\n                camera_offset + end_pos;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "            projectile_render_vec2_t end_screen;\n            end_screen = camera_offset + end_pos;"
+        },
+        {
+          "name": "named-result-then-copy",
+          "text": "            projectile_render_vec2_t end_screen_result =\n                camera_offset + end_pos;\n            projectile_render_vec2_t end_screen = end_screen_result;"
+        },
+        {
+          "name": "named-result-member-copy",
+          "text": "            projectile_render_vec2_t end_screen_result =\n                camera_offset + end_pos;\n            projectile_render_vec2_t end_screen;\n            end_screen.x = end_screen_result.x;\n            end_screen.y = end_screen_result.y;"
+        }
+      ]
+    },
+    {
+      "name": "end-point-result-copies",
+      "find": "            projectile_render_vec2_t point2 = end_screen + half_width;\n            projectile_render_vec2_t point3 = end_screen - half_width;",
+      "replacements": [
+        {
+          "name": "default-then-assign",
+          "text": "            projectile_render_vec2_t point2;\n            point2 = end_screen + half_width;\n            projectile_render_vec2_t point3;\n            point3 = end_screen - half_width;"
+        },
+        {
+          "name": "named-results-then-copy",
+          "text": "            projectile_render_vec2_t point2_result =\n                end_screen + half_width;\n            projectile_render_vec2_t point2 = point2_result;\n            projectile_render_vec2_t point3_result =\n                end_screen - half_width;\n            projectile_render_vec2_t point3 = point3_result;"
+        },
+        {
+          "name": "named-results-member-copy",
+          "text": "            projectile_render_vec2_t point2_result =\n                end_screen + half_width;\n            projectile_render_vec2_t point2;\n            point2.x = point2_result.x;\n            point2.y = point2_result.y;\n            projectile_render_vec2_t point3_result =\n                end_screen - half_width;\n            projectile_render_vec2_t point3;\n            point3.x = point3_result.x;\n            point3.y = point3_result.y;"
+        }
+      ]
+    }
+  ]
+}

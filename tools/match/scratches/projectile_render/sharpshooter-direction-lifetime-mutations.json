@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "end-direction-lifetime",
+      "find": "            projectile_render_vec2_t end_pos =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;",
+      "replacements": [
+        {
+          "name": "named-unit-direction",
+          "text": "            projectile_render_vec2_t end_direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t end_pos =\n                player_pos + end_direction * 512.0f;"
+        },
+        {
+          "name": "named-scaled-direction",
+          "text": "            projectile_render_vec2_t end_direction =\n                projectile_render_vec2_t(\n                    (float)cos(heading), (float)sin(heading))\n                * 512.0f;\n            projectile_render_vec2_t end_pos =\n                player_pos + end_direction;"
+        },
+        {
+          "name": "named-unit-and-scaled-directions",
+          "text": "            projectile_render_vec2_t end_unit_direction(\n                (float)cos(heading), (float)sin(heading));\n            projectile_render_vec2_t end_direction =\n                end_unit_direction * 512.0f;\n            projectile_render_vec2_t end_pos =\n                player_pos + end_direction;"
+        }
+      ]
+    },
+    {
+      "name": "start-direction-lifetime",
+      "find": "            projectile_render_vec2_t start_pos =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(start_heading), (float)sin(start_heading))\n                    * 15.0f;",
+      "replacements": [
+        {
+          "name": "named-unit-direction",
+          "text": "            projectile_render_vec2_t start_direction(\n                (float)cos(start_heading), (float)sin(start_heading));\n            projectile_render_vec2_t start_pos =\n                player_pos + start_direction * 15.0f;"
+        },
+        {
+          "name": "named-scaled-direction",
+          "text": "            projectile_render_vec2_t start_direction =\n                projectile_render_vec2_t(\n                    (float)cos(start_heading), (float)sin(start_heading))\n                * 15.0f;\n            projectile_render_vec2_t start_pos =\n                player_pos + start_direction;"
+        },
+        {
+          "name": "named-unit-and-scaled-directions",
+          "text": "            projectile_render_vec2_t start_unit_direction(\n                (float)cos(start_heading), (float)sin(start_heading));\n            projectile_render_vec2_t start_direction =\n                start_unit_direction * 15.0f;\n            projectile_render_vec2_t start_pos =\n                player_pos + start_direction;"
+        }
+      ]
+    },
+    {
+      "name": "half-width-direction-lifetime",
+      "find": "            projectile_render_vec2_t half_width =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;",
+      "replacements": [
+        {
+          "name": "named-unit-direction",
+          "text": "            projectile_render_vec2_t half_width_direction(\n                (float)cos(player->aim_heading),\n                (float)sin(player->aim_heading));\n            projectile_render_vec2_t half_width =\n                half_width_direction * 1.1f;"
+        },
+        {
+          "name": "constructed-scaled-components",
+          "text": "            projectile_render_vec2_t half_width(\n                (float)cos(player->aim_heading) * 1.1f,\n                (float)sin(player->aim_heading) * 1.1f);"
+        },
+        {
+          "name": "assigned-scaled-components",
+          "text": "            projectile_render_vec2_t half_width;\n            half_width.x =\n                (float)cos(player->aim_heading) * 1.1f;\n            half_width.y =\n                (float)sin(player->aim_heading) * 1.1f;"
+        }
+      ]
+    }
+  ]
+}

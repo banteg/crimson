@@ -821,3 +821,42 @@ The weighted match rises from 7,169.570 to 7,204.219 bytes, the gap falls from
 The two complete records bring `experiments.jsonl` to 49 sweeps and 1,389
 evaluated variants with SHA-256
 `d3bcbf9797ae8eb5d76d9d0655ed859b3005f2ba09c7324960afe5acf197f176`.
+
+## Sharpshooter result-ownership wave
+
+The opening Sharpshooter sight remains the largest localized mismatch region.
+Live native disassembly shows the player position copied at
+`0x00422d6b-0x00422d7b`, the end and start rays built at
+`0x00422d7f-0x00422df5`, the half-width at
+`0x00422df7-0x00422e0b`, and the sequential start/end screen results and four
+quad points at `0x00422e12-0x00422ee0`. The perk gate and draw then consume
+those points at `0x00422ee7-0x00422f55`.
+
+`sharpshooter-result-ownership-mutations.json` (SHA-256
+`a068cc073d49e7a54f08bb0977a3e60f9f46a1731f31199dd4b85ef765c1b2d2`)
+tests default assignment, aggregate result copies, and member result copies at
+all seven outer vector boundaries. The exhaustive run evaluates all 210
+single- and two-site variants. Only the camera-plus-end result copied into the
+long-lived end screen by members improves. Every two-site tie is that winner
+plus a byte-neutral spelling, so no unsupported interaction is retained.
+
+The exact recovered `vec2_sub` and `vec2_add_out` functions confirm the game's
+member-style destination ABI, but the Sharpshooter operators are inlined.
+`sharpshooter-direction-lifetime-mutations.json` (SHA-256
+`5f7e7c5e4cfc53b2b9d756a345fb1881771059b4979e2c4d5bbadb84bd9e5869`)
+therefore bounds the remaining inner constructor/scale hypothesis without
+changing that ABI globally. It exhausts all 63 single-, double-, and
+triple-site combinations across the end ray, start ray, and half-width
+direction. Named unit and scaled directions compile byte-identically; direct
+half-width component spellings do not improve. No change from that falsified
+matrix is retained.
+
+The retained member copy adds 4.255 fuzzy-weighted bytes with identical
+2,878/3,021 instruction and `442/0/10` reference counts. The weighted match
+rises from 7,204.219 to 7,208.474 bytes, the gap falls from 5,346.781 to
+5,342.526 bytes, and the ratio moves from 57.3995592% to 57.4334633%.
+The retained source has SHA-256
+`9105e341ecc8832b1afa55b9afbe64c631b760bb4ce49b97b5bafad1733aadaa`.
+The two complete records bring `experiments.jsonl` to 51 sweeps and 1,662
+evaluated variants with zero malformed records and SHA-256
+`ccea677de13bc41e6787015957bd51949c4e0bd6ec2f084848f8d9cc8d675786`.

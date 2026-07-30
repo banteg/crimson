@@ -51,7 +51,7 @@
       }
     }
   ],
-  "audit_digest": "366de2acbc589b92dbc20185a3d7a3a704e811e1ddeb9b7050855fe77647dd04",
+  "audit_digest": "f22c2bb1c7d756ada1f698593e00d0d41b987f062d308a3614ba24aba73d66e8",
   "entry": {
     "aliases": {
       "object": {
@@ -86,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "e913d7542ad44835cb515c82e7556daceea9ad92a6c77ebc9a02ac3ac15973ca"
+    "sha256": "78ea6573fe657d23227fc5df18fc5b40782aa8daac9dcf3401eba79c15e10776"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -338,7 +338,7 @@
           "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "3c5e868f7ecaba76fd85f0de7e7b9c00bd79a8923e7b409e1cce620c0bc13f26"
+          "sha256": "476e605097a2ee7c4d1055778bbf90e8363745380cda55ecf7221c596fe46e94"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions.",

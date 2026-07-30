@@ -151,8 +151,11 @@ extern "C" void projectile_render(float transition_alpha)
                 camera_offset + start_pos;
             projectile_render_vec2_t point0 = start_screen - half_width;
             projectile_render_vec2_t point1 = start_screen + half_width;
-            projectile_render_vec2_t end_screen =
+            projectile_render_vec2_t end_screen_result =
                 camera_offset + end_pos;
+            projectile_render_vec2_t end_screen;
+            end_screen.x = end_screen_result.x;
+            end_screen.y = end_screen_result.y;
             projectile_render_vec2_t point2 = end_screen + half_width;
             projectile_render_vec2_t point3 = end_screen - half_width;
 
