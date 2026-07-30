@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ring-vec2-add-out-shape",
+      "find": "    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }",
+      "replacements": [
+        {
+          "name": "lhs-first",
+          "text": "    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    void add_to(\n        creature_spawn_vec2_t *out,\n        const creature_spawn_vec2_t &other) const\n    {\n        out->x = x + other.x;\n        out->y = y + other.y;\n    }"
+        },
+        {
+          "name": "rhs-first",
+          "text": "    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    void add_to(\n        creature_spawn_vec2_t *out,\n        const creature_spawn_vec2_t &other) const\n    {\n        out->x = other.x + x;\n        out->y = other.y + y;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "ring-5-vector-add-out",
+      "find": "            chain_position.set(\n                creature->target_offset.x + pos->x,\n                creature->target_offset.y + pos->y);\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;",
+      "replacements": [
+        {
+          "name": "target-add-position",
+          "text": "            (*(creature_spawn_vec2_t *)&creature->target_offset).add_to(\n                &chain_position, *(const creature_spawn_vec2_t *)pos);\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        },
+        {
+          "name": "position-add-target",
+          "text": "            (*(const creature_spawn_vec2_t *)pos).add_to(\n                &chain_position,\n                *(creature_spawn_vec2_t *)&creature->target_offset);\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        }
+      ]
+    }
+  ]
+}

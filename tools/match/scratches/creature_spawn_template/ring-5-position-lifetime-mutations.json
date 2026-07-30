@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ring-5-position-lifetime",
+      "find": "            chain_position.set(\n                creature->target_offset.x + pos->x,\n                creature->target_offset.y + pos->y);\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;",
+      "replacements": [
+        {
+          "name": "copy-target-then-add",
+          "text": "            chain_position = *(creature_spawn_vec2_t *)&creature->target_offset;\n            chain_position.x = chain_position.x + pos->x;\n            chain_position.y = chain_position.y + pos->y;\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        },
+        {
+          "name": "copy-target-compound-add",
+          "text": "            chain_position = *(creature_spawn_vec2_t *)&creature->target_offset;\n            chain_position.x += pos->x;\n            chain_position.y += pos->y;\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        },
+        {
+          "name": "copy-position-then-add-target",
+          "text": "            chain_position = *(const creature_spawn_vec2_t *)pos;\n            chain_position.x = chain_position.x + creature->target_offset.x;\n            chain_position.y = chain_position.y + creature->target_offset.y;\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        },
+        {
+          "name": "copy-position-compound-add-target",
+          "text": "            chain_position = *(const creature_spawn_vec2_t *)pos;\n            chain_position.x += creature->target_offset.x;\n            chain_position.y += creature->target_offset.y;\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        },
+        {
+          "name": "split-position-x-then-y",
+          "text": "            chain_position.x = creature->target_offset.x + pos->x;\n            chain_position.y = creature->target_offset.y + pos->y;\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        },
+        {
+          "name": "split-position-y-then-x",
+          "text": "            chain_position.y = creature->target_offset.y + pos->y;\n            chain_position.x = creature->target_offset.x + pos->x;\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        },
+        {
+          "name": "direct-position-fields",
+          "text": "            creature->position.x = creature->target_offset.x + pos->x;\n            creature->position.y = creature->target_offset.y + pos->y;"
+        },
+        {
+          "name": "named-position-scalars",
+          "text": "            float child_position_x = creature->target_offset.x + pos->x;\n            float child_position_y = creature->target_offset.y + pos->y;\n            chain_position.set(child_position_x, child_position_y);\n            *(creature_spawn_vec2_t *)&creature->position = chain_position;"
+        }
+      ]
+    }
+  ]
+}

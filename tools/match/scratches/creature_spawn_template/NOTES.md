@@ -766,6 +766,42 @@ Together the nine retained lifetime seams improve this scratch by
 retained source SHA-256 is
 `3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
 
+## Five-member ring position boundary
+
+The largest fresh non-grid x87 residual is the template-`0x19` child-position
+construction at `0x00430ddd..0x00430e42`. Native stores both trigonometric
+target offsets, reloads them, adds the input position into a two-float
+temporary, and then copies that aggregate into the child. The retained source
+lets VC6 keep both values live on x87 through the equivalent expression.
+
+Three recorded sweeps exhaust the ordinary recovered source shapes at this
+single handler:
+
+- `ring-5-position-lifetime-mutations.json`
+  (`b13e722332c64f41cc5b68ea245b386ae6c65628f434d61961a3c0d99747440f`)
+  evaluates all 8/8 target-first, position-first, split, direct-field, and
+  named-scalar spellings. Every form regresses; the closest adds one
+  instruction and loses 95.637 weighted bytes.
+- `ring-5-vector-operator-mutations.json`
+  (`8ff0c1851507f3b7683b490720ee2599586a5cc06187915309451e15266f8bf3`)
+  evaluates all 8/8 single and paired value-returning `operator+` shapes.
+  Merely declaring either operator is byte-neutral, while using it perturbs
+  the function-wide aggregate-return allocation and loses 2,757.336 weighted
+  bytes.
+- `ring-5-vector-add-out-mutations.json`
+  (`ae9ec6c73491448951e9aa43e9aabaea983126c14b7e0ce06607c8ab32790e5a`)
+  evaluates all 8/8 single and paired inlined out-parameter shapes. Both
+  operand orders preserve instruction count but lose 62.464 weighted bytes.
+
+This rules out a missing local vector expression as the cause. The same native
+temporary occupies `[esp+0x18..0x1c]`, overlapping the function-wide
+root-offset/zero-vector slot permutation already bounded by the prologue and
+declaration-order sweeps. The residual is therefore retained as compiler-local
+allocation evidence rather than forced with a volatile or aliasing fakematch.
+The source remains unchanged at 87.689873%, 3,161/3,159 instructions, a
+23-instruction prefix, `352/0/1` references, and SHA-256
+`3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
+
 ## Template 0x31/0x32 speed-remainder negative control
 
 Native scheduling around the adjacent template-`0x31` and template-`0x32`
