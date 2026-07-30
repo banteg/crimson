@@ -158,3 +158,22 @@ behavior. Recorded spec SHAs:
 `ff1ff64a773f7c6930d593a0bd19b8487383d023c5c6ccd913dcb81ff8743e39`
 and
 `8f19a54a08f880ced92ea608dc6349ee8de611beccf3e7dec9dd69e525787be5`.
+
+## Native-order neighboring TU boundary
+
+`probe_neighbor_translation_unit.cpp` compiles the contiguous weapons and
+perks callbacks in native address order, with one shared definition of their
+three database UI helper classes. The perks function stays byte-for-byte at
+99.8043%, 511/511 instructions, and prefix 74. VC6 numbers its later
+function-local guard and destructor thunks as `$S4`, `$E5`, and `$E6`; the
+translation-unit aliases in `scratch.conf` prove the combined object still
+audits at `148/0/0` references rather than treating that numbering shift as
+recovery debt.
+
+Same-object compilation therefore does not repair the shared scheduler
+inversion. The standalone source remains canonical, and there is no honest
+reason to promote this WIP island into the native translation-unit manifest
+until a new compiler or source constraint changes the four weighted bytes.
+
+The recorded probe SHA is
+`763c886a313691f3934a38782b035b4e3ab981cfb001eb9cd1cac72a157c2e56`.

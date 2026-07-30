@@ -181,3 +181,22 @@ recoverable source interaction. Combined with the neutral call-schedule and
 compiler-profile menus, the residual is bounded compiler scheduling debt.
 Recorded spec SHA:
 `8f19a54a08f880ced92ea608dc6349ee8de611beccf3e7dec9dd69e525787be5`.
+
+## Native-order neighboring TU boundary
+
+The final higher-level hypothesis is also falsified. The adjacent native
+island is weapons update, its two local-static destructor thunks, perks update,
+then its two destructor thunks. `probe_neighbor_translation_unit.cpp` compiles
+both canonical callbacks in exactly that order with one guarded definition of
+the shared `database_vec2_t`, `database_scrollbar_t`, and `database_button_t`
+classes.
+
+Scoring the weapons symbol from that combined object is byte-for-byte neutral:
+99.8088%, 523/523 instructions, prefix 74, and `157/0/0` references. Thus
+neither the sibling callback nor shared class identity changes the dispatch
+load / integer-width conversion schedule. The independently compiled source
+remains canonical; promoting this WIP island to a translation-unit cluster
+would add no exact coverage.
+
+The recorded probe SHA is
+`d4530894e70ee9d8386b4776815877b16faadb39fec1333d04588819cedb64bf`.

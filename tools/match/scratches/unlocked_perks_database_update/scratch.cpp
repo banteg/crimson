@@ -3,6 +3,9 @@
 
 extern IGrim2D_cpp *grim_interface_ptr;
 
+#ifndef CRIMSON_DATABASE_UI_TYPES
+#define CRIMSON_DATABASE_UI_TYPES
+
 struct database_vec2_t {
     float x;
     float y;
@@ -70,6 +73,8 @@ struct database_button_t {
 
     ~database_button_t() {}
 };
+
+#endif
 
 extern "C" {
 extern ui_element_t ui_element_slot_09;
