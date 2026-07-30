@@ -898,6 +898,47 @@
       ]
     },
     {
+      "name": "quest-meta-zero-record-0002c",
+      "types": ["quest_meta_t"],
+      "size": 44,
+      "size_source": "third_party/headers/crimsonland_types.h: quest_meta_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_is_0x2c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes inherited from zero-filled quest_selected_meta",
+      "members": [
+        ["0x00484914", "quest_meta_terrain_desc_unlock_gt_0x13"],
+        ["0x00484acc", "quest_meta_terrain_desc_unlock_gt_0x1d"],
+        ["0x00484c84", "quest_meta_terrain_desc_unlock_gt_0x27"]
+      ]
+    },
+    {
+      "name": "game-status-zero-weapon-usage-000d4",
+      "types": ["weapon_usage_counts_t"],
+      "size": 212,
+      "size_source": "third_party/headers/crimsonland_types.h: weapon_usage_counts_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: weapon_usage_counts_is_0xd4",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_int_is_32_bit and game_status_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes inherited from zero-filled game_status_blob",
+      "members": [
+        ["0x00485544", "weapon_usage_counts"]
+      ]
+    },
+    {
+      "name": "game-status-zero-quest-play-0016c",
+      "types": ["quest_play_counts_t"],
+      "size": 364,
+      "size_source": "third_party/headers/crimsonland_types.h: quest_play_counts_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_play_counts_is_0x16c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_int_is_32_bit and game_status_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes inherited from zero-filled game_status_blob",
+      "members": [
+        ["0x00485618", "quest_play_counts"]
+      ]
+    },
+    {
       "name": "zero-abi-000f0",
       "types": ["controls_rebind_item_table_t"],
       "size": 240,
@@ -1129,7 +1170,7 @@
     },
     {
       "name": "zero-uint32",
-      "types": ["uint32_t"],
+      "types": ["uint32_t", "unsigned int"],
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: uint32_t presentation alias; third_party/headers/crimsonland_types.h: secondary_projectile_t.unused_0x28 is unsigned int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_int_is_32_bit",
       "alignment": 4,
@@ -1137,6 +1178,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
+        ["0x00485794", "game_sequence_id"],
         ["0x00495b00", "secondary_proj_unused_0x28"]
       ]
     },
@@ -1158,6 +1200,8 @@
         ["0x00482954", "bonus_time_max"],
         ["0x00482958", "bonus_pos_x"],
         ["0x0048295c", "bonus_pos_y"],
+        ["0x00484fdc", "creature_spawn_slot_interval"],
+        ["0x00484fe0", "creature_spawn_slot_timer"],
         ["0x0048701c", "bonus_weapon_power_up_timer"],
         ["0x00487020", "bonus_energizer_timer"],
         ["0x00487024", "bonus_double_xp_timer"],
@@ -1272,7 +1316,11 @@
         ["0x004d79ec", "controls_rebind_axis_peak_abs_141"],
         ["0x004d79f0", "controls_rebind_axis_peak_abs_153"],
         ["0x004d79f4", "controls_rebind_axis_peak_abs_154"],
-        ["0x004d79f8", "controls_rebind_axis_peak_abs_155"]
+        ["0x004d79f8", "controls_rebind_axis_peak_abs_155"],
+        ["0x004d7a98", "weapon_projectile_travel_budget"],
+        ["0x004d7a9c", "weapon_projectile_damage_scale"],
+        ["0x004d9040", "fire_bullets_fallback_shot_cooldown"],
+        ["0x004d9048", "fire_bullets_fallback_spread_heat"]
       ]
     },
     {
@@ -1315,6 +1363,17 @@
         ["0x00482940", "creature_type_count"],
         ["0x00482960", "bonus_amount"],
         ["0x00482b08", "quest_spawn_count"],
+        ["0x00484734", "quest_meta_index"],
+        ["0x00484738", "quest_meta_time_limit_ms"],
+        ["0x00484740", "quest_meta_terrain_id"],
+        ["0x00484744", "quest_meta_terrain_id_b"],
+        ["0x00484748", "quest_meta_terrain_id_c"],
+        ["0x00484750", "quest_unlock_perk_id"],
+        ["0x00484754", "quest_unlock_weapon_id"],
+        ["0x00484758", "quest_start_weapon_id"],
+        ["0x00484fd4", "creature_spawn_slot_count"],
+        ["0x00484fd8", "creature_spawn_slot_limit"],
+        ["0x00484fe4", "creature_spawn_slot_template"],
         ["0x004853d8", "bonus_meta_icon_id"],
         ["0x004853e0", "bonus_meta_default_amount"],
         ["0x00485400", "bonus_icon_energizer"],
@@ -1325,6 +1384,10 @@
         ["0x004854b4", "bonus_icon_freeze"],
         ["0x004854dc", "bonus_icon_speed"],
         ["0x004854f0", "bonus_icon_fire_bullets"],
+        ["0x00485784", "mode_play_survival"],
+        ["0x00485788", "mode_play_rush"],
+        ["0x0048578c", "mode_play_typo"],
+        ["0x00485790", "mode_play_other"],
         ["0x00486fac", "perk_pending_count"],
         ["0x00486fb0", "perk_choices_dirty"],
         ["0x00486fb4", "creature_spawned_count"],
@@ -1395,6 +1458,8 @@
         ["0x004c2b8c", "perk_id_count"],
         ["0x004c2bcc", "player_overlay_auto_target_line_perk_id"],
         ["0x004c2c38", "perk_id_max"],
+        ["0x004c2c48", "perk_flags_table"],
+        ["0x004c2c50", "perk_prereq_table"],
         ["0x004c3654", "quest_spawn_stall_timer_ms"],
         ["0x004c395c", "highscore_table_count"],
         ["0x004c3c74", "buffer_reader_size"],
@@ -1417,12 +1482,22 @@
         ["0x004d7588", "typo_input_length"],
         ["0x004d758c", "typo_spawn_counter"],
         ["0x004d79d8", "quest_select_stage_minor_index"],
-        ["0x004d79dc", "controls_rebind_player_index"]
+        ["0x004d79dc", "controls_rebind_player_index"],
+        ["0x004d7a90", "weapon_hud_icon_id"],
+        ["0x004d7aa0", "weapon_projectile_pellet_count"],
+        ["0x004d7b7c", "weapon_sfx_anchor_autorifle_fire"],
+        ["0x004d7fd8", "fire_bullets_secondary_shot_sfx_id"],
+        ["0x004d83c0", "weapon_sfx_anchor_autorifle_reload"],
+        ["0x004d86a8", "weapon_sfx_anchor_shock_reload"],
+        ["0x004d9050", "fire_bullets_primary_shot_sfx_id"],
+        ["0x004d92bc", "weapon_sfx_anchor_bloodspill_01"],
+        ["0x004d93b4", "weapon_sfx_anchor_explosion_large"],
+        ["0x004d93bc", "weapon_sfx_anchor_shotgun_reload"]
       ]
     },
     {
       "name": "zero-pointer32",
-      "types": ["FILE *", "char *", "char*", "cvar_float_t *", "effect_entry_t *", "float *", "int *", "mod_info_t *", "mod_interface_binja_t *", "quest_meta_t *", "tutorial_bonus_carrier_binja_t *", "ui_element_t *", "void *"],
+      "types": ["FILE *", "char *", "char*", "cvar_float_t *", "effect_entry_t *", "float *", "int *", "mod_info_t *", "mod_interface_binja_t *", "quest_builder_fn_t", "quest_meta_t *", "tutorial_bonus_carrier_binja_t *", "ui_element_t *", "void *"],
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: pointer types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "alignment": 4,
@@ -1446,6 +1521,8 @@
         ["0x004808ac", "tutorial_hint_bonus_ptr"],
         ["0x004824d4", "plugin_interface_ptr"],
         ["0x004824e0", "mods_menu_selected_info"],
+        ["0x0048473c", "quest_meta_name"],
+        ["0x0048474c", "quest_selected_builder"],
         ["0x004852d0", "registry_key_status_root_path"],
         ["0x004853d4", "bonus_meta_description"],
         ["0x004853e4", "bonus_label_points"],
@@ -1503,6 +1580,7 @@
         ["0x0048f59c", "bonus_hud_slot_label"],
         ["0x004aaee4", "runtime_empty_string_copy"],
         ["0x004c2b30", "effect_free_list_head"],
+        ["0x004c2c44", "perk_desc_table"],
         ["0x004c3640", "perk_slot_1_name_wrapped_primary"],
         ["0x004c3644", "perk_slot_1_name_wrapped_alternate"],
         ["0x004c3648", "perk_slot_1_desc_wrapped_primary"],
@@ -1537,6 +1615,7 @@
         ["0x004aaeda", "music_disabled_runtime"],
         ["0x004aaeea", "sfx_init_disabled"],
         ["0x004ab338", "effect_pool_effect_id"],
+        ["0x004c2c4c", "perk_available_table"],
         ["0x004d1220", "profile_name_add_mode"],
         ["0x004d1221", "profile_name_selection_dirty"],
         ["0x004d1222", "profile_name_filter_dirty"],

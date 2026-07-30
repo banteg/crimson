@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "24111c4436c1b6f7de9467efcfeda0130f9b4cfb24a6a2cc2d7cfbf0ed1a3a67"
+        "sha256": "78b4cc51926c080895381983b5853ed504aaf23de8d85066bd6cfc0572ed301a"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/eaef563a2d5aae74/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "24111c4436c1b6f7de9467efcfeda0130f9b4cfb24a6a2cc2d7cfbf0ed1a3a67",
+    "source_sha256": "78b4cc51926c080895381983b5853ed504aaf23de8d85066bd6cfc0572ed301a",
     "status": "passed"
   },
-  "audit_digest": "ef170be2df56974bf7e5094bcc58ef0f8271d76bc1ef786d4799e51b67aaa964",
+  "audit_digest": "7f3088e8db50847f528370abffbac03c19cbcaebecaa5f68cc5f936a16355957",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -3012,45 +3012,45 @@
         },
         {
           "address": 4737300,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "quest_meta_terrain_desc_unlock_gt_0x13",
           "section_number": 170,
           "section_offset": 484,
-          "size": null,
-          "storage_address": 4736816,
-          "storage_name": "quest_selected_meta",
+          "size": 44,
+          "storage_address": 4737300,
+          "storage_name": "quest_meta_terrain_desc_unlock_gt_0x13",
           "symbols": [
             "_quest_meta_terrain_desc_unlock_gt_0x13"
           ]
         },
         {
           "address": 4737740,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "quest_meta_terrain_desc_unlock_gt_0x1d",
           "section_number": 170,
           "section_offset": 924,
-          "size": null,
-          "storage_address": 4736816,
-          "storage_name": "quest_selected_meta",
+          "size": 44,
+          "storage_address": 4737740,
+          "storage_name": "quest_meta_terrain_desc_unlock_gt_0x1d",
           "symbols": [
             "_quest_meta_terrain_desc_unlock_gt_0x1d"
           ]
         },
         {
           "address": 4738180,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "quest_meta_terrain_desc_unlock_gt_0x27",
           "section_number": 170,
           "section_offset": 1364,
-          "size": null,
-          "storage_address": 4736816,
-          "storage_name": "quest_selected_meta",
+          "size": 44,
+          "storage_address": 4738180,
+          "storage_name": "quest_meta_terrain_desc_unlock_gt_0x27",
           "symbols": [
             "_quest_meta_terrain_desc_unlock_gt_0x27"
           ]
@@ -3433,90 +3433,90 @@
         },
         {
           "address": 4740420,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "weapon_usage_counts",
           "section_number": 176,
           "section_offset": 4,
-          "size": null,
-          "storage_address": 4740416,
-          "storage_name": "game_status_blob",
+          "size": 212,
+          "storage_address": 4740420,
+          "storage_name": "weapon_usage_counts",
           "symbols": [
             "_weapon_usage_counts"
           ]
         },
         {
           "address": 4740632,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "quest_play_counts",
           "section_number": 176,
           "section_offset": 216,
-          "size": null,
-          "storage_address": 4740416,
-          "storage_name": "game_status_blob",
+          "size": 364,
+          "storage_address": 4740632,
+          "storage_name": "quest_play_counts",
           "symbols": [
             "_quest_play_counts"
           ]
         },
         {
           "address": 4740996,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "mode_play_survival",
           "section_number": 176,
           "section_offset": 580,
-          "size": null,
-          "storage_address": 4740416,
-          "storage_name": "game_status_blob",
+          "size": 4,
+          "storage_address": 4740996,
+          "storage_name": "mode_play_survival",
           "symbols": [
             "_mode_play_survival"
           ]
         },
         {
           "address": 4741000,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "mode_play_rush",
           "section_number": 176,
           "section_offset": 584,
-          "size": null,
-          "storage_address": 4740416,
-          "storage_name": "game_status_blob",
+          "size": 4,
+          "storage_address": 4741000,
+          "storage_name": "mode_play_rush",
           "symbols": [
             "_mode_play_rush"
           ]
         },
         {
           "address": 4741004,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "mode_play_typo",
           "section_number": 176,
           "section_offset": 588,
-          "size": null,
-          "storage_address": 4740416,
-          "storage_name": "game_status_blob",
+          "size": 4,
+          "storage_address": 4741004,
+          "storage_name": "mode_play_typo",
           "symbols": [
             "_mode_play_typo"
           ]
         },
         {
           "address": 4741012,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "game_sequence_id",
           "section_number": 176,
           "section_offset": 596,
-          "size": null,
-          "storage_address": 4740416,
-          "storage_name": "game_status_blob",
+          "size": 4,
+          "storage_address": 4741012,
+          "storage_name": "game_sequence_id",
           "symbols": [
             "_game_sequence_id"
           ]
@@ -12155,60 +12155,60 @@
         },
         {
           "address": 5079000,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "fire_bullets_secondary_shot_sfx_id",
           "section_number": 661,
           "section_offset": 1456,
-          "size": null,
-          "storage_address": 5077544,
-          "storage_name": "weapon_ammo_class",
+          "size": 4,
+          "storage_address": 5079000,
+          "storage_name": "fire_bullets_secondary_shot_sfx_id",
           "symbols": [
             "_fire_bullets_secondary_shot_sfx_id"
           ]
         },
         {
           "address": 5083200,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "fire_bullets_fallback_shot_cooldown",
           "section_number": 661,
           "section_offset": 5656,
-          "size": null,
-          "storage_address": 5077544,
-          "storage_name": "weapon_ammo_class",
+          "size": 4,
+          "storage_address": 5083200,
+          "storage_name": "fire_bullets_fallback_shot_cooldown",
           "symbols": [
             "_fire_bullets_fallback_shot_cooldown"
           ]
         },
         {
           "address": 5083208,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "fire_bullets_fallback_spread_heat",
           "section_number": 661,
           "section_offset": 5664,
-          "size": null,
-          "storage_address": 5077544,
-          "storage_name": "weapon_ammo_class",
+          "size": 4,
+          "storage_address": 5083208,
+          "storage_name": "fire_bullets_fallback_spread_heat",
           "symbols": [
             "_fire_bullets_fallback_spread_heat"
           ]
         },
         {
           "address": 5083216,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "fire_bullets_primary_shot_sfx_id",
           "section_number": 661,
           "section_offset": 5672,
-          "size": null,
-          "storage_address": 5077544,
-          "storage_name": "weapon_ammo_class",
+          "size": 4,
+          "storage_address": 5083216,
+          "storage_name": "fire_bullets_primary_shot_sfx_id",
           "symbols": [
             "_fire_bullets_primary_shot_sfx_id"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "851f9b1bbe2338abcd9af890c17d5e1612b8061f3af776d0e23b62d9c1bd1891"
+        "sha256": "982841f96452482cf1a37bf0970968efe4183bb4716a5d34ff6114401b85a53f"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -14628,6 +14628,18 @@
             {
               "address": 4736816,
               "name": "quest_selected_meta"
+            },
+            {
+              "address": 4737300,
+              "name": "quest_meta_terrain_desc_unlock_gt_0x13"
+            },
+            {
+              "address": 4737740,
+              "name": "quest_meta_terrain_desc_unlock_gt_0x1d"
+            },
+            {
+              "address": 4738180,
+              "name": "quest_meta_terrain_desc_unlock_gt_0x27"
             }
           ],
           "relocations": [],
@@ -14782,6 +14794,30 @@
             {
               "address": 4740416,
               "name": "game_status_blob"
+            },
+            {
+              "address": 4740420,
+              "name": "weapon_usage_counts"
+            },
+            {
+              "address": 4740632,
+              "name": "quest_play_counts"
+            },
+            {
+              "address": 4740996,
+              "name": "mode_play_survival"
+            },
+            {
+              "address": 4741000,
+              "name": "mode_play_rush"
+            },
+            {
+              "address": 4741004,
+              "name": "mode_play_typo"
+            },
+            {
+              "address": 4741012,
+              "name": "game_sequence_id"
             }
           ],
           "relocations": [],
@@ -21375,6 +21411,22 @@
             {
               "address": 5077548,
               "name": "weapon_table"
+            },
+            {
+              "address": 5079000,
+              "name": "fire_bullets_secondary_shot_sfx_id"
+            },
+            {
+              "address": 5083200,
+              "name": "fire_bullets_fallback_shot_cooldown"
+            },
+            {
+              "address": 5083208,
+              "name": "fire_bullets_fallback_spread_heat"
+            },
+            {
+              "address": 5083216,
+              "name": "fire_bullets_primary_shot_sfx_id"
             }
           ],
           "relocations": [],
@@ -87927,7 +87979,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "851f9b1bbe2338abcd9af890c17d5e1612b8061f3af776d0e23b62d9c1bd1891"
+        "sha256": "982841f96452482cf1a37bf0970968efe4183bb4716a5d34ff6114401b85a53f"
       }
     ],
     "toolchain": {

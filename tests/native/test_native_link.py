@@ -2246,12 +2246,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert payload["summary"]["entry_count"] == 1548
     assert payload["summary"]["typed_entries"] == 1548
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1365
-    assert payload["summary"]["explicit_alignment_entries"] == 1365
-    assert payload["summary"]["explicit_initializer_entries"] == 1365
-    assert payload["summary"]["fully_specified_entries"] == 1365
-    assert payload["summary"]["definition_group_entries"] == 1281
-    assert payload["summary"]["definition_groups"] == 126
+    assert payload["summary"]["explicit_size_entries"] == 1408
+    assert payload["summary"]["explicit_alignment_entries"] == 1408
+    assert payload["summary"]["explicit_initializer_entries"] == 1408
+    assert payload["summary"]["fully_specified_entries"] == 1408
+    assert payload["summary"]["definition_group_entries"] == 1324
+    assert payload["summary"]["definition_groups"] == 129
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2309,6 +2309,13 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["effect_template_scale_step"]["size"] == 4
     assert defined["effect_pool_pos_x"]["size"] == 0xBC
     assert defined["effect_pool_quad_data"]["size"] == 0x70
+    assert defined["quest_selected_builder"]["definition_group"] == "zero-pointer32"
+    assert defined["quest_meta_terrain_desc_unlock_gt_0x13"]["size"] == 0x2C
+    assert defined["weapon_usage_counts"]["size"] == 0xD4
+    assert defined["quest_play_counts"]["size"] == 0x16C
+    assert defined["game_sequence_id"]["definition_group"] == "zero-uint32"
+    assert defined["fire_bullets_fallback_spread_heat"]["size"] == 4
+    assert defined["perk_available_table"]["size"] == 1
     assert defined["music_entry_table"]["size"] == 0x4200
     assert defined["weapon_table"]["size"] == 0x1F00
     assert defined["weapon_ammo_class"]["size"] == 0x1F00

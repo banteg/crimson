@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ef170be2df56974bf7e5094bcc58ef0f8271d76bc1ef786d4799e51b67aaa964",
+  "audit_digest": "7f3088e8db50847f528370abffbac03c19cbcaebecaa5f68cc5f936a16355957",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -86421,22 +86421,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5083200,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_fallback_shot_cooldown",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5083200,
+          "data_storage_name": "fire_bullets_fallback_shot_cooldown",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86445,22 +86445,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5083208,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_fallback_spread_heat",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5083208,
+          "data_storage_name": "fire_bullets_fallback_spread_heat",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86469,22 +86469,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5083216,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_primary_shot_sfx_id",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5083216,
+          "data_storage_name": "fire_bullets_primary_shot_sfx_id",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86493,22 +86493,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5079000,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_secondary_shot_sfx_id",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5079000,
+          "data_storage_name": "fire_bullets_secondary_shot_sfx_id",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -87561,22 +87561,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4741012,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "game_sequence_id",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4741012,
+          "data_storage_name": "game_sequence_id",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -90231,22 +90231,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4741000,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "mode_play_rush",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4741000,
+          "data_storage_name": "mode_play_rush",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -90255,22 +90255,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4740996,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "mode_play_survival",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4740996,
+          "data_storage_name": "mode_play_survival",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -90279,22 +90279,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4741004,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "mode_play_typo",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4741004,
+          "data_storage_name": "mode_play_typo",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -96741,22 +96741,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4737300,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_meta_terrain_desc_unlock_gt_0x13",
-          "data_storage_address": 4736816,
-          "data_storage_name": "quest_selected_meta",
+          "data_storage_address": 4737300,
+          "data_storage_name": "quest_meta_terrain_desc_unlock_gt_0x13",
           "function": null,
           "kind": "section",
           "logical_section_size": 2200,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 44,
           "weak": false
         }
       ],
@@ -96765,22 +96765,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4737740,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_meta_terrain_desc_unlock_gt_0x1d",
-          "data_storage_address": 4736816,
-          "data_storage_name": "quest_selected_meta",
+          "data_storage_address": 4737740,
+          "data_storage_name": "quest_meta_terrain_desc_unlock_gt_0x1d",
           "function": null,
           "kind": "section",
           "logical_section_size": 2200,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 44,
           "weak": false
         }
       ],
@@ -96789,22 +96789,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4738180,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_meta_terrain_desc_unlock_gt_0x27",
-          "data_storage_address": 4736816,
-          "data_storage_name": "quest_selected_meta",
+          "data_storage_address": 4738180,
+          "data_storage_name": "quest_meta_terrain_desc_unlock_gt_0x27",
           "function": null,
           "kind": "section",
           "logical_section_size": 2200,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 44,
           "weak": false
         }
       ],
@@ -96855,22 +96855,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4740632,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_play_counts",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4740632,
+          "data_storage_name": "quest_play_counts",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 364,
           "weak": false
         }
       ],
@@ -108627,22 +108627,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4740420,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "weapon_usage_counts",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4740420,
+          "data_storage_name": "weapon_usage_counts",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 212,
           "weak": false
         }
       ],
@@ -130959,22 +130959,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5083200,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_fallback_shot_cooldown",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5083200,
+          "data_storage_name": "fire_bullets_fallback_shot_cooldown",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130990,22 +130990,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5083208,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_fallback_spread_heat",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5083208,
+          "data_storage_name": "fire_bullets_fallback_spread_heat",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -131021,22 +131021,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5083216,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_primary_shot_sfx_id",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5083216,
+          "data_storage_name": "fire_bullets_primary_shot_sfx_id",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -131052,22 +131052,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 5079000,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "fire_bullets_secondary_shot_sfx_id",
-          "data_storage_address": 5077544,
-          "data_storage_name": "weapon_ammo_class",
+          "data_storage_address": 5079000,
+          "data_storage_name": "fire_bullets_secondary_shot_sfx_id",
           "function": null,
           "kind": "section",
           "logical_section_size": 7940,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -132694,22 +132694,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4741012,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "game_sequence_id",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4741012,
+          "data_storage_name": "game_sequence_id",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -136528,22 +136528,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4741000,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "mode_play_rush",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4741000,
+          "data_storage_name": "mode_play_rush",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -136559,22 +136559,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4740996,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "mode_play_survival",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4740996,
+          "data_storage_name": "mode_play_survival",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -136590,22 +136590,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4741004,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "mode_play_typo",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4741004,
+          "data_storage_name": "mode_play_typo",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -145897,22 +145897,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4737300,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_meta_terrain_desc_unlock_gt_0x13",
-          "data_storage_address": 4736816,
-          "data_storage_name": "quest_selected_meta",
+          "data_storage_address": 4737300,
+          "data_storage_name": "quest_meta_terrain_desc_unlock_gt_0x13",
           "function": null,
           "kind": "section",
           "logical_section_size": 2200,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 44,
           "weak": false
         }
       ],
@@ -145928,22 +145928,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4737740,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_meta_terrain_desc_unlock_gt_0x1d",
-          "data_storage_address": 4736816,
-          "data_storage_name": "quest_selected_meta",
+          "data_storage_address": 4737740,
+          "data_storage_name": "quest_meta_terrain_desc_unlock_gt_0x1d",
           "function": null,
           "kind": "section",
           "logical_section_size": 2200,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 44,
           "weak": false
         }
       ],
@@ -145959,22 +145959,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4738180,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_meta_terrain_desc_unlock_gt_0x27",
-          "data_storage_address": 4736816,
-          "data_storage_name": "quest_selected_meta",
+          "data_storage_address": 4738180,
+          "data_storage_name": "quest_meta_terrain_desc_unlock_gt_0x27",
           "function": null,
           "kind": "section",
           "logical_section_size": 2200,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 44,
           "weak": false
         }
       ],
@@ -146051,22 +146051,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4740632,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "quest_play_counts",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4740632,
+          "data_storage_name": "quest_play_counts",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 364,
           "weak": false
         }
       ],
@@ -164639,22 +164639,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4740420,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "weapon_usage_counts",
-          "data_storage_address": 4740416,
-          "data_storage_name": "game_status_blob",
+          "data_storage_address": 4740420,
+          "data_storage_name": "weapon_usage_counts",
           "function": null,
           "kind": "section",
           "logical_section_size": 616,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 212,
           "weak": false
         }
       ],

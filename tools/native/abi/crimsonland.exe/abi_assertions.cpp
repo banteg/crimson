@@ -284,6 +284,9 @@ CRIMSON_ABI_ASSERT(
     bonus_meta_table_is_0x12c,
     sizeof(bonus_meta_t[15]) == 0x12c);
 CRIMSON_ABI_ASSERT_ALIGN4(bonus_meta, bonus_meta_t);
+CRIMSON_ABI_ASSERT(
+    quest_builder_fn_is_32_bit,
+    sizeof(quest_builder_fn_t) == 4);
 CRIMSON_ABI_ASSERT(quest_meta_is_0x2c, sizeof(quest_meta_t) == 0x2c);
 CRIMSON_ABI_ASSERT(
     quest_meta_table_is_0x898,
@@ -305,6 +308,12 @@ CRIMSON_ABI_ASSERT(
     credits_line_table_is_0x800,
     sizeof(credits_line_table_t) == 0x800);
 CRIMSON_ABI_ASSERT_ALIGN4(credits_line_table, credits_line_table_t);
+CRIMSON_ABI_ASSERT(
+    weapon_usage_counts_is_0xd4,
+    sizeof(weapon_usage_counts_t) == 0xd4);
+CRIMSON_ABI_ASSERT(
+    quest_play_counts_is_0x16c,
+    sizeof(quest_play_counts_t) == 0x16c);
 CRIMSON_ABI_ASSERT(game_status_is_0x268, sizeof(game_status_t) == 0x268);
 CRIMSON_ABI_ASSERT_ALIGN4(game_status, game_status_t);
 CRIMSON_ABI_ASSERT(
