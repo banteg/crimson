@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f11f18fe2cee9e371c33af2335b9539d45fa84748f8b81923d8ae996e9086a3f",
+  "audit_digest": "acf343b379e90ca69bc323bd1ce8466e7939c0e445fbcdac7333ac91f7bad505",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -91995,7 +91995,7 @@
           "comdat_selection": 1,
           "function": "perk_apply",
           "kind": "section",
-          "logical_section_size": 880,
+          "logical_section_size": 896,
           "object": "tools/match/scratches/perk_apply/build/msvc6.5/4f78e461f46c832a/scratch.obj",
           "section": ".text",
           "size": null,
@@ -138595,7 +138595,7 @@
           "comdat_selection": 1,
           "function": "perk_apply",
           "kind": "section",
-          "logical_section_size": 880,
+          "logical_section_size": 896,
           "object": "tools/match/scratches/perk_apply/build/msvc6.5/4f78e461f46c832a/scratch.obj",
           "section": ".text",
           "size": null,

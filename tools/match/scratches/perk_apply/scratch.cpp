@@ -127,8 +127,8 @@ extern "C" void perk_apply(int perk_id)
 
     if (perk_id == perk_id_grim_deal) {
         experience = (int)(player_experience * 0.18f);
+        player_experience = player_experience + experience;
         player_health = -1.0f;
-        player_experience += experience;
     }
 
     if (perk_id == perk_id_ammo_maniac && player_count > 0) {

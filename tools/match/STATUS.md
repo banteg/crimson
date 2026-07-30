@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **301117/341963** code bytes (**88.1%**).
+Fuzzy-weighted alignment is **301129/341963** code bytes (**88.1%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280681/320805 | 87.5% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280693/320805 | 87.5% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20436/21158 | 96.6% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **280681/320805** fuzzy-weighted bytes (**87.5%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **280693/320805** fuzzy-weighted bytes (**87.5%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -162,7 +162,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | demo_trial_purchase_button_destroy | 0x00405140 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-purchase-button-empty-destructor |
 | match | demo_trial_maybe_later_button_destroy | 0x00405150 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-maybe-later-button-empty-destructor |
 | match | ui_render_keybind_help | 0x00405160 | 1142 | 1142/1142 | 0 | 324/324 | 100.00% | 324/324 | 80/0/0 |  | pause-keybind-help-panel |
-| wip | perk_apply | 0x004055e0 | 885 | 558/885 | 327 | 241/241 | 63.07% | 2/241 | 63/0/0 |  | perk-immediate-effect-dispatch |
+| wip | perk_apply | 0x004055e0 | 885 | 570/885 | 315 | 243/241 | 64.46% | 2/241 | 66/0/0 |  | perk-immediate-effect-dispatch |
 | match | gameplay_render_world | 0x00405960 | 625 | 625/625 | 0 | 184/184 | 100.00% | 184/184 | 56/0/0 |  | gameplay-world-render-coordinator |
 | wip | perk_selection_screen_update | 0x00405be0 | 1347 | 1171/1347 | 176 | 314/314 | 86.94% | 0/314 | 117/0/0 |  | perk-choice-menu-and-selection-flow |
 | match | perk_selection_select_button_destroy | 0x00406130 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-select-button-empty-destructor |

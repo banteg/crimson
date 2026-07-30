@@ -37,15 +37,16 @@ That exposes the named creature `active` field and the player's `pos_x` burst
 origin instead of byte and float offsets. A combined shadow probe produced
 identical VC6 output, including the 241 instructions and all 63 references.
 
-VC6 produces 63.07% with 241/241 normalized instructions and exact 63/0/0
-reference agreement. The broad residual is register allocation: native keeps
-the perk id in `EDI`, the cached player count in `EBP`, and loop state in
+VC6 now produces 64.46% with 243/241 normalized instructions and exact
+66/0/0 reference agreement. The broad residual is register allocation: native
+keeps the perk id in `EDI`, the cached player count in `EBP`, and loop state in
 `ESI`; the natural reconstruction keeps the count in `ESI` and shrink-wraps an
-`EBP` save around later loops. The other two instructions are the equivalent
-Grim Deal XP update (`mov`/`add`/`mov` versus a memory `add`). Initializing the
-count before the dispatcher raises the superficial score but emits the load
-before the first comparison, contradicting the native per-exit loads, so that
-shape is intentionally rejected. C and C++ modes,
+`EBP` save around later loops. The Grim Deal XP update now reproduces the
+native `mov`/`add`/`mov` sequence exactly; the two extra whole-function
+instructions are the orthogonal shrink-wrapped `EBP` save and restore.
+Initializing the count before the dispatcher raises the superficial score but
+emits the load before the first comparison, contradicting the native per-exit
+loads, so that shape is intentionally rejected. C and C++ modes,
 the available VC6-family backends, `/GB` and `/G6`, standalone-global aliases,
 and natural variable-lifetime spellings were checked. None recovers the native
 allocation without artificial source, so the honest semantic WIP is retained.
@@ -88,7 +89,7 @@ The negative subscripts that remain are truthful interior-pointer arithmetic:
 for example, Bandage reaches player position from the health cursor, while
 Breathing Room reaches the creature active byte from the lifecycle cursor.
 No owning record type is forced onto either pointer. The candidate remains
-63.07%, 241/241 instructions, and exact `63/0/0` references.
+64.46%, 243/241 instructions, and exact `66/0/0` references.
 
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output confirms the complete immediate dispatcher and
@@ -96,5 +97,35 @@ each independent contract, XP, ammo, regeneration, Bandage, clip-size, and
 Plaguebearer effect through `0x004055e0..0x00405955`. IDA and Ghidra
 independently retain the same signature and six named helper calls. The first
 localized mismatch is the native saved `EBP` and resulting stack offsets;
-candidate and target still contain the same 241 instructions and exact
-`63/0/0` audited references.
+the candidate retains exact `66/0/0` audited references.
+
+## Grim Deal assignment and allocation sweep
+
+`local-allocation-mutations.json` records eight declaration-priority variants
+and five natural Grim Deal assignment forms. All declaration orders are
+byte-identical, ruling out source declaration order as the cause of the
+`ESI`/`EBP` allocation split. Four assignment forms are neutral or regress.
+Writing the explicit XP assignment before the health source statement makes
+VC6 emit the exact native local sequence:
+
+```text
+fild; fmul; call __ftol; mov current_xp; mov health; add; mov new_xp
+```
+
+The retained form raises the weighted match by 12.3216 bytes, from 63.07% to
+64.46%, and aligns three additional references without adding any unresolved
+or mismatched reference. It grows the candidate from 241 to 243 instructions
+because VC6 still adds the separately identified shrink-wrapped `EBP`
+save/restore around later loops. That tradeoff is retained: the recovered
+seven-instruction native update is exact, while the two extra instructions are
+fully attributable to the existing register-allocation residual.
+
+A complete follow-up interaction sweep of the Ammo Maniac and Bandage nested
+entry forms evaluates all 8/8 single and paired variants on the improved
+baseline. Bandage is byte-neutral; every Ammo form loses 54.8554 weighted
+bytes and eleven aligned references. Scoping every unrelated branch local
+independently and compiling the exact predecessor
+`ui_render_keybind_help` before this function are also byte-identical. The
+remaining exit requires a non-artificial allocation constraint beyond
+declaration order, block scope, address-neighbor TU presence, or the two
+native-looking loop-entry forms.

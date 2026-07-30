@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "local-declaration-order",
+      "find": "    float value;\n    int i;\n    int player_count;\n    int count;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;",
+      "replacements": [
+        {
+          "name": "player-count-before-index",
+          "text": "    float value;\n    int player_count;\n    int i;\n    int count;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "player-count-first",
+          "text": "    int player_count;\n    float value;\n    int i;\n    int count;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "count-pair-first",
+          "text": "    int player_count;\n    int count;\n    int i;\n    float value;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "index-count-pair-first",
+          "text": "    int i;\n    int player_count;\n    int count;\n    float value;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "integer-locals-first",
+          "text": "    int i;\n    int player_count;\n    int count;\n    int weapon_id;\n    int experience;\n    float value;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "cursor-locals-first",
+          "text": "    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;\n    float value;\n    int i;\n    int player_count;\n    int count;\n    int weapon_id;\n    int experience;"
+        },
+        {
+          "name": "player-count-last-integer",
+          "text": "    float value;\n    int i;\n    int count;\n    int weapon_id;\n    int experience;\n    int player_count;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "reverse-integer-priority",
+          "text": "    float value;\n    int experience;\n    int weapon_id;\n    int count;\n    int player_count;\n    int i;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        }
+      ]
+    },
+    {
+      "name": "grim-deal-experience-assignment",
+      "find": "        experience = (int)(player_experience * 0.18f);\n        player_health = -1.0f;\n        player_experience += experience;",
+      "replacements": [
+        {
+          "name": "explicit-current-plus-delta",
+          "text": "        experience = (int)(player_experience * 0.18f);\n        player_health = -1.0f;\n        player_experience = player_experience + experience;"
+        },
+        {
+          "name": "explicit-delta-plus-current",
+          "text": "        experience = (int)(player_experience * 0.18f);\n        player_health = -1.0f;\n        player_experience = experience + player_experience;"
+        },
+        {
+          "name": "assignment-before-health",
+          "text": "        experience = (int)(player_experience * 0.18f);\n        player_experience = player_experience + experience;\n        player_health = -1.0f;"
+        },
+        {
+          "name": "current-local-after-conversion",
+          "text": "        experience = (int)(player_experience * 0.18f);\n        int current_experience = player_experience;\n        player_health = -1.0f;\n        player_experience = current_experience + experience;"
+        },
+        {
+          "name": "current-local-before-conversion",
+          "text": "        int current_experience = player_experience;\n        experience = (int)(current_experience * 0.18f);\n        player_health = -1.0f;\n        player_experience = current_experience + experience;"
+        }
+      ]
+    }
+  ]
+}
