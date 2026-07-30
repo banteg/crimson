@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "conventional-type-alias",
+      "find": "        projectile_type_id_t type_id = tail->type_id;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "mutable-reference-alias",
+          "text": "        projectile_type_id_t &type_id = tail->type_id;\n"
+        }
+      ]
+    },
+    {
+      "name": "plasma-type-alias",
+      "find": "        projectile_type_id_t type_id = plasma->tail.vy.type_id;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "mutable-reference-alias",
+          "text": "        projectile_type_id_t &type_id = plasma->tail.vy.type_id;\n"
+        }
+      ]
+    },
+    {
+      "name": "billboard-type-alias",
+      "find": "        projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "mutable-reference-alias",
+          "text": "        projectile_type_id_t &type_id =\n            projectile->pos.tail.vy.type_id;\n"
+        }
+      ]
+    },
+    {
+      "name": "secondary-sprite-type-alias",
+      "find": "        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "mutable-reference-alias",
+          "text": "        secondary_projectile_type_id_t &type_id =\n            projectile->pos.vx.vy.type_id;\n"
+        }
+      ]
+    },
+    {
+      "name": "secondary-glow-type-alias",
+      "find": "        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "mutable-reference-alias",
+          "text": "        secondary_projectile_type_id_t &type_id =\n            projectile->pos.vx.vy.type_id;\n"
+        }
+      ]
+    }
+  ]
+}

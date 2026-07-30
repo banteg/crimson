@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-life-alias-lifetime",
+      "find": "        float life = primary->vy.life_timer;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "mutable-reference-alias",
+          "text": "        float &life = primary->vy.life_timer;\n"
+        },
+        {
+          "name": "const-reference-alias",
+          "text": "        const float &life = primary->vy.life_timer;\n"
+        },
+        {
+          "name": "right-const-reference-alias",
+          "text": "        float const &life = primary->vy.life_timer;\n"
+        },
+        {
+          "name": "volatile-reference-alias",
+          "text": "        volatile float &life = primary->vy.life_timer;\n"
+        }
+      ]
+    }
+  ]
+}

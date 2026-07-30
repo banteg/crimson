@@ -314,7 +314,7 @@ extern "C" void projectile_render(float transition_alpha)
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
         projectile_pos_y_block_t *plasma = &projectile->pos;
-        projectile_type_id_t type_id = plasma->tail.vy.type_id;
+        projectile_type_id_t &type_id = plasma->tail.vy.type_id;
         if (!projectile->active
             || !(type_id == PROJECTILE_TYPE_PLASMA_RIFLE
                 || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN

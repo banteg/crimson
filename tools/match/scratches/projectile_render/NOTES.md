@@ -664,3 +664,38 @@ The retained source has SHA-256
 no malformed records across 40 complete sweeps and 783 evaluated variants.
 `experiments.jsonl` now has SHA-256
 `755cb9bbbf197e5d6b4bc5e0a2ba7810728a554d88a503f31e7113cc9100eda9`.
+
+## Plasma type-alias lifetime wave
+
+Two complete bounded sweeps test whether the primary type-field recovery
+generalizes to the remaining projectile passes:
+
+- `primary-life-alias-lifetime-mutations.json` (SHA-256
+  `3ba37b42fd5fdbb8e007c9ea236581292c73f1bcbba806f489499164f69ab254`)
+  tests mutable, const, right-const, and volatile aliases for the primary
+  `life_timer`. All four spellings compile identically, remove two candidate
+  instructions and two reference mismatches, but lose 1.950 fuzzy-weighted
+  bytes. The value lifetime is therefore retained: the lower mismatch count
+  is an alignment side effect, not sufficient evidence for a source change.
+- `render-type-alias-lifetime-interactions.json` (SHA-256
+  `d3d7ae5bd04e2ce311ea81961367c0f7c9be0058d62acef85ec5cbfcbb75be68`)
+  exhausts all 31 nonempty combinations of reference aliases in the
+  conventional, plasma, billboard, secondary-sprite, and secondary-glow
+  loops. Plasma alone is the only positive variant without a tradeoff: it
+  gains 4.265 weighted bytes with identical instruction and reference counts.
+  Billboard alone and billboard plus plasma score 24.426 and 28.690 bytes
+  higher, respectively, but each loses seven proven references and adds four
+  mismatches. Those higher aggregate scores are rejected. The conventional
+  and both secondary aliases regress independently.
+
+The retained plasma reference models repeated reads from the live mutable
+record rather than a copied scalar. It raises the weighted match from
+6,814.984 to 6,819.249 bytes, reduces the gap from 5,736.016 to 5,731.751
+bytes, and moves the ratio from 54.2983350% to 54.3323140%. The candidate
+remains 2,865/3,021 instructions with references unchanged at `424/0/12`.
+
+The retained source has SHA-256
+`63d0bbbce7a45ed03be5b9615764d9ba9cc65fd3b0f5498cda74be6ac8ea6afd`.
+The two complete records bring `experiments.jsonl` to 42 sweeps and 818
+evaluated variants with SHA-256
+`ae60fd2af8b5b2c6f6951a4d44f2683be56dbf988be5bcb98fdedade92f46098`.
