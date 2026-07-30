@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "ac83f2a8663fe145f34d413a234e24f2b18a1d10acc6e31c780f86a454d19bf0",
+  "audit_digest": "955642f3efbbbf7f5b8f3eeb71fb45a31c1297105a67ef91d91f1df3ac7dabc6",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7466,120 +7466,120 @@
         },
         {
           "address": 4786361,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_plaguebearer_active",
           "section_number": 374,
           "section_offset": 9,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 1,
+          "storage_address": 4786361,
+          "storage_name": "player_plaguebearer_active",
           "symbols": [
             "_player_plaguebearer_active"
           ]
         },
         {
           "address": 4786388,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_health",
           "section_number": 374,
           "section_offset": 36,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 4,
+          "storage_address": 4786388,
+          "storage_name": "player_health",
           "symbols": [
             "_player_health"
           ]
         },
         {
           "address": 4786524,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_experience",
           "section_number": 374,
           "section_offset": 172,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 4,
+          "storage_address": 4786524,
+          "storage_name": "player_experience",
           "symbols": [
             "_player_experience"
           ]
         },
         {
           "address": 4787252,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player2_health",
           "section_number": 374,
           "section_offset": 900,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 4,
+          "storage_address": 4787252,
+          "storage_name": "player2_health",
           "symbols": [
             "_player2_health"
           ]
         },
         {
           "address": 4788028,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_alt_move_key_forward",
           "section_number": 374,
           "section_offset": 1676,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 4,
+          "storage_address": 4788028,
+          "storage_name": "player_alt_move_key_forward",
           "symbols": [
             "_player_alt_move_key_forward"
           ]
         },
         {
           "address": 4788032,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_alt_move_key_backward",
           "section_number": 374,
           "section_offset": 1680,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 4,
+          "storage_address": 4788032,
+          "storage_name": "player_alt_move_key_backward",
           "symbols": [
             "_player_alt_move_key_backward"
           ]
         },
         {
           "address": 4788036,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_alt_turn_key_left",
           "section_number": 374,
           "section_offset": 1684,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 4,
+          "storage_address": 4788036,
+          "storage_name": "player_alt_turn_key_left",
           "symbols": [
             "_player_alt_turn_key_left"
           ]
         },
         {
           "address": 4788040,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "player_alt_turn_key_right",
           "section_number": 374,
           "section_offset": 1688,
-          "size": null,
-          "storage_address": 4786352,
-          "storage_name": "player_state_table",
+          "size": 4,
+          "storage_address": 4788040,
+          "storage_name": "player_alt_turn_key_right",
           "symbols": [
             "_player_alt_turn_key_right"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "00462b9b8892befa136a9e113ac1af0d77d4322fcbd134445c22da243ca73b3d"
+        "sha256": "43f97710eacb656a3e9100c0fc2cd64e4e6083f578865a83bde84feb19dc34c9"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -17320,6 +17320,38 @@
             {
               "address": 4786352,
               "name": "player_state_table"
+            },
+            {
+              "address": 4786361,
+              "name": "player_plaguebearer_active"
+            },
+            {
+              "address": 4786388,
+              "name": "player_health"
+            },
+            {
+              "address": 4786524,
+              "name": "player_experience"
+            },
+            {
+              "address": 4787252,
+              "name": "player2_health"
+            },
+            {
+              "address": 4788028,
+              "name": "player_alt_move_key_forward"
+            },
+            {
+              "address": 4788032,
+              "name": "player_alt_move_key_backward"
+            },
+            {
+              "address": 4788036,
+              "name": "player_alt_turn_key_left"
+            },
+            {
+              "address": 4788040,
+              "name": "player_alt_turn_key_right"
             }
           ],
           "relocations": [],
@@ -87627,7 +87659,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "00462b9b8892befa136a9e113ac1af0d77d4322fcbd134445c22da243ca73b3d"
+        "sha256": "43f97710eacb656a3e9100c0fc2cd64e4e6083f578865a83bde84feb19dc34c9"
       }
     ],
     "toolchain": {

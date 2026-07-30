@@ -2246,12 +2246,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert payload["summary"]["entry_count"] == 1548
     assert payload["summary"]["typed_entries"] == 1548
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1069
-    assert payload["summary"]["explicit_alignment_entries"] == 1069
-    assert payload["summary"]["explicit_initializer_entries"] == 1069
-    assert payload["summary"]["fully_specified_entries"] == 1069
-    assert payload["summary"]["definition_group_entries"] == 985
-    assert payload["summary"]["definition_groups"] == 121
+    assert payload["summary"]["explicit_size_entries"] == 1151
+    assert payload["summary"]["explicit_alignment_entries"] == 1151
+    assert payload["summary"]["explicit_initializer_entries"] == 1151
+    assert payload["summary"]["fully_specified_entries"] == 1151
+    assert payload["summary"]["definition_group_entries"] == 1067
+    assert payload["summary"]["definition_groups"] == 122
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2279,6 +2279,13 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
         "mapped-bss-zero-int32"
     )
     assert defined["player_state_table"]["size"] == 0x6C0
+    assert defined["player_perk_counts"]["size"] == 0x200
+    assert defined["player_perk_counts"]["definition_group"] == (
+        "player-state-zero-int-array-00200"
+    )
+    assert defined["player_health"]["size"] == 4
+    assert defined["player_reload_active"]["size"] == 1
+    assert defined["player_alt_fire_key"]["size"] == 4
     assert defined["creature_pool"]["size"] == 0xE400
     assert defined["highscore_table"]["size"] == 0x1C20
     assert defined["ui_element_table_end"]["size"] == 0xA4

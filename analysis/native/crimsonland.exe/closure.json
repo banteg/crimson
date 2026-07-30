@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ac83f2a8663fe145f34d413a234e24f2b18a1d10acc6e31c780f86a454d19bf0",
+  "audit_digest": "955642f3efbbbf7f5b8f3eeb71fb45a31c1297105a67ef91d91f1df3ac7dabc6",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -94461,22 +94461,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4787252,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player2_health",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4787252,
+          "data_storage_name": "player2_health",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -94509,22 +94509,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788032,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_move_key_backward",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788032,
+          "data_storage_name": "player_alt_move_key_backward",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -94533,22 +94533,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788028,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_move_key_forward",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788028,
+          "data_storage_name": "player_alt_move_key_forward",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -94557,22 +94557,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788036,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_turn_key_left",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788036,
+          "data_storage_name": "player_alt_turn_key_left",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -94581,22 +94581,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788040,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_turn_key_right",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788040,
+          "data_storage_name": "player_alt_turn_key_right",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -94671,22 +94671,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4786524,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_experience",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4786524,
+          "data_storage_name": "player_experience",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -94773,22 +94773,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4786388,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_health",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4786388,
+          "data_storage_name": "player_health",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -94893,22 +94893,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4786361,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_plaguebearer_active",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4786361,
+          "data_storage_name": "player_plaguebearer_active",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
@@ -142419,22 +142419,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4787252,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player2_health",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4787252,
+          "data_storage_name": "player2_health",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -142486,22 +142486,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788032,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_move_key_backward",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788032,
+          "data_storage_name": "player_alt_move_key_backward",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -142517,22 +142517,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788028,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_move_key_forward",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788028,
+          "data_storage_name": "player_alt_move_key_forward",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -142548,22 +142548,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788036,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_turn_key_left",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788036,
+          "data_storage_name": "player_alt_turn_key_left",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -142579,22 +142579,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4788040,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_alt_turn_key_right",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4788040,
+          "data_storage_name": "player_alt_turn_key_right",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -142707,22 +142707,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4786524,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_experience",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4786524,
+          "data_storage_name": "player_experience",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -142849,22 +142849,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4786388,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_health",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4786388,
+          "data_storage_name": "player_health",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -143044,22 +143044,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4786361,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "player_plaguebearer_active",
-          "data_storage_address": 4786352,
-          "data_storage_name": "player_state_table",
+          "data_storage_address": 4786361,
+          "data_storage_name": "player_plaguebearer_active",
           "function": null,
           "kind": "section",
           "logical_section_size": 1728,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 1,
           "weak": false
         }
       ],
