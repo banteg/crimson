@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-rifle-distance-conversion-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n"
+        }
+      ]
+    },
+    {
+      "name": "plasma-minigun-distance-conversion-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n"
+        }
+      ]
+    },
+    {
+      "name": "plasma-cannon-distance-conversion-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n"
+        }
+      ]
+    },
+    {
+      "name": "spider-plasma-distance-conversion-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n"
+        }
+      ]
+    },
+    {
+      "name": "shrinkifier-distance-conversion-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 5,
+      "replacements": [
+        {
+          "name": "named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n"
+        }
+      ]
+    }
+  ]
+}

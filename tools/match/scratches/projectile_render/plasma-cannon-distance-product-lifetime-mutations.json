@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-cannon-distance-product-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n",
+      "replacements": [
+        {
+          "name": "commuted-products",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dy * dy + dx * dx);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "commuted-named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dy * dy + dx * dx);\n                int distance_i = (int)distance;\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "named-squared-sum",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance_squared = dx * dx + dy * dy;\n                int distance_i = (int)sqrt(distance_squared);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "commuted-named-squared-sum",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance_squared = dy * dy + dx * dx;\n                int distance_i = (int)sqrt(distance_squared);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "named-products",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float dx_squared = dx * dx;\n                float dy_squared = dy * dy;\n                int distance_i = (int)sqrt(dx_squared + dy_squared);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "reversed-named-products",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float dy_squared = dy * dy;\n                float dx_squared = dx * dx;\n                int distance_i = (int)sqrt(dy_squared + dx_squared);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "constructed-vector",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                int distance_i = (int)sqrt(\n                    delta.x * delta.x + delta.y * delta.y);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "commuted-constructed-vector",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                int distance_i = (int)sqrt(\n                    delta.y * delta.y + delta.x * delta.x);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "destructive-products",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                dx *= dx;\n                dy *= dy;\n                int distance_i = (int)sqrt(dy + dx);\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "constructed-vector-length",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                int distance_i = (int)delta.length();\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "temporary-vector-length",
+          "text": "                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "named-vector-difference-length",
+          "text": "                projectile_render_vec2_t origin(\n                    projectile->pos.origin_x,\n                    projectile->pos.tail.origin_y);\n                projectile_render_vec2_t current(\n                    projectile->pos_x,\n                    projectile->pos.pos_y);\n                projectile_render_vec2_t delta = origin - current;\n                int distance_i = (int)delta.length();\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "temporary-vector-difference-length",
+          "text": "                projectile_render_vec2_t origin(\n                    projectile->pos.origin_x,\n                    projectile->pos.tail.origin_y);\n                projectile_render_vec2_t current(\n                    projectile->pos_x,\n                    projectile->pos.pos_y);\n                int distance_i = (int)(origin - current).length();\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        },
+        {
+          "name": "direct-vector-difference-length",
+          "text": "                int distance_i = (int)(\n                    projectile_render_vec2_t(\n                        projectile->pos.origin_x,\n                        projectile->pos.tail.origin_y)\n                    - projectile_render_vec2_t(\n                        projectile->pos_x,\n                        projectile->pos.pos_y)).length();\n                int divisor_i = (int)(\n                    plasma->tail.vy.speed_scale * 3.5f);\n"
+        }
+      ]
+    }
+  ]
+}

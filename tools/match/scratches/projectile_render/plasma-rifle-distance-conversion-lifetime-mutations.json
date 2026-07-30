@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-rifle-distance-conversion-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "commuted-products",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dy * dy + dx * dx);\n"
+        },
+        {
+          "name": "named-squared-sum",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance_squared = dx * dx + dy * dy;\n                int distance_i = (int)sqrt(distance_squared);\n"
+        },
+        {
+          "name": "named-products",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float dx_squared = dx * dx;\n                float dy_squared = dy * dy;\n                int distance_i = (int)sqrt(dx_squared + dy_squared);\n"
+        },
+        {
+          "name": "named-float-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float distance = (float)sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n"
+        },
+        {
+          "name": "named-double-distance",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                double distance = sqrt(dx * dx + dy * dy);\n                int distance_i = (int)distance;\n"
+        },
+        {
+          "name": "explicit-double-sum",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt((double)(dx * dx + dy * dy));\n"
+        },
+        {
+          "name": "destructive-products",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                dx *= dx;\n                dy *= dy;\n                int distance_i = (int)sqrt(dx + dy);\n"
+        },
+        {
+          "name": "separate-int-assignment",
+          "text": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i;\n                distance_i = (int)sqrt(dx * dx + dy * dy);\n"
+        },
+        {
+          "name": "direct-field-expression",
+          "text": "                int distance_i = (int)sqrt(\n                    (projectile->pos.origin_x - projectile->pos_x)\n                        * (projectile->pos.origin_x - projectile->pos_x)\n                    + (projectile->pos.tail.origin_y\n                            - projectile->pos.pos_y)\n                        * (projectile->pos.tail.origin_y\n                            - projectile->pos.pos_y));\n"
+        },
+        {
+          "name": "constructed-vector",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                int distance_i = (int)sqrt(\n                    delta.x * delta.x + delta.y * delta.y);\n"
+        },
+        {
+          "name": "assigned-vector",
+          "text": "                projectile_render_vec2_t delta;\n                delta.x = projectile->pos.origin_x - projectile->pos_x;\n                delta.y = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(\n                    delta.x * delta.x + delta.y * delta.y);\n"
+        },
+        {
+          "name": "reversed-declarations",
+          "text": "                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                float dx = projectile->pos.origin_x - projectile->pos_x;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n"
+        }
+      ]
+    }
+  ]
+}

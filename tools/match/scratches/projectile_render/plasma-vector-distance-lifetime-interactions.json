@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-cannon-vector-distance-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "temporary-vector-length",
+          "text": "                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n"
+        }
+      ]
+    },
+    {
+      "name": "spider-plasma-vector-distance-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "temporary-vector-length",
+          "text": "                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n"
+        }
+      ]
+    },
+    {
+      "name": "shrinkifier-vector-distance-lifetime",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "temporary-vector-length",
+          "text": "                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n"
+        }
+      ]
+    }
+  ]
+}

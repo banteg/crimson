@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shrinkifier-distance-branch-and-vector-shape",
+      "find": "            } else {\n                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "replacements": [
+        {
+          "name": "explicit-branch-scalar-distance",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n"
+        },
+        {
+          "name": "bare-else-temporary-vector-length",
+          "text": "            } else {\n                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n"
+        },
+        {
+          "name": "explicit-branch-temporary-vector-length",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n"
+        },
+        {
+          "name": "explicit-branch-named-constructed-vector-length",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "explicit-branch-named-assigned-vector-length",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                projectile_render_vec2_t delta;\n                delta.x = projectile->pos.origin_x - projectile->pos_x;\n                delta.y = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "explicit-branch-reverse-assigned-vector-length",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                projectile_render_vec2_t delta;\n                delta.y = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                delta.x = projectile->pos.origin_x - projectile->pos_x;\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "explicit-branch-cast-vector-difference-length",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                int distance_i = (int)(\n                    *(projectile_render_vec2_t *)&projectile->fields.origin\n                    - *(projectile_render_vec2_t *)&projectile->position).length();\n"
+        },
+        {
+          "name": "explicit-branch-named-vector-difference-length",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                projectile_render_vec2_t origin =\n                    *(projectile_render_vec2_t *)&projectile->fields.origin;\n                projectile_render_vec2_t current =\n                    *(projectile_render_vec2_t *)&projectile->position;\n                projectile_render_vec2_t delta = origin - current;\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "explicit-branch-destructive-vector-difference-length",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                projectile_render_vec2_t delta =\n                    *(projectile_render_vec2_t *)&projectile->fields.origin;\n                delta -= *(projectile_render_vec2_t *)&projectile->position;\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "explicit-branch-vector-float-distance",
+          "text": "            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {\n                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                float distance = delta.length();\n                int distance_i = (int)distance;\n"
+        }
+      ]
+    }
+  ]
+}

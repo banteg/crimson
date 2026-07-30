@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "spider-plasma-vector-distance-shape",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "temporary-vector-length",
+          "text": "                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n"
+        },
+        {
+          "name": "named-constructed-vector-length",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "named-assigned-vector-length",
+          "text": "                projectile_render_vec2_t delta;\n                delta.x = projectile->pos.origin_x - projectile->pos_x;\n                delta.y = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "named-vector-float-distance",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                float distance = delta.length();\n                int distance_i = (int)distance;\n"
+        },
+        {
+          "name": "direct-vector-difference-length",
+          "text": "                int distance_i = (int)(\n                    projectile_render_vec2_t(\n                        projectile->pos.origin_x,\n                        projectile->pos.tail.origin_y)\n                    - projectile_render_vec2_t(\n                        projectile->pos_x,\n                        projectile->pos.pos_y)).length();\n"
+        },
+        {
+          "name": "named-vector-difference-length",
+          "text": "                projectile_render_vec2_t origin(\n                    projectile->pos.origin_x,\n                    projectile->pos.tail.origin_y);\n                projectile_render_vec2_t current(\n                    projectile->pos_x,\n                    projectile->pos.pos_y);\n                projectile_render_vec2_t delta = origin - current;\n                int distance_i = (int)delta.length();\n"
+        }
+      ]
+    },
+    {
+      "name": "shrinkifier-vector-distance-shape",
+      "find": "                float dx = projectile->pos.origin_x - projectile->pos_x;\n                float dy = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)sqrt(dx * dx + dy * dy);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "temporary-vector-length",
+          "text": "                int distance_i = (int)projectile_render_vec2_t(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y\n                        - projectile->pos.pos_y).length();\n"
+        },
+        {
+          "name": "named-constructed-vector-length",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "named-assigned-vector-length",
+          "text": "                projectile_render_vec2_t delta;\n                delta.x = projectile->pos.origin_x - projectile->pos_x;\n                delta.y = projectile->pos.tail.origin_y\n                    - projectile->pos.pos_y;\n                int distance_i = (int)delta.length();\n"
+        },
+        {
+          "name": "named-vector-float-distance",
+          "text": "                projectile_render_vec2_t delta(\n                    projectile->pos.origin_x - projectile->pos_x,\n                    projectile->pos.tail.origin_y - projectile->pos.pos_y);\n                float distance = delta.length();\n                int distance_i = (int)distance;\n"
+        },
+        {
+          "name": "direct-vector-difference-length",
+          "text": "                int distance_i = (int)(\n                    projectile_render_vec2_t(\n                        projectile->pos.origin_x,\n                        projectile->pos.tail.origin_y)\n                    - projectile_render_vec2_t(\n                        projectile->pos_x,\n                        projectile->pos.pos_y)).length();\n"
+        },
+        {
+          "name": "named-vector-difference-length",
+          "text": "                projectile_render_vec2_t origin(\n                    projectile->pos.origin_x,\n                    projectile->pos.tail.origin_y);\n                projectile_render_vec2_t current(\n                    projectile->pos_x,\n                    projectile->pos.pos_y);\n                projectile_render_vec2_t delta = origin - current;\n                int distance_i = (int)delta.length();\n"
+        }
+      ]
+    }
+  ]
+}

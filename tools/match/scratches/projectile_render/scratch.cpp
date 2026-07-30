@@ -74,6 +74,10 @@ struct projectile_render_vec2_t {
         return *this;
     }
 
+    float length() const
+    {
+        return (float)sqrt(x * x + y * y);
+    }
 };
 
 extern "C" projectile_render_vec2_t camera_offset;
@@ -325,7 +329,8 @@ extern "C" void projectile_render(float transition_alpha)
                 float dx = projectile->pos.origin_x - projectile->pos_x;
                 float dy = projectile->pos.tail.origin_y
                     - projectile->pos.pos_y;
-                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                float distance = (float)sqrt(dx * dx + dy * dy);
+                int distance_i = (int)distance;
                 int divisor_i = (int)(
                     plasma->tail.vy.speed_scale * 2.5f);
                 int segment_count = distance_i / divisor_i;
@@ -375,7 +380,8 @@ extern "C" void projectile_render(float transition_alpha)
                 float dx = projectile->pos.origin_x - projectile->pos_x;
                 float dy = projectile->pos.tail.origin_y
                     - projectile->pos.pos_y;
-                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                float distance = (float)sqrt(dx * dx + dy * dy);
+                int distance_i = (int)distance;
                 int divisor_i = (int)(
                     plasma->tail.vy.speed_scale * 2.1f);
                 int segment_count = distance_i / divisor_i;
@@ -422,10 +428,10 @@ extern "C" void projectile_render(float transition_alpha)
                         120.0f);
                 }
             } else if (type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
-                float dx = projectile->pos.origin_x - projectile->pos_x;
-                float dy = projectile->pos.tail.origin_y
-                    - projectile->pos.pos_y;
-                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                int distance_i = (int)projectile_render_vec2_t(
+                    projectile->pos.origin_x - projectile->pos_x,
+                    projectile->pos.tail.origin_y
+                        - projectile->pos.pos_y).length();
                 int divisor_i = (int)(
                     plasma->tail.vy.speed_scale * 3.5f);
                 int segment_count = distance_i / divisor_i;
@@ -472,10 +478,10 @@ extern "C" void projectile_render(float transition_alpha)
                         256.0f);
                 }
             } else if (type_id == PROJECTILE_TYPE_SPIDER_PLASMA) {
-                float dx = projectile->pos.origin_x - projectile->pos_x;
-                float dy = projectile->pos.tail.origin_y
-                    - projectile->pos.pos_y;
-                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                int distance_i = (int)projectile_render_vec2_t(
+                    projectile->pos.origin_x - projectile->pos_x,
+                    projectile->pos.tail.origin_y
+                        - projectile->pos.pos_y).length();
                 int divisor_i = (int)(
                     plasma->tail.vy.speed_scale * 2.1f);
                 int segment_count = distance_i / divisor_i;
@@ -521,11 +527,11 @@ extern "C" void projectile_render(float transition_alpha)
                         120.0f,
                         120.0f);
                 }
-            } else {
-                float dx = projectile->pos.origin_x - projectile->pos_x;
-                float dy = projectile->pos.tail.origin_y
-                    - projectile->pos.pos_y;
-                int distance_i = (int)sqrt(dx * dx + dy * dy);
+            } else if (type_id == PROJECTILE_TYPE_SHRINKIFIER) {
+                int distance_i = (int)projectile_render_vec2_t(
+                    projectile->pos.origin_x - projectile->pos_x,
+                    projectile->pos.tail.origin_y
+                        - projectile->pos.pos_y).length();
                 int divisor_i = (int)(
                     plasma->tail.vy.speed_scale * 2.1f);
                 int segment_count = distance_i / divisor_i;

@@ -460,3 +460,67 @@ target dumps confirm the local schedule, and the 511-variant experiment audit
 has no errors. The three complete records bring `experiments.jsonl` to 28
 records with SHA-256
 `59a6478a0f7c6dc4659787e2a3aa4fc7d68f2ccf6d2bcd5e221c1e035558f865`.
+
+## Plasma distance x87 lifetime and branch-shape wave
+
+The five plasma render arms use two distinct native distance schedules. Plasma
+Rifle and Plasma Minigun keep a named scalar `sqrt` result live until the
+integer conversion. Plasma Cannon, Spider Plasma, and Shrinkifier instead
+construct a two-component difference and invoke its inlined `length()` method,
+which produces a different x87 multiply/add stack order.
+
+Six complete sweeps bound the recovery:
+
+- `plasma-rifle-distance-conversion-lifetime-mutations.json` (SHA-256
+  `1cce64a09eadffa89fc078c003b7b4573bf0418d5087999c0599a2fa8f89449c`)
+  evaluates 12 scalar conversion lifetimes. The named `float distance` is the
+  only local shape that reproduces the Rifle schedule.
+- `plasma-distance-conversion-lifetime-interactions.json` (SHA-256
+  `5b5b09daa6073141df903606fbdce2fa3aaf3f3a01769c0b200d51c80a8320cb`)
+  evaluates all 31 non-empty combinations across the five arms. It confirms
+  the same scalar lifetime for Minigun, while the aggregate all-five score is
+  rejected because Cannon, Spider, and Shrinkifier retain the wrong native x87
+  order.
+- `plasma-cannon-distance-product-lifetime-mutations.json` (SHA-256
+  `3ce3903d3f2eec85bf29448c1a2b37a3ed6544d78db4c213590bd93300339cf2`)
+  evaluates 15 product and vector spellings. A temporary two-component vector
+  followed by `length()` exactly reproduces the Cannon kernel and adds one
+  proven reference.
+- `plasma-vector-distance-lifetime-interactions.json` (SHA-256
+  `fbd66670edc161cd0d664b997877b2e426769bfadc76bc39692620f442469f76`)
+  evaluates all seven non-empty Cannon/Spider/Shrinkifier combinations. Cannon
+  plus Spider is the honest winner; applying the same spelling to a catch-all
+  final `else` lets VC6 hoist shared coordinate differences across the Spider
+  gate, unlike native.
+- `plasma-tail-vector-distance-shapes.json` (SHA-256
+  `4b35537e3da5815f2b7dccbe751127211daf4eceb34c80201db0a8b05666419b`)
+  evaluates all 48 one- and two-site Spider/Shrinkifier vector shapes. Its
+  aggregate score winner emits extra temporary stores and does not reproduce
+  the local target, so it is retained only as negative evidence.
+- `plasma-shrinkifier-distance-shape-mutations.json` (SHA-256
+  `d95b20502f3c747dbd3ab11f7d429a8445a4e3ec49771414377a7a0c2fe8f7e6`)
+  evaluates ten final-arm branch and vector shapes. An explicit
+  `PROJECTILE_TYPE_SHRINKIFIER` condition plus the temporary vector `length()`
+  is the top result, adding 24.271 fuzzy-weighted bytes, five instructions
+  toward native, and one proven reference. The same vector expression under a
+  catch-all `else` regresses, isolating the final type gate as the compiler
+  constraint that prevents cross-branch common-subexpression elimination.
+
+The normalized target and candidate dumps now agree instruction-for-instruction
+through all five distance kernels. In particular, Spider and Shrinkifier each
+retain their own `cmp` gate, coordinate loads, `fsub` pair, vector
+multiply/add stack, `fxch; fsqrt; fxch; fstp`, and conversion call.
+
+Against source SHA-256
+`806090184581b0b999df3214fc8899085410b584afcd826434e2c51a7980b71d`,
+the retained source SHA-256
+`5c2edb8b2f6dfc4322c49e17778d3a7d37077a231a02b98e7787769fdeaa4edb`
+moves the ratio from 51.9515937% to 52.7031622%, raises the weighted match
+from 6,520.445 to 6,614.774 bytes, and reduces the gap from 6,030.555 to
+5,936.226 bytes. The candidate moves from 2,846 to 2,861 instructions against
+3,021 native instructions. References improve from `407/0/13` to `412/0/13`.
+
+`crimson match validate` accepts the retained source, and the 634-variant
+experiment audit has no errors. The six complete records bring
+`experiments.jsonl` to 34 records with SHA-256
+`3dc768269aa02cad61a66363983a744c6cc7672aa9c3f2b8d469a5f95e7d6a37`.
