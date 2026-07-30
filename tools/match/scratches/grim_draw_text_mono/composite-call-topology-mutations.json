@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "e4-mark-call-topology",
+      "find": "            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {",
+      "replacements": [
+        {
+          "name": "explicit-this",
+          "text": "            this->grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            this->grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {"
+        },
+        {
+          "name": "scoped-renderer-pointer",
+          "text": "            IGrim2D_cpp *renderer = this;\n            renderer->grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            renderer->grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {"
+        },
+        {
+          "name": "scoped-renderer-reference",
+          "text": "            IGrim2D_cpp &renderer = *this;\n            renderer.grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            renderer.grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {"
+        },
+        {
+          "name": "one-pass-block",
+          "text": "            do {\n                grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n                grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n            } while (false);\n        } else if (character == '\\xf6') {"
+        }
+      ]
+    },
+    {
+      "name": "f6-mark-call-topology",
+      "find": "            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n",
+      "replacements": [
+        {
+          "name": "explicit-this",
+          "text": "            this->grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            this->grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n"
+        },
+        {
+          "name": "scoped-renderer-pointer",
+          "text": "            IGrim2D_cpp *renderer = this;\n            renderer->grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            renderer->grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n"
+        },
+        {
+          "name": "scoped-renderer-reference",
+          "text": "            IGrim2D_cpp &renderer = *this;\n            renderer.grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            renderer.grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n"
+        },
+        {
+          "name": "one-pass-block",
+          "text": "            do {\n                grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n                grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n            } while (false);\n        } else {\n"
+        }
+      ]
+    }
+  ]
+}

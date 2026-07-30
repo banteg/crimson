@@ -45,3 +45,13 @@ Pointer and copy-initialized forms remain byte-identical at 94.39%; scalar
 forms shorten the candidate and regress by at least 77.00 fuzzy-weighted
 bytes. These natural spelling differences cannot prevent VC6 from folding the
 suffix, so no source change is retained.
+
+`composite-call-topology-mutations.json` closes the remaining branch-local
+source boundary with all 24 single and paired combinations of explicit
+receivers, pointer/reference receiver aliases, and one-pass scopes. Every
+variant is byte-identical at 94.39%, including asymmetric `0xe4`/`0xf6`
+forms. A separate VC6.0/6.5/6.6 profile check also leaves the baseline
+unchanged, while disabling global optimization with `/Og-` uniformly regresses
+to 7.58% and 404 candidate instructions. The residual is therefore saturated
+at the global tail-cross-jump pass rather than an unmodeled call receiver,
+scope, or supported compiler profile.
