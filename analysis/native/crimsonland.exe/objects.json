@@ -54,7 +54,7 @@
     "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
     "status": "passed"
   },
-  "audit_digest": "71bc8cfa1f17b497f7544bb694e721ba2d21da1fad281aa1736f3e1260d02a41",
+  "audit_digest": "6e9f1390c764da91573b545070803380ea6a73ad4ed78b6b51551b1654956e2b",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -3147,255 +3147,255 @@
         },
         {
           "address": 4740068,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_points",
           "section_number": 174,
           "section_offset": 20,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740068,
+          "storage_name": "bonus_label_points",
           "symbols": [
             "_bonus_label_points"
           ]
         },
         {
           "address": 4740088,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_energizer",
           "section_number": 174,
           "section_offset": 40,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740088,
+          "storage_name": "bonus_label_energizer",
           "symbols": [
             "_bonus_label_energizer"
           ]
         },
         {
           "address": 4740096,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_energizer",
           "section_number": 174,
           "section_offset": 48,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740096,
+          "storage_name": "bonus_icon_energizer",
           "symbols": [
             "_bonus_icon_energizer"
           ]
         },
         {
           "address": 4740128,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_weapon_power_up",
           "section_number": 174,
           "section_offset": 80,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740128,
+          "storage_name": "bonus_label_weapon_power_up",
           "symbols": [
             "_bonus_label_weapon_power_up"
           ]
         },
         {
           "address": 4740136,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_weapon_power_up",
           "section_number": 174,
           "section_offset": 88,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740136,
+          "storage_name": "bonus_icon_weapon_power_up",
           "symbols": [
             "_bonus_icon_weapon_power_up"
           ]
         },
         {
           "address": 4740168,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_double_experience",
           "section_number": 174,
           "section_offset": 120,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740168,
+          "storage_name": "bonus_label_double_experience",
           "symbols": [
             "_bonus_label_double_experience"
           ]
         },
         {
           "address": 4740176,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_double_experience",
           "section_number": 174,
           "section_offset": 128,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740176,
+          "storage_name": "bonus_icon_double_experience",
           "symbols": [
             "_bonus_icon_double_experience"
           ]
         },
         {
           "address": 4740228,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_reflex_boost",
           "section_number": 174,
           "section_offset": 180,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740228,
+          "storage_name": "bonus_label_reflex_boost",
           "symbols": [
             "_bonus_label_reflex_boost"
           ]
         },
         {
           "address": 4740236,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_reflex_boost",
           "section_number": 174,
           "section_offset": 188,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740236,
+          "storage_name": "bonus_icon_reflex_boost",
           "symbols": [
             "_bonus_icon_reflex_boost"
           ]
         },
         {
           "address": 4740248,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_shield",
           "section_number": 174,
           "section_offset": 200,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740248,
+          "storage_name": "bonus_label_shield",
           "symbols": [
             "_bonus_label_shield"
           ]
         },
         {
           "address": 4740256,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_shield",
           "section_number": 174,
           "section_offset": 208,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740256,
+          "storage_name": "bonus_icon_shield",
           "symbols": [
             "_bonus_icon_shield"
           ]
         },
         {
           "address": 4740268,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_freeze",
           "section_number": 174,
           "section_offset": 220,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740268,
+          "storage_name": "bonus_label_freeze",
           "symbols": [
             "_bonus_label_freeze"
           ]
         },
         {
           "address": 4740276,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_freeze",
           "section_number": 174,
           "section_offset": 228,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740276,
+          "storage_name": "bonus_icon_freeze",
           "symbols": [
             "_bonus_icon_freeze"
           ]
         },
         {
           "address": 4740308,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_speed",
           "section_number": 174,
           "section_offset": 260,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740308,
+          "storage_name": "bonus_label_speed",
           "symbols": [
             "_bonus_label_speed"
           ]
         },
         {
           "address": 4740316,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_speed",
           "section_number": 174,
           "section_offset": 268,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740316,
+          "storage_name": "bonus_icon_speed",
           "symbols": [
             "_bonus_icon_speed"
           ]
         },
         {
           "address": 4740328,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_label_fire_bullets",
           "section_number": 174,
           "section_offset": 280,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740328,
+          "storage_name": "bonus_label_fire_bullets",
           "symbols": [
             "_bonus_label_fire_bullets"
           ]
         },
         {
           "address": 4740336,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "bonus_icon_fire_bullets",
           "section_number": 174,
           "section_offset": 288,
-          "size": null,
-          "storage_address": 4740048,
-          "storage_name": "bonus_meta_table",
+          "size": 4,
+          "storage_address": 4740336,
+          "storage_name": "bonus_icon_fire_bullets",
           "symbols": [
             "_bonus_icon_fire_bullets"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "bddcf7d48dbf2ddc3af72aac41e4325b589f762fe7be00708c046cc6f7f67d41"
+        "sha256": "22a661af84120fbae3e8c755ba05ae3191cf75158be8b098abfcc59b3473c037"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -14688,6 +14688,74 @@
             {
               "address": 4740048,
               "name": "bonus_meta_table"
+            },
+            {
+              "address": 4740068,
+              "name": "bonus_label_points"
+            },
+            {
+              "address": 4740088,
+              "name": "bonus_label_energizer"
+            },
+            {
+              "address": 4740096,
+              "name": "bonus_icon_energizer"
+            },
+            {
+              "address": 4740128,
+              "name": "bonus_label_weapon_power_up"
+            },
+            {
+              "address": 4740136,
+              "name": "bonus_icon_weapon_power_up"
+            },
+            {
+              "address": 4740168,
+              "name": "bonus_label_double_experience"
+            },
+            {
+              "address": 4740176,
+              "name": "bonus_icon_double_experience"
+            },
+            {
+              "address": 4740228,
+              "name": "bonus_label_reflex_boost"
+            },
+            {
+              "address": 4740236,
+              "name": "bonus_icon_reflex_boost"
+            },
+            {
+              "address": 4740248,
+              "name": "bonus_label_shield"
+            },
+            {
+              "address": 4740256,
+              "name": "bonus_icon_shield"
+            },
+            {
+              "address": 4740268,
+              "name": "bonus_label_freeze"
+            },
+            {
+              "address": 4740276,
+              "name": "bonus_icon_freeze"
+            },
+            {
+              "address": 4740308,
+              "name": "bonus_label_speed"
+            },
+            {
+              "address": 4740316,
+              "name": "bonus_icon_speed"
+            },
+            {
+              "address": 4740328,
+              "name": "bonus_label_fire_bullets"
+            },
+            {
+              "address": 4740336,
+              "name": "bonus_icon_fire_bullets"
             }
           ],
           "relocations": [],
@@ -87823,7 +87891,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "bddcf7d48dbf2ddc3af72aac41e4325b589f762fe7be00708c046cc6f7f67d41"
+        "sha256": "22a661af84120fbae3e8c755ba05ae3191cf75158be8b098abfcc59b3473c037"
       }
     ],
     "toolchain": {
