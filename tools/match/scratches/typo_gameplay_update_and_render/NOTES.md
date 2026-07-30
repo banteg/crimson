@@ -101,3 +101,20 @@ all regress to 88.98%, lose the exact prefix, and change the reference audit;
 the partial combinations fail compilation. The aggregate panel vector is
 therefore retained as the evidenced source shape. The plan SHA-256 is
 `8ec1d0778c5189c0bd31c664721cb04e7244f55aaf416ce1bf1a5ba610ccb79a`.
+
+`spawn-vector-slot-interactions.json` then evaluates all 54 bounded one- and
+two-site combinations across the two spawn-position aggregates and the panel
+aggregate. It covers typed versus plain vectors, component assignment versus
+construction, left-before-right and right-before-left declarations, one
+reused spawn vector, panel declaration order, and the cross-product of each
+spawn shape with each panel shape. All variants compile: 44 are byte-neutral
+at 98.43% with the same 508 instructions and `194/0/0` references, while the
+10 reused-vector combinations regress. No source form moves either residual
+slot toward native. The complete plan SHA-256 is
+`6e464b772ca736ac0fead378fdaf83eba8d5aa601232555b5f6e9f1ac8070ecb`.
+
+Across three complete sweeps, 72 unique variants produce no improvement and a
+three-sweep no-improvement streak. The experiment ledger therefore marks this
+target `stalled`: the remaining two-slot permutation is bounded as a VC6
+allocation residual unless a different recovered type or translation-unit
+constraint supplies new evidence.

@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "spawn-position-materialization",
+      "find": "        vec2f_t right_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&right_pos, &color, 4));\n\n        typo_vec2_t left_pos(\n            -64.0f,\n            (float)terrain_texture_height * 0.5f\n                + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f);\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));",
+      "replacements": [
+        {
+          "name": "typed-left-component-assignment",
+          "text": "        vec2f_t right_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&right_pos, &color, 4));\n\n        typo_vec2_t left_pos;\n        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));"
+        },
+        {
+          "name": "plain-left-component-assignment",
+          "text": "        vec2f_t right_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&right_pos, &color, 4));\n\n        vec2f_t left_pos;\n        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&left_pos, &color, 2));"
+        },
+        {
+          "name": "typed-left-before-plain-right",
+          "text": "        typo_vec2_t left_pos;\n        vec2f_t right_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&right_pos, &color, 4));\n\n        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));"
+        },
+        {
+          "name": "plain-left-before-plain-right",
+          "text": "        vec2f_t left_pos;\n        vec2f_t right_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&right_pos, &color, 4));\n\n        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&left_pos, &color, 2));"
+        },
+        {
+          "name": "typed-pair-right-before-left",
+          "text": "        typo_vec2_t right_pos;\n        typo_vec2_t left_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&right_pos, &color, 4));\n\n        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));"
+        },
+        {
+          "name": "typed-pair-left-before-right",
+          "text": "        typo_vec2_t left_pos;\n        typo_vec2_t right_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&right_pos, &color, 4));\n\n        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));"
+        },
+        {
+          "name": "typed-right-constructed-pair",
+          "text": "        typo_vec2_t right_pos(\n            (float)terrain_texture_width + 64.0f,\n            (float)terrain_texture_height * 0.5f\n                + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f);\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&right_pos, &color, 4));\n\n        typo_vec2_t left_pos(\n            -64.0f,\n            (float)terrain_texture_height * 0.5f\n                + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f);\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));"
+        },
+        {
+          "name": "plain-pair-right-before-left",
+          "text": "        vec2f_t right_pos;\n        vec2f_t left_pos;\n        right_pos.x = (float)terrain_texture_width + 64.0f;\n        right_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&right_pos, &color, 4));\n\n        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&left_pos, &color, 2));"
+        },
+        {
+          "name": "reuse-plain-position",
+          "text": "        vec2f_t spawn_pos;\n        spawn_pos.x = (float)terrain_texture_width + 64.0f;\n        spawn_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&spawn_pos, &color, 4));\n\n        spawn_pos.x = -64.0f;\n        spawn_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted(&spawn_pos, &color, 2));"
+        },
+        {
+          "name": "reuse-typed-position",
+          "text": "        typo_vec2_t spawn_pos;\n        spawn_pos.x = (float)terrain_texture_width + 64.0f;\n        spawn_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&spawn_pos, &color, 4));\n\n        spawn_pos.x = -64.0f;\n        spawn_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;\n        typo_target_name_assign_random(\n            creature_spawn_tinted((const vec2f_t *)&spawn_pos, &color, 2));"
+        }
+      ]
+    },
+    {
+      "name": "panel-position-aggregate",
+      "find": "    typo_vec2_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;\n    typo_input_buffer[typo_input_length + 1] = '\\0';",
+      "replacements": [
+        {
+          "name": "plain-panel-vector",
+          "text": "    vec2f_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;\n    typo_input_buffer[typo_input_length + 1] = '\\0';"
+        },
+        {
+          "name": "typed-panel-after-buffer-termination",
+          "text": "    typo_input_buffer[typo_input_length + 1] = '\\0';\n    typo_vec2_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;"
+        },
+        {
+          "name": "plain-panel-after-buffer-termination",
+          "text": "    typo_input_buffer[typo_input_length + 1] = '\\0';\n    vec2f_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;"
+        },
+        {
+          "name": "constructed-typed-panel",
+          "text": "    typo_vec2_t panel_position(\n        0.0f, (float)config_screen_height - 128.0f);\n    typo_input_buffer[typo_input_length + 1] = '\\0';"
+        }
+      ]
+    }
+  ]
+}
