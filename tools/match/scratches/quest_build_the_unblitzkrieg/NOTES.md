@@ -92,6 +92,13 @@ the native metadata tail. This narrows the remaining search to trigger/offset
 lifetime scheduling rather than the already-recovered entry layout or helper
 ABI.
 
+The exact `quest_build_syntax_terror` neighbor also motivated replaying its
+`pos.set(x, y)` member boundary across all eight sweeps and the center entry.
+The recorded `position-setter-all-sweeps` probe preserves 291/291 instructions
+and the 16-instruction prefix but loses 60.31 fuzzy-weighted bytes, falling to
+69.76%. That shared API is rejected here; the direct component stores remain
+the stronger recovered source.
+
 ## First-sweep position-materialization audit
 
 Native writes the fixed x coordinate before completing the signed
