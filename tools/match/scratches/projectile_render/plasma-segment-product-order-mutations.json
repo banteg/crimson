@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-rifle-segment-x-product-order",
+      "find": "                            + (float)segment_index * step_x",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_x * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "plasma-rifle-segment-y-product-order",
+      "find": "                            + (float)segment_index * step_y",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_y * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "plasma-minigun-segment-x-product-order",
+      "find": "                            + (float)segment_index * step_x",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_x * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "plasma-minigun-segment-y-product-order",
+      "find": "                            + (float)segment_index * step_y",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_y * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "plasma-cannon-segment-x-product-order",
+      "find": "                            + (float)segment_index * step_x",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_x * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "plasma-cannon-segment-y-product-order",
+      "find": "                            + (float)segment_index * step_y",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_y * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "spider-plasma-segment-x-product-order",
+      "find": "                            + (float)segment_index * step_x",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_x * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "spider-plasma-segment-y-product-order",
+      "find": "                            + (float)segment_index * step_y",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_y * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "shrinkifier-segment-x-product-order",
+      "find": "                            + (float)segment_index * step_x",
+      "occurrence": 5,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_x * (float)segment_index"
+        }
+      ]
+    },
+    {
+      "name": "shrinkifier-segment-y-product-order",
+      "find": "                            + (float)segment_index * step_y",
+      "occurrence": 5,
+      "replacements": [
+        {
+          "name": "step-times-index",
+          "text": "                            + step_y * (float)segment_index"
+        }
+      ]
+    }
+  ]
+}

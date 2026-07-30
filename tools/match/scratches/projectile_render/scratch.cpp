@@ -345,13 +345,12 @@ extern "C" void projectile_render(float transition_alpha)
                 for (int segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
+                    float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x
-                            + (float)segment_index * step_x
-                            - 11.0f,
+                            + segment * step_x - 11.0f,
                         camera_offset_y + projectile->pos.pos_y
-                            + (float)segment_index * step_y
-                            - 11.0f,
+                            + segment * step_y - 11.0f,
                         22.0f,
                         22.0f);
                 }
@@ -396,13 +395,12 @@ extern "C" void projectile_render(float transition_alpha)
                 for (int segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
+                    float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x
-                            + (float)segment_index * step_x
-                            - 6.0f,
+                            + segment * step_x - 6.0f,
                         camera_offset_y + projectile->pos.pos_y
-                            + (float)segment_index * step_y
-                            - 6.0f,
+                            + segment * step_y - 6.0f,
                         12.0f,
                         12.0f);
                 }
@@ -447,13 +445,12 @@ extern "C" void projectile_render(float transition_alpha)
                 for (int segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
+                    float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x
-                            + (float)segment_index * step_x
-                            - 22.0f,
+                            + segment * step_x - 22.0f,
                         camera_offset_y + projectile->pos.pos_y
-                            + (float)segment_index * step_y
-                            - 22.0f,
+                            + segment * step_y - 22.0f,
                         44.0f,
                         44.0f);
                 }
@@ -498,13 +495,12 @@ extern "C" void projectile_render(float transition_alpha)
                 for (int segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
+                    float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x
-                            + (float)segment_index * step_x
-                            - 6.0f,
+                            + segment * step_x - 6.0f,
                         camera_offset_y + projectile->pos.pos_y
-                            + (float)segment_index * step_y
-                            - 6.0f,
+                            + segment * step_y - 6.0f,
                         12.0f,
                         12.0f);
                 }
@@ -549,13 +545,12 @@ extern "C" void projectile_render(float transition_alpha)
                 for (int segment_index = 0;
                      segment_index < segment_count;
                      ++segment_index) {
+                    float segment = (float)segment_index;
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x
-                            + (float)segment_index * step_x
-                            - 6.0f,
+                            + segment * step_x - 6.0f,
                         camera_offset_y + projectile->pos.pos_y
-                            + (float)segment_index * step_y
-                            - 6.0f,
+                            + segment * step_y - 6.0f,
                         12.0f,
                         12.0f);
                 }

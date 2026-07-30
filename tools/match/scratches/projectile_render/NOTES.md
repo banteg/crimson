@@ -419,3 +419,44 @@ instructions. References remain `407/0/13`, so the improvement does not trade
 bytes for reference debt. Thirteen complete mutation records were appended in
 this wave; `experiments.jsonl` now has SHA-256
 `0ccae8857489a84d963e55b7183efbf526dd622a5aa17fd7c53f507e127ac70d`.
+
+## Plasma segment-index x87 lifetime wave
+
+The five plasma arms share one further native compiler shape. In each inner
+segment loop, the target converts the loop index once and keeps that x87 value
+live across the first product: `fild; fld st(0); fmul step_y; ...; fmul
+step_x`. The previous source converted the index independently in both
+coordinate expressions, producing an extra load and pop in every loop.
+
+Three complete sweeps bound the repair:
+
+- `plasma-segment-product-order-mutations.json` (SHA-256
+  `89eac8a5a63d6e17abf1fe6a9e164b588eec2bbe2f0d09592c790a174aecb948`)
+  evaluates all 55 one- and two-site X/Y product-order variants. Every variant
+  is byte-identical, ruling out commutation as the cause.
+- `plasma-rifle-segment-lifetime-mutations.json` (SHA-256
+  `711b09b390d1c18ccc4b5e3e3a2dba847bb6b747c5836119d10e344477df11da`)
+  evaluates all four bounded lifetime spellings in the rifle arm. A named
+  converted index is the only winner, adding 6.481 fuzzy-weighted bytes and
+  removing the exact two extra candidate instructions without changing
+  references.
+- `plasma-segment-index-lifetime-interactions.json` (SHA-256
+  `576da6b4236c4959c71ce68b04bc97cb2ab5ca1058ca12828fc826667b96470b`)
+  evaluates all 31 non-empty combinations across the five arms. Every site is
+  independently additive; retaining all five adds 32.451 fuzzy-weighted bytes
+  and removes ten extra instructions.
+
+The retained source SHA-256 is
+`806090184581b0b999df3214fc8899085410b584afcd826434e2c51a7980b71d`.
+It moves the ratio from 51.6930407% to 51.9515937%, raises the weighted match
+from 6,487.994 to 6,520.445 bytes, and reduces the gap from 6,063.006 to
+6,030.555 bytes. The candidate is now 2,846/3,021 instructions. That global
+count moves farther from the target, but each changed local loop loses exactly
+the two candidate-only x87 instructions and reproduces the native schedule.
+References remain `407/0/13`.
+
+`crimson match validate` accepts the source, the normalized candidate and
+target dumps confirm the local schedule, and the 511-variant experiment audit
+has no errors. The three complete records bring `experiments.jsonl` to 28
+records with SHA-256
+`59a6478a0f7c6dc4659787e2a3aa4fc7d68f2ccf6d2bcd5e221c1e035558f865`.

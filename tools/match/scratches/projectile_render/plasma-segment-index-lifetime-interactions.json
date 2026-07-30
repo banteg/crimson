@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-rifle-segment-index-lifetime",
+      "find": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + (float)segment_index * step_x\n                            - 11.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + (float)segment_index * step_y\n                            - 11.0f,\n                        22.0f,\n                        22.0f);\n                }",
+      "replacements": [
+        {
+          "name": "named-converted-index",
+          "text": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    float segment = (float)segment_index;\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + segment * step_x - 11.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + segment * step_y - 11.0f,\n                        22.0f,\n                        22.0f);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "plasma-minigun-segment-index-lifetime",
+      "find": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + (float)segment_index * step_x\n                            - 6.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + (float)segment_index * step_y\n                            - 6.0f,\n                        12.0f,\n                        12.0f);\n                }",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "named-converted-index",
+          "text": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    float segment = (float)segment_index;\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + segment * step_x - 6.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + segment * step_y - 6.0f,\n                        12.0f,\n                        12.0f);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "plasma-cannon-segment-index-lifetime",
+      "find": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + (float)segment_index * step_x\n                            - 22.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + (float)segment_index * step_y\n                            - 22.0f,\n                        44.0f,\n                        44.0f);\n                }",
+      "replacements": [
+        {
+          "name": "named-converted-index",
+          "text": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    float segment = (float)segment_index;\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + segment * step_x - 22.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + segment * step_y - 22.0f,\n                        44.0f,\n                        44.0f);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "spider-plasma-segment-index-lifetime",
+      "find": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + (float)segment_index * step_x\n                            - 6.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + (float)segment_index * step_y\n                            - 6.0f,\n                        12.0f,\n                        12.0f);\n                }",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "named-converted-index",
+          "text": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    float segment = (float)segment_index;\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + segment * step_x - 6.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + segment * step_y - 6.0f,\n                        12.0f,\n                        12.0f);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "shrinkifier-segment-index-lifetime",
+      "find": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + (float)segment_index * step_x\n                            - 6.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + (float)segment_index * step_y\n                            - 6.0f,\n                        12.0f,\n                        12.0f);\n                }",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "named-converted-index",
+          "text": "                for (int segment_index = 0;\n                     segment_index < segment_count;\n                     ++segment_index) {\n                    float segment = (float)segment_index;\n                    grim_interface_ptr->grim_draw_quad(\n                        camera_offset_x + projectile->pos_x\n                            + segment * step_x - 6.0f,\n                        camera_offset_y + projectile->pos.pos_y\n                            + segment * step_y - 6.0f,\n                        12.0f,\n                        12.0f);\n                }"
+        }
+      ]
+    }
+  ]
+}
