@@ -55,3 +55,15 @@ unchanged, while disabling global optimization with `/Og-` uniformly regresses
 to 7.58% and 404 candidate instructions. The residual is therefore saturated
 at the global tail-cross-jump pass rather than an unmodeled call receiver,
 scope, or supported compiler profile.
+
+`all-endpoint-storage-interactions.json` bounds the larger lifetime interaction
+suggested by the native frame. It promotes all seven branch-specific glyph
+endpoint pairs to function scope and independently rewrites the `0xe5`,
+`0xe4`, `0xf6`, and generic paths to assign their components there. All 16
+compile-valid combinations, including the five-site form, are byte-identical
+to the 298-instruction baseline with the same 41 resolved references; the 15
+dependent combinations without declarations fail compilation as expected.
+This confirms that the already-identical 0x5c-byte frame and endpoint slots do
+not control the missing cross-jump duplication. The seven recorded sweeps now
+cover 103 variants with no improvement, so further local spelling work is
+stalled pending different compiler or original-TU provenance.

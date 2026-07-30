@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-scope-endpoint-storage",
+      "find": "    bool combine = false;\n    GrimMonoPoint uv(0.0f, 0.0f);\n\n    for (int index = 0; index < length; ++index) {\n",
+      "replacements": [
+        {
+          "name": "all-glyph-endpoints",
+          "text": "    bool combine = false;\n    GrimMonoPoint uv(0.0f, 0.0f);\n    GrimMonoPoint e5_uv1(0.0f, 0.0f);\n    GrimMonoPoint e5_mark_uv1(0.0f, 0.0f);\n    GrimMonoPoint e4_uv1(0.0f, 0.0f);\n    GrimMonoPoint e4_mark_uv1(0.0f, 0.0f);\n    GrimMonoPoint f6_uv1(0.0f, 0.0f);\n    GrimMonoPoint f6_mark_uv1(0.0f, 0.0f);\n    GrimMonoPoint glyph_uv1(0.0f, 0.0f);\n\n    for (int index = 0; index < length; ++index) {\n"
+        }
+      ]
+    },
+    {
+      "name": "e5-endpoint-assignments",
+      "find": "            uv = grim_font2_uv_u['a'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['.'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y - 6.0f, cell_size, cell_size);\n",
+      "replacements": [
+        {
+          "name": "function-scope-components",
+          "text": "            uv = grim_font2_uv_u['a'];\n            e5_uv1.x = uv.x + 0.0625f;\n            e5_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, e5_uv1.x, e5_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['.'];\n            e5_mark_uv1.x = uv.x + 0.0625f;\n            e5_mark_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(\n                uv.x, uv.y, e5_mark_uv1.x, e5_mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y - 6.0f, cell_size, cell_size);\n"
+        }
+      ]
+    },
+    {
+      "name": "e4-endpoint-assignments",
+      "find": "            uv = grim_font2_uv_u['a'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n",
+      "replacements": [
+        {
+          "name": "function-scope-components",
+          "text": "            uv = grim_font2_uv_u['a'];\n            e4_uv1.x = uv.x + 0.0625f;\n            e4_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, e4_uv1.x, e4_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            e4_mark_uv1.x = uv.x + 0.0625f;\n            e4_mark_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(\n                uv.x, uv.y, e4_mark_uv1.x, e4_mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        }
+      ]
+    },
+    {
+      "name": "f6-endpoint-assignments",
+      "find": "            uv = grim_font2_uv_u['o'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n",
+      "replacements": [
+        {
+          "name": "function-scope-components",
+          "text": "            uv = grim_font2_uv_u['o'];\n            f6_uv1.x = uv.x + 0.0625f;\n            f6_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, f6_uv1.x, f6_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            f6_mark_uv1.x = uv.x + 0.0625f;\n            f6_mark_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(\n                uv.x, uv.y, f6_mark_uv1.x, f6_mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        }
+      ]
+    },
+    {
+      "name": "generic-endpoint-assignment",
+      "find": "            uv = grim_font2_uv_u[glyph];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n",
+      "replacements": [
+        {
+          "name": "function-scope-components",
+          "text": "            uv = grim_font2_uv_u[glyph];\n            glyph_uv1.x = uv.x + 0.0625f;\n            glyph_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, glyph_uv1.x, glyph_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n"
+        }
+      ]
+    }
+  ]
+}
