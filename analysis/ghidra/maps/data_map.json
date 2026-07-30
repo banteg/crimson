@@ -5392,7 +5392,7 @@
       "comment": "Perk prompt nested UI block loaded from ui_textLevelUp.jaz and resized in ui_menu_layout_init.",
       "name": "ui_perk_prompt_levelup_element",
       "program": "crimsonland.exe",
-      "type": "ui_element_t"
+      "type": "ui_menu_item_subtemplate_block_t"
     },
     {
       "address": "0x0048f500",

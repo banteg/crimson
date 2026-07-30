@@ -365,11 +365,15 @@ CRIMSON_ABI_ASSERT(ui_vertex_is_0x1c, sizeof(ui_element_vertex_t) == 0x1c);
 CRIMSON_ABI_ASSERT(
     ui_subtemplate_is_0xe8,
     sizeof(ui_menu_item_subtemplate_block_t) == 0xe8);
+CRIMSON_ABI_ASSERT(
+    ui_element_callback_is_32_bit,
+    sizeof(ui_element_callback_t) == 4);
 CRIMSON_ABI_ASSERT(ui_element_is_0x318, sizeof(ui_element_t) == 0x318);
 CRIMSON_ABI_ASSERT(
     ui_element_pointer_table_is_0xa4,
     sizeof(ui_element_t *[41]) == 0xa4);
 CRIMSON_ABI_ASSERT_ALIGN4(ui_element, ui_element_t);
+CRIMSON_ABI_ASSERT(ui_menu_item_is_0x10, sizeof(ui_menu_item_t) == 0x10);
 CRIMSON_ABI_ASSERT(ui_button_is_0x18, sizeof(ui_button_t) == 0x18);
 CRIMSON_ABI_ASSERT(
     perk_selection_choice_items_are_0xa0,
@@ -387,6 +391,7 @@ CRIMSON_ABI_ASSERT(
     controls_rebind_items_is_0xf0,
     sizeof(controls_rebind_item_table_t) == 0xf0);
 CRIMSON_ABI_ASSERT_ALIGN4(ui_button, ui_button_t);
+CRIMSON_ABI_ASSERT_ALIGN4(ui_menu_item, ui_menu_item_t);
 CRIMSON_ABI_ASSERT_ALIGN4(
     perk_selection_choice_items,
     perk_selection_choice_item_table_t);

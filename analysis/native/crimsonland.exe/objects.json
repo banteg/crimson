@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "78b4cc51926c080895381983b5853ed504aaf23de8d85066bd6cfc0572ed301a"
+        "sha256": "47c56f8553d1d8439bc58773c19f9da2801d3029d801966cd7c34b9384e810ce"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/eaef563a2d5aae74/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "78b4cc51926c080895381983b5853ed504aaf23de8d85066bd6cfc0572ed301a",
+    "source_sha256": "47c56f8553d1d8439bc58773c19f9da2801d3029d801966cd7c34b9384e810ce",
     "status": "passed"
   },
-  "audit_digest": "7f3088e8db50847f528370abffbac03c19cbcaebecaa5f68cc5f936a16355957",
+  "audit_digest": "4db3ace3ad8f34fc994cc785506657987edc36b930a7a589642e5c25a9f0139d",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4126,75 +4126,75 @@
         },
         {
           "address": 4747360,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "survival_elapsed_ms",
           "section_number": 216,
           "section_offset": 32,
-          "size": null,
-          "storage_address": 4747328,
-          "storage_name": "highscore_active_record",
+          "size": 4,
+          "storage_address": 4747360,
+          "storage_name": "survival_elapsed_ms",
           "symbols": [
             "_survival_elapsed_ms"
           ]
         },
         {
           "address": 4747364,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "highscore_score_xp",
           "section_number": 216,
           "section_offset": 36,
-          "size": null,
-          "storage_address": 4747328,
-          "storage_name": "highscore_active_record",
+          "size": 4,
+          "storage_address": 4747364,
+          "storage_name": "highscore_score_xp",
           "symbols": [
             "_highscore_score_xp"
           ]
         },
         {
           "address": 4747372,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "highscore_record_shots_fired",
           "section_number": 216,
           "section_offset": 44,
-          "size": null,
-          "storage_address": 4747328,
-          "storage_name": "highscore_active_record",
+          "size": 4,
+          "storage_address": 4747372,
+          "storage_name": "highscore_record_shots_fired",
           "symbols": [
             "_highscore_record_shots_fired"
           ]
         },
         {
           "address": 4747376,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "highscore_record_shots_hit",
           "section_number": 216,
           "section_offset": 48,
-          "size": null,
-          "storage_address": 4747328,
-          "storage_name": "highscore_active_record",
+          "size": 4,
+          "storage_address": 4747376,
+          "storage_name": "highscore_record_shots_hit",
           "symbols": [
             "_highscore_record_shots_hit"
           ]
         },
         {
           "address": 4747380,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "creature_kill_count",
           "section_number": 216,
           "section_offset": 52,
-          "size": null,
-          "storage_address": 4747328,
-          "storage_name": "highscore_active_record",
+          "size": 4,
+          "storage_address": 4747380,
+          "storage_name": "creature_kill_count",
           "symbols": [
             "_creature_kill_count"
           ]
@@ -6250,150 +6250,150 @@
         },
         {
           "address": 4780580,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_origin_x",
           "section_number": 310,
           "section_offset": 24,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4780580,
+          "storage_name": "perk_prompt_origin_x",
           "symbols": [
             "_perk_prompt_origin_x"
           ]
         },
         {
           "address": 4780584,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_origin_y",
           "section_number": 310,
           "section_offset": 28,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4780584,
+          "storage_name": "perk_prompt_origin_y",
           "symbols": [
             "_perk_prompt_origin_y"
           ]
         },
         {
           "address": 4780608,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "ui_perk_prompt_on_activate",
           "section_number": 310,
           "section_offset": 52,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4780608,
+          "storage_name": "ui_perk_prompt_on_activate",
           "symbols": [
             "_ui_perk_prompt_on_activate"
           ]
         },
         {
           "address": 4780616,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_bounds_min_x",
           "section_number": 310,
           "section_offset": 60,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4780616,
+          "storage_name": "perk_prompt_bounds_min_x",
           "symbols": [
             "_perk_prompt_bounds_min_x"
           ]
         },
         {
           "address": 4780620,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_bounds_min_y",
           "section_number": 310,
           "section_offset": 64,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4780620,
+          "storage_name": "perk_prompt_bounds_min_y",
           "symbols": [
             "_perk_prompt_bounds_min_y"
           ]
         },
         {
           "address": 4780672,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_bounds_max_x",
           "section_number": 310,
           "section_offset": 116,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4780672,
+          "storage_name": "perk_prompt_bounds_max_x",
           "symbols": [
             "_perk_prompt_bounds_max_x"
           ]
         },
         {
           "address": 4780676,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_bounds_max_y",
           "section_number": 310,
           "section_offset": 120,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4780676,
+          "storage_name": "perk_prompt_bounds_max_y",
           "symbols": [
             "_perk_prompt_bounds_max_y"
           ]
         },
         {
           "address": 4780848,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "ui_perk_prompt_levelup_element",
           "section_number": 310,
           "section_offset": 292,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 232,
+          "storage_address": 4780848,
+          "storage_name": "ui_perk_prompt_levelup_element",
           "symbols": [
             "_ui_perk_prompt_levelup_element"
           ]
         },
         {
           "address": 4781312,
-          "alignment": null,
+          "alignment": 1,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_hover_active",
           "section_number": 310,
           "section_offset": 756,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 1,
+          "storage_address": 4781312,
+          "storage_name": "perk_prompt_hover_active",
           "symbols": [
             "_perk_prompt_hover_active"
           ]
         },
         {
           "address": 4781316,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "perk_prompt_pulse",
           "section_number": 310,
           "section_offset": 760,
-          "size": null,
-          "storage_address": 4780556,
-          "storage_name": "ui_perk_prompt_element",
+          "size": 4,
+          "storage_address": 4781316,
+          "storage_name": "perk_prompt_pulse",
           "symbols": [
             "_perk_prompt_pulse"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "982841f96452482cf1a37bf0970968efe4183bb4716a5d34ff6114401b85a53f"
+        "sha256": "e7d0946d9a91ff42e7b71c62cd42898efd39554fa3ed0570802cfacd492762bb"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -15338,6 +15338,26 @@
             {
               "address": 4747328,
               "name": "highscore_active_record"
+            },
+            {
+              "address": 4747360,
+              "name": "survival_elapsed_ms"
+            },
+            {
+              "address": 4747364,
+              "name": "highscore_score_xp"
+            },
+            {
+              "address": 4747372,
+              "name": "highscore_record_shots_fired"
+            },
+            {
+              "address": 4747376,
+              "name": "highscore_record_shots_hit"
+            },
+            {
+              "address": 4747380,
+              "name": "creature_kill_count"
             }
           ],
           "relocations": [],
@@ -16724,6 +16744,46 @@
             {
               "address": 4780556,
               "name": "ui_perk_prompt_element"
+            },
+            {
+              "address": 4780580,
+              "name": "perk_prompt_origin_x"
+            },
+            {
+              "address": 4780584,
+              "name": "perk_prompt_origin_y"
+            },
+            {
+              "address": 4780608,
+              "name": "ui_perk_prompt_on_activate"
+            },
+            {
+              "address": 4780616,
+              "name": "perk_prompt_bounds_min_x"
+            },
+            {
+              "address": 4780620,
+              "name": "perk_prompt_bounds_min_y"
+            },
+            {
+              "address": 4780672,
+              "name": "perk_prompt_bounds_max_x"
+            },
+            {
+              "address": 4780676,
+              "name": "perk_prompt_bounds_max_y"
+            },
+            {
+              "address": 4780848,
+              "name": "ui_perk_prompt_levelup_element"
+            },
+            {
+              "address": 4781312,
+              "name": "perk_prompt_hover_active"
+            },
+            {
+              "address": 4781316,
+              "name": "perk_prompt_pulse"
             }
           ],
           "relocations": [],
@@ -87979,7 +88039,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "982841f96452482cf1a37bf0970968efe4183bb4716a5d34ff6114401b85a53f"
+        "sha256": "e7d0946d9a91ff42e7b71c62cd42898efd39554fa3ed0570802cfacd492762bb"
       }
     ],
     "toolchain": {
