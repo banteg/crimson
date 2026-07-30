@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "1d58d2b067f5d70b084f8e48cd613cdcfdccdcff0cc2e5313b25023306b0e278",
+  "audit_digest": "ba6053b5eeca9b910f4a34b789b7895b78f51c198f1c4bd0c8e4d7a01cf16ac6",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -77489,7 +77489,7 @@
         {
           "path": "tools/match/scratches/unlocked_weapons_database_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "8df5c2ae6977019df9833f6745e18696a1a0fdffe3928f5ed430662c754a003c"
+          "sha256": "f3c609a6af45e7d0cfa3a88cf990d202a6a7f5bd0bfaa82dad558ab98ed7adf9"
         },
         {
           "path": "tools/match/scratches/unlocked_weapons_database_update/scratch.conf",
@@ -77535,7 +77535,7 @@
           "canonical_config_sha256": "89c7577187fd5f61dbbd8f2e53af20750b495ad9f9d61d0e913432155e465e66",
           "canonical_scratch": "tools/match/scratches/unlocked_weapons_database_update",
           "canonical_source": "tools/match/scratches/unlocked_weapons_database_update/scratch.cpp",
-          "canonical_source_sha256": "8df5c2ae6977019df9833f6745e18696a1a0fdffe3928f5ed430662c754a003c",
+          "canonical_source_sha256": "f3c609a6af45e7d0cfa3a88cf990d202a6a7f5bd0bfaa82dad558ab98ed7adf9",
           "effective_end": 4458806,
           "end": 4458806,
           "function": "unlocked_weapons_database_update",
@@ -77568,7 +77568,7 @@
       "object_sha256": "e94facdd179b8ab13d97f79e30cdd94081bcdd3fd719eb40f706b6477890c05a",
       "scratch": "tools/match/scratches/unlocked_weapons_database_update",
       "source": "tools/match/scratches/unlocked_weapons_database_update/scratch.cpp",
-      "source_sha256": "8df5c2ae6977019df9833f6745e18696a1a0fdffe3928f5ed430662c754a003c",
+      "source_sha256": "f3c609a6af45e7d0cfa3a88cf990d202a6a7f5bd0bfaa82dad558ab98ed7adf9",
       "target_size": 2086,
       "translation_unit": {
         "kind": "isolated",
@@ -77780,12 +77780,12 @@
         {
           "path": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "df843b58e8e2950768a36ca8b9000fb17a051f32809cbba17eb794f406471741"
+          "sha256": "5423fb5f03c315525d4758a92d750c7d2a49d26ba2f68cf0530f101811d85040"
         },
         {
           "path": "tools/match/scratches/unlocked_perks_database_update/scratch.conf",
           "repository_relative": true,
-          "sha256": "3a506f7c06853aa0dff6067af1ac3e808467c4ef55f6b44b198118e74d8fa92e"
+          "sha256": "948757062c49e10bb67fc3ba48753f2aa62517aa4d6ed04d9221e5774c1cb769"
         },
         {
           "path": "tools/match/cl.sh",
@@ -77815,7 +77815,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/unlocked_perks_database_update/scratch.conf",
-      "config_sha256": "3a506f7c06853aa0dff6067af1ac3e808467c4ef55f6b44b198118e74d8fa92e",
+      "config_sha256": "948757062c49e10bb67fc3ba48753f2aa62517aa4d6ed04d9221e5774c1cb769",
       "effective_end": 4460913,
       "end": 4460913,
       "function": "unlocked_perks_database_update",
@@ -77823,10 +77823,10 @@
         {
           "address": 4458848,
           "canonical_config": "tools/match/scratches/unlocked_perks_database_update/scratch.conf",
-          "canonical_config_sha256": "3a506f7c06853aa0dff6067af1ac3e808467c4ef55f6b44b198118e74d8fa92e",
+          "canonical_config_sha256": "948757062c49e10bb67fc3ba48753f2aa62517aa4d6ed04d9221e5774c1cb769",
           "canonical_scratch": "tools/match/scratches/unlocked_perks_database_update",
           "canonical_source": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
-          "canonical_source_sha256": "df843b58e8e2950768a36ca8b9000fb17a051f32809cbba17eb794f406471741",
+          "canonical_source_sha256": "5423fb5f03c315525d4758a92d750c7d2a49d26ba2f68cf0530f101811d85040",
           "effective_end": 4460913,
           "end": 4460913,
           "function": "unlocked_perks_database_update",
@@ -77859,7 +77859,7 @@
       "object_sha256": "186306c6314dd3675553f5aee6303075f2cc1f331e618d9c0cc50f72079c5541",
       "scratch": "tools/match/scratches/unlocked_perks_database_update",
       "source": "tools/match/scratches/unlocked_perks_database_update/scratch.cpp",
-      "source_sha256": "df843b58e8e2950768a36ca8b9000fb17a051f32809cbba17eb794f406471741",
+      "source_sha256": "5423fb5f03c315525d4758a92d750c7d2a49d26ba2f68cf0530f101811d85040",
       "target_size": 2065,
       "translation_unit": {
         "kind": "isolated",
