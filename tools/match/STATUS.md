@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **301526/341963** code bytes (**88.2%**).
+Fuzzy-weighted alignment is **301665/341963** code bytes (**88.2%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 281075/320805 | 87.6% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 281214/320805 | 87.7% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20451/21158 | 96.7% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **281075/320805** fuzzy-weighted bytes (**87.6%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **281214/320805** fuzzy-weighted bytes (**87.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -441,7 +441,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | creature_find_in_radius | 0x004206a0 | 133 | 133/133 | 0 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 865/963 | 98 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
-| wip | projectile_update | 0x00420b90 | 8409 | 4635/8409 | 3774 | 2148/2203 | 55.11% | 0/2203 | 384/0/22 |  | core-projectile-simulation |
+| wip | projectile_update | 0x00420b90 | 8409 | 4774/8409 | 3635 | 2148/2203 | 56.77% | 0/2203 | 397/0/24 |  | core-projectile-simulation |
 | wip | projectile_render | 0x00422c70 | 12551 | 6488/12551 | 6063 | 2856/3021 | 51.69% | 0/3021 | 407/0/13 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-ion-chain-pointer-types",
+      "find": "                                            creature_t *next_creature =\n                                                &creature_pool[next_id];\n                                            creature_t *hit_creature =\n                                                &creature_pool[hit_id];\n                                            float chain_angle = (float)atan2(\n                                                next_creature->position.y\n                                                    - hit_creature->position.y,\n                                                next_creature->position.x\n                                                    - hit_creature->position.x);",
+      "replacements": [
+        {
+          "name": "next-position-hit-creature",
+          "text": "                                            vec2f_t *next_position =\n                                                &creature_pool[next_id].position;\n                                            creature_t *hit_creature =\n                                                &creature_pool[hit_id];\n                                            float chain_angle = (float)atan2(\n                                                next_position->y\n                                                    - hit_creature->position.y,\n                                                next_position->x\n                                                    - hit_creature->position.x);"
+        },
+        {
+          "name": "next-creature-hit-position",
+          "text": "                                            creature_t *next_creature =\n                                                &creature_pool[next_id];\n                                            vec2f_t *hit_position =\n                                                &creature_pool[hit_id].position;\n                                            float chain_angle = (float)atan2(\n                                                next_creature->position.y\n                                                    - hit_position->y,\n                                                next_creature->position.x\n                                                    - hit_position->x);"
+        },
+        {
+          "name": "both-position-pointers",
+          "text": "                                            vec2f_t *next_position =\n                                                &creature_pool[next_id].position;\n                                            vec2f_t *hit_position =\n                                                &creature_pool[hit_id].position;\n                                            float chain_angle = (float)atan2(\n                                                next_position->y - hit_position->y,\n                                                next_position->x - hit_position->x);"
+        },
+        {
+          "name": "creatures-then-position-pointers",
+          "text": "                                            creature_t *next_creature =\n                                                &creature_pool[next_id];\n                                            creature_t *hit_creature =\n                                                &creature_pool[hit_id];\n                                            vec2f_t *next_position =\n                                                &next_creature->position;\n                                            vec2f_t *hit_position =\n                                                &hit_creature->position;\n                                            float chain_angle = (float)atan2(\n                                                next_position->y - hit_position->y,\n                                                next_position->x - hit_position->x);"
+        },
+        {
+          "name": "const-creature-pointers",
+          "text": "                                            const creature_t *next_creature =\n                                                &creature_pool[next_id];\n                                            const creature_t *hit_creature =\n                                                &creature_pool[hit_id];\n                                            float chain_angle = (float)atan2(\n                                                next_creature->position.y\n                                                    - hit_creature->position.y,\n                                                next_creature->position.x\n                                                    - hit_creature->position.x);"
+        },
+        {
+          "name": "creature-references",
+          "text": "                                            creature_t &next_creature =\n                                                creature_pool[next_id];\n                                            creature_t &hit_creature =\n                                                creature_pool[hit_id];\n                                            float chain_angle = (float)atan2(\n                                                next_creature.position.y\n                                                    - hit_creature.position.y,\n                                                next_creature.position.x\n                                                    - hit_creature.position.x);"
+        },
+        {
+          "name": "position-references",
+          "text": "                                            vec2f_t &next_position =\n                                                creature_pool[next_id].position;\n                                            vec2f_t &hit_position =\n                                                creature_pool[hit_id].position;\n                                            float chain_angle = (float)atan2(\n                                                next_position.y - hit_position.y,\n                                                next_position.x - hit_position.x);"
+        }
+      ]
+    }
+  ]
+}

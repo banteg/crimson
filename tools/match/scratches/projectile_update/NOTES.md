@@ -714,3 +714,49 @@ reference debt. The final source SHA-256 is
 `605d117e2a187047317a78498b8b050be4ddf781a340ef38ec76e9fb1d47b584`;
 the 46-record `experiments.jsonl` SHA-256 is
 `ecd0768ac21e0442c156d222499716f309417fede665ebd4eb5c474808a28057`.
+
+## Ion-chain creature ownership
+
+The next unworked native seam was the Ion Rifle chain transition at
+`0x00421218-0x0042130b`: 243 target bytes with a 110.4545-byte localized gap.
+Native computes the next-creature record address once and retains the hit
+creature as a separate owner while forming the X/Y differences for `fpatan`.
+The recovered source instead repeated four indexed `creature_pool` expressions.
+
+`primary-ion-chain-geometry-mutations.json` evaluates eight pointer, scalar,
+and aggregate spellings. Five pointer-owner forms compile to the same dominant
+instruction improvement. Retaining explicit `next_creature` and
+`hit_creature` pointers gives the best reference explanation among them: it
+adds **139.1515 fuzzy-weighted bytes** without changing the 2,148-instruction
+candidate, and raises aligned references from 384 to **397**. Mismatches rise
+from 22 to 24 because the improved alignment exposes the remaining local x87
+operand schedule; unresolved references remain zero. The sweep spec SHA-256 is
+`1e52cc4281efe0fc7d038c0e7f3d3b549bc58e82e3063060296a7fc71306a631`.
+
+Two complete follow-ups bound that residual:
+
+- All seven creature/position pointer and reference-type refinements are
+  byte-neutral at best. Creature references and const creature pointers also
+  preserve the `397/0/24` audit exactly; position-typed owners lose one to
+  three aligned references. The spec SHA-256 is
+  `925e29b3b19f6b25aa988872f6b7a761cd62782852f8c981bcd305a83867a6b7`.
+- Eight natural operand-order forms do not recover native's x87 schedule.
+  The nominal aggregate winner adds only 2.7675 weighted bytes while adding
+  one instruction, losing one aligned reference, and adding one mismatch, so
+  it is rejected. Negating reverse subtractions removes the three local
+  mismatches but loses 17.6474 weighted bytes and adds two non-native
+  instructions; that artificial tradeoff is also rejected. The spec SHA-256
+  is
+  `1f2ddfc9c386292b65e93f15af07cb98c42a2e59985c378698bb2825bf376eba`.
+
+The retained candidate loads Y then X and executes `fpatan` directly; native
+loads X then Y, executes `fxch`, and reaches the same `atan2(dy, dx)` result.
+The two swapped leaf references and the adjacent address-owner reference are
+therefore an explicit compiler-evaluation residual, not hidden reference debt.
+The overall result rises from **55.1137670%** to **56.7685590%**,
+`4634.5167/8409` to **`4773.6681/8409`** weighted bytes, with a
+**3635.3319-byte** gap and unchanged 2,148/2,203 instructions. The final source
+SHA-256 is
+`c7002fb41ee645d9240e9df53c4c90466ea7f9a2691cb03553f8fd325724c2af`;
+the 49-record `experiments.jsonl` SHA-256 is
+`63ce3461dd936953b0160a02a3c148b10402333a67a3dd16198eb4ee75fab6b8`.

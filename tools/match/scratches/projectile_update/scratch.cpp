@@ -383,11 +383,15 @@ extern "C" void projectile_update(void)
                                                 hit_id,
                                                 100.0f);
                                             bonus_spawn_guard = 1;
+                                            creature_t *next_creature =
+                                                &creature_pool[next_id];
+                                            creature_t *hit_creature =
+                                                &creature_pool[hit_id];
                                             float chain_angle = (float)atan2(
-                                                creature_pool[next_id].position.y
-                                                    - creature_pool[hit_id].position.y,
-                                                creature_pool[next_id].position.x
-                                                    - creature_pool[hit_id].position.x);
+                                                next_creature->position.y
+                                                    - hit_creature->position.y,
+                                                next_creature->position.x
+                                                    - hit_creature->position.x);
                                             shock_chain_projectile_id =
                                                 projectile_spawn(
                                                     position,

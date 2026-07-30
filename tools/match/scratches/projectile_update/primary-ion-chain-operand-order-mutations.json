@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-ion-chain-operand-order",
+      "find": "                                            float chain_angle = (float)atan2(\n                                                next_creature->position.y\n                                                    - hit_creature->position.y,\n                                                next_creature->position.x\n                                                    - hit_creature->position.x);",
+      "replacements": [
+        {
+          "name": "dx-then-dy-float-locals",
+          "text": "                                            float chain_dx =\n                                                next_creature->position.x\n                                                - hit_creature->position.x;\n                                            float chain_dy =\n                                                next_creature->position.y\n                                                - hit_creature->position.y;\n                                            float chain_angle =\n                                                (float)atan2(chain_dy, chain_dx);"
+        },
+        {
+          "name": "dy-then-dx-float-locals",
+          "text": "                                            float chain_dy =\n                                                next_creature->position.y\n                                                - hit_creature->position.y;\n                                            float chain_dx =\n                                                next_creature->position.x\n                                                - hit_creature->position.x;\n                                            float chain_angle =\n                                                (float)atan2(chain_dy, chain_dx);"
+        },
+        {
+          "name": "dx-then-dy-double-locals",
+          "text": "                                            double chain_dx =\n                                                next_creature->position.x\n                                                - hit_creature->position.x;\n                                            double chain_dy =\n                                                next_creature->position.y\n                                                - hit_creature->position.y;\n                                            float chain_angle =\n                                                (float)atan2(chain_dy, chain_dx);"
+        },
+        {
+          "name": "dy-then-dx-double-locals",
+          "text": "                                            double chain_dy =\n                                                next_creature->position.y\n                                                - hit_creature->position.y;\n                                            double chain_dx =\n                                                next_creature->position.x\n                                                - hit_creature->position.x;\n                                            float chain_angle =\n                                                (float)atan2(chain_dy, chain_dx);"
+        },
+        {
+          "name": "aggregate-delta",
+          "text": "                                            vec2f_t chain_delta = {\n                                                next_creature->position.x\n                                                    - hit_creature->position.x,\n                                                next_creature->position.y\n                                                    - hit_creature->position.y,\n                                            };\n                                            float chain_angle = (float)atan2(\n                                                chain_delta.y,\n                                                chain_delta.x);"
+        },
+        {
+          "name": "explicit-double-operands",
+          "text": "                                            float chain_angle = (float)atan2(\n                                                (double)(next_creature->position.y\n                                                    - hit_creature->position.y),\n                                                (double)(next_creature->position.x\n                                                    - hit_creature->position.x));"
+        },
+        {
+          "name": "negated-reverse-subtractions",
+          "text": "                                            float chain_angle = (float)atan2(\n                                                -(hit_creature->position.y\n                                                    - next_creature->position.y),\n                                                -(hit_creature->position.x\n                                                    - next_creature->position.x));"
+        },
+        {
+          "name": "parenthesized-components",
+          "text": "                                            float chain_angle = (float)atan2(\n                                                (next_creature->position.y\n                                                    - hit_creature->position.y),\n                                                (next_creature->position.x\n                                                    - hit_creature->position.x));"
+        }
+      ]
+    }
+  ]
+}
