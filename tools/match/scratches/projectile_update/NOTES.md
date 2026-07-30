@@ -929,3 +929,29 @@ unchanged at `4839.3235/8409` weighted bytes (`57.5493346%`),
 `d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`.
 The 62-record, 730-variant `experiments.jsonl` SHA-256 is
 `1e7a926922fe8d60fae916048e14a04d75633cf836e926a5def3efedb8a20ca3`.
+
+## Secondary polar-decal geometry boundary
+
+Native repeats the same x87 schedule in the rocket, seeker-rocket, and
+rocket-minigun hit loops at `0x00422197..0x004221c7`,
+`0x00422280..0x004222b6`, and `0x0042236b..0x004223a1`: it stores the cosine
+times radius result before evaluating sine, then adds the creature's x and y
+coordinates. The canonical aggregate initializer instead appears to finish
+the x destination before beginning the y expression.
+
+`secondary-polar-decal-geometry-mutations.json` (SHA-256
+`faa08ed013708b4e907354a07bd964489ff377e0265f59868ed0e9082b0aa533`)
+exhausts all 215 single-, double-, and triple-site combinations of named x
+components, sequential destination assignments, named x/y components,
+offset aggregates, and separately named cosine values. None improves the
+canonical score or reference audit. Several combinations compile
+byte-for-byte identically; all other forms regress, and there are no
+tradeoff variants.
+
+The apparent three-site reference alignment is therefore not controlled by
+these local source lifetimes. Canonical metrics and source remain unchanged
+at `4839.3235/8409` weighted bytes (`57.5493346%`), 2,155/2,203
+instructions, and `403/0/20` references, with source SHA-256
+`d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`.
+The 63-record, 945-variant `experiments.jsonl` SHA-256 is
+`19f6533e1ec29c0de4c57865e530f33462392baff258915598b2da09e3521919`.

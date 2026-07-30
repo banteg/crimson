@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "rocket-polar-decal-geometry",
+      "find": "                                int radius = crt_rand() % 90;\n                                vec2f_t decal_pos = {\n                                    (float)(cos(angle) * radius)\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };",
+      "replacements": [
+        {
+          "name": "named-x-component",
+          "text": "                                int radius = crt_rand() % 90;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "named-x-sequential-position",
+          "text": "                                int radius = crt_rand() % 90;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                vec2f_t decal_pos;\n                                decal_pos.x = decal_x\n                                    + creature_pool[hit_id].position.x;\n                                decal_pos.y = (float)(sin(angle) * radius)\n                                    + creature_pool[hit_id].position.y;"
+        },
+        {
+          "name": "named-components",
+          "text": "                                int radius = crt_rand() % 90;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                float decal_y =\n                                    (float)(sin(angle) * radius);\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    decal_y\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "offset-aggregate",
+          "text": "                                int radius = crt_rand() % 90;\n                                vec2f_t decal_offset = {\n                                    (float)(cos(angle) * radius),\n                                    (float)(sin(angle) * radius),\n                                };\n                                vec2f_t decal_pos = {\n                                    decal_offset.x\n                                        + creature_pool[hit_id].position.x,\n                                    decal_offset.y\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "named-cosine-and-x-component",
+          "text": "                                int radius = crt_rand() % 90;\n                                float decal_cos = (float)cos(angle);\n                                float decal_x = decal_cos * radius;\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        }
+      ]
+    },
+    {
+      "name": "seeker-polar-decal-geometry",
+      "find": "                                int radius = crt_rand() % 64;\n                                vec2f_t decal_pos = {\n                                    (float)(cos(angle) * radius)\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };",
+      "replacements": [
+        {
+          "name": "named-x-component",
+          "text": "                                int radius = crt_rand() % 64;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "named-x-sequential-position",
+          "text": "                                int radius = crt_rand() % 64;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                vec2f_t decal_pos;\n                                decal_pos.x = decal_x\n                                    + creature_pool[hit_id].position.x;\n                                decal_pos.y = (float)(sin(angle) * radius)\n                                    + creature_pool[hit_id].position.y;"
+        },
+        {
+          "name": "named-components",
+          "text": "                                int radius = crt_rand() % 64;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                float decal_y =\n                                    (float)(sin(angle) * radius);\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    decal_y\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "offset-aggregate",
+          "text": "                                int radius = crt_rand() % 64;\n                                vec2f_t decal_offset = {\n                                    (float)(cos(angle) * radius),\n                                    (float)(sin(angle) * radius),\n                                };\n                                vec2f_t decal_pos = {\n                                    decal_offset.x\n                                        + creature_pool[hit_id].position.x,\n                                    decal_offset.y\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "named-cosine-and-x-component",
+          "text": "                                int radius = crt_rand() % 64;\n                                float decal_cos = (float)cos(angle);\n                                float decal_x = decal_cos * radius;\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        }
+      ]
+    },
+    {
+      "name": "minigun-polar-decal-geometry",
+      "find": "                                int radius = crt_rand() % 44;\n                                vec2f_t decal_pos = {\n                                    (float)(cos(angle) * radius)\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };",
+      "replacements": [
+        {
+          "name": "named-x-component",
+          "text": "                                int radius = crt_rand() % 44;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "named-x-sequential-position",
+          "text": "                                int radius = crt_rand() % 44;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                vec2f_t decal_pos;\n                                decal_pos.x = decal_x\n                                    + creature_pool[hit_id].position.x;\n                                decal_pos.y = (float)(sin(angle) * radius)\n                                    + creature_pool[hit_id].position.y;"
+        },
+        {
+          "name": "named-components",
+          "text": "                                int radius = crt_rand() % 44;\n                                float decal_x =\n                                    (float)(cos(angle) * radius);\n                                float decal_y =\n                                    (float)(sin(angle) * radius);\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    decal_y\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "offset-aggregate",
+          "text": "                                int radius = crt_rand() % 44;\n                                vec2f_t decal_offset = {\n                                    (float)(cos(angle) * radius),\n                                    (float)(sin(angle) * radius),\n                                };\n                                vec2f_t decal_pos = {\n                                    decal_offset.x\n                                        + creature_pool[hit_id].position.x,\n                                    decal_offset.y\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        },
+        {
+          "name": "named-cosine-and-x-component",
+          "text": "                                int radius = crt_rand() % 44;\n                                float decal_cos = (float)cos(angle);\n                                float decal_x = decal_cos * radius;\n                                vec2f_t decal_pos = {\n                                    decal_x\n                                        + creature_pool[hit_id].position.x,\n                                    (float)(sin(angle) * radius)\n                                        + creature_pool[hit_id].position.y,\n                                };"
+        }
+      ]
+    }
+  ]
+}
