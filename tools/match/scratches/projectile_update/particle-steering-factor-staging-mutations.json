@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "style-zero-steering-factor-staging",
+      "find": "                        int turn = crt_rand() % 100 - 50;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.96f;",
+      "replacements": [
+        {
+          "name": "named-base-then-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f\n                            * particle->intensity * frame_dt;\n                        particle->angle -= turn_delta * 1.96f;"
+        },
+        {
+          "name": "named-scaled-delta",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f\n                            * particle->intensity * frame_dt;\n                        turn_delta *= 1.96f;\n                        particle->angle -= turn_delta;"
+        },
+        {
+          "name": "staged-factor-chain",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f;\n                        turn_delta *= particle->intensity;\n                        turn_delta *= frame_dt;\n                        turn_delta *= 1.96f;\n                        particle->angle -= turn_delta;"
+        },
+        {
+          "name": "named-steering-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float steering_factor = 1.96f;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt\n                            * steering_factor;"
+        },
+        {
+          "name": "named-frame-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float frame_factor = frame_dt * 1.96f;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_factor;"
+        }
+      ]
+    },
+    {
+      "name": "style-eight-steering-factor-staging",
+      "find": "                        int turn = crt_rand() % 100 - 50;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.1f;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "named-base-then-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f\n                            * particle->intensity * frame_dt;\n                        particle->angle -= turn_delta * 1.1f;"
+        },
+        {
+          "name": "named-scaled-delta",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f\n                            * particle->intensity * frame_dt;\n                        turn_delta *= 1.1f;\n                        particle->angle -= turn_delta;"
+        },
+        {
+          "name": "staged-factor-chain",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f;\n                        turn_delta *= particle->intensity;\n                        turn_delta *= frame_dt;\n                        turn_delta *= 1.1f;\n                        particle->angle -= turn_delta;"
+        },
+        {
+          "name": "named-steering-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float steering_factor = 1.1f;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt\n                            * steering_factor;"
+        },
+        {
+          "name": "named-frame-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float frame_factor = frame_dt * 1.1f;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_factor;"
+        }
+      ]
+    },
+    {
+      "name": "default-steering-factor-staging",
+      "find": "                        int turn = crt_rand() % 100 - 50;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt * 1.1f;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "named-base-then-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f\n                            * particle->intensity * frame_dt;\n                        particle->angle -= turn_delta * 1.1f;"
+        },
+        {
+          "name": "named-scaled-delta",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f\n                            * particle->intensity * frame_dt;\n                        turn_delta *= 1.1f;\n                        particle->angle -= turn_delta;"
+        },
+        {
+          "name": "staged-factor-chain",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float turn_delta = (float)turn * 0.06f;\n                        turn_delta *= particle->intensity;\n                        turn_delta *= frame_dt;\n                        turn_delta *= 1.1f;\n                        particle->angle -= turn_delta;"
+        },
+        {
+          "name": "named-steering-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float steering_factor = 1.1f;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_dt\n                            * steering_factor;"
+        },
+        {
+          "name": "named-frame-factor",
+          "text": "                        int turn = crt_rand() % 100 - 50;\n                        float frame_factor = frame_dt * 1.1f;\n                        particle->angle -= (float)turn * 0.06f\n                            * particle->intensity * frame_factor;"
+        }
+      ]
+    }
+  ]
+}

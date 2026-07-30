@@ -881,3 +881,29 @@ retained source SHA-256 is
 `4eaf3f0b9ac959a68d5858a2e8364557b0f81c5e37a7629603ad235bfd754f23`;
 the 60-record `experiments.jsonl` SHA-256 is
 `56a567e472231377ef164a39e5aa230b619ebef651aafb3be630483cfea5eca9`.
+
+## Particle steering factor staging
+
+Live native disassembly at `0x00422775..0x0042283d` keeps all four
+multiplications in each style-specific turn calculation: `0.06f`, intensity,
+`frame_dt`, and the final `1.96f` or `1.1f` factor. The former single
+expression let VC6 combine the two constants and emitted only three
+multiplications per arm.
+
+`particle-steering-factor-staging-mutations.json` (SHA-256
+`2de36b944ab891a65e856ec22155bec5e0874a6c847e353acd28c33af92da0fb`)
+exhausts all 215 single-, double-, and triple-site combinations of five
+ordinary factor-lifetime spellings across the style-zero, style-eight, and
+default arms. Staging the four factors as successive updates to a
+branch-local `turn_delta` is the best reference-clean interaction. Although
+the style-eight and default forms regress in isolation, retaining all three
+together adds 8.2517 fuzzy-weighted bytes, three candidate instructions, and
+six aligned references while removing three mismatches.
+
+The canonical result rises to `4839.3235/8409` weighted bytes
+(`57.5493346%`), reduces the gap to 3,569.6765 bytes, moves the candidate to
+2,155/2,203 instructions, and improves references from `397/0/23` to
+`403/0/20`. The retained source SHA-256 is
+`d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`;
+the 61-record, 718-variant `experiments.jsonl` SHA-256 is
+`48dc4299a1b09391622837b8ab75c61da8ca07688eb19195c3a986b7cc8d6728`.

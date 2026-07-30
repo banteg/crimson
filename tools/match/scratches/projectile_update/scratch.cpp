@@ -1191,24 +1191,33 @@ extern "C" void projectile_update(void)
                 if (particle->render_flag == 1) {
                     if (style_id == 0) {
                         int turn = crt_rand() % 100 - 50;
-                        particle->angle -= (float)turn * 0.06f
-                            * particle->intensity * frame_dt * 1.96f;
+                        float turn_delta = (float)turn * 0.06f;
+                        turn_delta *= particle->intensity;
+                        turn_delta *= frame_dt;
+                        turn_delta *= 1.96f;
+                        particle->angle -= turn_delta;
                         particle->velocity.x =
                             (float)cos(particle->angle) * 82.0f;
                         particle->velocity.y =
                             (float)sin(particle->angle) * 82.0f;
                     } else if (style_id == 8) {
                         int turn = crt_rand() % 100 - 50;
-                        particle->angle -= (float)turn * 0.06f
-                            * particle->intensity * frame_dt * 1.1f;
+                        float turn_delta = (float)turn * 0.06f;
+                        turn_delta *= particle->intensity;
+                        turn_delta *= frame_dt;
+                        turn_delta *= 1.1f;
+                        particle->angle -= turn_delta;
                         particle->velocity.x =
                             (float)cos(particle->angle) * 62.0f;
                         particle->velocity.y =
                             (float)sin(particle->angle) * 62.0f;
                     } else {
                         int turn = crt_rand() % 100 - 50;
-                        particle->angle -= (float)turn * 0.06f
-                            * particle->intensity * frame_dt * 1.1f;
+                        float turn_delta = (float)turn * 0.06f;
+                        turn_delta *= particle->intensity;
+                        turn_delta *= frame_dt;
+                        turn_delta *= 1.1f;
+                        particle->angle -= turn_delta;
                         particle->velocity.x =
                             (float)cos(particle->angle) * 82.0f;
                         particle->velocity.y =

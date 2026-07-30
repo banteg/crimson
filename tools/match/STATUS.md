@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303097/341963** code bytes (**88.6%**).
+Fuzzy-weighted alignment is **303106/341963** code bytes (**88.6%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -16,13 +16,16 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
+| crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
 | grim.dll | current | 137 | 131 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=70, game_data=0, import=25, toolchain=2 | 0 | 1548 | 1548 | 1548 | 1548 | 1548 |
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 274 | 224 | 274 | 274 | 274 |
+
+Artifact freshness issues:
+- `crimsonland.exe`: **stale** — 1 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -92,12 +95,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 282297/320805 | 88.0% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 282305/320805 | 88.0% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20801/21158 | 98.3% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **282297/320805** fuzzy-weighted bytes (**88.0%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **282305/320805** fuzzy-weighted bytes (**88.0%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -441,7 +444,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | creature_find_in_radius | 0x004206a0 | 133 | 133/133 | 0 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 865/963 | 98 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
-| wip | projectile_update | 0x00420b90 | 8409 | 4831/8409 | 3578 | 2152/2203 | 57.45% | 0/2203 | 397/0/23 |  | core-projectile-simulation |
+| wip | projectile_update | 0x00420b90 | 8409 | 4839/8409 | 3570 | 2155/2203 | 57.55% | 0/2203 | 403/0/20 |  | core-projectile-simulation |
 | wip | projectile_render | 0x00422c70 | 12551 | 7208/12551 | 5343 | 2878/3021 | 57.43% | 0/3021 | 442/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
