@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **301232/341963** code bytes (**88.1%**).
+Fuzzy-weighted alignment is **301261/341963** code bytes (**88.1%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280795/320805 | 87.5% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 280825/320805 | 87.5% | 671/671 | 320805/320805 | 100.0% | 560/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20436/21158 | 96.6% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **280795/320805** fuzzy-weighted bytes (**87.5%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**560/671** functions, **114852/320805** bytes (**35.8%**), **280825/320805** fuzzy-weighted bytes (**87.5%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -655,7 +655,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | ui_button_update | 0x0043e830 | 1215 | 1215/1215 | 0 | 347/347 | 100.00% | 347/347 | 61/0/0 |  | ui-button-focus-animation-render-and-activation |
 | match | ui_text_input_update | 0x0043ecf0 | 716 | 716/716 | 0 | 203/203 | 100.00% | 203/203 | 36/0/0 |  | ui-text-input-widget |
 | wip | ui_list_widget_update | 0x0043efc0 | 1420 | 1409/1420 | 11 | 403/403 | 99.26% | 321/403 | 50/0/0 |  | ui-dropdown-focus-navigation-hover-and-row-selection |
-| wip | statistics_menu_update | 0x0043f550 | 2877 | 2555/2877 | 322 | 675/676 | 88.82% | 280/676 | 264/0/5 |  | statistics-playtime-network-status-and-navigation |
+| wip | statistics_menu_update | 0x0043f550 | 2877 | 2585/2877 | 292 | 675/676 | 89.86% | 280/676 | 264/0/5 |  | statistics-playtime-network-status-and-navigation |
 | match | nullsub_45 | 0x00440090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_46 | 0x004400a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_47 | 0x004400b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |

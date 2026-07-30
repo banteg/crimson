@@ -208,7 +208,7 @@ extern "C" void statistics_menu_update(void)
     int total_seconds = time_played_ms / 1000;
     int total_minutes = total_seconds / 60;
     int total_hours = total_minutes / 60;
-    int total_minute_part = total_minutes % 60;
+    total_minutes -= total_hours * 60;
     if (total_hours != session_hours
         && grim_interface_ptr->grim_is_key_active(0x3b)) {
         grim_interface_ptr->grim_draw_text_small_fmt(
@@ -216,8 +216,8 @@ extern "C" void statistics_menu_update(void)
             xy.y + 230.0f - 15.0f,
             "(total %dh)",
             total_hours,
-            total_minute_part,
-            total_seconds - total_minute_part * 60);
+            total_minutes,
+            total_seconds - total_minutes * 60);
     }
 
     xy.x += 28.0f;

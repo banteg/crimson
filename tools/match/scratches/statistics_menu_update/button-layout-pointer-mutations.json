@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "button-layout-pointer",
+      "find": "    xy.x += 28.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.x += 124.0f;\n    xy.y += 16.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;",
+      "replacements": [
+        {
+          "name": "first-member-address",
+          "text": "    xy.x += 28.0f;\n    ui_button_update(&xy.x, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update(&xy.x, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update(&xy.x, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update(&xy.x, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.x += 124.0f;\n    xy.y += 16.0f;\n    ui_button_update(&xy.x, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "named-first-member-pointer-before-adjustment",
+          "text": "    float *button_xy = &xy.x;\n    xy.x += 28.0f;\n    ui_button_update(button_xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.x += 124.0f;\n    xy.y += 16.0f;\n    ui_button_update(button_xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "named-first-member-pointer-after-adjustment",
+          "text": "    xy.x += 28.0f;\n    float *button_xy = &xy.x;\n    ui_button_update(button_xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.x += 124.0f;\n    xy.y += 16.0f;\n    ui_button_update(button_xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "named-cast-pointer-before-adjustment",
+          "text": "    float *button_xy = (float *)&xy;\n    xy.x += 28.0f;\n    ui_button_update(button_xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.x += 124.0f;\n    xy.y += 16.0f;\n    ui_button_update(button_xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "named-cast-pointer-after-adjustment",
+          "text": "    xy.x += 28.0f;\n    float *button_xy = (float *)&xy;\n    ui_button_update(button_xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update(button_xy, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.x += 124.0f;\n    xy.y += 16.0f;\n    ui_button_update(button_xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "back-x-before-y-advances",
+          "text": "    xy.x += 28.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&credits_button);\n    xy.x += 124.0f;\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.y += 16.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "back-x-between-y-advances",
+          "text": "    xy.x += 28.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.x += 124.0f;\n    xy.y += 34.0f;\n    xy.y += 16.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "whole-x-assignments",
+          "text": "    xy.x = xy.x + 28.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&high_scores_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&weapons_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&perks_button);\n    xy.y += 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&credits_button);\n    xy.y += 34.0f;\n    xy.y += 34.0f;\n    xy.x = xy.x + 124.0f;\n    xy.y += 16.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&back_button);\n    xy.y += 34.0f;"
+        },
+        {
+          "name": "whole-y-assignments",
+          "text": "    xy.x += 28.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&high_scores_button);\n    xy.y = xy.y + 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&weapons_button);\n    xy.y = xy.y + 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&perks_button);\n    xy.y = xy.y + 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&credits_button);\n    xy.y = xy.y + 34.0f;\n    xy.y = xy.y + 34.0f;\n    xy.x += 124.0f;\n    xy.y = xy.y + 16.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&back_button);\n    xy.y = xy.y + 34.0f;"
+        },
+        {
+          "name": "whole-component-assignments",
+          "text": "    xy.x = xy.x + 28.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&high_scores_button);\n    xy.y = xy.y + 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&weapons_button);\n    xy.y = xy.y + 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&perks_button);\n    xy.y = xy.y + 34.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&credits_button);\n    xy.y = xy.y + 34.0f;\n    xy.y = xy.y + 34.0f;\n    xy.x = xy.x + 124.0f;\n    xy.y = xy.y + 16.0f;\n    ui_button_update((float *)&xy, (ui_button_t *)&back_button);\n    xy.y = xy.y + 34.0f;"
+        }
+      ]
+    }
+  ]
+}

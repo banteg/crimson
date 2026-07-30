@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "typo-music-id-lifetime",
+      "find": "    if (typo_button.activated) {\n        render_pass_mode = 0;\n        ui_sign_crimson.focus_disabled = 0;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_TYPO_GAMEPLAY;\n        config_game_mode = GAME_MODE_TYPO_SHOOTER;\n        sfx_mute_all(music_track_crimson_theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        screen_fade_ramp_flag = 1;\n    }",
+      "replacements": [
+        {
+          "name": "named-theme-before-state",
+          "text": "    if (typo_button.activated) {\n        int theme_id = music_track_crimson_theme_id;\n        render_pass_mode = 0;\n        ui_sign_crimson.focus_disabled = 0;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_TYPO_GAMEPLAY;\n        config_game_mode = GAME_MODE_TYPO_SHOOTER;\n        sfx_mute_all(theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        screen_fade_ramp_flag = 1;\n    }"
+        },
+        {
+          "name": "split-theme-assignment-before-state",
+          "text": "    if (typo_button.activated) {\n        int theme_id;\n        theme_id = music_track_crimson_theme_id;\n        render_pass_mode = 0;\n        ui_sign_crimson.focus_disabled = 0;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_TYPO_GAMEPLAY;\n        config_game_mode = GAME_MODE_TYPO_SHOOTER;\n        sfx_mute_all(theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        screen_fade_ramp_flag = 1;\n    }"
+        },
+        {
+          "name": "const-theme-before-state",
+          "text": "    if (typo_button.activated) {\n        const int theme_id = music_track_crimson_theme_id;\n        render_pass_mode = 0;\n        ui_sign_crimson.focus_disabled = 0;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_TYPO_GAMEPLAY;\n        config_game_mode = GAME_MODE_TYPO_SHOOTER;\n        sfx_mute_all(theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        screen_fade_ramp_flag = 1;\n    }"
+        },
+        {
+          "name": "named-tracks-just-in-time",
+          "text": "    if (typo_button.activated) {\n        int theme_id = music_track_crimson_theme_id;\n        render_pass_mode = 0;\n        ui_sign_crimson.focus_disabled = 0;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_TYPO_GAMEPLAY;\n        config_game_mode = GAME_MODE_TYPO_SHOOTER;\n        sfx_mute_all(theme_id);\n        int shortie_id = music_track_shortie_monk_id;\n        sfx_mute_all(shortie_id);\n        int extra_id = music_track_extra_0;\n        sfx_mute_all(extra_id);\n        screen_fade_ramp_flag = 1;\n    }"
+        },
+        {
+          "name": "unsigned-theme-before-state",
+          "text": "    if (typo_button.activated) {\n        unsigned int theme_id = (unsigned int)music_track_crimson_theme_id;\n        render_pass_mode = 0;\n        ui_sign_crimson.focus_disabled = 0;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_TYPO_GAMEPLAY;\n        config_game_mode = GAME_MODE_TYPO_SHOOTER;\n        sfx_mute_all((int)theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        screen_fade_ramp_flag = 1;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "back-music-id-lifetime",
+      "find": "    if (back_button.activated) {\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_MAIN_MENU;\n        sfx_mute_all(music_track_crimson_theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        sfx_play_exclusive(music_track_crimson_theme_id);\n    }",
+      "replacements": [
+        {
+          "name": "named-theme-before-state",
+          "text": "    if (back_button.activated) {\n        int theme_id = music_track_crimson_theme_id;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_MAIN_MENU;\n        sfx_mute_all(theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        sfx_play_exclusive(music_track_crimson_theme_id);\n    }"
+        },
+        {
+          "name": "reuse-named-theme-for-play",
+          "text": "    if (back_button.activated) {\n        int theme_id = music_track_crimson_theme_id;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_MAIN_MENU;\n        sfx_mute_all(theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        sfx_play_exclusive(theme_id);\n    }"
+        },
+        {
+          "name": "split-theme-assignment-before-state",
+          "text": "    if (back_button.activated) {\n        int theme_id;\n        theme_id = music_track_crimson_theme_id;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_MAIN_MENU;\n        sfx_mute_all(theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        sfx_play_exclusive(music_track_crimson_theme_id);\n    }"
+        },
+        {
+          "name": "named-tracks-just-in-time",
+          "text": "    if (back_button.activated) {\n        int theme_id = music_track_crimson_theme_id;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_MAIN_MENU;\n        sfx_mute_all(theme_id);\n        int shortie_id = music_track_shortie_monk_id;\n        sfx_mute_all(shortie_id);\n        int extra_id = music_track_extra_0;\n        sfx_mute_all(extra_id);\n        sfx_play_exclusive(music_track_crimson_theme_id);\n    }"
+        },
+        {
+          "name": "const-theme-before-state",
+          "text": "    if (back_button.activated) {\n        const int theme_id = music_track_crimson_theme_id;\n        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_MAIN_MENU;\n        sfx_mute_all(theme_id);\n        sfx_mute_all(music_track_shortie_monk_id);\n        sfx_mute_all(music_track_extra_0);\n        sfx_play_exclusive(music_track_crimson_theme_id);\n    }"
+        }
+      ]
+    }
+  ]
+}

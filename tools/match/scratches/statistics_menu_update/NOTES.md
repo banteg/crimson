@@ -117,3 +117,62 @@ SHA-256 is
 `cb691dfef8cf77d81e4ef3eb00da8bda448ff22d43839b8fc1adb990542c5349`.
 Because both apparent instruction/reference wins worsen the overall native
 alignment, neither tradeoff is retained.
+
+## Total-playtime reuse and allocation bounds
+
+A fresh live disassembly pass separated two playtime regions that the prior
+notes treated together. Native session rendering keeps seconds in `ecx`,
+occupies `edi`/`ebp` with the renderer and vtable, and spills the long-lived
+session-hour value. Native lifetime rendering separately reuses the
+total-minutes register in place after deriving total hours.
+
+The recorded two-site `statistics-playtime-allocation-mutations.json` sweep
+evaluates all 103/103 singles and pairs across twelve session-lifetime shapes
+and seven total-remainder shapes. Its one clean winner replaces the temporary
+total-minute-part value with:
+
+```cpp
+total_minutes -= total_hours * 60;
+```
+
+and passes that reused value to the total-hours draw. This is semantic source
+recovery supported directly by native's register dataflow. It gains
+`29.8134715025908` weighted bytes without changing the instruction or
+reference counts. The scratch moves from
+`2555.440414507772/2877` (`88.82309400444115%`) to
+`2585.2538860103627/2877` (`89.85936343449297%`), reducing the gap to
+`291.74611398963725` bytes while retaining the 280-instruction prefix,
+675/676 instructions, and `264/0/5` references. The spec SHA-256 is
+`086d6d038f1c5803a348c04af9a040d064be45c372624ec61931d4f56929cbc3`;
+the retained source SHA-256 is
+`7f5e7366014525a11d2933d6f4a2243314d9b679cb48b660fcc6c923e43bca02`.
+
+Four follow-up sweeps record another 69 fully evaluated variants:
+
+- `session-call-evaluation-mutations.json` tests twelve defined assignment and
+  quotient forms intended to evaluate the virtual-call target before the
+  remaining arithmetic. One form is byte-neutral; the rest lose at least
+  `70.00684459024433` weighted bytes. Its spec SHA-256 is
+  `d8aeb7afb01310ef1dccd068b573556d25012eeede05c6ed4b01de0172b5be5d`.
+- `button-layout-pointer-mutations.json` tests ten first-member, named-pointer,
+  assignment, and independent update-order forms. Pointer and assignment
+  aliases are byte-neutral; moving the Back-column X update earlier regresses.
+  Its spec SHA-256 is
+  `01ca4e40e6f790d831453da60762e2e9f997c95dac5f5f082ffa1275b2c09da3`.
+- `music-id-lifetime-mutations.json` tests all 35/35 single and paired local
+  lifetime forms for the Typ'o'Shooter and Back music blocks. Every honest
+  theme/track local is byte-neutral; reusing the theme local for the final play
+  call regresses. Its spec SHA-256 is
+  `1287218b3f101e926f7c2f8148bfb6f29c09a1e115d4e658bee5f6008445e6a1`.
+- `session-division-lifetime-mutations.json` tests twelve declaration, nested
+  scope, compound-division, signed-snapshot, and qualifier forms. Ten compile
+  byte-identically and two regress. Its spec SHA-256 is
+  `1d8f98377081a13532e59cea36b88a3cd73675864a470433746ec21bb5bf9533`.
+
+The remaining long residual is consequently bounded. Native claims
+`edi`/`ebp` for the session renderer/vtable and stores session hours at
+`[esp+0x10]`; the candidate retains session hours in `edi` and evaluates the
+virtual target later. The rotated registers in the otherwise aligned button
+and music blocks inherit from that choice and cannot be changed locally by the
+tested semantic spellings. No volatile object, forced spill, register hint,
+dead expression, or fake alias is justified.

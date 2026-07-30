@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "1910a3660327a10d8680170f830c718c681cc8a7a296487d7e85c55932eae731",
+  "audit_digest": "1aa1ed6f53f26ed7106706ccf39db1043597eeea7a848894f93d3a327266beb3",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -76646,7 +76646,7 @@
         {
           "path": "tools/match/scratches/statistics_menu_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "6f5647fe2b409cce6cb02a27ec508052d95b837b6bffc499e295f25ae35e752c"
+          "sha256": "7f5e7366014525a11d2933d6f4a2243314d9b679cb48b660fcc6c923e43bca02"
         },
         {
           "path": "tools/match/scratches/statistics_menu_update/scratch.conf",
@@ -76692,7 +76692,7 @@
           "canonical_config_sha256": "a0cca4745f8677a74a1caeecff591c6ebb0c05cb21a26de576ae925353f6b38b",
           "canonical_scratch": "tools/match/scratches/statistics_menu_update",
           "canonical_source": "tools/match/scratches/statistics_menu_update/scratch.cpp",
-          "canonical_source_sha256": "6f5647fe2b409cce6cb02a27ec508052d95b837b6bffc499e295f25ae35e752c",
+          "canonical_source_sha256": "7f5e7366014525a11d2933d6f4a2243314d9b679cb48b660fcc6c923e43bca02",
           "effective_end": 4456589,
           "end": 4456589,
           "function": "statistics_menu_update",
@@ -76702,7 +76702,7 @@
             "masked_ok": 264,
             "masked_unresolved": 0,
             "prefix_instructions": 280,
-            "ratio": 0.8882309400444115,
+            "ratio": 0.8985936343449297,
             "state": "wip",
             "target_instructions": 676
           },
@@ -76716,16 +76716,16 @@
         "masked_ok": 264,
         "masked_unresolved": 0,
         "prefix_instructions": 280,
-        "ratio": 0.8882309400444115,
+        "ratio": 0.8985936343449297,
         "state": "wip",
         "target_instructions": 676
       },
       "object": "tools/match/scratches/statistics_menu_update/build/msvc6.5/8971fddbd25cca43/scratch.obj",
       "object_function_symbol": "_statistics_menu_update",
-      "object_sha256": "43c42ec775f2e10b788bb0ccdb6f56df24580354754ed874ecfba93eb424aee0",
+      "object_sha256": "c429852621b48a960a31dd98efcb24f5ae18191ef75325b16bc063dd1a353b8b",
       "scratch": "tools/match/scratches/statistics_menu_update",
       "source": "tools/match/scratches/statistics_menu_update/scratch.cpp",
-      "source_sha256": "6f5647fe2b409cce6cb02a27ec508052d95b837b6bffc499e295f25ae35e752c",
+      "source_sha256": "7f5e7366014525a11d2933d6f4a2243314d9b679cb48b660fcc6c923e43bca02",
       "target_size": 2877,
       "translation_unit": {
         "kind": "isolated",
