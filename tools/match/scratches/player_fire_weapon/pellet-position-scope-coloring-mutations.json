@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sprite-vector-scope-open",
+      "find": "                vec2f_t effect_velocity;\n",
+      "replacements": [
+        {
+          "name": "open-shared-sprite-scope",
+          "text": "                {\n                    vec2f_t effect_velocity;\n"
+        }
+      ]
+    },
+    {
+      "name": "sprite-vector-scope-close",
+      "find": "                sprite_effect_pool[effect_index].color.a = 0.223f;\n\n                int pellet_count = 12;\n",
+      "replacements": [
+        {
+          "name": "close-then-declare-pellet",
+          "text": "                sprite_effect_pool[effect_index].color.a = 0.223f;\n                }\n\n                vec2f_t pellet_position;\n                int pellet_count = 12;\n"
+        },
+        {
+          "name": "declare-count-then-pellet",
+          "text": "                sprite_effect_pool[effect_index].color.a = 0.223f;\n                }\n\n                int pellet_count = 12;\n                vec2f_t pellet_position;\n"
+        },
+        {
+          "name": "close-before-loop-local",
+          "text": "                sprite_effect_pool[effect_index].color.a = 0.223f;\n                }\n\n                int pellet_count = 12;\n"
+        }
+      ]
+    },
+    {
+      "name": "scoped-pellet-position-owner",
+      "find": "                    player_position =\n                        &player_state_table[render_overlay_player_index].position;\n                    typo_fire_vec_add(\n                        &effect_velocity, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &effect_velocity,\n",
+      "replacements": [
+        {
+          "name": "use-scoped-pellet",
+          "text": "                    vec2f_t *player_position =\n                        &player_state_table[render_overlay_player_index].position;\n                    typo_fire_vec_add(\n                        &pellet_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &pellet_position,\n"
+        },
+        {
+          "name": "declare-loop-pellet",
+          "text": "                    vec2f_t pellet_position;\n                    vec2f_t *player_position =\n                        &player_state_table[render_overlay_player_index].position;\n                    typo_fire_vec_add(\n                        &pellet_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &pellet_position,\n"
+        }
+      ]
+    }
+  ]
+}

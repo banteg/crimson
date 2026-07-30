@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shotgun-vector-declaration-lifetime",
+      "find": "                vec2f_t effect_velocity;\n                vec2f_t effect_position;\n                float heading_cos = (float)cos(shot_heading);\n                effect_velocity.x = heading_cos * 25.0f;\n                float heading_sin = (float)sin(shot_heading);\n                effect_velocity.y = heading_sin * 25.0f;\n",
+      "replacements": [
+        {
+          "name": "position-before-velocity",
+          "text": "                vec2f_t effect_position;\n                vec2f_t effect_velocity;\n                float heading_cos = (float)cos(shot_heading);\n                effect_velocity.x = heading_cos * 25.0f;\n                float heading_sin = (float)sin(shot_heading);\n                effect_velocity.y = heading_sin * 25.0f;\n"
+        },
+        {
+          "name": "position-after-cosine",
+          "text": "                vec2f_t effect_velocity;\n                float heading_cos = (float)cos(shot_heading);\n                vec2f_t effect_position;\n                effect_velocity.x = heading_cos * 25.0f;\n                float heading_sin = (float)sin(shot_heading);\n                effect_velocity.y = heading_sin * 25.0f;\n"
+        },
+        {
+          "name": "position-after-x-store",
+          "text": "                vec2f_t effect_velocity;\n                float heading_cos = (float)cos(shot_heading);\n                effect_velocity.x = heading_cos * 25.0f;\n                vec2f_t effect_position;\n                float heading_sin = (float)sin(shot_heading);\n                effect_velocity.y = heading_sin * 25.0f;\n"
+        },
+        {
+          "name": "position-at-first-use",
+          "text": "                vec2f_t effect_velocity;\n                float heading_cos = (float)cos(shot_heading);\n                effect_velocity.x = heading_cos * 25.0f;\n                float heading_sin = (float)sin(shot_heading);\n                effect_velocity.y = heading_sin * 25.0f;\n                vec2f_t effect_position;\n"
+        },
+        {
+          "name": "velocity-after-cosine",
+          "text": "                vec2f_t effect_position;\n                float heading_cos = (float)cos(shot_heading);\n                vec2f_t effect_velocity;\n                effect_velocity.x = heading_cos * 25.0f;\n                float heading_sin = (float)sin(shot_heading);\n                effect_velocity.y = heading_sin * 25.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "pellet-position-owner",
+      "find": "                    typo_fire_vec_add(\n                        &effect_velocity, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &effect_velocity,\n",
+      "replacements": [
+        {
+          "name": "reuse-effect-position",
+          "text": "                    typo_fire_vec_add(\n                        &effect_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &effect_position,\n"
+        },
+        {
+          "name": "effect-position-reference",
+          "text": "                    vec2f_t &pellet_position = effect_position;\n                    typo_fire_vec_add(\n                        &pellet_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &pellet_position,\n"
+        },
+        {
+          "name": "effect-position-pointer",
+          "text": "                    vec2f_t *pellet_position = &effect_position;\n                    typo_fire_vec_add(\n                        pellet_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        pellet_position,\n"
+        }
+      ]
+    }
+  ]
+}

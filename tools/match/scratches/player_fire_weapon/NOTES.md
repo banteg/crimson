@@ -82,3 +82,29 @@ regress to 90.21%, and explicit component stores regress to 89.42%, while
 retaining the 378-instruction count and 142 resolved references. The existing
 adjacent-vector expression remains the strongest source evidence despite its
 two stack-slot operand differences.
+
+## Pellet-slot ownership interaction audit
+
+Fresh native stack data flow proves the two sprite calls use
+`effect_velocity` at the lower vector slot and `effect_position` at the upper
+slot, then the pellet loop writes and passes the upper slot. The current
+99.21% candidate instead colors the pellet result into the lower slot. That
+made the previously tested direct `effect_position` reuse worth crossing with
+the declaration lifetime rather than treating the three operand differences
+as arbitrary stack offsets.
+
+`pellet-position-owner-interaction-mutations.json` evaluates all 23 single and
+paired combinations of five declaration schedules and direct, reference, and
+pointer ownership of the upper slot. Every declaration schedule is
+byte-neutral alone. Every upper-slot owner, alone or paired, produces the same
+96.03% object and moves the first mismatch 71 instructions earlier.
+
+`pellet-position-scope-coloring-mutations.json` then tests a disjoint lexical
+scope for the two sprite vectors followed by an outer or loop-local pellet
+vector. The corrected complete variants also give the pellet loop its own
+player-position alias, so no out-of-scope variable is being relied on. The
+best complete forms reach only 96.83%; the outer pellet forms fall to 90.21%.
+Thus neither extending the native upper-slot owner nor asking VC6 to color a
+new disjoint-lifetime aggregate preserves the otherwise exact allocation.
+The canonical two-vector source remains the honest optimum, and both complete
+interaction matrices are recorded in `experiments.jsonl`.
