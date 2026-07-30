@@ -108,3 +108,15 @@ VC6.0, 6.5, and 6.6 with `/GB`, `/G5`, `/Ob1`, explicit `/Ot`, `/Oa`, and
 `/Ow` all tie at the same one-swap result. `/G6`, `/Os`, `/Op`, `/Oy-`, the
 processor-pack compiler, and MSVC 7 regress, bounding the residual as compiler
 scheduling rather than missing behavior.
+
+`probe_saved_name_schedule.cpp` closes the remaining obvious source-lifetime
+escape hatch with a reproducible nine-variant matrix. It moves a raw or typed
+saved-name cursor before, between, and after the index and recovered
+`saved_name_order` offset initializers, and tests both postincrement and
+separate-increment spellings. The raw-pointer forms all fall to **92.53%**,
+141 candidate instructions, and references `80/0/0`; the typed array-pointer
+forms fall to **90.78%**, 142 instructions, and the same clean references.
+None changes the compiler's preferred setup order without perturbing the
+otherwise exact body. The canonical direct-index form therefore remains the
+honest optimum at 99.29%; all nine negative results are recorded in
+`experiments.jsonl`.
