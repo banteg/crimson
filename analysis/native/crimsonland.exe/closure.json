@@ -1,5 +1,5 @@
 {
-  "audit_digest": "9d54e9bc461c304c831e07cd031fdd6c7ec81b103199cfe3ecb6f8bb9846f17f",
+  "audit_digest": "1d58d2b067f5d70b084f8e48cd613cdcfdccdcff0cc2e5313b25023306b0e278",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -11173,6 +11173,19 @@
           "section": ".rdata",
           "size": null,
           "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3ff4ebedfb0000000000",
+          "comdat_selection": 2,
+          "function": "play_game_menu_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/play_game_menu_update/build/msvc6.5/f1df14b1c26d7d81/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
         }
       ],
       "name": "__real@4@3ff4ebedfb0000000000"
@@ -16135,6 +16148,19 @@
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/projectile_render/build/msvc6.5/8a255986e5c9b7e2/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3fff8ccccd0000000000",
+          "comdat_selection": 2,
+          "function": "projectile_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -61117,24 +61143,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "__real@4@3ff4ebedfa0000000000",
-          "comdat_selection": 2,
-          "function": "play_game_menu_update",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/play_game_menu_update/build/msvc6.5/f1df14b1c26d7d81/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "__real@4@3ff4ebedfa0000000000"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff4ebedfb0000000000",
           "comdat_selection": 2,
           "function": "controls_menu_update",
@@ -61154,6 +61162,19 @@
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/607a94c8abe58bbe/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3ff4ebedfb0000000000",
+          "comdat_selection": 2,
+          "function": "play_game_menu_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/play_game_menu_update/build/msvc6.5/f1df14b1c26d7d81/scratch.obj",
           "section": ".rdata",
           "size": null,
           "weak": false
@@ -62507,6 +62528,24 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "__real@4@3ffaf5c28f0000000000",
+          "comdat_selection": 2,
+          "function": "projectile_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "__real@4@3ffaf5c28f0000000000"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffb8000000000000000",
           "comdat_selection": 2,
           "function": "effect_uv_tables_init",
@@ -62545,24 +62584,6 @@
         }
       ],
       "name": "__real@4@3ffb8000000000000000"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@3ffb872b020ac0830000",
-          "comdat_selection": 2,
-          "function": "projectile_update",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "__real@4@3ffb872b020ac0830000"
     },
     {
       "definitions": [
@@ -62960,24 +62981,6 @@
         }
       ],
       "name": "__real@4@3ffbe147ae0000000000"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@3ffbf0d844c467380000",
-          "comdat_selection": 2,
-          "function": "projectile_update",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "__real@4@3ffbf0d844c467380000"
     },
     {
       "definitions": [
@@ -66974,6 +66977,19 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff8ccccd0000000000",
           "comdat_selection": 2,
+          "function": "projectile_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        },
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3fff8ccccd0000000000",
+          "comdat_selection": 2,
           "function": "ui_cursor_render",
           "kind": "section",
           "logical_section_size": 4,
@@ -67702,6 +67718,24 @@
         }
       ],
       "name": "__real@4@3ffff333330000000000"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "__real@4@3ffffae1480000000000",
+          "comdat_selection": 2,
+          "function": "projectile_update",
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
+          "section": ".rdata",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "__real@4@3ffffae1480000000000"
     },
     {
       "definitions": [
@@ -95573,7 +95607,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8096,
+          "logical_section_size": 8112,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "section": ".text",
           "size": null,
@@ -144326,7 +144360,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8096,
+          "logical_section_size": 8112,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "section": ".text",
           "size": null,
@@ -164837,7 +164871,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3149,
+    "defined_symbols": 3148,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},

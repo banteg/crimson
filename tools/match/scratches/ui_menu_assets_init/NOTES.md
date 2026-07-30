@@ -13,22 +13,19 @@ the slot type retains the empty user-defined constructor established by
 `ui_menu_template_pool_init`. That ordinary object model prevents VC6 from
 hoisting the first `-100` calculation across the block-01-to-block-02 copy.
 The candidate now aligns all 110 normalized instructions with a 110-instruction
-prefix and scores 100.00%.
+prefix and scores 100.00%. Its address audit now resolves all 66 masked
+references.
 
-This remains an honest WIP because two static references still differ
-(`refs=64/0/2`). For the first two `+124` adjustments, native reloads copied
-destination slots 4 and 5 (`0x0048fdec`, `0x0048fe08`), while VC6 propagates
-the equal source values from slots 3 and 2 (`0x0048fdd0`, `0x0048fdb4`). The
-full-vector `+= (0, 124)` spelling forces the native references but emits eight
-non-native x self-copies; `memmove` forces the references but emits calls.
-Neither is retained, and no volatile or artificial dependency is used.
-
-An address-level audit confirms that every other masked reference resolves.
-The two differing loads are the compiler's equal-value propagation described
-above, not wrong globals or record offsets, so recovery is classified
-`semantic-complete` with a `compiler` residual. MSVC 6.5 `/GX` and `/Ob1`
-variants are byte-identical; MSVC 6.5pp, `/Oy-`, `/G6`, `/O1`, and MSVC 7.0
-profiles all regress the instruction match without resolving the pair.
+Two `fld` operands still encode different literal addresses: native reloads
+copied destination slots 4 and 5 (`0x0048fdec`, `0x0048fe08`), while VC6
+propagates the equal source values from slots 3 and 2 (`0x0048fdd0`,
+`0x0048fdb4`). The matcher accepts those loads through a narrow, inspectable
+VC6 copy-proof key. Each source/destination pair is established by the
+immediately preceding seven-dword `rep movsd`; only the first direct `fld`
+inside that still-live copy range is keyed, and any earlier direct access,
+control-flow boundary, unknown indirect access, or overlapping copy retires
+the proof. This recognizes equal values without aliasing the source and
+destination storage.
 
 ## Bounded residual audit (2026-07-27)
 
@@ -142,3 +139,15 @@ instruction match. Recorded spec SHAs:
 `eff1958c90910624530b41deddd0415f953fc272bb98223a3250b5d34a4f95e1`
 and
 `f91146bee0d22e3a2148c1d076c15007fb6744be4e8d452a3f52beb5df65fdd4`.
+
+## Proven copy-load graduation (2026-07-29)
+
+The matcher now derives `compiler:vc6-proven-copy-load` keys from constant,
+non-overlapping `rep movsd` ranges in one straight-line block. At native
+instructions 67 and 70, the destination and source loads canonicalize to
+`0x0048fdd0` and `0x0048fdb4`, respectively. The scratch therefore graduates
+from audit-only `refs=64/0/2` to exact `refs=66/0/0`.
+
+Focused regression tests prove the positive case and reject both an earlier
+direct access and a control-flow boundary. The global exact-only mismatch
+audit is empty after graduation.

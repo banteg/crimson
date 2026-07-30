@@ -4,7 +4,7 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**691/808** functions matched exactly, **129790/341963** code bytes (**38.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**692/808** functions matched exactly, **130341/341963** code bytes (**38.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 Fuzzy-weighted alignment is **303106/341963** code bytes (**88.6%**).
 
@@ -16,16 +16,13 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
+| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
 | grim.dll | current | 137 | 131 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=70, game_data=0, import=25, toolchain=2 | 0 | 1548 | 1548 | 1548 | 1548 | 1548 |
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 274 | 224 | 274 | 274 | 274 |
-
-Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +92,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 560/671 | 114852/320805 | 35.8% | 282305/320805 | 88.0% | 671/671 | 320805/320805 | 100.0% | 560/671 |
+| crimsonland.exe | 561/671 | 115403/320805 | 36.0% | 282305/320805 | 88.0% | 671/671 | 320805/320805 | 100.0% | 561/671 |
 | grim.dll | 131/137 | 14938/21158 | 70.6% | 20801/21158 | 98.3% | 137/137 | 21159/21158 | 100.0% | 131/137 |
 
 ## crimsonland.exe
 
-**560/671** functions, **114852/320805** bytes (**35.8%**), **282305/320805** fuzzy-weighted bytes (**88.0%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **560/671** scratches verified.
+**561/671** functions, **115403/320805** bytes (**36.0%**), **282305/320805** fuzzy-weighted bytes (**88.0%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **561/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -335,7 +332,7 @@ Artifact freshness issues:
 | match | creature_render_all | 0x00419680 | 1302 | 1302/1302 | 0 | 349/349 | 100.00% | 349/349 | 87/0/0 |  | creature-overlay-species-and-freeze-render-passes |
 | match | ui_element_set_rect | 0x00419ba0 | 348 | 348/348 | 0 | 91/91 | 100.00% | 91/91 | 6/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 207/207 | 0 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
-| audit | ui_menu_assets_init | 0x00419dd0 | 551 | 551/551 | 0 | 110/110 | 100.00% | 110/110 | 64/0/2 |  | ui-menu-template-assets |
+| match | ui_menu_assets_init | 0x00419dd0 | 551 | 551/551 | 0 | 110/110 | 100.00% | 110/110 | 66/0/0 |  | ui-menu-template-assets |
 | match | j___cfltcvt_init_3 | 0x0041a000 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-global-initializer |
 | match | __cfltcvt_init_3 | 0x0041a010 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | reserved-four-float-global-initializer |
 | wip | ui_cursor_render | 0x0041a040 | 730 | 722/730 | 8 | 177/177 | 98.87% | 158/177 | 57/0/0 |  | ui-cursor-particle-renderer |

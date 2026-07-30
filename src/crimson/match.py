@@ -81,10 +81,12 @@ PADDING_LINE_TEXT = {
     "nop",
 }
 BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
+ADDRESS_REFERENCE_KEY_RE = re.compile(r"^address:0x([0-9a-fA-F]+)$")
 LOCAL_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"\r\n]+)"', re.MULTILINE)
 VC6_SINGLE_DELETE_UNWIND_KEY = "compiler:vc6-cxx-frame-handler:single-delete-unwind"
 VC6_LOCAL_JUMP_TABLE_KEY = "compiler:vc6-local-jump-table"
 VC6_LOCAL_SWITCH_PARTITION_KEY = "compiler:vc6-local-switch-partition"
+VC6_PROVEN_COPY_LOAD_KEY = "compiler:vc6-proven-copy-load"
 
 
 def parse_int(value: str | int) -> int:
@@ -1965,6 +1967,174 @@ def _strip_trailing_padding_lines(lines: tuple[DisassemblyLine, ...]) -> tuple[D
     return lines[:trim_start]
 
 
+@dataclass(frozen=True, slots=True)
+class _ProvenCopyRange:
+    source: int
+    destination: int
+    size: int
+
+    def canonical_address(self, address: int) -> int | None:
+        if self.source <= address < self.source + self.size:
+            return address
+        if self.destination <= address < self.destination + self.size:
+            return self.source + address - self.destination
+        return None
+
+
+def _masked_reference_address(reference: MaskedReference) -> int | None:
+    addresses = {reference.value} if reference.value is not None else set()
+    for key in reference.keys:
+        if match := ADDRESS_REFERENCE_KEY_RE.fullmatch(key):
+            addresses.add(int(match.group(1), 16))
+    if len(addresses) != 1:
+        return None
+    return next(iter(addresses))
+
+
+def _line_reference_address(line: DisassemblyLine, operand_index: int) -> int | None:
+    addresses = {
+        address
+        for reference in line.masked_references
+        if reference.operand_index == operand_index
+        if (address := _masked_reference_address(reference)) is not None
+    }
+    if len(addresses) != 1:
+        return None
+    return next(iter(addresses))
+
+
+def _ranges_overlap(first_start: int, first_size: int, second_start: int, second_size: int) -> bool:
+    return first_start < second_start + second_size and second_start < first_start + first_size
+
+
+def _annotate_vc6_proven_copy_loads(
+    lines: tuple[DisassemblyLine, ...],
+) -> tuple[DisassemblyLine, ...]:
+    """Key the first direct load from either side of a proven ``rep movsd`` copy.
+
+    VC6 can propagate a copied aggregate's source value while another build
+    reloads the equal destination field. Keep this deliberately local: the
+    copy must have constant absolute endpoints and a constant dword count in
+    the same straight-line block, the ranges must not overlap, and the first
+    subsequent direct access retires the proof. Calls, branches, and unknown
+    indirect memory accesses also discard it.
+    """
+
+    branch_targets = {
+        int(match.group(1), 16)
+        for line in lines
+        for match in BRANCH_TARGET_RE.finditer(line.text)
+    }
+    live_copies: list[_ProvenCopyRange] = []
+    copy_count: int | None = None
+    copy_source: int | None = None
+    copy_destination: int | None = None
+    annotated: list[DisassemblyLine] = []
+
+    def clear_copy_setup() -> None:
+        nonlocal copy_count, copy_source, copy_destination
+        copy_count = None
+        copy_source = None
+        copy_destination = None
+
+    for line in lines:
+        if line.offset in branch_targets:
+            live_copies.clear()
+            clear_copy_setup()
+
+        references = list(line.masked_references)
+        touched_copies: set[_ProvenCopyRange] = set()
+        for reference_index, reference in enumerate(references):
+            address = _masked_reference_address(reference)
+            if address is None:
+                continue
+            matching_copies = [
+                copy_range
+                for copy_range in live_copies
+                if copy_range.canonical_address(address) is not None
+            ]
+            if (
+                line.text == "fld dword [ADDR]"
+                and len(references) == 1
+                and len(matching_copies) == 1
+            ):
+                canonical_address = matching_copies[0].canonical_address(address)
+                assert canonical_address is not None
+                key = f"{VC6_PROVEN_COPY_LOAD_KEY}:0x{canonical_address:08x}"
+                references[reference_index] = replace(
+                    reference,
+                    keys=tuple(dict.fromkeys((*reference.keys, key))),
+                )
+            touched_copies.update(matching_copies)
+        if touched_copies:
+            live_copies = [copy_range for copy_range in live_copies if copy_range not in touched_copies]
+
+        annotated.append(replace(line, masked_references=tuple(references)))
+        text = line.text
+
+        if text == "rep movsd dword [edi], dword [esi]":
+            if (
+                copy_count is not None
+                and 0 < copy_count <= 0x1000
+                and copy_source is not None
+                and copy_destination is not None
+            ):
+                copy_size = copy_count * 4
+                if not _ranges_overlap(copy_source, copy_size, copy_destination, copy_size):
+                    live_copies = [
+                        copy_range
+                        for copy_range in live_copies
+                        if not _ranges_overlap(
+                            copy_destination,
+                            copy_size,
+                            copy_range.source,
+                            copy_range.size,
+                        )
+                        and not _ranges_overlap(
+                            copy_destination,
+                            copy_size,
+                            copy_range.destination,
+                            copy_range.size,
+                        )
+                    ]
+                    live_copies.append(
+                        _ProvenCopyRange(
+                            source=copy_source,
+                            destination=copy_destination,
+                            size=copy_size,
+                        ),
+                    )
+            clear_copy_setup()
+            continue
+
+        if match := re.fullmatch(r"mov ecx, 0x([0-9a-f]+)", text):
+            copy_count = int(match.group(1), 16)
+        elif text == "mov esi, ADDR":
+            copy_source = _line_reference_address(line, 1)
+        elif text == "mov edi, ADDR":
+            copy_destination = _line_reference_address(line, 1)
+        else:
+            for register in ("ecx", "esi", "edi"):
+                if re.search(rf"\b{register}\b", text):
+                    if register == "ecx":
+                        copy_count = None
+                    elif register == "esi":
+                        copy_source = None
+                    else:
+                        copy_destination = None
+
+        mnemonic = text.partition(" ")[0]
+        if (
+            mnemonic.startswith("j")
+            or mnemonic in {"call", "loop", "loope", "loopne", "ret", "retf", "iret"}
+            or ("[" in text and "ADDR" not in text)
+        ):
+            live_copies.clear()
+            clear_copy_setup()
+
+    return tuple(annotated)
+
+
 def normalize_function(
     data: bytes,
     *,
@@ -2072,6 +2242,8 @@ def match_function(
         reference_catalog=reference_catalog,
         image=image,
     )
+    target_disassembly = _annotate_vc6_proven_copy_loads(target_disassembly)
+    candidate_disassembly = _annotate_vc6_proven_copy_loads(candidate_disassembly)
     target_lines = tuple(line.text for line in target_disassembly)
     candidate_lines = tuple(line.text for line in candidate_disassembly)
     ratio = difflib.SequenceMatcher(a=target_lines, b=candidate_lines, autojunk=False).ratio()

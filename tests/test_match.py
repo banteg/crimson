@@ -16,6 +16,7 @@ from crimson.match import (
     SHARD_PLAN_KIND,
     VC6_LOCAL_JUMP_TABLE_KEY,
     VC6_LOCAL_SWITCH_PARTITION_KEY,
+    VC6_PROVEN_COPY_LOAD_KEY,
     VC6_SINGLE_DELETE_UNWIND_KEY,
     WORKER_CLAIM_KIND,
     WORKER_OUTCOME_FILE,
@@ -767,6 +768,172 @@ def test_match_function_audits_masked_reference_identity(
     assert result.ratio == 1.0
     assert result.masked_operand_audit.entries[0].status == expected_status
     assert result.exact is exact
+
+
+def test_match_function_accepts_first_load_from_proven_vc6_copy_range() -> None:
+    image_base = 0x400000
+    function_address = 0x401000
+    source_address = 0x402000
+    destination_address = 0x402100
+    target = (
+        bytes.fromhex("b902000000be")
+        + struct.pack("<I", source_address)
+        + b"\xbf"
+        + struct.pack("<I", destination_address)
+        + bytes.fromhex("f3a5d905")
+        + struct.pack("<I", destination_address + 4)
+        + b"\xc3"
+    )
+    candidate = ObjectFunction(
+        name="_probe",
+        data=(
+            bytes.fromhex("b902000000be")
+            + b"\x00" * 4
+            + b"\xbf"
+            + b"\x00" * 4
+            + bytes.fromhex("f3a5d905")
+            + struct.pack("<I", 4)
+            + b"\xc3"
+        ),
+        relocation_offsets=frozenset({6, 11, 19}),
+        relocation_references=(
+            ObjectRelocationReference(6, "copy_source", "name:copy_source", True, addend=0),
+            ObjectRelocationReference(11, "copy_destination", "name:copy_destination", True, addend=0),
+            ObjectRelocationReference(19, "copy_source", "name:copy_source+0x4", True, addend=4),
+        ),
+    )
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(b"\x00" * 0x3000, image_base, 0x3000),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog(
+            {
+                source_address: ("copy_source",),
+                destination_address: ("copy_destination",),
+            },
+        ),
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 3
+    assert (
+        f"{VC6_PROVEN_COPY_LOAD_KEY}:0x{source_address + 4:08x}"
+        in result.masked_operand_audit.entries[-1].target_references[0].keys
+    )
+
+
+def test_proven_vc6_copy_load_expires_on_first_direct_access() -> None:
+    image_base = 0x400000
+    function_address = 0x401000
+    source_address = 0x402000
+    destination_address = 0x402100
+    target = (
+        bytes.fromhex("b902000000be")
+        + struct.pack("<I", source_address)
+        + b"\xbf"
+        + struct.pack("<I", destination_address)
+        + bytes.fromhex("f3a5c705")
+        + struct.pack("<I", destination_address + 4)
+        + b"\x00" * 4
+        + bytes.fromhex("d905")
+        + struct.pack("<I", destination_address + 4)
+        + b"\xc3"
+    )
+    candidate = ObjectFunction(
+        name="_probe",
+        data=(
+            bytes.fromhex("b902000000be")
+            + b"\x00" * 4
+            + b"\xbf"
+            + b"\x00" * 4
+            + bytes.fromhex("f3a5c705")
+            + struct.pack("<I", 4)
+            + b"\x00" * 4
+            + bytes.fromhex("d905")
+            + struct.pack("<I", 4)
+            + b"\xc3"
+        ),
+        relocation_offsets=frozenset({6, 11, 19, 29}),
+        relocation_references=(
+            ObjectRelocationReference(6, "copy_source", "name:copy_source", True, addend=0),
+            ObjectRelocationReference(11, "copy_destination", "name:copy_destination", True, addend=0),
+            ObjectRelocationReference(
+                19,
+                "copy_destination",
+                "name:copy_destination+0x4",
+                True,
+                addend=4,
+            ),
+            ObjectRelocationReference(29, "copy_source", "name:copy_source+0x4", True, addend=4),
+        ),
+    )
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(b"\x00" * 0x3000, image_base, 0x3000),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog(
+            {
+                source_address: ("copy_source",),
+                destination_address: ("copy_destination",),
+            },
+        ),
+    )
+
+    assert result.ratio == 1.0
+    assert result.masked_operand_audit.mismatch_count == 1
+    assert not result.exact
+
+
+def test_proven_vc6_copy_load_does_not_cross_control_flow() -> None:
+    image_base = 0x400000
+    function_address = 0x401000
+    source_address = 0x402000
+    destination_address = 0x402100
+    target = (
+        bytes.fromhex("b902000000be")
+        + struct.pack("<I", source_address)
+        + b"\xbf"
+        + struct.pack("<I", destination_address)
+        + bytes.fromhex("f3a5eb00d905")
+        + struct.pack("<I", destination_address + 4)
+        + b"\xc3"
+    )
+    candidate = ObjectFunction(
+        name="_probe",
+        data=(
+            bytes.fromhex("b902000000be")
+            + b"\x00" * 4
+            + b"\xbf"
+            + b"\x00" * 4
+            + bytes.fromhex("f3a5eb00d905")
+            + struct.pack("<I", 4)
+            + b"\xc3"
+        ),
+        relocation_offsets=frozenset({6, 11, 21}),
+        relocation_references=(
+            ObjectRelocationReference(6, "copy_source", "name:copy_source", True, addend=0),
+            ObjectRelocationReference(11, "copy_destination", "name:copy_destination", True, addend=0),
+            ObjectRelocationReference(21, "copy_source", "name:copy_source+0x4", True, addend=4),
+        ),
+    )
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(b"\x00" * 0x3000, image_base, 0x3000),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog(
+            {
+                source_address: ("copy_source",),
+                destination_address: ("copy_destination",),
+            },
+        ),
+    )
+
+    assert result.ratio == 1.0
+    assert result.masked_operand_audit.mismatch_count == 1
+    assert not result.exact
 
 
 def test_reference_catalog_scopes_ambiguous_object_alias() -> None:
