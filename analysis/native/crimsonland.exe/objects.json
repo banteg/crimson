@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "ba6053b5eeca9b910f4a34b789b7895b78f51c198f1c4bd0c8e4d7a01cf16ac6",
+  "audit_digest": "aea665d957d6540fd70b896bf644982a87d73578332fb014a772e412f32b3b6e",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -66938,12 +66938,12 @@
         {
           "path": "tools/match/scratches/quest_build_lizard_zombie_pact/scratch.cpp",
           "repository_relative": true,
-          "sha256": "6a08396e4239b0ba0171d540d8a8102d1099f8969890669d9e2d0dbe645d1b21"
+          "sha256": "42f349ea57e7cf57763212f80aae65746bd265f58b0dd7be7c8f3dd36549248d"
         },
         {
           "path": "tools/match/scratches/quest_build_lizard_zombie_pact/scratch.conf",
           "repository_relative": true,
-          "sha256": "5aee700590e6c810f88bc9b0f2a25d30065afe89f0a021107776e1c9cfce6b8c"
+          "sha256": "47e3596e931bdf45a967f444bb789365f240e0883540c70b83888c45999d0d21"
         },
         {
           "path": "tools/match/cl.sh",
@@ -66968,7 +66968,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_lizard_zombie_pact/scratch.conf",
-      "config_sha256": "5aee700590e6c810f88bc9b0f2a25d30065afe89f0a021107776e1c9cfce6b8c",
+      "config_sha256": "47e3596e931bdf45a967f444bb789365f240e0883540c70b83888c45999d0d21",
       "effective_end": 4425783,
       "end": 4425783,
       "function": "quest_build_lizard_zombie_pact",
@@ -66976,10 +66976,10 @@
         {
           "address": 4425472,
           "canonical_config": "tools/match/scratches/quest_build_lizard_zombie_pact/scratch.conf",
-          "canonical_config_sha256": "5aee700590e6c810f88bc9b0f2a25d30065afe89f0a021107776e1c9cfce6b8c",
+          "canonical_config_sha256": "47e3596e931bdf45a967f444bb789365f240e0883540c70b83888c45999d0d21",
           "canonical_scratch": "tools/match/scratches/quest_build_lizard_zombie_pact",
           "canonical_source": "tools/match/scratches/quest_build_lizard_zombie_pact/scratch.cpp",
-          "canonical_source_sha256": "6a08396e4239b0ba0171d540d8a8102d1099f8969890669d9e2d0dbe645d1b21",
+          "canonical_source_sha256": "42f349ea57e7cf57763212f80aae65746bd265f58b0dd7be7c8f3dd36549248d",
           "effective_end": 4425783,
           "end": 4425783,
           "function": "quest_build_lizard_zombie_pact",
@@ -66988,9 +66988,9 @@
             "masked_mismatches": 0,
             "masked_ok": 3,
             "masked_unresolved": 0,
-            "prefix_instructions": 2,
-            "ratio": 0.5789473684210527,
-            "state": "wip",
+            "prefix_instructions": 95,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 95
           },
           "object_function_symbol": "_quest_build_lizard_zombie_pact",
@@ -67002,17 +67002,17 @@
         "masked_mismatches": 0,
         "masked_ok": 3,
         "masked_unresolved": 0,
-        "prefix_instructions": 2,
-        "ratio": 0.5789473684210527,
-        "state": "wip",
+        "prefix_instructions": 95,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 95
       },
       "object": "tools/match/scratches/quest_build_lizard_zombie_pact/build/msvc6.5/fc874be5ef104f67/scratch.obj",
       "object_function_symbol": "_quest_build_lizard_zombie_pact",
-      "object_sha256": "2ee0d2a95bf193897fca2f27a48de86febab6c0d23fce31449f5833e937efcc9",
+      "object_sha256": "ca19b80bc928d9c800578598f6b3e61ade73f5d1c77dae4e39f7dc716463d976",
       "scratch": "tools/match/scratches/quest_build_lizard_zombie_pact",
       "source": "tools/match/scratches/quest_build_lizard_zombie_pact/scratch.cpp",
-      "source_sha256": "6a08396e4239b0ba0171d540d8a8102d1099f8969890669d9e2d0dbe645d1b21",
+      "source_sha256": "42f349ea57e7cf57763212f80aae65746bd265f58b0dd7be7c8f3dd36549248d",
       "target_size": 311,
       "translation_unit": {
         "kind": "isolated",
@@ -88097,8 +88097,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 561,
-    "wip": 110
+    "match": 562,
+    "wip": 109
   },
   "translation_units": {
     "cluster_count": 3,
