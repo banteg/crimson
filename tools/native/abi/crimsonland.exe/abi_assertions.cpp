@@ -94,6 +94,12 @@ CRIMSON_ABI_ASSERT(bool_is_one_byte, sizeof(bool) == 1);
 CRIMSON_ABI_ASSERT(unsigned_char_is_one_byte, sizeof(unsigned char) == 1);
 CRIMSON_ABI_ASSERT(game_mode_id_is_32_bit, sizeof(game_mode_id_t) == 4);
 CRIMSON_ABI_ASSERT(game_state_id_is_32_bit, sizeof(game_state_id_t) == 4);
+CRIMSON_ABI_ASSERT(
+    projectile_type_id_is_32_bit,
+    sizeof(projectile_type_id_t) == 4);
+CRIMSON_ABI_ASSERT(
+    secondary_projectile_type_id_is_32_bit,
+    sizeof(secondary_projectile_type_id_t) == 4);
 CRIMSON_ABI_ASSERT(u16_is_16_bit, sizeof(u16_t) == 2);
 CRIMSON_ABI_ASSERT(guid_is_0x10, sizeof(GUID) == 0x10);
 CRIMSON_ABI_ASSERT(systemtime_is_0x10, sizeof(SYSTEMTIME) == 0x10);

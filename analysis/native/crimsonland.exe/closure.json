@@ -1,5 +1,5 @@
 {
-  "audit_digest": "6e9f1390c764da91573b545070803380ea6a73ad4ed78b6b51551b1654956e2b",
+  "audit_digest": "ef170be2df56974bf7e5094bcc58ef0f8271d76bc1ef786d4799e51b67aaa964",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -85587,22 +85587,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895536,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_pool_pos_x",
           "data_storage_address": 4895536,
-          "data_storage_name": "effect_pool",
+          "data_storage_name": "effect_pool_pos_x",
           "function": null,
           "kind": "section",
           "logical_section_size": 96256,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 188,
           "weak": false
         }
       ],
@@ -85935,22 +85935,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895188,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_age",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895188,
+          "data_storage_name": "effect_template_age",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -85959,22 +85959,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895184,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_half_height",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895184,
+          "data_storage_name": "effect_template_half_height",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -85983,22 +85983,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895180,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_half_width",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895180,
+          "data_storage_name": "effect_template_half_width",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86007,22 +86007,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895192,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_lifetime",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895192,
+          "data_storage_name": "effect_template_lifetime",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86055,22 +86055,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895172,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_rotation",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895172,
+          "data_storage_name": "effect_template_rotation",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86079,22 +86079,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895220,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_scale_step",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895220,
+          "data_storage_name": "effect_template_scale_step",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86103,22 +86103,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895164,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_vel_x",
           "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_name": "effect_template_vel_x",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -86127,22 +86127,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895168,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_vel_y",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895168,
+          "data_storage_name": "effect_template_vel_y",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -129557,22 +129557,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895536,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_pool_pos_x",
           "data_storage_address": 4895536,
-          "data_storage_name": "effect_pool",
+          "data_storage_name": "effect_pool_pos_x",
           "function": null,
           "kind": "section",
           "logical_section_size": 96256,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 188,
           "weak": false
         }
       ],
@@ -130251,22 +130251,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895188,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_age",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895188,
+          "data_storage_name": "effect_template_age",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130282,22 +130282,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895184,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_half_height",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895184,
+          "data_storage_name": "effect_template_half_height",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130313,22 +130313,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895180,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_half_width",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895180,
+          "data_storage_name": "effect_template_half_width",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130344,22 +130344,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895192,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_lifetime",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895192,
+          "data_storage_name": "effect_template_lifetime",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130406,22 +130406,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895172,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_rotation",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895172,
+          "data_storage_name": "effect_template_rotation",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130447,22 +130447,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895220,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_scale_step",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895220,
+          "data_storage_name": "effect_template_scale_step",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130488,22 +130488,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895164,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_vel_x",
           "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_name": "effect_template_vel_x",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],
@@ -130529,22 +130529,22 @@
     {
       "definitions": [
         {
-          "alignment": null,
+          "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
           "data_address": 4895168,
-          "data_binding_kind": "interior-alias",
+          "data_binding_kind": "definition",
           "data_name": "effect_template_vel_y",
-          "data_storage_address": 4895164,
-          "data_storage_name": "effect_template",
+          "data_storage_address": 4895168,
+          "data_storage_name": "effect_template_vel_y",
           "function": null,
           "kind": "section",
           "logical_section_size": 60,
           "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
           "section": ".data",
-          "size": null,
+          "size": 4,
           "weak": false
         }
       ],

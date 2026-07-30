@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc"
+        "sha256": "24111c4436c1b6f7de9467efcfeda0130f9b4cfb24a6a2cc2d7cfbf0ed1a3a67"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/eaef563a2d5aae74/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "575c892d0da2594ec5b38db5a1903ae97867e2ec7f2c01c181e12f6aa068fcbc",
+    "source_sha256": "24111c4436c1b6f7de9467efcfeda0130f9b4cfb24a6a2cc2d7cfbf0ed1a3a67",
     "status": "passed"
   },
-  "audit_digest": "6e9f1390c764da91573b545070803380ea6a73ad4ed78b6b51551b1654956e2b",
+  "audit_digest": "ef170be2df56974bf7e5094bcc58ef0f8271d76bc1ef786d4799e51b67aaa964",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -8561,120 +8561,120 @@
         },
         {
           "address": 4895164,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_vel_x",
           "section_number": 433,
           "section_offset": 0,
-          "size": null,
+          "size": 4,
           "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "storage_name": "effect_template_vel_x",
           "symbols": [
             "_effect_template_vel_x"
           ]
         },
         {
           "address": 4895168,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_vel_y",
           "section_number": 433,
           "section_offset": 4,
-          "size": null,
-          "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "size": 4,
+          "storage_address": 4895168,
+          "storage_name": "effect_template_vel_y",
           "symbols": [
             "_effect_template_vel_y"
           ]
         },
         {
           "address": 4895172,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_rotation",
           "section_number": 433,
           "section_offset": 8,
-          "size": null,
-          "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "size": 4,
+          "storage_address": 4895172,
+          "storage_name": "effect_template_rotation",
           "symbols": [
             "_effect_template_rotation"
           ]
         },
         {
           "address": 4895180,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_half_width",
           "section_number": 433,
           "section_offset": 16,
-          "size": null,
-          "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "size": 4,
+          "storage_address": 4895180,
+          "storage_name": "effect_template_half_width",
           "symbols": [
             "_effect_template_half_width"
           ]
         },
         {
           "address": 4895184,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_half_height",
           "section_number": 433,
           "section_offset": 20,
-          "size": null,
-          "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "size": 4,
+          "storage_address": 4895184,
+          "storage_name": "effect_template_half_height",
           "symbols": [
             "_effect_template_half_height"
           ]
         },
         {
           "address": 4895188,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_age",
           "section_number": 433,
           "section_offset": 24,
-          "size": null,
-          "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "size": 4,
+          "storage_address": 4895188,
+          "storage_name": "effect_template_age",
           "symbols": [
             "_effect_template_age"
           ]
         },
         {
           "address": 4895192,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_lifetime",
           "section_number": 433,
           "section_offset": 28,
-          "size": null,
-          "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "size": 4,
+          "storage_address": 4895192,
+          "storage_name": "effect_template_lifetime",
           "symbols": [
             "_effect_template_lifetime"
           ]
         },
         {
           "address": 4895220,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_template_scale_step",
           "section_number": 433,
           "section_offset": 56,
-          "size": null,
-          "storage_address": 4895164,
-          "storage_name": "effect_template",
+          "size": 4,
+          "storage_address": 4895220,
+          "storage_name": "effect_template_scale_step",
           "symbols": [
             "_effect_template_scale_step"
           ]
@@ -8726,15 +8726,15 @@
         },
         {
           "address": 4895536,
-          "alignment": null,
+          "alignment": 4,
           "initializer_target": null,
-          "kind": "interior-alias",
+          "kind": "definition",
           "name": "effect_pool_pos_x",
           "section_number": 436,
           "section_offset": 0,
-          "size": null,
+          "size": 188,
           "storage_address": 4895536,
-          "storage_name": "effect_pool",
+          "storage_name": "effect_pool_pos_x",
           "symbols": [
             "_effect_pool_pos_x"
           ]
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "22a661af84120fbae3e8c755ba05ae3191cf75158be8b098abfcc59b3473c037"
+        "sha256": "851f9b1bbe2338abcd9af890c17d5e1612b8061f3af776d0e23b62d9c1bd1891"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -18367,6 +18367,38 @@
             {
               "address": 4895164,
               "name": "effect_template"
+            },
+            {
+              "address": 4895164,
+              "name": "effect_template_vel_x"
+            },
+            {
+              "address": 4895168,
+              "name": "effect_template_vel_y"
+            },
+            {
+              "address": 4895172,
+              "name": "effect_template_rotation"
+            },
+            {
+              "address": 4895180,
+              "name": "effect_template_half_width"
+            },
+            {
+              "address": 4895184,
+              "name": "effect_template_half_height"
+            },
+            {
+              "address": 4895188,
+              "name": "effect_template_age"
+            },
+            {
+              "address": 4895192,
+              "name": "effect_template_lifetime"
+            },
+            {
+              "address": 4895220,
+              "name": "effect_template_scale_step"
             }
           ],
           "relocations": [],
@@ -18406,6 +18438,10 @@
             {
               "address": 4895536,
               "name": "effect_pool"
+            },
+            {
+              "address": 4895536,
+              "name": "effect_pool_pos_x"
             }
           ],
           "relocations": [],
@@ -87891,7 +87927,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "22a661af84120fbae3e8c755ba05ae3191cf75158be8b098abfcc59b3473c037"
+        "sha256": "851f9b1bbe2338abcd9af890c17d5e1612b8061f3af776d0e23b62d9c1bd1891"
       }
     ],
     "toolchain": {

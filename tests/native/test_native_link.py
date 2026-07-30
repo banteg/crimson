@@ -2246,12 +2246,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert payload["summary"]["entry_count"] == 1548
     assert payload["summary"]["typed_entries"] == 1548
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1274
-    assert payload["summary"]["explicit_alignment_entries"] == 1274
-    assert payload["summary"]["explicit_initializer_entries"] == 1274
-    assert payload["summary"]["fully_specified_entries"] == 1274
-    assert payload["summary"]["definition_group_entries"] == 1190
-    assert payload["summary"]["definition_groups"] == 124
+    assert payload["summary"]["explicit_size_entries"] == 1365
+    assert payload["summary"]["explicit_alignment_entries"] == 1365
+    assert payload["summary"]["explicit_initializer_entries"] == 1365
+    assert payload["summary"]["fully_specified_entries"] == 1365
+    assert payload["summary"]["definition_group_entries"] == 1281
+    assert payload["summary"]["definition_groups"] == 126
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2303,7 +2303,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["bonus_state"]["size"] == 1
     assert defined["bonus_icon_fire_bullets"]["size"] == 4
     assert defined["bonus_hud_slot_timer_ptr"]["definition_group"] == "zero-pointer32"
+    assert defined["projectile_type_id"]["definition_group"] == "zero-enum32"
+    assert defined["secondary_proj_unused_0x28"]["definition_group"] == "zero-uint32"
     assert defined["effect_template"]["size"] == 0x3C
+    assert defined["effect_template_scale_step"]["size"] == 4
+    assert defined["effect_pool_pos_x"]["size"] == 0xBC
+    assert defined["effect_pool_quad_data"]["size"] == 0x70
     assert defined["music_entry_table"]["size"] == 0x4200
     assert defined["weapon_table"]["size"] == 0x1F00
     assert defined["weapon_ammo_class"]["size"] == 0x1F00
