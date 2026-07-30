@@ -921,13 +921,11 @@ extern "C" void projectile_render(float transition_alpha)
     }
     grim_interface_ptr->grim_end_batch();
 
+    float plague_phase =
+        ((float)survival_elapsed_ms * 0.001f) * 9.0f;
     grim_interface_ptr->grim_set_config_var(0x13, 1u);
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
     grim_interface_ptr->grim_begin_batch();
-    float plague_phase =
-        (float)highscore_active_record.survival_elapsed_ms
-        * 0.001f
-        * 9.0f;
     for (projectile_index = 0;
          projectile_index < 0x60;
          ++projectile_index) {

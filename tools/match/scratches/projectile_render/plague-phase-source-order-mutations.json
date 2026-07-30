@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plague-phase-source-and-order",
+      "find": "    grim_interface_ptr->grim_end_batch();\n\n    grim_interface_ptr->grim_set_config_var(0x13, 1u);\n    grim_interface_ptr->grim_set_config_var(0x14, 6u);\n    grim_interface_ptr->grim_begin_batch();\n    float plague_phase =\n        (float)highscore_active_record.survival_elapsed_ms\n        * 0.001f\n        * 9.0f;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "signed-field-after-batch-start",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    grim_interface_ptr->grim_set_config_var(0x13, 1u);\n    grim_interface_ptr->grim_set_config_var(0x14, 6u);\n    grim_interface_ptr->grim_begin_batch();\n    float plague_phase =\n        (float)(int)highscore_active_record.survival_elapsed_ms\n        * 0.001f\n        * 9.0f;\n"
+        },
+        {
+          "name": "elapsed-global-after-batch-start",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    grim_interface_ptr->grim_set_config_var(0x13, 1u);\n    grim_interface_ptr->grim_set_config_var(0x14, 6u);\n    grim_interface_ptr->grim_begin_batch();\n    float plague_phase =\n        (float)survival_elapsed_ms * 0.001f * 9.0f;\n"
+        },
+        {
+          "name": "unsigned-field-before-batch-start",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    float plague_phase =\n        (float)highscore_active_record.survival_elapsed_ms\n        * 0.001f\n        * 9.0f;\n    grim_interface_ptr->grim_set_config_var(0x13, 1u);\n    grim_interface_ptr->grim_set_config_var(0x14, 6u);\n    grim_interface_ptr->grim_begin_batch();\n"
+        },
+        {
+          "name": "signed-field-before-batch-start",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    float plague_phase =\n        (float)(int)highscore_active_record.survival_elapsed_ms\n        * 0.001f\n        * 9.0f;\n    grim_interface_ptr->grim_set_config_var(0x13, 1u);\n    grim_interface_ptr->grim_set_config_var(0x14, 6u);\n    grim_interface_ptr->grim_begin_batch();\n"
+        },
+        {
+          "name": "elapsed-global-before-batch-start",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    float plague_phase =\n        (float)survival_elapsed_ms * 0.001f * 9.0f;\n    grim_interface_ptr->grim_set_config_var(0x13, 1u);\n    grim_interface_ptr->grim_set_config_var(0x14, 6u);\n    grim_interface_ptr->grim_begin_batch();\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plague-phase-scale-lifetime",
+      "find": "    float plague_phase =\n        (float)survival_elapsed_ms * 0.001f * 9.0f;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "split-scale-update",
+          "text": "    float plague_phase =\n        (float)survival_elapsed_ms * 0.001f;\n    plague_phase *= 9.0f;\n"
+        },
+        {
+          "name": "split-scale-assignment",
+          "text": "    float plague_phase =\n        (float)survival_elapsed_ms * 0.001f;\n    plague_phase = plague_phase * 9.0f;\n"
+        },
+        {
+          "name": "initialized-seconds-temp",
+          "text": "    float plague_seconds =\n        (float)survival_elapsed_ms * 0.001f;\n    float plague_phase = plague_seconds * 9.0f;\n"
+        },
+        {
+          "name": "assigned-seconds-temp",
+          "text": "    float plague_seconds;\n    float plague_phase;\n    plague_seconds = (float)survival_elapsed_ms * 0.001f;\n    plague_phase = plague_seconds * 9.0f;\n"
+        },
+        {
+          "name": "parenthesized-chain",
+          "text": "    float plague_phase =\n        ((float)survival_elapsed_ms * 0.001f) * 9.0f;\n"
+        }
+      ]
+    }
+  ]
+}

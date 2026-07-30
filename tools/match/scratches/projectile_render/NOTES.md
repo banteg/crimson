@@ -559,3 +559,47 @@ The retained source has SHA-256
 errors across 35 complete sweeps and 758 variants. `experiments.jsonl` now has
 SHA-256
 `77c1af0215d8a780900ddaa46c55f7a0f9edd2d606966ce2d4ac526f73c28239`.
+
+## Plague timer source, order, and rounding-lifetime wave
+
+The native plague pass begins at `0x00424fd2`, immediately after the preceding
+`grim_end_batch`. It loads address `0x00487060` with signed `fild dword`,
+multiplies first by `0.001f` and then by `9.0f`, and keeps that x87 value live
+while constructing the first `grim_set_config_var` call. Binary Ninja names
+the address `survival_elapsed_ms`; the previous recovery instead read the
+unsigned `highscore_active_record.survival_elapsed_ms` field after all three
+batch-setup calls. VC6 therefore emitted an unsigned qword-conversion
+temporary, the wrong source order, and a folded `0.009f` constant.
+
+Two complete five-variant sweeps bound the repair:
+
+- `plague-phase-source-order-mutations.json` (SHA-256
+  `6ee8a3e91c94fb08f69a0a3c0c0ec6e84a32dc1525af8c594d307752c4b27fe5`)
+  varies the signed source and its position around the batch setup. Only the
+  signed dword forms placed before the calls reproduce the native load and
+  scheduling; the standalone global and an explicit signed field cast compile
+  identically. The global spelling is retained because it is also the native
+  symbol at `0x00487060`.
+- `plague-phase-lifetime-mutations.json` (SHA-256
+  `df3feca9c7e723055ab747e20d10cfc016615adbc5493aa170f78459eef6ecf1`)
+  varies five ways of preserving the intermediate `elapsed * 0.001f` result.
+  All five compile identically and improve without tradeoffs. The minimal
+  parenthesized chain is retained; unlike the ungrouped expression, VC6 keeps
+  the native two-`fmul` rounding boundary instead of folding the constants.
+
+The retained object now matches the native island instruction-for-instruction
+apart from the function-wide stack-slot displacement: `fild dword
+[_survival_elapsed_ms]`, the two `fmul` relocations, interleaved first-call
+construction, and final `fstp`. Against the prior source, the two sweeps add
+24.694 fuzzy-weighted bytes, reduce the gap from 5,920.765 to 5,896.071 bytes,
+and move the ratio from 52.8263453% to 53.0230978%. References improve from
+`413/0/11` to `415/0/11`. The candidate is now 2,867/3,021 instructions; the
+lower aggregate instruction count comes from removing the non-native unsigned
+qword conversion sequence.
+
+The retained source has SHA-256
+`7a5f066a76e108429ac840e040fdf1589652b96d2c348ca0161392a602e01318`.
+`crimson match validate` accepts it, and the experiment audit reports zero
+errors across 37 complete sweeps and 768 variants. `experiments.jsonl` now has
+SHA-256
+`6cd9a11ce8e873d962c98796bd4e7482879d4b3522e6e137bc7720cb2de95e52`.
