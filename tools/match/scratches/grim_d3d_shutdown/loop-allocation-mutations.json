@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "texture-slot-loop",
+      "find": "    for (i = 0; i < 256; ++i) {\n        texture = grim_texture_slots[i];\n        delete texture;\n        grim_texture_slots[i] = 0;\n    }\n",
+      "replacements": [
+        {
+          "name": "loop-scoped-index-and-texture",
+          "text": "    for (int slot_index = 0; slot_index < 256; ++slot_index) {\n        GrimTexture *slot_texture = grim_texture_slots[slot_index];\n        delete slot_texture;\n        grim_texture_slots[slot_index] = 0;\n    }\n"
+        },
+        {
+          "name": "texture-then-slot-while",
+          "text": "    {\n        GrimTexture *slot_texture;\n        GrimTexture **slot = grim_texture_slots;\n        while (slot < &grim_texture_slots[256]) {\n            slot_texture = *slot;\n            delete slot_texture;\n            *slot = 0;\n            ++slot;\n        }\n    }\n"
+        },
+        {
+          "name": "slot-then-texture-while",
+          "text": "    {\n        GrimTexture **slot = grim_texture_slots;\n        GrimTexture *slot_texture;\n        while (slot < &grim_texture_slots[256]) {\n            slot_texture = *slot;\n            delete slot_texture;\n            *slot = 0;\n            ++slot;\n        }\n    }\n"
+        },
+        {
+          "name": "pointer-for",
+          "text": "    for (GrimTexture **slot = grim_texture_slots;\n         slot < &grim_texture_slots[256];\n         ++slot) {\n        GrimTexture *slot_texture = *slot;\n        delete slot_texture;\n        *slot = 0;\n    }\n"
+        },
+        {
+          "name": "texture-then-slot-do-while",
+          "text": "    {\n        GrimTexture *slot_texture;\n        GrimTexture **slot = grim_texture_slots;\n        do {\n            slot_texture = *slot;\n            delete slot_texture;\n            *slot = 0;\n            ++slot;\n        } while (slot < &grim_texture_slots[256]);\n    }\n"
+        },
+        {
+          "name": "direct-index-delete",
+          "text": "    for (i = 0; i < 256; ++i) {\n        delete grim_texture_slots[i];\n        grim_texture_slots[i] = 0;\n    }\n"
+        },
+        {
+          "name": "direct-pointer-delete",
+          "text": "    {\n        GrimTexture **slot = grim_texture_slots;\n        while (slot < &grim_texture_slots[256]) {\n            delete *slot;\n            *slot = 0;\n            ++slot;\n        }\n    }\n"
+        },
+        {
+          "name": "indexed-slot-pointer",
+          "text": "    for (i = 0; i < 256; ++i) {\n        GrimTexture **slot = &grim_texture_slots[i];\n        texture = *slot;\n        delete texture;\n        *slot = 0;\n    }\n"
+        },
+        {
+          "name": "pointer-end-while",
+          "text": "    {\n        GrimTexture **slot = grim_texture_slots;\n        GrimTexture **slot_end = &grim_texture_slots[256];\n        while (slot != slot_end) {\n            texture = *slot;\n            delete texture;\n            *slot = 0;\n            ++slot;\n        }\n    }\n"
+        },
+        {
+          "name": "pointer-preincrement-current",
+          "text": "    {\n        GrimTexture **slot = grim_texture_slots;\n        while (slot < &grim_texture_slots[256]) {\n            GrimTexture **current = slot++;\n            texture = *current;\n            delete texture;\n            *current = 0;\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-temp-if",
+          "text": "    for (i = 0; i < 256; ++i) {\n        texture = grim_texture_slots[i];\n        if (texture != 0) {\n            delete texture;\n            grim_texture_slots[i] = 0;\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-temp-if-clear-after",
+          "text": "    for (i = 0; i < 256; ++i) {\n        texture = grim_texture_slots[i];\n        if (texture != 0) {\n            delete texture;\n        }\n        grim_texture_slots[i] = 0;\n    }\n"
+        },
+        {
+          "name": "explicit-direct-if",
+          "text": "    for (i = 0; i < 256; ++i) {\n        if (grim_texture_slots[i] != 0) {\n            delete grim_texture_slots[i];\n            grim_texture_slots[i] = 0;\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-slot-if",
+          "text": "    for (i = 0; i < 256; ++i) {\n        GrimTexture **slot = &grim_texture_slots[i];\n        texture = *slot;\n        if (texture != 0) {\n            delete texture;\n            *slot = 0;\n        }\n    }\n"
+        },
+        {
+          "name": "index-init-before-loop",
+          "text": "    i = 0;\n    while (i < 256) {\n        texture = grim_texture_slots[i];\n        delete texture;\n        grim_texture_slots[i] = 0;\n        ++i;\n    }\n"
+        },
+        {
+          "name": "index-postincrement",
+          "text": "    for (i = 0; i < 256; i++) {\n        texture = grim_texture_slots[i];\n        delete texture;\n        grim_texture_slots[i] = 0;\n    }\n"
+        },
+        {
+          "name": "register-texture",
+          "text": "    for (i = 0; i < 256; ++i) {\n        register GrimTexture *slot_texture = grim_texture_slots[i];\n        delete slot_texture;\n        grim_texture_slots[i] = 0;\n    }\n"
+        },
+        {
+          "name": "register-index",
+          "text": "    for (register int slot_index = 0; slot_index < 256; ++slot_index) {\n        texture = grim_texture_slots[slot_index];\n        delete texture;\n        grim_texture_slots[slot_index] = 0;\n    }\n"
+        },
+        {
+          "name": "register-texture-and-index",
+          "text": "    for (register int slot_index = 0; slot_index < 256; ++slot_index) {\n        register GrimTexture *slot_texture = grim_texture_slots[slot_index];\n        delete slot_texture;\n        grim_texture_slots[slot_index] = 0;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

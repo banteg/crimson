@@ -3,7 +3,6 @@
 void grim_d3d_shutdown(void)
 {
     int i;
-    GrimTexture *texture;
 
     if (grim_backbuffer_surface != 0) {
         if (grim_backbuffer_surface->Release() <= 0) {
@@ -27,9 +26,10 @@ void grim_d3d_shutdown(void)
     }
 
     for (i = 0; i < 256; ++i) {
-        texture = grim_texture_slots[i];
-        delete texture;
-        grim_texture_slots[i] = 0;
+        if (grim_texture_slots[i] != 0) {
+            delete grim_texture_slots[i];
+            grim_texture_slots[i] = 0;
+        }
     }
 
     grim_release_geometry_buffers();
