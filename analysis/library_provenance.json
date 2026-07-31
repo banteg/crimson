@@ -13,6 +13,16 @@
           "path": "DXF/DXSDK/lib/d3dx8.lib",
           "size": 2150226,
           "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+        },
+        {
+          "path": "DXF/DXSDK/lib/dinput8.lib",
+          "size": 19978,
+          "sha256": "1aefd62d9df8a26aa312817bd98b2fc3340477b238c918fc9edc04f7498a5b34"
+        },
+        {
+          "path": "DXF/DXSDK/lib/dxguid.lib",
+          "size": 104752,
+          "sha256": "73a147b9ff6e4527e543e9a436cb244adcdae4ad89b89df51a0634f9a8c13682"
         }
       ]
     },
@@ -179,6 +189,60 @@
         "tools/match/scratches/reg_write_dword/scratch.c"
       ],
       "validation": "Every archive member must remain an exact all-scope instruction and reference match.",
+      "normalization": [
+        "zero archive member timestamps",
+        "zero COFF TimeDateStamp fields"
+      ],
+      "tools": {
+        "lib_sha256": "2a2b5c23b1ca784f6b62fdd2e9d29ce10bc85e95f47117bda03767f02d68f2f6",
+        "wibo_sha256": "e81ef773fb511e3780bbd8dcf324ffec2497f52805f10fa20d6e4a29bc0f94bc"
+      }
+    },
+    {
+      "id": "grim-recovered-platform-vc6-provider",
+      "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
+      "size": 59442,
+      "sha256": "b88b14df24ffaec4c65e74b3924480fbde484683a0c59dcda8588d1fdcd32806",
+      "recipe": "scripts/build_native_recovered_providers.py",
+      "source_artifacts": [
+        "visual-cpp-6-sp6-media"
+      ],
+      "tracked_sources": [
+        "tools/match/scratches/grim_apply_config/scratch.cpp",
+        "tools/match/scratches/grim_app_cleanup/scratch.cpp",
+        "tools/match/scratches/grim_app_init/scratch.cpp",
+        "tools/match/scratches/grim_app_pump/scratch.cpp",
+        "tools/match/scratches/grim_app_shutdown/scratch.cpp",
+        "tools/match/scratches/grim_app_tick/scratch.cpp",
+        "tools/match/scratches/grim_create_geometry_buffers/scratch.cpp",
+        "tools/match/scratches/grim_d3d_init/scratch.cpp",
+        "tools/match/scratches/grim_d3d_shutdown/scratch.cpp",
+        "tools/match/scratches/grim_joystick_configure_axis/scratch.cpp",
+        "tools/match/scratches/grim_joystick_button_down/scratch.cpp",
+        "tools/match/scratches/grim_joystick_enum_device/scratch.cpp",
+        "tools/match/scratches/grim_joystick_init/scratch.cpp",
+        "tools/match/scratches/grim_joystick_poll/scratch.cpp",
+        "tools/match/scratches/grim_joystick_shutdown/scratch.cpp",
+        "tools/match/scratches/grim_keyboard_init/scratch.cpp",
+        "tools/match/scratches/grim_keyboard_key_down/scratch.cpp",
+        "tools/match/scratches/grim_keyboard_poll/scratch.cpp",
+        "tools/match/scratches/grim_keyboard_shutdown/scratch.cpp",
+        "tools/match/scratches/grim_mouse_button_down/scratch.cpp",
+        "tools/match/scratches/grim_mouse_init/scratch.cpp",
+        "tools/match/scratches/grim_mouse_poll/scratch.cpp",
+        "tools/match/scratches/grim_mouse_shutdown/scratch.cpp",
+        "tools/match/scratches/grim_release_geometry_buffers/scratch.cpp",
+        "tools/match/scratches/grim_restore_textures/scratch.cpp",
+        "tools/match/scratches/grim_save_screenshot/scratch.cpp",
+        "tools/match/scratches/grim_save_texture/scratch.cpp",
+        "tools/match/scratches/grim_window_create/scratch.cpp",
+        "tools/match/scratches/grim_window_destroy/scratch.cpp",
+        "tools/match/scratches/grim_run_loop/scratch.cpp",
+        "tools/match/scratches/grim_try_reset_device/scratch.cpp",
+        "tools/native/providers/sources/grim_app_on_tick/scratch.cpp",
+        "tools/native/data_definitions/grim.dll.json"
+      ],
+      "validation": "Every function member must remain an exact all-scope instruction and reference match; provider-only data dependencies must be fully specified and disjoint from the primary native data object.",
       "normalization": [
         "zero archive member timestamps",
         "zero COFF TimeDateStamp fields"

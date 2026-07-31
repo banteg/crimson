@@ -601,9 +601,11 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     assert coverage["import_symbols"] == 21
     assert coverage["import_exports"] == 20
     assert coverage["generated_import_symbols"] == 5
-    assert coverage["archive_symbols"] == 33
-    assert coverage["link_dependency_symbols"] == 24
-    assert coverage["placeholder_symbols"] == 16
+    assert coverage["archive_symbols"] == 49
+    assert coverage["link_dependency_symbols"] == 57
+    assert coverage["closure_placeholder_symbols"] == 0
+    assert coverage["link_dependency_placeholder_symbols"] == 2
+    assert coverage["placeholder_symbols"] == 2
     assert coverage["runnable"] is False
     assert [
         provider.name
@@ -613,6 +615,12 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
         "user32.dll",
         "winmm.dll",
         "d3d8.dll",
+        "recovered-platform-dinput8",
+        "recovered-platform-user32",
+        "recovered-platform-kernel32",
+        "recovered-platform-gdi32",
+        "recovered-platform-winmm",
+        "recovered-platform-msvcrt",
         "directx-8.1-d3dx8-kernel32",
         "directx-8.1-d3dx8-gdi32",
         "directx-8.1-d3dx8-advapi32",
@@ -623,17 +631,36 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
         if provider.resolution == "archive-library"
     ] == [
         "msvcrt.dll",
+        "recovered-platform",
+        "recovered-platform-dinput-data",
+        "recovered-platform-dxguid",
         "directx-8.1-d3dx8-static",
         "grim-jaz-libjpeg-6a-vc6-static",
         "zlib-1.1.3-static",
         "msvc6-runtime-static",
         "msvc6-toolchain",
     ]
-    assert len(config.archives) == 4
+    assert len(config.archives) == 7
     archives = {archive.id: archive for archive in config.archives}
+    assert archives["grim-recovered-platform-vc6"].size == 59442
+    assert archives["grim-recovered-platform-vc6"].sha256 == (
+        "b88b14df24ffaec4c65e74b3924480fbde484683a0c59dcda8588d1fdcd32806"
+    )
+    assert (
+        archives["grim-recovered-platform-vc6"].provenance.derived_artifact
+        == "grim-recovered-platform-vc6-provider"
+    )
     assert archives["directx-8.1-d3dx8"].size == 2150226
     assert archives["directx-8.1-d3dx8"].sha256 == (
         "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+    )
+    assert archives["directx-8.1-dinput8"].size == 19978
+    assert archives["directx-8.1-dinput8"].sha256 == (
+        "1aefd62d9df8a26aa312817bd98b2fc3340477b238c918fc9edc04f7498a5b34"
+    )
+    assert archives["directx-8.1-dxguid"].size == 104752
+    assert archives["directx-8.1-dxguid"].sha256 == (
+        "73a147b9ff6e4527e543e9a436cb244adcdae4ad89b89df51a0634f9a8c13682"
     )
     assert archives["vc6-sp6-msvcrt"].size == 235942
     assert archives["vc6-sp6-msvcrt"].sha256 == (
@@ -723,7 +750,7 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
     ]
 
 
-def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
+def test_default_grim_link_manifest_records_recovered_platform_frontier() -> None:
     manifest = json.loads(
         (
             matchlib.REPO_ROOT
@@ -732,32 +759,41 @@ def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
     )
 
     assert manifest["schema"] == 3
-    assert manifest["summary"]["link_dependency_symbols"] == 24
-    assert manifest["summary"]["archive_symbols"] == 33
+    assert manifest["status"] == "linked"
+    assert manifest["runnable"] is False
+    assert manifest["summary"]["link_dependency_symbols"] == 57
+    assert manifest["summary"]["archive_symbols"] == 49
     assert manifest["summary"]["import_exports"] == 20
-    assert manifest["summary"]["placeholder_symbols"] == 16
+    assert manifest["summary"]["closure_placeholder_symbols"] == 0
+    assert manifest["summary"]["link_dependency_placeholder_symbols"] == 2
+    assert manifest["summary"]["placeholder_symbols"] == 2
     assert manifest["summary"]["discarded_placeholder_symbols"] == 0
-    assert manifest["summary"]["retained_closure_placeholder_symbols"] == 16
-    assert manifest["summary"]["retained_link_dependency_placeholder_symbols"] == 0
-    assert manifest["summary"]["retained_placeholder_symbols"] == 16
-    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 17
-    assert manifest["summary"]["validated_output_import_symbols"] == 54
+    assert manifest["summary"]["retained_closure_placeholder_symbols"] == 0
+    assert manifest["summary"]["retained_link_dependency_placeholder_symbols"] == 2
+    assert manifest["summary"]["retained_placeholder_symbols"] == 2
+    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 48
+    assert manifest["summary"]["validated_output_import_symbols"] == 85
+    assert manifest["summary"]["input_object_count"] == 164
     assert manifest["entry"] == {"symbol": "DllMain"}
     assert manifest["placeholder_object"]["discarded_symbols"] == []
-    assert len(manifest["placeholder_object"]["retained_symbols"]) == 16
+    assert manifest["placeholder_object"]["retained_symbols"] == [
+        "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
+        "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z",
+    ]
     dependencies = {
         row["module"]: row
         for row in manifest["reference_imports"]["link_dependencies"]
     }
     assert dependencies["kernel32"]["discarded_symbols"] == [
-        "FindResourceA",
         "FindResourceW",
-        "LoadResource",
-        "LockResource",
-        "SizeofResource",
-        "WriteFile",
     ]
-    assert dependencies["gdi32"]["retained_symbols"] == []
+    assert dependencies["dinput8"]["retained_symbols"] == [
+        "DirectInput8Create",
+    ]
+    assert dependencies["gdi32"]["retained_symbols"] == [
+        "DeleteObject",
+        "GetStockObject",
+    ]
     assert dependencies["advapi32"]["discarded_symbols"] == []
 
 
@@ -1034,9 +1070,12 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
 
-    assert len(symbols) == 16
-    assert len(coff.sections) == 16
-    assert [section.name for section in coff.sections] == [".text"] * 16
+    assert set(symbols) == {
+        "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
+        "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z",
+    }
+    assert len(coff.sections) == 2
+    assert [section.name for section in coff.sections] == [".text"] * 2
     assert {
         (section.comdat_key, section.comdat_selection)
         for section in coff.sections
@@ -1048,10 +1087,6 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
     assert "_d3dx_copy_texture_filtered@24" not in symbols
     assert "_jpeg_CreateDecompress" not in symbols
     assert "_grim_jpeg_memory_src" not in symbols
-    cxx = symbols["?grim_apply_config@IGrim2D_cpp@@UAE_NXZ"]
-    assert coff.sections[cxx.section_number - 1].data[
-        cxx.value : cxx.value + 3
-    ] == b"\x31\xc0\xc3"
     assert "__fltused" not in symbols
 
 

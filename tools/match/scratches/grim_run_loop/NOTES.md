@@ -14,3 +14,5 @@ rendering is disabled. Frozen non-DC frames sleep for 50 ms.
 
 The recovered function matches all 174 native instructions and all 61 masked
 references across its 608-byte body under MSVC 6.5 `/O2 /GB`.
+Its C linkage preserves the native `_grim_run_loop` entry symbol used by the
+application seam.

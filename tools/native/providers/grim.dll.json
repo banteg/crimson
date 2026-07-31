@@ -6,6 +6,15 @@
   "mode": "structural",
   "archives": [
     {
+      "id": "grim-recovered-platform-vc6",
+      "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
+      "sha256": "b88b14df24ffaec4c65e74b3924480fbde484683a0c59dcda8588d1fdcd32806",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "derived_artifact": "grim-recovered-platform-vc6-provider"
+      }
+    },
+    {
       "id": "directx-8.1-d3dx8",
       "path": "tools/native/providers/build/directx-8.1/d3dx8.lib",
       "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28",
@@ -13,6 +22,26 @@
         "path": "analysis/library_provenance.json",
         "source_artifact": "directx-8.1-sdk-full",
         "member": "DXF/DXSDK/lib/d3dx8.lib"
+      }
+    },
+    {
+      "id": "directx-8.1-dinput8",
+      "path": "tools/native/providers/build/directx-8.1/dinput8.lib",
+      "sha256": "1aefd62d9df8a26aa312817bd98b2fc3340477b238c918fc9edc04f7498a5b34",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "source_artifact": "directx-8.1-sdk-full",
+        "member": "DXF/DXSDK/lib/dinput8.lib"
+      }
+    },
+    {
+      "id": "directx-8.1-dxguid",
+      "path": "tools/native/providers/build/directx-8.1/dxguid.lib",
+      "sha256": "73a147b9ff6e4527e543e9a436cb244adcdae4ad89b89df51a0634f9a8c13682",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "source_artifact": "directx-8.1-sdk-full",
+        "member": "DXF/DXSDK/lib/dxguid.lib"
       }
     },
     {
@@ -244,13 +273,18 @@
       ]
     },
     {
-      "name": "host-platform-replacements",
+      "name": "recovered-platform",
       "kind": "platform-replaced",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "archive": "grim-recovered-platform-vc6",
       "evidence": [
         {
-          "path": "analysis/matching_scope.json",
-          "note": "The port scope assigns these Win32, Direct3D, and input responsibilities to host backends."
+          "path": "analysis/library_provenance.json",
+          "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member."
+        },
+        {
+          "path": "tools/match/scratches/grim_d3d_shutdown/NOTES.md",
+          "note": "The final platform member is an exact 196-byte match with all 17 references aligned."
         }
       ],
       "symbols": [
@@ -317,6 +351,425 @@
         {
           "name": "_grim_run_loop",
           "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-callback-frontier",
+      "scope": "link-dependency",
+      "kind": "static-library",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/functions.json",
+          "note": "The two remaining recovered-platform references are bounded native callbacks with known addresses and signatures but no matching scratches yet."
+        },
+        {
+          "path": "tools/match/scratches/grim_apply_config/scratch.cpp",
+          "note": "The exact config launcher references the native dialog callback."
+        },
+        {
+          "path": "tools/match/scratches/grim_window_create/scratch.cpp",
+          "note": "The exact window creator references the native window callback."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-dinput8",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "DINPUT8.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports DirectInput8Create from DINPUT8."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned DirectX 8.1 SDK supplies the original dinput8 import archive."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_DirectInput8Create@20",
+          "link_name": "DirectInput8Create@20",
+          "export": "DirectInput8Create"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-dinput-data",
+      "scope": "link-dependency",
+      "kind": "static-library",
+      "resolution": "archive-library",
+      "archive": "directx-8.1-dinput8",
+      "evidence": [
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned DirectX 8.1 SDK dinput8 archive supplies the canonical DirectInput data-format objects."
+        },
+        {
+          "path": "tools/match/scratches/grim_mouse_init/scratch.cpp",
+          "note": "The exact recovered input initializers retain the SDK data-format references."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_c_dfDIJoystick2",
+          "binding": "data"
+        },
+        {
+          "name": "_c_dfDIKeyboard",
+          "binding": "data"
+        },
+        {
+          "name": "_c_dfDIMouse2",
+          "binding": "data"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-dxguid",
+      "scope": "link-dependency",
+      "kind": "static-library",
+      "resolution": "archive-library",
+      "archive": "directx-8.1-dxguid",
+      "evidence": [
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned DirectX 8.1 SDK supplies the exact DirectInput GUID and data-format definitions referenced by the recovered input backends."
+        },
+        {
+          "path": "tools/match/scratches/grim_mouse_init/scratch.cpp",
+          "note": "The exact recovered input initializers retain the SDK GUID and data-format references."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_GUID_SysKeyboard",
+          "binding": "data"
+        },
+        {
+          "name": "_GUID_SysMouse",
+          "binding": "data"
+        },
+        {
+          "name": "_IID_IDirectInput8A",
+          "binding": "data"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-user32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "USER32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports these Win32 window, dialog, and message-loop exports from USER32."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The exact recovered platform archive retains the corresponding decorated import references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__AdjustWindowRectEx@16",
+          "target": "__imp__AdjustWindowRectEx"
+        },
+        {
+          "alias": "__imp__CreateWindowExA@48",
+          "target": "__imp__CreateWindowExA"
+        },
+        {
+          "alias": "__imp__DestroyWindow@4",
+          "target": "__imp__DestroyWindow"
+        },
+        {
+          "alias": "__imp__DialogBoxParamA@20",
+          "target": "__imp__DialogBoxParamA"
+        },
+        {
+          "alias": "__imp__DispatchMessageA@4",
+          "target": "__imp__DispatchMessageA"
+        },
+        {
+          "alias": "__imp__GetClientRect@8",
+          "target": "__imp__GetClientRect"
+        },
+        {
+          "alias": "__imp__GetDesktopWindow@0",
+          "target": "__imp__GetDesktopWindow"
+        },
+        {
+          "alias": "__imp__GetForegroundWindow@0",
+          "target": "__imp__GetForegroundWindow"
+        },
+        {
+          "alias": "__imp__GetSystemMetrics@4",
+          "target": "__imp__GetSystemMetrics"
+        },
+        {
+          "alias": "__imp__LoadCursorA@8",
+          "target": "__imp__LoadCursorA"
+        },
+        {
+          "alias": "__imp__PeekMessageA@20",
+          "target": "__imp__PeekMessageA"
+        },
+        {
+          "alias": "__imp__PostQuitMessage@4",
+          "target": "__imp__PostQuitMessage"
+        },
+        {
+          "alias": "__imp__RegisterClassExA@4",
+          "target": "__imp__RegisterClassExA"
+        },
+        {
+          "alias": "__imp__SetFocus@4",
+          "target": "__imp__SetFocus"
+        },
+        {
+          "alias": "__imp__SetForegroundWindow@4",
+          "target": "__imp__SetForegroundWindow"
+        },
+        {
+          "alias": "__imp__ShowCursor@4",
+          "target": "__imp__ShowCursor"
+        },
+        {
+          "alias": "__imp__ShowWindow@8",
+          "target": "__imp__ShowWindow"
+        },
+        {
+          "alias": "__imp__TranslateMessage@4",
+          "target": "__imp__TranslateMessage"
+        },
+        {
+          "alias": "__imp__UnregisterClassA@8",
+          "target": "__imp__UnregisterClassA"
+        },
+        {
+          "alias": "__imp__UpdateWindow@4",
+          "target": "__imp__UpdateWindow"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__AdjustWindowRectEx@16",
+          "link_name": "AdjustWindowRectEx",
+          "export": "AdjustWindowRectEx"
+        },
+        {
+          "name": "__imp__CreateWindowExA@48",
+          "link_name": "CreateWindowExA",
+          "export": "CreateWindowExA"
+        },
+        {
+          "name": "__imp__DestroyWindow@4",
+          "link_name": "DestroyWindow",
+          "export": "DestroyWindow"
+        },
+        {
+          "name": "__imp__DialogBoxParamA@20",
+          "link_name": "DialogBoxParamA",
+          "export": "DialogBoxParamA"
+        },
+        {
+          "name": "__imp__DispatchMessageA@4",
+          "link_name": "DispatchMessageA",
+          "export": "DispatchMessageA"
+        },
+        {
+          "name": "__imp__GetClientRect@8",
+          "link_name": "GetClientRect",
+          "export": "GetClientRect"
+        },
+        {
+          "name": "__imp__GetDesktopWindow@0",
+          "link_name": "GetDesktopWindow",
+          "export": "GetDesktopWindow"
+        },
+        {
+          "name": "__imp__GetForegroundWindow@0",
+          "link_name": "GetForegroundWindow",
+          "export": "GetForegroundWindow"
+        },
+        {
+          "name": "__imp__GetSystemMetrics@4",
+          "link_name": "GetSystemMetrics",
+          "export": "GetSystemMetrics"
+        },
+        {
+          "name": "__imp__LoadCursorA@8",
+          "link_name": "LoadCursorA",
+          "export": "LoadCursorA"
+        },
+        {
+          "name": "__imp__PeekMessageA@20",
+          "link_name": "PeekMessageA",
+          "export": "PeekMessageA"
+        },
+        {
+          "name": "__imp__PostQuitMessage@4",
+          "link_name": "PostQuitMessage",
+          "export": "PostQuitMessage"
+        },
+        {
+          "name": "__imp__RegisterClassExA@4",
+          "link_name": "RegisterClassExA",
+          "export": "RegisterClassExA"
+        },
+        {
+          "name": "__imp__SetFocus@4",
+          "link_name": "SetFocus",
+          "export": "SetFocus"
+        },
+        {
+          "name": "__imp__SetForegroundWindow@4",
+          "link_name": "SetForegroundWindow",
+          "export": "SetForegroundWindow"
+        },
+        {
+          "name": "__imp__ShowCursor@4",
+          "link_name": "ShowCursor",
+          "export": "ShowCursor"
+        },
+        {
+          "name": "__imp__ShowWindow@8",
+          "link_name": "ShowWindow",
+          "export": "ShowWindow"
+        },
+        {
+          "name": "__imp__TranslateMessage@4",
+          "link_name": "TranslateMessage",
+          "export": "TranslateMessage"
+        },
+        {
+          "name": "__imp__UnregisterClassA@8",
+          "link_name": "UnregisterClassA",
+          "export": "UnregisterClassA"
+        },
+        {
+          "name": "__imp__UpdateWindow@4",
+          "link_name": "UpdateWindow",
+          "export": "UpdateWindow"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-kernel32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "KERNEL32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports Sleep from KERNEL32."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__Sleep@4",
+          "target": "__imp__Sleep"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__Sleep@4",
+          "link_name": "Sleep",
+          "export": "Sleep"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-gdi32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "GDI32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports GetStockObject from GDI32."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__GetStockObject@4",
+          "target": "__imp__GetStockObject"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__GetStockObject@4",
+          "link_name": "GetStockObject",
+          "export": "GetStockObject"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-winmm",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "WINMM.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports timeEndPeriod from WINMM."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__timeEndPeriod@4",
+          "target": "__imp__timeEndPeriod"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__timeEndPeriod@4",
+          "link_name": "timeEndPeriod",
+          "export": "timeEndPeriod"
+        }
+      ]
+    },
+    {
+      "name": "recovered-platform-msvcrt",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "MSVCRT.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports strchr from MSVCRT."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned VC6 SP6 MSVCRT import archive supplies the original import object."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__strchr",
+          "link_name": "strchr",
+          "export": "strchr"
         }
       ]
     },

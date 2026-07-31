@@ -56,7 +56,7 @@ extern GrimDirectInput *grim_dinput_mouse;
 extern GrimMouseDevice *grim_mouse_device;
 extern bool grim_mouse_poll(void);
 
-bool grim_mouse_init(void)
+bool grim_mouse_init(HWND)
 {
     HWND hwnd = grim_main_window_hwnd;
     if (hwnd == 0 && GetForegroundWindow() == 0) {

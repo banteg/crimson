@@ -4,6 +4,9 @@ Native target: `grim.dll` at `0x1000a5a0..0x1000a662` (194 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 71/71
 normalized instructions, full prefix, and masked references `18/0/0`.
+The unused `HWND` parameter preserves the native
+`?grim_mouse_init@@YA_NPAUHWND__@@@Z` ABI while the body intentionally
+snapshots `grim_main_window_hwnd`.
 
 ## Recovered source shape
 

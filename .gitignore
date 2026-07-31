@@ -19,6 +19,7 @@
 /tools/native/data_definitions/build/
 /tools/native/linker_aliases/build/
 /tools/native/providers/build/
+/tools/native/providers/sources/*/build/
 /analysis/native/*/link/*
 !/analysis/native/*/link/link.json
 .venv/

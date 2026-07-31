@@ -51,7 +51,7 @@ bool grim_mouse_poll(void);
 HRESULT grim_try_reset_device(void);
 BOOL grim_window_destroy(void);
 
-int grim_run_loop(void)
+extern "C" int grim_run_loop(void)
 {
     MSG msg;
     memset(&msg, 0, sizeof(msg));
