@@ -122,6 +122,11 @@
       "sha256": "0e963fdd29d5049f61f3dc137bdc9437473a0ad505dbcfc8925f0fcad46c5929",
       "members": [
         {
+          "path": "jpeg-6a/jinclude.h",
+          "size": 3250,
+          "sha256": "a6433e5ea0030f4bffd41bcc2f064008afd79de4270cf28494bd43d2fbc5da06"
+        },
+        {
           "path": "jpeg-6a/jpeglib.h",
           "size": 44388,
           "sha256": "8d12532e685e58429e8e973f3e7d3604673750e79f5bc23598afbb8030175eae"
@@ -721,6 +726,11 @@
     }
   ],
   "synced_files": [
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jinclude.h",
+      "path": "third_party/headers/jinclude.h"
+    },
     {
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jpeglib.h",

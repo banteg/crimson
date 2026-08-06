@@ -234,6 +234,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   The recipe additionally gates exact `jpeg_resync_to_restart`, `jpeg_abort`,
   and `jpeg_destroy` bodies. Across the archive, 18 functions are required to
   match their reference addresses before publication.
+- Matcher corpus: the pinned IJG 6a `jinclude.h` is synced and provenance
+  checked alongside the public headers. All five memory-source functions now
+  select the canonical provider translation unit directly under its VC6
+  profile and documented one-byte `boolean` ABI, yielding 354 exact all-scope
+  bytes without duplicating the recovered source.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.

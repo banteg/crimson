@@ -3249,14 +3249,15 @@ def _scratch_has_unconfigured_files(directory: Path) -> bool:
     return False
 
 
-def _filter_dispositioned_scratch_configs(
+def _filter_scoped_scratch_configs(
     configs: Collection[ScratchConfig],
     *,
     scope: str | None,
 ) -> list[ScratchConfig]:
-    """Keep archived replacement scratches out of the active scoped corpus."""
+    """Keep every out-of-scope scratch out of the active scoped corpus."""
     if scope is None or scope == "all":
         return list(configs)
+    ranges = load_matching_scope(scope)
     dispositions = load_matching_scope_function_dispositions(scope)
     excluded_addresses = {
         image: frozenset(row.address for row in rows)
@@ -3265,10 +3266,6 @@ def _filter_dispositioned_scratch_configs(
     manifests: dict[str, FunctionManifest] = {}
     result: list[ScratchConfig] = []
     for config in configs:
-        image_exclusions = excluded_addresses.get(config.image, frozenset())
-        if not image_exclusions:
-            result.append(config)
-            continue
         if config.image not in manifests:
             _, functions_path, metadata_path = _paths_for_image(config.image)
             manifests[config.image] = load_function_manifest(
@@ -3286,7 +3283,9 @@ def _filter_dispositioned_scratch_configs(
         except ValueError:
             result.append(config)
             continue
-        if address not in image_exclusions:
+        owned = any(row.contains(address) for row in ranges.get(config.image, ()))
+        dispositioned = address in excluded_addresses.get(config.image, frozenset())
+        if owned and not dispositioned:
             result.append(config)
     return result
 
@@ -3314,7 +3313,7 @@ def validate_matching_workspace(
             configs.append(load_scratch_config(conf_path.parent))
         except Exception as exc:  # noqa: BLE001 - collect every invalid scratch config in one pass
             errors.append(f"{conf_path.parent.name}: {_exception_summary(exc)}")
-    for config in _filter_dispositioned_scratch_configs(configs, scope=scope):
+    for config in _filter_scoped_scratch_configs(configs, scope=scope):
         try:
             if config.image not in manifests:
                 _, functions_path, metadata_path = _paths_for_image(config.image)
@@ -3677,7 +3676,7 @@ def collect_scratch_statuses(
         if compiler is not None or cflags is not None:
             config = replace(config, compiler=compiler or config.compiler, cflags=cflags or config.cflags)
         configs.append(config)
-    configs = _filter_dispositioned_scratch_configs(configs, scope=scope)
+    configs = _filter_scoped_scratch_configs(configs, scope=scope)
 
     manifest_cache: dict[str, FunctionManifest] = {}
     catalog_cache: dict[str, ReferenceCatalog] = {}

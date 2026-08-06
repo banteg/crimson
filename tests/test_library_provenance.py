@@ -60,7 +60,7 @@ def test_library_provenance_manifest_validates_current_binaries() -> None:
         )
         == 3
     )
-    assert sum(check.component == "ijg-libjpeg-6a" and check.passed for check in report.checks) == 4
+    assert sum(check.component == "ijg-libjpeg-6a" and check.passed for check in report.checks) == 5
     assert sum(check.component == "d3dx8" and check.kind == "cross-image" for check in report.checks) == 3
 
 
@@ -115,7 +115,7 @@ def test_library_provenance_reports_synced_file_drift(tmp_path: Path) -> None:
     report = validate_library_provenance(manifest)
 
     assert any(
-        check.artifact == "third_party/headers/jpeglib.h"
+        check.artifact == "third_party/headers/jinclude.h"
         and check.kind == "source-member"
         and not check.passed
         for check in report.failed
