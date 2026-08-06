@@ -195,6 +195,9 @@ RECOVERY=semantic-complete
 RESIDUAL=compiler
 ```
 
+Only the fields shown above plus `NOTE` are accepted; misspelled or malformed
+assignments fail immediately instead of silently falling back to defaults.
+
 `REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
 names are reused across translation units. Each comma-separated
 `object-symbol:image-symbol` pair scopes that candidate symbol to one uniquely

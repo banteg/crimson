@@ -457,6 +457,23 @@ def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
     assert config.residuals == ("compiler", "references")
 
 
+def test_scratch_config_rejects_unknown_fields(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=foo MSVC_VER=msvc6.5pp\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="unknown field 'MSVC_VER'.*COMPILER"):
+        load_scratch_config(tmp_path)
+
+
+def test_scratch_config_rejects_malformed_assignments(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text("FUNCTION=foo typo\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid assignment 'typo'"):
+        load_scratch_config(tmp_path)
+
+
 def test_inspect_joins_scoped_tool_views() -> None:
     payload = inspect_match_function("game_is_full_version", statuses=[])
 

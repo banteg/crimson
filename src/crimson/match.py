@@ -2563,6 +2563,21 @@ DEFAULT_SCRATCH_COMPILER = "msvc6.5"
 DEFAULT_SCRATCH_CFLAGS = "/O2 /GB /W3 /GR-"
 RECOVERY_VALUES = frozenset({"incomplete", "semantic-complete"})
 RESIDUAL_VALUES = frozenset({"analysis", "compiler", "references"})
+SCRATCH_CONFIG_KEYS = frozenset(
+    {
+        "CFLAGS",
+        "COMPILER",
+        "END",
+        "FUNCTION",
+        "IMAGE",
+        "NOTE",
+        "RECOVERY",
+        "REFERENCE_ALIASES",
+        "RESIDUAL",
+        "SOURCE",
+        "SYMBOL",
+    },
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -2711,7 +2726,16 @@ class ProbeResult:
 def load_scratch_config(directory: Path) -> ScratchConfig:
     values: dict[str, str] = {}
     for token in shlex.split((directory / "scratch.conf").read_text(encoding="utf-8"), comments=True):
-        key, _, value = token.partition("=")
+        key, separator, value = token.partition("=")
+        if not separator or not key:
+            raise ValueError(
+                f"{directory}/scratch.conf has invalid assignment {token!r}",
+            )
+        if key not in SCRATCH_CONFIG_KEYS:
+            allowed = ", ".join(sorted(SCRATCH_CONFIG_KEYS))
+            raise ValueError(
+                f"{directory}/scratch.conf has unknown field {key!r}; use {allowed}",
+            )
         if value:
             values[key] = value
     if "FUNCTION" not in values:
