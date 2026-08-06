@@ -12568,13 +12568,14 @@
   {
     "program": "grim.dll",
     "address": "0x100463c0",
+    "end": "0x10046400",
     "name": "grim_jpeg_idct_1x1",
     "aliases": [
       "sub_100463C0"
     ],
     "signature": "void grim_jpeg_idct_1x1(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
     "comment": "JAZ IJG 6a one-by-one scaled inverse DCT selected by the exact stock manager",
-    "create": false
+    "create": true
   },
   {
     "program": "grim.dll",

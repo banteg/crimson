@@ -4,6 +4,8 @@
 # historical trailing whitespace. Local sources remain subject to diff checks.
 third_party/headers/jdct.h whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jidctflt.c whitespace=-trailing-space
+third_party/sources/ijg-libjpeg-6a/jidctfst.c whitespace=-trailing-space
+third_party/sources/ijg-libjpeg-6a/jidctint.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jidctred.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jdmarker.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jcomapi.c whitespace=-trailing-space

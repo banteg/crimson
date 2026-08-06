@@ -13034,6 +13034,34 @@
       "type": "const int[3]"
     },
     {
+      "address": "0x1005095c",
+      "comment": "JAZ IJG 6a floating-point inverse-DCT factor 1.082392200.",
+      "name": "grim_jpeg_idct_float_factor_1_082392200",
+      "program": "grim.dll",
+      "type": "const float"
+    },
+    {
+      "address": "0x10050960",
+      "comment": "JAZ IJG 6a floating-point inverse-DCT factor 2.613125930.",
+      "name": "grim_jpeg_idct_float_factor_2_613125930",
+      "program": "grim.dll",
+      "type": "const float"
+    },
+    {
+      "address": "0x10050964",
+      "comment": "JAZ IJG 6a floating-point inverse-DCT factor 1.847759065.",
+      "name": "grim_jpeg_idct_float_factor_1_847759065",
+      "program": "grim.dll",
+      "type": "const float"
+    },
+    {
+      "address": "0x10050968",
+      "comment": "JAZ IJG 6a floating-point inverse-DCT factor 1.414213562.",
+      "name": "grim_jpeg_idct_float_factor_1_414213562",
+      "program": "grim.dll",
+      "type": "const float"
+    },
+    {
       "address": "0x100554e8",
       "comment": "D3DX JPEG inverse-DCT dispatcher flag selecting the MMX kernels.",
       "name": "d3dx_jpeg_mmx_idct_enabled",

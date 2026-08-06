@@ -177,6 +177,16 @@
           "sha256": "cd29042cf33e126ff99bae8e4304ee8d83e96fb226e0df635e053e4449a65e73"
         },
         {
+          "path": "jpeg-6a/jidctfst.c",
+          "size": 13104,
+          "sha256": "5eac120a649ee5996aae76cdbf8e6464a4d2093d944701e30e5ef46ca36ec85a"
+        },
+        {
+          "path": "jpeg-6a/jidctint.c",
+          "size": 14749,
+          "sha256": "2d13f6db2a55602e9a6a602c43644d1479eb23c508086e6f54abdff36956d7a1"
+        },
+        {
           "path": "jpeg-6a/jdmarker.c",
           "size": 30754,
           "sha256": "85dc333850a72dff9eb1ecfa9613dea87a18a5fe3b27989e29b9a8b3816379d6"
@@ -1002,6 +1012,16 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jidctflt.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jidctflt.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jidctfst.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jidctfst.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jidctint.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jidctint.c"
     },
     {
       "source_artifact": "ijg-libjpeg-6a",

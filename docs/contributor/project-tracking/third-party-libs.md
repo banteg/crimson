@@ -349,6 +349,14 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   instructions, 14 references). The manager's two AA&N scale tables and all
   six selected JAZ IDCT implementations now have stable reference identities;
   this naming does not by itself claim the downstream IDCT bodies are exact.
+- Matcher corpus: the newly pinned `jidctfst.c` and `jidctint.c` complete the
+  official JAZ inverse-DCT source set. Under VC6 `/O2 /Ob2 /G6`, the
+  fast-integer, floating-point, and one-pixel transforms reproduce byte-for-byte
+  (2,349 bytes, 673 instructions, 18 references); the floating constants have
+  explicit identities, and live bounds restore the previously omitted
+  one-pixel function. The slow-integer, 4-by-4, and 2-by-2 transforms are
+  semantic-complete compiler residuals across the full installed compiler and
+  profile matrix, without matcher-only source shaping.
 - Matcher corpus: `jdpostct.c` under VC6 `/O2 /Ob2 /G6` reproduces all five
   emitted decompression-postprocessor bodies byte-for-byte (829 bytes, 312
   instructions, five references). Live-confirmed boundaries fill the static

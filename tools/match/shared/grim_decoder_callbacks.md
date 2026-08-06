@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred forty-one exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred forty-four exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -230,6 +230,15 @@ The neighboring 4-by-4 and 2-by-2 reducers remain semantic-complete WIPs: the
 official source exposes D3DX's 16-bit multiplier ABI, but the available
 compilers do not reproduce the provider's narrowed multiplies and scheduling.
 
-Altogether the one hundred fifty-one exact functions cover 20,146 bytes and
-7,402 instructions in the explicit `all` scope, with every external
+The separately linked JAZ copy adds byte-exact fast-integer, floating-point,
+and one-pixel inverse DCTs from those same official sources. They cover 2,349
+bytes and 673 instructions; the floating transform's four constants and 18
+relocations now have explicit identities. Live Binary Ninja bounds also
+restore the 64-byte one-pixel reducer missing from the static export. The
+slow-integer, 4-by-4, and 2-by-2 bodies remain semantic-complete compiler
+residuals after the stock source was tested across all five installed-era
+backends and both processor profiles without source shaping.
+
+Altogether the one hundred sixty-two exact functions cover 24,472 bytes and
+8,765 instructions in the explicit `all` scope, with every external
 relocation resolved.

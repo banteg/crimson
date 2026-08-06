@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 306
+    assert payload["summary"]["source_entry_count"] == 310
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 303
-    assert payload["summary"]["typed_entries"] == 253
+    assert payload["summary"]["entry_count"] == 307
+    assert payload["summary"]["typed_entries"] == 257
     assert payload["summary"]["explicit_size_entries"] == 283
     assert payload["summary"]["explicit_alignment_entries"] == 283
     assert payload["summary"]["explicit_initializer_entries"] == 283
@@ -2265,6 +2265,7 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["d3dx_jpeg_std_message_table"]["type"] == "const char *[120]"
     assert observed["grim_jpeg_base_dither_matrix"]["type"] == "const unsigned char[16][16]"
     assert observed["grim_jpeg_quant1_rgb_order"]["type"] == "const int[3]"
+    assert observed["grim_jpeg_idct_float_factor_1_082392200"]["type"] == "const float"
     assert observed["d3dx_jpeg_mmx_idct_enabled"]["type"] == "unsigned char"
     assert observed["d3dx_jpeg_base_dither_matrix"]["type"] == (
         "const unsigned char[16][16]"
