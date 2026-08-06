@@ -278,6 +278,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   compiled with VC6 `/O2 /GB /W3 /MD` exactly matches all nine entry-cluster
   functions (1,642 bytes total). `jdmarker.c`, `jcomapi.c`, and the recovered
   custom memory source use `/O2 /G6 /W3 /MD`.
+- Matcher corpus: the pinned and provenance-checked `jdapimin.c` and
+  `jdapistd.c` reproduce the eight remaining entry and local-helper bodies
+  byte-for-byte (1,630 bytes, 567 instructions, 12 references). Together with
+  the existing destroy wrapper, all nine exact provider functions now run
+  through the normal all-scope scratch verifier.
 - Native provider: `grim_jpeg_memory_src` at `0x1003a990` and its four local
   callbacks at `0x1003aa10..0x1003ab00` are exact matches totaling 354 bytes.
   The recipe additionally gates exact `jpeg_resync_to_restart`, `jpeg_abort`,

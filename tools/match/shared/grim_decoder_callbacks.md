@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred fifty-one exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred fifty-nine exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -251,6 +251,12 @@ instructions, including the inlined private copier, bit-length generator, and
 code generator. The fixed literal and distance trees and bit-length order now
 have explicit identities, resolving all 19 relocations.
 
-Altogether the one hundred sixty-nine exact functions cover 30,887 bytes and
-10,869 instructions in the explicit `all` scope, with every external
+The separately linked JAZ API cluster is now backed directly by the pinned
+`jdapimin.c` and `jdapistd.c` sources. Eight entry and local-helper bodies add
+1,630 exact bytes and 567 instructions; together with the previously matched
+destroy wrapper, all nine provider functions are represented by normal
+scratch checks.
+
+Altogether the one hundred seventy-seven exact functions cover 32,517 bytes
+and 11,436 instructions in the explicit `all` scope, with every external
 relocation resolved.
