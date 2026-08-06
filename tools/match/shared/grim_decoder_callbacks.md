@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes eighty-five exact callback, state, and cleanup
+The image-decoder cluster contributes ninety-two exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -107,11 +107,17 @@ local `msvc7.0` profile reproduces eight bodies exactly; the already-supported
 `msvc6.5` surrogate reproduces the merged-upsample Boolean-clear instruction
 shape. Both remain code-generation surrogates for product 29, build 9178.
 
+The separately linked JAZ decoder copy contributes seven byte-identical IJG
+helpers: the two integer rounders, coefficient-row copy, far-buffer clear,
+memory availability policy, and two upsampler leaves. Unique archive symbols
+anchor each target identity. The two bulk-memory helpers retain `/Oi` so the
+local compiler emits the native inline `rep` sequences.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the eighty-five functions cover 3,864 bytes and 1,448 instructions in the
+Altogether the ninety-two functions cover 4,007 bytes and 1,505 instructions in the
 explicit `all` scope, with every external relocation resolved.

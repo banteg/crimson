@@ -11302,11 +11302,38 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003e460",
+    "name": "grim_jpeg_div_round_up",
+    "signature": "long grim_jpeg_div_round_up(long value, long divisor)",
+    "comment": "Archive-confirmed IJG 6a ceiling division in the JAZ decoder copy"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e470",
+    "name": "grim_jpeg_round_up",
+    "signature": "long grim_jpeg_round_up(long value, long divisor)",
+    "comment": "Archive-confirmed IJG 6a divisor rounding in the JAZ decoder copy"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e4e0",
+    "name": "grim_jpeg_copy_block_row",
+    "signature": "void grim_jpeg_copy_block_row(JBLOCKROW input_row, JBLOCKROW output_row, JDIMENSION block_count)",
+    "comment": "Archive-confirmed IJG 6a coefficient-row copy in the JAZ decoder copy"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e510",
+    "name": "grim_jpeg_zero_far",
+    "signature": "void grim_jpeg_zero_far(void *target, unsigned int size)",
+    "comment": "Archive-confirmed IJG 6a far-buffer clear in the JAZ decoder copy"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003e530",
-    "name": "FUN_1003e530",
-    "signature": "int FUN_1003e530(int arg1)",
-    "comment": "[binja] int32_t sub_1003e530(int32_t arg1) __pure",
-    "create": false
+    "name": "grim_jpeg_mem_available",
+    "signature": "long grim_jpeg_mem_available(j_common_ptr cinfo, long min_bytes_needed, long max_bytes_needed, long already_allocated)",
+    "comment": "Archive-confirmed IJG 6a no-backing-store policy in the JAZ decoder copy"
   },
   {
     "program": "grim.dll",
@@ -11323,6 +11350,20 @@
     "signature": "int FUN_10041b00(void* arg1, int arg2, int* arg3, int arg4)",
     "comment": "[binja] int32_t sub_10041b00(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041da0",
+    "name": "grim_jpeg_start_pass_upsample",
+    "signature": "void grim_jpeg_start_pass_upsample(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a separate-upsampler pass initializer in the JAZ decoder copy"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041eb0",
+    "name": "grim_jpeg_fullsize_upsample",
+    "signature": "void grim_jpeg_fullsize_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a full-size upsampling adapter in the JAZ decoder copy"
   },
   {
     "program": "grim.dll",
