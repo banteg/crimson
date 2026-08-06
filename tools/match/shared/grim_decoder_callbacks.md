@@ -9,13 +9,16 @@ two private fields at offsets `0x1c` and `0x20`; its skip callback advances and
 shrinks that same window. This is distinct from the separately linked JAZ
 decoder's buffered IJG source manager.
 
-The PNG path supplies a longjmp error callback, two free adapters, a warning
-dispatcher, a 64-byte info-structure clear, and CRC reset/update helpers. The
-clear requires the evidenced `/Oi` intrinsic profile to emit the native
-`rep stosd`. The two free adapters require the VC6 Processor Pack profile: its
-optimizer emits the native direct tail jumps, where stock VC6 emits
-call/cleanup/return sequences for the same source. The CRC update preserves
-libpng's distinct ancillary and critical-chunk ignore policies.
+The PNG path supplies a longjmp error callback, `png_zfree` and
+`png_destroy_struct` adapters, a warning dispatcher, `png_info_destroy`, and
+CRC reset/update helpers. The pinned DirectX 8.1 archive identifies the exact
+members and symbols and stamps each object with `@comp.id=0x001d23da`
+(product 29, build 9178). The locally available MSVC 7 profile reproduces the
+two native tail jumps exactly and is retained as a compatible code-generation
+surrogate, not as original-compiler provenance. Stock VC6 reproduces the other
+helpers exactly; `png_info_destroy` additionally requires `/Oi` to emit its
+native `rep stosd`. The CRC update preserves libpng's distinct ancillary and
+critical-chunk ignore policies.
 
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes

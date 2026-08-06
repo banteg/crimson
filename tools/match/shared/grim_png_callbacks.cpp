@@ -28,12 +28,12 @@ extern "C" __declspec(noreturn) void grim_png_error_longjmp(
     longjmp(jump_buffer, 1);
 }
 
-extern "C" void grim_png_free_thunk(void *png, void *allocation)
+extern "C" void grim_png_zfree(void *png, void *allocation)
 {
     png_free(png, allocation);
 }
 
-extern "C" void grim_png_free_ptr(void *allocation)
+extern "C" void grim_png_destroy_struct(void *allocation)
 {
     if (allocation == 0) {
         return;
@@ -41,7 +41,7 @@ extern "C" void grim_png_free_ptr(void *allocation)
     free(allocation);
 }
 
-extern "C" void grim_png_info_clear(void *, void *info)
+extern "C" void grim_png_info_destroy(void *, void *info)
 {
     memset(info, 0, 0x40);
 }
