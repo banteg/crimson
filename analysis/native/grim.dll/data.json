@@ -1,5 +1,5 @@
 {
-  "audit_digest": "82ccb12cf6e5d244566ae01a0f2a019f5361dfbe6743af6e73d1b0c8df166e07",
+  "audit_digest": "f366a898769494266c206c3d08ce3637d5ed4f1ca3cf4d187c330c539012e492",
   "entries": [
     {
       "address": 268747320,
@@ -2984,6 +2984,50 @@
       "type": "char"
     },
     {
+      "address": 268775528,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "Pointer to the parental-lock enabled status text shown by the Grim config dialog.",
+      "definition_state": "fully-specified",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10053068",
+      "initializer_target": {
+        "address": 268775592,
+        "name": "grim_parental_lock_enabled_text_data"
+      },
+      "linker_reference_count": 0,
+      "name": "grim_parental_lock_enabled_text",
+      "section": ".data",
+      "section_offset": 104,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "char *"
+    },
+    {
+      "address": 268775532,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "Pointer to the parental-lock disabled status text shown by the Grim config dialog.",
+      "definition_state": "fully-specified",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x1005306c",
+      "initializer_target": {
+        "address": 268775540,
+        "name": "grim_parental_lock_disabled_text_data"
+      },
+      "linker_reference_count": 0,
+      "name": "grim_parental_lock_disabled_text",
+      "section": ".data",
+      "section_offset": 108,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "char *"
+    },
+    {
       "address": 268775536,
       "aliases": [],
       "alignment": 4,
@@ -3002,6 +3046,44 @@
       "size": 4,
       "size_source": "tools/match/scratches: recovered int, unsigned int, D3DFORMAT, and D3DDEVTYPE declarations; tools/native/abi/grim.dll/abi_assertions.cpp: 32-bit integer assertions",
       "type": null
+    },
+    {
+      "address": 268775540,
+      "aliases": [],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "NUL-terminated parental-lock disabled status text referenced by grim_parental_lock_disabled_text.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "506172656e74616c206c6f636b206973206e6f772064697361626c65642e2046756c6c20676f72652069732073686f776e2e00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10053074",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_parental_lock_disabled_text_data",
+      "section": ".data",
+      "section_offset": 116,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 51,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[51] parental-lock status string extent",
+      "type": "char[51]"
+    },
+    {
+      "address": 268775592,
+      "aliases": [],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "NUL-terminated parental-lock enabled status text referenced by grim_parental_lock_enabled_text.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "506172656e74616c206c6f636b206973206e6f7720656e61626c65642e204e6f20626c6f6f642069732073686f776e20616e6420626f64696573206661646520617761792e00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x100530a8",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_parental_lock_enabled_text_data",
+      "section": ".data",
+      "section_offset": 168,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 70,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[70] parental-lock status string extent",
+      "type": "char[70]"
     },
     {
       "address": 268775664,
@@ -5025,6 +5107,46 @@
       "type": "GrimUV *"
     },
     {
+      "address": 268811516,
+      "aliases": [],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "Primary 256-byte password edit buffer used by the Grim parental-lock dialogs.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005bcfc",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_parental_password_buffer",
+      "section": ".data",
+      "section_offset": 36092,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[256] edit-buffer extent",
+      "type": "char[256]"
+    },
+    {
+      "address": 268811772,
+      "aliases": [],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "Confirmation 256-byte password edit buffer used by the Grim parental-lock set-password dialog.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005bdfc",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_parental_password_confirm_buffer",
+      "section": ".data",
+      "section_offset": 36348,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[256] edit-buffer extent",
+      "type": "char[256]"
+    },
+    {
       "address": 268812028,
       "aliases": [],
       "alignment": 1,
@@ -6875,9 +6997,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "530dc42133be73293a2c450c5242a254347abe10b74214addbedc0ba4f6edd63",
+    "data_map_sha256": "74f518dcdd7aa1f11bdb00736a1b54d1dc51d8fed0169a0fe6213b45c3048512",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "7f1bfaeceb02d391a52bb4ba65aaf6fbe9da05fa00a9dd0498e343809ba79a31",
+    "definitions_sha256": "de231c540bcd1426420593f5891d6ec640a8429394c6aef479f4f0ead1ab9f33",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -6891,12 +7013,12 @@
     "code_label_entries": 3,
     "definition_group_entries": 213,
     "definition_groups": 57,
-    "entry_count": 274,
-    "explicit_alignment_entries": 274,
-    "explicit_initializer_entries": 274,
-    "explicit_size_entries": 274,
-    "fixed_array_types": 69,
-    "fully_specified_entries": 274,
+    "entry_count": 280,
+    "explicit_alignment_entries": 280,
+    "explicit_initializer_entries": 280,
+    "explicit_size_entries": 280,
+    "fixed_array_types": 73,
+    "fully_specified_entries": 280,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 0,
@@ -6904,12 +7026,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 199,
+      ".data": 205,
       ".rdata": 75
     },
-    "source_entry_count": 277,
-    "typed_entries": 224,
-    "unique_addresses": 274,
+    "source_entry_count": 283,
+    "typed_entries": 230,
+    "unique_addresses": 280,
     "untyped_entries": 50
   }
 }

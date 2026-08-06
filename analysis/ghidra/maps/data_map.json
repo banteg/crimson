@@ -11074,6 +11074,34 @@
       "type": "char"
     },
     {
+      "address": "0x10053068",
+      "comment": "Pointer to the parental-lock enabled status text shown by the Grim config dialog.",
+      "name": "grim_parental_lock_enabled_text",
+      "program": "grim.dll",
+      "type": "char *"
+    },
+    {
+      "address": "0x1005306c",
+      "comment": "Pointer to the parental-lock disabled status text shown by the Grim config dialog.",
+      "name": "grim_parental_lock_disabled_text",
+      "program": "grim.dll",
+      "type": "char *"
+    },
+    {
+      "address": "0x10053074",
+      "comment": "NUL-terminated parental-lock disabled status text referenced by grim_parental_lock_disabled_text.",
+      "name": "grim_parental_lock_disabled_text_data",
+      "program": "grim.dll",
+      "type": "char[51]"
+    },
+    {
+      "address": "0x100530a8",
+      "comment": "NUL-terminated parental-lock enabled status text referenced by grim_parental_lock_enabled_text.",
+      "name": "grim_parental_lock_enabled_text_data",
+      "program": "grim.dll",
+      "type": "char[70]"
+    },
+    {
       "address": "0x10053040",
       "comment": "Pointer to the NUL-terminated paq magic string that prefixes the lookup blob.",
       "name": "grim_lookup_blob_magic",
@@ -11118,6 +11146,20 @@
       "comment": "Vertex/index capacity used for dynamic buffers.",
       "name": "grim_vertex_capacity",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005bcfc",
+      "comment": "Primary 256-byte password edit buffer used by the Grim parental-lock dialogs.",
+      "name": "grim_parental_password_buffer",
+      "program": "grim.dll",
+      "type": "char[256]"
+    },
+    {
+      "address": "0x1005bdfc",
+      "comment": "Confirmation 256-byte password edit buffer used by the Grim parental-lock set-password dialog.",
+      "name": "grim_parental_password_confirm_buffer",
+      "program": "grim.dll",
+      "type": "char[256]"
     },
     {
       "address": "0x10059770",

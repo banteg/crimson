@@ -784,6 +784,46 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x1005304c"
     },
     {
+      "address": "0x10053068",
+      "name": "grim_parental_lock_enabled_text",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_target": ["0x100530a8", "grim_parental_lock_enabled_text_data"],
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10053068"
+    },
+    {
+      "address": "0x1005306c",
+      "name": "grim_parental_lock_disabled_text",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_target": ["0x10053074", "grim_parental_lock_disabled_text_data"],
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x1005306c"
+    },
+    {
+      "address": "0x10053074",
+      "name": "grim_parental_lock_disabled_text_data",
+      "size": 51,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[51] parental-lock status string extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_hex": "506172656e74616c206c6f636b206973206e6f772064697361626c65642e2046756c6c20676f72652069732073686f776e2e00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10053074"
+    },
+    {
+      "address": "0x100530a8",
+      "name": "grim_parental_lock_enabled_text_data",
+      "size": 70,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[70] parental-lock status string extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_hex": "506172656e74616c206c6f636b206973206e6f7720656e61626c65642e204e6f20626c6f6f642069732073686f776e20616e6420626f64696573206661646520617761792e00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x100530a8"
+    },
+    {
       "address": "0x100530f0",
       "name": "grim_lookup_blob_magic_text",
       "size": 4,
@@ -842,6 +882,26 @@
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "initializer_hex": "00000000",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data reference bytes at VA 0x10059e2c"
+    },
+    {
+      "address": "0x1005bcfc",
+      "name": "grim_parental_password_buffer",
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[256] edit-buffer extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005bcfc"
+    },
+    {
+      "address": "0x1005bdfc",
+      "name": "grim_parental_password_confirm_buffer",
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete char[256] edit-buffer extent",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005bdfc"
     },
     {
       "address": "0x1005c898",

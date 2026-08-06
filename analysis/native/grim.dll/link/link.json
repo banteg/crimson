@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -21,7 +21,7 @@
       "file": {
         "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
         "repository_relative": true,
-        "sha256": "47772743b1ebf2c59ca3f3f3d346e0d9516a5ebaf08861f62dcb17edbd36eba2"
+        "sha256": "ea93e755b48c8920fc53f28ee29d8963ee85862979344cbee830cf4271c84f33"
       },
       "id": "grim-recovered-platform-vc6",
       "provenance": {
@@ -29,7 +29,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       }
     },
@@ -44,7 +44,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         "member": "DXF/DXSDK/lib/dinput8.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -61,7 +61,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         "member": "DXF/DXSDK/lib/dxguid.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -78,7 +78,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -96,7 +96,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       }
     },
@@ -112,12 +112,12 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       }
     }
   ],
-  "audit_digest": "82ccb12cf6e5d244566ae01a0f2a019f5361dfbe6743af6e73d1b0c8df166e07",
+  "audit_digest": "f366a898769494266c206c3d08ce3637d5ed4f1ca3cf4d187c330c539012e492",
   "entry": {
     "symbol": "DllMain"
   },
@@ -139,7 +139,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "413ede5b617ab764944533261292d86d88135a1159b930013ef0a94cdac37471"
+    "sha256": "5beb0c6709f2e3f03c40b8a0d41475a3b3bcf31b9937bf034128caf410a38215"
   },
   "placeholder_object": {
     "discarded_symbols": [],
@@ -153,10 +153,10 @@
     "symbol_count": 2
   },
   "provider_config": {
-    "declared_sha256": "655744962168f955a6e2ec76d80115d72a643fa60504cf0c5845183225b57789",
+    "declared_sha256": "71843f3e0805ffd9670c59bec9de4dcdad1c77970929d473252462b0864ccf29",
     "path": "tools/native/providers/grim.dll.json",
     "repository_relative": true,
-    "sha256": "655744962168f955a6e2ec76d80115d72a643fa60504cf0c5845183225b57789"
+    "sha256": "71843f3e0805ffd9670c59bec9de4dcdad1c77970929d473252462b0864ccf29"
   },
   "providers": [
     {
@@ -185,7 +185,7 @@
           "note": "The provenance manifest pins the original VC6 SP6 MSVCRT import archive used by the reference runtime seam.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       ],
       "kind": "reference-import",
@@ -351,13 +351,19 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         {
           "note": "The legacy display-mode helper is an exact 646-byte match and preserves its persisted-byte comparison.",
           "path": "tools/match/scratches/grim_config_dialog_populate_display_modes/NOTES.md",
           "repository_relative": true,
           "sha256": "713f1ad3d05c6a599534394be9daf745816d4f2d26d2e2ab591a6a9f0fd36c3b"
+        },
+        {
+          "note": "The legacy parental-lock callback is an exact 318-instruction match, including its password and dialog-state behavior.",
+          "path": "tools/match/scratches/grim_parental_lock_dialog_proc/NOTES.md",
+          "repository_relative": true,
+          "sha256": "efbbdda3189a7156957aa07c656b7ed61309da014b137c25e443f5a0cb573756"
         }
       ],
       "kind": "platform-replaced",
@@ -435,7 +441,7 @@
           "note": "The pinned DirectX 8.1 SDK supplies the original dinput8 import archive.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       ],
       "import_library": {
@@ -459,7 +465,7 @@
           "note": "The pinned DirectX 8.1 SDK dinput8 archive supplies the canonical DirectInput data-format objects.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         {
           "note": "The exact recovered input initializers retain the SDK data-format references.",
@@ -485,7 +491,7 @@
           "note": "The pinned DirectX 8.1 SDK supplies the exact DirectInput GUID and data-format definitions referenced by the recovered input backends.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         {
           "note": "The exact recovered input initializers retain the SDK GUID and data-format references.",
@@ -610,7 +616,7 @@
           "note": "The exact recovered platform archive retains the corresponding decorated import references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       ],
       "import_library": {
@@ -786,7 +792,7 @@
           "note": "The pinned VC6 SP6 MSVCRT import archive supplies the original import object.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       ],
       "import_library": {
@@ -833,7 +839,7 @@
           "note": "The provenance manifest pins the exact DirectX 8.1 SDK archive whose normalized functions match the reference image.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         {
           "note": "The archive proof records exact matches for the four public APIs and the internal D3DXComputeNormalMap body.",
@@ -961,7 +967,7 @@
           "note": "The pinned DirectX 8.1 archive records these decorated import references in the selected members.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       ],
       "import_library": {
@@ -1027,7 +1033,7 @@
           "note": "The selected D3DX8 resource member records a decorated DeleteObject import reference.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       ],
       "import_library": {
@@ -1082,7 +1088,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 import references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         }
       ],
       "import_library": {
@@ -1108,7 +1114,7 @@
           "note": "The deterministic mixed-profile VC6 archive reproduces all six JAZ closure entries plus jpeg_destroy_decompress byte-for-byte.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         {
           "note": "The one-byte boolean ABI, compiler profiles, archive hash, custom source reconstruction, and 18 exact reference functions are recorded here.",
@@ -1151,7 +1157,7 @@
           "note": "The normalized VC6 archive is derived from the pinned zlib 1.1.3 source release and has a reproducible hash.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c2855c80a1fa7f34818a3063497e374c8f8b43463d795b38d333fc31b55ceb4e"
+          "sha256": "0d20a5ae4bf6be3123b6dbced52a891eb31ced698229ed8b3166860d6024d9f5"
         },
         {
           "note": "The stock uncompress entry is a 156-byte exact reference match; the archive contains 24 exact Grim functions.",
@@ -1199,7 +1205,7 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "e057765c19d31f2409833afe3ebf3a78693685ed56eb1a4c2b930efed66d8e35"
+          "sha256": "d4831932a0abbd8250eae1d465233a54b0c30d05a75dd6368951b9077573de4b"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",

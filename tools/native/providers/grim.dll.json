@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "47772743b1ebf2c59ca3f3f3d346e0d9516a5ebaf08861f62dcb17edbd36eba2",
+      "sha256": "ea93e755b48c8920fc53f28ee29d8963ee85862979344cbee830cf4271c84f33",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"
@@ -285,6 +285,10 @@
         {
           "path": "tools/match/scratches/grim_config_dialog_populate_display_modes/NOTES.md",
           "note": "The legacy display-mode helper is an exact 646-byte match and preserves its persisted-byte comparison."
+        },
+        {
+          "path": "tools/match/scratches/grim_parental_lock_dialog_proc/NOTES.md",
+          "note": "The legacy parental-lock callback is an exact 318-instruction match, including its password and dialog-state behavior."
         }
       ],
       "symbols": [

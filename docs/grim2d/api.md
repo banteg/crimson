@@ -67,6 +67,10 @@ We also generate an evidence appendix with callsite snippets:
   launcher's fixed windowed, 16-bit, and 32-bit mode list. Capability flags
   gate the available groups, and the persisted width, depth, and canonical
   one-byte windowed flag select the current entry.
+- `grim_parental_lock_dialog_proc` (`0x10001ad0`) exact-matches the three
+  parental-lock dialogs: status toggle, password setup, and password entry.
+  It preserves the original eight-byte stored-password limit and comparison
+  over only the stored password length.
 - `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
 - Exact-matched `grim_window_create` (`0x10002680`) registers the `Crimson`
   class with `grim_window_proc`, then creates either a topmost screen-sized
