@@ -225,6 +225,9 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   `0x100492c0` through `0x1004a100` byte-for-byte (3,708 bytes, 1,343
   instructions, 40 references). Its `border` and `inflate_mask` tables and all
   downstream codes/tree/flush calls are resolved to the plain-C zlib copy.
+- Matcher corpus: the pinned `infcodes.c` reproduces `inflate_codes_new`,
+  `inflate_codes`, and `inflate_codes_free` at `0x1004a190` through
+  `0x1004a980` byte-for-byte (1,996 bytes, 692 instructions, 18 references).
 
 ### libjpeg (IJG 6a)
 
