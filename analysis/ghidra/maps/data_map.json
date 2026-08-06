@@ -11725,6 +11725,20 @@
       "type": "MyApp"
     },
     {
+      "address": "0x1005bc00",
+      "comment": "Window-procedure byte cleared with the DC-mode flag on WM_CLOSE and WM_DESTROY; no other native references are present.",
+      "name": "grim_window_proc_dc_flag",
+      "program": "grim.dll",
+      "type": "unsigned char"
+    },
+    {
+      "address": "0x1005bc01",
+      "comment": "Window-procedure byte set after the DC-mode WM_PAINT BeginPaint/EndPaint pair; no other native references are present.",
+      "name": "grim_window_proc_paint_flag",
+      "program": "grim.dll",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x1005bc04",
       "comment": "Packed RGBA color slot 0.",
       "name": "grim_color_slot0",
