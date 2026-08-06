@@ -10160,9 +10160,58 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001e9bf",
+    "name": "png_get_valid",
+    "signature": "png_uint_32 png_get_valid(png_structp png_ptr, png_infop info_ptr, png_uint_32 flag)",
+    "comment": "Returns the requested subset of libpng info validity flags"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e9d9",
+    "name": "png_get_rowbytes",
+    "signature": "png_uint_32 png_get_rowbytes(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Returns the decoded row byte count when both libpng structures are present"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e9ef",
+    "name": "png_get_channels",
+    "signature": "png_byte png_get_channels(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Returns the decoded channel count when both libpng structures are present"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001ea59",
     "name": "FUN_1001ea59",
     "signature": "undefined4 FUN_1001ea59(png_structp png_ptr, uint *param_2, uint *param_3, uint *param_4, uint *param_5, uint *param_6, uint *param_7, uint *param_8, uint *param_9)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ebc4",
+    "name": "png_set_bgr",
+    "signature": "void png_set_bgr(png_structp png_ptr)",
+    "comment": "Enables libpng's red/blue channel swap transform"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ebcd",
+    "name": "png_set_swap",
+    "signature": "void png_set_swap(png_structp png_ptr)",
+    "comment": "Enables 16-bit sample byte swapping when the input depth is 16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ebdf",
+    "name": "png_set_packing",
+    "signature": "void png_set_packing(png_structp png_ptr)",
+    "comment": "Expands packed sub-byte samples and promotes the user bit depth to eight"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ebf8",
+    "name": "png_set_interlace_handling",
+    "signature": "int png_set_interlace_handling(png_structp png_ptr)",
+    "comment": "Enables Adam7 handling and returns seven passes, or one pass for noninterlaced input"
   },
   {
     "program": "grim.dll",
@@ -10404,6 +10453,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10022b83",
+    "name": "jdiv_round_up",
+    "signature": "long jdiv_round_up(long value, long divisor)",
+    "comment": "IJG signed ceiling-division helper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022b93",
+    "name": "jround_up",
+    "signature": "long jround_up(long value, long divisor)",
+    "comment": "IJG signed round-up-to-divisor helper"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10022c14",
     "name": "memzero",
     "signature": "void memzero(void *dst, unsigned int size)",
@@ -10416,6 +10479,20 @@
     "signature": "int FUN_10022c2f(int arg1)",
     "comment": "[binja] int32_t __fastcall sub_10022c2f(int32_t arg1)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002305e",
+    "name": "consume_markers",
+    "signature": "int consume_markers(j_decompress_ptr cinfo)",
+    "comment": "IJG input-controller marker consumer restored after each input pass"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023128",
+    "name": "finish_input_pass",
+    "signature": "void finish_input_pass(j_decompress_ptr cinfo)",
+    "comment": "Restores consume_markers as the IJG input controller's consume callback"
   },
   {
     "program": "grim.dll",

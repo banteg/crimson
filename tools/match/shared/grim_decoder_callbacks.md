@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes nineteen exact callback and cleanup
+The image-decoder cluster contributes twenty-nine exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -12,6 +12,10 @@ decoder's buffered IJG source manager.
 The D3DX IJG error-manager reset clears the accumulated warning count and
 message code. The pinned DirectX archive uniquely identifies the exact
 `jerror.obj` member and symbol.
+
+Three additional IJG leaves recover ceiling division, divisor rounding, and
+the input-pass transition back to `consume_markers`. Their exact archive
+symbols come from `jutils.obj` and `jdinput.obj`.
 
 The PNG path supplies a longjmp error callback, `png_zfree` and
 `png_destroy_struct` adapters, a warning dispatcher, `png_info_destroy`, and
@@ -31,11 +35,16 @@ caller cleanup and return that the imported IDA boundary omitted. The signature
 comparison's global reference is bound to the archive-confirmed eight-byte PNG
 signature at `0x1004e51c`.
 
+The PNG leaf group also includes validity, row-byte, and channel getters plus
+the BGR, 16-bit swap, packed-sample, and Adam7 setup helpers. These preserve the
+libpng 1.0.5 structure offsets and flag values identified by the matching
+`pngget.obj` and `pngtrans.obj` members.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the nineteen functions cover 464 bytes and 174 instructions in the
+Altogether the twenty-nine functions cover 668 bytes and 247 instructions in the
 explicit `all` scope, with every external relocation resolved.
