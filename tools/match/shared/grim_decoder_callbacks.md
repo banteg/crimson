@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred twenty-nine exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred thirty-three exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -180,5 +180,11 @@ cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the one hundred twenty-nine functions cover 11,564 bytes and 4,358 instructions in the
+Four adjacent zlib 1.1.3 bodies recover inflate-block reset, allocation, and
+teardown plus the Adler-32 checksum. The pinned DirectX archive uniquely maps
+them to `infblock.obj` and `adler32.obj`; the official source archive at
+SHA-256 `cae5847bc0e1cf113d3f70d037400da3e47c2e2b7b1c96b0b08447a5fbb906f4`
+reproduces all 239 native instructions with the local `msvc7.0` surrogate.
+
+Altogether the one hundred thirty-three functions cover 12,145 bytes and 4,597 instructions in the
 explicit `all` scope, with every external relocation resolved.
