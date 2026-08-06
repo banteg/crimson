@@ -43,6 +43,7 @@ from crimson.match import (
     TriageRow,
     _coff_local_jump_table_key,
     _coff_vc6_single_delete_unwind_key,
+    _exception_summary,
     _local_switch_partition_key,
     _region_hints,
     _scratch_build_key,
@@ -2373,6 +2374,22 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert len(commands) == 3
     assert Path(commands[0][0]).is_absolute()
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
+
+
+def test_exception_summary_keeps_first_actionable_compiler_diagnostic() -> None:
+    error = RuntimeError(
+        "cl failed:\n"
+        "scratch.cpp\n"
+        "scratch.cpp(7) : error C2143: syntax error : missing ';' before '}'\n"
+        "scratch.cpp(8) : error C2059: syntax error : '}'\n",
+    )
+
+    assert _exception_summary(error) == (
+        "cl failed: scratch.cpp(7) : error C2143: "
+        "syntax error : missing ';' before '}'"
+    )
+    assert _exception_summary(RuntimeError("plain failure\nextra detail")) == "plain failure"
+    assert _exception_summary(RuntimeError()) == "RuntimeError"
 
 
 def test_source_probe_uses_temporary_shadow_without_touching_scratch(

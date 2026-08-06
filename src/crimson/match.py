@@ -3030,6 +3030,22 @@ def compile_scratch(
     return obj_path
 
 
+def _exception_summary(exc: Exception) -> str:
+    """Keep one actionable line from an exception for tabular status output."""
+
+    lines = [line.strip() for line in str(exc).splitlines() if line.strip()]
+    if not lines:
+        return type(exc).__name__
+    heading = lines[0]
+    if heading.endswith(":") and len(lines) > 1:
+        detail = next(
+            (line for line in lines[1:] if "error" in line.casefold()),
+            lines[1],
+        )
+        return f"{heading} {detail}"
+    return heading
+
+
 def evaluate_scratch(
     config: ScratchConfig,
     match_root: Path = DEFAULT_MATCH_ROOT,
@@ -3094,7 +3110,7 @@ def evaluate_scratch(
             prefix_instructions=0,
             target_instructions=0,
             candidate_instructions=0,
-            error=str(exc).splitlines()[0] if str(exc) else type(exc).__name__,
+            error=_exception_summary(exc),
         )
 
 
@@ -3297,7 +3313,7 @@ def validate_matching_workspace(
         try:
             configs.append(load_scratch_config(conf_path.parent))
         except Exception as exc:  # noqa: BLE001 - collect every invalid scratch config in one pass
-            errors.append(f"{conf_path.parent.name}: {str(exc).splitlines()[0]}")
+            errors.append(f"{conf_path.parent.name}: {_exception_summary(exc)}")
     for config in _filter_dispositioned_scratch_configs(configs, scope=scope):
         try:
             if config.image not in manifests:
@@ -3315,7 +3331,7 @@ def validate_matching_workspace(
             )
             targets.setdefault((config.image, symbol.address), []).append(config)
         except Exception as exc:  # noqa: BLE001 - collect every invalid scratch config in one pass
-            errors.append(f"{config.directory.name}: {str(exc).splitlines()[0]}")
+            errors.append(f"{config.directory.name}: {_exception_summary(exc)}")
     for (image, address), configs in sorted(targets.items()):
         if len(configs) < 2:
             continue
@@ -3768,7 +3784,7 @@ def collect_scratch_statuses(
                 prefix_instructions=0,
                 target_instructions=0,
                 candidate_instructions=0,
-                error=str(exc).splitlines()[0] if str(exc) else type(exc).__name__,
+                error=_exception_summary(exc),
             )
 
     if jobs == 1 or len(uncached) < 2:
@@ -4311,7 +4327,7 @@ def validate_match_claim(
                             f"{image}:0x{address:08x}",
                         )
         except Exception as exc:  # noqa: BLE001 - collect every invalid worker claim in one pass
-            errors.append(f"{worker}: {image}:0x{address:08x}: {str(exc).splitlines()[0]}")
+            errors.append(f"{worker}: {image}:0x{address:08x}: {_exception_summary(exc)}")
     return errors
 
 
