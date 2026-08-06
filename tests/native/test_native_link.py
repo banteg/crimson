@@ -2251,6 +2251,16 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
     )
+    assert payload["source"]["data_map_projection"] == {
+        "kind": "json-program-v1",
+        "program": "grim.dll",
+    }
+    assert payload["source"]["data_map_sha256"] == (
+        matchlib.native_json_program_sha256(
+            matchlib.DEFAULT_DATA_MAP_PATH,
+            "grim.dll",
+        )
+    )
     observed = {entry["name"]: entry for entry in payload["entries"]}
     assert observed["d3dx_jpeg_std_message_table"]["type"] == "const char *[120]"
     assert observed["png_pass_start"]["type"] == "const int[7]"

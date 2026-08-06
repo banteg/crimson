@@ -92,6 +92,12 @@ not unrelated SDK or library directories. A shared audit digest detects
 mixed-generation JSON, and component hashes cover the object list and export
 definition. The report never adds fake providers.
 
+The shared semantic `name_map.json` and `data_map.json` inputs use a canonical
+per-image JSON projection. An edit to Grim-only rows therefore invalidates the
+Grim audit without needlessly rebuilding Crimsonland, while edits to shared
+top-level data-map metadata still invalidate both images. Older audit records
+without projection metadata retain their full-file hash behavior.
+
 `objects.json` distinguishes `function_count` from physical `object_count`.
 Each physical row has a `functions` array; ordinary rows contain one binding,
 while an explicit cluster contains every independently validated member. The

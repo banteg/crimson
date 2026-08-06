@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "21318fa083a77d0702ee3688b998395e10368943a85757a29cbdb371b7a8af56",
+  "audit_digest": "614614546e7b10d63d5127ec76b748f9b24fa4f846d5899d48a5db328df73e6f",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -88035,8 +88035,12 @@
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
+        "projection": {
+          "kind": "json-program-v1",
+          "program": "crimsonland.exe"
+        },
         "repository_relative": true,
-        "sha256": "95fb67233b1e31ddca63f0668a9844cf8ceb56c3100085f8febfd6fbaa0284f1"
+        "sha256": "6346798ffba146dff86039bec8d04ae743958eb0a6667c10108e421079aeb07a"
       },
       {
         "path": "analysis/matching_scope.json",

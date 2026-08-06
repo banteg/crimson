@@ -4958,6 +4958,37 @@ def _native_file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+NATIVE_JSON_PROGRAM_PROJECTION = "json-program-v1"
+
+
+def native_json_program_sha256(path: Path, program: str) -> str:
+    """Hash only the rows consumed for one image from a shared JSON map."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        projected: Any = [
+            row
+            for row in payload
+            if isinstance(row, dict) and row.get("program") == program
+        ]
+    elif isinstance(payload, dict):
+        raw_entries = payload.get("entries")
+        if not isinstance(raw_entries, list):
+            raise TypeError(f"{path}: projected JSON object must contain an entries array")
+        projected = {
+            **payload,
+            "entries": [
+                row
+                for row in raw_entries
+                if isinstance(row, dict) and row.get("program") == program
+            ],
+        }
+    else:
+        raise TypeError(f"{path}: projected JSON input must be an array or object")
+    return hashlib.sha256(
+        json.dumps(projected, separators=(",", ":"), sort_keys=True).encode(),
+    ).hexdigest()
+
+
 def _native_tree_set_sha256(root: Path, trees: tuple[str, ...]) -> str:
     digest = hashlib.sha256()
     files: list[Path] = []
@@ -4980,8 +5011,30 @@ def _native_input_records(
     objects: dict[str, Any],
     closure: dict[str, Any],
     data: dict[str, Any],
-) -> tuple[list[tuple[str, str, bool]], list[tuple[str, tuple[str, ...], str]]]:
-    files: list[tuple[str, str, bool]] = []
+) -> tuple[
+    list[tuple[str, str, bool, tuple[str, str] | None]],
+    list[tuple[str, tuple[str, ...], str]],
+]:
+    files: list[tuple[str, str, bool, tuple[str, str] | None]] = []
+
+    def projection_from_row(
+        row: dict[str, Any],
+        key: str,
+        label: str,
+    ) -> tuple[str, str] | None:
+        raw_projection = row.get(key)
+        if raw_projection is None:
+            return None
+        projection = _native_required_mapping(raw_projection, f"{label}.{key}")
+        kind = projection.get("kind")
+        program = projection.get("program")
+        if kind != NATIVE_JSON_PROGRAM_PROJECTION:
+            raise ValueError(
+                f"{label}.{key}.kind must be {NATIVE_JSON_PROGRAM_PROJECTION!r}",
+            )
+        if not isinstance(program, str) or not program:
+            raise ValueError(f"{label}.{key}.program must be a non-empty string")
+        return kind, program
 
     def add_file_rows(rows: Any, label: str) -> None:
         if not isinstance(rows, list):
@@ -4997,7 +5050,12 @@ def _native_input_records(
                 raise ValueError(f"{label}[{index}].sha256 must be a SHA-256 digest")
             if not isinstance(repository_relative, bool):
                 raise TypeError(f"{label}[{index}].repository_relative must be a boolean")
-            files.append((path, sha256, repository_relative))
+            projection = projection_from_row(
+                row,
+                "projection",
+                f"{label}[{index}]",
+            )
+            files.append((path, sha256, repository_relative, projection))
 
     def add_direct_file(
         row: dict[str, Any],
@@ -5011,7 +5069,12 @@ def _native_input_records(
             raise ValueError(f"{label}.{path_key} must be a non-empty string")
         if not isinstance(sha256, str) or len(sha256) != 64:
             raise ValueError(f"{label}.{sha256_key} must be a SHA-256 digest")
-        files.append((path, sha256, True))
+        projection = projection_from_row(
+            row,
+            f"{path_key}_projection",
+            label,
+        )
+        files.append((path, sha256, True, projection))
 
     raw_objects = objects.get("objects")
     if not isinstance(raw_objects, list):
@@ -5062,20 +5125,19 @@ def _native_input_records(
         raise ValueError("objects.json.reference_image must be a non-empty string")
     if not isinstance(reference_image_sha256, str) or len(reference_image_sha256) != 64:
         raise ValueError("objects.json.reference_image_sha256 must be a SHA-256 digest")
-    files.append((reference_image, reference_image_sha256, True))
+    files.append((reference_image, reference_image_sha256, True, None))
 
     closure_source = _native_required_mapping(closure.get("source"), "closure.json.source")
     add_file_rows(closure_source.get("catalog_inputs"), "closure.json.source.catalog_inputs")
 
     data_source = _native_required_mapping(data.get("source"), "data.json.source")
     for key in ("data_map", "segments"):
-        path = data_source.get(key)
-        sha256 = data_source.get(f"{key}_sha256")
-        if not isinstance(path, str) or not path:
-            raise ValueError(f"data.json.source.{key} must be a non-empty string")
-        if not isinstance(sha256, str) or len(sha256) != 64:
-            raise ValueError(f"data.json.source.{key}_sha256 must be a SHA-256 digest")
-        files.append((path, sha256, True))
+        add_direct_file(
+            data_source,
+            key,
+            f"{key}_sha256",
+            "data.json.source",
+        )
     if "definitions" in data_source or "definitions_sha256" in data_source:
         path = data_source.get("definitions")
         sha256 = data_source.get("definitions_sha256")
@@ -5085,7 +5147,7 @@ def _native_input_records(
             raise ValueError(
                 "data.json.source.definitions_sha256 must be a SHA-256 digest",
             )
-        files.append((path, sha256, True))
+        files.append((path, sha256, True, None))
 
     raw_bundles = toolchain.get("compiler_bundles")
     if not isinstance(raw_bundles, list):
@@ -5129,21 +5191,25 @@ def _native_input_staleness(
     allow_absent_toolchain: bool = False,
 ) -> list[str]:
     file_rows, bundle_rows = _native_input_records(objects, closure, data)
-    expected_files: dict[str, str] = {}
-    conflicting_files: set[str] = set()
+    expected_files: dict[tuple[str, tuple[str, str] | None], str] = {}
+    conflicting_files: set[tuple[str, tuple[str, str] | None]] = set()
     non_repository_files = 0
-    for path, sha256, repository_relative in file_rows:
+    for path, sha256, repository_relative, projection in file_rows:
         if not repository_relative:
             non_repository_files += 1
             continue
-        previous = expected_files.setdefault(path, sha256)
+        key = (path, projection)
+        previous = expected_files.setdefault(key, sha256)
         if previous != sha256:
-            conflicting_files.add(path)
+            conflicting_files.add(key)
 
     root = repo_root.resolve()
     changed_files = 0
     escaped_files = 0
-    for label, expected_sha256 in sorted(expected_files.items()):
+    for (label, projection), expected_sha256 in sorted(
+        expected_files.items(),
+        key=lambda item: (item[0][0], item[0][1] or ("", "")),
+    ):
         path = (root / label).resolve()
         try:
             path.relative_to(root)
@@ -5151,7 +5217,11 @@ def _native_input_staleness(
             escaped_files += 1
             continue
         try:
-            actual_sha256 = _native_file_sha256(path)
+            actual_sha256 = (
+                _native_file_sha256(path)
+                if projection is None
+                else native_json_program_sha256(path, projection[1])
+            )
         except OSError:
             if (
                 allow_absent_toolchain

@@ -1293,6 +1293,40 @@ def _file_payload(path: Path, *, repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _program_projected_file_payload(
+    path: Path,
+    image: str,
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
+    payload = _file_payload(path, repo_root=repo_root)
+    payload["sha256"] = matchlib.native_json_program_sha256(path, image)
+    payload["projection"] = {
+        "kind": matchlib.NATIVE_JSON_PROGRAM_PROJECTION,
+        "program": image,
+    }
+    return payload
+
+
+def _native_analysis_file_payload(
+    path: Path,
+    image: str,
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
+    projected_paths = {
+        matchlib.DEFAULT_DATA_MAP_PATH.resolve(),
+        matchlib.DEFAULT_NAME_MAP_PATH.resolve(),
+    }
+    if path.resolve() in projected_paths:
+        return _program_projected_file_payload(
+            path,
+            image,
+            repo_root=repo_root,
+        )
+    return _file_payload(path, repo_root=repo_root)
+
+
 def _snapshotted_file_payload(
     path: Path,
     sha256: str,
@@ -2360,7 +2394,11 @@ def object_manifest_payload(
         "provenance": {
             "build_policy": build_policy,
             "selection_inputs": [
-                _file_payload(path, repo_root=repo_root)
+                _native_analysis_file_payload(
+                    path,
+                    objects.image,
+                    repo_root=repo_root,
+                )
                 for path in selection_input_paths
             ],
             "toolchain": _toolchain_payload(objects, repo_root=repo_root),
@@ -3073,7 +3111,11 @@ def symbol_closure_payload(
             input_paths.append(matchlib.DEFAULT_MATCHING_SCOPE_PATH)
         source = {
             "catalog_inputs": [
-                _file_payload(path, repo_root=repo_root)
+                _native_analysis_file_payload(
+                    path,
+                    objects.image,
+                    repo_root=repo_root,
+                )
                 for path in input_paths
             ],
         }
@@ -5005,7 +5047,14 @@ def data_manifest_payload(
     ]
     source = {
         "data_map": _repo_relative(data_map_path, repo_root=repo_root),
-        "data_map_sha256": _sha256(data_map_path),
+        "data_map_sha256": matchlib.native_json_program_sha256(
+            data_map_path,
+            image,
+        ),
+        "data_map_projection": {
+            "kind": matchlib.NATIVE_JSON_PROGRAM_PROJECTION,
+            "program": image,
+        },
         "segments": _repo_relative(segments_path, repo_root=repo_root),
         "segments_sha256": _sha256(segments_path),
     }

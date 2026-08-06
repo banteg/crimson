@@ -72,6 +72,7 @@ from crimson.match import (
     match_function,
     match_result_payload,
     matching_scope_function_disposition_payloads,
+    native_json_program_sha256,
     normalize_function,
     parse_coff_object,
     render_image_total_rows,
@@ -1858,6 +1859,103 @@ def test_native_link_status_labels_changed_or_mixed_artifacts_stale(tmp_path: Pa
     markdown = "\n".join(render_native_link_status_markdown([status]))
     assert "Gate values in `stale` rows are historical snapshots" in markdown
     assert "`grim.dll`: **stale**" in markdown
+
+
+def test_native_link_status_projects_shared_json_inputs_by_image(
+    tmp_path: Path,
+) -> None:
+    artifact_dir, _ = _write_native_link_fixture(tmp_path)
+    shared_map = tmp_path / "shared-map.json"
+    shared_map.write_text(
+        json.dumps(
+            [
+                {"program": "crimsonland.exe", "name": "other"},
+                {"program": "grim.dll", "name": "target"},
+            ],
+        ),
+        encoding="utf-8",
+    )
+    paths = {
+        name: artifact_dir / name
+        for name in ("objects.json", "closure.json", "data.json")
+    }
+    payloads = {
+        name: json.loads(path.read_text(encoding="utf-8"))
+        for name, path in paths.items()
+    }
+    payloads["objects.json"]["provenance"]["selection_inputs"].append(
+        {
+            "path": "shared-map.json",
+            "projection": {
+                "kind": "json-program-v1",
+                "program": "grim.dll",
+            },
+            "repository_relative": True,
+            "sha256": native_json_program_sha256(shared_map, "grim.dll"),
+        },
+    )
+    digest_payload = {
+        "data_manifest": {
+            key: value
+            for key, value in payloads["data.json"].items()
+            if key != "audit_digest"
+        },
+        "object_manifest": {
+            key: value
+            for key, value in payloads["objects.json"].items()
+            if key != "audit_digest"
+        },
+        "symbol_closure": {
+            key: value
+            for key, value in payloads["closure.json"].items()
+            if key != "audit_digest"
+        },
+    }
+    audit_digest = hashlib.sha256(
+        json.dumps(
+            digest_payload,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode(),
+    ).hexdigest()
+    for name, payload in payloads.items():
+        payload["audit_digest"] = audit_digest
+        paths[name].write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+
+    shared_map.write_text(
+        json.dumps(
+            [
+                {"program": "crimsonland.exe", "name": "changed-other"},
+                {"program": "grim.dll", "name": "target"},
+            ],
+        ),
+        encoding="utf-8",
+    )
+    unrelated = collect_native_link_statuses(
+        analysis_root=artifact_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+    assert unrelated.artifact_state == "current"
+
+    shared_map.write_text(
+        json.dumps(
+            [
+                {"program": "crimsonland.exe", "name": "changed-other"},
+                {"program": "grim.dll", "name": "changed-target"},
+            ],
+        ),
+        encoding="utf-8",
+    )
+    relevant = collect_native_link_statuses(
+        analysis_root=artifact_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+    assert relevant.artifact_state == "stale"
+    assert "1 recorded file inputs changed or missing" in relevant.artifact_note
 
 
 def test_native_link_status_detects_report_content_changed_without_digest(
