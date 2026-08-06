@@ -884,6 +884,16 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data reference bytes at VA 0x10059e2c"
     },
     {
+      "address": "0x1005bc18",
+      "name": "grim_advanced_texture_formats",
+      "size": 24,
+      "size_source": "tools/match/scratches/grim_advanced_config_dialog_proc: six-entry D3DFORMAT selection map; tools/native/abi/grim.dll/abi_assertions.cpp: int_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005bc18"
+    },
+    {
       "address": "0x1005bcfc",
       "name": "grim_parental_password_buffer",
       "size": 256,
@@ -1058,6 +1068,7 @@
         ["0x1005d3e4", "grim_key_char_queue_count", "00000000"],
         ["0x1005d3e8", "grim_selected_adapter_index", "00000000"],
         ["0x1005d808", "grim_device_reset_retry_count", "00000000"],
+        ["0x1005d80c", "grim_advanced_texture_format_count", "00000000"],
         ["0x1005d814", "grim_fps_sample_frames", "00000000"],
         ["0x1005d818", "grim_fps_sample_elapsed_ms", "00000000"],
         ["0x1005d834", "grim_joystick_axis_y", "00000000"],

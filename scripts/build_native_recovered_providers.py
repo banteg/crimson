@@ -51,6 +51,7 @@ RECIPES = {
         derived_id="grim-recovered-platform-vc6-provider",
         output=Path("grim-platform/grim-platform.lib"),
         scratches=(
+            "grim_advanced_config_dialog_proc",
             "grim_apply_config",
             "grim_app_cleanup",
             "grim_app_init",

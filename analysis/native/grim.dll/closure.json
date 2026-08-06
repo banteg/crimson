@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f366a898769494266c206c3d08ce3637d5ed4f1ca3cf4d187c330c539012e492",
+  "audit_digest": "ec07681f678778e43b83500205f837da1cc45f5a7b1cb9c3b99260174d577758",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -18317,7 +18317,7 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "74f518dcdd7aa1f11bdb00736a1b54d1dc51d8fed0169a0fe6213b45c3048512"
+        "sha256": "1b3d3eb7126a9ac5b84872986f66994e2dc5b9fba0a0b724ef7fb281f8f565aa"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",

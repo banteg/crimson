@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "ea93e755b48c8920fc53f28ee29d8963ee85862979344cbee830cf4271c84f33",
+      "sha256": "33603d729a6437a6eb1168153e9ad3e3a1055cee1b690e4e3550b2aa8d0fe651",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"
@@ -289,6 +289,10 @@
         {
           "path": "tools/match/scratches/grim_parental_lock_dialog_proc/NOTES.md",
           "note": "The legacy parental-lock callback is an exact 318-instruction match, including its password and dialog-state behavior."
+        },
+        {
+          "path": "tools/match/scratches/grim_advanced_config_dialog_proc/NOTES.md",
+          "note": "The legacy advanced-config callback is an exact 459-instruction match, including texture-format probing and control persistence."
         }
       ],
       "symbols": [

@@ -201,13 +201,14 @@
     {
       "id": "grim-recovered-platform-vc6-provider",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "size": 81148,
-      "sha256": "ea93e755b48c8920fc53f28ee29d8963ee85862979344cbee830cf4271c84f33",
+      "size": 88816,
+      "sha256": "33603d729a6437a6eb1168153e9ad3e3a1055cee1b690e4e3550b2aa8d0fe651",
       "recipe": "scripts/build_native_recovered_providers.py",
       "source_artifacts": [
         "visual-cpp-6-sp6-media"
       ],
       "tracked_sources": [
+        "tools/match/scratches/grim_advanced_config_dialog_proc/scratch.cpp",
         "tools/match/scratches/grim_apply_config/scratch.cpp",
         "tools/match/scratches/grim_app_cleanup/scratch.cpp",
         "tools/match/scratches/grim_app_init/scratch.cpp",

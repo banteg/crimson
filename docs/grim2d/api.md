@@ -71,6 +71,10 @@ We also generate an evidence appendix with callsite snippets:
   parental-lock dialogs: status toggle, password setup, and password entry.
   It preserves the original eight-byte stored-password limit and comparison
   over only the stored password length.
+- `grim_advanced_config_dialog_proc` (`0x10001170`) exact-matches the advanced
+  launcher controls. It probes five optional texture formats, maps combo-box
+  selections back to the renderer format, and persists dithering, smoothing,
+  and decal-storage choices.
 - `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
 - Exact-matched `grim_window_create` (`0x10002680`) registers the `Crimson`
   class with `grim_window_proc`, then creates either a topmost screen-sized

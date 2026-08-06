@@ -642,9 +642,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     ]
     assert len(config.archives) == 7
     archives = {archive.id: archive for archive in config.archives}
-    assert archives["grim-recovered-platform-vc6"].size == 81148
+    assert archives["grim-recovered-platform-vc6"].size == 88816
     assert archives["grim-recovered-platform-vc6"].sha256 == (
-        "ea93e755b48c8920fc53f28ee29d8963ee85862979344cbee830cf4271c84f33"
+        "33603d729a6437a6eb1168153e9ad3e3a1055cee1b690e4e3550b2aa8d0fe651"
     )
     assert (
         archives["grim-recovered-platform-vc6"].provenance.derived_artifact
@@ -2238,15 +2238,15 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 283
+    assert payload["summary"]["source_entry_count"] == 285
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 280
-    assert payload["summary"]["typed_entries"] == 230
-    assert payload["summary"]["explicit_size_entries"] == 280
-    assert payload["summary"]["explicit_alignment_entries"] == 280
-    assert payload["summary"]["explicit_initializer_entries"] == 280
-    assert payload["summary"]["fully_specified_entries"] == 280
-    assert payload["summary"]["definition_group_entries"] == 213
+    assert payload["summary"]["entry_count"] == 282
+    assert payload["summary"]["typed_entries"] == 232
+    assert payload["summary"]["explicit_size_entries"] == 282
+    assert payload["summary"]["explicit_alignment_entries"] == 282
+    assert payload["summary"]["explicit_initializer_entries"] == 282
+    assert payload["summary"]["fully_specified_entries"] == 282
+    assert payload["summary"]["definition_group_entries"] == 214
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
@@ -2266,6 +2266,10 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     }
     assert defined["grim_parental_password_buffer"]["size"] == 0x100
     assert defined["grim_parental_password_buffer"]["initializer_fill"] == "00"
+    assert defined["grim_advanced_texture_formats"]["size"] == 6 * 4
+    assert defined["grim_advanced_texture_format_count"]["initializer_hex"] == (
+        "00000000"
+    )
     assert defined["grim_adapter_identifier"]["size"] == 0x42C
     assert defined["grim_pixel_format_vtable_dxt"]["size"] == 0x10
     assert [

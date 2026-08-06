@@ -11756,6 +11756,13 @@
       "type": "char"
     },
     {
+      "address": "0x1005bc18",
+      "comment": "Advanced-config combo mapping from selection index to the six probed texture formats.",
+      "name": "grim_advanced_texture_formats",
+      "program": "grim.dll",
+      "type": "D3DFORMAT[6]"
+    },
+    {
       "address": "0x1005bc78",
       "comment": "Pointer table base for atlas sub-rects.",
       "name": "grim_subrect_ptr_table",
@@ -12192,6 +12199,13 @@
       "address": "0x1005d808",
       "comment": "Retry counter for device Reset/restore attempts after device loss.",
       "name": "grim_device_reset_retry_count",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005d80c",
+      "comment": "Number of entries currently populated in grim_advanced_texture_formats.",
+      "name": "grim_advanced_texture_format_count",
       "program": "grim.dll",
       "type": "int"
     },

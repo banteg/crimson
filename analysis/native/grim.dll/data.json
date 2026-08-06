@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f366a898769494266c206c3d08ce3637d5ed4f1ca3cf4d187c330c539012e492",
+  "audit_digest": "ec07681f678778e43b83500205f837da1cc45f5a7b1cb9c3b99260174d577758",
   "entries": [
     {
       "address": 268747320,
@@ -5002,6 +5002,26 @@
       "type": "char"
     },
     {
+      "address": 268811288,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "Advanced-config combo mapping from selection index to the six probed texture formats.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005bc18",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_advanced_texture_formats",
+      "section": ".data",
+      "section_offset": 35864,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 24,
+      "size_source": "tools/match/scratches/grim_advanced_config_dialog_proc: six-entry D3DFORMAT selection map; tools/native/abi/grim.dll/abi_assertions.cpp: int_is_32_bit",
+      "type": "D3DFORMAT[6]"
+    },
+    {
       "address": 268811384,
       "aliases": [],
       "alignment": 4,
@@ -6365,6 +6385,26 @@
       "type": "int"
     },
     {
+      "address": 268818444,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "Number of entries currently populated in grim_advanced_texture_formats.",
+      "definition_group": "literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_advanced_texture_format_count",
+      "section": ".data",
+      "section_offset": 43020,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
+      "type": "int"
+    },
+    {
       "address": 268818448,
       "aliases": [],
       "alignment": 1,
@@ -6997,9 +7037,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "74f518dcdd7aa1f11bdb00736a1b54d1dc51d8fed0169a0fe6213b45c3048512",
+    "data_map_sha256": "1b3d3eb7126a9ac5b84872986f66994e2dc5b9fba0a0b724ef7fb281f8f565aa",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "de231c540bcd1426420593f5891d6ec640a8429394c6aef479f4f0ead1ab9f33",
+    "definitions_sha256": "0e491dee317bc9c160fb214612c60ea3f23c8802d449f4c55a3b91051d053859",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -7011,14 +7051,14 @@
     "alias_names": 6,
     "alias_rows": 6,
     "code_label_entries": 3,
-    "definition_group_entries": 213,
+    "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 280,
-    "explicit_alignment_entries": 280,
-    "explicit_initializer_entries": 280,
-    "explicit_size_entries": 280,
-    "fixed_array_types": 73,
-    "fully_specified_entries": 280,
+    "entry_count": 282,
+    "explicit_alignment_entries": 282,
+    "explicit_initializer_entries": 282,
+    "explicit_size_entries": 282,
+    "fixed_array_types": 74,
+    "fully_specified_entries": 282,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 0,
@@ -7026,12 +7066,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 205,
+      ".data": 207,
       ".rdata": 75
     },
-    "source_entry_count": 283,
-    "typed_entries": 230,
-    "unique_addresses": 280,
+    "source_entry_count": 285,
+    "typed_entries": 232,
+    "unique_addresses": 282,
     "untyped_entries": 50
   }
 }
