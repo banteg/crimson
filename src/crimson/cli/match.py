@@ -332,11 +332,16 @@ def cmd_match_dump(
 
 
 @match_app.command("validate")
-def cmd_match_validate(source: Path = typer.Argument(..., help="scratch source file")) -> None:
+def cmd_match_validate(
+    source: Path = typer.Argument(..., help="scratch source file or directory"),
+) -> None:
     """Reject fakematching-only scratch constructs."""
     try:
+        if source.is_dir():
+            config = matchlib.load_scratch_config(source)
+            source = config.directory / config.source
         matchlib.validate_scratch_source(source)
-    except ValueError as exc:
+    except (OSError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
     typer.echo("ok")

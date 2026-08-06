@@ -1481,6 +1481,36 @@ def test_validate_scratch_source_rejects_inline_asm(tmp_path: Path) -> None:
             validate_scratch_source(dirty)
 
 
+def test_validate_command_accepts_scratch_directory(tmp_path: Path) -> None:
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=example SOURCE=source.cpp\n",
+        encoding="utf-8",
+    )
+    (scratch / "source.cpp").write_text("void example() {}\n", encoding="utf-8")
+
+    completed = CliRunner().invoke(match_app, ["validate", str(scratch)])
+
+    assert completed.exit_code == 0
+    assert completed.output == "ok\n"
+
+
+def test_validate_command_reports_directory_errors_without_traceback(tmp_path: Path) -> None:
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=example SOURCE=missing.cpp\n",
+        encoding="utf-8",
+    )
+
+    completed = CliRunner().invoke(match_app, ["validate", str(scratch)])
+
+    assert completed.exit_code == 1
+    assert "missing.cpp" in completed.output
+    assert "Traceback" not in completed.output
+
+
 def test_render_status_rows_includes_prefix() -> None:
     config = ScratchConfig(
         directory=Path("scratch"),
