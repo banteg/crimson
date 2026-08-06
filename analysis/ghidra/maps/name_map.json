@@ -10112,14 +10112,16 @@
   {
     "program": "grim.dll",
     "address": "0x1001e147",
-    "name": "FUN_1001e147",
-    "signature": "void FUN_1001e147(png_structp png_ptr, undefined4 *param_2)"
+    "name": "png_chunk_error",
+    "signature": "void png_chunk_error(png_structp png_ptr, png_const_charp error_message)",
+    "comment": "Formats the current chunk name with an error message and enters png_error"
   },
   {
     "program": "grim.dll",
     "address": "0x1001e16c",
-    "name": "FUN_1001e16c",
-    "signature": "void FUN_1001e16c(png_structp png_ptr, undefined4 *param_2)"
+    "name": "png_chunk_warning",
+    "signature": "void png_chunk_warning(png_structp png_ptr, png_const_charp warning_message)",
+    "comment": "Formats the current chunk name with a warning message and enters png_warning"
   },
   {
     "program": "grim.dll",
@@ -10316,6 +10318,20 @@
     "name": "png_set_sRGB",
     "signature": "void png_set_sRGB(png_structp png_ptr, png_infop info_ptr, int intent)",
     "comment": "Stores the PNG sRGB rendering intent and marks the sRGB field valid"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100203fc",
+    "name": "png_set_sRGB_gAMA_and_cHRM",
+    "signature": "void png_set_sRGB_gAMA_and_cHRM(png_structp png_ptr, png_infop info_ptr, int intent)",
+    "comment": "Stores sRGB intent and the standard sRGB gamma under the provider's feature selection"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020435",
+    "name": "png_set_tRNS",
+    "signature": "void png_set_tRNS(png_structp png_ptr, png_infop info_ptr, png_bytep trans, int num_trans, png_color_16p trans_values)",
+    "comment": "Stores palette or color-key transparency metadata and marks tRNS valid"
   },
   {
     "program": "grim.dll",
@@ -10725,28 +10741,28 @@
     "address": "0x100247e4",
     "name": "png_get_uint_32",
     "signature": "png_uint_32 png_get_uint_32(png_bytep buf)",
-    "comment": "read big-endian 32-bit value"
+    "comment": "Reads a big-endian 32-bit value"
   },
   {
     "program": "grim.dll",
     "address": "0x10024807",
     "name": "png_crc_read",
-    "signature": "void png_crc_read(png_structp png_ptr, png_bytep buf, png_uint_32 length)",
-    "comment": "read PNG chunk data and update CRC"
+    "signature": "void png_crc_read(png_structp png_ptr, png_bytep buf, png_size_t length)",
+    "comment": "Reads PNG chunk data and feeds the bytes into the configured CRC policy"
   },
   {
     "program": "grim.dll",
     "address": "0x10024821",
     "name": "png_crc_error",
     "signature": "int png_crc_error(png_structp png_ptr)",
-    "comment": "read stored CRC and compare with computed"
+    "comment": "Reads and compares a stored chunk CRC unless policy disables checking"
   },
   {
     "program": "grim.dll",
     "address": "0x1002487f",
     "name": "png_check_chunk_name",
     "signature": "void png_check_chunk_name(png_structp png_ptr, png_bytep chunk_name)",
-    "comment": "validate PNG chunk type characters"
+    "comment": "Rejects chunk names containing characters outside the PNG alphabetic range"
   },
   {
     "program": "grim.dll",
@@ -10766,7 +10782,7 @@
     "address": "0x100250d7",
     "name": "png_crc_finish",
     "signature": "int png_crc_finish(png_structp png_ptr, png_uint_32 skip)",
-    "comment": "read remaining chunk bytes and check CRC"
+    "comment": "Consumes remaining chunk bytes, checks the CRC, and applies critical or ancillary error policy"
   },
   {
     "program": "grim.dll",
@@ -10783,8 +10799,9 @@
   {
     "program": "grim.dll",
     "address": "0x10025483",
-    "name": "FUN_10025483",
-    "signature": "void FUN_10025483(png_structp png_ptr, undefined4 param_2, undefined4 param_3, int param_4, uint param_5)"
+    "name": "png_handle_IEND",
+    "signature": "void png_handle_IEND(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Validates and records the terminal IEND chunk before finishing its CRC"
   },
   {
     "program": "grim.dll",
@@ -10807,8 +10824,9 @@
   {
     "program": "grim.dll",
     "address": "0x1002587e",
-    "name": "grim_png_read_chunk_generic",
-    "signature": "void grim_png_read_chunk_generic(png_structp png_ptr, int param_2, uint param_3)"
+    "name": "png_handle_unknown",
+    "signature": "void png_handle_unknown(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Validates, rejects unknown critical chunks, and skips unknown ancillary chunks"
   },
   {
     "program": "grim.dll",

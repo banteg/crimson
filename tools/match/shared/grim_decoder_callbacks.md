@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes forty-nine exact callback, state, and cleanup
+The image-decoder cluster contributes fifty-nine exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -60,11 +60,19 @@ These provider objects also carry product 29, build 9178 provenance; the local
 `msvc7.0` profile is an exact code-generation surrogate rather than an
 original-compiler claim.
 
+The source/archive overlap further recovers the compound sRGB/gamma and tRNS
+setters, internal structure allocation, big-endian integer load, CRC read,
+comparison and finish helpers, chunk-name validation, and the IEND and unknown
+chunk handlers. The provider feature set omits cHRM work from the compound
+setter and uses 0x19c-byte PNG and 0x40-byte info structures. Only
+`png_create_struct` selects `/MT`, matching its archive object's direct
+`malloc` relocation; the other utility scratches retain `/MD`.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the forty-nine functions cover 1,559 bytes and 589 instructions in the
+Altogether the fifty-nine functions cover 2,294 bytes and 887 instructions in the
 explicit `all` scope, with every external relocation resolved.

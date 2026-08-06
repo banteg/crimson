@@ -12,13 +12,22 @@
 #include "../../../third_party/headers/png.h"
 
 struct grim_png_source_t {
-    png_byte fields_000[0x5c];
+    png_byte fields_000[0x58];
+    png_uint_32 mode;
     png_uint_32 flags;
     png_uint_32 transformations;
-    png_byte fields_064[0x58];
+    png_byte fields_064[0x38];
+    png_bytep zbuf;
+    png_size_t zbuf_size;
+    png_byte fields_0a4[0x18];
     png_uint_32 height;
     png_uint_32 num_rows;
-    png_byte fields_0c4[0x4f];
+    png_byte fields_0c4[0x3c];
+    png_uint_32 crc;
+    png_byte fields_104[8];
+    png_byte chunk_name[5];
+    png_byte compression;
+    png_byte filter;
     png_byte interlaced;
     png_byte pass;
     png_byte do_filter;
@@ -34,6 +43,16 @@ struct grim_png_source_t {
     png_byte fields_120[0x10];
     float gamma;
     float screen_gamma;
+};
+
+struct grim_png_info_source_t {
+    png_byte fields_00[8];
+    png_uint_32 valid;
+    png_byte fields_0c[0x0a];
+    png_uint_16 num_trans;
+    png_byte fields_18[0x18];
+    png_bytep trans;
+    png_color_16 trans_values;
 };
 
 extern "C" void grim_png_read_update_info(
@@ -176,4 +195,182 @@ extern "C" png_voidp grim_png_memset_check(
     if ((png_uint_32)size != length)
         png_error(png_ptr, "Overflow in png_memset_check.");
     return png_memset(s1, value, size);
+}
+
+extern "C" void grim_png_set_srgb_gamma(
+    grim_png_source_t *png_ptr,
+    grim_png_info_source_t *info_ptr,
+    int intent)
+{
+    float file_gamma;
+
+    if (png_ptr == NULL || info_ptr == NULL)
+        return;
+
+    png_set_sRGB((png_structp)png_ptr, (png_infop)info_ptr, intent);
+    file_gamma = (float).45455;
+    png_set_gAMA((png_structp)png_ptr, (png_infop)info_ptr, file_gamma);
+}
+
+extern "C" void grim_png_set_trns(
+    grim_png_source_t *png_ptr,
+    grim_png_info_source_t *info_ptr,
+    png_bytep trans,
+    int num_trans,
+    png_color_16p trans_values)
+{
+    if (png_ptr == NULL || info_ptr == NULL)
+        return;
+
+    if (trans != NULL)
+        info_ptr->trans = trans;
+
+    if (trans_values != NULL) {
+        png_memcpy(
+            &info_ptr->trans_values,
+            trans_values,
+            sizeof(png_color_16));
+        if (num_trans == 0)
+            num_trans = 1;
+    }
+    info_ptr->num_trans = (png_uint_16)num_trans;
+    info_ptr->valid |= PNG_INFO_tRNS;
+}
+
+extern "C" png_voidp grim_png_create_struct(int type)
+{
+    png_size_t size;
+    png_voidp struct_ptr;
+
+    if (type == PNG_STRUCT_INFO)
+        size = 0x40;
+    else if (type == PNG_STRUCT_PNG)
+        size = 0x19c;
+    else
+        return NULL;
+
+    if ((struct_ptr = (png_voidp)malloc(size)) != NULL)
+        png_memset(struct_ptr, 0, size);
+
+    return struct_ptr;
+}
+
+extern "C" png_uint_32 grim_png_get_uint32(png_bytep buf)
+{
+    png_uint_32 value = ((png_uint_32)(*buf) << 24) +
+        ((png_uint_32)(*(buf + 1)) << 16) +
+        ((png_uint_32)(*(buf + 2)) << 8) +
+        (png_uint_32)(*(buf + 3));
+
+    return value;
+}
+
+extern "C" void grim_png_crc_read(
+    grim_png_source_t *png_ptr, png_bytep buf, png_size_t length)
+{
+    png_read_data((png_structp)png_ptr, buf, length);
+    png_calculate_crc((png_structp)png_ptr, buf, length);
+}
+
+extern "C" int grim_png_crc_error(grim_png_source_t *png_ptr)
+{
+    png_byte crc_bytes[4];
+    png_uint_32 crc;
+    int need_crc = 1;
+
+    if (png_ptr->chunk_name[0] & 0x20) {
+        if ((png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_MASK) ==
+            (PNG_FLAG_CRC_ANCILLARY_USE | PNG_FLAG_CRC_ANCILLARY_NOWARN))
+            need_crc = 0;
+    } else if (png_ptr->flags & PNG_FLAG_CRC_CRITICAL_IGNORE) {
+        need_crc = 0;
+    }
+
+    png_read_data((png_structp)png_ptr, crc_bytes, 4);
+
+    if (need_crc) {
+        crc = png_get_uint_32(crc_bytes);
+        return (int)(crc != png_ptr->crc);
+    }
+    return 0;
+}
+
+extern "C" void grim_png_check_chunk_name(
+    grim_png_source_t *png_ptr, png_bytep chunk_name)
+{
+    if (chunk_name[0] < 41 || chunk_name[0] > 122 ||
+        (chunk_name[0] > 90 && chunk_name[0] < 97) ||
+        chunk_name[1] < 41 || chunk_name[1] > 122 ||
+        (chunk_name[1] > 90 && chunk_name[1] < 97) ||
+        chunk_name[2] < 41 || chunk_name[2] > 122 ||
+        (chunk_name[2] > 90 && chunk_name[2] < 97) ||
+        chunk_name[3] < 41 || chunk_name[3] > 122 ||
+        (chunk_name[3] > 90 && chunk_name[3] < 97)) {
+        png_chunk_error((png_structp)png_ptr, "invalid chunk type");
+    }
+}
+
+extern "C" int grim_png_crc_finish(
+    grim_png_source_t *png_ptr, png_uint_32 skip)
+{
+    png_size_t i;
+    png_size_t istop = png_ptr->zbuf_size;
+
+    for (i = (png_size_t)skip; i > istop; i -= istop)
+        png_crc_read((png_structp)png_ptr, png_ptr->zbuf, png_ptr->zbuf_size);
+
+    if (i)
+        png_crc_read((png_structp)png_ptr, png_ptr->zbuf, i);
+
+    if (png_crc_error((png_structp)png_ptr)) {
+        if ((png_ptr->chunk_name[0] & 0x20 &&
+             !(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN)) ||
+            (!(png_ptr->chunk_name[0] & 0x20) &&
+             png_ptr->flags & PNG_FLAG_CRC_CRITICAL_USE)) {
+            png_chunk_warning((png_structp)png_ptr, "CRC error");
+        } else {
+            png_chunk_error((png_structp)png_ptr, "CRC error");
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
+extern "C" void grim_png_handle_iend(
+    grim_png_source_t *png_ptr,
+    png_infop info_ptr,
+    png_uint_32 length)
+{
+    if (!(png_ptr->mode & PNG_HAVE_IHDR) ||
+        !(png_ptr->mode & PNG_HAVE_IDAT)) {
+        png_error((png_structp)png_ptr, "No image in file");
+        if (info_ptr == NULL)
+            return;
+    }
+
+    png_ptr->mode |= PNG_AFTER_IDAT | PNG_HAVE_IEND;
+
+    if (length != 0)
+        png_warning((png_structp)png_ptr, "Incorrect IEND chunk length");
+    png_crc_finish((png_structp)png_ptr, length);
+}
+
+extern "C" void grim_png_handle_unknown(
+    grim_png_source_t *png_ptr,
+    png_infop info_ptr,
+    png_uint_32 length)
+{
+    png_check_chunk_name((png_structp)png_ptr, png_ptr->chunk_name);
+
+    if (!(png_ptr->chunk_name[0] & 0x20)) {
+        png_chunk_error((png_structp)png_ptr, "unknown critical chunk");
+        if (info_ptr == NULL)
+            return;
+    }
+
+    if (png_ptr->mode & PNG_HAVE_IDAT)
+        png_ptr->mode |= PNG_AFTER_IDAT;
+
+    png_crc_finish((png_structp)png_ptr, length);
 }
