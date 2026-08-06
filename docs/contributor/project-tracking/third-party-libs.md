@@ -299,6 +299,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   `jdsample.c`, `jdmerge.c`, and `jquant2.c` reproduce byte-for-byte (140
   bytes, 33 instructions, seven references). The previously missing private
   `jversion.h` dependency is now pinned and provenance checked too.
+- Matcher corpus: seven more `jdsample.c` functions under VC6 `/O2 /Ob2 /G6`
+  plus `jcopy_sample_rows` from the newly pinned `jutils.c` reproduce
+  byte-for-byte (1,848 bytes, 662 instructions, 12 references). Together with
+  the three previously matched leaf adapters, this completes the target's
+  ten-function separate-upsampler module.
 - Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
   reproduces the remaining five JAZ input-controller functions byte-for-byte
   (2,157 bytes, 672 instructions, 15 references). Together with

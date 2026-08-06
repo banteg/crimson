@@ -11995,6 +11995,17 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003e490",
+    "name": "grim_jpeg_copy_sample_rows",
+    "aliases": [
+      "sub_1003E490"
+    ],
+    "signature": "void grim_jpeg_copy_sample_rows(JSAMPARRAY input_array, int source_row, JSAMPARRAY output_array, int destination_row, int row_count, JDIMENSION column_count)",
+    "comment": "JAZ IJG 6a sample-row copy helper",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003e4e0",
     "name": "grim_jpeg_copy_block_row",
     "signature": "void grim_jpeg_copy_block_row(JBLOCKROW input_row, JBLOCKROW output_row, JDIMENSION block_count)",
@@ -12032,10 +12043,32 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10041ba0",
+    "name": "grim_jpeg_init_upsampler",
+    "aliases": [
+      "sub_10041BA0"
+    ],
+    "signature": "void grim_jpeg_init_upsampler(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a separate-upsampler initializer",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10041da0",
     "name": "grim_jpeg_start_pass_upsample",
     "signature": "void grim_jpeg_start_pass_upsample(j_decompress_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a separate-upsampler pass initializer in the JAZ decoder copy"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041dc0",
+    "name": "grim_jpeg_sep_upsample",
+    "aliases": [
+      "sub_10041DC0"
+    ],
+    "signature": "void grim_jpeg_sep_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a separate-upsampling controller",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -12053,6 +12086,61 @@
     ],
     "signature": "void grim_jpeg_noop_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "JAZ IJG 6a ignored-component upsampling adapter; exact VC6 provider body",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041ed0",
+    "name": "grim_jpeg_int_upsample",
+    "aliases": [
+      "sub_10041ED0"
+    ],
+    "signature": "void grim_jpeg_int_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "JAZ IJG 6a integral-factor upsampler",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041ff0",
+    "name": "grim_jpeg_h2v1_upsample",
+    "aliases": [
+      "sub_10041FF0"
+    ],
+    "signature": "void grim_jpeg_h2v1_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "JAZ IJG 6a horizontal two-to-one upsampler",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042050",
+    "name": "grim_jpeg_h2v2_upsample",
+    "aliases": [
+      "sub_10042050"
+    ],
+    "signature": "void grim_jpeg_h2v2_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "JAZ IJG 6a horizontal and vertical two-to-one upsampler",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100420e0",
+    "name": "grim_jpeg_h2v1_fancy_upsample",
+    "aliases": [
+      "sub_100420E0"
+    ],
+    "signature": "void grim_jpeg_h2v1_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "JAZ IJG 6a fancy horizontal two-to-one upsampler",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100421b0",
+    "name": "grim_jpeg_h2v2_fancy_upsample",
+    "aliases": [
+      "sub_100421B0"
+    ],
+    "signature": "void grim_jpeg_h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "JAZ IJG 6a fancy horizontal and vertical two-to-one upsampler",
     "create": false
   },
   {

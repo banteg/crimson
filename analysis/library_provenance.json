@@ -200,6 +200,11 @@
           "path": "jpeg-6a/jquant2.c",
           "size": 48429,
           "sha256": "9b6844e18480d7003618e8f473a0900743d15fc8516aee7229a77adce470eb0b"
+        },
+        {
+          "path": "jpeg-6a/jutils.c",
+          "size": 5240,
+          "sha256": "2cab735c6ea1bca55f4c94a72c73035a0a161378403a6bd849b350df71db92d6"
         }
       ]
     },
@@ -962,6 +967,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jquant2.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jquant2.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jutils.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jutils.c"
     },
     {
       "source_artifact": "zlib-1.1.3",
