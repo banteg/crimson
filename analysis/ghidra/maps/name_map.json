@@ -11129,6 +11129,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10031fa5",
+    "name": "d3dx_jpeg_build_merged_ycc_rgb_table",
+    "signature": "void d3dx_jpeg_build_merged_ycc_rgb_table(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a merged-upsample YCbCr-to-RGB conversion-table builder"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10032055",
     "name": "d3dx_jpeg_start_pass_merged_upsample",
     "signature": "void d3dx_jpeg_start_pass_merged_upsample(j_decompress_ptr cinfo)",
@@ -11136,10 +11143,38 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003206a",
+    "name": "d3dx_jpeg_merged_2v_upsample",
+    "signature": "void d3dx_jpeg_merged_2v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a two-row merged upsampling controller"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10032110",
     "name": "d3dx_jpeg_merged_1v_upsample",
     "signature": "void d3dx_jpeg_merged_1v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "Archive-confirmed IJG 6a one-row merged upsampling controller"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032141",
+    "name": "d3dx_jpeg_h2v1_merged_upsample",
+    "signature": "void d3dx_jpeg_h2v1_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)",
+    "comment": "Archive-confirmed IJG 6a horizontal two-to-one merged upsampling and color conversion"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032297",
+    "name": "d3dx_jpeg_h2v2_merged_upsample",
+    "signature": "void d3dx_jpeg_h2v2_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)",
+    "comment": "Archive-confirmed IJG 6a horizontal and vertical two-to-one merged upsampling and color conversion"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003247d",
+    "name": "d3dx_jpeg_init_merged_upsampler",
+    "signature": "void d3dx_jpeg_init_merged_upsampler(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a merged-upsampler initializer"
   },
   {
     "program": "grim.dll",

@@ -144,11 +144,17 @@ The table builder is retained behind a translation-unit callsite to preserve
 its archive-local decoder-in-`EAX` convention; the conversion loops follow the
 official IJG 6a fixed-point and range-limit arithmetic directly.
 
+Three merged-upsample helpers recover the module-local YCbCr table builder and
+the horizontal two-to-one pixel kernels for one- and two-row output. They are
+compiled as C, matching the pinned `jdmerge.obj` translation-unit provenance;
+the two kernels reproduce all 298 native instructions directly from the
+official IJG 6a loops.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the one hundred eight functions cover 5,974 bytes and 2,251 instructions in the
+Altogether the one hundred eleven functions cover 6,978 bytes and 2,613 instructions in the
 explicit `all` scope, with every external relocation resolved.
