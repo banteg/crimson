@@ -328,6 +328,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   bytes, 578 instructions, four references), as do the three adjacent
   no-backing-store hooks (28 bytes, 12 instructions). The empty memory
   terminator is linker-folded with the existing one-byte callback.
+- Matcher corpus: the newly pinned and provenance-checked `jdcoefct.c` under
+  VC6 `/O2 /Ob2 /G6` reproduces all eight emitted JAZ coefficient-controller
+  bodies byte-for-byte (4,104 bytes, 1,322 instructions, 12 references). The
+  private `start_iMCU_row` and `smoothing_ok` helpers are inlined into their
+  callers, so no synthetic target functions are recorded for them.
 - Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
   reproduces the remaining five JAZ input-controller functions byte-for-byte
   (2,157 bytes, 672 instructions, 15 references). Together with

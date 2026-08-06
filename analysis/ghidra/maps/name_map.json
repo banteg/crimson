@@ -12175,6 +12175,103 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003ec50",
+    "end": "0x1003ed60",
+    "name": "grim_jpeg_init_d_coef_controller",
+    "aliases": [
+      "jinit_d_coef_controller",
+      "sub_1003EC50"
+    ],
+    "signature": "void grim_jpeg_init_d_coef_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
+    "comment": "JAZ IJG 6a coefficient-buffer controller initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ed60",
+    "end": "0x1003edc0",
+    "name": "grim_jpeg_start_input_pass_coef",
+    "aliases": [
+      "sub_1003ED60"
+    ],
+    "signature": "void grim_jpeg_start_input_pass_coef(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a coefficient-controller input-pass initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003edc0",
+    "end": "0x1003ef50",
+    "name": "grim_jpeg_start_output_pass_coef",
+    "aliases": [
+      "sub_1003EDC0"
+    ],
+    "signature": "void grim_jpeg_start_output_pass_coef(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a coefficient-controller output-pass initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ef50",
+    "end": "0x1003f1f0",
+    "name": "grim_jpeg_decompress_onepass",
+    "aliases": [
+      "sub_1003EF50"
+    ],
+    "signature": "int grim_jpeg_decompress_onepass(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
+    "comment": "JAZ IJG 6a single-pass coefficient decompressor",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003f1f0",
+    "end": "0x1003f200",
+    "name": "grim_jpeg_dummy_consume_data",
+    "aliases": [
+      "sub_1003F1F0"
+    ],
+    "signature": "int grim_jpeg_dummy_consume_data(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a single-pass consume-input stub",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003f200",
+    "end": "0x1003f470",
+    "name": "grim_jpeg_consume_coefficients",
+    "aliases": [
+      "sub_1003F200"
+    ],
+    "signature": "int grim_jpeg_consume_coefficients(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a full-image coefficient input consumer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003f470",
+    "end": "0x1003f620",
+    "name": "grim_jpeg_decompress_coefficients",
+    "aliases": [
+      "sub_1003F470"
+    ],
+    "signature": "int grim_jpeg_decompress_coefficients(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
+    "comment": "JAZ IJG 6a multi-pass coefficient decompressor",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003f620",
+    "end": "0x1003fc90",
+    "name": "grim_jpeg_decompress_smooth_data",
+    "aliases": [
+      "sub_1003F620"
+    ],
+    "signature": "int grim_jpeg_decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
+    "comment": "JAZ IJG 6a progressive block-smoothing coefficient decompressor",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10041a60",
     "name": "FUN_10041a60",
     "signature": "int FUN_10041a60(void* arg1, int arg2, int arg3, int arg4, void** arg5)",
