@@ -12145,14 +12145,75 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100428e0",
+    "end": "0x10042a10",
+    "name": "grim_jpeg_init_merged_upsampler",
+    "aliases": [
+      "sub_100428E0"
+    ],
+    "signature": "void grim_jpeg_init_merged_upsampler(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a merged-upsampler initializer with inlined YCbCr-to-RGB table builder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10042a10",
+    "end": "0x10042a30",
     "name": "grim_jpeg_start_pass_merged_upsample",
     "aliases": [
       "sub_10042A10"
     ],
     "signature": "void grim_jpeg_start_pass_merged_upsample(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a merged-upsampler pass initializer; exact VC6 provider body",
-    "create": false
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042a30",
+    "end": "0x10042b00",
+    "name": "grim_jpeg_merged_2v_upsample",
+    "aliases": [
+      "sub_10042A30"
+    ],
+    "signature": "void grim_jpeg_merged_2v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a two-row merged upsampling controller",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042b00",
+    "end": "0x10042b40",
+    "name": "grim_jpeg_merged_1v_upsample",
+    "aliases": [
+      "sub_10042B00"
+    ],
+    "signature": "void grim_jpeg_merged_1v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a one-row merged upsampling controller",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042b40",
+    "end": "0x10042c90",
+    "name": "grim_jpeg_h2v1_merged_upsample",
+    "aliases": [
+      "sub_10042B40"
+    ],
+    "signature": "void grim_jpeg_h2v1_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)",
+    "comment": "JAZ IJG 6a horizontal two-to-one merged upsampling and color conversion",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042c90",
+    "end": "0x10042ea0",
+    "name": "grim_jpeg_h2v2_merged_upsample",
+    "aliases": [
+      "sub_10042C90"
+    ],
+    "signature": "void grim_jpeg_h2v2_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)",
+    "comment": "JAZ IJG 6a horizontal and vertical two-to-one merged upsampling and color conversion",
+    "create": true
   },
   {
     "program": "grim.dll",
