@@ -62,6 +62,7 @@ RECIPES = {
             "grim_config_blob_load",
             "grim_config_blob_save",
             "grim_config_dialog_populate_display_modes",
+            "grim_config_dialog_proc",
             "grim_parental_lock_dialog_proc",
             "grim_d3d_init",
             "grim_d3d_shutdown",

@@ -75,7 +75,10 @@ We also generate an evidence appendix with callsite snippets:
   launcher controls. It probes five optional texture formats, maps combo-box
   selections back to the renderer format, and persists dithering, smoothing,
   and decal-storage choices.
-- `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
+- `grim_config_dialog_proc` (`0x10002120`) exact-matches the 404-instruction
+  launcher callback. It filters adapters through the required 16/32-bit
+  device checks, parses the selected display-mode text into persisted globals,
+  and routes the website, manual, parental-lock, and advanced-dialog commands.
 - Exact-matched `grim_window_create` (`0x10002680`) registers the `Crimson`
   class with `grim_window_proc`, then creates either a topmost screen-sized
   popup or a centered adjusted window using the configured backbuffer size.

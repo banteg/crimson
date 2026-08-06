@@ -602,10 +602,10 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     assert coverage["import_exports"] == 20
     assert coverage["generated_import_symbols"] == 5
     assert coverage["archive_symbols"] == 49
-    assert coverage["link_dependency_symbols"] == 57
+    assert coverage["link_dependency_symbols"] == 65
     assert coverage["closure_placeholder_symbols"] == 0
-    assert coverage["link_dependency_placeholder_symbols"] == 2
-    assert coverage["placeholder_symbols"] == 2
+    assert coverage["link_dependency_placeholder_symbols"] == 1
+    assert coverage["placeholder_symbols"] == 1
     assert coverage["runnable"] is False
     assert [
         provider.name
@@ -621,6 +621,7 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
         "recovered-platform-gdi32",
         "recovered-platform-winmm",
         "recovered-platform-msvcrt",
+        "recovered-platform-urlmon",
         "directx-8.1-d3dx8-kernel32",
         "directx-8.1-d3dx8-gdi32",
         "directx-8.1-d3dx8-advapi32",
@@ -632,6 +633,7 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     ] == [
         "msvcrt.dll",
         "recovered-platform",
+        "recovered-platform-config-dialog",
         "recovered-platform-dinput-data",
         "recovered-platform-dxguid",
         "directx-8.1-d3dx8-static",
@@ -642,9 +644,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     ]
     assert len(config.archives) == 7
     archives = {archive.id: archive for archive in config.archives}
-    assert archives["grim-recovered-platform-vc6"].size == 88816
+    assert archives["grim-recovered-platform-vc6"].size == 100246
     assert archives["grim-recovered-platform-vc6"].sha256 == (
-        "33603d729a6437a6eb1168153e9ad3e3a1055cee1b690e4e3550b2aa8d0fe651"
+        "192b49592a7671b265dd43f481d4965071abb2306cf0be099b39b3c03b799fe3"
     )
     assert (
         archives["grim-recovered-platform-vc6"].provenance.derived_artifact
@@ -761,23 +763,22 @@ def test_default_grim_link_manifest_records_recovered_platform_frontier() -> Non
     assert manifest["schema"] == 3
     assert manifest["status"] == "linked"
     assert manifest["runnable"] is False
-    assert manifest["summary"]["link_dependency_symbols"] == 57
+    assert manifest["summary"]["link_dependency_symbols"] == 65
     assert manifest["summary"]["archive_symbols"] == 49
     assert manifest["summary"]["import_exports"] == 20
     assert manifest["summary"]["closure_placeholder_symbols"] == 0
-    assert manifest["summary"]["link_dependency_placeholder_symbols"] == 2
-    assert manifest["summary"]["placeholder_symbols"] == 2
+    assert manifest["summary"]["link_dependency_placeholder_symbols"] == 1
+    assert manifest["summary"]["placeholder_symbols"] == 1
     assert manifest["summary"]["discarded_placeholder_symbols"] == 0
     assert manifest["summary"]["retained_closure_placeholder_symbols"] == 0
-    assert manifest["summary"]["retained_link_dependency_placeholder_symbols"] == 2
-    assert manifest["summary"]["retained_placeholder_symbols"] == 2
-    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 48
-    assert manifest["summary"]["validated_output_import_symbols"] == 85
-    assert manifest["summary"]["input_object_count"] == 164
+    assert manifest["summary"]["retained_link_dependency_placeholder_symbols"] == 1
+    assert manifest["summary"]["retained_placeholder_symbols"] == 1
+    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 56
+    assert manifest["summary"]["validated_output_import_symbols"] == 96
+    assert manifest["summary"]["input_object_count"] == 166
     assert manifest["entry"] == {"symbol": "DllMain"}
     assert manifest["placeholder_object"]["discarded_symbols"] == []
     assert manifest["placeholder_object"]["retained_symbols"] == [
-        "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
         "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z",
     ]
     dependencies = {
@@ -1071,11 +1072,10 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
     }
 
     assert set(symbols) == {
-        "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
         "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z",
     }
-    assert len(coff.sections) == 2
-    assert [section.name for section in coff.sections] == [".text"] * 2
+    assert len(coff.sections) == 1
+    assert [section.name for section in coff.sections] == [".text"]
     assert {
         (section.comdat_key, section.comdat_selection)
         for section in coff.sections

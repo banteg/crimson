@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -21,7 +21,7 @@
       "file": {
         "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
         "repository_relative": true,
-        "sha256": "33603d729a6437a6eb1168153e9ad3e3a1055cee1b690e4e3550b2aa8d0fe651"
+        "sha256": "192b49592a7671b265dd43f481d4965071abb2306cf0be099b39b3c03b799fe3"
       },
       "id": "grim-recovered-platform-vc6",
       "provenance": {
@@ -29,7 +29,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       }
     },
@@ -44,7 +44,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         "member": "DXF/DXSDK/lib/dinput8.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -61,7 +61,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         "member": "DXF/DXSDK/lib/dxguid.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -78,7 +78,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -96,7 +96,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       }
     },
@@ -112,7 +112,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       }
     }
@@ -131,7 +131,7 @@
       "dll": true,
       "entry_point_rva": 25296,
       "image_base": 268435456,
-      "image_size": 368640,
+      "image_size": 380928,
       "machine": 332,
       "optional_magic": 267,
       "section_count": 5,
@@ -139,24 +139,23 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "a1d851aef375773eed77c76c7863e2131594b4daf68eb29361e1752c026a99f8"
+    "sha256": "e12dd63ae4662aacd739d9ad99d09a294160c5a0228d95d5d0beccd446c35d51"
   },
   "placeholder_object": {
     "discarded_symbols": [],
     "path": "analysis/native/grim.dll/link/providers/placeholders.obj",
     "repository_relative": true,
     "retained_symbols": [
-      "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
       "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z"
     ],
-    "sha256": "08d5441dac08f70a3ab0d1f19b91717dedd9d0b212c2ba434c834bbe4c7bf1ce",
-    "symbol_count": 2
+    "sha256": "6c6b9f10eb89a98891444bed8fe1f13a67209fe8b1ba18dce6451c898c273923",
+    "symbol_count": 1
   },
   "provider_config": {
-    "declared_sha256": "ee00016f3f5be1a84288fc41d74046cd4757a68a05af7de504cff0e7f641d2ff",
+    "declared_sha256": "fce9f21a7fd881f60535c87936afa137799fa3949fde237349ec413acbfeccd7",
     "path": "tools/native/providers/grim.dll.json",
     "repository_relative": true,
-    "sha256": "ee00016f3f5be1a84288fc41d74046cd4757a68a05af7de504cff0e7f641d2ff"
+    "sha256": "fce9f21a7fd881f60535c87936afa137799fa3949fde237349ec413acbfeccd7"
   },
   "providers": [
     {
@@ -185,7 +184,7 @@
           "note": "The provenance manifest pins the original VC6 SP6 MSVCRT import archive used by the reference runtime seam.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       ],
       "kind": "reference-import",
@@ -351,7 +350,7 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         {
           "note": "The legacy display-mode helper is an exact 646-byte match and preserves its persisted-byte comparison.",
@@ -370,6 +369,12 @@
           "path": "tools/match/scratches/grim_advanced_config_dialog_proc/NOTES.md",
           "repository_relative": true,
           "sha256": "3cfbe8e5110eff0d986cfd7039bd02e6537d850d171ca808be98dff377b06ce3"
+        },
+        {
+          "note": "The legacy launcher callback is an exact 404-instruction match, including adapter filtering, mode parsing, and child-dialog routing.",
+          "path": "tools/match/scratches/grim_config_dialog_proc/NOTES.md",
+          "repository_relative": true,
+          "sha256": "05ea90586830c51756caeda43f2ba82e7c9feb8c688ae46b7551ca2270757c5a"
         }
       ],
       "kind": "platform-replaced",
@@ -396,19 +401,37 @@
       ]
     },
     {
+      "archive": "grim-recovered-platform-vc6",
+      "evidence": [
+        {
+          "note": "The exact recovered launcher callback is retained transitively by grim_apply_config.",
+          "path": "tools/match/scratches/grim_config_dialog_proc/NOTES.md",
+          "repository_relative": true,
+          "sha256": "05ea90586830c51756caeda43f2ba82e7c9feb8c688ae46b7551ca2270757c5a"
+        },
+        {
+          "note": "The deterministic recovered platform archive includes the exact callback and both exact child dialog members.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
+        }
+      ],
+      "kind": "static-library",
+      "name": "recovered-platform-config-dialog",
+      "resolution": "archive-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z"
+      ]
+    },
+    {
       "discarded_symbols": [],
       "evidence": [
         {
-          "note": "The two remaining recovered-platform references are bounded native callbacks with known addresses and signatures but no matching scratches yet.",
+          "note": "The sole remaining recovered-platform reference is a bounded native callback with a known address and signature but no matching scratch yet.",
           "path": "analysis/ida/raw/grim.dll/functions.json",
           "repository_relative": true,
           "sha256": "c2226db5bc1c854d75bc72b50588c6fad64f2577de8ebe360fa0eead7679e104"
-        },
-        {
-          "note": "The exact config launcher references the native dialog callback.",
-          "path": "tools/match/scratches/grim_apply_config/scratch.cpp",
-          "repository_relative": true,
-          "sha256": "589eee514109ba6860718997ab3af674444e53fbe3c2c6ba8bcaa266df2a86e3"
         },
         {
           "note": "The exact window creator references the native window callback.",
@@ -421,12 +444,10 @@
       "name": "recovered-platform-callback-frontier",
       "resolution": "placeholder-object",
       "retained_symbols": [
-        "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
         "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z"
       ],
       "scope": "link-dependency",
       "symbols": [
-        "?grim_config_dialog_proc@@YGHPAUHWND__@@IIJ@Z",
         "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z"
       ]
     },
@@ -447,7 +468,7 @@
           "note": "The pinned DirectX 8.1 SDK supplies the original dinput8 import archive.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       ],
       "import_library": {
@@ -471,7 +492,7 @@
           "note": "The pinned DirectX 8.1 SDK dinput8 archive supplies the canonical DirectInput data-format objects.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         {
           "note": "The exact recovered input initializers retain the SDK data-format references.",
@@ -497,7 +518,7 @@
           "note": "The pinned DirectX 8.1 SDK supplies the exact DirectInput GUID and data-format definitions referenced by the recovered input backends.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         {
           "note": "The exact recovered input initializers retain the SDK GUID and data-format references.",
@@ -521,7 +542,7 @@
         "object": {
           "path": "analysis/native/grim.dll/link/providers/recovered-platform-user32-aliases.obj",
           "repository_relative": true,
-          "sha256": "d80257fdc57f7c3ed85aefa3ea1841e8f92389a28e5b5333c8bc90dd3c3ec9a4"
+          "sha256": "b895d7f4f094097585e501ab76c49882d9e509030cf5e19b123a5e32a105d6af"
         },
         "symbols": [
           {
@@ -545,6 +566,10 @@
             "target": "__imp__DispatchMessageA"
           },
           {
+            "alias": "__imp__EndDialog@8",
+            "target": "__imp__EndDialog"
+          },
+          {
             "alias": "__imp__GetClientRect@8",
             "target": "__imp__GetClientRect"
           },
@@ -553,12 +578,20 @@
             "target": "__imp__GetDesktopWindow"
           },
           {
+            "alias": "__imp__GetDlgItem@8",
+            "target": "__imp__GetDlgItem"
+          },
+          {
             "alias": "__imp__GetForegroundWindow@0",
             "target": "__imp__GetForegroundWindow"
           },
           {
             "alias": "__imp__GetSystemMetrics@4",
             "target": "__imp__GetSystemMetrics"
+          },
+          {
+            "alias": "__imp__GetWindowTextA@12",
+            "target": "__imp__GetWindowTextA"
           },
           {
             "alias": "__imp__LoadCursorA@8",
@@ -577,12 +610,20 @@
             "target": "__imp__RegisterClassExA"
           },
           {
+            "alias": "__imp__SendMessageA@16",
+            "target": "__imp__SendMessageA"
+          },
+          {
             "alias": "__imp__SetFocus@4",
             "target": "__imp__SetFocus"
           },
           {
             "alias": "__imp__SetForegroundWindow@4",
             "target": "__imp__SetForegroundWindow"
+          },
+          {
+            "alias": "__imp__SetWindowTextA@8",
+            "target": "__imp__SetWindowTextA"
           },
           {
             "alias": "__imp__ShowCursor@4",
@@ -609,7 +650,7 @@
       "definition": {
         "path": "analysis/native/grim.dll/link/providers/recovered-platform-user32.def",
         "repository_relative": true,
-        "sha256": "bf1865c8ffed511eba0f16a940472daa4140aab0f0e42b3e85a2ab2f04cad5d0"
+        "sha256": "1b0dfb5d9443d6f119d35da157d7471b72e06cd26e1ea3cae78d3eaeb29ae84f"
       },
       "evidence": [
         {
@@ -622,13 +663,13 @@
           "note": "The exact recovered platform archive retains the corresponding decorated import references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       ],
       "import_library": {
         "path": "analysis/native/grim.dll/link/providers/recovered-platform-user32.lib",
         "repository_relative": true,
-        "sha256": "dec6e6281b2ea5f636ce4b0b9e57f552c4b34743d1a814376e4b92de22900ebd"
+        "sha256": "5843b088a1d2f935ec9f96c94dc287fd4ff837b5630cfbaaf3484c2944946373"
       },
       "kind": "reference-import",
       "module": "USER32.dll",
@@ -641,16 +682,21 @@
         "__imp__DestroyWindow@4",
         "__imp__DialogBoxParamA@20",
         "__imp__DispatchMessageA@4",
+        "__imp__EndDialog@8",
         "__imp__GetClientRect@8",
         "__imp__GetDesktopWindow@0",
+        "__imp__GetDlgItem@8",
         "__imp__GetForegroundWindow@0",
         "__imp__GetSystemMetrics@4",
+        "__imp__GetWindowTextA@12",
         "__imp__LoadCursorA@8",
         "__imp__PeekMessageA@20",
         "__imp__PostQuitMessage@4",
         "__imp__RegisterClassExA@4",
+        "__imp__SendMessageA@16",
         "__imp__SetFocus@4",
         "__imp__SetForegroundWindow@4",
+        "__imp__SetWindowTextA@8",
         "__imp__ShowCursor@4",
         "__imp__ShowWindow@8",
         "__imp__TranslateMessage@4",
@@ -663,23 +709,31 @@
         "object": {
           "path": "analysis/native/grim.dll/link/providers/recovered-platform-kernel32-aliases.obj",
           "repository_relative": true,
-          "sha256": "33cba578f22196553f782637dbc2ab7fe95ce12b80e5b05f912373d489903737"
+          "sha256": "74f6f7e79df906330679fbd8a8b38399ca5ba50f7a826c5f9b6c948085628e1d"
         },
         "symbols": [
           {
+            "alias": "__imp__GetLocalTime@4",
+            "target": "__imp__GetLocalTime"
+          },
+          {
             "alias": "__imp__Sleep@4",
             "target": "__imp__Sleep"
+          },
+          {
+            "alias": "__imp__WinExec@8",
+            "target": "__imp__WinExec"
           }
         ]
       },
       "definition": {
         "path": "analysis/native/grim.dll/link/providers/recovered-platform-kernel32.def",
         "repository_relative": true,
-        "sha256": "9701c2c4715b6896ece44ad265aec1fe9253710275efdd5271dd756a5e1b2927"
+        "sha256": "c33f2209999ee2effb8f938e37c40dfa77d9e8a20517e05d2a87242c20cb8781"
       },
       "evidence": [
         {
-          "note": "The reference image imports Sleep from KERNEL32.",
+          "note": "The reference image imports these launcher and runtime exports from KERNEL32.",
           "path": "analysis/ida/raw/grim.dll/imports.json",
           "repository_relative": true,
           "sha256": "ffc865dc723dd872e65ee74c3c6471296712f26191b3ff214c05abf22da9b6a2"
@@ -688,7 +742,7 @@
       "import_library": {
         "path": "analysis/native/grim.dll/link/providers/recovered-platform-kernel32.lib",
         "repository_relative": true,
-        "sha256": "54bbde748ea5037d45e7820f3c58111efe6cb027e8a80225c1563aa804cb7fed"
+        "sha256": "a7f0910375643f2d6fe3fbfb8a65e4086302ed359ef589f753906a27fb845a8c"
       },
       "kind": "reference-import",
       "module": "KERNEL32.dll",
@@ -696,7 +750,9 @@
       "resolution": "import-library",
       "scope": "link-dependency",
       "symbols": [
-        "__imp__Sleep@4"
+        "__imp__GetLocalTime@4",
+        "__imp__Sleep@4",
+        "__imp__WinExec@8"
       ]
     },
     {
@@ -798,7 +854,7 @@
           "note": "The pinned VC6 SP6 MSVCRT import archive supplies the original import object.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       ],
       "import_library": {
@@ -813,6 +869,53 @@
       "scope": "link-dependency",
       "symbols": [
         "__imp__strchr"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/recovered-platform-urlmon-aliases.obj",
+          "repository_relative": true,
+          "sha256": "07d09bf7c618d56d500c0f723e11c3634c434480aebe1c98c7e28fd3d3c35c7c"
+        },
+        "symbols": [
+          {
+            "alias": "_HlinkNavigateString@8",
+            "target": "_HlinkNavigateString"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/grim.dll/link/providers/recovered-platform-urlmon.def",
+        "repository_relative": true,
+        "sha256": "7337351fa87f70b5d2cb9845164eb19fc94217ce61a8815b16e089ac23da8f89"
+      },
+      "evidence": [
+        {
+          "note": "The reference image imports HlinkNavigateString from URLMON.",
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "repository_relative": true,
+          "sha256": "ffc865dc723dd872e65ee74c3c6471296712f26191b3ff214c05abf22da9b6a2"
+        },
+        {
+          "note": "The exact recovered launcher callback retains the decorated hyperlink import.",
+          "path": "tools/match/scratches/grim_config_dialog_proc/NOTES.md",
+          "repository_relative": true,
+          "sha256": "05ea90586830c51756caeda43f2ba82e7c9feb8c688ae46b7551ca2270757c5a"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/grim.dll/link/providers/recovered-platform-urlmon.lib",
+        "repository_relative": true,
+        "sha256": "5cca71de8c9f6d5b66f6eaaf592209cf3d1831eb36518ef9e4b24e6b38e4bc6c"
+      },
+      "kind": "reference-import",
+      "module": "urlmon.dll",
+      "name": "recovered-platform-urlmon",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "_HlinkNavigateString@8"
       ]
     },
     {
@@ -845,7 +948,7 @@
           "note": "The provenance manifest pins the exact DirectX 8.1 SDK archive whose normalized functions match the reference image.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         {
           "note": "The archive proof records exact matches for the four public APIs and the internal D3DXComputeNormalMap body.",
@@ -973,7 +1076,7 @@
           "note": "The pinned DirectX 8.1 archive records these decorated import references in the selected members.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       ],
       "import_library": {
@@ -1039,7 +1142,7 @@
           "note": "The selected D3DX8 resource member records a decorated DeleteObject import reference.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       ],
       "import_library": {
@@ -1094,7 +1197,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 import references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         }
       ],
       "import_library": {
@@ -1120,7 +1223,7 @@
           "note": "The deterministic mixed-profile VC6 archive reproduces all six JAZ closure entries plus jpeg_destroy_decompress byte-for-byte.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         {
           "note": "The one-byte boolean ABI, compiler profiles, archive hash, custom source reconstruction, and 18 exact reference functions are recorded here.",
@@ -1163,7 +1266,7 @@
           "note": "The normalized VC6 archive is derived from the pinned zlib 1.1.3 source release and has a reproducible hash.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "c716091187dc2757a7db089760e51c88c9cde17322d1eaf49937f5035bbc9afe"
+          "sha256": "ef5bbc585c828dba378c9db656a266eaf972ba7f2ee2a9201fbea223876028ab"
         },
         {
           "note": "The stock uncompress entry is a 156-byte exact reference match; the archive contains 24 exact Grim functions.",
@@ -1278,6 +1381,7 @@
           "FindResourceW",
           "GetFileSize",
           "GetLastError",
+          "GetLocalTime",
           "GetModuleHandleA",
           "GetProcAddress",
           "GetVersionExA",
@@ -1290,6 +1394,7 @@
           "Sleep",
           "UnmapViewOfFile",
           "WideCharToMultiByte",
+          "WinExec",
           "WriteFile"
         ],
         "discarded_symbols": [
@@ -1304,6 +1409,7 @@
           "FindResourceA",
           "GetFileSize",
           "GetLastError",
+          "GetLocalTime",
           "GetModuleHandleA",
           "GetProcAddress",
           "GetVersionExA",
@@ -1316,6 +1422,7 @@
           "Sleep",
           "UnmapViewOfFile",
           "WideCharToMultiByte",
+          "WinExec",
           "WriteFile"
         ]
       },
@@ -1331,21 +1438,36 @@
       },
       {
         "declared_symbols": [
+          "HlinkNavigateString"
+        ],
+        "discarded_symbols": [],
+        "module": "urlmon",
+        "retained_symbols": [
+          "HlinkNavigateString"
+        ]
+      },
+      {
+        "declared_symbols": [
           "AdjustWindowRectEx",
           "CreateWindowExA",
           "DestroyWindow",
           "DialogBoxParamA",
           "DispatchMessageA",
+          "EndDialog",
           "GetClientRect",
           "GetDesktopWindow",
+          "GetDlgItem",
           "GetForegroundWindow",
           "GetSystemMetrics",
+          "GetWindowTextA",
           "LoadCursorA",
           "PeekMessageA",
           "PostQuitMessage",
           "RegisterClassExA",
+          "SendMessageA",
           "SetFocus",
           "SetForegroundWindow",
+          "SetWindowTextA",
           "ShowCursor",
           "ShowWindow",
           "TranslateMessage",
@@ -1360,16 +1482,21 @@
           "DestroyWindow",
           "DialogBoxParamA",
           "DispatchMessageA",
+          "EndDialog",
           "GetClientRect",
           "GetDesktopWindow",
+          "GetDlgItem",
           "GetForegroundWindow",
           "GetSystemMetrics",
+          "GetWindowTextA",
           "LoadCursorA",
           "PeekMessageA",
           "PostQuitMessage",
           "RegisterClassExA",
+          "SendMessageA",
           "SetFocus",
           "SetForegroundWindow",
+          "SetWindowTextA",
           "ShowCursor",
           "ShowWindow",
           "TranslateMessage",
@@ -1388,7 +1515,7 @@
         ]
       }
     ],
-    "link_dependency_retained_symbol_count": 48,
+    "link_dependency_retained_symbol_count": 56,
     "modules": [
       {
         "module": "d3d8",
@@ -1469,6 +1596,7 @@
           "FindResourceA",
           "GetFileSize",
           "GetLastError",
+          "GetLocalTime",
           "GetModuleHandleA",
           "GetProcAddress",
           "GetVersionExA",
@@ -1481,6 +1609,7 @@
           "Sleep",
           "UnmapViewOfFile",
           "WideCharToMultiByte",
+          "WinExec",
           "WriteFile"
         ]
       },
@@ -1502,6 +1631,7 @@
           "_onexit",
           "_setjmp3",
           "_strdup",
+          "atoi",
           "calloc",
           "exit",
           "fclose",
@@ -1511,6 +1641,7 @@
           "free",
           "fseek",
           "ftell",
+          "fwrite",
           "getenv",
           "isdigit",
           "isspace",
@@ -1519,7 +1650,14 @@
           "sprintf",
           "sscanf",
           "strchr",
+          "strstr",
           "vsprintf"
+        ]
+      },
+      {
+        "module": "urlmon",
+        "symbols": [
+          "HlinkNavigateString"
         ]
       },
       {
@@ -1530,18 +1668,23 @@
           "DestroyWindow",
           "DialogBoxParamA",
           "DispatchMessageA",
+          "EndDialog",
           "GetClientRect",
           "GetDesktopWindow",
+          "GetDlgItem",
           "GetForegroundWindow",
           "GetSystemMetrics",
+          "GetWindowTextA",
           "LoadCursorA",
           "LoadIconA",
           "MessageBoxA",
           "PeekMessageA",
           "PostQuitMessage",
           "RegisterClassExA",
+          "SendMessageA",
           "SetFocus",
           "SetForegroundWindow",
+          "SetWindowTextA",
           "ShowCursor",
           "ShowWindow",
           "TranslateMessage",
@@ -1558,7 +1701,7 @@
         ]
       }
     ],
-    "output_symbol_count": 85,
+    "output_symbol_count": 96,
     "symbol_count": 20
   },
   "runnable": false,
@@ -1572,10 +1715,10 @@
     "generated_import_symbols": 5,
     "import_exports": 20,
     "import_symbols": 21,
-    "input_object_count": 164,
-    "link_dependency_placeholder_symbols": 2,
-    "link_dependency_symbols": 57,
-    "placeholder_symbols": 2,
+    "input_object_count": 166,
+    "link_dependency_placeholder_symbols": 1,
+    "link_dependency_symbols": 65,
+    "placeholder_symbols": 1,
     "providers": [
       {
         "alias_count": 1,
@@ -1620,10 +1763,17 @@
       },
       {
         "kind": "static-library",
+        "name": "recovered-platform-config-dialog",
+        "resolution": "archive-library",
+        "scope": "link-dependency",
+        "symbol_count": 1
+      },
+      {
+        "kind": "static-library",
         "name": "recovered-platform-callback-frontier",
         "resolution": "placeholder-object",
         "scope": "link-dependency",
-        "symbol_count": 2
+        "symbol_count": 1
       },
       {
         "kind": "reference-import",
@@ -1647,20 +1797,20 @@
         "symbol_count": 3
       },
       {
-        "alias_count": 20,
+        "alias_count": 25,
         "kind": "reference-import",
         "name": "recovered-platform-user32",
         "resolution": "import-library",
         "scope": "link-dependency",
-        "symbol_count": 20
+        "symbol_count": 25
       },
       {
-        "alias_count": 1,
+        "alias_count": 3,
         "kind": "reference-import",
         "name": "recovered-platform-kernel32",
         "resolution": "import-library",
         "scope": "link-dependency",
-        "symbol_count": 1
+        "symbol_count": 3
       },
       {
         "alias_count": 1,
@@ -1681,6 +1831,14 @@
       {
         "kind": "reference-import",
         "name": "recovered-platform-msvcrt",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 1
+      },
+      {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "recovered-platform-urlmon",
         "resolution": "import-library",
         "scope": "link-dependency",
         "symbol_count": 1
@@ -1753,11 +1911,11 @@
       }
     ],
     "retained_closure_placeholder_symbols": 0,
-    "retained_link_dependency_import_symbols": 48,
-    "retained_link_dependency_placeholder_symbols": 2,
-    "retained_placeholder_symbols": 2,
+    "retained_link_dependency_import_symbols": 56,
+    "retained_link_dependency_placeholder_symbols": 1,
+    "retained_placeholder_symbols": 1,
     "runnable": false,
-    "validated_output_import_symbols": 85,
+    "validated_output_import_symbols": 96,
     "validated_reference_import_symbols": 20
   },
   "toolchain": {
