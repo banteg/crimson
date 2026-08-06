@@ -12007,6 +12007,28 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10050790",
+    "name": "grim_jpeg_idct_aanscales",
+    "aliases": [
+      "DAT_10050790"
+    ],
+    "signature": "const INT16 grim_jpeg_idct_aanscales[DCTSIZE2]",
+    "comment": "JAZ IJG 6a fixed-point AA&N inverse-DCT scale table",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10050810",
+    "name": "grim_jpeg_idct_aanscalefactor",
+    "aliases": [
+      "DAT_10050810"
+    ],
+    "signature": "const double grim_jpeg_idct_aanscalefactor[DCTSIZE]",
+    "comment": "JAZ IJG 6a floating-point AA&N inverse-DCT scale factors",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1005035c",
     "name": "grim_jpeg_std_message_table",
     "aliases": [
@@ -12462,6 +12484,97 @@
     "signature": "boolean grim_jpeg_decode_mcu_ac_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
     "comment": "JAZ IJG 6a progressive refining-AC MCU decoder",
     "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041590",
+    "end": "0x10041610",
+    "name": "grim_jpeg_init_inverse_dct",
+    "aliases": [
+      "jinit_inverse_dct",
+      "sub_10041590"
+    ],
+    "signature": "void grim_jpeg_init_inverse_dct(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a inverse-DCT manager initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041610",
+    "end": "0x10041848",
+    "name": "grim_jpeg_start_pass_inverse_dct",
+    "aliases": [
+      "sub_10041610"
+    ],
+    "signature": "void grim_jpeg_start_pass_inverse_dct(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a inverse-DCT method and multiplier-table selector",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044e50",
+    "name": "grim_jpeg_idct_islow",
+    "aliases": [
+      "sub_10044E50"
+    ],
+    "signature": "void grim_jpeg_idct_islow(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "JAZ IJG 6a slow-integer inverse DCT selected by the exact stock manager",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100454a0",
+    "name": "grim_jpeg_idct_ifast",
+    "aliases": [
+      "sub_100454A0"
+    ],
+    "signature": "void grim_jpeg_idct_ifast(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "JAZ IJG 6a fast-integer inverse DCT selected by the exact stock manager",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10045930",
+    "name": "grim_jpeg_idct_float",
+    "aliases": [
+      "sub_10045930"
+    ],
+    "signature": "void grim_jpeg_idct_float(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "JAZ IJG 6a floating-point inverse DCT selected by the exact stock manager",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10045d90",
+    "name": "grim_jpeg_idct_4x4",
+    "aliases": [
+      "sub_10045D90"
+    ],
+    "signature": "void grim_jpeg_idct_4x4(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "JAZ IJG 6a four-by-four scaled inverse DCT selected by the exact stock manager",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10046190",
+    "name": "grim_jpeg_idct_2x2",
+    "aliases": [
+      "sub_10046190"
+    ],
+    "signature": "void grim_jpeg_idct_2x2(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "JAZ IJG 6a two-by-two scaled inverse DCT selected by the exact stock manager",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100463c0",
+    "name": "grim_jpeg_idct_1x1",
+    "aliases": [
+      "sub_100463C0"
+    ],
+    "signature": "void grim_jpeg_idct_1x1(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "JAZ IJG 6a one-by-one scaled inverse DCT selected by the exact stock manager",
+    "create": false
   },
   {
     "program": "grim.dll",

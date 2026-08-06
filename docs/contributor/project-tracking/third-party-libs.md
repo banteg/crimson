@@ -344,6 +344,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   (3,788 bytes, 1,230 instructions, 31 references). Its private
   `process_restart` helper is likewise inlined, and the module-local
   sign-extension tables are explicitly separated from the baseline copies.
+- Matcher corpus: `jddctmgr.c` under VC6 `/O2 /Ob2 /G6` reproduces both
+  emitted inverse-DCT manager bodies byte-for-byte (654 bytes, 211
+  instructions, 14 references). The manager's two AA&N scale tables and all
+  six selected JAZ IDCT implementations now have stable reference identities;
+  this naming does not by itself claim the downstream IDCT bodies are exact.
 - Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
   reproduces the remaining five JAZ input-controller functions byte-for-byte
   (2,157 bytes, 672 instructions, 15 references). Together with
