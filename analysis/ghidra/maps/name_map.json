@@ -11974,10 +11974,65 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003dd90",
+    "end": "0x1003dfb0",
+    "name": "grim_jpeg_calc_output_dimensions",
+    "aliases": [
+      "jpeg_calc_output_dimensions",
+      "sub_1003DD90"
+    ],
+    "signature": "void grim_jpeg_calc_output_dimensions(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a output-dimension and IDCT-scaling calculator",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003dfb0",
+    "end": "0x1003e040",
+    "name": "grim_jpeg_use_merged_upsample",
+    "aliases": [
+      "sub_1003DFB0"
+    ],
+    "signature": "boolean grim_jpeg_use_merged_upsample(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a merged-upsample capability predicate",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003e040",
-    "name": "jinit_master_decompress",
-    "signature": "void jinit_master_decompress(void *context)",
-    "comment": "IJG libjpeg 6a master decompression initializer"
+    "end": "0x1003e2d0",
+    "name": "grim_jpeg_init_master_decompress",
+    "aliases": [
+      "jinit_master_decompress",
+      "sub_1003E040"
+    ],
+    "signature": "void grim_jpeg_init_master_decompress(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a master decompression initializer with inlined module selection",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e2d0",
+    "end": "0x1003e430",
+    "name": "grim_jpeg_prepare_for_output_pass",
+    "aliases": [
+      "sub_1003E2D0"
+    ],
+    "signature": "void grim_jpeg_prepare_for_output_pass(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a output-pass preparation controller",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e430",
+    "end": "0x1003e460",
+    "name": "grim_jpeg_finish_output_pass",
+    "aliases": [
+      "sub_1003E430"
+    ],
+    "signature": "void grim_jpeg_finish_output_pass(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a output-pass completion controller",
+    "create": true
   },
   {
     "program": "grim.dll",

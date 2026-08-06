@@ -182,6 +182,11 @@
           "sha256": "5b7998534ff15e8ee99296f8fde1459d429ec0b636efd33a1578adcb73e07a67"
         },
         {
+          "path": "jpeg-6a/jdmaster.c",
+          "size": 19670,
+          "sha256": "c88155f021e403ddadfbd986a27df6d922d62ad39febd22afbbcd98a2d83d4b4"
+        },
+        {
           "path": "jpeg-6a/jdinput.c",
           "size": 13497,
           "sha256": "a945a258e19ca01fbfe2159ce7f3aace89ec04c082c71e8cbc2be3d83aa884bb"
@@ -952,6 +957,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jerror.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jerror.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdmaster.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jdmaster.c"
     },
     {
       "source_artifact": "ijg-libjpeg-6a",

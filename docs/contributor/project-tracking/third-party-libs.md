@@ -316,6 +316,12 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   references). Its empty `start_pass_dcolor` callback is linker-folded with
   the existing one-byte memory-source terminator; live-confirmed bounds fill
   the corresponding six-function static-export gap.
+- Matcher corpus: the newly pinned and provenance-checked `jdmaster.c` under
+  VC6 `/O2 /Ob2 /G6` reproduces all five emitted JAZ decompression-master
+  bodies byte-for-byte (1,679 bytes, 570 instructions, 25 references). The
+  private range-table and module-selection routines are inlined into the
+  initializer; explicit live-confirmed bounds cover the previously unnamed
+  dimension, merged-upsample, prepare-pass, and finish-pass routines.
 - Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
   reproduces the remaining five JAZ input-controller functions byte-for-byte
   (2,157 bytes, 672 instructions, 15 references). Together with
