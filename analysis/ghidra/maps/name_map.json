@@ -10083,6 +10083,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001de6f",
+    "name": "d3dx_jpeg_reset_marker_reader",
+    "signature": "void d3dx_jpeg_reset_marker_reader(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a marker-reader state reset in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001e016",
     "name": "jpeg_reset_error_mgr",
     "signature": "void jpeg_reset_error_mgr(j_common_ptr cinfo)",
@@ -10571,10 +10578,24 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10022bab",
+    "name": "d3dx_jpeg_copy_sample_rows",
+    "signature": "void d3dx_jpeg_copy_sample_rows(JSAMPARRAY input_array, int source_row, JSAMPARRAY output_array, int destination_row, int row_count, JDIMENSION column_count)",
+    "comment": "Archive-confirmed IJG 6a sample-row copy helper in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022bf2",
+    "name": "d3dx_jpeg_copy_block_row",
+    "signature": "void d3dx_jpeg_copy_block_row(JBLOCKROW input_row, JBLOCKROW output_row, JDIMENSION block_count)",
+    "comment": "Archive-confirmed IJG 6a coefficient-block row copy helper in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10022c14",
-    "name": "memzero",
-    "signature": "void memzero(void *dst, unsigned int size)",
-    "comment": "zero-fill helper (memset to 0)"
+    "name": "d3dx_jpeg_zero_far",
+    "signature": "void d3dx_jpeg_zero_far(void *target, size_t size)",
+    "comment": "Archive-confirmed IJG 6a far-buffer zero helper in the D3DX provider"
   },
   {
     "program": "grim.dll",
@@ -10586,6 +10607,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10023024",
+    "name": "d3dx_jpeg_start_input_pass",
+    "signature": "void d3dx_jpeg_start_input_pass(j_decompress_ptr cinfo)",
+    "comment": "Starts an IJG decompressor input pass in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002305e",
     "name": "consume_markers",
     "signature": "int consume_markers(j_decompress_ptr cinfo)",
@@ -10593,10 +10621,31 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100230f1",
+    "name": "d3dx_jpeg_reset_input_controller",
+    "signature": "void d3dx_jpeg_reset_input_controller(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a input-controller reset in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10023128",
     "name": "finish_input_pass",
     "signature": "void finish_input_pass(j_decompress_ptr cinfo)",
     "comment": "Restores consume_markers as the IJG input controller's consume callback"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023139",
+    "name": "d3dx_jpeg_init_input_controller",
+    "signature": "void d3dx_jpeg_init_input_controller(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a input-controller initializer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002317a",
+    "name": "d3dx_jpeg_out_of_memory",
+    "signature": "void d3dx_jpeg_out_of_memory(j_common_ptr cinfo, int code)",
+    "comment": "Archive-confirmed IJG 6a out-of-memory error dispatcher in the D3DX provider"
   },
   {
     "program": "grim.dll",
@@ -10632,6 +10681,27 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100239de",
+    "name": "d3dx_jpeg_free_pool",
+    "signature": "void d3dx_jpeg_free_pool(j_common_ptr cinfo, int pool_id)",
+    "comment": "Releases one IJG memory pool for the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023abf",
+    "name": "d3dx_jpeg_self_destruct",
+    "signature": "void d3dx_jpeg_self_destruct(j_common_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a memory-manager teardown in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023ba3",
+    "name": "d3dx_jpeg_abort",
+    "signature": "void d3dx_jpeg_abort(j_common_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a operation reset in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10023bc5",
     "name": "d3dx_jpeg_destroy",
     "signature": "void d3dx_jpeg_destroy(j_common_ptr cinfo)",
@@ -10658,6 +10728,13 @@
     "signature": "int FUN_10023c18(int arg1, void* arg2)",
     "comment": "[binja] int32_t __fastcall sub_10023c18(int32_t arg1, void* arg2)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100241c1",
+    "name": "d3dx_jpeg_finish_output_pass",
+    "signature": "void d3dx_jpeg_finish_output_pass(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a output-pass finalizer in the D3DX provider"
   },
   {
     "program": "grim.dll",
