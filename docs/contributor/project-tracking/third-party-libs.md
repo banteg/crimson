@@ -294,6 +294,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   `jdsample.c`, `jdmerge.c`, and `jquant2.c` reproduce byte-for-byte (140
   bytes, 33 instructions, seven references). The previously missing private
   `jversion.h` dependency is now pinned and provenance checked too.
+- Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
+  reproduces the remaining five JAZ input-controller functions byte-for-byte
+  (2,157 bytes, 672 instructions, 15 references). Together with
+  `finish_input_pass`, the complete six-function input-controller cluster is
+  now exact; the `/Ob2` profile accounts for IJG's inlined setup helpers.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.

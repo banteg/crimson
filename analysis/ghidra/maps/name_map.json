@@ -11669,9 +11669,23 @@
   {
     "program": "grim.dll",
     "address": "0x1003acd0",
-    "name": "jinit_input_controller",
-    "signature": "void jinit_input_controller(void *context)",
-    "comment": "IJG libjpeg 6a decompression input-controller initializer"
+    "name": "grim_jpeg_init_input_controller",
+    "aliases": [
+      "jinit_input_controller"
+    ],
+    "signature": "void grim_jpeg_init_input_controller(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a decompression input-controller initializer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ad20",
+    "name": "grim_jpeg_start_input_pass",
+    "aliases": [
+      "sub_1003AD20"
+    ],
+    "signature": "void grim_jpeg_start_input_pass(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a input-pass initializer",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -11693,6 +11707,28 @@
     ],
     "signature": "int grim_jpeg_consume_markers(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a marker-consumption state machine",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003b370",
+    "name": "grim_jpeg_per_scan_setup",
+    "aliases": [
+      "sub_1003B370"
+    ],
+    "signature": "void grim_jpeg_per_scan_setup(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a per-scan geometry setup",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003b520",
+    "name": "grim_jpeg_reset_input_controller",
+    "aliases": [
+      "sub_1003B520"
+    ],
+    "signature": "void grim_jpeg_reset_input_controller(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a input-controller reset",
     "create": false
   },
   {
