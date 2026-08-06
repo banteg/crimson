@@ -211,6 +211,12 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   `inflate_flush` at `0x1004b0e0` byte-for-byte (306 bytes, 117 instructions).
   These headers also establish the original state layouts for subsequent
   source-backed recovery of the remaining plain-C inflate modules.
+- Matcher corpus: the pinned upstream `inflate.c` reproduces `inflateEnd`,
+  `inflateInit2_`, `inflateInit_`, and `inflate` at `0x100473f0` through
+  `0x100475d0` byte-for-byte (1,477 bytes, 550 instructions). The initializer's
+  `/Ob2` profile accounts for the observed automatic inlining of `inflateEnd`
+  and `inflateReset`; all 17 direct references across the four functions are
+  resolved to the separate plain-C zlib copy.
 
 ### libjpeg (IJG 6a)
 

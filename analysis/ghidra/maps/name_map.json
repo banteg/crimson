@@ -11769,6 +11769,17 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10047440",
+    "name": "zlib_inflate_init2",
+    "aliases": [
+      "sub_10047440"
+    ],
+    "signature": "int zlib_inflate_init2(z_streamp stream, int window_bits, const char *version, int stream_size)",
+    "comment": "Plain-C zlib 1.1.3 configurable inflate initializer",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100475b0",
     "name": "zlib_inflate_init",
     "aliases": [
@@ -11822,6 +11833,54 @@
     ],
     "signature": "unsigned long zlib_adler32(unsigned long adler, const unsigned char *buffer, unsigned int length)",
     "comment": "Plain-C zlib 1.1.3 Adler-32 checksum routine",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100492c0",
+    "name": "zlib_inflate_blocks_reset",
+    "aliases": [
+      "FUN_100492c0",
+      "sub_100492C0"
+    ],
+    "signature": "void zlib_inflate_blocks_reset(inflate_blocks_statef *state, z_streamp stream, uLongf *checksum)",
+    "comment": "Plain-C zlib 1.1.3 inflate block-state reset",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10049340",
+    "name": "zlib_inflate_blocks_new",
+    "aliases": [
+      "FUN_10049340",
+      "sub_10049340"
+    ],
+    "signature": "inflate_blocks_statef *zlib_inflate_blocks_new(z_streamp stream, check_func checksum, uInt window_size)",
+    "comment": "Plain-C zlib 1.1.3 inflate block-state allocator",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10049400",
+    "name": "zlib_inflate_blocks",
+    "aliases": [
+      "FUN_10049400",
+      "sub_10049400"
+    ],
+    "signature": "int zlib_inflate_blocks(inflate_blocks_statef *state, z_streamp stream, int status)",
+    "comment": "Plain-C zlib 1.1.3 inflate block-state machine",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004a100",
+    "name": "zlib_inflate_blocks_free",
+    "aliases": [
+      "FUN_1004a100",
+      "sub_1004A100"
+    ],
+    "signature": "void zlib_inflate_blocks_free(inflate_blocks_statef *state, z_streamp stream)",
+    "comment": "Plain-C zlib 1.1.3 inflate block-state teardown",
     "create": false
   },
   {

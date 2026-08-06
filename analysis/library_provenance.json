@@ -186,6 +186,11 @@
           "sha256": "c74668be73c56e1adda6ff9da06132330d9c4a7479232339dfc4e0f3bf703ff8"
         },
         {
+          "path": "zlib-1.1.3/inflate.c",
+          "size": 9656,
+          "sha256": "fac42b9bfdcd2ff4751e642a518dff921ae5a79a22f7eeda73845c803a89a623"
+        },
+        {
           "path": "zlib-1.1.3/infcodes.h",
           "size": 737,
           "sha256": "83bbaf1225242b86b9ad4078993ba224a73eed777553955ad0c958a9cd840928"
@@ -872,6 +877,11 @@
       "source_artifact": "zlib-1.1.3",
       "member": "zlib-1.1.3/infutil.c",
       "path": "third_party/sources/zlib-1.1.3/infutil.c"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/inflate.c",
+      "path": "third_party/sources/zlib-1.1.3/inflate.c"
     }
   ],
   "cross_image_matches": [
