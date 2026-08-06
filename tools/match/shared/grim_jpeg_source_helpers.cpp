@@ -184,6 +184,15 @@ struct grim_jpeg_merged_upsampler_source_t {
     unsigned int rows_to_go;
 };
 
+struct grim_jpeg_color_converter_source_t {
+    void *start_pass;
+    void *color_convert;
+    int *cr_to_red;
+    int *cb_to_blue;
+    long *cr_to_green;
+    long *cb_to_green;
+};
+
 struct grim_jpeg_decompress_source_t {
     grim_jpeg_error_source_t *error;
     grim_jpeg_memory_source_t *memory;
@@ -216,7 +225,7 @@ struct grim_jpeg_decompress_source_t {
     int max_v_samp_factor;
     unsigned char fields_114[0x04];
     unsigned int total_iMCU_rows;
-    unsigned char fields_11c[0x04];
+    unsigned char *sample_range_limit;
     int components_in_scan;
     grim_jpeg_component_source_t *current_components[4];
     unsigned char fields_134[0x44];
@@ -229,7 +238,7 @@ struct grim_jpeg_decompress_source_t {
     grim_jpeg_marker_reader_source_t *marker_reader;
     unsigned char fields_194[0x08];
     void *upsampler;
-    void *color_converter;
+    grim_jpeg_color_converter_source_t *color_converter;
     grim_jpeg_color_quantizer_source_t *color_quantizer;
 };
 
@@ -847,6 +856,138 @@ extern "C" void grim_jpeg_h2v2_fancy_upsample(
                 (this_column_sum * 4 + 7) >> 4);
         }
         input_row++;
+    }
+}
+
+#define GRIM_JPEG_FIX(value) \
+    (static_cast<long>((value) * (1L << 16) + 0.5))
+
+extern "C" {
+static void grim_jpeg_build_ycc_rgb_table(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_color_converter_source_t *converter = decoder->color_converter;
+    int index;
+    long centered_sample;
+
+    converter->cr_to_red = static_cast<int *>(decoder->memory->alloc_small(
+        reinterpret_cast<grim_jpeg_common_source_t *>(decoder),
+        1,
+        256 * sizeof(int)));
+    converter->cb_to_blue = static_cast<int *>(decoder->memory->alloc_small(
+        reinterpret_cast<grim_jpeg_common_source_t *>(decoder),
+        1,
+        256 * sizeof(int)));
+    converter->cr_to_green = static_cast<long *>(decoder->memory->alloc_small(
+        reinterpret_cast<grim_jpeg_common_source_t *>(decoder),
+        1,
+        256 * sizeof(long)));
+    converter->cb_to_green = static_cast<long *>(decoder->memory->alloc_small(
+        reinterpret_cast<grim_jpeg_common_source_t *>(decoder),
+        1,
+        256 * sizeof(long)));
+
+    for (index = 0, centered_sample = -128;
+         index <= 255;
+         index++, centered_sample++) {
+        converter->cr_to_red[index] = static_cast<int>(
+            (GRIM_JPEG_FIX(1.40200) * centered_sample + (1L << 15)) >> 16);
+        converter->cb_to_blue[index] = static_cast<int>(
+            (GRIM_JPEG_FIX(1.77200) * centered_sample + (1L << 15)) >> 16);
+        converter->cr_to_green[index] =
+            (-GRIM_JPEG_FIX(0.71414)) * centered_sample;
+        converter->cb_to_green[index] =
+            (-GRIM_JPEG_FIX(0.34414)) * centered_sample + (1L << 15);
+    }
+}
+}
+
+#undef GRIM_JPEG_FIX
+
+extern "C" void grim_jpeg_build_ycc_rgb_table_callsite(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_build_ycc_rgb_table(decoder);
+}
+
+extern "C" void grim_jpeg_null_convert(
+    grim_jpeg_decompress_source_t *decoder,
+    unsigned char ***input_buffer,
+    unsigned int input_row,
+    unsigned char **output_buffer,
+    int row_count)
+{
+    register unsigned char *input_pointer;
+    register unsigned char *output_pointer;
+    register unsigned int count;
+    register int component_count = decoder->component_count;
+    unsigned int column_count = decoder->output_width;
+    int component_index;
+
+    while (--row_count >= 0) {
+        for (component_index = 0;
+             component_index < component_count;
+             component_index++) {
+            input_pointer = input_buffer[component_index][input_row];
+            output_pointer = output_buffer[0] + component_index;
+            for (count = column_count; count > 0; count--) {
+                *output_pointer = *input_pointer++;
+                output_pointer += component_count;
+            }
+        }
+        input_row++;
+        output_buffer++;
+    }
+}
+
+extern "C" void grim_jpeg_ycck_cmyk_convert(
+    grim_jpeg_decompress_source_t *decoder,
+    unsigned char ***input_buffer,
+    unsigned int input_row,
+    unsigned char **output_buffer,
+    int row_count)
+{
+    grim_jpeg_color_converter_source_t *converter = decoder->color_converter;
+    register int luminance;
+    register int blue_chroma;
+    register int red_chroma;
+    register unsigned char *output_pointer;
+    register unsigned char *input_pointer_0;
+    register unsigned char *input_pointer_1;
+    register unsigned char *input_pointer_2;
+    register unsigned char *input_pointer_3;
+    register unsigned int column;
+    unsigned int column_count = decoder->output_width;
+    register unsigned char *range_limit = decoder->sample_range_limit;
+    register int *cr_to_red = converter->cr_to_red;
+    register int *cb_to_blue = converter->cb_to_blue;
+    register long *cr_to_green = converter->cr_to_green;
+    register long *cb_to_green = converter->cb_to_green;
+
+    while (--row_count >= 0) {
+        input_pointer_0 = input_buffer[0][input_row];
+        input_pointer_1 = input_buffer[1][input_row];
+        input_pointer_2 = input_buffer[2][input_row];
+        input_pointer_3 = input_buffer[3][input_row];
+        input_row++;
+        output_pointer = *output_buffer++;
+        for (column = 0; column < column_count; column++) {
+            luminance = input_pointer_0[column];
+            blue_chroma = input_pointer_1[column];
+            red_chroma = input_pointer_2[column];
+            output_pointer[0] =
+                range_limit[255 - (luminance + cr_to_red[red_chroma])];
+            output_pointer[1] = range_limit[
+                255 -
+                (luminance +
+                 static_cast<int>(
+                     (cb_to_green[blue_chroma] + cr_to_green[red_chroma]) >>
+                     16))];
+            output_pointer[2] =
+                range_limit[255 - (luminance + cb_to_blue[blue_chroma])];
+            output_pointer[3] = input_pointer_3[column];
+            output_pointer += 4;
+        }
     }
 }
 

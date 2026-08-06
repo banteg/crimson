@@ -138,11 +138,17 @@ triangle-filter variants for the common two-to-one sampling cases. Their
 component and upsampler layouts expose only archive-backed fields, including
 the byte-sized expansion tables and the component's downsampled width.
 
+Three exact color-conversion helpers add the fixed-point YCbCr lookup-table
+builder, planar-to-interleaved null conversion, and Adobe YCCK-to-CMYK path.
+The table builder is retained behind a translation-unit callsite to preserve
+its archive-local decoder-in-`EAX` convention; the conversion loops follow the
+official IJG 6a fixed-point and range-limit arithmetic directly.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the one hundred five functions cover 5,385 bytes and 2,032 instructions in the
+Altogether the one hundred eight functions cover 5,974 bytes and 2,251 instructions in the
 explicit `all` scope, with every external relocation resolved.

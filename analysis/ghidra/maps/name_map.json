@@ -11101,10 +11101,31 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100318ba",
+    "name": "d3dx_jpeg_build_ycc_rgb_table",
+    "signature": "void d3dx_jpeg_build_ycc_rgb_table(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a YCbCr-to-RGB conversion-table builder"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003196a",
+    "name": "d3dx_jpeg_null_convert",
+    "signature": "void d3dx_jpeg_null_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a planar-to-interleaved no-colorspace-change converter"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100319d5",
     "name": "d3dx_jpeg_grayscale_convert",
     "signature": "void d3dx_jpeg_grayscale_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
     "comment": "Archive-confirmed IJG 6a grayscale row-copy converter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100319f8",
+    "name": "d3dx_jpeg_ycck_cmyk_convert",
+    "signature": "void d3dx_jpeg_ycck_cmyk_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a Adobe YCCK-to-CMYK converter"
   },
   {
     "program": "grim.dll",
