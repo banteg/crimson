@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 301
+    assert payload["summary"]["source_entry_count"] == 303
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 298
-    assert payload["summary"]["typed_entries"] == 248
+    assert payload["summary"]["entry_count"] == 300
+    assert payload["summary"]["typed_entries"] == 250
     assert payload["summary"]["explicit_size_entries"] == 283
     assert payload["summary"]["explicit_alignment_entries"] == 283
     assert payload["summary"]["explicit_initializer_entries"] == 283
@@ -2267,6 +2267,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
         "const unsigned char[16][16]"
     )
     assert observed["d3dx_jpeg_quant1_rgb_order"]["type"] == "const int[3]"
+    assert observed["d3dx_zlib_inflate_border"]["type"] == (
+        "const unsigned int[19]"
+    )
     assert observed["d3dx_zlib_cplens"]["type"] == "const unsigned int[31]"
     assert observed["d3dx_zlib_cplext"]["type"] == "const unsigned int[31]"
     assert observed["d3dx_zlib_cpdist"]["type"] == "const unsigned int[30]"
@@ -2279,6 +2282,7 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["d3dx_zlib_fixed_distance_tree"]["type"] == (
         "unsigned char[256]"
     )
+    assert observed["d3dx_zlib_inflate_mask"]["type"] == "unsigned int[17]"
     assert observed["png_pass_start"]["type"] == "const int[7]"
     assert observed["png_pass_inc"]["type"] == "const int[7]"
     assert observed["grim_window_proc_dc_flag"]["type"] == "unsigned char"

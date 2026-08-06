@@ -12985,6 +12985,13 @@
       "type": "const int[3]"
     },
     {
+      "address": "0x1004f6e0",
+      "comment": "Archive-confirmed zlib 1.1.3 bit-length code permutation.",
+      "name": "d3dx_zlib_inflate_border",
+      "program": "grim.dll",
+      "type": "const unsigned int[19]"
+    },
+    {
       "address": "0x1004f868",
       "comment": "Archive-confirmed zlib 1.1.3 literal and length code bases.",
       "name": "d3dx_zlib_cplens",
@@ -13039,6 +13046,13 @@
       "name": "d3dx_zlib_fixed_distance_tree",
       "program": "grim.dll",
       "type": "unsigned char[256]"
+    },
+    {
+      "address": "0x10057020",
+      "comment": "Archive-confirmed zlib 1.1.3 low-bit masks indexed by bit count.",
+      "name": "d3dx_zlib_inflate_mask",
+      "program": "grim.dll",
+      "type": "unsigned int[17]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."

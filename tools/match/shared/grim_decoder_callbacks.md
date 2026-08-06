@@ -195,5 +195,12 @@ fixed-tree wrappers. The four zlib constant tables and four prebuilt-tree data
 objects are identified explicitly in the analysis map, and all 18 references
 resolve without masking.
 
-Altogether the one hundred thirty-nine functions cover 13,808 bytes and 5,235 instructions in the
+The two central inflate state machines now follow the same pinned zlib 1.1.3
+source: `inflate_codes` covers literal, length, distance, copy, and flush modes,
+while `inflate_blocks` handles stored, fixed, and dynamic blocks through tree
+construction and code dispatch. Together their 3,247 bytes and 1,086
+instructions match exactly, including the code-state jump table, both static
+lookup tables, `/Oi` stored-block copying, and all 32 references.
+
+Altogether the one hundred forty-one functions cover 17,055 bytes and 6,321 instructions in the
 explicit `all` scope, with every external relocation resolved.
