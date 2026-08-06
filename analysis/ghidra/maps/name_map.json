@@ -10325,8 +10325,9 @@
   {
     "program": "grim.dll",
     "address": "0x10020036",
-    "name": "FUN_10020036",
-    "signature": "void FUN_10020036(png_structp png_ptr)"
+    "name": "png_init_read_transformations",
+    "signature": "void png_init_read_transformations(png_structp png_ptr)",
+    "comment": "Archive-confirmed libpng 1.0.5 read-transform initialization"
   },
   {
     "program": "grim.dll",

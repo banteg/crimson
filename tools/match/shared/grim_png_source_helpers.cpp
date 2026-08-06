@@ -16,15 +16,32 @@ struct grim_png_source_t {
     png_uint_32 mode;
     png_uint_32 flags;
     png_uint_32 transformations;
-    png_byte fields_064[0x38];
+    png_byte fields_064[4];
+    png_uint_32 zstream_avail_in;
+    png_byte fields_06c[0x30];
     png_bytep zbuf;
     png_size_t zbuf_size;
-    png_byte fields_0a4[0x18];
+    png_byte fields_0a4[0x14];
+    png_uint_32 width;
     png_uint_32 height;
     png_uint_32 num_rows;
-    png_byte fields_0c4[0x3c];
+    png_uint_32 usr_width;
+    png_uint_32 rowbytes;
+    png_uint_32 irowbytes;
+    png_uint_32 iwidth;
+    png_uint_32 row_number;
+    png_bytep prev_row;
+    png_bytep row_buf;
+    png_bytep sub_row;
+    png_bytep up_row;
+    png_bytep avg_row;
+    png_bytep paeth_row;
+    png_row_info row_info;
+    png_uint_32 idat_size;
     png_uint_32 crc;
-    png_byte fields_104[8];
+    png_colorp palette;
+    png_uint_16 num_palette;
+    png_uint_16 num_trans;
     png_byte chunk_name[5];
     png_byte compression;
     png_byte filter;
@@ -43,14 +60,29 @@ struct grim_png_source_t {
     png_byte fields_120[0x10];
     float gamma;
     float screen_gamma;
+    png_byte fields_138[0x3c];
+    png_bytep palette_lookup;
 };
 
 struct grim_png_info_source_t {
-    png_byte fields_00[8];
+    png_uint_32 width;
+    png_uint_32 height;
     png_uint_32 valid;
-    png_byte fields_0c[0x0a];
+    png_uint_32 rowbytes;
+    png_colorp palette;
+    png_uint_16 num_palette;
     png_uint_16 num_trans;
-    png_byte fields_18[0x18];
+    png_byte bit_depth;
+    png_byte color_type;
+    png_byte compression_type;
+    png_byte filter_type;
+    png_byte interlace_type;
+    png_byte channels;
+    png_byte pixel_depth;
+    png_byte spare_byte;
+    png_byte signature[8];
+    float gamma;
+    png_byte fields_2c[4];
     png_bytep trans;
     png_color_16 trans_values;
 };
@@ -81,6 +113,154 @@ extern "C" void grim_png_read_image(
             rp++;
         }
     }
+}
+
+extern "C" void grim_png_read_transform_info(
+    grim_png_source_t *png_ptr, grim_png_info_source_t *info_ptr)
+{
+    if (png_ptr->transformations & PNG_EXPAND) {
+        if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
+            if (png_ptr->num_trans)
+                info_ptr->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+            else
+                info_ptr->color_type = PNG_COLOR_TYPE_RGB;
+            info_ptr->bit_depth = 8;
+            info_ptr->num_trans = 0;
+        } else {
+            if (png_ptr->num_trans)
+                info_ptr->color_type |= PNG_COLOR_MASK_ALPHA;
+            if (info_ptr->bit_depth < 8)
+                info_ptr->bit_depth = 8;
+            info_ptr->num_trans = 0;
+        }
+    }
+
+    if (png_ptr->transformations & PNG_GAMMA)
+        info_ptr->gamma = png_ptr->gamma;
+
+    if ((png_ptr->transformations & PNG_16_TO_8) &&
+        info_ptr->bit_depth == 16)
+        info_ptr->bit_depth = 8;
+
+    if (png_ptr->transformations & PNG_DITHER) {
+        if (((info_ptr->color_type == PNG_COLOR_TYPE_RGB) ||
+             (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA)) &&
+            png_ptr->palette_lookup && info_ptr->bit_depth == 8) {
+            info_ptr->color_type = PNG_COLOR_TYPE_PALETTE;
+        }
+    }
+
+    if ((png_ptr->transformations & PNG_PACK) && info_ptr->bit_depth < 8)
+        info_ptr->bit_depth = 8;
+
+    if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
+        info_ptr->channels = 1;
+    else if (info_ptr->color_type & PNG_COLOR_MASK_COLOR)
+        info_ptr->channels = 3;
+    else
+        info_ptr->channels = 1;
+
+    if (info_ptr->color_type & PNG_COLOR_MASK_ALPHA)
+        info_ptr->channels++;
+
+    if ((png_ptr->transformations & PNG_FILLER) &&
+        (info_ptr->color_type == PNG_COLOR_TYPE_RGB ||
+         info_ptr->color_type == PNG_COLOR_TYPE_GRAY))
+        info_ptr->channels++;
+
+    info_ptr->pixel_depth =
+        (png_byte)(info_ptr->channels * info_ptr->bit_depth);
+    info_ptr->rowbytes =
+        ((info_ptr->width * info_ptr->pixel_depth + 7) >> 3);
+}
+
+extern "C" void grim_png_read_start_row(grim_png_source_t *png_ptr)
+{
+    int max_pixel_depth;
+    png_uint_32 row_bytes;
+
+    png_ptr->zstream_avail_in = 0;
+    png_init_read_transformations((png_structp)png_ptr);
+    if (png_ptr->interlaced) {
+        if (!(png_ptr->transformations & PNG_INTERLACE))
+            png_ptr->num_rows = (png_ptr->height + 7) >> 3;
+        else
+            png_ptr->num_rows = png_ptr->height;
+
+        png_ptr->iwidth =
+            (png_ptr->width + png_pass_inc[png_ptr->pass] - 1 -
+             png_pass_start[png_ptr->pass]) /
+            png_pass_inc[png_ptr->pass];
+
+        row_bytes =
+            ((png_ptr->iwidth * (png_uint_32)png_ptr->pixel_depth + 7) >> 3) +
+            1;
+        png_ptr->irowbytes = (png_size_t)row_bytes;
+        if ((png_uint_32)png_ptr->irowbytes != row_bytes)
+            png_error(
+                (png_structp)png_ptr,
+                "Rowbytes overflow in png_read_start_row");
+    } else {
+        png_ptr->num_rows = png_ptr->height;
+        png_ptr->iwidth = png_ptr->width;
+        png_ptr->irowbytes = png_ptr->rowbytes + 1;
+    }
+    max_pixel_depth = png_ptr->pixel_depth;
+
+    if ((png_ptr->transformations & PNG_PACK) && png_ptr->bit_depth < 8)
+        max_pixel_depth = 8;
+
+    if (png_ptr->transformations & PNG_EXPAND) {
+        if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
+            if (png_ptr->num_trans)
+                max_pixel_depth = 32;
+            else
+                max_pixel_depth = 24;
+        } else if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
+            if (max_pixel_depth < 8)
+                max_pixel_depth = 8;
+            if (png_ptr->num_trans)
+                max_pixel_depth *= 2;
+        } else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB) {
+            if (png_ptr->num_trans) {
+                max_pixel_depth *= 4;
+                max_pixel_depth /= 3;
+            }
+        }
+    }
+
+    if (png_ptr->transformations & PNG_FILLER) {
+        if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
+            max_pixel_depth = 32;
+        else if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
+            if (max_pixel_depth <= 8)
+                max_pixel_depth = 16;
+            else
+                max_pixel_depth = 32;
+        } else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB) {
+            if (max_pixel_depth <= 32)
+                max_pixel_depth = 32;
+            else
+                max_pixel_depth = 64;
+        }
+    }
+
+    row_bytes = ((png_ptr->width + 7) & ~((png_uint_32)7));
+    row_bytes =
+        ((row_bytes * (png_uint_32)max_pixel_depth + 7) >> 3) + 1 +
+        ((max_pixel_depth + 7) >> 3);
+    png_ptr->row_buf =
+        (png_bytep)png_malloc((png_structp)png_ptr, row_bytes);
+    png_ptr->prev_row = (png_bytep)png_malloc(
+        (png_structp)png_ptr, (png_uint_32)(png_ptr->rowbytes + 1));
+
+    png_memset_check(
+        (png_structp)png_ptr,
+        png_ptr->prev_row,
+        0,
+        png_ptr->rowbytes + 1);
+
+    png_ptr->flags |= PNG_FLAG_ROW_INIT;
 }
 
 extern "C" void grim_png_set_filler(

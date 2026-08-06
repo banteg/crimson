@@ -1,5 +1,5 @@
 {
-  "audit_digest": "364545e85e1ee4e532fec5fab7a2d011febe5a644bc08a4fe484c506aceea535",
+  "audit_digest": "173e28ebd2a1bafc22fa645851cb193d3f74faf18a7b439a46c7f32c1b1c6537",
   "entries": [
     {
       "address": 268747320,
@@ -2679,6 +2679,44 @@
       "size": 24,
       "size_source": "analysis/ghidra/maps/data_map.json: six-entry DXT5 alpha index map; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_uint_table_6_is_0x18",
       "type": "unsigned int[6]"
+    },
+    {
+      "address": 268757648,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 horizontal pass starting columns.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "png_pass_start",
+      "section": ".rdata",
+      "section_offset": 10452,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const int[7]"
+    },
+    {
+      "address": 268757676,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 horizontal pass increments.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "png_pass_inc",
+      "section": ".rdata",
+      "section_offset": 10480,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const int[7]"
     },
     {
       "address": 268762740,
@@ -7115,7 +7153,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "83efc83c096ff30312fd1af68c70a0209f4992c101fbbab5c6a114685f2a4014",
+    "data_map_sha256": "53b1c589b6984e556d9a9f26ad1917cdc78e6696908e4a2d60b608931ca64834",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7131,11 +7169,11 @@
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 286,
+    "entry_count": 288,
     "explicit_alignment_entries": 283,
     "explicit_initializer_entries": 283,
     "explicit_size_entries": 283,
-    "fixed_array_types": 76,
+    "fixed_array_types": 78,
     "fully_specified_entries": 283,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -7145,11 +7183,11 @@
     "referenced_entries": 0,
     "section_counts": {
       ".data": 209,
-      ".rdata": 77
+      ".rdata": 79
     },
-    "source_entry_count": 289,
-    "typed_entries": 236,
-    "unique_addresses": 286,
+    "source_entry_count": 291,
+    "typed_entries": 238,
+    "unique_addresses": 288,
     "untyped_entries": 50
   }
 }

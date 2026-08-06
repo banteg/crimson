@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes seventy-four exact callback, state, and cleanup
+The image-decoder cluster contributes seventy-six exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -77,6 +77,15 @@ setter and uses 0x19c-byte PNG and 0x40-byte info structures. Only
 `png_create_struct` selects `/MT`, matching its archive object's direct
 `malloc` relocation; the other utility scratches retain `/MD`.
 
+The archive-confirmed post-transform info updater and row initializer add the
+provider's larger read-side setup bodies. The info updater retains expand,
+gamma, 16-to-8, dither, pack, and filler handling. The row initializer retains
+Adam7, pack, expand, and filler sizing, then allocates and clears the two row
+buffers through the provider helpers. Its dynamic Adam7 width calculation is
+bound to the exact seven-entry `png_pass_start` and `png_pass_inc` tables. The
+local `msvc7.0` profile reproduces both bodies exactly as a code-generation
+surrogate for their product 29, build 9178 archive objects.
+
 Ten IJG 6a routines are reconstructed directly from the official source and
 their uniquely matching DirectX archive symbols: marker and input-controller
 resets, input-controller allocation, sample and coefficient-row copies,
@@ -95,5 +104,5 @@ cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the seventy-four functions cover 3,056 bytes and 1,182 instructions in the
+Altogether the seventy-six functions cover 3,703 bytes and 1,392 instructions in the
 explicit `all` scope, with every external relocation resolved.

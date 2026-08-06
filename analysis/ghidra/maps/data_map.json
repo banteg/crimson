@@ -12955,6 +12955,20 @@
       "name": "grim_png_signature",
       "program": "grim.dll",
       "type": "uint8_t[8]"
+    },
+    {
+      "address": "0x1004ea90",
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 horizontal pass starting columns.",
+      "name": "png_pass_start",
+      "program": "grim.dll",
+      "type": "const int[7]"
+    },
+    {
+      "address": "0x1004eaac",
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 horizontal pass increments.",
+      "name": "png_pass_inc",
+      "program": "grim.dll",
+      "type": "const int[7]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."
