@@ -349,6 +349,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   instructions, 14 references). The manager's two AA&N scale tables and all
   six selected JAZ IDCT implementations now have stable reference identities;
   this naming does not by itself claim the downstream IDCT bodies are exact.
+- Matcher corpus: `jdpostct.c` under VC6 `/O2 /Ob2 /G6` reproduces all five
+  emitted decompression-postprocessor bodies byte-for-byte (829 bytes, 312
+  instructions, five references). Live-confirmed boundaries fill the static
+  export gaps for the pass selector and one-pass processing callback; the
+  unreferenced alignment thunk immediately before the initializer is omitted.
 - Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
   reproduces the remaining five JAZ input-controller functions byte-for-byte
   (2,157 bytes, 672 instructions, 15 references). Together with

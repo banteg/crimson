@@ -12578,19 +12578,66 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10041850",
+    "end": "0x100418e0",
+    "name": "grim_jpeg_init_d_post_controller",
+    "aliases": [
+      "jinit_d_post_controller",
+      "sub_10041850"
+    ],
+    "signature": "void grim_jpeg_init_d_post_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
+    "comment": "JAZ IJG 6a decompression postprocessor initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100418e0",
+    "end": "0x100419e0",
+    "name": "grim_jpeg_start_pass_dpost",
+    "aliases": [
+      "sub_100418E0"
+    ],
+    "signature": "void grim_jpeg_start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)",
+    "comment": "JAZ IJG 6a decompression postprocessor pass selector",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100419e0",
+    "end": "0x10041a60",
+    "name": "grim_jpeg_post_process_1pass",
+    "aliases": [
+      "sub_100419E0"
+    ],
+    "signature": "void grim_jpeg_post_process_1pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a one-pass decompression postprocessor",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10041a60",
-    "name": "FUN_10041a60",
-    "signature": "int FUN_10041a60(void* arg1, int arg2, int arg3, int arg4, void** arg5)",
-    "comment": "[binja] int32_t sub_10041a60(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4, void** arg5)",
-    "create": false
+    "end": "0x10041b00",
+    "name": "grim_jpeg_post_process_prepass",
+    "aliases": [
+      "FUN_10041a60",
+      "sub_10041A60"
+    ],
+    "signature": "void grim_jpeg_post_process_prepass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a first-pass decompression quantization preprocessor",
+    "create": true
   },
   {
     "program": "grim.dll",
     "address": "0x10041b00",
-    "name": "FUN_10041b00",
-    "signature": "int FUN_10041b00(void* arg1, int arg2, int* arg3, int arg4)",
-    "comment": "[binja] int32_t sub_10041b00(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
-    "create": false
+    "end": "0x10041ba0",
+    "name": "grim_jpeg_post_process_2pass",
+    "aliases": [
+      "FUN_10041b00",
+      "sub_10041B00"
+    ],
+    "signature": "void grim_jpeg_post_process_2pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a second-pass decompression quantization postprocessor",
+    "create": true
   },
   {
     "program": "grim.dll",
