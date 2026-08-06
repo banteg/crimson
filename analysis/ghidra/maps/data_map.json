@@ -13062,6 +13062,36 @@
       "type": "const float"
     },
     {
+      "address": "0x10050b5c",
+      "aliases": [
+        "bl_order"
+      ],
+      "comment": "Plain-C zlib 1.1.3 bit-length code transmission order.",
+      "name": "zlib_bit_length_order",
+      "program": "grim.dll",
+      "type": "const unsigned char[19]"
+    },
+    {
+      "address": "0x10050b70",
+      "aliases": [
+        "static_ltree"
+      ],
+      "comment": "Plain-C zlib 1.1.3 fixed literal and length Huffman tree.",
+      "name": "zlib_static_literal_tree",
+      "program": "grim.dll",
+      "type": "unsigned int[288]"
+    },
+    {
+      "address": "0x10050ff0",
+      "aliases": [
+        "static_dtree"
+      ],
+      "comment": "Plain-C zlib 1.1.3 fixed distance Huffman tree.",
+      "name": "zlib_static_distance_tree",
+      "program": "grim.dll",
+      "type": "unsigned int[30]"
+    },
+    {
       "address": "0x100554e8",
       "comment": "D3DX JPEG inverse-DCT dispatcher flag selecting the MMX kernels.",
       "name": "d3dx_jpeg_mmx_idct_enabled",

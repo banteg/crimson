@@ -244,6 +244,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   instructions, 20 references). The analysis map restores the four function
   boundaries absent from Ghidra's static export and distinguishes the JAZ
   copy's `adler32` from the independent same-named executable function.
+- Matcher corpus: the same profile reproduces `_tr_stored_block`,
+  `_tr_flush_block`, and `build_tree` at `0x10047a30` through `0x100480f0`
+  byte-for-byte (2,883 bytes, 854 instructions, 19 references). The private
+  block copier, bit-length generator, and code generator are inlined exactly;
+  the three newly named static tree objects resolve the remaining relocations.
 
 ### libjpeg (IJG 6a)
 

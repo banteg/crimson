@@ -13284,10 +13284,35 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10047a30",
+    "name": "zlib_tr_stored_block",
+    "aliases": [
+      "sub_10047A30",
+      "tr_stored_block"
+    ],
+    "signature": "void zlib_tr_stored_block(deflate_state *state, char *buffer, unsigned long stored_length, int end_of_file)",
+    "comment": "Plain-C zlib 1.1.3 stored-block emitter with the private copier inlined",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100480f0",
+    "name": "zlib_build_tree",
+    "aliases": [
+      "sub_100480F0",
+      "build_tree"
+    ],
+    "signature": "void zlib_build_tree(deflate_state *state, tree_desc *description)",
+    "comment": "Plain-C zlib 1.1.3 Huffman tree constructor",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10048580",
     "name": "zlib_pqdownheap",
     "aliases": [
-      "sub_10048580"
+      "sub_10048580",
+      "pqdownheap"
     ],
     "signature": "void zlib_pqdownheap(deflate_state *state, ct_data *tree, int node)",
     "comment": "Plain-C zlib 1.1.3 Huffman priority-queue repair",
@@ -13298,7 +13323,8 @@
     "address": "0x10048660",
     "name": "zlib_scan_tree",
     "aliases": [
-      "sub_10048660"
+      "sub_10048660",
+      "scan_tree"
     ],
     "signature": "void zlib_scan_tree(deflate_state *state, ct_data *tree, int max_code)",
     "comment": "Plain-C zlib 1.1.3 bit-length tree frequency scan",
@@ -13309,7 +13335,8 @@
     "address": "0x10048750",
     "name": "zlib_send_tree",
     "aliases": [
-      "sub_10048750"
+      "sub_10048750",
+      "send_tree"
     ],
     "signature": "void zlib_send_tree(deflate_state *state, ct_data *tree, int max_code)",
     "comment": "Plain-C zlib 1.1.3 bit-length tree encoder",
@@ -13320,7 +13347,8 @@
     "address": "0x10048cd0",
     "name": "zlib_compress_block",
     "aliases": [
-      "sub_10048CD0"
+      "sub_10048CD0",
+      "compress_block"
     ],
     "signature": "void zlib_compress_block(deflate_state *state, ct_data *literal_tree, ct_data *distance_tree)",
     "comment": "Plain-C zlib 1.1.3 Huffman block encoder",
@@ -13331,7 +13359,8 @@
     "address": "0x10049110",
     "name": "zlib_bi_windup",
     "aliases": [
-      "sub_10049110"
+      "sub_10049110",
+      "bi_windup"
     ],
     "signature": "void zlib_bi_windup(deflate_state *state)",
     "comment": "Plain-C zlib 1.1.3 bit-buffer flush",

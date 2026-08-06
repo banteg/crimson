@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred forty-eight exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred fifty-one exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -245,6 +245,12 @@ profile reproduces all 3,532 bytes and 1,250 instructions, including the
 inlined input reader, and all 20 calls and lookup-table relocations resolve to
 the plain-C zlib copy.
 
-Altogether the one hundred sixty-six exact functions cover 28,004 bytes and
-10,015 instructions in the explicit `all` scope, with every external
+Three adjoining `trees.c` orchestration bodies add `_tr_stored_block`,
+`_tr_flush_block`, and `build_tree`. They reproduce 2,883 bytes and 854
+instructions, including the inlined private copier, bit-length generator, and
+code generator. The fixed literal and distance trees and bit-length order now
+have explicit identities, resolving all 19 relocations.
+
+Altogether the one hundred sixty-nine exact functions cover 30,887 bytes and
+10,869 instructions in the explicit `all` scope, with every external
 relocation resolved.
