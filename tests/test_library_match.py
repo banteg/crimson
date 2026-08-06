@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import struct
 from pathlib import Path
+from typing import cast
 
 from crimson.library_match import (
     AR_MAGIC,
+    archive_match_payload,
     match_coff_archive,
     parse_coff_archive,
     render_archive_match_report,
@@ -16,14 +18,19 @@ def _build_object(
     code: bytes,
     symbol: str = "_probe",
     relocations: tuple[int, ...] = (),
+    compiler_id: int | None = None,
 ) -> bytes:
     header_size = 20
     section_header_size = 40
     code_offset = header_size + section_header_size
     relocation_offset = code_offset + len(code)
     symtab_offset = relocation_offset + len(relocations) * 10
-    symbol_record = struct.pack("<8sIhHBB", symbol.encode(), 0, 1, 0x20, 2, 0)
-    header = struct.pack("<HHIIIHH", 0x14C, 1, 0, symtab_offset, 1, 0, 0)
+    symbol_records = struct.pack("<8sIhHBB", symbol.encode(), 0, 1, 0x20, 2, 0)
+    symbol_count = 1
+    if compiler_id is not None:
+        symbol_records += struct.pack("<8sIhHBB", b"@comp.id", compiler_id, -1, 0, 3, 0)
+        symbol_count += 1
+    header = struct.pack("<HHIIIHH", 0x14C, 1, 0, symtab_offset, symbol_count, 0, 0)
     section = struct.pack(
         "<8sIIIIIIHHI",
         b".text",
@@ -41,7 +48,7 @@ def _build_object(
         struct.pack("<IIH", offset, 0, 6)
         for offset in relocations
     )
-    return header + section + code + relocation_records + symbol_record + struct.pack("<I", 4)
+    return header + section + code + relocation_records + symbol_records + struct.pack("<I", 4)
 
 
 def _ar_member(name: bytes, payload: bytes) -> bytes:
@@ -82,7 +89,7 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     archive_path.write_bytes(
         _build_archive(
             r"obj\i386\probe.obj",
-            _build_object(object_code, relocations=(1,)),
+            _build_object(object_code, relocations=(1,), compiler_id=0x001D23DA),
         ),
     )
     image_path = tmp_path / "game.exe"
@@ -117,7 +124,26 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert report.unique_functions == 1
     assert report.matches[0].candidates[0].symbol == "_probe"
     assert report.matches[0].candidates[0].relocation_count == 1
-    assert "matched=1/1" in render_archive_match_report(report)
+    candidate = report.matches[0].candidates[0]
+    assert candidate.compiler_product == 29
+    assert candidate.compiler_build == 9178
+    payload_matches = cast(
+        "list[dict[str, object]]",
+        archive_match_payload(report)["matches"],
+    )
+    payload_candidates = cast(
+        "list[dict[str, object]]",
+        payload_matches[0]["candidates"],
+    )
+    payload_candidate = payload_candidates[0]
+    assert payload_candidate["compiler"] == {
+        "id": "0x001d23da",
+        "product": 29,
+        "build": 9178,
+    }
+    rendered = render_archive_match_report(report, show_matches=True)
+    assert "matched=1/1" in rendered
+    assert "[product-29/build-9178]" in rendered
 
 
 def test_archive_match_trims_untargeted_terminal_padding(

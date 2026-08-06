@@ -25,6 +25,15 @@ class ArchiveCandidate:
     symbol: str
     size: int
     relocation_count: int
+    compiler_id: int | None = None
+
+    @property
+    def compiler_product(self) -> int | None:
+        return None if self.compiler_id is None else self.compiler_id >> 16
+
+    @property
+    def compiler_build(self) -> int | None:
+        return None if self.compiler_id is None else self.compiler_id & 0xFFFF
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,6 +154,16 @@ def _archive_function_index(
         except (IndexError, struct.error, ValueError):
             continue
         object_members += 1
+        compiler_ids = {
+            symbol.value
+            for symbol in obj.symbols
+            if (
+                symbol.name == "@comp.id"
+                and symbol.section_number == -1
+                and symbol.storage_class == matchlib.IMAGE_SYM_CLASS_STATIC
+            )
+        }
+        compiler_id = next(iter(compiler_ids)) if len(compiler_ids) == 1 else None
         function_names = tuple(
             dict.fromkeys(
                 symbol.name
@@ -180,6 +199,7 @@ def _archive_function_index(
                         symbol=function.name,
                         size=significant_size,
                         relocation_count=len(relocation_offsets),
+                        compiler_id=compiler_id,
                     ),
                     data=function.data[:significant_size],
                     relocation_offsets=relocation_offsets,
@@ -309,6 +329,15 @@ def archive_match_payload(report: ArchiveMatchReport) -> dict[str, object]:
                         "symbol": candidate.symbol,
                         "size": candidate.size,
                         "relocations": candidate.relocation_count,
+                        "compiler": (
+                            None
+                            if candidate.compiler_id is None
+                            else {
+                                "id": f"0x{candidate.compiler_id:08x}",
+                                "product": candidate.compiler_product,
+                                "build": candidate.compiler_build,
+                            }
+                        ),
                     }
                     for candidate in match.candidates
                 ],
@@ -343,7 +372,15 @@ def render_archive_match_report(
     if show_matches:
         selected = report.matches if limit is None else report.matches[:limit]
         for match in selected:
-            candidates = ", ".join(f"{candidate.member}:{candidate.symbol}" for candidate in match.candidates)
+            candidates = ", ".join(
+                (
+                    f"{candidate.member}:{candidate.symbol} "
+                    f"[product-{candidate.compiler_product}/build-{candidate.compiler_build}]"
+                    if candidate.compiler_id is not None
+                    else f"{candidate.member}:{candidate.symbol}"
+                )
+                for candidate in match.candidates
+            )
             state = "unique" if match.unique else f"ambiguous:{len(match.candidates)}"
             lines.append(
                 f"0x{match.address:08x} {match.name} bytes={match.size} "
