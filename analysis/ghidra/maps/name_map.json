@@ -12145,6 +12145,78 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10042310",
+    "end": "0x100424d0",
+    "name": "grim_jpeg_init_color_deconverter",
+    "aliases": [
+      "sub_10042310"
+    ],
+    "signature": "void grim_jpeg_init_color_deconverter(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a output color-deconverter initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100424d0",
+    "end": "0x10042590",
+    "name": "grim_jpeg_build_ycc_rgb_table",
+    "aliases": [
+      "sub_100424D0"
+    ],
+    "signature": "void grim_jpeg_build_ycc_rgb_table(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a YCbCr-to-RGB conversion-table builder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042590",
+    "end": "0x100426c0",
+    "name": "grim_jpeg_ycc_rgb_convert",
+    "aliases": [
+      "sub_10042590"
+    ],
+    "signature": "void grim_jpeg_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a YCbCr-to-RGB row converter",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100426c0",
+    "end": "0x10042750",
+    "name": "grim_jpeg_null_convert",
+    "aliases": [
+      "sub_100426C0"
+    ],
+    "signature": "void grim_jpeg_null_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a planar-to-interleaved no-colorspace-change converter",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042750",
+    "end": "0x10042780",
+    "name": "grim_jpeg_grayscale_convert",
+    "aliases": [
+      "sub_10042750"
+    ],
+    "signature": "void grim_jpeg_grayscale_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a grayscale row-copy converter",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042780",
+    "end": "0x100428e0",
+    "name": "grim_jpeg_ycck_cmyk_convert",
+    "aliases": [
+      "sub_10042780"
+    ],
+    "signature": "void grim_jpeg_ycck_cmyk_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a Adobe YCCK-to-CMYK row converter",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100428e0",
     "end": "0x10042a10",
     "name": "grim_jpeg_init_merged_upsampler",

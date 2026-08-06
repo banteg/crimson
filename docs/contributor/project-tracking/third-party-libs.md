@@ -310,6 +310,12 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   table builder into the initializer. Binary Ninja-confirmed boundaries now
   fill the five-function gap in the checked-in IDA/Ghidra exports with bounded
   curated entries.
+- Matcher corpus: the newly pinned and provenance-checked `jdcolor.c` under
+  VC6 `/O2 /Ob2 /G6` reproduces all six separately emitted JAZ color
+  deconverter bodies byte-for-byte (1,424 bytes, 476 instructions, 11
+  references). Its empty `start_pass_dcolor` callback is linker-folded with
+  the existing one-byte memory-source terminator; live-confirmed bounds fill
+  the corresponding six-function static-export gap.
 - Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
   reproduces the remaining five JAZ input-controller functions byte-for-byte
   (2,157 bytes, 672 instructions, 15 references). Together with
