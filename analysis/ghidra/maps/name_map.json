@@ -11618,9 +11618,122 @@
   {
     "program": "grim.dll",
     "address": "0x1003b560",
-    "name": "jpeg_resync_to_restart",
-    "signature": "int jpeg_resync_to_restart(void *context, int desired_restart)",
+    "name": "grim_jpeg_resync_to_restart",
+    "aliases": [
+      "jpeg_resync_to_restart"
+    ],
+    "signature": "boolean grim_jpeg_resync_to_restart(j_decompress_ptr cinfo, int desired_restart)",
     "comment": "IJG libjpeg 6a restart-marker recovery; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003b660",
+    "name": "grim_jpeg_next_marker",
+    "aliases": [
+      "sub_1003B660"
+    ],
+    "signature": "boolean grim_jpeg_next_marker(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a marker scanner",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003b820",
+    "name": "grim_jpeg_get_app0",
+    "aliases": [
+      "sub_1003B820"
+    ],
+    "signature": "boolean grim_jpeg_get_app0(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a APP0 marker parser",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003bac0",
+    "name": "grim_jpeg_get_app14",
+    "aliases": [
+      "sub_1003BAC0"
+    ],
+    "signature": "boolean grim_jpeg_get_app14(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a Adobe APP14 marker parser",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003bc90",
+    "name": "grim_jpeg_skip_variable",
+    "aliases": [
+      "sub_1003BC90"
+    ],
+    "signature": "boolean grim_jpeg_skip_variable(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a variable-length marker skipper",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003c320",
+    "name": "grim_jpeg_get_sof",
+    "aliases": [
+      "sub_1003C320"
+    ],
+    "signature": "boolean grim_jpeg_get_sof(j_decompress_ptr cinfo, boolean is_prog, boolean is_arith)",
+    "comment": "JAZ IJG 6a start-of-frame marker parser",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003c640",
+    "name": "grim_jpeg_get_sos",
+    "aliases": [
+      "sub_1003C640"
+    ],
+    "signature": "boolean grim_jpeg_get_sos(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a start-of-scan marker parser",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003c950",
+    "name": "grim_jpeg_get_dht",
+    "aliases": [
+      "sub_1003C950"
+    ],
+    "signature": "boolean grim_jpeg_get_dht(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a Huffman-table marker parser",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003cca0",
+    "name": "grim_jpeg_get_dqt",
+    "aliases": [
+      "sub_1003CCA0"
+    ],
+    "signature": "boolean grim_jpeg_get_dqt(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a quantization-table marker parser",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003cf10",
+    "name": "grim_jpeg_get_dri",
+    "aliases": [
+      "sub_1003CF10"
+    ],
+    "signature": "boolean grim_jpeg_get_dri(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a restart-interval marker parser",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d090",
+    "name": "grim_jpeg_reset_marker_reader",
+    "aliases": [
+      "sub_1003D090"
+    ],
+    "signature": "void grim_jpeg_reset_marker_reader(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a marker-reader reset",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -11672,6 +11785,28 @@
     "name": "jpeg_alloc_quant_table",
     "signature": "void *jpeg_alloc_quant_table(void *context)",
     "comment": "IJG libjpeg 6a quantization-table allocator; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003dd70",
+    "name": "grim_jpeg_alloc_huff_table",
+    "aliases": [
+      "sub_1003DD70"
+    ],
+    "signature": "JHUFF_TBL *grim_jpeg_alloc_huff_table(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a Huffman-table allocator",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10050550",
+    "name": "grim_jpeg_natural_order",
+    "aliases": [
+      "DAT_10050550"
+    ],
+    "signature": "const int grim_jpeg_natural_order[80]",
+    "comment": "JAZ IJG 6a zigzag-to-natural coefficient order with safety tail",
+    "create": false
   },
   {
     "program": "grim.dll",

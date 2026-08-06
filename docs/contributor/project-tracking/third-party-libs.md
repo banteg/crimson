@@ -282,6 +282,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   the exact one-pixel and floating-point IDCT bodies; two small matcher-only
   dispatchers recover D3DX's aligned portable/MMX integer routing. The 4-by-4
   and 2-by-2 reducers remain explicit semantic-complete compiler residuals.
+- Matcher corpus: the pinned upstream `jdmarker.c` reproduces eleven JAZ marker
+  routines from `jpeg_resync_to_restart` through `reset_marker_reader`
+  byte-for-byte (5,113 bytes, 1,819 instructions, five references). The JAZ
+  Huffman allocator and natural-order table are independently named from the
+  D3DX decoder copy.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.
