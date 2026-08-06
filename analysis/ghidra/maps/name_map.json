@@ -10181,9 +10181,30 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001ea05",
+    "name": "png_get_gAMA",
+    "signature": "png_uint_32 png_get_gAMA(png_structp png_ptr, png_infop info_ptr, double *file_gamma)",
+    "comment": "Returns the stored PNG gamma value when the gAMA field is valid"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ea2e",
+    "name": "png_get_sRGB",
+    "signature": "png_uint_32 png_get_sRGB(png_structp png_ptr, png_infop info_ptr, int *intent)",
+    "comment": "Returns the stored PNG sRGB rendering intent when the sRGB field is valid"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001ea59",
     "name": "FUN_1001ea59",
     "signature": "undefined4 FUN_1001ea59(png_structp png_ptr, uint *param_2, uint *param_3, uint *param_4, uint *param_5, uint *param_6, uint *param_7, uint *param_8, uint *param_9)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001eb2a",
+    "name": "png_get_PLTE",
+    "signature": "png_uint_32 png_get_PLTE(png_structp png_ptr, png_infop info_ptr, png_colorp *palette, int *num_palette)",
+    "comment": "Returns the stored PNG palette and color count when the PLTE field is valid"
   },
   {
     "program": "grim.dll",
@@ -10233,9 +10254,30 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10020301",
+    "name": "png_set_gAMA",
+    "signature": "void png_set_gAMA(png_structp png_ptr, png_infop info_ptr, double file_gamma)",
+    "comment": "Stores the PNG gamma value and marks the gAMA field valid"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002031c",
     "name": "FUN_1002031c",
     "signature": "void FUN_1002031c(png_structp png_ptr, uint *param_2, uint param_3, uint param_4, char param_5, byte param_6, undefined1 param_7, undefined1 param_8, undefined1 param_9)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100203bd",
+    "name": "png_set_PLTE",
+    "signature": "void png_set_PLTE(png_structp png_ptr, png_infop info_ptr, png_colorp palette, int num_palette)",
+    "comment": "Stores the PNG palette and color count and marks the PLTE field valid"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100203e1",
+    "name": "png_set_sRGB",
+    "signature": "void png_set_sRGB(png_structp png_ptr, png_infop info_ptr, int intent)",
+    "comment": "Stores the PNG sRGB rendering intent and marks the sRGB field valid"
   },
   {
     "program": "grim.dll",
@@ -10525,6 +10567,27 @@
     "signature": "void* FUN_100234aa(int* arg1, int* arg2, char arg3, int arg4, int arg5, int arg6)",
     "comment": "[binja] void* sub_100234aa(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023bc5",
+    "name": "d3dx_jpeg_destroy",
+    "signature": "void d3dx_jpeg_destroy(j_common_ptr cinfo)",
+    "comment": "D3DX-linked IJG jpeg_destroy; releases the memory manager and clears the common state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023be0",
+    "name": "d3dx_jpeg_alloc_quant_table",
+    "signature": "JQUANT_TBL *d3dx_jpeg_alloc_quant_table(j_common_ptr cinfo)",
+    "comment": "D3DX-linked IJG jpeg_alloc_quant_table; allocates and clears the sent-table flag"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023bfc",
+    "name": "d3dx_jpeg_alloc_huff_table",
+    "signature": "JHUFF_TBL *d3dx_jpeg_alloc_huff_table(j_common_ptr cinfo)",
+    "comment": "D3DX-linked IJG jpeg_alloc_huff_table; allocates and clears the sent-table flag"
   },
   {
     "program": "grim.dll",

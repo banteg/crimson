@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes twenty-nine exact callback, state, and cleanup
+The image-decoder cluster contributes thirty-nine exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -40,11 +40,20 @@ the BGR, 16-bit swap, packed-sample, and Adam7 setup helpers. These preserve the
 libpng 1.0.5 structure offsets and flag values identified by the matching
 `pngget.obj` and `pngtrans.obj` members.
 
+The matching `pngget.obj` and `pngset.obj` members additionally recover the
+gAMA, sRGB, and PLTE metadata getters and setters. The default `png_free`
+helper dispatches to the CRT only when both its libpng context and allocation
+are present. The D3DX-linked IJG common helpers destroy decoder state and
+allocate initialized quantization and Huffman tables. The pinned provider
+objects retain product 29, build 9178 provenance; stock VC6 `/O1 /G6` is an
+exact local code-generation surrogate for the two table allocators, not a
+claim about their original compiler.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the twenty-nine functions cover 668 bytes and 247 instructions in the
+Altogether the thirty-nine functions cover 1,001 bytes and 367 instructions in the
 explicit `all` scope, with every external relocation resolved.
