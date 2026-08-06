@@ -11066,6 +11066,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100313b0",
+    "name": "d3dx_jpeg_int_upsample",
+    "signature": "void d3dx_jpeg_int_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a generic integral-ratio box upsampler"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003148d",
     "name": "d3dx_jpeg_h2v1_upsample",
     "signature": "void d3dx_jpeg_h2v1_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
@@ -11077,6 +11084,20 @@
     "name": "d3dx_jpeg_h2v2_upsample",
     "signature": "void d3dx_jpeg_h2v2_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "Archive-confirmed IJG 6a horizontal and vertical two-to-one box upsampler"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003154e",
+    "name": "d3dx_jpeg_h2v1_fancy_upsample",
+    "signature": "void d3dx_jpeg_h2v1_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a horizontal two-to-one triangle-filter upsampler"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100315f2",
+    "name": "d3dx_jpeg_h2v2_fancy_upsample",
+    "signature": "void d3dx_jpeg_h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a horizontal and vertical two-to-one triangle-filter upsampler"
   },
   {
     "program": "grim.dll",

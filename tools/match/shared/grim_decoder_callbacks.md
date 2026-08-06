@@ -133,11 +133,16 @@ two-to-one upsampling. Keeping the official `smoothing_ok` body in the shared
 translation unit reproduces its decoder-in-`ESI` internal convention and the
 caller's three archive-local references without artificial assembly shaping.
 
+Three exact upsampling bodies complete the integral-ratio box filter and both
+triangle-filter variants for the common two-to-one sampling cases. Their
+component and upsampler layouts expose only archive-backed fields, including
+the byte-sized expansion tables and the component's downsampled width.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the one hundred two functions cover 4,737 bytes and 1,789 instructions in the
+Altogether the one hundred five functions cover 5,385 bytes and 2,032 instructions in the
 explicit `all` scope, with every external relocation resolved.

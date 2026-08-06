@@ -119,9 +119,13 @@ struct grim_jpeg_quantization_table_source_t {
 };
 
 struct grim_jpeg_component_source_t {
-    unsigned char fields_00[0x0c];
+    unsigned char fields_00[0x04];
+    int component_index;
+    unsigned char fields_08[0x04];
     int vertical_sampling_factor;
-    unsigned char fields_10[0x38];
+    unsigned char fields_10[0x18];
+    unsigned int downsampled_width;
+    unsigned char fields_2c[0x1c];
     int last_row_height;
     grim_jpeg_quantization_table_source_t *quantization_table;
     unsigned char fields_50[0x04];
@@ -158,6 +162,9 @@ struct grim_jpeg_separate_upsampler_source_t {
     void *methods[10];
     int next_row_out;
     unsigned int rows_to_go;
+    unsigned char fields_64[0x28];
+    unsigned char horizontal_expand[10];
+    unsigned char vertical_expand[10];
 };
 
 struct grim_jpeg_merged_upsampler_source_t {
@@ -633,6 +640,54 @@ extern "C" void grim_jpeg_noop_upsample(
     *output_data = 0;
 }
 
+extern "C" void grim_jpeg_int_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    grim_jpeg_component_source_t *component,
+    unsigned char **input_data,
+    unsigned char ***output_data_pointer)
+{
+    grim_jpeg_separate_upsampler_source_t *upsampler =
+        static_cast<grim_jpeg_separate_upsampler_source_t *>(decoder->upsampler);
+    unsigned char **output_data = *output_data_pointer;
+    register unsigned char *input_pointer;
+    register unsigned char *output_pointer;
+    register unsigned char input_value;
+    register int horizontal_counter;
+    unsigned char *output_end;
+    int horizontal_expand;
+    int vertical_expand;
+    int input_row;
+    int output_row;
+
+    horizontal_expand = upsampler->horizontal_expand[component->component_index];
+    vertical_expand = upsampler->vertical_expand[component->component_index];
+
+    input_row = output_row = 0;
+    while (output_row < decoder->max_v_samp_factor) {
+        input_pointer = input_data[input_row];
+        output_pointer = output_data[output_row];
+        output_end = output_pointer + decoder->output_width;
+        while (output_pointer < output_end) {
+            input_value = *input_pointer++;
+            for (horizontal_counter = horizontal_expand;
+                 horizontal_counter > 0;
+                 horizontal_counter--)
+                *output_pointer++ = input_value;
+        }
+        if (vertical_expand > 1) {
+            grim_jpeg_copy_sample_rows(
+                output_data,
+                output_row,
+                output_data,
+                output_row + 1,
+                vertical_expand - 1,
+                decoder->output_width);
+        }
+        input_row++;
+        output_row += vertical_expand;
+    }
+}
+
 extern "C" void grim_jpeg_h2v1_upsample(
     grim_jpeg_decompress_source_t *decoder,
     void *component,
@@ -693,6 +748,105 @@ extern "C" void grim_jpeg_h2v2_upsample(
             decoder->output_width);
         input_row++;
         output_row += 2;
+    }
+}
+
+extern "C" void grim_jpeg_h2v1_fancy_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    grim_jpeg_component_source_t *component,
+    unsigned char **input_data,
+    unsigned char ***output_data_pointer)
+{
+    unsigned char **output_data = *output_data_pointer;
+    register unsigned char *input_pointer;
+    register unsigned char *output_pointer;
+    register int input_value;
+    register unsigned int column_counter;
+    int input_row;
+
+    for (input_row = 0;
+         input_row < decoder->max_v_samp_factor;
+         input_row++) {
+        input_pointer = input_data[input_row];
+        output_pointer = output_data[input_row];
+        input_value = *input_pointer++;
+        *output_pointer++ = static_cast<unsigned char>(input_value);
+        *output_pointer++ = static_cast<unsigned char>(
+            (input_value * 3 + *input_pointer + 2) >> 2);
+
+        for (column_counter = component->downsampled_width - 2;
+             column_counter > 0;
+             column_counter--) {
+            input_value = *input_pointer++ * 3;
+            *output_pointer++ = static_cast<unsigned char>(
+                (input_value + input_pointer[-2] + 1) >> 2);
+            *output_pointer++ = static_cast<unsigned char>(
+                (input_value + *input_pointer + 2) >> 2);
+        }
+
+        input_value = *input_pointer;
+        *output_pointer++ = static_cast<unsigned char>(
+            (input_value * 3 + input_pointer[-1] + 1) >> 2);
+        *output_pointer++ = static_cast<unsigned char>(input_value);
+    }
+}
+
+extern "C" void grim_jpeg_h2v2_fancy_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    grim_jpeg_component_source_t *component,
+    unsigned char **input_data,
+    unsigned char ***output_data_pointer)
+{
+    unsigned char **output_data = *output_data_pointer;
+    register unsigned char *input_pointer_0;
+    register unsigned char *input_pointer_1;
+    register unsigned char *output_pointer;
+    register int this_column_sum;
+    register int last_column_sum;
+    register int next_column_sum;
+    register unsigned int column_counter;
+    int input_row;
+    int output_row;
+    int vertical_phase;
+
+    input_row = output_row = 0;
+    while (output_row < decoder->max_v_samp_factor) {
+        for (vertical_phase = 0; vertical_phase < 2; vertical_phase++) {
+            input_pointer_0 = input_data[input_row];
+            if (vertical_phase == 0)
+                input_pointer_1 = input_data[input_row - 1];
+            else
+                input_pointer_1 = input_data[input_row + 1];
+            output_pointer = output_data[output_row++];
+
+            this_column_sum = *input_pointer_0++ * 3 + *input_pointer_1++;
+            next_column_sum = *input_pointer_0++ * 3 + *input_pointer_1++;
+            *output_pointer++ = static_cast<unsigned char>(
+                (this_column_sum * 4 + 8) >> 4);
+            *output_pointer++ = static_cast<unsigned char>(
+                (this_column_sum * 3 + next_column_sum + 7) >> 4);
+            last_column_sum = this_column_sum;
+            this_column_sum = next_column_sum;
+
+            for (column_counter = component->downsampled_width - 2;
+                 column_counter > 0;
+                 column_counter--) {
+                next_column_sum =
+                    *input_pointer_0++ * 3 + *input_pointer_1++;
+                *output_pointer++ = static_cast<unsigned char>(
+                    (this_column_sum * 3 + last_column_sum + 8) >> 4);
+                *output_pointer++ = static_cast<unsigned char>(
+                    (this_column_sum * 3 + next_column_sum + 7) >> 4);
+                last_column_sum = this_column_sum;
+                this_column_sum = next_column_sum;
+            }
+
+            *output_pointer++ = static_cast<unsigned char>(
+                (this_column_sum * 3 + last_column_sum + 8) >> 4);
+            *output_pointer++ = static_cast<unsigned char>(
+                (this_column_sum * 4 + 7) >> 4);
+        }
+        input_row++;
     }
 }
 
