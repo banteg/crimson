@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f5a99ef47425e39b54416fd4b7589339f5d7b4c1d38e780ecca80973d8b2221c",
+  "audit_digest": "aaf37643f3c285480f6bb54044ed2033c4615fc4a38f1bae9ac195eca6ff6c74",
   "entries": [
     {
       "address": 268747320,
@@ -2717,6 +2717,44 @@
       "size": null,
       "size_source": null,
       "type": "const int[7]"
+    },
+    {
+      "address": 268760528,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed IJG 6a 16-by-16 Bayer ordered-dither matrix.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_jpeg_base_dither_matrix",
+      "section": ".rdata",
+      "section_offset": 13332,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const unsigned char[16][16]"
+    },
+    {
+      "address": 268760784,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed IJG 6a RGB component allocation preference order (green, red, blue).",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_jpeg_quant1_rgb_order",
+      "section": ".rdata",
+      "section_offset": 13588,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const int[3]"
     },
     {
       "address": 268762740,
@@ -7157,7 +7195,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "46a54f93c269662c654b4b4973d6f6c0a2ced5e040b2cc381d07c5a369db313d",
+    "data_map_sha256": "1e983ae10fa1475858c3a8579eb1100ef13768622cc6704eb8968af304443141",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7173,25 +7211,25 @@
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 288,
+    "entry_count": 290,
     "explicit_alignment_entries": 283,
     "explicit_initializer_entries": 283,
     "explicit_size_entries": 283,
-    "fixed_array_types": 78,
+    "fixed_array_types": 80,
     "fully_specified_entries": 283,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
-    "multidimensional_array_types": 0,
+    "multidimensional_array_types": 1,
     "overlay_addresses": 0,
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
       ".data": 209,
-      ".rdata": 79
+      ".rdata": 81
     },
-    "source_entry_count": 291,
-    "typed_entries": 238,
-    "unique_addresses": 288,
+    "source_entry_count": 293,
+    "typed_entries": 240,
+    "unique_addresses": 290,
     "untyped_entries": 50
   }
 }

@@ -11207,6 +11207,69 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10033505",
+    "name": "d3dx_jpeg_select_component_color_counts",
+    "signature": "int d3dx_jpeg_select_component_color_counts(j_decompress_ptr cinfo, int component_color_counts[4])",
+    "comment": "Archive-confirmed IJG 6a one-pass component color-count allocator"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100335d0",
+    "name": "d3dx_jpeg_create_colormap",
+    "signature": "void d3dx_jpeg_create_colormap(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a one-pass colormap builder"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100336fd",
+    "name": "d3dx_jpeg_create_color_index",
+    "signature": "void d3dx_jpeg_create_color_index(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a one-pass color-index builder"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033828",
+    "name": "d3dx_jpeg_create_ordered_dither_tables",
+    "signature": "void d3dx_jpeg_create_ordered_dither_tables(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a ordered-dither table builder"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100338ed",
+    "name": "d3dx_jpeg_color_quantize",
+    "signature": "void d3dx_jpeg_color_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a general one-pass color quantizer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033975",
+    "name": "d3dx_jpeg_color_quantize3",
+    "signature": "void d3dx_jpeg_color_quantize3(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a three-component one-pass color quantizer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033a02",
+    "name": "d3dx_jpeg_quantize_ordered_dither",
+    "signature": "void d3dx_jpeg_quantize_ordered_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a general ordered-dither quantizer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033aed",
+    "name": "d3dx_jpeg_quantize3_ordered_dither",
+    "signature": "void d3dx_jpeg_quantize3_ordered_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a three-component ordered-dither quantizer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033bec",
+    "name": "d3dx_jpeg_quantize_fs_dither",
+    "signature": "void d3dx_jpeg_quantize_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a Floyd-Steinberg dither quantizer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10033d70",
     "name": "d3dx_jpeg_alloc_fs_workspace",
     "signature": "void d3dx_jpeg_alloc_fs_workspace(j_decompress_ptr cinfo)",
@@ -11214,10 +11277,24 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10033da6",
+    "name": "d3dx_jpeg_start_pass_one_quantizer",
+    "signature": "void d3dx_jpeg_start_pass_one_quantizer(j_decompress_ptr cinfo, boolean is_pre_scan)",
+    "comment": "Archive-confirmed IJG 6a one-pass quantizer pass initializer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10033e70",
     "name": "d3dx_jpeg_new_color_map_1_quant",
     "signature": "void d3dx_jpeg_new_color_map_1_quant(j_decompress_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a one-pass quantizer mode-change error path"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033e84",
+    "name": "d3dx_jpeg_init_one_pass_quantizer",
+    "signature": "void d3dx_jpeg_init_one_pass_quantizer(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a one-pass quantizer initializer"
   },
   {
     "program": "grim.dll",

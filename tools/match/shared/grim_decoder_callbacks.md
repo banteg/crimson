@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes ninety-six exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred eighteen exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -150,11 +150,22 @@ compiled as C, matching the pinned `jdmerge.obj` translation-unit provenance;
 the two kernels reproduce all 298 native instructions directly from the
 official IJG 6a loops.
 
+Seven one-pass quantizer routines recover component-count selection's consumers:
+colormap construction, ordered-dither table construction, the generic and
+three-component plain and ordered kernels, and quantizer initialization. They
+come directly from IJG 6a's `jquant1.c`, with object-local helpers and the RGB
+preference and base-dither tables bound to their pinned archive addresses. The
+installed `msvc7.0` profile actually reports CL 13.10.3077; it is a
+code-generation surrogate for the provider's product-29/build-9178 objects,
+not that exact backend. Four faithful neighboring bodies remain explicitly
+semantic-complete because that available compiler differs in one-byte clear
+selection, independent-store scheduling, or inner-loop register allocation.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the one hundred eleven functions cover 6,978 bytes and 2,613 instructions in the
+Altogether the one hundred eighteen functions cover 8,378 bytes and 3,138 instructions in the
 explicit `all` scope, with every external relocation resolved.

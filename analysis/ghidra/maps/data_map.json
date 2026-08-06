@@ -12969,6 +12969,20 @@
       "name": "png_pass_inc",
       "program": "grim.dll",
       "type": "const int[7]"
+    },
+    {
+      "address": "0x1004f5d0",
+      "comment": "Archive-confirmed IJG 6a 16-by-16 Bayer ordered-dither matrix.",
+      "name": "d3dx_jpeg_base_dither_matrix",
+      "program": "grim.dll",
+      "type": "const unsigned char[16][16]"
+    },
+    {
+      "address": "0x1004f6d0",
+      "comment": "Archive-confirmed IJG 6a RGB component allocation preference order (green, red, blue).",
+      "name": "d3dx_jpeg_quant1_rgb_order",
+      "program": "grim.dll",
+      "type": "const int[3]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."
