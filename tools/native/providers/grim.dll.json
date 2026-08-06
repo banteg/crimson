@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "b88b14df24ffaec4c65e74b3924480fbde484683a0c59dcda8588d1fdcd32806",
+      "sha256": "04d25a15c89a13ac3ac131e320444d0092b3648cd348770ca08c2a1516a979f7",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"
@@ -283,8 +283,8 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member."
         },
         {
-          "path": "tools/match/scratches/grim_d3d_shutdown/NOTES.md",
-          "note": "The final platform member is an exact 196-byte match with all 17 references aligned."
+          "path": "tools/match/scratches/grim_restore_device_after_activation/NOTES.md",
+          "note": "The reactivation helper is an exact 762-byte match and records the folded one-argument no-op ABI role."
         }
       ],
       "symbols": [

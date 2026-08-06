@@ -75,6 +75,7 @@ RECIPES = {
             "grim_mouse_poll",
             "grim_mouse_shutdown",
             "grim_release_geometry_buffers",
+            "grim_restore_device_after_activation",
             "grim_restore_textures",
             "grim_save_screenshot",
             "grim_save_texture",

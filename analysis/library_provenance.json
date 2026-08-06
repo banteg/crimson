@@ -201,8 +201,8 @@
     {
       "id": "grim-recovered-platform-vc6-provider",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "size": 59442,
-      "sha256": "b88b14df24ffaec4c65e74b3924480fbde484683a0c59dcda8588d1fdcd32806",
+      "size": 62776,
+      "sha256": "04d25a15c89a13ac3ac131e320444d0092b3648cd348770ca08c2a1516a979f7",
       "recipe": "scripts/build_native_recovered_providers.py",
       "source_artifacts": [
         "visual-cpp-6-sp6-media"
@@ -232,6 +232,7 @@
         "tools/match/scratches/grim_mouse_poll/scratch.cpp",
         "tools/match/scratches/grim_mouse_shutdown/scratch.cpp",
         "tools/match/scratches/grim_release_geometry_buffers/scratch.cpp",
+        "tools/match/scratches/grim_restore_device_after_activation/scratch.cpp",
         "tools/match/scratches/grim_restore_textures/scratch.cpp",
         "tools/match/scratches/grim_save_screenshot/scratch.cpp",
         "tools/match/scratches/grim_save_texture/scratch.cpp",
