@@ -365,6 +365,15 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   matched color-map callback, this completes every separately emitted target
   body from the module; the empty `finish_pass2` callback is linker-folded
   with the existing one-byte memory-source terminator.
+- Matcher corpus: the newly pinned and provenance-checked `jquant1.c`
+  reproduces eight separately emitted JAZ one-pass quantizer bodies
+  byte-for-byte (1,977 bytes, 690 instructions, three references). The stock
+  VC6 surrogate needs `/O2 /G6` to retain the independently emitted
+  `select_ncolors` body and `/O2 /Ob2 /G6` for the other seven exact bodies.
+  Colormap construction and the ordered/Floyd-Steinberg setup helpers are
+  inlined. The initializer retains an explicit compiler-only over-inlining
+  residual, while the pass initializer differs only in one independent-load
+  scheduling swap; both remain semantic-complete without source shaping.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.

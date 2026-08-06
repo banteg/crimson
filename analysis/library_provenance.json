@@ -247,6 +247,11 @@
           "sha256": "a47ca108ebf955104abbe3f9a64383532be2c70c6f956b5844b412f151f50453"
         },
         {
+          "path": "jpeg-6a/jquant1.c",
+          "size": 31294,
+          "sha256": "556df5715cf5d915e5190066ff4e542a9911b651e45b34d322a6f6c2b0098fbc"
+        },
+        {
           "path": "jpeg-6a/jquant2.c",
           "size": 48429,
           "sha256": "9b6844e18480d7003618e8f473a0900743d15fc8516aee7229a77adce470eb0b"
@@ -1067,6 +1072,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jdmerge.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jdmerge.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jquant1.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jquant1.c"
     },
     {
       "source_artifact": "ijg-libjpeg-6a",

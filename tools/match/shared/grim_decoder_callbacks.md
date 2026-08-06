@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred thirty-three exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred forty-one exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -173,6 +173,18 @@ scratch. The
 full Floyd-Steinberg mapper and pass initializer remain semantic-complete at
 99.03% and 97.83% respectively; their exact instruction counts and references
 leave only build-9178 byte-clear selection and scheduling as compiler debt.
+
+Eight separately emitted JAZ one-pass quantizer bodies now come directly from
+the pinned IJG 6a `jquant1.c`: component color-count selection, color-index
+construction, all five plain and dithered pixel kernels, and the mode-change
+error callback. They reproduce 690 instructions byte-for-byte under the
+stock VC6 `/O2 /G6` or `/O2 /Ob2 /G6` code-generation surrogates, with the
+module's RGB preference table and Bayer matrix assigned explicit identities.
+The compiler inlines colormap construction, ordered-dither setup, and
+Floyd-Steinberg workspace allocation. The initializer remains
+semantic-complete because the available `/Ob2` compiler over-inlines
+`select_ncolors`; the pass initializer is likewise semantic-complete with one
+independent stack-load scheduling swap. Neither residual is source debt.
 
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes

@@ -12,6 +12,7 @@ third_party/sources/ijg-libjpeg-6a/jdmaster.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jdinput.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jdsample.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jdmerge.c whitespace=-trailing-space
+third_party/sources/ijg-libjpeg-6a/jquant1.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jquant2.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jutils.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jdhuff.c whitespace=-trailing-space

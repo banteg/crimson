@@ -13020,6 +13020,20 @@
       "type": "const unsigned int[30]"
     },
     {
+      "address": "0x10050850",
+      "comment": "JAZ provider IJG 6a 16-by-16 Bayer ordered-dither matrix.",
+      "name": "grim_jpeg_base_dither_matrix",
+      "program": "grim.dll",
+      "type": "const unsigned char[16][16]"
+    },
+    {
+      "address": "0x10050950",
+      "comment": "JAZ provider IJG 6a RGB component allocation preference order (green, red, blue).",
+      "name": "grim_jpeg_quant1_rgb_order",
+      "program": "grim.dll",
+      "type": "const int[3]"
+    },
+    {
       "address": "0x100554e8",
       "comment": "D3DX JPEG inverse-DCT dispatcher flag selecting the MMX kernels.",
       "name": "d3dx_jpeg_mmx_idct_enabled",

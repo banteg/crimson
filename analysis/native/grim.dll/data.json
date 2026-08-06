@@ -1,5 +1,5 @@
 {
-  "audit_digest": "f263f5ae1520780899e6e9bc5df7ffc82e7b6abd05af642891af20a2f5e61c75",
+  "audit_digest": "c1325f7e410d525bcc6c517f77d62db9ec26a00af8d152e846d750d74852f187",
   "entries": [
     {
       "address": 268747320,
@@ -2967,6 +2967,44 @@
       "size": 16,
       "size_source": "third_party/headers/dinput.h: DirectInput GUID declarations; tools/native/abi/grim.dll/abi_assertions.cpp: guid_is_0x10",
       "type": "GUID"
+    },
+    {
+      "address": 268765264,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "JAZ provider IJG 6a 16-by-16 Bayer ordered-dither matrix.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_jpeg_base_dither_matrix",
+      "section": ".rdata",
+      "section_offset": 18068,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const unsigned char[16][16]"
+    },
+    {
+      "address": 268765520,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "JAZ provider IJG 6a RGB component allocation preference order (green, red, blue).",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_jpeg_quant1_rgb_order",
+      "section": ".rdata",
+      "section_offset": 18324,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const int[3]"
     },
     {
       "address": 268775488,
@@ -7404,7 +7442,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "ecf34a4719aa0e248fb2f75cc574323ee08f11be75a5f858e2743472a96dbf74",
+    "data_map_sha256": "c64b6ce3745a9d3d60fbc4f365700c8da902326d22eff890589a5b69465b0749",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7420,25 +7458,25 @@
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 301,
+    "entry_count": 303,
     "explicit_alignment_entries": 283,
     "explicit_initializer_entries": 283,
     "explicit_size_entries": 283,
-    "fixed_array_types": 88,
+    "fixed_array_types": 90,
     "fully_specified_entries": 283,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
-    "multidimensional_array_types": 1,
+    "multidimensional_array_types": 2,
     "overlay_addresses": 0,
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
       ".data": 215,
-      ".rdata": 86
+      ".rdata": 88
     },
-    "source_entry_count": 304,
-    "typed_entries": 251,
-    "unique_addresses": 301,
+    "source_entry_count": 306,
+    "typed_entries": 253,
+    "unique_addresses": 303,
     "untyped_entries": 50
   }
 }

@@ -13019,6 +13019,127 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10044210",
+    "end": "0x10044450",
+    "name": "grim_jpeg_init_one_pass_quantizer",
+    "aliases": [
+      "jinit_1pass_quantizer",
+      "sub_10044210"
+    ],
+    "signature": "void grim_jpeg_init_one_pass_quantizer(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a one-pass color-quantizer initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044450",
+    "end": "0x10044540",
+    "name": "grim_jpeg_select_component_color_counts",
+    "aliases": [
+      "sub_10044450"
+    ],
+    "signature": "int grim_jpeg_select_component_color_counts(j_decompress_ptr cinfo, int component_color_counts[4])",
+    "comment": "JAZ IJG 6a one-pass component color-count allocator",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044540",
+    "end": "0x10044690",
+    "name": "grim_jpeg_create_color_index",
+    "aliases": [
+      "sub_10044540"
+    ],
+    "signature": "void grim_jpeg_create_color_index(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a one-pass color-index builder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044690",
+    "end": "0x10044890",
+    "name": "grim_jpeg_start_pass_one_quantizer",
+    "aliases": [
+      "sub_10044690"
+    ],
+    "signature": "void grim_jpeg_start_pass_one_quantizer(j_decompress_ptr cinfo, boolean is_pre_scan)",
+    "comment": "JAZ IJG 6a one-pass quantizer pass initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044890",
+    "end": "0x10044950",
+    "name": "grim_jpeg_color_quantize",
+    "aliases": [
+      "sub_10044890"
+    ],
+    "signature": "void grim_jpeg_color_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a general one-pass color quantizer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044950",
+    "end": "0x10044a10",
+    "name": "grim_jpeg_color_quantize3",
+    "aliases": [
+      "sub_10044950"
+    ],
+    "signature": "void grim_jpeg_color_quantize3(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a three-component one-pass color quantizer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044a10",
+    "end": "0x10044b40",
+    "name": "grim_jpeg_quantize_ordered_dither",
+    "aliases": [
+      "sub_10044A10"
+    ],
+    "signature": "void grim_jpeg_quantize_ordered_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a general ordered-dither quantizer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044b40",
+    "end": "0x10044c70",
+    "name": "grim_jpeg_quantize3_ordered_dither",
+    "aliases": [
+      "sub_10044B40"
+    ],
+    "signature": "void grim_jpeg_quantize3_ordered_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a three-component ordered-dither quantizer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044c70",
+    "end": "0x10044e30",
+    "name": "grim_jpeg_quantize_fs_dither",
+    "aliases": [
+      "sub_10044C70"
+    ],
+    "signature": "void grim_jpeg_quantize_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a Floyd-Steinberg dither quantizer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044e30",
+    "end": "0x10044e50",
+    "name": "grim_jpeg_new_color_map_1_quant",
+    "aliases": [
+      "sub_10044E30"
+    ],
+    "signature": "void grim_jpeg_new_color_map_1_quant(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a one-pass quantizer mode-change error path",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10046400",
     "name": "zlib_uncompress",
     "aliases": [
