@@ -152,6 +152,11 @@
           "sha256": "089ad98da28cdcabb4cf252607cff2e0ca73268818793d0795caaa9032c2da57"
         },
         {
+          "path": "jpeg-6a/jmemsys.h",
+          "size": 7847,
+          "sha256": "079586edfbbb27fe214f96ffb2fe72b2715de95c607ed9d02657e8c64d45e345"
+        },
+        {
           "path": "jpeg-6a/jdct.h",
           "size": 7041,
           "sha256": "4cde9d7c12ffc920e1dd525c6b7f41f88a3ea573af8c66a4b6d0d6ed3d7fd770"
@@ -192,6 +197,11 @@
           "sha256": "a945a258e19ca01fbfe2159ce7f3aace89ec04c082c71e8cbc2be3d83aa884bb"
         },
         {
+          "path": "jpeg-6a/jdmainct.c",
+          "size": 20366,
+          "sha256": "f9a8331d0a58f6ae74bbfc27e9640d66afb067793586358e0bb47bdb7cb754df"
+        },
+        {
           "path": "jpeg-6a/jdsample.c",
           "size": 16381,
           "sha256": "acca64d28c61b87e77993dd0bd51d089ecd68f8989f93e7d17156314ca58670d"
@@ -215,6 +225,11 @@
           "path": "jpeg-6a/jutils.c",
           "size": 5240,
           "sha256": "2cab735c6ea1bca55f4c94a72c73035a0a161378403a6bd849b350df71db92d6"
+        },
+        {
+          "path": "jpeg-6a/jmemnobs.c",
+          "size": 2772,
+          "sha256": "0605c64556d298071473fc245fa9d83cf10b60022d5c5d2821a846b94aa1a9fb"
         }
       ]
     },
@@ -930,6 +945,11 @@
     },
     {
       "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jmemsys.h",
+      "path": "third_party/headers/jmemsys.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jdct.h",
       "path": "third_party/headers/jdct.h"
     },
@@ -970,6 +990,11 @@
     },
     {
       "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdmainct.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jdmainct.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jdsample.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jdsample.c"
     },
@@ -992,6 +1017,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jutils.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jutils.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jmemnobs.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jmemnobs.c"
     },
     {
       "source_artifact": "zlib-1.1.3",

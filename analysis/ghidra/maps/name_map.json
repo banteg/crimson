@@ -12076,9 +12076,102 @@
   {
     "program": "grim.dll",
     "address": "0x1003e530",
+    "end": "0x1003e540",
     "name": "grim_jpeg_mem_available",
+    "aliases": [
+      "jpeg_mem_available",
+      "FUN_1003E530"
+    ],
     "signature": "long grim_jpeg_mem_available(j_common_ptr cinfo, long min_bytes_needed, long max_bytes_needed, long already_allocated)",
-    "comment": "Archive-confirmed IJG 6a no-backing-store policy in the JAZ decoder copy"
+    "comment": "Archive-confirmed IJG 6a no-backing-store policy in the JAZ decoder copy",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e540",
+    "end": "0x1003e560",
+    "name": "grim_jpeg_open_backing_store",
+    "aliases": [
+      "jpeg_open_backing_store",
+      "sub_1003E540"
+    ],
+    "signature": "void grim_jpeg_open_backing_store(j_common_ptr cinfo, backing_store_ptr info, long total_bytes_needed)",
+    "comment": "JAZ IJG 6a no-backing-store error hook",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e560",
+    "end": "0x1003e570",
+    "name": "grim_jpeg_mem_init",
+    "aliases": [
+      "jpeg_mem_init",
+      "sub_1003E560"
+    ],
+    "signature": "long grim_jpeg_mem_init(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a system-memory initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e570",
+    "end": "0x1003e6f0",
+    "name": "grim_jpeg_init_d_main_controller",
+    "aliases": [
+      "jinit_d_main_controller",
+      "sub_1003E570"
+    ],
+    "signature": "void grim_jpeg_init_d_main_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
+    "comment": "JAZ IJG 6a decompression main-buffer controller initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e6f0",
+    "end": "0x1003e8c0",
+    "name": "grim_jpeg_start_pass_main",
+    "aliases": [
+      "sub_1003E6F0"
+    ],
+    "signature": "void grim_jpeg_start_pass_main(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)",
+    "comment": "JAZ IJG 6a main-buffer pass initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e8c0",
+    "end": "0x1003e930",
+    "name": "grim_jpeg_process_data_simple_main",
+    "aliases": [
+      "sub_1003E8C0"
+    ],
+    "signature": "void grim_jpeg_process_data_simple_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a simple main-buffer processing callback",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e930",
+    "end": "0x1003ec20",
+    "name": "grim_jpeg_process_data_context_main",
+    "aliases": [
+      "sub_1003E930"
+    ],
+    "signature": "void grim_jpeg_process_data_context_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a context-row main-buffer processing callback",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ec20",
+    "end": "0x1003ec50",
+    "name": "grim_jpeg_process_data_crank_post",
+    "aliases": [
+      "sub_1003EC20"
+    ],
+    "signature": "void grim_jpeg_process_data_crank_post(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "JAZ IJG 6a final two-pass quantization postprocessor crank",
+    "create": true
   },
   {
     "program": "grim.dll",
