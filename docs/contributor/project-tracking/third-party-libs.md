@@ -233,6 +233,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   through `0x1004b0b0` byte-for-byte (1,827 bytes, 625 instructions, 18
   references). The copy's four dynamic-code tables and four prebuilt fixed-tree
   objects are named and reference-checked independently from D3DX's copy.
+- Matcher corpus: the pinned `deflate.c`, `deflate.h`, `trees.c`, and generated
+  `trees.h` reproduce `longest_match`, `pqdownheap`, `scan_tree`, `send_tree`,
+  `compress_block`, and `bi_windup` byte-for-byte (3,411 bytes, 987
+  instructions). All seven `compress_block` references resolve to the copy's
+  six independently named deflate lookup tables.
 
 ### libjpeg (IJG 6a)
 

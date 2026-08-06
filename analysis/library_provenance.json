@@ -181,6 +181,16 @@
           "sha256": "bb15ef9fda3d4d326b8b6e9e84e4a9f74b41576be421800a123d00478e914dbd"
         },
         {
+          "path": "zlib-1.1.3/deflate.c",
+          "size": 48983,
+          "sha256": "ff820d58faed4323bae46aebf454d18c9b8dfd16050da3decd78ee2c546249a2"
+        },
+        {
+          "path": "zlib-1.1.3/deflate.h",
+          "size": 11607,
+          "sha256": "cd21f799dede43d2e38498cef3f022427f1866be826d3ed7bb99e7ec20df0e69"
+        },
+        {
           "path": "zlib-1.1.3/infblock.c",
           "size": 12352,
           "sha256": "ba062cff2a248ce95062bc0f7f713f3fe70a276d13ba5566b0be51e8af1e7d18"
@@ -229,6 +239,16 @@
           "path": "zlib-1.1.3/inftrees.c",
           "size": 16074,
           "sha256": "ceb90191ca5b2bcccdfe3cfc3af92d3c6ebf6d4a2130c7c76989c32b6870c98b"
+        },
+        {
+          "path": "zlib-1.1.3/trees.c",
+          "size": 43672,
+          "sha256": "cfda553556f3c2461c2fae7cf7dcb6aa61a256d6694855694cd8709f93f9fb2b"
+        },
+        {
+          "path": "zlib-1.1.3/trees.h",
+          "size": 8444,
+          "sha256": "81579041310716219bbbf7c98849d91f5aeabdd7eadb1f8e9d7e2aa57724b58b"
         },
         {
           "path": "zlib-1.1.3/infutil.c",
@@ -942,6 +962,26 @@
       "source_artifact": "zlib-1.1.3",
       "member": "zlib-1.1.3/inftrees.c",
       "path": "third_party/sources/zlib-1.1.3/inftrees.c"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/deflate.h",
+      "path": "third_party/headers/deflate.h"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/trees.h",
+      "path": "third_party/headers/trees.h"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/deflate.c",
+      "path": "third_party/sources/zlib-1.1.3/deflate.c"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/trees.c",
+      "path": "third_party/sources/zlib-1.1.3/trees.c"
     }
   ],
   "cross_image_matches": [
