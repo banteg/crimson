@@ -6,6 +6,8 @@
  * are isolated so the scratch object can coexist with the reconstructed port.
  */
 
+#include <string.h>
+
 typedef struct grim_zlib_stream_source_s grim_zlib_stream_source_t;
 typedef struct grim_inflate_blocks_state_source_s
     grim_inflate_blocks_state_source_t;
@@ -43,6 +45,39 @@ typedef struct grim_inflate_huft_source_s {
     } word;
     unsigned int base;
 } grim_inflate_huft_source_t;
+
+typedef enum grim_inflate_codes_mode_source_e {
+    GRIM_INFLATE_CODE_START,
+    GRIM_INFLATE_CODE_LEN,
+    GRIM_INFLATE_CODE_LENEXT,
+    GRIM_INFLATE_CODE_DIST,
+    GRIM_INFLATE_CODE_DISTEXT,
+    GRIM_INFLATE_CODE_COPY,
+    GRIM_INFLATE_CODE_LIT,
+    GRIM_INFLATE_CODE_WASH,
+    GRIM_INFLATE_CODE_END,
+    GRIM_INFLATE_CODE_BAD
+} grim_inflate_codes_mode_source_t;
+
+typedef struct grim_inflate_codes_state_source_s {
+    grim_inflate_codes_mode_source_t mode;
+    unsigned int length;
+    union {
+        struct {
+            grim_inflate_huft_source_t *tree;
+            unsigned int need;
+        } code;
+        unsigned int literal;
+        struct {
+            unsigned int extra;
+            unsigned int distance;
+        } copy;
+    } sub;
+    unsigned char literal_bits;
+    unsigned char distance_bits;
+    grim_inflate_huft_source_t *literal_tree;
+    grim_inflate_huft_source_t *distance_tree;
+} grim_inflate_codes_state_source_t;
 
 typedef enum grim_inflate_block_mode_source_e {
     GRIM_INFLATE_TYPE,
@@ -194,4 +229,84 @@ unsigned long grim_adler32(
         sum2 %= GRIM_ADLER_BASE;
     }
     return (sum2 << 16) | sum1;
+}
+
+grim_inflate_codes_state_source_t *grim_inflate_codes_new(
+    unsigned int literal_bits,
+    unsigned int distance_bits,
+    grim_inflate_huft_source_t *literal_tree,
+    grim_inflate_huft_source_t *distance_tree,
+    grim_zlib_stream_source_t *stream)
+{
+    grim_inflate_codes_state_source_t *codes;
+
+    if ((codes = (grim_inflate_codes_state_source_t *)stream->allocate(
+             stream->opaque,
+             1,
+             sizeof(grim_inflate_codes_state_source_t))) != 0) {
+        codes->mode = GRIM_INFLATE_CODE_START;
+        codes->literal_bits = (unsigned char)literal_bits;
+        codes->distance_bits = (unsigned char)distance_bits;
+        codes->literal_tree = literal_tree;
+        codes->distance_tree = distance_tree;
+    }
+    return codes;
+}
+
+int grim_inflate_flush(
+    grim_inflate_blocks_state_source_t *state,
+    grim_zlib_stream_source_t *stream,
+    int result)
+{
+    unsigned int count;
+    unsigned char *output;
+    unsigned char *read;
+
+    output = stream->next_output;
+    read = state->read;
+
+    count = (unsigned int)(
+        (read <= state->write ? state->write : state->window_end) - read);
+    if (count > stream->available_output)
+        count = stream->available_output;
+    if (count != 0 && result == -5)
+        result = 0;
+
+    stream->available_output -= count;
+    stream->total_output += count;
+
+    if (state->check != 0)
+        stream->adler = state->check_value =
+            state->check(state->check_value, read, count);
+
+    memcpy(output, read, count);
+    output += count;
+    read += count;
+
+    if (read == state->window_end) {
+        read = state->window;
+        if (state->write == state->window_end)
+            state->write = state->window;
+
+        count = (unsigned int)(state->write - read);
+        if (count > stream->available_output)
+            count = stream->available_output;
+        if (count != 0 && result == -5)
+            result = 0;
+
+        stream->available_output -= count;
+        stream->total_output += count;
+
+        if (state->check != 0)
+            stream->adler = state->check_value =
+                state->check(state->check_value, read, count);
+
+        memcpy(output, read, count);
+        output += count;
+        read += count;
+    }
+
+    stream->next_output = output;
+    state->read = read;
+    return result;
 }

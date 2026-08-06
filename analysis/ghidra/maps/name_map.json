@@ -11446,7 +11446,7 @@
     "program": "grim.dll",
     "address": "0x1003692a",
     "name": "huft_build",
-    "signature": "int huft_build(uInt *b, uInt n, uInt s, uInt *d, uInt *e, void **t, uInt *m, void *hp, uInt *hn)",
+    "signature": "int huft_build(uInt *b, uInt n, uInt s, const uInt *d, const uInt *e, void **t, uInt *m, void *hp, uInt *hn, uInt *v)",
     "comment": "zlib (internal): build Huffman decoding tables"
   },
   {
@@ -11462,6 +11462,13 @@
     "name": "inflate_trees_dynamic",
     "signature": "int inflate_trees_dynamic(uInt nl, uInt nd, uInt *c, uInt *bl, uInt *bd, void **tl, void **td, void *hp, z_streamp z)",
     "comment": "zlib (internal): build dynamic Huffman trees"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036e31",
+    "name": "d3dx_zlib_inflate_trees_fixed",
+    "signature": "int d3dx_zlib_inflate_trees_fixed(uInt *bl, uInt *bd, void **tl, void **td, z_streamp z)",
+    "comment": "zlib (internal): select the prebuilt fixed Huffman trees"
   },
   {
     "program": "grim.dll",

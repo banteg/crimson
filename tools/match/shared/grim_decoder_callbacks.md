@@ -186,5 +186,14 @@ them to `infblock.obj` and `adler32.obj`; the official source archive at
 SHA-256 `cae5847bc0e1cf113d3f70d037400da3e47c2e2b7b1c96b0b08447a5fbb906f4`
 reproduces all 239 native instructions with the local `msvc7.0` surrogate.
 
-Altogether the one hundred thirty-three functions cover 12,145 bytes and 4,597 instructions in the
+Code-state allocation and window flushing add exact `infcodes.obj` and
+`infutil.obj` bodies alongside the already-counted teardown callback. The flush body requires the
+archive-consistent `/Oi` intrinsic setting so both `memcpy` operations expand
+to their native `rep movs` sequences. Four adjacent `inftrees.obj` bodies then
+recover the complete 901-byte Huffman builder plus the bit-length, dynamic, and
+fixed-tree wrappers. The four zlib constant tables and four prebuilt-tree data
+objects are identified explicitly in the analysis map, and all 18 references
+resolve without masking.
+
+Altogether the one hundred thirty-nine functions cover 13,808 bytes and 5,235 instructions in the
 explicit `all` scope, with every external relocation resolved.

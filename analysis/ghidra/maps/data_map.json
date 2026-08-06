@@ -12983,6 +12983,62 @@
       "name": "d3dx_jpeg_quant1_rgb_order",
       "program": "grim.dll",
       "type": "const int[3]"
+    },
+    {
+      "address": "0x1004f868",
+      "comment": "Archive-confirmed zlib 1.1.3 literal and length code bases.",
+      "name": "d3dx_zlib_cplens",
+      "program": "grim.dll",
+      "type": "const unsigned int[31]"
+    },
+    {
+      "address": "0x1004f8e8",
+      "comment": "Archive-confirmed zlib 1.1.3 literal and length extra-bit counts.",
+      "name": "d3dx_zlib_cplext",
+      "program": "grim.dll",
+      "type": "const unsigned int[31]"
+    },
+    {
+      "address": "0x1004f968",
+      "comment": "Archive-confirmed zlib 1.1.3 distance code bases.",
+      "name": "d3dx_zlib_cpdist",
+      "program": "grim.dll",
+      "type": "const unsigned int[30]"
+    },
+    {
+      "address": "0x1004f9e0",
+      "comment": "Archive-confirmed zlib 1.1.3 distance extra-bit counts.",
+      "name": "d3dx_zlib_cpdext",
+      "program": "grim.dll",
+      "type": "const unsigned int[30]"
+    },
+    {
+      "address": "0x10055f18",
+      "comment": "Archive-confirmed zlib 1.1.3 fixed literal-tree lookup depth.",
+      "name": "d3dx_zlib_fixed_literal_bits",
+      "program": "grim.dll",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x10055f1c",
+      "comment": "Archive-confirmed zlib 1.1.3 fixed distance-tree lookup depth.",
+      "name": "d3dx_zlib_fixed_distance_bits",
+      "program": "grim.dll",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x10055f20",
+      "comment": "Archive-confirmed zlib 1.1.3 fixed literal and length Huffman table.",
+      "name": "d3dx_zlib_fixed_literal_tree",
+      "program": "grim.dll",
+      "type": "unsigned char[4096]"
+    },
+    {
+      "address": "0x10056f20",
+      "comment": "Archive-confirmed zlib 1.1.3 fixed distance Huffman table.",
+      "name": "d3dx_zlib_fixed_distance_tree",
+      "program": "grim.dll",
+      "type": "unsigned char[256]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."
