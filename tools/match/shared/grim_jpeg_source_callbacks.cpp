@@ -15,6 +15,8 @@ struct grim_jpeg_decompress_t {
     grim_jpeg_source_manager_t *source;
 };
 
+extern "C" void grim_jpeg_destroy(void *decoder);
+
 extern "C" void grim_jpeg_source_noop(grim_jpeg_decompress_t *)
 {
 }
@@ -33,4 +35,9 @@ extern "C" void grim_jpeg_skip_input_data(
     grim_jpeg_source_manager_t *source = decoder->source;
     source->next_input_byte += byte_count;
     source->bytes_in_buffer -= byte_count;
+}
+
+extern "C" void grim_jpeg_destroy_decompress(void *decoder)
+{
+    grim_jpeg_destroy(decoder);
 }
