@@ -11754,6 +11754,16 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003b770",
+    "name": "grim_jpeg_init_marker_reader",
+    "aliases": [
+      "jinit_marker_reader"
+    ],
+    "signature": "void grim_jpeg_init_marker_reader(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a marker-reader initializer; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003b820",
     "name": "grim_jpeg_get_app0",
     "aliases": [
@@ -11783,6 +11793,17 @@
     ],
     "signature": "boolean grim_jpeg_skip_variable(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a variable-length marker skipper",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003bd30",
+    "name": "grim_jpeg_read_markers",
+    "aliases": [
+      "sub_1003BD30"
+    ],
+    "signature": "int grim_jpeg_read_markers(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a marker dispatch loop",
     "create": false
   },
   {
@@ -11842,6 +11863,19 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003d000",
+    "name": "grim_jpeg_read_restart_marker",
+    "aliases": [
+      "FUN_1003d000",
+      "sub_1003D000"
+    ],
+    "signature": "boolean grim_jpeg_read_restart_marker(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a restart-marker reader",
+    "create": true,
+    "end": "0x1003d090"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003d090",
     "name": "grim_jpeg_reset_marker_reader",
     "aliases": [
@@ -11850,13 +11884,6 @@
     "signature": "void grim_jpeg_reset_marker_reader(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a marker-reader reset",
     "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1003b770",
-    "name": "jinit_marker_reader",
-    "signature": "void jinit_marker_reader(void *context)",
-    "comment": "IJG libjpeg 6a decompression marker-reader initializer"
   },
   {
     "program": "grim.dll",

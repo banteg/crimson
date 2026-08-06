@@ -287,6 +287,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   byte-for-byte (5,113 bytes, 1,819 instructions, five references). The JAZ
   Huffman allocator and natural-order table are independently named from the
   D3DX decoder copy.
+- Matcher corpus: the target's VC6 `/O2 /Ob2 /G6` profile also reproduces the
+  three larger `jdmarker.c` bodies byte-for-byte (1,495 bytes, 464
+  instructions, 17 references): marker-reader initialization, dispatch, and
+  restart handling. This completes the target's 14-function marker module;
+  IJG's small SOI, DAC, and first-marker helpers are inlined into dispatch.
 - Matcher corpus: the pinned upstream `jcomapi.c` reproduces the four JAZ
   common-API routines byte-for-byte (122 bytes, 48 instructions): abort,
   destroy, and both table allocators.
