@@ -466,6 +466,7 @@ def load_function_manifest(
     scoped_disposition_addresses = frozenset(row.address for row in scoped_dispositions)
 
     name_overrides: dict[int, str] = {}
+    end_overrides: dict[int, int] = {}
     included_library_addresses: set[int] = set()
     created_rows: list[dict[str, Any]] = []
     if name_map_path is not None and name_map_path.exists():
@@ -475,6 +476,8 @@ def load_function_manifest(
                 continue
             address = parse_int(row["address"])
             name_overrides[address] = str(row["name"])
+            if not bool(row.get("create")) and row.get("end") is not None:
+                end_overrides[address] = parse_int(row["end"])
             if bool(row.get("include_library")):
                 included_library_addresses.add(address)
             if bool(row.get("create")) and row.get("end") is not None:
@@ -519,13 +522,22 @@ def load_function_manifest(
             continue
         if not is_scoped(address):
             continue
-        end = parse_int(row["end"])
+        end = end_overrides.get(address, parse_int(row["end"]))
+        if end <= address:
+            raise ValueError(
+                f"curated function {name_overrides.get(address, row['name'])!r} "
+                f"has invalid extent 0x{address:x}..0x{end:x}",
+            )
         functions.append(
             FunctionSymbol(
                 name=name_overrides.get(address, str(row["name"])),
                 address=address,
                 end=end,
-                size=int(row.get("size") or max(0, end - address)),
+                size=(
+                    end - address
+                    if address in end_overrides
+                    else int(row.get("size") or end - address)
+                ),
             ),
         )
     existing_addresses = {function.address for function in functions}
@@ -549,10 +561,22 @@ def load_function_manifest(
             ),
         )
         existing_addresses.add(address)
+    sorted_functions = sorted(functions, key=lambda function: function.address)
+    for index, function in enumerate(sorted_functions[:-1]):
+        if (
+            function.address in end_overrides
+            and function.end > sorted_functions[index + 1].address
+        ):
+            next_function = sorted_functions[index + 1]
+            raise ValueError(
+                f"curated function {function.name!r} extent "
+                f"0x{function.address:x}..0x{function.end:x} overlaps "
+                f"{next_function.name!r} at 0x{next_function.address:x}",
+            )
     return FunctionManifest(
         image_name=resolved_image_name,
         image_base=_load_image_base(metadata_path),
-        functions=tuple(sorted(functions, key=lambda function: function.address)),
+        functions=tuple(sorted_functions),
     )
 
 

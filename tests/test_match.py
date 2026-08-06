@@ -175,6 +175,60 @@ def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
     assert end == 0x1000A323
 
 
+def test_load_manifest_applies_curated_end_override(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x1002047C","end":"0x100204A1",'
+        '"name":"png_read_data","size":37},'
+        '{"address":"0x100204A4","end":"0x100204E3",'
+        '"name":"sub_100204A4","size":63}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1002047C",'
+        '"end":"0x100204A4","name":"png_read_data"}]\n',
+        encoding="utf-8",
+    )
+
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=None,
+        image_name="grim.dll",
+        name_map_path=name_map_path,
+    )
+
+    function, start, end = resolve_function(manifest, "png_read_data")
+    assert function.size == 40
+    assert start == 0x1002047C
+    assert end == 0x100204A4
+
+
+def test_load_manifest_rejects_overlapping_curated_end_override(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x1002047C","end":"0x100204A1",'
+        '"name":"png_read_data","size":37},'
+        '{"address":"0x100204A4","end":"0x100204E3",'
+        '"name":"sub_100204A4","size":63}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1002047C",'
+        '"end":"0x100204A5","name":"png_read_data"}]\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="curated function.*overlaps"):
+        load_function_manifest(
+            functions_path,
+            metadata_path=None,
+            image_name="grim.dll",
+            name_map_path=name_map_path,
+        )
+
+
 def test_load_manifest_adds_explicit_disjoint_curated_function(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(
