@@ -57,6 +57,8 @@ RECIPES = {
             "grim_app_pump",
             "grim_app_shutdown",
             "grim_app_tick",
+            "grim_config_blob_load",
+            "grim_config_blob_save",
             "grim_d3d_init",
             "grim_d3d_shutdown",
             "grim_create_geometry_buffers",
