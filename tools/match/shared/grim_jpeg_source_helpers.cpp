@@ -102,6 +102,37 @@ struct grim_jpeg_color_quantizer_source_t {
     void *color_quantize;
     grim_jpeg_finish_quantize_source_fn_t finish_pass;
     void *new_color_map;
+    unsigned char fields_10[0x0c];
+    unsigned char needs_zeroed;
+    unsigned char fields_1d[3];
+};
+
+struct grim_jpeg_separate_upsampler_source_t {
+    void *start_pass;
+    void *upsample;
+    unsigned char need_context_rows;
+    unsigned char fields_09[3];
+    unsigned char **color_buffer[10];
+    void *methods[10];
+    int next_row_out;
+    unsigned int rows_to_go;
+};
+
+struct grim_jpeg_merged_upsampler_source_t {
+    void *start_pass;
+    void *upsample;
+    unsigned char need_context_rows;
+    unsigned char fields_09[3];
+    void *upmethod;
+    int *cr_r_table;
+    int *cb_b_table;
+    int *cr_g_table;
+    int *cb_g_table;
+    unsigned char *spare_row;
+    unsigned char spare_full;
+    unsigned char fields_25[3];
+    unsigned int out_row_width;
+    unsigned int rows_to_go;
 };
 
 struct grim_jpeg_decompress_source_t {
@@ -113,19 +144,26 @@ struct grim_jpeg_decompress_source_t {
     int global_state;
     unsigned char fields_14[0x36];
     unsigned char quantize_colors;
-    unsigned char fields_4b[0x31];
+    unsigned char fields_4b[0x11];
+    unsigned int output_width;
+    unsigned int output_height;
+    unsigned char fields_64[0x18];
     int input_scan_number;
     unsigned char fields_80[0x0c];
     void *coefficient_bits;
     unsigned char fields_90[0x34];
     void *component_info;
-    unsigned char fields_c8[0xb0];
+    unsigned char fields_c8[0x48];
+    int max_v_samp_factor;
+    unsigned char fields_114[0x64];
     int unread_marker;
     grim_jpeg_decomp_master_source_t *master;
     unsigned char fields_180[0x0c];
     grim_jpeg_input_controller_source_t *input_controller;
     grim_jpeg_marker_reader_source_t *marker_reader;
-    unsigned char fields_194[0x10];
+    unsigned char fields_194[0x08];
+    void *upsampler;
+    void *color_converter;
     grim_jpeg_color_quantizer_source_t *color_quantizer;
 };
 
@@ -389,4 +427,90 @@ extern "C" void grim_jpeg_finish_output_pass(
     if (decoder->quantize_colors)
         decoder->color_quantizer->finish_pass(decoder);
     master->pass_number++;
+}
+
+extern "C" long grim_jpeg_mem_available(
+    grim_jpeg_common_source_t *decoder,
+    long minimum_bytes,
+    long maximum_bytes,
+    long already_allocated)
+{
+    return maximum_bytes;
+}
+
+extern "C" void grim_jpeg_open_backing_store(
+    grim_jpeg_common_source_t *decoder,
+    void *backing_store,
+    long total_bytes)
+{
+    decoder->error->message_code = 48;
+    decoder->error->error_exit(decoder);
+}
+
+extern "C" void grim_jpeg_start_pass_upsample(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_separate_upsampler_source_t *upsampler =
+        static_cast<grim_jpeg_separate_upsampler_source_t *>(decoder->upsampler);
+
+    upsampler->next_row_out = decoder->max_v_samp_factor;
+    upsampler->rows_to_go = decoder->output_height;
+}
+
+extern "C" void grim_jpeg_fullsize_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    void *component,
+    unsigned char **input_data,
+    unsigned char ***output_data)
+{
+    *output_data = input_data;
+}
+
+extern "C" void grim_jpeg_noop_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    void *component,
+    unsigned char **input_data,
+    unsigned char ***output_data)
+{
+    *output_data = 0;
+}
+
+extern "C" void grim_jpeg_grayscale_convert(
+    grim_jpeg_decompress_source_t *decoder,
+    unsigned char ***input_buffer,
+    unsigned int input_row,
+    unsigned char **output_buffer,
+    int row_count)
+{
+    grim_jpeg_copy_sample_rows(
+        input_buffer[0],
+        static_cast<int>(input_row),
+        output_buffer,
+        0,
+        row_count,
+        decoder->output_width);
+}
+
+extern "C" void grim_jpeg_start_pass_merged_upsample(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_merged_upsampler_source_t *upsampler =
+        static_cast<grim_jpeg_merged_upsampler_source_t *>(decoder->upsampler);
+
+    upsampler->spare_full = 0;
+    upsampler->rows_to_go = decoder->output_height;
+}
+
+extern "C" void grim_jpeg_new_color_map_2_quant(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    decoder->color_quantizer->needs_zeroed = 1;
+}
+
+extern "C" void grim_jpeg_new_color_map_1_quant(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    decoder->error->message_code = 45;
+    decoder->error->error_exit(
+        reinterpret_cast<grim_jpeg_common_source_t *>(decoder));
 }

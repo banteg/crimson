@@ -10959,10 +10959,16 @@
   {
     "program": "grim.dll",
     "address": "0x1002e670",
-    "name": "FUN_1002e670",
-    "signature": "int FUN_1002e670(int arg1)",
-    "comment": "[binja] int32_t sub_1002e670(int32_t arg1) __pure",
-    "create": false
+    "name": "d3dx_jpeg_mem_available",
+    "signature": "long d3dx_jpeg_mem_available(j_common_ptr cinfo, long min_bytes_needed, long max_bytes_needed, long already_allocated)",
+    "comment": "Archive-confirmed IJG 6a no-backing-store memory availability helper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e675",
+    "name": "d3dx_jpeg_open_backing_store",
+    "signature": "void d3dx_jpeg_open_backing_store(j_common_ptr cinfo, backing_store_ptr info, long total_bytes_needed)",
+    "comment": "Archive-confirmed IJG 6a unsupported backing-store error path"
   },
   {
     "program": "grim.dll",
@@ -10990,11 +10996,32 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100312bd",
+    "name": "d3dx_jpeg_start_pass_upsample",
+    "signature": "void d3dx_jpeg_start_pass_upsample(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a separate-upsampler pass initializer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100312d7",
     "name": "FUN_100312d7",
     "signature": "int* FUN_100312d7(void* arg1, int arg2, int* arg3, int arg4, int* arg5, int arg6)",
     "comment": "[binja] int32_t* sub_100312d7(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003139d",
+    "name": "d3dx_jpeg_fullsize_upsample",
+    "signature": "void d3dx_jpeg_fullsize_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a full-size upsampling pointer adapter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100313a8",
+    "name": "d3dx_jpeg_noop_upsample",
+    "signature": "void d3dx_jpeg_noop_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a ignored-component upsampling adapter"
   },
   {
     "program": "grim.dll",
@@ -11014,6 +11041,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100319d5",
+    "name": "d3dx_jpeg_grayscale_convert",
+    "signature": "void d3dx_jpeg_grayscale_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a grayscale row-copy converter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032055",
+    "name": "d3dx_jpeg_start_pass_merged_upsample",
+    "signature": "void d3dx_jpeg_start_pass_merged_upsample(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a merged-upsampler pass initializer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10032110",
     "name": "FUN_10032110",
     "signature": "int FUN_10032110(void* arg1, int arg2, int* arg3, int arg4, int* arg5)",
@@ -11027,6 +11068,20 @@
     "signature": "short* FUN_100324f2(short* arg1, short* arg2, int arg3)",
     "comment": "[binja] int16_t* sub_100324f2(int16_t* arg1, int16_t* arg2, int32_t arg3)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100333e3",
+    "name": "d3dx_jpeg_new_color_map_2_quant",
+    "signature": "void d3dx_jpeg_new_color_map_2_quant(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer colormap reset"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033e70",
+    "name": "d3dx_jpeg_new_color_map_1_quant",
+    "signature": "void d3dx_jpeg_new_color_map_1_quant(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a one-pass quantizer mode-change error path"
   },
   {
     "program": "grim.dll",

@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes seventy-six exact callback, state, and cleanup
+The image-decoder cluster contributes eighty-five exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -98,11 +98,20 @@ the two input-controller state stores differs from build 9178, while the
 already-supported `msvc6.5` D3DX JPEG surrogate emits those same recovered
 sources exactly; neither local profile is claimed as the original compiler.
 
+Nine more official IJG 6a leaves recover the no-backing-store memory policy,
+separate and merged upsampler pass setup, full-size and ignored-component
+adapters, grayscale row conversion, and both quantizer colormap callbacks.
+Their symbols are unique within the pinned `jmemnobs.obj`, `jdsample.obj`,
+`jdcolor.obj`, `jdmerge.obj`, `jquant1.obj`, and `jquant2.obj` members. The
+local `msvc7.0` profile reproduces eight bodies exactly; the already-supported
+`msvc6.5` surrogate reproduces the merged-upsample Boolean-clear instruction
+shape. Both remain code-generation surrogates for product 29, build 9178.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the seventy-six functions cover 3,703 bytes and 1,392 instructions in the
+Altogether the eighty-five functions cover 3,864 bytes and 1,448 instructions in the
 explicit `all` scope, with every external relocation resolved.
