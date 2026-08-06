@@ -207,6 +207,10 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   sources reproduce the plain-C `adler32`, `zcalloc`, and `zcfree` bodies at
   `0x10049190`, `0x10047a00`, and `0x10047a20`. Together they add 335 exact
   bytes and keep both CRT import references audited.
+- Matcher corpus: the pinned inflate-private headers and `infutil.c` reproduce
+  `inflate_flush` at `0x1004b0e0` byte-for-byte (306 bytes, 117 instructions).
+  These headers also establish the original state layouts for subsequent
+  source-backed recovery of the remaining plain-C inflate modules.
 
 ### libjpeg (IJG 6a)
 

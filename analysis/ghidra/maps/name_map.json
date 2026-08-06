@@ -11833,6 +11833,17 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1004b0e0",
+    "name": "zlib_inflate_flush",
+    "aliases": [
+      "sub_1004B0E0"
+    ],
+    "signature": "int zlib_inflate_flush(inflate_blocks_statef *state, z_streamp stream, int status)",
+    "comment": "Plain-C zlib 1.1.3 sliding-window output flush",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004b5b0",
     "name": "seh_prolog",
     "signature": "void seh_prolog(void)",

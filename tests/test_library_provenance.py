@@ -61,7 +61,7 @@ def test_library_provenance_manifest_validates_current_binaries() -> None:
         == 3
     )
     assert sum(check.component == "ijg-libjpeg-6a" and check.passed for check in report.checks) == 8
-    assert sum(check.component == "zlib-1.1.3" and check.passed for check in report.checks) == 4
+    assert sum(check.component == "zlib-1.1.3" and check.passed for check in report.checks) == 9
     assert sum(check.component == "d3dx8" and check.kind == "cross-image" for check in report.checks) == 3
 
 

@@ -5,7 +5,12 @@
 third_party/headers/jdct.h whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jidctflt.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jidctred.c whitespace=-trailing-space
+third_party/headers/infblock.h whitespace=-trailing-space
+third_party/headers/infcodes.h whitespace=-trailing-space
+third_party/headers/inftrees.h whitespace=-trailing-space
+third_party/headers/infutil.h whitespace=-trailing-space
 third_party/headers/zutil.h whitespace=-trailing-space
 third_party/sources/zlib-1.1.3/adler32.c whitespace=-trailing-space
+third_party/sources/zlib-1.1.3/infutil.c whitespace=-trailing-space
 third_party/sources/zlib-1.1.3/uncompr.c whitespace=-trailing-space
 third_party/sources/zlib-1.1.3/zutil.c whitespace=-trailing-space
