@@ -217,6 +217,9 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   `/Ob2` profile accounts for the observed automatic inlining of `inflateEnd`
   and `inflateReset`; all 17 direct references across the four functions are
   resolved to the separate plain-C zlib copy.
+- Matcher corpus: the pinned `inffast.c` and private `inffast.h` reproduce
+  `inflate_fast` at `0x1004b220` byte-for-byte (911 bytes, 334 instructions,
+  eight references), including the copy's distinct `inflate_mask` table.
 
 ### libjpeg (IJG 6a)
 
