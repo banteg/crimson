@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "5a3e4342c186401d820fd56ec2efe7f686fda39b585e877e5ea0c503d5760c29",
+      "sha256": "47772743b1ebf2c59ca3f3f3d346e0d9516a5ebaf08861f62dcb17edbd36eba2",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"
@@ -283,8 +283,8 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member."
         },
         {
-          "path": "tools/match/scratches/grim_config_blob_load/NOTES.md",
-          "note": "The legacy config reader is an exact 151-byte match and preserves missing-file and wrong-size recovery behavior."
+          "path": "tools/match/scratches/grim_config_dialog_populate_display_modes/NOTES.md",
+          "note": "The legacy display-mode helper is an exact 646-byte match and preserves its persisted-byte comparison."
         }
       ],
       "symbols": [

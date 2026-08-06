@@ -642,9 +642,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     ]
     assert len(config.archives) == 7
     archives = {archive.id: archive for archive in config.archives}
-    assert archives["grim-recovered-platform-vc6"].size == 65434
+    assert archives["grim-recovered-platform-vc6"].size == 75236
     assert archives["grim-recovered-platform-vc6"].sha256 == (
-        "5a3e4342c186401d820fd56ec2efe7f686fda39b585e877e5ea0c503d5760c29"
+        "47772743b1ebf2c59ca3f3f3d346e0d9516a5ebaf08861f62dcb17edbd36eba2"
     )
     assert (
         archives["grim-recovered-platform-vc6"].provenance.derived_artifact

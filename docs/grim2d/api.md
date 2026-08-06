@@ -63,6 +63,10 @@ We also generate an evidence appendix with callsite snippets:
   expansion; it also stores the coordinate mode later compared against the current
   mode before converting vertices.
 
+- `grim_config_dialog_populate_display_modes` (`0x10001e90`) exact-matches the
+  launcher's fixed windowed, 16-bit, and 32-bit mode list. Capability flags
+  gate the available groups, and the persisted width, depth, and canonical
+  one-byte windowed flag select the current entry.
 - `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
 - Exact-matched `grim_window_create` (`0x10002680`) registers the `Crimson`
   class with `grim_window_proc`, then creates either a topmost screen-sized

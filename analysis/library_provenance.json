@@ -201,8 +201,8 @@
     {
       "id": "grim-recovered-platform-vc6-provider",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "size": 65434,
-      "sha256": "5a3e4342c186401d820fd56ec2efe7f686fda39b585e877e5ea0c503d5760c29",
+      "size": 75236,
+      "sha256": "47772743b1ebf2c59ca3f3f3d346e0d9516a5ebaf08861f62dcb17edbd36eba2",
       "recipe": "scripts/build_native_recovered_providers.py",
       "source_artifacts": [
         "visual-cpp-6-sp6-media"
@@ -214,8 +214,10 @@
         "tools/match/scratches/grim_app_pump/scratch.cpp",
         "tools/match/scratches/grim_app_shutdown/scratch.cpp",
         "tools/match/scratches/grim_app_tick/scratch.cpp",
+        "tools/match/scratches/grim_backup_textures/scratch.cpp",
         "tools/match/scratches/grim_config_blob_load/scratch.cpp",
         "tools/match/scratches/grim_config_blob_save/scratch.cpp",
+        "tools/match/scratches/grim_config_dialog_populate_display_modes/scratch.cpp",
         "tools/match/scratches/grim_create_geometry_buffers/scratch.cpp",
         "tools/match/scratches/grim_d3d_init/scratch.cpp",
         "tools/match/scratches/grim_d3d_shutdown/scratch.cpp",
