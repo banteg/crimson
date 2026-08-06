@@ -10090,10 +10090,45 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001df16",
+    "name": "d3dx_jpeg_error_exit",
+    "signature": "void d3dx_jpeg_error_exit(j_common_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a fatal-error callback in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001df31",
+    "name": "d3dx_jpeg_output_message",
+    "signature": "void d3dx_jpeg_output_message(j_common_ptr cinfo)",
+    "comment": "D3DX IJG message sink; formats the current diagnostic into a local buffer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001df4e",
+    "name": "d3dx_jpeg_emit_message",
+    "signature": "void d3dx_jpeg_emit_message(j_common_ptr cinfo, int message_level)",
+    "comment": "Archive-confirmed IJG 6a warning and trace policy in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001df7f",
+    "name": "d3dx_jpeg_format_message",
+    "signature": "void d3dx_jpeg_format_message(j_common_ptr cinfo, char *buffer)",
+    "comment": "Archive-confirmed IJG 6a diagnostic formatter in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001e016",
     "name": "jpeg_reset_error_mgr",
     "signature": "void jpeg_reset_error_mgr(j_common_ptr cinfo)",
     "comment": "D3DX IJG error-manager reset; clears warning count and message code"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e027",
+    "name": "d3dx_jpeg_std_error",
+    "signature": "jpeg_error_mgr *d3dx_jpeg_std_error(jpeg_error_mgr *error_manager)",
+    "comment": "Archive-confirmed IJG 6a standard error-manager initializer in the D3DX provider"
   },
   {
     "program": "grim.dll",

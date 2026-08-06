@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes sixty-nine exact callback, state, and cleanup
+The image-decoder cluster contributes seventy-four exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -12,6 +12,15 @@ decoder's buffered IJG source manager.
 The D3DX IJG error-manager reset clears the accumulated warning count and
 message code. The pinned DirectX archive uniquely identifies the exact
 `jerror.obj` member and symbol.
+
+The rest of that `jerror.obj` member now recovers the fatal-error path,
+warning/trace dispatch, diagnostic formatting, output sink, and standard
+error-manager initializer. The D3DX output sink intentionally formats into a
+200-byte local buffer without printing it. The fatal path preserves the
+compiler-emitted unreachable `pop esi` after `exit`; an explicit scratch end
+includes that provider-confirmed byte when the imported function boundary
+stops at the noreturn call. The initializer binds all five callbacks plus the
+existing reset helper and the archive-confirmed 120-entry message table.
 
 Three additional IJG leaves recover ceiling division, divisor rounding, and
 the input-pass transition back to `consume_markers`. Their exact archive
@@ -86,5 +95,5 @@ cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the sixty-nine functions cover 2,724 bytes and 1,056 instructions in the
+Altogether the seventy-four functions cover 3,056 bytes and 1,182 instructions in the
 explicit `all` scope, with every external relocation resolved.

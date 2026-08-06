@@ -12814,6 +12814,13 @@
       "type": "void *[4]"
     },
     {
+      "address": "0x1004ce48",
+      "comment": "Archive-confirmed IJG 6a standard error message pointer table used by the D3DX JPEG provider.",
+      "name": "d3dx_jpeg_std_message_table",
+      "program": "grim.dll",
+      "type": "const char *[120]"
+    },
+    {
       "address": "0x1004c388",
       "comment": "Fallback 36-byte descriptor returned when a D3D pixel format is not registered.",
       "name": "grim_format_info_default",

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ae2df27a16b6d340af4763e390cf7880ac8add39516e446bebbcd421c81cfef0",
+  "audit_digest": "364545e85e1ee4e532fec5fab7a2d011febe5a644bc08a4fe484c506aceea535",
   "entries": [
     {
       "address": 268747320,
@@ -2399,6 +2399,25 @@
       "size": 16,
       "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
       "type": "void *[4]"
+    },
+    {
+      "address": 268750408,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed IJG 6a standard error message pointer table used by the D3DX JPEG provider.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_jpeg_std_message_table",
+      "section": ".rdata",
+      "section_offset": 3212,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const char *[120]"
     },
     {
       "address": 268756252,
@@ -7096,7 +7115,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "f47b652ce7c2d4c3b2391c54c533554f176408f63c1c3a59b9ee220f559781f4",
+    "data_map_sha256": "83efc83c096ff30312fd1af68c70a0209f4992c101fbbab5c6a114685f2a4014",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7112,11 +7131,11 @@
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 285,
+    "entry_count": 286,
     "explicit_alignment_entries": 283,
     "explicit_initializer_entries": 283,
     "explicit_size_entries": 283,
-    "fixed_array_types": 75,
+    "fixed_array_types": 76,
     "fully_specified_entries": 283,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -7126,11 +7145,11 @@
     "referenced_entries": 0,
     "section_counts": {
       ".data": 209,
-      ".rdata": 76
+      ".rdata": 77
     },
-    "source_entry_count": 288,
-    "typed_entries": 235,
-    "unique_addresses": 285,
+    "source_entry_count": 289,
+    "typed_entries": 236,
+    "unique_addresses": 286,
     "untyped_entries": 50
   }
 }

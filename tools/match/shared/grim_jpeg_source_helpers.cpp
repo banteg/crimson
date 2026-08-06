@@ -24,14 +24,20 @@ struct grim_jpeg_memory_source_t {
 
 typedef void (__cdecl *grim_jpeg_error_exit_source_fn_t)(
     grim_jpeg_common_source_t *);
+typedef void (__cdecl *grim_jpeg_emit_message_source_fn_t)(
+    grim_jpeg_common_source_t *, int);
+typedef void (__cdecl *grim_jpeg_output_message_source_fn_t)(
+    grim_jpeg_common_source_t *);
+typedef void (__cdecl *grim_jpeg_format_message_source_fn_t)(
+    grim_jpeg_common_source_t *, char *);
 typedef void (__cdecl *grim_jpeg_error_reset_source_fn_t)(
     grim_jpeg_common_source_t *);
 
 struct grim_jpeg_error_source_t {
     grim_jpeg_error_exit_source_fn_t error_exit;
-    void *emit_message;
-    void *output_message;
-    void *format_message;
+    grim_jpeg_emit_message_source_fn_t emit_message;
+    grim_jpeg_output_message_source_fn_t output_message;
+    grim_jpeg_format_message_source_fn_t format_message;
     grim_jpeg_error_reset_source_fn_t reset_error_manager;
     int message_code;
     int message_parameters[20];
@@ -135,8 +141,119 @@ extern "C" void grim_jpeg_free_small_source(
     grim_jpeg_common_source_t *decoder, void *allocation, unsigned int size);
 extern "C" void grim_jpeg_mem_term_source(
     grim_jpeg_common_source_t *decoder);
+extern "C" void grim_jpeg_destroy_source(
+    grim_jpeg_common_source_t *decoder);
+extern "C" void grim_jpeg_reset_error_manager_source(
+    grim_jpeg_common_source_t *decoder);
+extern "C" const char *const grim_jpeg_std_message_table_source[];
+extern "C" __declspec(noreturn) void exit(int status);
+extern "C" int sprintf(char *buffer, const char *format, ...);
 extern "C" void *memcpy(void *destination, const void *source, unsigned int size);
 extern "C" void *memset(void *destination, int value, unsigned int size);
+
+extern "C" void grim_jpeg_error_exit(grim_jpeg_common_source_t *decoder)
+{
+    decoder->error->output_message(decoder);
+    grim_jpeg_destroy_source(decoder);
+    exit(1);
+}
+
+extern "C" void grim_jpeg_output_message(grim_jpeg_common_source_t *decoder)
+{
+    char buffer[200];
+
+    decoder->error->format_message(decoder, buffer);
+}
+
+extern "C" void grim_jpeg_emit_message(
+    grim_jpeg_common_source_t *decoder, int message_level)
+{
+    grim_jpeg_error_source_t *error = decoder->error;
+
+    if (message_level < 0) {
+        if (error->warning_count == 0 || error->trace_level >= 3)
+            error->output_message(decoder);
+        error->warning_count++;
+    } else if (error->trace_level >= message_level) {
+        error->output_message(decoder);
+    }
+}
+
+extern "C" void grim_jpeg_format_message(
+    grim_jpeg_common_source_t *decoder, char *buffer)
+{
+    grim_jpeg_error_source_t *error = decoder->error;
+    int message_code = error->message_code;
+    const char *message_text = 0;
+    const char *message_pointer;
+    char character;
+    bool is_string;
+
+    if (message_code > 0 && message_code <= error->last_message) {
+        message_text = error->message_table[message_code];
+    } else if (error->addon_message_table != 0 &&
+               message_code >= error->first_addon_message &&
+               message_code <= error->last_addon_message) {
+        message_text = error->addon_message_table[
+            message_code - error->first_addon_message];
+    }
+
+    if (message_text == 0) {
+        error->message_parameters[0] = message_code;
+        message_text = error->message_table[0];
+    }
+
+    is_string = false;
+    message_pointer = message_text;
+    while ((character = *message_pointer++) != '\0') {
+        if (character == '%') {
+            if (*message_pointer == 's')
+                is_string = true;
+            break;
+        }
+    }
+
+    if (is_string) {
+        sprintf(
+            buffer,
+            message_text,
+            reinterpret_cast<char *>(error->message_parameters));
+    } else {
+        sprintf(
+            buffer,
+            message_text,
+            error->message_parameters[0],
+            error->message_parameters[1],
+            error->message_parameters[2],
+            error->message_parameters[3],
+            error->message_parameters[4],
+            error->message_parameters[5],
+            error->message_parameters[6],
+            error->message_parameters[7]);
+    }
+}
+
+extern "C" grim_jpeg_error_source_t *grim_jpeg_std_error(
+    grim_jpeg_error_source_t *error)
+{
+    error->error_exit = grim_jpeg_error_exit;
+    error->emit_message = grim_jpeg_emit_message;
+    error->output_message = grim_jpeg_output_message;
+    error->format_message = grim_jpeg_format_message;
+    error->reset_error_manager = grim_jpeg_reset_error_manager_source;
+
+    error->trace_level = 0;
+    error->warning_count = 0;
+    error->message_code = 0;
+
+    error->message_table = grim_jpeg_std_message_table_source;
+    error->last_message = 119;
+    error->addon_message_table = 0;
+    error->first_addon_message = 0;
+    error->last_addon_message = 0;
+
+    return error;
+}
 
 extern "C" void grim_jpeg_reset_marker_reader(
     grim_jpeg_decompress_source_t *decoder)
