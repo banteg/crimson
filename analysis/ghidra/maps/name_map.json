@@ -8766,6 +8766,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10010dec",
+    "name": "nullsub_2",
+    "signature": "void nullsub_2(void)",
+    "comment": "Shared return leaf; the pinned jquant2.obj binds its IJG 6a finish_pass2 callback here"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10010e13",
     "name": "grim_load_image_jpg",
     "signature": "int grim_load_image_jpg(int* arg1, int arg2, int arg3)",
@@ -11179,10 +11186,30 @@
   {
     "program": "grim.dll",
     "address": "0x100324f2",
-    "name": "FUN_100324f2",
-    "signature": "short* FUN_100324f2(short* arg1, short* arg2, int arg3)",
-    "comment": "[binja] int16_t* sub_100324f2(int16_t* arg1, int16_t* arg2, int32_t arg3)",
-    "create": false
+    "name": "d3dx_jpeg_prescan_quantize",
+    "signature": "void d3dx_jpeg_prescan_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer histogram prescan"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003255e",
+    "name": "d3dx_jpeg_update_color_box",
+    "signature": "void d3dx_jpeg_update_color_box(j_decompress_ptr cinfo, void *box)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer histogram-box tightener"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032896",
+    "name": "d3dx_jpeg_median_cut",
+    "signature": "int d3dx_jpeg_median_cut(j_decompress_ptr cinfo, void *boxlist, int numboxes, int desired_colors)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer median-cut splitter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100329e9",
+    "name": "d3dx_jpeg_compute_color",
+    "signature": "void d3dx_jpeg_compute_color(j_decompress_ptr cinfo, void *box, int color_index)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer representative-color calculator"
   },
   {
     "program": "grim.dll",
@@ -11193,6 +11220,48 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10032bae",
+    "name": "d3dx_jpeg_find_nearby_colors",
+    "signature": "int d3dx_jpeg_find_nearby_colors(j_decompress_ptr cinfo, int minc0, int minc1, int minc2, JSAMPLE colorlist[256])",
+    "comment": "Archive-confirmed IJG 6a inverse-colormap candidate selector"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032d2e",
+    "name": "d3dx_jpeg_find_best_colors",
+    "signature": "void d3dx_jpeg_find_best_colors(j_decompress_ptr cinfo, int minc0, int minc1, int minc2, int numcolors, JSAMPLE colorlist[256], JSAMPLE bestcolor[128])",
+    "comment": "Archive-confirmed IJG 6a inverse-colormap nearest-color search"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032e48",
+    "name": "d3dx_jpeg_fill_inverse_cmap",
+    "signature": "void d3dx_jpeg_fill_inverse_cmap(j_decompress_ptr cinfo, int c0, int c1, int c2)",
+    "comment": "Archive-confirmed IJG 6a inverse-colormap subbox filler"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032f18",
+    "name": "d3dx_jpeg_pass2_no_dither",
+    "signature": "void d3dx_jpeg_pass2_no_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a two-pass undithered color mapper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032fc1",
+    "name": "d3dx_jpeg_pass2_fs_dither",
+    "signature": "void d3dx_jpeg_pass2_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "Archive-confirmed IJG 6a two-pass Floyd-Steinberg color mapper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003322f",
+    "name": "d3dx_jpeg_init_error_limit",
+    "signature": "void d3dx_jpeg_init_error_limit(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer error-limiter table initializer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100332bf",
     "name": "d3dx_jpeg_finish_quantizer_pass_one",
     "signature": "void d3dx_jpeg_finish_quantizer_pass_one(j_decompress_ptr cinfo)",
@@ -11200,10 +11269,24 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100332e1",
+    "name": "d3dx_jpeg_start_pass_two_quantizer",
+    "signature": "void d3dx_jpeg_start_pass_two_quantizer(j_decompress_ptr cinfo, boolean is_pre_scan)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer pass initializer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100333e3",
     "name": "d3dx_jpeg_new_color_map_2_quant",
     "signature": "void d3dx_jpeg_new_color_map_2_quant(j_decompress_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a two-pass quantizer colormap reset"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100333f2",
+    "name": "d3dx_jpeg_init_two_pass_quantizer",
+    "signature": "void d3dx_jpeg_init_two_pass_quantizer(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer initializer"
   },
   {
     "program": "grim.dll",

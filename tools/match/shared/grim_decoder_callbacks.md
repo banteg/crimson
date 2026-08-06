@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred eighteen exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred twenty-nine exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -161,11 +161,24 @@ not that exact backend. Four faithful neighboring bodies remain explicitly
 semantic-complete because that available compiler differs in one-byte clear
 selection, independent-store scheduling, or inner-loop register allocation.
 
+Eleven two-pass quantizer routines recover the histogram prescan, box
+tightening and median cut, representative-color and palette selection,
+inverse-colormap candidate and nearest-color searches, subbox filling,
+undithered mapping, error-limit construction, and module initialization. The
+official IJG 6a `jquant2.c` source reproduces all 1,220 instructions across
+those exact bodies, with every object-local reference bound through the
+uniquely matching `jquant2.obj` member. Its no-op second-pass finalizer folds
+to the already-counted shared return leaf rather than becoming a duplicate
+scratch. The
+full Floyd-Steinberg mapper and pass initializer remain semantic-complete at
+99.03% and 97.83% respectively; their exact instruction counts and references
+leave only build-9178 byte-clear selection and scheduling as compiler debt.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the one hundred eighteen functions cover 8,378 bytes and 3,138 instructions in the
+Altogether the one hundred twenty-nine functions cover 11,564 bytes and 4,358 instructions in the
 explicit `all` scope, with every external relocation resolved.
