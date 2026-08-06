@@ -12011,6 +12011,94 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100514d0",
+    "name": "zlib_cplens",
+    "aliases": [
+      "DAT_100514D0"
+    ],
+    "signature": "const uInt zlib_cplens[31]",
+    "comment": "Plain-C zlib 1.1.3 literal code copy-length bases",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1005154c",
+    "name": "zlib_cplext",
+    "aliases": [
+      "DAT_1005154C"
+    ],
+    "signature": "const uInt zlib_cplext[31]",
+    "comment": "Plain-C zlib 1.1.3 literal code extra-bit counts",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100515c8",
+    "name": "zlib_cpdist",
+    "aliases": [
+      "DAT_100515C8"
+    ],
+    "signature": "const uInt zlib_cpdist[30]",
+    "comment": "Plain-C zlib 1.1.3 distance code bases",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10051640",
+    "name": "zlib_cpdext",
+    "aliases": [
+      "DAT_10051640"
+    ],
+    "signature": "const uInt zlib_cpdext[30]",
+    "comment": "Plain-C zlib 1.1.3 distance code extra-bit counts",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10058410",
+    "name": "zlib_fixed_literal_bits",
+    "aliases": [
+      "DAT_10058410"
+    ],
+    "signature": "uInt zlib_fixed_literal_bits",
+    "comment": "Plain-C zlib 1.1.3 fixed literal-tree bit depth",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10058414",
+    "name": "zlib_fixed_distance_bits",
+    "aliases": [
+      "DAT_10058414"
+    ],
+    "signature": "uInt zlib_fixed_distance_bits",
+    "comment": "Plain-C zlib 1.1.3 fixed distance-tree bit depth",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10058418",
+    "name": "zlib_fixed_literal_tree",
+    "aliases": [
+      "DAT_10058418"
+    ],
+    "signature": "inflate_huft zlib_fixed_literal_tree[512]",
+    "comment": "Plain-C zlib 1.1.3 prebuilt fixed literal tree",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10059418",
+    "name": "zlib_fixed_distance_tree",
+    "aliases": [
+      "DAT_10059418"
+    ],
+    "signature": "inflate_huft zlib_fixed_distance_tree[32]",
+    "comment": "Plain-C zlib 1.1.3 prebuilt fixed distance tree",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004b5b0",
     "name": "seh_prolog",
     "signature": "void seh_prolog(void)",

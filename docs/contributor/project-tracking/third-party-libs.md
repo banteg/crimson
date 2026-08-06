@@ -228,6 +228,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 - Matcher corpus: the pinned `infcodes.c` reproduces `inflate_codes_new`,
   `inflate_codes`, and `inflate_codes_free` at `0x1004a190` through
   `0x1004a980` byte-for-byte (1,996 bytes, 692 instructions, 18 references).
+- Matcher corpus: the pinned `inftrees.c` and generated `inffixed.h` reproduce
+  `huft_build` and all three `inflate_trees_*` entry points at `0x1004a9a0`
+  through `0x1004b0b0` byte-for-byte (1,827 bytes, 625 instructions, 18
+  references). The copy's four dynamic-code tables and four prebuilt fixed-tree
+  objects are named and reference-checked independently from D3DX's copy.
 
 ### libjpeg (IJG 6a)
 

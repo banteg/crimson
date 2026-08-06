@@ -206,6 +206,11 @@
           "sha256": "6f2bae64c1838cbec06bc481e6a7d0f36bf47ad7eb66c1777cd02754cde6dc4f"
         },
         {
+          "path": "zlib-1.1.3/inffixed.h",
+          "size": 8928,
+          "sha256": "2a28f6ec7a9042b31ee2f214aff62a8ae9ab079a584e278a8e7e0f156b329d9e"
+        },
+        {
           "path": "zlib-1.1.3/inflate.c",
           "size": 9656,
           "sha256": "fac42b9bfdcd2ff4751e642a518dff921ae5a79a22f7eeda73845c803a89a623"
@@ -219,6 +224,11 @@
           "path": "zlib-1.1.3/inftrees.h",
           "size": 2616,
           "sha256": "c5fd84fc82e7aef32d4a7867cca4355d8ef50609449ce7e6a13b8348d29c2971"
+        },
+        {
+          "path": "zlib-1.1.3/inftrees.c",
+          "size": 16074,
+          "sha256": "ceb90191ca5b2bcccdfe3cfc3af92d3c6ebf6d4a2130c7c76989c32b6870c98b"
         },
         {
           "path": "zlib-1.1.3/infutil.c",
@@ -922,6 +932,16 @@
       "source_artifact": "zlib-1.1.3",
       "member": "zlib-1.1.3/infcodes.c",
       "path": "third_party/sources/zlib-1.1.3/infcodes.c"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/inffixed.h",
+      "path": "third_party/headers/inffixed.h"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/inftrees.c",
+      "path": "third_party/sources/zlib-1.1.3/inftrees.c"
     }
   ],
   "cross_image_matches": [
