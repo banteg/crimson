@@ -203,6 +203,10 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 - Matcher corpus: the pinned upstream `uncompr.c` is synced byte-for-byte and
   provenance checked. Its normal scratch compile reproduces all 52 instructions
   and all five references at `0x10046400`.
+- Matcher corpus: the pinned `adler32.c`, `zutil.c`, and private `zutil.h`
+  sources reproduce the plain-C `adler32`, `zcalloc`, and `zcfree` bodies at
+  `0x10049190`, `0x10047a00`, and `0x10047a20`. Together they add 335 exact
+  bytes and keep both CRT import references audited.
 
 ### libjpeg (IJG 6a)
 
