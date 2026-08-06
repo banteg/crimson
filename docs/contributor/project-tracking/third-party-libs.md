@@ -238,6 +238,12 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   `compress_block`, and `bi_windup` byte-for-byte (3,411 bytes, 987
   instructions). All seven `compress_block` references resolve to the copy's
   six independently named deflate lookup tables.
+- Matcher corpus: VC6 `/O2 /Ob2 /GB /W3 /MD` additionally reproduces
+  `deflate_stored`, `fill_window`, `deflate_fast`, and `deflate_slow` at
+  `0x100464a0` through `0x10046e70` byte-for-byte (3,532 bytes, 1,250
+  instructions, 20 references). The analysis map restores the four function
+  boundaries absent from Ghidra's static export and distinguishes the JAZ
+  copy's `adler32` from the independent same-named executable function.
 
 ### libjpeg (IJG 6a)
 

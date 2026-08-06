@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred forty-four exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred forty-eight exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -239,6 +239,12 @@ slow-integer, 4-by-4, and 2-by-2 bodies remain semantic-complete compiler
 residuals after the stock source was tested across all five installed-era
 backends and both processor profiles without source shaping.
 
-Altogether the one hundred sixty-two exact functions cover 24,472 bytes and
-8,765 instructions in the explicit `all` scope, with every external
+The stock zlib 1.1.3 compressor then recovers `deflate_stored`, `fill_window`,
+`deflate_fast`, and `deflate_slow` at `0x100464a0..0x100473e6`. Its `/Ob2`
+profile reproduces all 3,532 bytes and 1,250 instructions, including the
+inlined input reader, and all 20 calls and lookup-table relocations resolve to
+the plain-C zlib copy.
+
+Altogether the one hundred sixty-six exact functions cover 28,004 bytes and
+10,015 instructions in the explicit `all` scope, with every external
 relocation resolved.

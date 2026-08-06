@@ -17,12 +17,15 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
 | crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
-| grim.dll | current | 137 | 131 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
+| grim.dll | stale | 137 | 131 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=70, game_data=0, import=25, toolchain=2 | 0 | 1548 | 1548 | 1548 | 1548 | 1548 |
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 307 | 257 | 283 | 283 | 283 |
+
+Artifact freshness issues:
+- `grim.dll`: **stale** — 1 recorded file inputs changed or missing
 
 ## Function dispositions
 
