@@ -864,3 +864,148 @@ int grim_inflate_blocks(
             GRIM_INFLATE_LEAVE
         }
 }
+
+#define GRIM_INFLATE_GRAB_BITS(count) \
+    { \
+        while (bit_count < (count)) { \
+            bit_buffer |= ((unsigned long)GRIM_INFLATE_NEXT_BYTE) << bit_count; \
+            bit_count += 8; \
+        } \
+    }
+#define GRIM_INFLATE_UNGRAB \
+    { \
+        copy_count = stream->available_input - available_input; \
+        copy_count = (bit_count >> 3) < copy_count \
+            ? bit_count >> 3 \
+            : copy_count; \
+        available_input += copy_count; \
+        input -= copy_count; \
+        bit_count -= copy_count << 3; \
+    }
+
+int grim_inflate_fast(
+    unsigned int literal_bits,
+    unsigned int distance_bits,
+    grim_inflate_huft_source_t *literal_tree,
+    grim_inflate_huft_source_t *distance_tree,
+    grim_inflate_blocks_state_source_t *state,
+    grim_zlib_stream_source_t *stream)
+{
+    grim_inflate_huft_source_t *tree_entry;
+    unsigned int operation;
+    unsigned long bit_buffer;
+    unsigned int bit_count;
+    unsigned char *input;
+    unsigned int available_input;
+    unsigned char *output;
+    unsigned int available_output;
+    unsigned int literal_mask;
+    unsigned int distance_mask;
+    unsigned int copy_count;
+    unsigned int distance;
+    unsigned char *copy;
+    int result;
+
+    GRIM_INFLATE_LOAD
+
+    literal_mask = grim_inflate_mask[literal_bits];
+    distance_mask = grim_inflate_mask[distance_bits];
+
+    do {
+        GRIM_INFLATE_GRAB_BITS(20)
+        operation = (tree_entry = literal_tree +
+            ((unsigned int)bit_buffer & literal_mask))->word.what.operation;
+        if (operation == 0) {
+            GRIM_INFLATE_DUMP_BITS(tree_entry->word.what.bits)
+            *output++ = (unsigned char)tree_entry->base;
+            available_output--;
+            continue;
+        }
+        do {
+            GRIM_INFLATE_DUMP_BITS(tree_entry->word.what.bits)
+            if (operation & 16) {
+                operation &= 15;
+                copy_count = tree_entry->base +
+                    ((unsigned int)bit_buffer & grim_inflate_mask[operation]);
+                GRIM_INFLATE_DUMP_BITS(operation)
+
+                GRIM_INFLATE_GRAB_BITS(15)
+                operation = (tree_entry = distance_tree +
+                    ((unsigned int)bit_buffer & distance_mask))
+                                ->word.what.operation;
+                do {
+                    GRIM_INFLATE_DUMP_BITS(tree_entry->word.what.bits)
+                    if (operation & 16) {
+                        operation &= 15;
+                        GRIM_INFLATE_GRAB_BITS(operation)
+                        distance = tree_entry->base +
+                            ((unsigned int)bit_buffer &
+                             grim_inflate_mask[operation]);
+                        GRIM_INFLATE_DUMP_BITS(operation)
+
+                        available_output -= copy_count;
+                        if ((unsigned int)(output - state->window) >= distance) {
+                            copy = output - distance;
+                            *output++ = *copy++;
+                            copy_count--;
+                            *output++ = *copy++;
+                            copy_count--;
+                        } else {
+                            operation = distance -
+                                (unsigned int)(output - state->window);
+                            copy = state->window_end - operation;
+                            if (copy_count > operation) {
+                                copy_count -= operation;
+                                do {
+                                    *output++ = *copy++;
+                                } while (--operation);
+                                copy = state->window;
+                            }
+                        }
+                        do {
+                            *output++ = *copy++;
+                        } while (--copy_count);
+                        break;
+                    } else if ((operation & 64) == 0) {
+                        tree_entry += tree_entry->base;
+                        operation = (tree_entry +=
+                            ((unsigned int)bit_buffer &
+                             grim_inflate_mask[operation]))
+                                        ->word.what.operation;
+                    } else {
+                        stream->message = "invalid distance code";
+                        GRIM_INFLATE_UNGRAB
+                        GRIM_INFLATE_UPDATE
+                        return -3;
+                    }
+                } while (1);
+                break;
+            }
+            if ((operation & 64) == 0) {
+                tree_entry += tree_entry->base;
+                operation = (tree_entry +=
+                    ((unsigned int)bit_buffer &
+                     grim_inflate_mask[operation]))->word.what.operation;
+                if (operation == 0) {
+                    GRIM_INFLATE_DUMP_BITS(tree_entry->word.what.bits)
+                    *output++ = (unsigned char)tree_entry->base;
+                    available_output--;
+                    break;
+                }
+            } else if (operation & 32) {
+                GRIM_INFLATE_UNGRAB
+                GRIM_INFLATE_UPDATE
+                return 1;
+            } else {
+                stream->message = "invalid literal/length code";
+                GRIM_INFLATE_UNGRAB
+                GRIM_INFLATE_UPDATE
+                return -3;
+            }
+        } while (1);
+    } while (available_output >= 258 && available_input >= 10);
+
+    GRIM_INFLATE_UNGRAB
+    GRIM_INFLATE_UPDATE
+    return 0;
+}

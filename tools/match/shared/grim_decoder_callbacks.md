@@ -202,5 +202,10 @@ construction and code dispatch. Together their 3,247 bytes and 1,086
 instructions match exactly, including the code-state jump table, both static
 lookup tables, `/Oi` stored-block copying, and all 32 references.
 
-Altogether the one hundred forty-one functions cover 17,055 bytes and 6,321 instructions in the
+The 693-byte `inffast.obj` decoder completes the lower inflate pipeline, and
+five `inflate.obj` entry points recover stream reset, teardown, initialization,
+and the wrapped inflate state machine. Their 1,885 bytes and 677 instructions
+match exactly with all 25 calls, data references, and error strings resolved.
+
+Altogether the one hundred forty-seven functions cover 18,940 bytes and 6,998 instructions in the
 explicit `all` scope, with every external relocation resolved.

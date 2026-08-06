@@ -11479,6 +11479,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10038bbd",
+    "name": "d3dx_zlib_inflate_fast",
+    "signature": "int d3dx_zlib_inflate_fast(uInt bl, uInt bd, void *tl, void *td, void *s, z_streamp z)",
+    "comment": "Archive-confirmed zlib 1.1.3 fast literal and distance decoder"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003a990",
     "name": "grim_jpeg_memory_src",
     "signature": "void grim_jpeg_memory_src(void *context, unsigned char *data, unsigned int size)",
