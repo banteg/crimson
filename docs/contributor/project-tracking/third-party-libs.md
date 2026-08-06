@@ -200,6 +200,9 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   (156 bytes, five relocations). The deterministic full archive matches 24
   Grim functions totaling 13,441 bytes and has SHA-256
   `6b44ac2a8a67123b929cb9286c343730af5f6777609a54e12e402e5ac7e503b0`.
+- Matcher corpus: the pinned upstream `uncompr.c` is synced byte-for-byte and
+  provenance checked. Its normal scratch compile reproduces all 52 instructions
+  and all five references at `0x10046400`.
 
 ### libjpeg (IJG 6a)
 

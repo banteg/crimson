@@ -11758,6 +11758,39 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100473f0",
+    "name": "zlib_inflate_end",
+    "aliases": [
+      "sub_100473F0"
+    ],
+    "signature": "int zlib_inflate_end(z_streamp stream)",
+    "comment": "Plain-C zlib 1.1.3 inflate teardown called by zlib_uncompress",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100475b0",
+    "name": "zlib_inflate_init",
+    "aliases": [
+      "sub_100475B0"
+    ],
+    "signature": "int zlib_inflate_init(z_streamp stream, const char *version, int stream_size)",
+    "comment": "Plain-C zlib 1.1.3 inflate initializer called by zlib_uncompress",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100475d0",
+    "name": "zlib_inflate",
+    "aliases": [
+      "sub_100475D0"
+    ],
+    "signature": "int zlib_inflate(z_streamp stream, int flush)",
+    "comment": "Plain-C zlib 1.1.3 inflate state machine called by zlib_uncompress",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10047a00",
     "name": "FUN_10047a00",
     "signature": "int FUN_10047a00(uint arg1, uint arg2)",

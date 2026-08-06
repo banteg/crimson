@@ -173,7 +173,14 @@
       "id": "zlib-1.1.3",
       "url": "https://zlib.net/fossils/zlib-1.1.3.tar.gz",
       "size": 168463,
-      "sha256": "cae5847bc0e1cf113d3f70d037400da3e47c2e2b7b1c96b0b08447a5fbb906f4"
+      "sha256": "cae5847bc0e1cf113d3f70d037400da3e47c2e2b7b1c96b0b08447a5fbb906f4",
+      "members": [
+        {
+          "path": "zlib-1.1.3/uncompr.c",
+          "size": 1981,
+          "sha256": "4f771ea1070726e0e2c3b16dfd95783049c5bca4b0218d23db8ddfdd87ba1e97"
+        }
+      ]
     },
     {
       "id": "libogg-1.0",
@@ -780,6 +787,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jidctflt.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jidctflt.c"
+    },
+    {
+      "source_artifact": "zlib-1.1.3",
+      "member": "zlib-1.1.3/uncompr.c",
+      "path": "third_party/sources/zlib-1.1.3/uncompr.c"
     }
   ],
   "cross_image_matches": [
