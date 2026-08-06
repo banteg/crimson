@@ -1,5 +1,5 @@
 {
-  "audit_digest": "1c435745b34f7722b2e8ea6251460945f71476abeabea33218f32a6a20a534f3",
+  "audit_digest": "892971784e91aff9c7fa7c6bd82615402cad808c9e42878b50df64ca3ee09ccc",
   "entries": [
     {
       "address": 268747320,
@@ -2399,6 +2399,27 @@
       "size": 16,
       "size_source": "analysis/ghidra/maps/data_map.json: void *[4]; tools/native/abi/grim.dll/abi_assertions.cpp: codec_vtable_is_four_slots",
       "type": "void *[4]"
+    },
+    {
+      "address": 268756252,
+      "aliases": [
+        "png_sig"
+      ],
+      "alignment": 1,
+      "alignment_source": "third_party/headers/png.h: png_byte FARDATA png_sig[8]",
+      "comment": "Eight-byte PNG file signature used by D3DX libpng 1.0.5 signature comparisons.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "89504e470d0a1a0a",
+      "initializer_source": "libpng 1.0.5 PNG signature; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at VA 0x1004e51c",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_png_signature",
+      "section": ".rdata",
+      "section_offset": 9056,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "third_party/headers/png.h: png_sig[8]; pinned DirectX 8.1 d3dx8.lib obj\\i386\\png.obj:?png_sig_cmp; tools/match/scratches/grim_png_sig_cmp",
+      "type": "uint8_t[8]"
     },
     {
       "address": 268756316,
@@ -7075,9 +7096,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "893d5f2ceec9867d68b368ebc6d71facdd31efc283acddd6ab3819852b8d198f",
+    "data_map_sha256": "f47b652ce7c2d4c3b2391c54c533554f176408f63c1c3a59b9ee220f559781f4",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "0e491dee317bc9c160fb214612c60ea3f23c8802d449f4c55a3b91051d053859",
+    "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -7086,17 +7107,17 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 6,
-    "alias_rows": 6,
+    "alias_names": 7,
+    "alias_rows": 7,
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 284,
-    "explicit_alignment_entries": 282,
-    "explicit_initializer_entries": 282,
-    "explicit_size_entries": 282,
-    "fixed_array_types": 74,
-    "fully_specified_entries": 282,
+    "entry_count": 285,
+    "explicit_alignment_entries": 283,
+    "explicit_initializer_entries": 283,
+    "explicit_size_entries": 283,
+    "fixed_array_types": 75,
+    "fully_specified_entries": 283,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 0,
@@ -7105,11 +7126,11 @@
     "referenced_entries": 0,
     "section_counts": {
       ".data": 209,
-      ".rdata": 75
+      ".rdata": 76
     },
-    "source_entry_count": 287,
-    "typed_entries": 234,
-    "unique_addresses": 284,
+    "source_entry_count": 288,
+    "typed_entries": 235,
+    "unique_addresses": 285,
     "untyped_entries": 50
   }
 }

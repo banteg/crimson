@@ -724,6 +724,16 @@
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cdf0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
     },
     {
+      "address": "0x1004e51c",
+      "name": "grim_png_signature",
+      "size": 8,
+      "size_source": "third_party/headers/png.h: png_sig[8]; pinned DirectX 8.1 d3dx8.lib obj\\i386\\png.obj:?png_sig_cmp; tools/match/scratches/grim_png_sig_cmp",
+      "alignment": 1,
+      "alignment_source": "third_party/headers/png.h: png_byte FARDATA png_sig[8]",
+      "initializer_hex": "89504e470d0a1a0a",
+      "initializer_source": "libpng 1.0.5 PNG signature; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at VA 0x1004e51c"
+    },
+    {
       "address": "0x1004fe74",
       "name": "c_dfDIJoystick2",
       "size": 24,

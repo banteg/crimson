@@ -2238,14 +2238,14 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 287
+    assert payload["summary"]["source_entry_count"] == 288
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 284
-    assert payload["summary"]["typed_entries"] == 234
-    assert payload["summary"]["explicit_size_entries"] == 282
-    assert payload["summary"]["explicit_alignment_entries"] == 282
-    assert payload["summary"]["explicit_initializer_entries"] == 282
-    assert payload["summary"]["fully_specified_entries"] == 282
+    assert payload["summary"]["entry_count"] == 285
+    assert payload["summary"]["typed_entries"] == 235
+    assert payload["summary"]["explicit_size_entries"] == 283
+    assert payload["summary"]["explicit_alignment_entries"] == 283
+    assert payload["summary"]["explicit_initializer_entries"] == 283
+    assert payload["summary"]["fully_specified_entries"] == 283
     assert payload["summary"]["definition_group_entries"] == 214
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2306,6 +2306,10 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_format_info_default"]["size"] == 0x24
     assert defined["grim_format_info_entries"]["size"] == 43 * 0x24
     assert defined["grim_format_info_end"]["initializer_hex"] == "bcc90410"
+    assert defined["grim_png_signature"]["size"] == 8
+    assert defined["grim_png_signature"]["initializer_hex"] == (
+        "89504e470d0a1a0a"
+    )
     assert defined["c_dfDIJoystick2"]["initializer_hex"] == (
         "18000000100000000100000010010000a4000000808e0310"
     )

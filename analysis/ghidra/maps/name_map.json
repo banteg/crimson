@@ -10083,6 +10083,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001e016",
+    "name": "jpeg_reset_error_mgr",
+    "signature": "void jpeg_reset_error_mgr(j_common_ptr cinfo)",
+    "comment": "D3DX IJG error-manager reset; clears warning count and message code"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e0fa",
+    "name": "png_set_error_fn",
+    "signature": "void png_set_error_fn(png_structp png_ptr, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warning_fn)",
+    "comment": "Configures the libpng error context and error/warning callbacks"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001e114",
     "name": "png_error",
     "signature": "void png_error(png_structp png_ptr, char * msg)",
@@ -10177,6 +10191,7 @@
   {
     "program": "grim.dll",
     "address": "0x1002047c",
+    "end": "0x100204a4",
     "name": "png_read_data",
     "signature": "void png_read_data(png_structp png_ptr, png_bytep data, png_uint_32 length)",
     "comment": "png read callback wrapper (errors if NULL)"
@@ -10184,8 +10199,16 @@
   {
     "program": "grim.dll",
     "address": "0x100204a4",
-    "name": "FUN_100204a4",
-    "signature": "void FUN_100204a4(png_structp png_ptr, undefined4 param_2, undefined4 param_3)"
+    "name": "png_set_read_fn",
+    "signature": "void png_set_read_fn(png_structp png_ptr, png_voidp io_ptr, png_rw_ptr read_data_fn)",
+    "comment": "Configures libpng read I/O, clears conflicting write callbacks, and resets flush distance"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100204e3",
+    "name": "png_sig_cmp",
+    "signature": "int png_sig_cmp(png_bytep sig, png_size_t start, png_size_t num_to_check)",
+    "comment": "Bounds and compares a caller-provided byte range against the eight-byte PNG signature"
   },
   {
     "program": "grim.dll",

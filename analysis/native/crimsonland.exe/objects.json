@@ -54,7 +54,7 @@
     "source_sha256": "21959b8fc6e214241b3d4887fbc9880aa39b9c0f52b72f6b0ba32f4b38903568",
     "status": "passed"
   },
-  "audit_digest": "8bba0c17e8fda6b3e6f5746ddc0e9ca169c437b188c2f952626cb6ab4f1e5e7a",
+  "audit_digest": "da04efe460a051480ca2430ddba094e4ce3c65b3074534acd7095345f0532b61",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -88036,7 +88036,7 @@
       {
         "path": "analysis/ghidra/maps/name_map.json",
         "repository_relative": true,
-        "sha256": "edb3ac63318a2cfdce1735cd238941d774df9e36eff0d6d9da40c5a8cc546051"
+        "sha256": "63720b69316d6da8aa55d11323f8eb3ea12bca5692cde8679cac6799f8e06a4a"
       },
       {
         "path": "analysis/matching_scope.json",

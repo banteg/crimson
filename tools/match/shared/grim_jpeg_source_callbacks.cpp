@@ -10,12 +10,29 @@ struct grim_jpeg_source_manager_t {
     unsigned int input_size;
 };
 
+struct grim_jpeg_error_manager_t {
+    unsigned char fields_00[0x14];
+    int message_code;
+    unsigned char fields_18[0x54];
+    int warning_count;
+};
+
+struct grim_jpeg_common_t {
+    grim_jpeg_error_manager_t *error;
+};
+
 struct grim_jpeg_decompress_t {
     unsigned char fields[0x14];
     grim_jpeg_source_manager_t *source;
 };
 
 extern "C" void grim_jpeg_destroy(void *decoder);
+
+extern "C" void grim_jpeg_reset_error_manager(grim_jpeg_common_t *decoder)
+{
+    decoder->error->warning_count = 0;
+    decoder->error->message_code = 0;
+}
 
 extern "C" void grim_jpeg_source_noop(grim_jpeg_decompress_t *)
 {

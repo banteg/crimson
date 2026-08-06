@@ -12938,6 +12938,16 @@
       "name": "statistics_back_button",
       "program": "crimsonland.exe",
       "type": "ui_button_t"
+    },
+    {
+      "address": "0x1004e51c",
+      "aliases": [
+        "png_sig"
+      ],
+      "comment": "Eight-byte PNG file signature used by D3DX libpng 1.0.5 signature comparisons.",
+      "name": "grim_png_signature",
+      "program": "grim.dll",
+      "type": "uint8_t[8]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."
