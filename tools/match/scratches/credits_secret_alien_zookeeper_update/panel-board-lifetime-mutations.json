@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-board-lifetime",
+      "find": "    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);\n\n    credits_secret_vec2_t board_position = panel_position;",
+      "replacements": [
+        {
+          "name": "board-declared-first",
+          "text": "    credits_secret_vec2_t board_position;\n    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);\n\n    board_position = panel_position;"
+        },
+        {
+          "name": "board-declared-first-components",
+          "text": "    credits_secret_vec2_t board_position;\n    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);\n\n    board_position.x = panel_position.x;\n    board_position.y = panel_position.y;"
+        },
+        {
+          "name": "board-and-panel-declared-first",
+          "text": "    credits_secret_vec2_t board_position;\n    credits_secret_vec2_t panel_position;\n    panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);\n\n    board_position = panel_position;"
+        },
+        {
+          "name": "direct-board-copy-initialization",
+          "text": "    credits_secret_vec2_t board_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "direct-board-initialization",
+          "text": "    credits_secret_vec2_t board_position(\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f));"
+        }
+      ]
+    }
+  ]
+}

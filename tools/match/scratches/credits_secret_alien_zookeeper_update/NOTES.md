@@ -120,3 +120,34 @@ for best; 6.0, the 6.5 Processor Pack, and 7.0 regress. An additional
 `/Ox` keeps the fuzzy ratio but introduces six unresolved references, while
 `/Oi-`, `/Oy-`, `/G6`, `/Op`, `/Ob0`, `/Os`, and `/O1` regress. No compiler
 or flag override is justified.
+
+## Panel/board stack-coloring boundary (2026-08-06)
+
+A focused comparison of the persisted native executable disassembly and the
+current candidate object isolates the first broad divergence to stack-slot
+coloring for the short-lived panel expression and the long-lived board
+position. Both objects retain the exact `0x54` frame and 638 instructions;
+the same x87 values are stored and copied, but VC6 assigns the two vector
+pairs in the opposite slots from native.
+
+`panel-board-lifetime-mutations.json` tests all five ordinary declaration and
+construction boundaries suggested by that evidence: declaring the board
+before the panel, splitting both declarations, component copying, and direct
+board construction with or without copy-initialization. The first two are
+byte-identical to the 83.86%, 638/638, `154/0/0` baseline. Component and
+direct construction remove four native instructions, move the first mismatch
+earlier, and introduce reference debt, so none is retained. The complete spec
+SHA-256 is
+`4924d8330935140e46d8ee7b3890bde13f6054bc6b0d685e7a54a9457cb5dbbb`.
+
+`panel-operator-shape-mutations.json` then crosses four normal
+`operator+` return shapes with four panel-expression forms, including named
+intermediates, a named addend, right association, and compound addition. All
+24/24 single and paired variants were evaluated. The neutral forms preserve
+the same stack coloring; the other forms regress instruction, prefix, or
+reference fidelity. The complete spec SHA-256 is
+`1ef4bd2817a24a3305bdb8e0942c15ea25f3bc39400277919a26c371278eb796`.
+
+These negative results close the natural source-lifetime explanation for the
+first mismatch without volatile state, padding, or forced dependencies. The
+canonical source and metrics remain unchanged.

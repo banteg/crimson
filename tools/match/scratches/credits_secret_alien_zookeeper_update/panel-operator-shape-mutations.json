@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-add-return-shape",
+      "find": "    credits_secret_vec2_t operator+(\n        const credits_secret_vec2_t &other) const\n    {\n        return credits_secret_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "named-direct-result",
+          "text": "    credits_secret_vec2_t operator+(\n        const credits_secret_vec2_t &other) const\n    {\n        credits_secret_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        },
+        {
+          "name": "assigned-result-x-first",
+          "text": "    credits_secret_vec2_t operator+(\n        const credits_secret_vec2_t &other) const\n    {\n        credits_secret_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }"
+        },
+        {
+          "name": "assigned-result-y-first",
+          "text": "    credits_secret_vec2_t operator+(\n        const credits_secret_vec2_t &other) const\n    {\n        credits_secret_vec2_t result;\n        result.y = y + other.y;\n        result.x = x + other.x;\n        return result;\n    }"
+        },
+        {
+          "name": "named-components",
+          "text": "    credits_secret_vec2_t operator+(\n        const credits_secret_vec2_t &other) const\n    {\n        float result_x = x + other.x;\n        float result_y = y + other.y;\n        return credits_secret_vec2_t(result_x, result_y);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "panel-addition-shape",
+      "find": "    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);",
+      "replacements": [
+        {
+          "name": "named-first-sum",
+          "text": "    credits_secret_vec2_t panel_base =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_secret_vec2_t panel_position =\n        panel_base + credits_secret_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "named-addend",
+          "text": "    credits_secret_vec2_t panel_offset(300.0f, 40.0f);\n    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + panel_offset;"
+        },
+        {
+          "name": "right-associated",
+          "text": "    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + (*(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n            + credits_secret_vec2_t(300.0f, 40.0f));"
+        },
+        {
+          "name": "compound-second-add",
+          "text": "    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_secret_vec2_t(300.0f, 40.0f);"
+        }
+      ]
+    }
+  ]
+}
