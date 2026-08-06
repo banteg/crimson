@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ec07681f678778e43b83500205f837da1cc45f5a7b1cb9c3b99260174d577758",
+  "audit_digest": "1c435745b34f7722b2e8ea6251460945f71476abeabea33218f32a6a20a534f3",
   "entries": [
     {
       "address": 268747320,
@@ -4897,6 +4897,44 @@
       "type": "MyApp"
     },
     {
+      "address": 268811264,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Window-procedure byte cleared with the DC-mode flag on WM_CLOSE and WM_DESTROY; no other native references are present.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_window_proc_dc_flag",
+      "section": ".data",
+      "section_offset": 35840,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "unsigned char"
+    },
+    {
+      "address": 268811265,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Window-procedure byte set after the DC-mode WM_PAINT BeginPaint/EndPaint pair; no other native references are present.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_window_proc_paint_flag",
+      "section": ".data",
+      "section_offset": 35841,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "unsigned char"
+    },
+    {
       "address": 268811268,
       "aliases": [],
       "alignment": 4,
@@ -7037,7 +7075,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "1b3d3eb7126a9ac5b84872986f66994e2dc5b9fba0a0b724ef7fb281f8f565aa",
+    "data_map_sha256": "893d5f2ceec9867d68b368ebc6d71facdd31efc283acddd6ab3819852b8d198f",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "0e491dee317bc9c160fb214612c60ea3f23c8802d449f4c55a3b91051d053859",
     "reference_image": {
@@ -7053,7 +7091,7 @@
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 282,
+    "entry_count": 284,
     "explicit_alignment_entries": 282,
     "explicit_initializer_entries": 282,
     "explicit_size_entries": 282,
@@ -7066,12 +7104,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 207,
+      ".data": 209,
       ".rdata": 75
     },
-    "source_entry_count": 285,
-    "typed_entries": 232,
-    "unique_addresses": 282,
+    "source_entry_count": 287,
+    "typed_entries": 234,
+    "unique_addresses": 284,
     "untyped_entries": 50
   }
 }

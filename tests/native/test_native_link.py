@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 285
+    assert payload["summary"]["source_entry_count"] == 287
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 282
-    assert payload["summary"]["typed_entries"] == 232
+    assert payload["summary"]["entry_count"] == 284
+    assert payload["summary"]["typed_entries"] == 234
     assert payload["summary"]["explicit_size_entries"] == 282
     assert payload["summary"]["explicit_alignment_entries"] == 282
     assert payload["summary"]["explicit_initializer_entries"] == 282
@@ -2251,6 +2251,11 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
     )
+    observed = {entry["name"]: entry for entry in payload["entries"]}
+    assert observed["grim_window_proc_dc_flag"]["type"] == "unsigned char"
+    assert observed["grim_window_proc_dc_flag"]["definition_state"] == "unknown"
+    assert observed["grim_window_proc_paint_flag"]["type"] == "unsigned char"
+    assert observed["grim_window_proc_paint_flag"]["definition_state"] == "unknown"
     defined = {
         entry["name"]: entry
         for entry in payload["entries"]
