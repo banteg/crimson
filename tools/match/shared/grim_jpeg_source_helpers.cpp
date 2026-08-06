@@ -11,12 +11,15 @@ struct grim_jpeg_decompress_source_t;
 
 typedef void *(__cdecl *grim_jpeg_alloc_small_source_fn_t)(
     grim_jpeg_common_source_t *, int, unsigned int);
+typedef void *(__cdecl *grim_jpeg_alloc_large_source_fn_t)(
+    grim_jpeg_common_source_t *, int, unsigned int);
 typedef void (__cdecl *grim_jpeg_free_pool_source_fn_t)(
     grim_jpeg_common_source_t *, int);
 
 struct grim_jpeg_memory_source_t {
     grim_jpeg_alloc_small_source_fn_t alloc_small;
-    void *fields_04[8];
+    grim_jpeg_alloc_large_source_fn_t alloc_large;
+    void *fields_08[7];
     grim_jpeg_free_pool_source_fn_t free_pool;
     void *self_destruct;
     long max_memory_to_use;
@@ -107,6 +110,26 @@ struct grim_jpeg_color_quantizer_source_t {
     unsigned char fields_18[0x04];
     unsigned char needs_zeroed;
     unsigned char fields_1d[3];
+    unsigned char fields_20[0x24];
+    short *fs_errors[4];
+};
+
+struct grim_jpeg_component_source_t {
+    unsigned char fields_00[0x0c];
+    int vertical_sampling_factor;
+    unsigned char fields_10[0x38];
+    int last_row_height;
+};
+
+struct grim_jpeg_coefficient_controller_source_t {
+    void *start_input_pass;
+    void *consume_data;
+    void *start_output_pass;
+    void *decompress_data;
+    void *coefficient_arrays;
+    unsigned int MCU_counter;
+    int MCU_vertical_offset;
+    int MCU_rows_per_iMCU_row;
 };
 
 typedef void (__cdecl *grim_jpeg_merged_upmethod_source_fn_t)(
@@ -155,7 +178,8 @@ struct grim_jpeg_decompress_source_t {
     unsigned char fields_4b[0x11];
     unsigned int output_width;
     unsigned int output_height;
-    unsigned char fields_64[0x0c];
+    int output_color_components;
+    unsigned char fields_68[0x08];
     int actual_number_of_colors;
     unsigned char **colormap;
     unsigned char fields_78[0x04];
@@ -167,11 +191,16 @@ struct grim_jpeg_decompress_source_t {
     void *component_info;
     unsigned char fields_c8[0x48];
     int max_v_samp_factor;
-    unsigned char fields_114[0x64];
+    unsigned char fields_114[0x04];
+    unsigned int total_iMCU_rows;
+    unsigned char fields_11c[0x04];
+    int components_in_scan;
+    grim_jpeg_component_source_t *current_components[4];
+    unsigned char fields_134[0x44];
     int unread_marker;
     grim_jpeg_decomp_master_source_t *master;
     void *main_controller;
-    void *coefficient_controller;
+    grim_jpeg_coefficient_controller_source_t *coefficient_controller;
     void *postprocessor;
     grim_jpeg_input_controller_source_t *input_controller;
     grim_jpeg_marker_reader_source_t *marker_reader;
@@ -473,6 +502,27 @@ extern "C" void grim_jpeg_start_pass_upsample(
     upsampler->rows_to_go = decoder->output_height;
 }
 
+extern "C" void __fastcall grim_jpeg_start_iMCU_row_source(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_coefficient_controller_source_t *coefficient_controller =
+        decoder->coefficient_controller;
+
+    if (decoder->components_in_scan > 1) {
+        coefficient_controller->MCU_rows_per_iMCU_row = 1;
+    } else {
+        if (decoder->input_iMCU_row < decoder->total_iMCU_rows - 1)
+            coefficient_controller->MCU_rows_per_iMCU_row =
+                decoder->current_components[0]->vertical_sampling_factor;
+        else
+            coefficient_controller->MCU_rows_per_iMCU_row =
+                decoder->current_components[0]->last_row_height;
+    }
+
+    coefficient_controller->MCU_counter = 0;
+    coefficient_controller->MCU_vertical_offset = 0;
+}
+
 extern "C" void grim_jpeg_fullsize_upsample(
     grim_jpeg_decompress_source_t *decoder,
     void *component,
@@ -489,6 +539,33 @@ extern "C" void grim_jpeg_noop_upsample(
     unsigned char ***output_data)
 {
     *output_data = 0;
+}
+
+extern "C" void grim_jpeg_h2v1_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    void *component,
+    unsigned char **input_data,
+    unsigned char ***output_data_pointer)
+{
+    unsigned char **output_data = *output_data_pointer;
+    unsigned char *input_pointer;
+    unsigned char *output_pointer;
+    unsigned char input_value;
+    unsigned char *output_end;
+    int input_row;
+
+    for (input_row = 0;
+         input_row < decoder->max_v_samp_factor;
+         input_row++) {
+        input_pointer = input_data[input_row];
+        output_pointer = output_data[input_row];
+        output_end = output_pointer + decoder->output_width;
+        while (output_pointer < output_end) {
+            input_value = *input_pointer++;
+            *output_pointer++ = input_value;
+            *output_pointer++ = input_value;
+        }
+    }
 }
 
 extern "C" void grim_jpeg_grayscale_convert(
@@ -648,6 +725,31 @@ static void grim_jpeg_select_colors_callsite(
     decoder->error->emit_message(
         reinterpret_cast<grim_jpeg_common_source_t *>(decoder), 1);
 }
+
+static void grim_jpeg_alloc_fs_workspace(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_color_quantizer_source_t *quantizer = decoder->color_quantizer;
+    unsigned int array_size;
+    int component_index;
+
+    array_size = (decoder->output_width + 2) * sizeof(short);
+    for (component_index = 0;
+         component_index < decoder->output_color_components;
+         component_index++) {
+        quantizer->fs_errors[component_index] = static_cast<short *>(
+            decoder->memory->alloc_large(
+                reinterpret_cast<grim_jpeg_common_source_t *>(decoder),
+                1,
+                array_size));
+    }
+}
+}
+
+extern "C" void grim_jpeg_alloc_fs_workspace_callsite(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_alloc_fs_workspace(decoder);
 }
 
 extern "C" void grim_jpeg_finish_quantizer_pass_one(

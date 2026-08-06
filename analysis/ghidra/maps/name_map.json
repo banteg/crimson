@@ -11039,10 +11039,9 @@
   {
     "program": "grim.dll",
     "address": "0x1003148d",
-    "name": "FUN_1003148d",
-    "signature": "int* FUN_1003148d(int* arg1, int arg2, int* arg3)",
-    "comment": "[binja] int32_t* sub_1003148d(int32_t* arg1, int32_t arg2, int32_t* arg3)",
-    "create": false
+    "name": "d3dx_jpeg_h2v1_upsample",
+    "signature": "void d3dx_jpeg_h2v1_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a horizontal two-to-one, vertical one-to-one box upsampler"
   },
   {
     "program": "grim.dll",
@@ -11101,6 +11100,13 @@
     "name": "d3dx_jpeg_new_color_map_2_quant",
     "signature": "void d3dx_jpeg_new_color_map_2_quant(j_decompress_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a two-pass quantizer colormap reset"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033d70",
+    "name": "d3dx_jpeg_alloc_fs_workspace",
+    "signature": "void d3dx_jpeg_alloc_fs_workspace(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a Floyd-Steinberg error workspace allocator"
   },
   {
     "program": "grim.dll",

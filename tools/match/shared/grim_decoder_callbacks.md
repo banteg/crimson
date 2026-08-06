@@ -121,11 +121,17 @@ archive-local fastcall tail jump. The quantizer object passes its decoder in
 official IJG routine as a translation-unit callsite so MSVC reproduces the
 same internal convention, while only the finalizer is claimed exact here.
 
+Three more IJG 6a helpers recover the coefficient controller's per-row state,
+the common horizontal two-to-one upsampler, and Floyd-Steinberg error-buffer
+allocation. The row initializer preserves the archive-local fastcall entry;
+the allocator is retained behind a translation-unit callsite so MSVC selects
+the same decoder-in-`ESI` internal convention as the pinned archive member.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the ninety-six functions cover 4,141 bytes and 1,557 instructions in the
+Altogether the ninety-nine functions cover 4,345 bytes and 1,640 instructions in the
 explicit `all` scope, with every external relocation resolved.
