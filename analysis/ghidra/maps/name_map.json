@@ -10137,20 +10137,23 @@
   {
     "program": "grim.dll",
     "address": "0x1001e407",
-    "name": "FUN_1001e407",
-    "signature": "void FUN_1001e407(png_structp png_ptr, int *param_2)"
+    "name": "png_read_update_info",
+    "signature": "void png_read_update_info(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Initializes row reading when needed and refreshes caller-visible info after transforms"
   },
   {
     "program": "grim.dll",
     "address": "0x1001e427",
-    "name": "FUN_1001e427",
-    "signature": "void FUN_1001e427(void *this, png_structp png_ptr, byte *param_2, byte *param_3)"
+    "name": "png_read_row",
+    "signature": "void png_read_row(png_structp png_ptr, png_bytep row, png_bytep display_row)",
+    "comment": "Archive-confirmed libpng 1.0.5 row decoder"
   },
   {
     "program": "grim.dll",
     "address": "0x1001e7ce",
-    "name": "FUN_1001e7ce",
-    "signature": "void FUN_1001e7ce(png_structp png_ptr, undefined4 *param_2)"
+    "name": "png_read_image",
+    "signature": "void png_read_image(png_structp png_ptr, png_bytepp image)",
+    "comment": "Reads every image row across the configured interlace passes"
   },
   {
     "program": "grim.dll",
@@ -10236,6 +10239,41 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001ec11",
+    "name": "png_set_filler",
+    "signature": "void png_set_filler(png_structp png_ptr, png_uint_32 filler, int filler_loc)",
+    "comment": "Configures filler value, placement, and transformed channel count"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ec5e",
+    "name": "png_do_swap",
+    "signature": "void png_do_swap(png_row_infop row_info, png_bytep row)",
+    "comment": "Swaps the byte order of each 16-bit sample in a decoded row"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ed4a",
+    "name": "png_set_gamma",
+    "signature": "void png_set_gamma(png_structp png_ptr, double screen_gamma, double file_gamma)",
+    "comment": "Stores file and display gamma and enables correction when their product differs from one"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ed89",
+    "name": "png_read_transform_info",
+    "signature": "void png_read_transform_info(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Archive-confirmed libpng 1.0.5 post-transform info updater"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001f0fb",
+    "name": "png_do_chop",
+    "signature": "void png_do_chop(png_row_infop row_info, png_bytep row)",
+    "comment": "Reduces 16-bit samples to eight bits and updates the row layout"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001fd2d",
     "name": "FUN_1001fd2d",
     "signature": "void FUN_1001fd2d(png_structp png_ptr)"
@@ -10304,8 +10342,9 @@
   {
     "program": "grim.dll",
     "address": "0x1002052b",
-    "name": "FUN_1002052b",
-    "signature": "undefined4 * FUN_1002052b(png_structp png_ptr, int param_2, int param_3)"
+    "name": "png_zalloc",
+    "signature": "voidpf png_zalloc(voidpf png_ptr, uInt items, uInt size)",
+    "comment": "Allocates and zeroes a libpng zlib buffer, splitting clears above 32 KiB"
   },
   {
     "program": "grim.dll",
@@ -10335,6 +10374,13 @@
     "signature": "void FUN_100205da(int arg1)",
     "comment": "[binja] void sub_100205da(int32_t arg1)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100205e8",
+    "name": "png_create_info_struct",
+    "signature": "png_infop png_create_info_struct(png_structp png_ptr)",
+    "comment": "Allocates and zero-initializes the D3DX libpng info structure"
   },
   {
     "program": "grim.dll",
@@ -10634,6 +10680,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100246f2",
+    "name": "png_create_struct",
+    "signature": "png_voidp png_create_struct(int type)",
+    "comment": "Archive-confirmed libpng 1.0.5 internal structure allocator"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10024734",
     "name": "png_free_ptr",
     "signature": "void png_free_ptr(void * ptr)",
@@ -10656,18 +10709,16 @@
   {
     "program": "grim.dll",
     "address": "0x10024790",
-    "name": "FUN_10024790",
-    "signature": "int FUN_10024790(int arg1, int arg2, int arg3)",
-    "comment": "[binja] int32_t sub_10024790(int32_t arg1, int32_t arg2, int32_t arg3)",
-    "create": false
+    "name": "png_memcpy_check",
+    "signature": "png_voidp png_memcpy_check(png_structp png_ptr, png_voidp dst, png_voidp src, png_uint_32 length)",
+    "comment": "Copies a checked libpng byte count using the provider's intrinsic expansion"
   },
   {
     "program": "grim.dll",
     "address": "0x100247b3",
-    "name": "FUN_100247b3",
-    "signature": "int FUN_100247b3(int arg1, char arg2, int arg3)",
-    "comment": "[binja] int32_t sub_100247b3(int32_t arg1, char arg2, int32_t arg3)",
-    "create": false
+    "name": "png_memset_check",
+    "signature": "png_voidp png_memset_check(png_structp png_ptr, png_voidp dst, int value, png_uint_32 length)",
+    "comment": "Fills a checked libpng byte count using the provider's intrinsic expansion"
   },
   {
     "program": "grim.dll",
@@ -10706,8 +10757,9 @@
   {
     "program": "grim.dll",
     "address": "0x10024f3b",
-    "name": "FUN_10024f3b",
-    "signature": "void FUN_10024f3b(png_structp png_ptr)"
+    "name": "png_read_start_row",
+    "signature": "void png_read_start_row(png_structp png_ptr)",
+    "comment": "Archive-confirmed libpng 1.0.5 row-buffer and interlace initializer"
   },
   {
     "program": "grim.dll",
