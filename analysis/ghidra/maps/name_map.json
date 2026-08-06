@@ -12156,6 +12156,127 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10042ea0",
+    "name": "grim_jpeg_init_two_pass_quantizer",
+    "aliases": [
+      "sub_10042EA0"
+    ],
+    "signature": "void grim_jpeg_init_two_pass_quantizer(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a two-pass color-quantizer initializer",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042fd0",
+    "name": "grim_jpeg_init_error_limit",
+    "aliases": [
+      "sub_10042FD0"
+    ],
+    "signature": "void grim_jpeg_init_error_limit(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a Floyd-Steinberg error-limiter initializer",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10043070",
+    "name": "grim_jpeg_start_pass_two_quantizer",
+    "aliases": [
+      "sub_10043070"
+    ],
+    "signature": "void grim_jpeg_start_pass_two_quantizer(j_decompress_ptr cinfo, boolean is_pre_scan)",
+    "comment": "JAZ IJG 6a two-pass quantizer pass initializer",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10043190",
+    "name": "grim_jpeg_prescan_quantize",
+    "aliases": [
+      "sub_10043190"
+    ],
+    "signature": "void grim_jpeg_prescan_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a two-pass quantizer histogram prescan",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10043210",
+    "name": "grim_jpeg_pass2_no_dither",
+    "aliases": [
+      "sub_10043210"
+    ],
+    "signature": "void grim_jpeg_pass2_no_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a undithered two-pass color mapping",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100432e0",
+    "name": "grim_jpeg_fill_inverse_cmap",
+    "aliases": [
+      "sub_100432E0"
+    ],
+    "signature": "void grim_jpeg_fill_inverse_cmap(j_decompress_ptr cinfo, int c0, int c1, int c2)",
+    "comment": "JAZ IJG 6a inverse-colormap cache fill",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100435e0",
+    "name": "grim_jpeg_find_best_colors",
+    "aliases": [
+      "sub_100435E0"
+    ],
+    "signature": "void grim_jpeg_find_best_colors(j_decompress_ptr cinfo, int minc0, int minc1, int minc2, int numcolors, JSAMPLE *colorlist, JSAMPLE *bestcolor)",
+    "comment": "JAZ IJG 6a nearest-color search",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10043740",
+    "name": "grim_jpeg_pass2_fs_dither",
+    "aliases": [
+      "sub_10043740"
+    ],
+    "signature": "void grim_jpeg_pass2_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "JAZ IJG 6a Floyd-Steinberg two-pass color mapping",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10043a20",
+    "name": "grim_jpeg_finish_pass_one_quantizer",
+    "aliases": [
+      "sub_10043A20"
+    ],
+    "signature": "void grim_jpeg_finish_pass_one_quantizer(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a quantizer prescan finalizer and palette selector",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10043c40",
+    "name": "grim_jpeg_update_color_box",
+    "aliases": [
+      "sub_10043C40"
+    ],
+    "signature": "void grim_jpeg_update_color_box(j_decompress_ptr cinfo, void *box)",
+    "comment": "JAZ IJG 6a median-cut color-box bounds updater",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044070",
+    "name": "grim_jpeg_compute_box_color",
+    "aliases": [
+      "sub_10044070"
+    ],
+    "signature": "void grim_jpeg_compute_box_color(j_decompress_ptr cinfo, void *box, int color_index)",
+    "comment": "JAZ IJG 6a representative color computation",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10044200",
     "name": "grim_jpeg_new_color_map_2_quant",
     "aliases": [

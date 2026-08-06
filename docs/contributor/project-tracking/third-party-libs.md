@@ -309,6 +309,12 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   (2,157 bytes, 672 instructions, 15 references). Together with
   `finish_input_pass`, the complete six-function input-controller cluster is
   now exact; the `/Ob2` profile accounts for IJG's inlined setup helpers.
+- Matcher corpus: `jquant2.c` under the same VC6 `/O2 /Ob2 /G6` profile
+  reproduces eleven additional JAZ two-pass quantizer functions byte-for-byte
+  (4,883 bytes, 1,659 instructions, 18 references). Together with the already
+  matched color-map callback, this completes every separately emitted target
+  body from the module; the empty `finish_pass2` callback is linker-folded
+  with the existing one-byte memory-source terminator.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.
