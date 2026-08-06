@@ -142,6 +142,11 @@
           "sha256": "641fd75fc7d5a0d61c63c86fde46b4d76369a4311aabade55b2326d5094c2636"
         },
         {
+          "path": "jpeg-6a/jversion.h",
+          "size": 357,
+          "sha256": "627a154dab9aa74de01d4b8a34b1ac2102fe865eb24f34f77c0590332c389f1f"
+        },
+        {
           "path": "jpeg-6a/jpegint.h",
           "size": 15527,
           "sha256": "089ad98da28cdcabb4cf252607cff2e0ca73268818793d0795caaa9032c2da57"
@@ -170,6 +175,31 @@
           "path": "jpeg-6a/jcomapi.c",
           "size": 2746,
           "sha256": "cfa950a2cd4361d4e68b76f2cc5bdddbf4733905b9c58270cef3f82b01e47546"
+        },
+        {
+          "path": "jpeg-6a/jerror.c",
+          "size": 6798,
+          "sha256": "5b7998534ff15e8ee99296f8fde1459d429ec0b636efd33a1578adcb73e07a67"
+        },
+        {
+          "path": "jpeg-6a/jdinput.c",
+          "size": 13497,
+          "sha256": "a945a258e19ca01fbfe2159ce7f3aace89ec04c082c71e8cbc2be3d83aa884bb"
+        },
+        {
+          "path": "jpeg-6a/jdsample.c",
+          "size": 16381,
+          "sha256": "acca64d28c61b87e77993dd0bd51d089ecd68f8989f93e7d17156314ca58670d"
+        },
+        {
+          "path": "jpeg-6a/jdmerge.c",
+          "size": 13916,
+          "sha256": "a47ca108ebf955104abbe3f9a64383532be2c70c6f956b5844b412f151f50453"
+        },
+        {
+          "path": "jpeg-6a/jquant2.c",
+          "size": 48429,
+          "sha256": "9b6844e18480d7003618e8f473a0900743d15fc8516aee7229a77adce470eb0b"
         }
       ]
     },
@@ -875,6 +905,11 @@
     },
     {
       "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jversion.h",
+      "path": "third_party/headers/jversion.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jpegint.h",
       "path": "third_party/headers/jpegint.h"
     },
@@ -902,6 +937,31 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jcomapi.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jcomapi.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jerror.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jerror.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdinput.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jdinput.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdsample.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jdsample.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdmerge.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jdmerge.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jquant2.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jquant2.c"
     },
     {
       "source_artifact": "zlib-1.1.3",

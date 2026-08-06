@@ -11604,9 +11604,67 @@
   {
     "program": "grim.dll",
     "address": "0x1003ab10",
-    "name": "jpeg_std_error",
-    "signature": "void *jpeg_std_error(void *error_manager)",
-    "comment": "IJG libjpeg 6a standard error-manager initializer; exact DirectX 8.1 d3dx8.lib jerror.obj body"
+    "name": "grim_jpeg_std_error",
+    "aliases": [
+      "jpeg_std_error"
+    ],
+    "signature": "jpeg_error_mgr *grim_jpeg_std_error(jpeg_error_mgr *error_manager)",
+    "comment": "JAZ IJG 6a standard error-manager initializer; exact VC6 provider body"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ab60",
+    "name": "grim_jpeg_error_exit",
+    "aliases": [
+      "sub_1003AB60"
+    ],
+    "signature": "void grim_jpeg_error_exit(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a fatal-error callback",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ab80",
+    "name": "grim_jpeg_output_message",
+    "aliases": [
+      "sub_1003AB80"
+    ],
+    "signature": "void grim_jpeg_output_message(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a diagnostic-output callback",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003abc0",
+    "name": "grim_jpeg_emit_message",
+    "aliases": [
+      "sub_1003ABC0"
+    ],
+    "signature": "void grim_jpeg_emit_message(j_common_ptr cinfo, int msg_level)",
+    "comment": "JAZ IJG 6a warning and trace-message callback",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ac00",
+    "name": "grim_jpeg_format_message",
+    "aliases": [
+      "sub_1003AC00"
+    ],
+    "signature": "void grim_jpeg_format_message(j_common_ptr cinfo, char *buffer)",
+    "comment": "JAZ IJG 6a diagnostic-message formatter",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003acb0",
+    "name": "grim_jpeg_reset_error_mgr",
+    "aliases": [
+      "sub_1003ACB0"
+    ],
+    "signature": "void grim_jpeg_reset_error_mgr(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a error-manager reset callback",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -11614,6 +11672,28 @@
     "name": "jinit_input_controller",
     "signature": "void jinit_input_controller(void *context)",
     "comment": "IJG libjpeg 6a decompression input-controller initializer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003afa0",
+    "name": "grim_jpeg_finish_input_pass",
+    "aliases": [
+      "sub_1003AFA0"
+    ],
+    "signature": "void grim_jpeg_finish_input_pass(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a input-pass finalizer; exact VC6 provider body",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003afc0",
+    "name": "grim_jpeg_consume_markers",
+    "aliases": [
+      "sub_1003AFC0"
+    ],
+    "signature": "int grim_jpeg_consume_markers(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a marker-consumption state machine",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -11820,6 +11900,17 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1005035c",
+    "name": "grim_jpeg_std_message_table",
+    "aliases": [
+      "DAT_1005035C"
+    ],
+    "signature": "const char * const grim_jpeg_std_message_table[]",
+    "comment": "JAZ IJG 6a standard diagnostic-message table",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003e040",
     "name": "jinit_master_decompress",
     "signature": "void jinit_master_decompress(void *context)",
@@ -11889,6 +11980,39 @@
     "name": "grim_jpeg_fullsize_upsample",
     "signature": "void grim_jpeg_fullsize_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "Archive-confirmed IJG 6a full-size upsampling adapter in the JAZ decoder copy"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041ec0",
+    "name": "grim_jpeg_noop_upsample",
+    "aliases": [
+      "sub_10041EC0"
+    ],
+    "signature": "void grim_jpeg_noop_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "JAZ IJG 6a ignored-component upsampling adapter; exact VC6 provider body",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10042a10",
+    "name": "grim_jpeg_start_pass_merged_upsample",
+    "aliases": [
+      "sub_10042A10"
+    ],
+    "signature": "void grim_jpeg_start_pass_merged_upsample(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a merged-upsampler pass initializer; exact VC6 provider body",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10044200",
+    "name": "grim_jpeg_new_color_map_2_quant",
+    "aliases": [
+      "sub_10044200"
+    ],
+    "signature": "void grim_jpeg_new_color_map_2_quant(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a two-pass quantizer colormap reset; exact VC6 provider body",
+    "create": false
   },
   {
     "program": "grim.dll",

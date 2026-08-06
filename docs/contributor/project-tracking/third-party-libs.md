@@ -290,6 +290,10 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 - Matcher corpus: the pinned upstream `jcomapi.c` reproduces the four JAZ
   common-API routines byte-for-byte (122 bytes, 48 instructions): abort,
   destroy, and both table allocators.
+- Matcher corpus: five small JAZ callbacks from `jerror.c`, `jdinput.c`,
+  `jdsample.c`, `jdmerge.c`, and `jquant2.c` reproduce byte-for-byte (140
+  bytes, 33 instructions, seven references). The previously missing private
+  `jversion.h` dependency is now pinned and provenance checked too.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.
