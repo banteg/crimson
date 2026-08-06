@@ -11885,10 +11885,85 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1004a190",
+    "name": "zlib_inflate_codes_new",
+    "aliases": [
+      "FUN_1004a190",
+      "sub_1004A190"
+    ],
+    "signature": "inflate_codes_statef *zlib_inflate_codes_new(uInt literal_bits, uInt distance_bits, inflate_huft *literal_tree, inflate_huft *distance_tree, z_streamp stream)",
+    "comment": "Plain-C zlib 1.1.3 inflate codes-state allocator",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004a1d0",
+    "name": "zlib_inflate_codes",
+    "aliases": [
+      "FUN_1004a1d0",
+      "sub_1004A1D0"
+    ],
+    "signature": "int zlib_inflate_codes(inflate_blocks_statef *state, z_streamp stream, int status)",
+    "comment": "Plain-C zlib 1.1.3 literal and distance codes-state machine",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004a980",
+    "name": "zlib_inflate_codes_free",
+    "aliases": [
+      "FUN_1004a980",
+      "sub_1004A980"
+    ],
+    "signature": "void zlib_inflate_codes_free(inflate_codes_statef *codes, z_streamp stream)",
+    "comment": "Plain-C zlib 1.1.3 inflate codes-state teardown",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004a9a0",
+    "name": "zlib_inflate_trees_bits",
+    "aliases": [
+      "FUN_1004a9a0",
+      "sub_1004A9A0"
+    ],
+    "signature": "int zlib_inflate_trees_bits(uInt *lengths, uInt *bits, inflate_huft **tree, inflate_huft *workspace, z_streamp stream)",
+    "comment": "Plain-C zlib 1.1.3 bit-length Huffman tree builder",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004aa50",
+    "name": "zlib_huft_build",
+    "aliases": [
+      "FUN_1004aa50",
+      "sub_1004AA50"
+    ],
+    "signature": "int zlib_huft_build(uInt *lengths, uInt count, uInt simple_count, const uInt *bases, const uInt *extra, inflate_huft **tree, uInt *bits, inflate_huft *workspace, uInt *used, uInt *scratch)",
+    "comment": "Plain-C zlib 1.1.3 Huffman decoding-table builder",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004af20",
+    "name": "zlib_inflate_trees_dynamic",
+    "aliases": [
+      "FUN_1004af20",
+      "sub_1004AF20"
+    ],
+    "signature": "int zlib_inflate_trees_dynamic(uInt literal_count, uInt distance_count, uInt *lengths, uInt *literal_bits, uInt *distance_bits, inflate_huft **literal_tree, inflate_huft **distance_tree, inflate_huft *workspace, z_streamp stream)",
+    "comment": "Plain-C zlib 1.1.3 dynamic Huffman tree builder",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004b0b0",
-    "name": "inflate_trees_fixed",
+    "name": "zlib_inflate_trees_fixed",
+    "aliases": [
+      "inflate_trees_fixed"
+    ],
     "signature": "int inflate_trees_fixed(uInt *bl, uInt *bd, void **tl, void **td, z_streamp z)",
-    "comment": "zlib (internal): return fixed Huffman trees"
+    "comment": "Plain-C zlib 1.1.3 fixed Huffman tree selector"
   },
   {
     "program": "grim.dll",
@@ -11921,6 +11996,17 @@
     ],
     "signature": "const uInt zlib_inflate_mask[17]",
     "comment": "Plain-C zlib 1.1.3 low-bit masks used by the inflate decoders",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10051454",
+    "name": "zlib_inflate_border",
+    "aliases": [
+      "DAT_10051454"
+    ],
+    "signature": "const uInt zlib_inflate_border[19]",
+    "comment": "Plain-C zlib 1.1.3 bit-length code ordering table",
     "create": false
   },
   {

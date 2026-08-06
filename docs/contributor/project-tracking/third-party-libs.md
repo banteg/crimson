@@ -220,6 +220,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 - Matcher corpus: the pinned `inffast.c` and private `inffast.h` reproduce
   `inflate_fast` at `0x1004b220` byte-for-byte (911 bytes, 334 instructions,
   eight references), including the copy's distinct `inflate_mask` table.
+- Matcher corpus: the pinned `infblock.c` reproduces `inflate_blocks_reset`,
+  `inflate_blocks_new`, `inflate_blocks`, and `inflate_blocks_free` at
+  `0x100492c0` through `0x1004a100` byte-for-byte (3,708 bytes, 1,343
+  instructions, 40 references). Its `border` and `inflate_mask` tables and all
+  downstream codes/tree/flush calls are resolved to the plain-C zlib copy.
 
 ### libjpeg (IJG 6a)
 
