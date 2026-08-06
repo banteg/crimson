@@ -159,23 +159,30 @@ def _archive_function_index(
         )
         for function_name in function_names:
             function = matchlib.extract_object_function(obj, function_name)
-            lines = matchlib.normalize_function(
+            disassembly = matchlib.disassemble_normalized_function(
                 function.data,
                 relocation_offsets=function.relocation_offsets,
             )
-            if not lines:
+            if not disassembly:
                 continue
+            significant_size = disassembly[-1].offset + disassembly[-1].size
+            relocation_offsets = frozenset(
+                offset
+                for offset in function.relocation_offsets
+                if offset + 4 <= significant_size
+            )
+            lines = tuple(line.text for line in disassembly)
             object_functions += 1
             index[lines].append(
                 _NormalizedArchiveFunction(
                     candidate=ArchiveCandidate(
                         member=member.name,
                         symbol=function.name,
-                        size=len(function.data),
-                        relocation_count=len(function.relocation_offsets),
+                        size=significant_size,
+                        relocation_count=len(relocation_offsets),
                     ),
-                    data=function.data,
-                    relocation_offsets=function.relocation_offsets,
+                    data=function.data[:significant_size],
+                    relocation_offsets=relocation_offsets,
                 ),
             )
     return index, object_members, object_functions
