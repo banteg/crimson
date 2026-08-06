@@ -102,10 +102,18 @@ struct grim_jpeg_color_quantizer_source_t {
     void *color_quantize;
     grim_jpeg_finish_quantize_source_fn_t finish_pass;
     void *new_color_map;
-    unsigned char fields_10[0x0c];
+    unsigned char **saved_colormap;
+    int desired_color_count;
+    unsigned char fields_18[0x04];
     unsigned char needs_zeroed;
     unsigned char fields_1d[3];
 };
+
+typedef void (__cdecl *grim_jpeg_merged_upmethod_source_fn_t)(
+    grim_jpeg_decompress_source_t *,
+    unsigned char ***,
+    unsigned int,
+    unsigned char **);
 
 struct grim_jpeg_separate_upsampler_source_t {
     void *start_pass;
@@ -123,7 +131,7 @@ struct grim_jpeg_merged_upsampler_source_t {
     void *upsample;
     unsigned char need_context_rows;
     unsigned char fields_09[3];
-    void *upmethod;
+    grim_jpeg_merged_upmethod_source_fn_t upmethod;
     int *cr_r_table;
     int *cb_b_table;
     int *cr_g_table;
@@ -147,9 +155,13 @@ struct grim_jpeg_decompress_source_t {
     unsigned char fields_4b[0x11];
     unsigned int output_width;
     unsigned int output_height;
-    unsigned char fields_64[0x18];
+    unsigned char fields_64[0x0c];
+    int actual_number_of_colors;
+    unsigned char **colormap;
+    unsigned char fields_78[0x04];
     int input_scan_number;
-    unsigned char fields_80[0x0c];
+    unsigned int input_iMCU_row;
+    unsigned char fields_84[0x08];
     void *coefficient_bits;
     unsigned char fields_90[0x34];
     void *component_info;
@@ -158,7 +170,9 @@ struct grim_jpeg_decompress_source_t {
     unsigned char fields_114[0x64];
     int unread_marker;
     grim_jpeg_decomp_master_source_t *master;
-    unsigned char fields_180[0x0c];
+    void *main_controller;
+    void *coefficient_controller;
+    void *postprocessor;
     grim_jpeg_input_controller_source_t *input_controller;
     grim_jpeg_marker_reader_source_t *marker_reader;
     unsigned char fields_194[0x08];
@@ -172,6 +186,8 @@ extern "C" int grim_jpeg_consume_markers_source(
 extern "C" void grim_jpeg_start_input_pass_source(
     grim_jpeg_decompress_source_t *decoder);
 extern "C" void grim_jpeg_finish_input_pass_source(
+    grim_jpeg_decompress_source_t *decoder);
+extern "C" void __fastcall grim_jpeg_start_iMCU_row_source(
     grim_jpeg_decompress_source_t *decoder);
 extern "C" void grim_jpeg_free_pool_source(
     grim_jpeg_common_source_t *decoder, int pool);
@@ -513,4 +529,133 @@ extern "C" void grim_jpeg_new_color_map_1_quant(
     decoder->error->message_code = 45;
     decoder->error->error_exit(
         reinterpret_cast<grim_jpeg_common_source_t *>(decoder));
+}
+
+typedef void (__cdecl *grim_jpeg_post_process_source_fn_t)(
+    grim_jpeg_decompress_source_t *,
+    unsigned char ***,
+    unsigned int *,
+    unsigned int,
+    unsigned char **,
+    unsigned int *,
+    unsigned int);
+
+struct grim_jpeg_postprocessor_source_t {
+    void *start_pass;
+    grim_jpeg_post_process_source_fn_t post_process_data;
+};
+
+extern "C" void grim_jpeg_process_data_crank_post(
+    grim_jpeg_decompress_source_t *decoder,
+    unsigned char **output_buffer,
+    unsigned int *output_row_counter,
+    unsigned int output_rows_available)
+{
+    grim_jpeg_postprocessor_source_t *postprocessor =
+        static_cast<grim_jpeg_postprocessor_source_t *>(decoder->postprocessor);
+
+    postprocessor->post_process_data(
+        decoder,
+        0,
+        0,
+        0,
+        output_buffer,
+        output_row_counter,
+        output_rows_available);
+}
+
+extern "C" void grim_jpeg_start_coefficient_input_pass(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    decoder->input_iMCU_row = 0;
+    grim_jpeg_start_iMCU_row_source(decoder);
+}
+
+extern "C" void grim_jpeg_merged_1v_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    unsigned char ***input_buffer,
+    unsigned int *input_row_group_counter,
+    unsigned int input_row_groups_available,
+    unsigned char **output_buffer,
+    unsigned int *output_row_counter,
+    unsigned int output_rows_available)
+{
+    grim_jpeg_merged_upsampler_source_t *upsampler =
+        static_cast<grim_jpeg_merged_upsampler_source_t *>(decoder->upsampler);
+
+    upsampler->upmethod(
+        decoder,
+        input_buffer,
+        *input_row_group_counter,
+        output_buffer + *output_row_counter);
+    (*output_row_counter)++;
+    (*input_row_group_counter)++;
+}
+
+extern "C" {
+struct grim_jpeg_color_box_source_t {
+    int c0_min;
+    int c0_max;
+    int c1_min;
+    int c1_max;
+    int c2_min;
+    int c2_max;
+    long volume;
+    long color_count;
+};
+
+void grim_jpeg_update_color_box_source(
+    grim_jpeg_decompress_source_t *decoder,
+    grim_jpeg_color_box_source_t *box);
+int grim_jpeg_median_cut_source(
+    grim_jpeg_decompress_source_t *decoder,
+    grim_jpeg_color_box_source_t *boxes,
+    int box_count,
+    int desired_color_count);
+void grim_jpeg_compute_color_source(
+    grim_jpeg_decompress_source_t *decoder,
+    grim_jpeg_color_box_source_t *box,
+    int color_index);
+
+static void grim_jpeg_select_colors_callsite(
+    grim_jpeg_decompress_source_t *decoder, int desired_color_count)
+{
+    grim_jpeg_color_box_source_t *boxes =
+        static_cast<grim_jpeg_color_box_source_t *>(
+            decoder->memory->alloc_small(
+                reinterpret_cast<grim_jpeg_common_source_t *>(decoder),
+                1,
+                desired_color_count * sizeof(grim_jpeg_color_box_source_t)));
+    int box_count;
+    int index;
+
+    box_count = 1;
+    boxes[0].c0_min = 0;
+    boxes[0].c0_max = 31;
+    boxes[0].c1_min = 0;
+    boxes[0].c1_max = 63;
+    boxes[0].c2_min = 0;
+    boxes[0].c2_max = 31;
+    grim_jpeg_update_color_box_source(decoder, &boxes[0]);
+    box_count = grim_jpeg_median_cut_source(
+        decoder, boxes, box_count, desired_color_count);
+    for (index = 0; index < box_count; index++)
+        grim_jpeg_compute_color_source(decoder, &boxes[index], index);
+
+    decoder->actual_number_of_colors = box_count;
+    decoder->error->message_code = 95;
+    decoder->error->message_parameters[0] = box_count;
+    decoder->error->emit_message(
+        reinterpret_cast<grim_jpeg_common_source_t *>(decoder), 1);
+}
+}
+
+extern "C" void grim_jpeg_finish_quantizer_pass_one(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_color_quantizer_source_t *quantizer = decoder->color_quantizer;
+
+    decoder->colormap = quantizer->saved_colormap;
+    grim_jpeg_select_colors_callsite(decoder, quantizer->desired_color_count);
+    quantizer->needs_zeroed = 1;
 }

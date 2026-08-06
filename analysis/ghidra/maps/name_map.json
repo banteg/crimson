@@ -10972,11 +10972,24 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002eb3f",
+    "name": "d3dx_jpeg_process_data_crank_post",
+    "signature": "void d3dx_jpeg_process_data_crank_post(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a two-pass postprocessor dispatch"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002ec9d",
-    "name": "FUN_1002ec9d",
-    "signature": "void* FUN_1002ec9d(void* arg1)",
-    "comment": "[binja] void* __fastcall sub_1002ec9d(void* arg1)",
-    "create": false
+    "name": "d3dx_jpeg_start_iMCU_row",
+    "signature": "void d3dx_jpeg_start_iMCU_row(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a coefficient-controller row initializer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002ecdc",
+    "name": "d3dx_jpeg_start_coefficient_input_pass",
+    "signature": "void d3dx_jpeg_start_coefficient_input_pass(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a coefficient-controller input-pass initializer"
   },
   {
     "program": "grim.dll",
@@ -11056,10 +11069,9 @@
   {
     "program": "grim.dll",
     "address": "0x10032110",
-    "name": "FUN_10032110",
-    "signature": "int FUN_10032110(void* arg1, int arg2, int* arg3, int arg4, int* arg5)",
-    "comment": "[binja] int32_t sub_10032110(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)",
-    "create": false
+    "name": "d3dx_jpeg_merged_1v_upsample",
+    "signature": "void d3dx_jpeg_merged_1v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a one-row merged upsampling controller"
   },
   {
     "program": "grim.dll",
@@ -11068,6 +11080,20 @@
     "signature": "short* FUN_100324f2(short* arg1, short* arg2, int arg3)",
     "comment": "[binja] int16_t* sub_100324f2(int16_t* arg1, int16_t* arg2, int32_t arg3)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032b21",
+    "name": "d3dx_jpeg_select_colors",
+    "signature": "void d3dx_jpeg_select_colors(j_decompress_ptr cinfo, int desired_colors)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer palette selector"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100332bf",
+    "name": "d3dx_jpeg_finish_quantizer_pass_one",
+    "signature": "void d3dx_jpeg_finish_quantizer_pass_one(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer first-pass finalizer"
   },
   {
     "program": "grim.dll",
