@@ -45,6 +45,17 @@ retain commutative x86 SIB operand-order differences.
   permutations of `WM_CREATE`, `WM_SIZE`, `WM_ACTIVATE`, `WM_ACTIVATEAPP`,
   `WM_ENTERSIZEMOVE`, and `WM_EXITSIZEMOVE` were compiled; none improved on the
   retained order.
+- The remaining `WM_ACTIVATE`/`WM_ENTERSIZEMOVE` join was tested with 39 valid
+  control-flow forms: paired, early-return, inverted, and fallthrough
+  activation branches; paired, early-return, and inverted application
+  activation branches; and both application-activation/enter-size-move source
+  orders.  Both VC6 profiles produced the same best result, uniquely attained
+  by the retained source.
+- Prepending recovered bodies for the immediately preceding
+  `grim_default_device_callback` and `grim_restore_device_after_activation`
+  functions leaves this callback byte-identical.  The residual is therefore
+  not explained by a simple adjacent-function or translation-unit label-state
+  effect.
 - Reversing state-store order can raise the fuzzy score by changing tail
   merging, but contradicts the native instruction order and is intentionally
   rejected.
