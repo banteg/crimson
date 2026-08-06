@@ -333,6 +333,12 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   bodies byte-for-byte (4,104 bytes, 1,322 instructions, 12 references). The
   private `start_iMCU_row` and `smoothing_ok` helpers are inlined into their
   callers, so no synthetic target functions are recorded for them.
+- Matcher corpus: the newly pinned `jdhuff.c` and private `jdhuff.h` dependency
+  are provenance checked. Under VC6 `/O2 /Ob2 /G6`, all six separately
+  emitted baseline Huffman-decoder bodies reproduce byte-for-byte (2,528
+  bytes, 857 instructions, 20 references). The private `process_restart`
+  helper is inlined into `decode_mcu`, and its two sign-extension tables now
+  have explicit reference identities rather than anonymous data addresses.
 - Matcher corpus: `jdinput.c` under the target's VC6 `/O2 /Ob2 /G6` profile
   reproduces the remaining five JAZ input-controller functions byte-for-byte
   (2,157 bytes, 672 instructions, 15 references). Together with

@@ -11963,6 +11963,28 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10050690",
+    "name": "grim_jpeg_huff_extend_test",
+    "aliases": [
+      "DAT_10050690"
+    ],
+    "signature": "const int grim_jpeg_huff_extend_test[16]",
+    "comment": "JAZ IJG 6a baseline Huffman sign-extension thresholds",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100506d0",
+    "name": "grim_jpeg_huff_extend_offset",
+    "aliases": [
+      "DAT_100506D0"
+    ],
+    "signature": "const int grim_jpeg_huff_extend_offset[16]",
+    "comment": "JAZ IJG 6a baseline Huffman sign-extension offsets",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1005035c",
     "name": "grim_jpeg_std_message_table",
     "aliases": [
@@ -12268,6 +12290,82 @@
     ],
     "signature": "int grim_jpeg_decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
     "comment": "JAZ IJG 6a progressive block-smoothing coefficient decompressor",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003fc90",
+    "end": "0x1003fe80",
+    "name": "grim_jpeg_make_d_derived_tbl",
+    "aliases": [
+      "jpeg_make_d_derived_tbl",
+      "sub_1003FC90"
+    ],
+    "signature": "void grim_jpeg_make_d_derived_tbl(j_decompress_ptr cinfo, JHUFF_TBL *htbl, d_derived_tbl **pdtbl)",
+    "comment": "JAZ IJG 6a derived Huffman decoding-table builder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003fe80",
+    "end": "0x1003ff80",
+    "name": "grim_jpeg_fill_bit_buffer",
+    "aliases": [
+      "jpeg_fill_bit_buffer",
+      "sub_1003FE80"
+    ],
+    "signature": "boolean grim_jpeg_fill_bit_buffer(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, int nbits)",
+    "comment": "JAZ IJG 6a entropy bit-buffer refill helper",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ff80",
+    "end": "0x10040070",
+    "name": "grim_jpeg_huff_decode",
+    "aliases": [
+      "jpeg_huff_decode",
+      "sub_1003FF80"
+    ],
+    "signature": "int grim_jpeg_huff_decode(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, d_derived_tbl *htbl, int min_bits)",
+    "comment": "JAZ IJG 6a out-of-line Huffman-code decoder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10040070",
+    "end": "0x100400b0",
+    "name": "grim_jpeg_init_huff_decoder",
+    "aliases": [
+      "jinit_huff_decoder",
+      "sub_10040070"
+    ],
+    "signature": "void grim_jpeg_init_huff_decoder(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a baseline Huffman entropy-decoder initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100400b0",
+    "end": "0x10040200",
+    "name": "grim_jpeg_start_pass_huff_decoder",
+    "aliases": [
+      "sub_100400B0"
+    ],
+    "signature": "void grim_jpeg_start_pass_huff_decoder(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a baseline Huffman scan initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10040200",
+    "end": "0x100406a0",
+    "name": "grim_jpeg_decode_mcu_huff",
+    "aliases": [
+      "sub_10040200"
+    ],
+    "signature": "boolean grim_jpeg_decode_mcu_huff(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "JAZ IJG 6a baseline Huffman MCU decoder",
     "create": true
   },
   {

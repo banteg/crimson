@@ -162,6 +162,11 @@
           "sha256": "4cde9d7c12ffc920e1dd525c6b7f41f88a3ea573af8c66a4b6d0d6ed3d7fd770"
         },
         {
+          "path": "jpeg-6a/jdhuff.h",
+          "size": 8230,
+          "sha256": "9a465efa3cd690036c3e9ed649663ab9c5e5f5e18da8527c6ddd109f582d1824"
+        },
+        {
           "path": "jpeg-6a/jidctred.c",
           "size": 13442,
           "sha256": "1b830678d15255131558240ed0565859513b85431cf2d6fb2c999997355798df"
@@ -205,6 +210,11 @@
           "path": "jpeg-6a/jdcoefct.c",
           "size": 25137,
           "sha256": "7c18cf3eb231e6998c5d743b3708798f4a7c5007380c366178826a64def85ddb"
+        },
+        {
+          "path": "jpeg-6a/jdhuff.c",
+          "size": 17563,
+          "sha256": "fd4268d83ec2102f01f4c45ad93ccf939c8b2ce7f054af3feb073a516c951754"
         },
         {
           "path": "jpeg-6a/jdsample.c",
@@ -960,6 +970,11 @@
     },
     {
       "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdhuff.h",
+      "path": "third_party/headers/jdhuff.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jidctred.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jidctred.c"
     },
@@ -1002,6 +1017,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jdcoefct.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jdcoefct.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdhuff.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jdhuff.c"
     },
     {
       "source_artifact": "ijg-libjpeg-6a",
