@@ -1,1 +1,7 @@
 * text=auto eol=lf
+
+# Keep provenance-pinned upstream snapshots byte-for-byte, including their
+# historical trailing whitespace. Local sources remain subject to diff checks.
+third_party/headers/jdct.h whitespace=-trailing-space
+third_party/sources/ijg-libjpeg-6a/jidctflt.c whitespace=-trailing-space
+third_party/sources/ijg-libjpeg-6a/jidctred.c whitespace=-trailing-space

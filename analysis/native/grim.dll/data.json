@@ -1,5 +1,5 @@
 {
-  "audit_digest": "49f209b80e31f0fde436543d9296a0bc32f9ac46ba4ea19ed7feebdea57de110",
+  "audit_digest": "c7bc75a6a86fd1c9fb7edc4023396280d997db062b72b8e970bb167e42c9037b",
   "entries": [
     {
       "address": 268747320,
@@ -3373,6 +3373,25 @@
       "size": 128,
       "size_source": "analysis/ghidra/maps/data_map.json: 32-entry neutral dither pattern; tools/native/abi/grim.dll/abi_assertions.cpp: dither_pattern_is_0x80",
       "type": "float[32]"
+    },
+    {
+      "address": 268784872,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "D3DX JPEG inverse-DCT dispatcher flag selecting the MMX kernels.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_jpeg_mmx_idct_enabled",
+      "section": ".data",
+      "section_offset": 9448,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "unsigned char"
     },
     {
       "address": 268787480,
@@ -7385,7 +7404,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "0a44e640bda32963dac1581e7ddad16598e70a144b432449ac95280e8be9ea14",
+    "data_map_sha256": "ecf34a4719aa0e248fb2f75cc574323ee08f11be75a5f858e2743472a96dbf74",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7401,7 +7420,7 @@
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 300,
+    "entry_count": 301,
     "explicit_alignment_entries": 283,
     "explicit_initializer_entries": 283,
     "explicit_size_entries": 283,
@@ -7414,12 +7433,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 214,
+      ".data": 215,
       ".rdata": 86
     },
-    "source_entry_count": 303,
-    "typed_entries": 250,
-    "unique_addresses": 300,
+    "source_entry_count": 304,
+    "typed_entries": 251,
+    "unique_addresses": 301,
     "untyped_entries": 50
   }
 }

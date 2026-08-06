@@ -145,6 +145,21 @@
           "path": "jpeg-6a/jpegint.h",
           "size": 15527,
           "sha256": "089ad98da28cdcabb4cf252607cff2e0ca73268818793d0795caaa9032c2da57"
+        },
+        {
+          "path": "jpeg-6a/jdct.h",
+          "size": 7041,
+          "sha256": "4cde9d7c12ffc920e1dd525c6b7f41f88a3ea573af8c66a4b6d0d6ed3d7fd770"
+        },
+        {
+          "path": "jpeg-6a/jidctred.c",
+          "size": 13442,
+          "sha256": "1b830678d15255131558240ed0565859513b85431cf2d6fb2c999997355798df"
+        },
+        {
+          "path": "jpeg-6a/jidctflt.c",
+          "size": 8418,
+          "sha256": "cd29042cf33e126ff99bae8e4304ee8d83e96fb226e0df635e053e4449a65e73"
         }
       ]
     },
@@ -750,6 +765,21 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jpegint.h",
       "path": "third_party/headers/jpegint.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jdct.h",
+      "path": "third_party/headers/jdct.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jidctred.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jidctred.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jidctflt.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jidctflt.c"
     }
   ],
   "cross_image_matches": [

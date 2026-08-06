@@ -11423,6 +11423,48 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100359f8",
+    "name": "d3dx_jpeg_idct_4x4",
+    "signature": "void d3dx_jpeg_idct_4x4(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "Archive-confirmed IJG 6a reduced four-by-four inverse DCT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10035d0d",
+    "name": "d3dx_jpeg_idct_2x2",
+    "signature": "void d3dx_jpeg_idct_2x2(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "Archive-confirmed IJG 6a reduced two-by-two inverse DCT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10035ecb",
+    "name": "d3dx_jpeg_idct_1x1",
+    "signature": "void d3dx_jpeg_idct_1x1(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "Archive-confirmed IJG 6a reduced one-by-one inverse DCT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10035f08",
+    "name": "d3dx_jpeg_idct_islow",
+    "signature": "void d3dx_jpeg_idct_islow(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "Archive-confirmed D3DX IJG slow integer inverse-DCT dispatcher"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10035f54",
+    "name": "d3dx_jpeg_idct_ifast",
+    "signature": "void d3dx_jpeg_idct_ifast(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "Archive-confirmed D3DX IJG fast integer inverse-DCT dispatcher"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10035fa0",
+    "name": "d3dx_jpeg_idct_float",
+    "signature": "void d3dx_jpeg_idct_float(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
+    "comment": "Archive-confirmed IJG 6a floating-point inverse DCT"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10036381",
     "name": "inflate_codes_new",
     "signature": "void * inflate_codes_new(uInt bl, uInt bd, void *tl, void *td, z_streamp z)",
@@ -11476,6 +11518,34 @@
     "name": "inflate_flush",
     "signature": "int inflate_flush(void *s, z_streamp z, int r)",
     "comment": "zlib (internal): flush pending output"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036f75",
+    "name": "d3dx_jpeg_pidct8x8llm",
+    "signature": "void d3dx_jpeg_pidct8x8llm(JCOEFPTR coef_block, ISLOW_MULT_TYPE *multipliers, short *workspace, JSAMPARRAY output_buf, JDIMENSION output_col, JSAMPLE *range_limit)",
+    "comment": "Archive-confirmed D3DX portable LL&M eight-by-eight integer inverse DCT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100373d7",
+    "name": "d3dx_jpeg_midct8x8llm",
+    "signature": "void d3dx_jpeg_midct8x8llm(JCOEFPTR coef_block, ISLOW_MULT_TYPE *multipliers, short *workspace, JSAMPARRAY output_buf, JDIMENSION output_col, JSAMPLE *range_limit)",
+    "comment": "Archive-confirmed D3DX MMX LL&M eight-by-eight integer inverse DCT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10037a8f",
+    "name": "d3dx_jpeg_pidct8x8aan",
+    "signature": "void d3dx_jpeg_pidct8x8aan(JCOEFPTR coef_block, short *workspace, IFAST_MULT_TYPE *multipliers, JSAMPARRAY output_buf, JDIMENSION output_col, JSAMPLE *range_limit)",
+    "comment": "Archive-confirmed D3DX portable AA&N eight-by-eight integer inverse DCT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10037dea",
+    "name": "d3dx_jpeg_midct8x8aan",
+    "signature": "void d3dx_jpeg_midct8x8aan(JCOEFPTR coef_block, short *workspace, IFAST_MULT_TYPE *multipliers, JSAMPARRAY output_buf, JDIMENSION output_col, JSAMPLE *range_limit)",
+    "comment": "Archive-confirmed D3DX MMX AA&N eight-by-eight integer inverse DCT"
   },
   {
     "program": "grim.dll",

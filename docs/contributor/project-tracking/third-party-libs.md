@@ -239,6 +239,11 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   select the canonical provider translation unit directly under its VC6
   profile and documented one-byte `boolean` ABI, yielding 354 exact all-scope
   bytes without duplicating the recovered source.
+- Matcher corpus: the private `jdct.h` header plus the official `jidctred.c`
+  and `jidctflt.c` units are also synced and provenance checked. They recover
+  the exact one-pixel and floating-point IDCT bodies; two small matcher-only
+  dispatchers recover D3DX's aligned portable/MMX integer routing. The 4-by-4
+  and 2-by-2 reducers remain explicit semantic-complete compiler residuals.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.

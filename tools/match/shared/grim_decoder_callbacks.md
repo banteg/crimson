@@ -207,5 +207,17 @@ five `inflate.obj` entry points recover stream reset, teardown, initialization,
 and the wrapped inflate state machine. Their 1,885 bytes and 677 instructions
 match exactly with all 25 calls, data references, and error strings resolved.
 
-Altogether the one hundred forty-seven functions cover 18,940 bytes and 6,998 instructions in the
-explicit `all` scope, with every external relocation resolved.
+Four inverse-DCT entry points add the trivial one-pixel reducer, both D3DX
+integer dispatchers, and IJG's floating-point transform. The pinned 6a
+`jdct.h`, `jidctred.c`, and `jidctflt.c` inputs are now provenance-checked
+directly from the official archive. The integer wrappers preserve D3DX's
+eight-byte-aligned workspace and MMX dispatch, while the floating-point unit's
+MSVC 6.5 Processor Pack profile is recorded only as an exact code-generation
+surrogate for the uniquely matching product-29/build-9178 `jidctflt.obj`.
+The neighboring 4-by-4 and 2-by-2 reducers remain semantic-complete WIPs: the
+official source exposes D3DX's 16-bit multiplier ABI, but the available
+compilers do not reproduce the provider's narrowed multiplies and scheduling.
+
+Altogether the one hundred fifty-one exact functions cover 20,146 bytes and
+7,402 instructions in the explicit `all` scope, with every external
+relocation resolved.
