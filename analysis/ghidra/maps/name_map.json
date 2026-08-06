@@ -11985,6 +11985,28 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10050710",
+    "name": "grim_jpeg_phuff_extend_test",
+    "aliases": [
+      "DAT_10050710"
+    ],
+    "signature": "const int grim_jpeg_phuff_extend_test[16]",
+    "comment": "JAZ IJG 6a progressive Huffman sign-extension thresholds",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10050750",
+    "name": "grim_jpeg_phuff_extend_offset",
+    "aliases": [
+      "DAT_10050750"
+    ],
+    "signature": "const int grim_jpeg_phuff_extend_offset[16]",
+    "comment": "JAZ IJG 6a progressive Huffman sign-extension offsets",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1005035c",
     "name": "grim_jpeg_std_message_table",
     "aliases": [
@@ -12366,6 +12388,79 @@
     ],
     "signature": "boolean grim_jpeg_decode_mcu_huff(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
     "comment": "JAZ IJG 6a baseline Huffman MCU decoder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100406a0",
+    "end": "0x10040710",
+    "name": "grim_jpeg_init_phuff_decoder",
+    "aliases": [
+      "jinit_phuff_decoder",
+      "sub_100406A0"
+    ],
+    "signature": "void grim_jpeg_init_phuff_decoder(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a progressive Huffman entropy-decoder initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10040710",
+    "end": "0x10040a10",
+    "name": "grim_jpeg_start_pass_phuff_decoder",
+    "aliases": [
+      "sub_10040710"
+    ],
+    "signature": "void grim_jpeg_start_pass_phuff_decoder(j_decompress_ptr cinfo)",
+    "comment": "JAZ IJG 6a progressive Huffman scan initializer",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10040a10",
+    "end": "0x10040cb0",
+    "name": "grim_jpeg_decode_mcu_dc_first",
+    "aliases": [
+      "sub_10040A10"
+    ],
+    "signature": "boolean grim_jpeg_decode_mcu_dc_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "JAZ IJG 6a progressive initial-DC MCU decoder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10040cb0",
+    "end": "0x10040f80",
+    "name": "grim_jpeg_decode_mcu_ac_first",
+    "aliases": [
+      "sub_10040CB0"
+    ],
+    "signature": "boolean grim_jpeg_decode_mcu_ac_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "JAZ IJG 6a progressive initial-AC MCU decoder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10040f80",
+    "end": "0x100410e0",
+    "name": "grim_jpeg_decode_mcu_dc_refine",
+    "aliases": [
+      "sub_10040F80"
+    ],
+    "signature": "boolean grim_jpeg_decode_mcu_dc_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "JAZ IJG 6a progressive refining-DC MCU decoder",
+    "create": true
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100410e0",
+    "end": "0x10041590",
+    "name": "grim_jpeg_decode_mcu_ac_refine",
+    "aliases": [
+      "sub_100410E0"
+    ],
+    "signature": "boolean grim_jpeg_decode_mcu_ac_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "JAZ IJG 6a progressive refining-AC MCU decoder",
     "create": true
   },
   {
