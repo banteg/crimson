@@ -11768,22 +11768,31 @@
   {
     "program": "grim.dll",
     "address": "0x1003dd00",
-    "name": "jpeg_abort",
-    "signature": "void jpeg_abort(void *context)",
+    "name": "grim_jpeg_abort",
+    "aliases": [
+      "jpeg_abort"
+    ],
+    "signature": "void grim_jpeg_abort(j_common_ptr cinfo)",
     "comment": "IJG libjpeg 6a operation reset; exact VC6 provider body"
   },
   {
     "program": "grim.dll",
     "address": "0x1003dd30",
-    "name": "jpeg_destroy",
-    "signature": "void jpeg_destroy(void *context)",
+    "name": "grim_jpeg_destroy",
+    "aliases": [
+      "jpeg_destroy"
+    ],
+    "signature": "void grim_jpeg_destroy(j_common_ptr cinfo)",
     "comment": "IJG libjpeg 6a object destroy; exact VC6 provider body"
   },
   {
     "program": "grim.dll",
     "address": "0x1003dd50",
-    "name": "jpeg_alloc_quant_table",
-    "signature": "void *jpeg_alloc_quant_table(void *context)",
+    "name": "grim_jpeg_alloc_quant_table",
+    "aliases": [
+      "jpeg_alloc_quant_table"
+    ],
+    "signature": "JQUANT_TBL *grim_jpeg_alloc_quant_table(j_common_ptr cinfo)",
     "comment": "IJG libjpeg 6a quantization-table allocator; exact VC6 provider body"
   },
   {
@@ -11791,10 +11800,11 @@
     "address": "0x1003dd70",
     "name": "grim_jpeg_alloc_huff_table",
     "aliases": [
+      "jpeg_alloc_huff_table",
       "sub_1003DD70"
     ],
     "signature": "JHUFF_TBL *grim_jpeg_alloc_huff_table(j_common_ptr cinfo)",
-    "comment": "JAZ IJG 6a Huffman-table allocator",
+    "comment": "JAZ IJG 6a Huffman-table allocator; exact VC6 provider body",
     "create": false
   },
   {

@@ -287,6 +287,9 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   byte-for-byte (5,113 bytes, 1,819 instructions, five references). The JAZ
   Huffman allocator and natural-order table are independently named from the
   D3DX decoder copy.
+- Matcher corpus: the pinned upstream `jcomapi.c` reproduces the four JAZ
+  common-API routines byte-for-byte (122 bytes, 48 instructions): abort,
+  destroy, and both table allocators.
 - Native provider: the normalized 28-object archive has size 152,452 and
   SHA-256
   `c0bf240e27e8684357c676030e3cb8913d04e6b1e14f8000f069b43b17de6869`.

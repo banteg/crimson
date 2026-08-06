@@ -6,6 +6,7 @@ third_party/headers/jdct.h whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jidctflt.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jidctred.c whitespace=-trailing-space
 third_party/sources/ijg-libjpeg-6a/jdmarker.c whitespace=-trailing-space
+third_party/sources/ijg-libjpeg-6a/jcomapi.c whitespace=-trailing-space
 third_party/headers/infblock.h whitespace=-trailing-space
 third_party/headers/infcodes.h whitespace=-trailing-space
 third_party/headers/inffast.h whitespace=-trailing-space

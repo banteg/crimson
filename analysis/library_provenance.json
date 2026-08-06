@@ -165,6 +165,11 @@
           "path": "jpeg-6a/jdmarker.c",
           "size": 30754,
           "sha256": "85dc333850a72dff9eb1ecfa9613dea87a18a5fe3b27989e29b9a8b3816379d6"
+        },
+        {
+          "path": "jpeg-6a/jcomapi.c",
+          "size": 2746,
+          "sha256": "cfa950a2cd4361d4e68b76f2cc5bdddbf4733905b9c58270cef3f82b01e47546"
         }
       ]
     },
@@ -892,6 +897,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jdmarker.c",
       "path": "third_party/sources/ijg-libjpeg-6a/jdmarker.c"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jcomapi.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jcomapi.c"
     },
     {
       "source_artifact": "zlib-1.1.3",
