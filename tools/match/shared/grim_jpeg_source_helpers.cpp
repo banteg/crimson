@@ -114,22 +114,33 @@ struct grim_jpeg_color_quantizer_source_t {
     short *fs_errors[4];
 };
 
+struct grim_jpeg_quantization_table_source_t {
+    unsigned short quantization_values[64];
+};
+
 struct grim_jpeg_component_source_t {
     unsigned char fields_00[0x0c];
     int vertical_sampling_factor;
     unsigned char fields_10[0x38];
     int last_row_height;
+    grim_jpeg_quantization_table_source_t *quantization_table;
+    unsigned char fields_50[0x04];
 };
+
+typedef int (__cdecl *grim_jpeg_decompress_data_source_fn_t)(
+    grim_jpeg_decompress_source_t *, unsigned char ***);
 
 struct grim_jpeg_coefficient_controller_source_t {
     void *start_input_pass;
     void *consume_data;
     void *start_output_pass;
-    void *decompress_data;
+    grim_jpeg_decompress_data_source_fn_t decompress_data;
     void *coefficient_arrays;
     unsigned int MCU_counter;
     int MCU_vertical_offset;
     int MCU_rows_per_iMCU_row;
+    unsigned char fields_20[0x50];
+    int *coefficient_bits_latch;
 };
 
 typedef void (__cdecl *grim_jpeg_merged_upmethod_source_fn_t)(
@@ -173,7 +184,10 @@ struct grim_jpeg_decompress_source_t {
     unsigned char is_decompressor;
     unsigned char fields_0d[3];
     int global_state;
-    unsigned char fields_14[0x36];
+    unsigned char fields_14[0x0c];
+    int component_count;
+    unsigned char fields_24[0x25];
+    unsigned char do_block_smoothing;
     unsigned char quantize_colors;
     unsigned char fields_4b[0x11];
     unsigned int output_width;
@@ -185,11 +199,13 @@ struct grim_jpeg_decompress_source_t {
     unsigned char fields_78[0x04];
     int input_scan_number;
     unsigned int input_iMCU_row;
-    unsigned char fields_84[0x08];
-    void *coefficient_bits;
+    unsigned char fields_84[0x04];
+    unsigned int output_iMCU_row;
+    int (*coefficient_bits)[64];
     unsigned char fields_90[0x34];
-    void *component_info;
-    unsigned char fields_c8[0x48];
+    grim_jpeg_component_source_t *component_info;
+    unsigned char progressive_mode;
+    unsigned char fields_c9[0x47];
     int max_v_samp_factor;
     unsigned char fields_114[0x04];
     unsigned int total_iMCU_rows;
@@ -218,6 +234,10 @@ extern "C" void grim_jpeg_finish_input_pass_source(
     grim_jpeg_decompress_source_t *decoder);
 extern "C" void __fastcall grim_jpeg_start_iMCU_row_source(
     grim_jpeg_decompress_source_t *decoder);
+extern "C" int grim_jpeg_decompress_data_source(
+    grim_jpeg_decompress_source_t *decoder, unsigned char ***output_buffer);
+extern "C" int grim_jpeg_decompress_smooth_data_source(
+    grim_jpeg_decompress_source_t *decoder, unsigned char ***output_buffer);
 extern "C" void grim_jpeg_free_pool_source(
     grim_jpeg_common_source_t *decoder, int pool);
 extern "C" void grim_jpeg_free_small_source(
@@ -523,6 +543,78 @@ extern "C" void __fastcall grim_jpeg_start_iMCU_row_source(
     coefficient_controller->MCU_vertical_offset = 0;
 }
 
+extern "C" {
+static unsigned char grim_jpeg_smoothing_ok(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_coefficient_controller_source_t *coefficient_controller =
+        decoder->coefficient_controller;
+    unsigned char smoothing_useful = 0;
+    int component_index;
+    int coefficient_index;
+    grim_jpeg_component_source_t *component;
+    grim_jpeg_quantization_table_source_t *quantization_table;
+    int *coefficient_bits;
+    int *coefficient_bits_latch;
+
+    if (!decoder->progressive_mode || decoder->coefficient_bits == 0)
+        return 0;
+
+    if (coefficient_controller->coefficient_bits_latch == 0)
+        coefficient_controller->coefficient_bits_latch = static_cast<int *>(
+            decoder->memory->alloc_small(
+                reinterpret_cast<grim_jpeg_common_source_t *>(decoder),
+                1,
+                decoder->component_count * (6 * sizeof(int))));
+    coefficient_bits_latch = coefficient_controller->coefficient_bits_latch;
+
+    for (component_index = 0, component = decoder->component_info;
+         component_index < decoder->component_count;
+         component_index++, component++) {
+        if ((quantization_table = component->quantization_table) == 0)
+            return 0;
+        if (quantization_table->quantization_values[0] == 0 ||
+            quantization_table->quantization_values[1] == 0 ||
+            quantization_table->quantization_values[8] == 0 ||
+            quantization_table->quantization_values[16] == 0 ||
+            quantization_table->quantization_values[9] == 0 ||
+            quantization_table->quantization_values[2] == 0)
+            return 0;
+        coefficient_bits = decoder->coefficient_bits[component_index];
+        if (coefficient_bits[0] < 0)
+            return 0;
+        for (coefficient_index = 1;
+             coefficient_index <= 5;
+             coefficient_index++) {
+            coefficient_bits_latch[coefficient_index] =
+                coefficient_bits[coefficient_index];
+            if (coefficient_bits[coefficient_index] != 0)
+                smoothing_useful = 1;
+        }
+        coefficient_bits_latch += 6;
+    }
+
+    return smoothing_useful;
+}
+}
+
+extern "C" void grim_jpeg_start_coefficient_output_pass(
+    grim_jpeg_decompress_source_t *decoder)
+{
+    grim_jpeg_coefficient_controller_source_t *coefficient_controller =
+        decoder->coefficient_controller;
+
+    if (coefficient_controller->coefficient_arrays != 0) {
+        if (decoder->do_block_smoothing && grim_jpeg_smoothing_ok(decoder))
+            coefficient_controller->decompress_data =
+                grim_jpeg_decompress_smooth_data_source;
+        else
+            coefficient_controller->decompress_data =
+                grim_jpeg_decompress_data_source;
+    }
+    decoder->output_iMCU_row = 0;
+}
+
 extern "C" void grim_jpeg_fullsize_upsample(
     grim_jpeg_decompress_source_t *decoder,
     void *component,
@@ -565,6 +657,42 @@ extern "C" void grim_jpeg_h2v1_upsample(
             *output_pointer++ = input_value;
             *output_pointer++ = input_value;
         }
+    }
+}
+
+extern "C" void grim_jpeg_h2v2_upsample(
+    grim_jpeg_decompress_source_t *decoder,
+    void *component,
+    unsigned char **input_data,
+    unsigned char ***output_data_pointer)
+{
+    unsigned char **output_data = *output_data_pointer;
+    unsigned char *input_pointer;
+    unsigned char *output_pointer;
+    unsigned char input_value;
+    unsigned char *output_end;
+    int input_row;
+    int output_row;
+
+    input_row = output_row = 0;
+    while (output_row < decoder->max_v_samp_factor) {
+        input_pointer = input_data[input_row];
+        output_pointer = output_data[output_row];
+        output_end = output_pointer + decoder->output_width;
+        while (output_pointer < output_end) {
+            input_value = *input_pointer++;
+            *output_pointer++ = input_value;
+            *output_pointer++ = input_value;
+        }
+        grim_jpeg_copy_sample_rows(
+            output_data,
+            output_row,
+            output_data,
+            output_row + 1,
+            1,
+            decoder->output_width);
+        input_row++;
+        output_row += 2;
     }
 }
 

@@ -10993,6 +10993,34 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002f068",
+    "name": "d3dx_jpeg_decompress_data",
+    "signature": "int d3dx_jpeg_decompress_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
+    "comment": "Archive-confirmed IJG 6a full-buffer coefficient decompressor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002f1ce",
+    "name": "d3dx_jpeg_smoothing_ok",
+    "signature": "boolean d3dx_jpeg_smoothing_ok(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a progressive coefficient-smoothing predicate"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002f2b1",
+    "name": "d3dx_jpeg_decompress_smooth_data",
+    "signature": "int d3dx_jpeg_decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
+    "comment": "Archive-confirmed IJG 6a progressive smoothed coefficient decompressor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002f7ce",
+    "name": "d3dx_jpeg_start_coefficient_output_pass",
+    "signature": "void d3dx_jpeg_start_coefficient_output_pass(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a coefficient-controller output-pass selector"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10031078",
     "name": "FUN_10031078",
     "signature": "int FUN_10031078(int arg1, int arg2, int arg3, int arg4, int* arg5)",
@@ -11046,10 +11074,9 @@
   {
     "program": "grim.dll",
     "address": "0x100314e4",
-    "name": "FUN_100314e4",
-    "signature": "int* FUN_100314e4(void* arg1, int* arg2, int* arg3)",
-    "comment": "[binja] int32_t* sub_100314e4(void* arg1, int32_t* arg2, int32_t* arg3)",
-    "create": false
+    "name": "d3dx_jpeg_h2v2_upsample",
+    "signature": "void d3dx_jpeg_h2v2_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
+    "comment": "Archive-confirmed IJG 6a horizontal and vertical two-to-one box upsampler"
   },
   {
     "program": "grim.dll",

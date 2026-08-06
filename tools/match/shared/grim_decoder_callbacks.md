@@ -127,11 +127,17 @@ allocation. The row initializer preserves the archive-local fastcall entry;
 the allocator is retained behind a translation-unit callsite so MSVC selects
 the same decoder-in-`ESI` internal convention as the pinned archive member.
 
+The next three exact leaves cover progressive smoothing eligibility, the
+coefficient controller's output-pass selection, and horizontal-plus-vertical
+two-to-one upsampling. Keeping the official `smoothing_ok` body in the shared
+translation unit reproduces its decoder-in-`ESI` internal convention and the
+caller's three archive-local references without artificial assembly shaping.
+
 The zlib allocation callbacks ignore their opaque argument and forward to
 `calloc(item_count, item_size)` and `free(allocation)`. Its inflate-codes
 cleanup dispatches the configured free callback with the stream's opaque
 value. VC6 `/O1 /G6` emits all three wrappers exactly. The JPEG destroy wrapper
 uses its library's `/O2` profile and forwards to the common destroy routine.
 
-Altogether the ninety-nine functions cover 4,345 bytes and 1,640 instructions in the
+Altogether the one hundred two functions cover 4,737 bytes and 1,789 instructions in the
 explicit `all` scope, with every external relocation resolved.
