@@ -864,6 +864,26 @@
       "initializer_source": "Binary Ninja grim.dll session: pointer value 0x1004c9bc is exactly one past grim_format_info_entries[43]; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10053c50"
     },
     {
+      "address": "0x10054390",
+      "name": "d3dx_box_filter_2d_a8r8g8b8_impl",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: void pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_symbols": [["0x0", "0x100134ea", "d3dx_init_box_filter_2d_a8r8g8b8"]],
+      "initializer_source": "Pinned DirectX 8.1 cd3dxblt.obj box-filter initializer; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10054390"
+    },
+    {
+      "address": "0x10054394",
+      "name": "d3dx_box_filter_2d_x8r8g8b8_impl",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: void pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_symbols": [["0x0", "0x10013522", "d3dx_init_box_filter_2d_x8r8g8b8"]],
+      "initializer_source": "Pinned DirectX 8.1 cd3dxblt.obj box-filter initializer; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10054394"
+    },
+    {
       "address": "0x1005976c",
       "name": "grim_vertex_capacity",
       "size": 4,
@@ -992,6 +1012,16 @@
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "initializer_hex": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005d3f4"
+    },
+    {
+      "address": "0x1005db68",
+      "name": "fpu_control_word_saved_blt",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: DirectX 8.1 unsigned long x87 control-word slot; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005db68"
     },
     {
       "address": "0x1005db70",

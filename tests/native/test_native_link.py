@@ -2238,14 +2238,14 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 323
+    assert payload["summary"]["source_entry_count"] == 326
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 320
-    assert payload["summary"]["typed_entries"] == 270
-    assert payload["summary"]["explicit_size_entries"] == 286
-    assert payload["summary"]["explicit_alignment_entries"] == 286
-    assert payload["summary"]["explicit_initializer_entries"] == 286
-    assert payload["summary"]["fully_specified_entries"] == 286
+    assert payload["summary"]["entry_count"] == 323
+    assert payload["summary"]["typed_entries"] == 273
+    assert payload["summary"]["explicit_size_entries"] == 289
+    assert payload["summary"]["explicit_alignment_entries"] == 289
+    assert payload["summary"]["explicit_initializer_entries"] == 289
+    assert payload["summary"]["fully_specified_entries"] == 289
     assert payload["summary"]["definition_group_entries"] == 215
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2267,6 +2267,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["grim_dxt_luminance_weights"]["type"] == "const float[3]"
     assert observed["grim_dxt_luminance_inverse"]["type"] == "const float[3]"
     assert observed["fpu_control_word_saved_dxt"]["type"] == "unsigned long"
+    assert observed["d3dx_box_filter_2d_a8r8g8b8_impl"]["type"] == "void *"
+    assert observed["d3dx_box_filter_2d_x8r8g8b8_impl"]["type"] == "void *"
+    assert observed["fpu_control_word_saved_blt"]["type"] == "unsigned long"
     assert observed["d3dx_jpeg_std_message_table"]["type"] == "const char *[120]"
     assert observed["grim_jpeg_first_pool_slop"]["type"] == "const size_t[2]"
     assert observed["grim_jpeg_extra_pool_slop"]["type"] == "const size_t[2]"
@@ -2355,6 +2358,21 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert defined["grim_dxt_luminance_weights"]["size"] == 0x0C
     assert defined["grim_dxt_luminance_inverse"]["size"] == 0x0C
     assert defined["fpu_control_word_saved_dxt"]["size"] == 4
+    assert defined["d3dx_box_filter_2d_a8r8g8b8_impl"]["initializer_symbols"] == [
+        {
+            "address": 0x100134EA,
+            "offset": 0,
+            "symbol": "d3dx_init_box_filter_2d_a8r8g8b8",
+        },
+    ]
+    assert defined["d3dx_box_filter_2d_x8r8g8b8_impl"]["initializer_symbols"] == [
+        {
+            "address": 0x10013522,
+            "offset": 0,
+            "symbol": "d3dx_init_box_filter_2d_x8r8g8b8",
+        },
+    ]
+    assert defined["fpu_control_word_saved_blt"]["initializer_hex"] == "00000000"
     assert defined["grim_format_info_default"]["size"] == 0x24
     assert defined["grim_format_info_entries"]["size"] == 43 * 0x24
     assert defined["grim_format_info_end"]["initializer_hex"] == "bcc90410"

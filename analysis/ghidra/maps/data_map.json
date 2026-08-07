@@ -11185,6 +11185,22 @@
       "type": "char[35]"
     },
     {
+      "address": "0x10054390",
+      "aliases": ["?g_pBoxFilter2D_A8R8G8B8@@3P6AJPAI0IIII@ZA"],
+      "comment": "DirectX 8.1 runtime-selected A8R8G8B8 box-filter implementation pointer.",
+      "name": "d3dx_box_filter_2d_a8r8g8b8_impl",
+      "program": "grim.dll",
+      "type": "void *"
+    },
+    {
+      "address": "0x10054394",
+      "aliases": ["?g_pBoxFilter2D_X8R8G8B8@@3P6AJPAI0IIII@ZA"],
+      "comment": "DirectX 8.1 runtime-selected X8R8G8B8 box-filter implementation pointer.",
+      "name": "d3dx_box_filter_2d_x8r8g8b8_impl",
+      "program": "grim.dll",
+      "type": "void *"
+    },
+    {
       "address": "0x10054398",
       "comment": "Neutral 32-entry dither pattern whose entries are all 0.5.",
       "name": "grim_dither_half_pattern",
@@ -12469,6 +12485,13 @@
       "name": "grim_mouse_wheel_delta",
       "program": "grim.dll",
       "type": "float"
+    },
+    {
+      "address": "0x1005db68",
+      "comment": "Four-byte DirectX 8.1 x87 control-word slot used by the cd3dxblt linear-filter helper.",
+      "name": "fpu_control_word_saved_blt",
+      "program": "grim.dll",
+      "type": "unsigned long"
     },
     {
       "address": "0x1005db6c",

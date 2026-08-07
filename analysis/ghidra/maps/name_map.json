@@ -8952,26 +8952,56 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10012881",
+    "name": "d3dx_tf_row_dtor",
+    "aliases": ["??1SchedulerPolicy@Concurrency@@QAE@XZ", "??1TF_Row@@QAE@XZ"],
+    "signature": "void d3dx_tf_row_dtor(void *this)",
+    "comment": "Exact DirectX 8.1 TF_Row destructor from cd3dxblt.obj.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001288a",
+    "name": "d3dx_tf_setup_triangle",
+    "aliases": ["sub_1001288A", "?TF_SetupTriangle@@YAPAEIIH@Z"],
+    "signature": "unsigned char * d3dx_tf_setup_triangle(unsigned int width, unsigned int height, int filter)",
+    "comment": "Exact DirectX 8.1 triangle-filter setup helper from cd3dxblt.obj.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10012b47",
-    "name": "FUN_10012b47",
-    "signature": "int* FUN_10012b47(int* arg1, char arg2)",
-    "comment": "[binja] int32_t* __thiscall sub_10012b47(int32_t* arg1, char arg2)",
+    "name": "d3dx_tf_row_scalar_deleting_dtor",
+    "aliases": ["FUN_10012b47", "??_ETF_Row@@QAEPAXI@Z"],
+    "signature": "void * d3dx_tf_row_scalar_deleting_dtor(void *this, unsigned int flags)",
+    "comment": "Exact DirectX 8.1 TF_Row scalar deleting destructor from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10012b93",
-    "name": "FUN_10012b93",
-    "signature": "int FUN_10012b93(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10012b93(int32_t* arg1)",
+    "name": "d3dx_blt_triangle_3d",
+    "aliases": ["FUN_10012b93", "?BltTriangle3D@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_triangle_3d(void *this)",
+    "comment": "CD3DXBlt triangle-filter 3D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10013007",
-    "name": "FUN_10013007",
-    "signature": "int FUN_10013007(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013007(int32_t* arg1)",
+    "name": "d3dx_blt_same_dxtn",
+    "aliases": ["FUN_10013007", "?BltSame_DXTn@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_same_dxtn(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt same-format DXT path from cd3dxblt.obj.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013195",
+    "name": "d3dx_box_filter_2d_a8r8g8b8",
+    "aliases": ["sub_10013195", "?c_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"],
+    "signature": "int d3dx_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
+    "comment": "Exact DirectX 8.1 scalar A8R8G8B8 box filter from cd3dxblt.obj.",
     "create": false
   },
   {
@@ -8980,6 +9010,42 @@
     "name": "FUN_100132bb",
     "signature": "int FUN_100132bb(int* arg1)",
     "comment": "[binja] int32_t __fastcall sub_100132bb(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100132ec",
+    "name": "d3dx_box_filter_2d_x8r8g8b8",
+    "aliases": ["sub_100132EC", "?c_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"],
+    "signature": "int d3dx_box_filter_2d_x8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
+    "comment": "Exact DirectX 8.1 scalar X8R8G8B8 box filter from cd3dxblt.obj.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100133d4",
+    "name": "d3dx_mmx_box_filter_2d_a8r8g8b8",
+    "aliases": ["sub_100133D4", "?mmx_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"],
+    "signature": "int d3dx_mmx_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
+    "comment": "Exact DirectX 8.1 MMX A8R8G8B8 box filter from cd3dxblt.obj.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100134ea",
+    "name": "d3dx_init_box_filter_2d_a8r8g8b8",
+    "aliases": ["sub_100134EA", "?init_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"],
+    "signature": "int d3dx_init_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
+    "comment": "Exact DirectX 8.1 A8R8G8B8 box-filter dispatcher from cd3dxblt.obj.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013522",
+    "name": "d3dx_init_box_filter_2d_x8r8g8b8",
+    "aliases": ["sub_10013522", "?init_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"],
+    "signature": "int d3dx_init_box_filter_2d_x8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
+    "comment": "Exact DirectX 8.1 X8R8G8B8 box-filter dispatcher from cd3dxblt.obj.",
     "create": false
   },
   {
@@ -8993,153 +9059,181 @@
   {
     "program": "grim.dll",
     "address": "0x10013582",
-    "name": "FUN_10013582",
-    "signature": "int FUN_10013582(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013582(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_r5g6b5",
+    "aliases": ["FUN_10013582", "?BltBox2D_R5G6B5@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_r5g6b5(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt R5G6B5 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x100136d2",
-    "name": "FUN_100136d2",
-    "signature": "int FUN_100136d2(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_100136d2(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_x1r5g5b5",
+    "aliases": ["FUN_100136d2", "?BltBox2D_X1R5G5B5@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_x1r5g5b5(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt X1R5G5B5 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x100137f6",
-    "name": "FUN_100137f6",
-    "signature": "int FUN_100137f6(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_100137f6(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_a1r5g5b5",
+    "aliases": ["FUN_100137f6", "?BltBox2D_A1R5G5B5@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_a1r5g5b5(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt A1R5G5B5 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10013945",
-    "name": "FUN_10013945",
-    "signature": "int FUN_10013945(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013945(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_a4r4g4b4",
+    "aliases": ["FUN_10013945", "?BltBox2D_A4R4G4B4@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_a4r4g4b4(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt A4R4G4B4 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10013a98",
-    "name": "FUN_10013a98",
-    "signature": "int FUN_10013a98(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013a98(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_r3g3b2",
+    "aliases": ["FUN_10013a98", "?BltBox2D_R3G3B2@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_r3g3b2(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt R3G3B2 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10013bd7",
-    "name": "FUN_10013bd7",
-    "signature": "int FUN_10013bd7(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013bd7(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_a8",
+    "aliases": ["FUN_10013bd7", "?BltBox2D_A8@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_a8(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt A8 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10013c72",
-    "name": "FUN_10013c72",
-    "signature": "int FUN_10013c72(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013c72(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_a8r3g3b2",
+    "aliases": ["FUN_10013c72", "?BltBox2D_A8R3G3B2@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_a8r3g3b2(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt A8R3G3B2 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10013dbe",
-    "name": "FUN_10013dbe",
-    "signature": "int FUN_10013dbe(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013dbe(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_x4r4g4b4",
+    "aliases": ["FUN_10013dbe", "?BltBox2D_X4R4G4B4@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_x4r4g4b4(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt X4R4G4B4 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10013edf",
-    "name": "FUN_10013edf",
-    "signature": "int FUN_10013edf(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013edf(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_a8l8",
+    "aliases": ["FUN_10013edf", "?BltBox2D_A8L8@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_a8l8(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt A8L8 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001402b",
-    "name": "FUN_1001402b",
-    "signature": "int FUN_1001402b(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001402b(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_a4l4",
+    "aliases": ["FUN_1001402b", "?BltBox2D_A4L4@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_a4l4(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt A4L4 box-filter path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001416a",
-    "name": "FUN_1001416a",
-    "signature": "int FUN_1001416a(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001416a(int32_t* arg1)",
+    "name": "d3dx_blt_same",
+    "aliases": ["FUN_1001416a", "?BltSame@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_same(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXBlt same-format path from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x100142a2",
-    "name": "FUN_100142a2",
-    "signature": "int FUN_100142a2(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_100142a2(int32_t* arg1)",
+    "name": "d3dx_blt_copy",
+    "aliases": ["FUN_100142a2", "?BltCopy@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_copy(void *this)",
+    "comment": "CD3DXBlt copy path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10014393",
-    "name": "FUN_10014393",
-    "signature": "int FUN_10014393(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10014393(int32_t* arg1)",
+    "name": "d3dx_blt_none",
+    "aliases": ["FUN_10014393", "?BltNone@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_none(void *this)",
+    "comment": "CD3DXBlt no-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10014595",
-    "name": "FUN_10014595",
-    "signature": "int FUN_10014595(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10014595(int32_t* arg1)",
+    "name": "d3dx_blt_point",
+    "aliases": ["FUN_10014595", "?BltPoint@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_point(void *this)",
+    "comment": "CD3DXBlt point-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10014799",
-    "name": "FUN_10014799",
-    "signature": "int FUN_10014799(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10014799(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d",
+    "aliases": ["FUN_10014799", "?BltBox2D@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d(void *this)",
+    "comment": "CD3DXBlt generic 2D box-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10014bbc",
-    "name": "FUN_10014bbc",
-    "signature": "int FUN_10014bbc(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10014bbc(int32_t* arg1)",
+    "name": "d3dx_blt_box_3d",
+    "aliases": ["FUN_10014bbc", "?BltBox3D@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_3d(void *this)",
+    "comment": "CD3DXBlt generic 3D box-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001504e",
+    "name": "d3dx_lf_setup_linear",
+    "aliases": ["sub_1001504E", "?LF_SetupLinear@@YAPAEIIH@Z"],
+    "signature": "unsigned char * d3dx_lf_setup_linear(unsigned int width, unsigned int height, int filter)",
+    "comment": "Exact DirectX 8.1 linear-filter setup helper from cd3dxblt.obj.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001514e",
-    "name": "FUN_1001514e",
-    "signature": "int FUN_1001514e(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001514e(int32_t* arg1)",
+    "name": "d3dx_blt_linear_2d",
+    "aliases": ["FUN_1001514e", "?BltLinear2D@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_linear_2d(void *this)",
+    "comment": "CD3DXBlt linear-filter 2D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10015534",
-    "name": "FUN_10015534",
-    "signature": "int FUN_10015534(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10015534(int32_t* arg1)",
+    "name": "d3dx_blt_linear_3d",
+    "aliases": ["FUN_10015534", "?BltLinear3D@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_linear_3d(void *this)",
+    "comment": "CD3DXBlt linear-filter 3D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10015c65",
-    "name": "FUN_10015c65",
-    "signature": "int FUN_10015c65(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10015c65(int32_t* arg1)",
+    "name": "d3dx_blt_triangle_2d",
+    "aliases": ["FUN_10015c65", "?BltTriangle2D@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_triangle_2d(void *this)",
+    "comment": "CD3DXBlt triangle-filter 2D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
   },
   {
@@ -9281,9 +9375,10 @@
   {
     "program": "grim.dll",
     "address": "0x10017361",
-    "name": "FUN_10017361",
-    "signature": "int FUN_10017361(void* arg1, void* arg2)",
-    "comment": "[binja] int32_t __thiscall sub_10017361(void* arg1, void* arg2)",
+    "name": "d3dx_codec_convert_from",
+    "aliases": ["FUN_10017361", "?ConvertFrom@CD3DXCodec@@QAEJPAV1@@Z"],
+    "signature": "int d3dx_codec_convert_from(void *this, void *source)",
+    "comment": "CD3DXCodec conversion entry identified by the exact DirectX 8.1 CD3DXBlt relocation.",
     "create": false
   },
   {
@@ -10173,6 +10268,15 @@
     "name": "FUN_1001bf39",
     "signature": "int FUN_1001bf39(int arg1)",
     "comment": "[binja] int32_t __fastcall sub_1001bf39(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bf5e",
+    "name": "d3dx_is_mmx_processor",
+    "aliases": ["sub_1001BF5E", "?isMMXprocessor@@YAHXZ"],
+    "signature": "int d3dx_is_mmx_processor(void)",
+    "comment": "DirectX 8.1 MMX capability helper identified by both box-filter initializer relocations.",
     "create": false
   },
   {

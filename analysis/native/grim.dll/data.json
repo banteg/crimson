@@ -1,5 +1,5 @@
 {
-  "audit_digest": "6a6a7930d5446d8c7566003ec98cda31cfd6105fd3a73f733dc98eafd1718060",
+  "audit_digest": "fb0bfdd936d89f3b5aefc5fdfa45012728e3dfa89b97029770a32b366fa2116a",
   "entries": [
     {
       "address": 268747320,
@@ -3722,6 +3722,62 @@
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: grim_format_info_t pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": "grim_format_info_t *"
+    },
+    {
+      "address": 268780432,
+      "aliases": [
+        "?g_pBoxFilter2D_A8R8G8B8@@3P6AJPAI0IIII@ZA"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "DirectX 8.1 runtime-selected A8R8G8B8 box-filter implementation pointer.",
+      "definition_state": "fully-specified",
+      "initializer_hex": null,
+      "initializer_source": "Pinned DirectX 8.1 cd3dxblt.obj box-filter initializer; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10054390",
+      "initializer_symbols": [
+        {
+          "address": 268514538,
+          "offset": 0,
+          "symbol": "d3dx_init_box_filter_2d_a8r8g8b8"
+        }
+      ],
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_box_filter_2d_a8r8g8b8_impl",
+      "section": ".data",
+      "section_offset": 5008,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: void pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *"
+    },
+    {
+      "address": 268780436,
+      "aliases": [
+        "?g_pBoxFilter2D_X8R8G8B8@@3P6AJPAI0IIII@ZA"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "DirectX 8.1 runtime-selected X8R8G8B8 box-filter implementation pointer.",
+      "definition_state": "fully-specified",
+      "initializer_hex": null,
+      "initializer_source": "Pinned DirectX 8.1 cd3dxblt.obj box-filter initializer; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10054394",
+      "initializer_symbols": [
+        {
+          "address": 268514594,
+          "offset": 0,
+          "symbol": "d3dx_init_box_filter_2d_x8r8g8b8"
+        }
+      ],
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_box_filter_2d_x8r8g8b8_impl",
+      "section": ".data",
+      "section_offset": 5012,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: void pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *"
     },
     {
       "address": 268780440,
@@ -7763,6 +7819,25 @@
       "type": "float"
     },
     {
+      "address": 268819304,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
+      "comment": "Four-byte DirectX 8.1 x87 control-word slot used by the cd3dxblt linear-filter helper.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005db68",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "fpu_control_word_saved_blt",
+      "section": ".data",
+      "section_offset": 43880,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: DirectX 8.1 unsigned long x87 control-word slot; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "type": "unsigned long"
+    },
+    {
       "address": 268819308,
       "aliases": [],
       "alignment": 2,
@@ -7817,9 +7892,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "93524848321fd7adc9e7fd772fab98dee30c82cbbb590beef828d06472827ebe",
+    "data_map_sha256": "f5c1918e09c1cfb7b4948261b28480631ec192360042e7f7c55d5dafaced3307",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "be9116c53f2f2820cb2557e176b83cf12c95823c6951d8dec7b835862e1c6004",
+    "definitions_sha256": "6dce23a3cdc4097d0633d5b4d99714cf700232e35b58a3b4879b1837631b1265",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -7828,17 +7903,17 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 33,
-    "alias_rows": 33,
+    "alias_names": 35,
+    "alias_rows": 35,
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 320,
-    "explicit_alignment_entries": 286,
-    "explicit_initializer_entries": 286,
-    "explicit_size_entries": 286,
+    "entry_count": 323,
+    "explicit_alignment_entries": 289,
+    "explicit_initializer_entries": 289,
+    "explicit_size_entries": 289,
     "fixed_array_types": 102,
-    "fully_specified_entries": 286,
+    "fully_specified_entries": 289,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -7846,12 +7921,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 217,
+      ".data": 220,
       ".rdata": 103
     },
-    "source_entry_count": 323,
-    "typed_entries": 270,
-    "unique_addresses": 320,
+    "source_entry_count": 326,
+    "typed_entries": 273,
+    "unique_addresses": 323,
     "untyped_entries": 50
   }
 }
