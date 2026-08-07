@@ -2477,15 +2477,15 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1814
+    assert payload["summary"]["source_entry_count"] == 1817
     assert payload["summary"]["code_label_entries"] == 54
-    assert payload["summary"]["entry_count"] == 1760
-    assert payload["summary"]["typed_entries"] == 1760
+    assert payload["summary"]["entry_count"] == 1763
+    assert payload["summary"]["typed_entries"] == 1763
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1760
-    assert payload["summary"]["explicit_alignment_entries"] == 1760
-    assert payload["summary"]["explicit_initializer_entries"] == 1760
-    assert payload["summary"]["fully_specified_entries"] == 1760
+    assert payload["summary"]["explicit_size_entries"] == 1763
+    assert payload["summary"]["explicit_alignment_entries"] == 1763
+    assert payload["summary"]["explicit_initializer_entries"] == 1763
+    assert payload["summary"]["fully_specified_entries"] == 1763
     assert payload["summary"]["definition_group_entries"] == 1656
     assert payload["summary"]["definition_groups"] == 174
     assert {
@@ -2506,6 +2506,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
         for entry in payload["entries"]
         if entry["definition_state"] == "fully-specified"
     }
+    assert defined["d3dx_sse_rsqrt_half_vector"]["size"] == 16
+    assert defined["d3dx_sse_rsqrt_half_vector"]["alignment"] == 16
+    assert defined["d3dx_sse_rsqrt_three_vector"]["size"] == 16
+    assert defined["d3dx_sse_rsqrt_three_vector"]["alignment"] == 16
+    assert defined["d3dx_sse_rsqrt_init_guard"]["size"] == 1
+    assert defined["d3dx_sse_rsqrt_init_guard"]["alignment"] == 1
     assert defined["config_blob"]["size"] == 0x480
     assert defined["config_blob"]["initializer_fill"] == "00"
     assert defined["config_direction_arrow_flags"]["size"] == 2

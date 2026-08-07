@@ -127,6 +127,7 @@ class _ArchiveReferenceEvidence:
 @dataclass(frozen=True, slots=True)
 class _NormalizedArchiveFunction:
     candidate: ArchiveCandidate
+    function: matchlib.ObjectFunction
     data: bytes
     relocation_offsets: frozenset[int]
 
@@ -235,6 +236,16 @@ def _archive_function_index(
                 for offset in function.relocation_offsets
                 if offset + 4 <= significant_size
             )
+            normalized_function = matchlib.ObjectFunction(
+                name=function.name,
+                data=function.data[:significant_size],
+                relocation_offsets=relocation_offsets,
+                relocation_references=tuple(
+                    reference
+                    for reference in function.relocation_references
+                    if reference.offset < significant_size
+                ),
+            )
             # Relocations can link to values the target normalizer cannot
             # recognize as addresses, notably VC6's FS:[0] SEH chain. Keep
             # this index structural and let _candidate_matches verify every
@@ -249,7 +260,8 @@ def _archive_function_index(
                         relocation_count=len(relocation_offsets),
                         compiler_id=compiler_id,
                     ),
-                    data=function.data[:significant_size],
+                    function=normalized_function,
+                    data=normalized_function.data,
                     relocation_offsets=relocation_offsets,
                 ),
             )
@@ -282,6 +294,7 @@ def match_coff_archive(
     range_start: int,
     range_end: int,
     excluded_addresses: Collection[int] = (),
+    resolve_known_references: bool = False,
 ) -> ArchiveMatchReport:
     if range_end <= range_start:
         raise ValueError("archive match range end must be greater than start")
@@ -295,6 +308,11 @@ def match_coff_archive(
         metadata_path=metadata_path,
         image_name=image_path.name,
         scope="all",
+    )
+    reference_catalog = (
+        matchlib.load_reference_catalog(manifest, functions_path=functions_path)
+        if resolve_known_references
+        else None
     )
     range_targets = tuple(
         function for function in manifest.functions if range_start <= function.address < range_end
@@ -317,10 +335,26 @@ def match_coff_archive(
             address_range=(image.image_base, image.image_base + image.size_of_image),
             base_address=function.address,
         )
-        candidates = tuple(
-            candidate.candidate
+        structural_candidates = tuple(
+            candidate
             for candidate in index.get((len(target_data), len(lines)), ())
             if _candidate_matches(target_data, candidate)
+        )
+        candidates = tuple(
+            candidate.candidate
+            for candidate in structural_candidates
+            if not resolve_known_references
+            or (
+                (result := matchlib.match_function(
+                    target_data,
+                    candidate.function,
+                    image=image,
+                    target_va=function.address,
+                    reference_catalog=reference_catalog,
+                )).ratio
+                == 1.0
+                and result.masked_operand_audit.mismatch_count == 0
+            )
         )
         if candidates:
             matches.append(

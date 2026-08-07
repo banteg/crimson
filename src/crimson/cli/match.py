@@ -402,6 +402,11 @@ def cmd_match_archive(
         "--show-reference-bindings",
         help="list stable addend-normalized object symbols bound to one image address",
     ),
+    resolve_known_references: bool = typer.Option(
+        False,
+        "--resolve-known-references",
+        help="discard byte-identical candidates contradicted by known relocation targets",
+    ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum listed matches"),
     write_scratches: bool = typer.Option(
         False,
@@ -453,6 +458,7 @@ def cmd_match_archive(
             range_start=matchlib.parse_int(start),
             range_end=matchlib.parse_int(end),
             excluded_addresses=excluded_addresses,
+            resolve_known_references=resolve_known_references,
         )
     except Exception as exc:
         typer.echo(f"archive match failed: {str(exc).splitlines()[0]}", err=True)
@@ -493,6 +499,8 @@ def cmd_match_archive(
         payload["expected_sha256"] = expected_sha256
         payload["hash_ok"] = hash_ok
         payload["filters"] = {"missing_scratches": missing_scratches}
+        if resolve_known_references:
+            payload["filters"]["known_references"] = True
         if show_reference_bindings:
             payload["reference_bindings"] = library_match.archive_reference_bindings_payload(
                 reference_bindings,

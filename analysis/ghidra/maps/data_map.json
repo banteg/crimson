@@ -15637,6 +15637,7 @@
     },
     {
       "address": "0x004795a0",
+      "aliases": ["?g_D3DXFastTable@@3UD3DXFASTTABLE@@A", "g_D3DXFastTable"],
       "comment": "Active 57-entry vector and matrix dispatch table; reset from renderer_dispatch_defaults and patched for the selected CPU backend.",
       "name": "renderer_dispatch_table",
       "program": "crimsonland.exe",
@@ -15644,6 +15645,7 @@
     },
     {
       "address": "0x00479688",
+      "aliases": ["?g_D3DXFastTableC@@3UD3DXFASTTABLE@@A", "g_D3DXFastTableC"],
       "comment": "Default 57-entry vector and matrix dispatch table copied into renderer_dispatch_table during reset and lazy initialization.",
       "name": "renderer_dispatch_defaults",
       "program": "crimsonland.exe",

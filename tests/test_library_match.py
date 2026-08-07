@@ -26,6 +26,7 @@ from crimson.match import (
     CoffSection,
     CoffSymbol,
     LoadedImage,
+    ReferenceCatalog,
     load_scratch_config,
 )
 
@@ -411,6 +412,82 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert cli_payload["exclusions"] == {"target_functions": 1, "target_bytes": 6}
 
 
+def test_archive_match_resolves_known_relocation_targets(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    object_code = bytes.fromhex("a100000000c3")
+    archive_path = tmp_path / "probe.lib"
+    archive_path.write_bytes(
+        _build_archive_members(
+            [
+                (
+                    r"obj\i386\left.obj",
+                    _build_object(object_code, symbol="_left", relocations=(1,)),
+                ),
+                (
+                    r"obj\i386\right.obj",
+                    _build_object(object_code, symbol="_right", relocations=(1,)),
+                ),
+            ],
+        ),
+    )
+    image_path = tmp_path / "game.exe"
+    image_path.write_bytes(b"unused")
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x00401000","end":"0x00401006",'
+        '"name":"native_probe","size":6,"library":false}]',
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "metadata.json"
+    metadata_path.write_text('{"image_base":"0x00400000"}', encoding="utf-8")
+    mapped = bytearray(0x2000)
+    mapped[0x1000:0x1006] = bytes.fromhex("a100104000c3")
+    monkeypatch.setattr(
+        "crimson.library_match.matchlib.load_image",
+        lambda path, image_base=None: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
+    )
+
+    structural = match_coff_archive(
+        archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401006,
+    )
+    assert len(structural.matches[0].candidates) == 2
+
+    catalog = ReferenceCatalog(
+        names_by_address={
+            0x00401000: ("_left",),
+            0x00401100: ("_right",),
+        },
+        addresses_by_name={
+            "left": (0x00401000,),
+            "right": (0x00401100,),
+        },
+    )
+    monkeypatch.setattr(
+        "crimson.library_match.matchlib.load_reference_catalog",
+        lambda *args, **kwargs: catalog,
+    )
+
+    resolved = match_coff_archive(
+        archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401006,
+        resolve_known_references=True,
+    )
+
+    assert resolved.unique_functions == 1
+    assert resolved.matches[0].candidates[0].symbol == "_left"
+
+
 def test_archive_reference_inference_tolerates_duplicate_member_names(
     tmp_path: Path,
     monkeypatch,
@@ -591,6 +668,7 @@ def test_archive_match_trims_untargeted_terminal_padding(
         metadata_path=metadata_path,
         range_start=0x00401000,
         range_end=0x00401003,
+        resolve_known_references=True,
     )
 
     assert report.matched_functions == 1
