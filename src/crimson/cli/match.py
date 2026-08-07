@@ -927,12 +927,32 @@ def cmd_match_status(
 @match_app.command("naming-audit")
 def cmd_match_naming_audit(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    name_map: Path = typer.Option(
+        matchlib.DEFAULT_NAME_MAP_PATH,
+        "--name-map",
+        help="curated function-name map",
+    ),
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
     image: str | None = typer.Option(None, "--image", help="show rows for one image"),
+    provider_member: str | None = typer.Option(
+        None,
+        "--provider-member",
+        help="restrict to one archive member path or basename",
+    ),
     suggested_only: bool = typer.Option(
         False,
         "--suggested-only",
         help="show only deterministic same-provider naming suggestions",
+    ),
+    apply_suggestions: bool = typer.Option(
+        False,
+        "--apply-suggestions",
+        help="apply selected deterministic suggestions to scratches and the name map",
+    ),
+    prune_aliases: bool = typer.Option(
+        False,
+        "--prune-placeholder-aliases",
+        help="remove audited analyzer aliases from selected exact name-map rows",
     ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
     summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate naming debt only"),
@@ -947,14 +967,73 @@ def cmd_match_naming_audit(
     """Report exact recoveries that still expose weaker analyzer names."""
 
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
-    rows = matchlib.collect_naming_debt(statuses)
+    rows = matchlib.collect_naming_debt(statuses, name_map_path=name_map)
     rows = [
         row
         for row in rows
         if (image is None or row.image == image)
+        and (
+            provider_member is None
+            or row.provider_member == provider_member
+            or (
+                row.provider_member is not None
+                and row.provider_member.replace("\\", "/").rsplit("/", 1)[-1] == provider_member
+            )
+        )
         and (not suggested_only or row.suggestion is not None)
     ]
     selected_rows = rows
+    if apply_suggestions and prune_aliases:
+        raise typer.BadParameter(
+            "choose either --apply-suggestions or --prune-placeholder-aliases",
+            param_hint="--apply-suggestions",
+        )
+    if prune_aliases:
+        if suggested_only or limit is not None or summary_only or check:
+            raise typer.BadParameter(
+                "alias pruning cannot be combined with suggestion, limit, summary, or check filters",
+                param_hint="--prune-placeholder-aliases",
+            )
+        result = matchlib.prune_placeholder_aliases(selected_rows, name_map_path=name_map)
+        if as_json:
+            typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        else:
+            typer.echo(
+                f"rows_pruned={result['rows_pruned']} aliases_removed={result['aliases_removed']}",
+            )
+        return
+    if apply_suggestions:
+        if limit is not None:
+            raise typer.BadParameter(
+                "--limit cannot be combined with --apply-suggestions; filter by image or provider member",
+                param_hint="--limit",
+            )
+        if summary_only or check:
+            raise typer.BadParameter(
+                "--apply-suggestions cannot be combined with --summary-only or --check",
+                param_hint="--apply-suggestions",
+            )
+        result = matchlib.apply_naming_suggestions(
+            selected_rows,
+            match_root=match_root,
+            name_map_path=name_map,
+        )
+        if as_json:
+            typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        else:
+            typer.echo(
+                " ".join(
+                    (
+                        f"applied={result['applied']}",
+                        f"map_added={result['map_rows_added']}",
+                        f"map_updated={result['map_rows_updated']}",
+                        f"directories={result['directories_renamed']}",
+                        f"references={result['config_references_updated']}",
+                        f"aliases_removed={result['aliases_removed']}",
+                    ),
+                ),
+            )
+        return
     displayed_rows = selected_rows[:limit] if limit is not None else selected_rows
     if as_json:
         typer.echo(

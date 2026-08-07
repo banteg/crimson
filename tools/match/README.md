@@ -602,14 +602,28 @@ reference aliases, or notes:
 ```sh
 uv run crimson match naming-audit --summary-only
 uv run crimson match naming-audit --suggested-only --image crimsonland.exe
+uv run crimson match naming-audit --provider-member d3dxmath.obj --apply-suggestions
+uv run crimson match naming-audit --provider-member d3dxmath.obj --prune-placeholder-aliases
 uv run crimson match naming-audit --json --check
 ```
 
 Suggestions are intentionally narrow. The command proposes a canonical name
-only when another exact scratch for the same hash-pinned archive and COFF symbol
-already has one unique non-placeholder identity. Real decorated/linkage symbols
-remain useful aliases; generated names such as `FUN_*`, `sub_*`, and
-`unknown_libname_*` are naming debt once a stronger identity is proven.
+when another exact scratch for the same hash-pinned archive and COFF symbol
+already has one unique non-placeholder identity. Recognized DirectX 8.1 D3DX
+helpers may also derive the canonical `d3dx_init_*` or `d3dx_c_*` name directly
+from their exact decorated COFF symbol. The latter also reports
+`provider-name-conflict` when an older semantic name is meaningful but weaker
+than that exact identity, and `provider-directory-conflict` when only the
+scratch directory still carries the superseded identity. Real
+decorated/linkage symbols remain useful aliases;
+generated names such as `FUN_*`, `sub_*`, and `unknown_libname_*` are naming
+debt once a stronger identity is proven.
+`--apply-suggestions` updates canonical map rows, exact scratch `FUNCTION`
+assignments, and scratch reference aliases together. It removes superseded
+analyzer aliases and gives a renamed scratch an image prefix when the canonical
+directory is already occupied by the cross-image provider peer.
+`--prune-placeholder-aliases` removes only the generated aliases reported on
+the selected exact rows; decorated provider and linkage aliases are retained.
 
 ## No Fakematching
 

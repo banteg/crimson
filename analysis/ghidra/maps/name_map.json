@@ -5001,9 +5001,13 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00452f1d",
-    "name": "vec2_normalize_dispatch_init",
-    "signature": "vec2f_t * __stdcall vec2_normalize_dispatch_init(vec2f_t *dst, const vec2f_t *src)",
-    "comment": "dispatch initializer: calls renderer_select_backend(1), then tail-jumps via DAT_00479658; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0"
+    "name": "d3dx_init_vec2_normalize",
+    "signature": "vec2f_t * __stdcall d3dx_init_vec2_normalize(vec2f_t *dst, const vec2f_t *src)",
+    "comment": "dispatch initializer: calls renderer_select_backend(1), then tail-jumps via DAT_00479658; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0",
+    "aliases": [
+      "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -5014,269 +5018,1101 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00452f30",
+    "name": "d3dx_init_vec2_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00452f5a",
+    "name": "d3dx_c_vec2_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00452fe8",
+    "name": "d3dx_init_vec2_catmull_rom",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453012",
+    "name": "d3dx_c_vec2_catmull_rom",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004530c1",
+    "name": "d3dx_init_vec2_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004530f0",
+    "name": "d3dx_c_vec2_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453133",
+    "name": "d3dx_init_vec2_transform",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0045315a",
-    "name": "FUN_0045315a",
-    "signature": "int FUN_0045315a(void)",
-    "comment": "[binja] int32_t sub_45315a()"
+    "name": "d3dx_init_vec3_normalize",
+    "signature": "int d3dx_init_vec3_normalize(void)",
+    "comment": "[binja] int32_t d3dx_init_vec3_normalize()",
+    "aliases": [
+      "?init_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453167",
+    "name": "D3DXVec3Normalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXVec3Normalize@8.",
+    "create": false,
+    "aliases": [
+      "_D3DXVec3Normalize@8"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045316d",
+    "name": "d3dx_init_vec3_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453197",
+    "name": "d3dx_c_vec3_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453245",
+    "name": "d3dx_init_vec3_catmull_rom",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045326f",
+    "name": "d3dx_c_vec3_catmull_rom",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453340",
+    "name": "d3dx_init_vec3_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045336f",
+    "name": "d3dx_c_vec3_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004533d9",
+    "name": "d3dx_c_vec3_transform",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00453464",
-    "name": "FUN_00453464",
-    "signature": "int FUN_00453464(void)",
-    "comment": "[binja] int32_t sub_453464()"
+    "name": "d3dx_init_vec3_transform_coord",
+    "signature": "int d3dx_init_vec3_transform_coord(void)",
+    "comment": "[binja] int32_t d3dx_init_vec3_transform_coord()",
+    "aliases": [
+      "?init_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453471",
+    "name": "D3DXVec3TransformCoord",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXVec3TransformCoord@12.",
+    "create": false,
+    "aliases": [
+      "_D3DXVec3TransformCoord@12"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453484",
+    "name": "d3dx_c_vec3_transform_normal",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004534ea",
-    "name": "FUN_004534ea",
-    "signature": "int FUN_004534ea(void)",
-    "comment": "[binja] int32_t sub_4534ea()"
+    "name": "d3dx_init_vec3_project",
+    "signature": "int d3dx_init_vec3_project(void)",
+    "comment": "[binja] int32_t d3dx_init_vec3_project()",
+    "aliases": [
+      "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004534fb",
+    "name": "d3dx_init_vec3_unproject",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453519",
+    "name": "d3dx_c_vec4_cross",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453616",
+    "name": "d3dx_init_vec4_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453640",
+    "name": "d3dx_c_vec4_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453711",
+    "name": "d3dx_init_vec4_catmull_rom",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045373b",
+    "name": "d3dx_c_vec4_catmull_rom",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045382e",
+    "name": "d3dx_init_vec4_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045385d",
+    "name": "d3dx_c_vec4_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004538e1",
+    "name": "d3dx_c_vec4_transform",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045398d",
+    "name": "d3dx_c_matrixf_determinant",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00453a57",
-    "name": "FUN_00453a57",
-    "signature": "int FUN_00453a57(void)",
-    "comment": "[binja] int32_t sub_453a57()"
+    "name": "d3dx_init_matrix_multiply",
+    "signature": "int d3dx_init_matrix_multiply(void)",
+    "comment": "[binja] int32_t d3dx_init_matrix_multiply()",
+    "aliases": [
+      "?init_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453a64",
+    "name": "D3DXMatrixMultiply",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXMatrixMultiply@12.",
+    "create": false,
+    "aliases": [
+      "_D3DXMatrixMultiply@12"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453a6a",
+    "name": "d3dx_c_matrix_multiply",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00453ca0",
-    "name": "FUN_00453ca0",
-    "signature": "int FUN_00453ca0(void)",
-    "comment": "[binja] int32_t sub_453ca0()"
+    "name": "d3dx_init_matrix_transpose",
+    "signature": "int d3dx_init_matrix_transpose(void)",
+    "comment": "[binja] int32_t d3dx_init_matrix_transpose()",
+    "aliases": [
+      "?init_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453cad",
+    "name": "D3DXMatrixTranspose",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXMatrixTranspose@8.",
+    "create": false,
+    "aliases": [
+      "_D3DXMatrixTranspose@8"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453cb3",
+    "name": "d3dx_c_matrix_transpose",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453d2d",
+    "name": "d3dx_c_matrix_multiply_transpose",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00453f63",
-    "name": "FUN_00453f63",
-    "signature": "int FUN_00453f63(void)",
-    "comment": "[binja] int32_t sub_453f63()"
+    "name": "d3dx_init_matrix_inverse",
+    "signature": "int d3dx_init_matrix_inverse(void)",
+    "comment": "[binja] int32_t d3dx_init_matrix_inverse()",
+    "aliases": [
+      "?init_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453f70",
+    "name": "D3DXMatrixInverse",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXMatrixInverse@12.",
+    "create": false,
+    "aliases": [
+      "_D3DXMatrixInverse@12"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453f76",
+    "name": "d3dx_c_matrix_inverse",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454303",
-    "name": "FUN_00454303",
-    "signature": "float * FUN_00454303(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall sub_454303(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479624 (idx 0x21)"
+    "name": "d3dx_init_matrix_scaling",
+    "signature": "float * d3dx_init_matrix_scaling(float *arg1, float arg2, float arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_scaling(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479624 (idx 0x21)",
+    "aliases": [
+      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454331",
+    "name": "d3dx_c_matrix_scaling",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0045438d",
-    "name": "FUN_0045438d",
-    "signature": "float * FUN_0045438d(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall sub_45438d(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479608 (idx 0x1a)"
+    "name": "d3dx_init_matrix_translation",
+    "signature": "float * d3dx_init_matrix_translation(float *arg1, float arg2, float arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_translation(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479608 (idx 0x1a)",
+    "aliases": [
+      "?init_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004543bb",
+    "name": "d3dx_c_matrix_translation",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454417",
-    "name": "FUN_00454417",
-    "signature": "float * FUN_00454417(float *arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall sub_454417(float arg1); wrapper calls PTR_FUN_00479618 (idx 0x1e)"
+    "name": "d3dx_init_matrix_rotation_x",
+    "signature": "float * d3dx_init_matrix_rotation_x(float *arg1, float arg2)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_x(float arg1); wrapper calls PTR_FUN_00479618 (idx 0x1e)",
+    "aliases": [
+      "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454433",
-    "name": "FUN_00454433",
-    "signature": "float * FUN_00454433(float *arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_454433(float* arg1, float arg2)"
+    "name": "d3dx_c_matrix_rotation_x",
+    "signature": "float * d3dx_c_matrix_rotation_x(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall d3dx_c_matrix_rotation_x(float* arg1, float arg2)",
+    "aliases": [
+      "?c_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004544ad",
-    "name": "FUN_004544ad",
-    "signature": "float * FUN_004544ad(float *arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall sub_4544ad(float arg1); wrapper calls PTR_FUN_0047961c (idx 0x1f)"
+    "name": "d3dx_init_matrix_rotation_y",
+    "signature": "float * d3dx_init_matrix_rotation_y(float *arg1, float arg2)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_y(float arg1); wrapper calls PTR_FUN_0047961c (idx 0x1f)",
+    "aliases": [
+      "?init_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004544c9",
-    "name": "FUN_004544c9",
-    "signature": "float * FUN_004544c9(float *arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_4544c9(float* arg1, float arg2)"
+    "name": "d3dx_c_matrix_rotation_y",
+    "signature": "float * d3dx_c_matrix_rotation_y(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall d3dx_c_matrix_rotation_y(float* arg1, float arg2)",
+    "aliases": [
+      "?c_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454544",
-    "name": "FUN_00454544",
-    "signature": "float * FUN_00454544(float *arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall sub_454544(float arg1); wrapper calls PTR_FUN_00479620 (idx 0x20)"
+    "name": "d3dx_init_matrix_rotation_z",
+    "signature": "float * d3dx_init_matrix_rotation_z(float *arg1, float arg2)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_z(float arg1); wrapper calls PTR_FUN_00479620 (idx 0x20)",
+    "aliases": [
+      "?init_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454560",
-    "name": "FUN_00454560",
-    "signature": "float * FUN_00454560(float *arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_454560(float* arg1, float arg2)"
+    "name": "d3dx_c_matrix_rotation_z",
+    "signature": "float * d3dx_c_matrix_rotation_z(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall d3dx_c_matrix_rotation_z(float* arg1, float arg2)",
+    "aliases": [
+      "?c_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004545dc",
-    "name": "FUN_004545dc",
-    "signature": "float * FUN_004545dc(float *arg1, float *arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall sub_4545dc(int arg1, float arg2); wrapper calls PTR_FUN_00479648 (idx 0x2a)"
+    "name": "d3dx_init_matrix_rotation_axis",
+    "signature": "float * d3dx_init_matrix_rotation_axis(float *arg1, float *arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_axis(int arg1, float arg2); wrapper calls PTR_FUN_00479648 (idx 0x2a)",
+    "aliases": [
+      "?init_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004545fc",
-    "name": "FUN_004545fc",
-    "signature": "float * FUN_004545fc(float *arg1, float arg2, float arg3)",
-    "comment": "[binja] float* __stdcall sub_4545fc(float* arg1, float arg2, float arg3)"
+    "name": "d3dx_c_matrix_rotation_axis",
+    "signature": "float * d3dx_c_matrix_rotation_axis(float *arg1, float arg2, float arg3)",
+    "comment": "[binja] float* __stdcall d3dx_c_matrix_rotation_axis(float* arg1, float arg2, float arg3)",
+    "aliases": [
+      "?c_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004546fe",
-    "name": "FUN_004546fe",
-    "signature": "int FUN_004546fe(void)",
-    "comment": "[binja] int32_t sub_4546fe()"
+    "name": "d3dx_init_matrix_rotation_quaternion",
+    "signature": "int d3dx_init_matrix_rotation_quaternion(void)",
+    "comment": "[binja] int32_t d3dx_init_matrix_rotation_quaternion()",
+    "aliases": [
+      "?init_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045470b",
+    "name": "D3DXMatrixRotationQuaternion",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXMatrixRotationQuaternion@8.",
+    "create": false,
+    "aliases": [
+      "_D3DXMatrixRotationQuaternion@8"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454711",
+    "name": "d3dx_c_matrix_rotation_quaternion",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004547f3",
-    "name": "FUN_004547f3",
-    "signature": "float * FUN_004547f3(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall sub_4547f3(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479640 (idx 0x28)"
+    "name": "d3dx_init_matrix_rotation_yaw_pitch_roll",
+    "signature": "float * d3dx_init_matrix_rotation_yaw_pitch_roll(float *arg1, float arg2, float arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479640 (idx 0x28)",
+    "aliases": [
+      "?init_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454821",
-    "name": "FUN_00454821",
-    "signature": "int FUN_00454821(void)",
-    "comment": "[binja] int32_t sub_454821()"
+    "name": "d3dx_init_matrix_transformation",
+    "signature": "int d3dx_init_matrix_transformation(void)",
+    "comment": "[binja] int32_t d3dx_init_matrix_transformation()",
+    "aliases": [
+      "?init_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454832",
+    "name": "d3dx_init_matrix_affine_transformation",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454859",
+    "name": "d3dx_c_matrix_affine_transformation",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454966",
+    "name": "d3dx_c_quaternion_to_axis_angle",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454a10",
+    "name": "d3dx_c_quaternion_rotation_matrix",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454b44",
-    "name": "FUN_00454b44",
-    "signature": "float * FUN_00454b44(float *arg1, float *arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall sub_454b44(int arg1, float arg2); wrapper calls PTR_FUN_00479614 (idx 0x1d)"
+    "name": "d3dx_init_quaternion_rotation_axis",
+    "signature": "float * d3dx_init_quaternion_rotation_axis(float *arg1, float *arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_rotation_axis(int arg1, float arg2); wrapper calls PTR_FUN_00479614 (idx 0x1d)",
+    "aliases": [
+      "?init_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454b64",
-    "name": "FUN_00454b64",
-    "signature": "float * FUN_00454b64(float arg1, float arg2, float arg3)",
-    "comment": "[binja] float* __stdcall sub_454b64(float arg1, float arg2, float arg3)"
+    "name": "d3dx_c_quaternion_rotation_axis",
+    "signature": "float * d3dx_c_quaternion_rotation_axis(float arg1, float arg2, float arg3)",
+    "comment": "[binja] float* __stdcall d3dx_c_quaternion_rotation_axis(float arg1, float arg2, float arg3)",
+    "aliases": [
+      "?c_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454bc0",
-    "name": "FUN_00454bc0",
-    "signature": "float * FUN_00454bc0(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall sub_454bc0(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479604 (idx 0x19)"
+    "name": "d3dx_init_quaternion_rotation_yaw_pitch_roll",
+    "signature": "float * d3dx_init_quaternion_rotation_yaw_pitch_roll(float *arg1, float arg2, float arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479604 (idx 0x19)",
+    "aliases": [
+      "?init_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454bee",
+    "name": "D3DXQuaternionRotationYawPitchRoll",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXQuaternionRotationYawPitchRoll@16.",
+    "create": false,
+    "aliases": [
+      "_D3DXQuaternionRotationYawPitchRoll@16"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454bf4",
+    "name": "d3dx_c_quaternion_rotation_yaw_pitch_roll",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454ccd",
-    "name": "FUN_00454ccd",
-    "signature": "int FUN_00454ccd(void)",
-    "comment": "[binja] int32_t sub_454ccd()"
+    "name": "d3dx_init_quaternion_multiply",
+    "signature": "int d3dx_init_quaternion_multiply(void)",
+    "comment": "[binja] int32_t d3dx_init_quaternion_multiply()",
+    "aliases": [
+      "?init_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454cda",
+    "name": "D3DXQuaternionMultiply",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXQuaternionMultiply@12.",
+    "create": false,
+    "aliases": [
+      "_D3DXQuaternionMultiply@12"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454ce0",
+    "name": "d3dx_c_quaternion_multiply",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454d83",
+    "name": "d3dx_c_quaternion_normalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454e3c",
-    "name": "FUN_00454e3c",
-    "signature": "int FUN_00454e3c(void)",
-    "comment": "[binja] int32_t sub_454e3c()"
+    "name": "d3dx_init_quaternion_inverse",
+    "signature": "int d3dx_init_quaternion_inverse(void)",
+    "comment": "[binja] int32_t d3dx_init_quaternion_inverse()",
+    "aliases": [
+      "?init_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454e49",
+    "name": "D3DXQuaternionInverse",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXQuaternionInverse@8.",
+    "create": false,
+    "aliases": [
+      "_D3DXQuaternionInverse@8"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454e4f",
+    "name": "d3dx_c_quaternion_inverse",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454f03",
-    "name": "FUN_00454f03",
-    "signature": "int FUN_00454f03(void)",
-    "comment": "[binja] int32_t sub_454f03()"
+    "name": "D3DXQuaternionLn",
+    "signature": "int D3DXQuaternionLn(void)",
+    "comment": "[binja] int32_t D3DXQuaternionLn()",
+    "aliases": [
+      "_D3DXQuaternionLn@8"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454f09",
+    "name": "d3dx_c_quaternion_ln",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00454f87",
-    "name": "FUN_00454f87",
-    "signature": "int FUN_00454f87(void)",
-    "comment": "[binja] int32_t sub_454f87()"
+    "name": "D3DXQuaternionExp",
+    "signature": "int D3DXQuaternionExp(void)",
+    "comment": "[binja] int32_t D3DXQuaternionExp()",
+    "aliases": [
+      "_D3DXQuaternionExp@8"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454f8d",
+    "name": "d3dx_c_quaternion_exp",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455028",
-    "name": "FUN_00455028",
-    "signature": "float * FUN_00455028(float *arg1, float *arg2, float *arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall sub_455028(int arg1, int arg2, float arg3); wrapper calls PTR_FUN_0047962c (idx 0x23)"
+    "name": "d3dx_init_quaternion_slerp",
+    "signature": "float * d3dx_init_quaternion_slerp(float *arg1, float *arg2, float *arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_slerp(int arg1, int arg2, float arg3); wrapper calls PTR_FUN_0047962c (idx 0x23)",
+    "aliases": [
+      "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045504c",
+    "name": "D3DXQuaternionSlerp",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXQuaternionSlerp@16.",
+    "create": false,
+    "aliases": [
+      "_D3DXQuaternionSlerp@16"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455052",
+    "name": "d3dx_c_quaternion_slerp",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455135",
+    "name": "d3dx_init_quaternion_squad",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045515f",
+    "name": "d3dx_c_quaternion_squad",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004551b6",
-    "name": "FUN_004551b6",
-    "signature": "int FUN_004551b6(void)",
-    "comment": "[binja] int32_t sub_4551b6()"
+    "name": "d3dx_init_quaternion_squad_setup",
+    "signature": "int d3dx_init_quaternion_squad_setup(void)",
+    "comment": "[binja] int32_t d3dx_init_quaternion_squad_setup()",
+    "aliases": [
+      "?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004551c7",
+    "name": "d3dx_init_quaternion_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004551f6",
+    "name": "d3dx_c_quaternion_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455281",
-    "name": "FUN_00455281",
-    "signature": "int FUN_00455281(void)",
-    "comment": "[binja] int32_t sub_455281()"
+    "name": "d3dx_init_plane_normalize",
+    "signature": "int d3dx_init_plane_normalize(void)",
+    "comment": "[binja] int32_t d3dx_init_plane_normalize()",
+    "aliases": [
+      "?init_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045528e",
+    "name": "D3DXPlaneNormalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol _D3DXPlaneNormalize@8.",
+    "create": false,
+    "aliases": [
+      "_D3DXPlaneNormalize@8"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455294",
+    "name": "d3dx_c_plane_normalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455345",
+    "name": "d3dx_c_plane_intersect_line",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004553f4",
+    "name": "d3dx_c_plane_from_point_normal",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455439",
+    "name": "d3dx_c_plane_from_points",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004554e8",
+    "name": "d3dx_c_plane_transform",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455587",
-    "name": "vec2_normalize_safe",
-    "signature": "vec2f_t * __stdcall vec2_normalize_safe(vec2f_t *dst, const vec2f_t *src)",
-    "comment": "normalizes src into dst, preserves near-unit vectors, and writes zero vector when length <= FLT_MIN; observed as DAT_00479658 target after vec2_normalize_dispatch_init (2026-02-18 capture)"
+    "name": "d3dx_c_vec2_normalize",
+    "signature": "vec2f_t * __stdcall d3dx_c_vec2_normalize(vec2f_t *dst, const vec2f_t *src)",
+    "comment": "normalizes src into dst, preserves near-unit vectors, and writes zero vector when length <= FLT_MIN; observed as DAT_00479658 target after d3dx_init_vec2_normalize (2026-02-18 capture)",
+    "aliases": [
+      "?c_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455614",
-    "name": "FUN_00455614",
-    "signature": "float * FUN_00455614(float *arg1, float *arg2, float *arg3)",
-    "comment": "[binja] float* __stdcall sub_455614(float* arg1, float* arg2, float* arg3)"
+    "name": "d3dx_c_vec2_transform",
+    "signature": "float * d3dx_c_vec2_transform(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec2_transform(float* arg1, float* arg2, float* arg3)",
+    "aliases": [
+      "?c_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0045567f",
-    "name": "FUN_0045567f",
-    "signature": "float * FUN_0045567f(float *arg1, float *arg2, float *arg3)",
-    "comment": "[binja] float* __stdcall sub_45567f(float* arg1, float* arg2, float* arg3)"
+    "name": "d3dx_c_vec2_transform_coord",
+    "signature": "float * d3dx_c_vec2_transform_coord(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec2_transform_coord(float* arg1, float* arg2, float* arg3)",
+    "aliases": [
+      "?c_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004556ff",
-    "name": "FUN_004556ff",
-    "signature": "float * FUN_004556ff(float *arg1, float *arg2, float *arg3)",
-    "comment": "[binja] float* __stdcall sub_4556ff(float* arg1, float* arg2, float* arg3)"
+    "name": "d3dx_c_vec2_transform_normal",
+    "signature": "float * d3dx_c_vec2_transform_normal(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec2_transform_normal(float* arg1, float* arg2, float* arg3)",
+    "aliases": [
+      "?c_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0045573b",
-    "name": "FUN_0045573b",
-    "signature": "float * FUN_0045573b(float *arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_45573b(float* arg1, float arg2)"
+    "name": "d3dx_c_vec3_normalize",
+    "signature": "float * d3dx_c_vec3_normalize(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec3_normalize(float* arg1, float arg2)",
+    "aliases": [
+      "?c_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004557db",
-    "name": "FUN_004557db",
-    "signature": "float * FUN_004557db(float *arg1, float *arg2, float *arg3)",
-    "comment": "[binja] float* __stdcall sub_4557db(float* arg1, float* arg2, float* arg3)"
+    "name": "d3dx_c_vec3_transform_coord",
+    "signature": "float * d3dx_c_vec3_transform_coord(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec3_transform_coord(float* arg1, float* arg2, float* arg3)",
+    "aliases": [
+      "?c_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045589a",
+    "name": "d3dx_c_vec3_project",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455a27",
-    "name": "FUN_00455a27",
-    "signature": "float * FUN_00455a27(float *arg1, float *arg2, int *arg3, int *arg4, int *arg5, int *arg6)",
-    "comment": "[binja] float* __stdcall sub_455a27(float* arg1, float* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)"
+    "name": "d3dx_c_vec3_unproject",
+    "signature": "float * d3dx_c_vec3_unproject(float *arg1, float *arg2, int *arg3, int *arg4, int *arg5, int *arg6)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec3_unproject(float* arg1, float* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)",
+    "aliases": [
+      "?c_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455bcd",
-    "name": "FUN_00455bcd",
-    "signature": "float * FUN_00455bcd(float *arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_455bcd(float* arg1, float arg2)"
+    "name": "d3dx_c_vec4_normalize",
+    "signature": "float * d3dx_c_vec4_normalize(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec4_normalize(float* arg1, float arg2)",
+    "aliases": [
+      "?c_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455c86",
-    "name": "FUN_00455c86",
-    "signature": "int FUN_00455c86(int arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall sub_455c86(int32_t arg1, float arg2, float arg3, float arg4)"
+    "name": "d3dx_c_matrix_rotation_yaw_pitch_roll",
+    "signature": "int d3dx_c_matrix_rotation_yaw_pitch_roll(int arg1, float arg2, float arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall d3dx_c_matrix_rotation_yaw_pitch_roll(int32_t arg1, float arg2, float arg3, float arg4)",
+    "aliases": [
+      "?c_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455cbf",
+    "name": "d3dx_c_matrix_transformation",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455f73",
+    "name": "d3dx_c_matrix_shadow",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045604d",
+    "name": "d3dx_c_matrix_reflect",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045610c",
+    "name": "d3dx_c_quaternion_squad_setup",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6439,7 +7275,9 @@
     "program": "crimsonland.exe",
     "address": "0x00466ca6",
     "name": "crt_sbh_free_block",
-    "aliases": ["___sbh_free_block"],
+    "aliases": [
+      "___sbh_free_block"
+    ],
     "signature": "int * crt_sbh_free_block(void *region, int *block)",
     "comment": "Exact VC6 small-block heap free/coalescing helper from libcmt.lib sbheap.obj.",
     "create": false
@@ -6462,7 +7300,9 @@
     "program": "crimsonland.exe",
     "address": "0x00467484",
     "name": "crt_sbh_resize_block",
-    "aliases": ["___sbh_resize_block"],
+    "aliases": [
+      "___sbh_resize_block"
+    ],
     "signature": "int crt_sbh_resize_block(int *region, void **block, void *size)",
     "comment": "Exact VC6 in-place small-block heap resize helper from libcmt.lib sbheap.obj.",
     "create": false
@@ -6773,7 +7613,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046b740",
     "name": "crt_fdiv_main_routine",
-    "aliases": ["_fdiv_main_routine"],
+    "aliases": [
+      "_fdiv_main_routine"
+    ],
     "comment": "Exact VC6 SP6 Pentium FDIV workaround core from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6781,7 +7623,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046b857",
     "name": "crt_adj_fdiv_r",
-    "aliases": ["__adj_fdiv_r"],
+    "aliases": [
+      "__adj_fdiv_r"
+    ],
     "comment": "Exact VC6 SP6 64-way x87 division dispatcher from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6789,7 +7633,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046bcf6",
     "name": "crt_fdivp_sti_st",
-    "aliases": ["__fdivp_sti_st"],
+    "aliases": [
+      "__fdivp_sti_st"
+    ],
     "comment": "Exact VC6 SP6 x87 FDIVP wrapper from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6797,7 +7643,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046bd09",
     "name": "crt_fdivrp_sti_st",
-    "aliases": ["__fdivrp_sti_st"],
+    "aliases": [
+      "__fdivrp_sti_st"
+    ],
     "comment": "Exact VC6 SP6 x87 FDIVRP wrapper from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6805,7 +7653,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046bf1c",
     "name": "crt_safe_fdiv",
-    "aliases": ["__safe_fdiv"],
+    "aliases": [
+      "__safe_fdiv"
+    ],
     "comment": "Exact VC6 SP6 safe x87 FDIV wrapper from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6813,7 +7663,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046bf31",
     "name": "crt_safe_fdivr",
-    "aliases": ["__safe_fdivr"],
+    "aliases": [
+      "__safe_fdivr"
+    ],
     "comment": "Exact VC6 SP6 safe x87 FDIVR wrapper from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6821,7 +7673,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046bf46",
     "name": "crt_fprem_common",
-    "aliases": ["__fprem_common"],
+    "aliases": [
+      "__fprem_common"
+    ],
     "comment": "Exact VC6 SP6 shared x87 FPREM core from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6829,7 +7683,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046c14c",
     "name": "crt_adj_fprem",
-    "aliases": ["__adj_fprem"],
+    "aliases": [
+      "__adj_fprem"
+    ],
     "comment": "Exact VC6 SP6 adjusted x87 FPREM wrapper from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6837,7 +7693,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046c1fe",
     "name": "crt_fprem1_common",
-    "aliases": ["__fprem1_common"],
+    "aliases": [
+      "__fprem1_common"
+    ],
     "comment": "Exact VC6 SP6 shared x87 FPREM1 core from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6845,7 +7703,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046c404",
     "name": "crt_adj_fprem1",
-    "aliases": ["__adj_fprem1"],
+    "aliases": [
+      "__adj_fprem1"
+    ],
     "comment": "Exact VC6 SP6 adjusted x87 FPREM1 wrapper from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -7056,7 +7916,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046fa10",
     "name": "crt_thread_entry_scope_table",
-    "aliases": ["$T17507"],
+    "aliases": [
+      "$T17507"
+    ],
     "signature": "const unsigned char crt_thread_entry_scope_table[12]",
     "comment": "VC6 SEH scope table occupying thread.obj's complete 12-byte .rdata section, proven by the exact __threadstart relocation.",
     "create": false
@@ -7065,7 +7927,9 @@
     "program": "crimsonland.exe",
     "address": "0x004710fc",
     "name": "crt_pre_terminator_begin",
-    "aliases": ["___xp_a"],
+    "aliases": [
+      "___xp_a"
+    ],
     "comment": "VC6 .CRT$XPA begin marker proven by the exact _doexit relocation in crt0dat.obj.",
     "create": false
   },
@@ -7073,7 +7937,9 @@
     "program": "crimsonland.exe",
     "address": "0x00471104",
     "name": "crt_pre_terminator_end",
-    "aliases": ["___xp_z"],
+    "aliases": [
+      "___xp_z"
+    ],
     "comment": "VC6 .CRT$XPZ end marker proven by the exact _doexit relocation in crt0dat.obj.",
     "create": false
   },
@@ -7081,7 +7947,9 @@
     "program": "crimsonland.exe",
     "address": "0x00471108",
     "name": "crt_terminator_begin",
-    "aliases": ["___xt_a"],
+    "aliases": [
+      "___xt_a"
+    ],
     "comment": "VC6 .CRT$XTA begin marker proven by the exact _doexit relocation in crt0dat.obj.",
     "create": false
   },
@@ -7089,7 +7957,9 @@
     "program": "crimsonland.exe",
     "address": "0x00471110",
     "name": "crt_terminator_end",
-    "aliases": ["___xt_z"],
+    "aliases": [
+      "___xt_z"
+    ],
     "comment": "VC6 .CRT$XTZ end marker proven by the exact _doexit relocation in crt0dat.obj.",
     "create": false
   },
@@ -7097,7 +7967,9 @@
     "program": "crimsonland.exe",
     "address": "0x0047b164",
     "name": "crt_fp_mt_init",
-    "aliases": ["__FPmtinit"],
+    "aliases": [
+      "__FPmtinit"
+    ],
     "signature": "void (*crt_fp_mt_init)(void)",
     "comment": "VC6 multithread floating-point initializer pointer proven by the exact __threadstart relocation in thread.obj.",
     "create": false
@@ -7106,7 +7978,9 @@
     "program": "crimsonland.exe",
     "address": "0x0047b168",
     "name": "crt_fp_mt_term",
-    "aliases": ["__FPmtterm"],
+    "aliases": [
+      "__FPmtterm"
+    ],
     "signature": "void (*crt_fp_mt_term)(void)",
     "comment": "VC6 multithread floating-point terminator pointer proven by the exact __endthread relocation in thread.obj.",
     "create": false
@@ -7115,7 +7989,9 @@
     "program": "crimsonland.exe",
     "address": "0x0047b180",
     "name": "crt_exit_routine",
-    "aliases": ["__aexit_rtn"],
+    "aliases": [
+      "__aexit_rtn"
+    ],
     "signature": "void (*crt_exit_routine)(int)",
     "comment": "VC6 WinCRT process-exit routine pointer proven by the exact __amsg_exit relocation in wincrt0.obj.",
     "create": false
@@ -7124,7 +8000,9 @@
     "program": "crimsonland.exe",
     "address": "0x004d99bc",
     "name": "crt_termination_done",
-    "aliases": ["__C_Termination_Done"],
+    "aliases": [
+      "__C_Termination_Done"
+    ],
     "signature": "unsigned char crt_termination_done",
     "comment": "VC6 CRT termination-state flag proven by the exact _doexit relocation in crt0dat.obj.",
     "create": false
@@ -7133,7 +8011,9 @@
     "program": "crimsonland.exe",
     "address": "0x004d99c0",
     "name": "crt_exit_done",
-    "aliases": ["__C_Exit_Done"],
+    "aliases": [
+      "__C_Exit_Done"
+    ],
     "signature": "int crt_exit_done",
     "comment": "VC6 CRT exit-state flag proven by the exact _doexit relocation in crt0dat.obj.",
     "create": false
@@ -7158,7 +8038,9 @@
     "name": "grim_noop",
     "signature": "void grim_noop(void)",
     "comment": "debug stub and folded empty callback (no-op)",
-    "aliases": ["?on_tick@MyApp@@QAEXXZ"]
+    "aliases": [
+      "?on_tick@MyApp@@QAEXXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -7257,7 +8139,9 @@
     "name": "grim_app_cleanup",
     "signature": "void __fastcall grim_app_cleanup(void *self)",
     "comment": "release and clear the MyApp GDI object",
-    "aliases": ["?cleanup@MyApp@@QAEXXZ"]
+    "aliases": [
+      "?cleanup@MyApp@@QAEXXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -7265,7 +8149,9 @@
     "name": "grim_app_tick",
     "signature": "bool __fastcall grim_app_tick(void *self)",
     "comment": "advance the MyApp 30 ms tick accumulator",
-    "aliases": ["?tick@MyApp@@QAE_NXZ"]
+    "aliases": [
+      "?tick@MyApp@@QAE_NXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -7273,7 +8159,9 @@
     "name": "grim_app_init",
     "signature": "bool __fastcall grim_app_init(void *self)",
     "comment": "initialize MyApp timing, dimensions, working directory, and client rectangle",
-    "aliases": ["?init@MyApp@@QAE_NXZ"]
+    "aliases": [
+      "?init@MyApp@@QAE_NXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -7281,7 +8169,9 @@
     "name": "grim_app_shutdown",
     "signature": "void __fastcall grim_app_shutdown(void *self)",
     "comment": "tail-call the MyApp GDI cleanup body when the run loop exits",
-    "aliases": ["?shutdown@MyApp@@QAEXXZ"]
+    "aliases": [
+      "?shutdown@MyApp@@QAEXXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -7289,7 +8179,9 @@
     "name": "grim_app_pump",
     "signature": "void __fastcall grim_app_pump(void *self)",
     "comment": "dispatch the singleton's empty callback on each 30 ms app tick",
-    "aliases": ["?pump@MyApp@@QAEXXZ"]
+    "aliases": [
+      "?pump@MyApp@@QAEXXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -7379,7 +8271,9 @@
     "program": "grim.dll",
     "address": "0x10004a50",
     "name": "grim_texture_init",
-    "aliases": ["??0GrimTexture@@QAE@PAD@Z"],
+    "aliases": [
+      "??0GrimTexture@@QAE@PAD@Z"
+    ],
     "signature": "void * grim_texture_init(void *texture, char *name)",
     "comment": "allocates/copies texture name and zeroes fields"
   },
@@ -7387,7 +8281,9 @@
     "program": "grim.dll",
     "address": "0x10004ab0",
     "name": "grim_texture_release",
-    "aliases": ["??1GrimTexture@@QAE@XZ"],
+    "aliases": [
+      "??1GrimTexture@@QAE@XZ"
+    ],
     "signature": "void grim_texture_release(void *texture)",
     "comment": "releases COM objects and frees texture name"
   },
@@ -7417,7 +8313,9 @@
     "program": "grim.dll",
     "address": "0x10004ec0",
     "name": "grim_texture_load_file",
-    "aliases": ["?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z"],
+    "aliases": [
+      "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z"
+    ],
     "signature": "bool __thiscall grim_texture_load_file(void *texture, char *path)",
     "comment": "loads an ANSI-path texture from the lookup blob or disk, including JAZ decode"
   },
@@ -7517,7 +8415,9 @@
     "program": "grim.dll",
     "address": "0x10005cb0",
     "name": "grim_save_screenshot",
-    "aliases": ["grim_check_device"],
+    "aliases": [
+      "grim_check_device"
+    ],
     "signature": "bool grim_save_screenshot(char *path)",
     "comment": "Grim2D vtable 0xc: captures the front buffer and saves it as a BMP"
   },
@@ -8082,7 +8982,7 @@
     "address": "0x100092b0",
     "name": "grim_draw_text_mono",
     "signature": "void grim_draw_text_mono(float x, float y, char *text)",
-    "comment": "Grim2D vtable 0x13c: fixed-grid mono text with native ä/å/ö composite glyphs"
+    "comment": "Grim2D vtable 0x13c: fixed-grid mono text with native \u00e4/\u00e5/\u00f6 composite glyphs"
   },
   {
     "program": "grim.dll",
@@ -8355,7 +9255,9 @@
     "program": "grim.dll",
     "address": "0x1000aaa6",
     "name": "grim_format_info_lookup",
-    "aliases": ["?D3DXGetFormatInfo@@YAPBU_D3DXFORMAT_INFO@@W4_D3DFORMAT@@@Z"],
+    "aliases": [
+      "?D3DXGetFormatInfo@@YAPBU_D3DXFORMAT_INFO@@W4_D3DFORMAT@@@Z"
+    ],
     "signature": "int * grim_format_info_lookup(int format)",
     "comment": "DirectX 8.1 archive-proven D3DXGetFormatInfo body; returns the matching format descriptor or the unknown-format fallback."
   },
@@ -8363,7 +9265,9 @@
     "program": "grim.dll",
     "address": "0x1000ae4f",
     "name": "grim_yuv_cache_entry_init",
-    "aliases": ["??0D3DXCOLOR@@QAE@XZ"],
+    "aliases": [
+      "??0D3DXCOLOR@@QAE@XZ"
+    ],
     "signature": "void * grim_yuv_cache_entry_init(void *this)",
     "comment": "Empty default constructor reused for 16-byte color entries; exact D3DXComputeNormalMap relocation proves the D3DXCOLOR constructor alias."
   },
@@ -8371,7 +9275,9 @@
     "program": "grim.dll",
     "address": "0x1000b393",
     "name": "grim_vector_constructor_iterator",
-    "aliases": ["??_H@YGXPAXIHP6EPAX0@Z@Z"],
+    "aliases": [
+      "??_H@YGXPAXIHP6EPAX0@Z@Z"
+    ],
     "signature": "void grim_vector_constructor_iterator(void *base, unsigned int size, int count, void *constructor)",
     "comment": "VC6 vector-construction iterator; the decorated runtime alias is proven by the exact DirectX 8.1 archive body."
   },
@@ -8379,7 +9285,10 @@
     "program": "grim.dll",
     "address": "0x1000aaca",
     "name": "d3dx_score_format",
-    "aliases": ["FUN_1000aaca", "?D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z"],
+    "aliases": [
+      "FUN_1000aaca",
+      "?D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z"
+    ],
     "signature": "unsigned int d3dx_score_format(const void *candidate, const void *requested)",
     "comment": "Exact DirectX 8.1 format-compatibility scoring helper.",
     "create": false
@@ -8388,7 +9297,10 @@
     "program": "grim.dll",
     "address": "0x1000ab3f",
     "name": "d3dx_find_closest_format",
-    "aliases": ["sub_1000AB3F", "?D3DXFindClosestFormat@@YA?AW4_D3DFORMAT@@PBW41@PBUtagPALETTEENTRY@@PBU_D3DXFORMAT_INFO@@@Z"],
+    "aliases": [
+      "sub_1000AB3F",
+      "?D3DXFindClosestFormat@@YA?AW4_D3DFORMAT@@PBW41@PBUtagPALETTEENTRY@@PBU_D3DXFORMAT_INFO@@@Z"
+    ],
     "signature": "int d3dx_find_closest_format(const int *formats, const void *palette, const void *requested)",
     "comment": "Exact DirectX 8.1 helper that ranks a format list against the requested descriptor.",
     "create": false
@@ -8397,7 +9309,10 @@
     "program": "grim.dll",
     "address": "0x1000abad",
     "name": "d3dx_find_closest_device_format",
-    "aliases": ["sub_1000ABAD", "?D3DXFindClosestDeviceFormat@@YA?AW4_D3DFORMAT@@PAUIDirect3DDevice8@@KW4_D3DRESOURCETYPE@@PBU_D3DXFORMAT_INFO@@@Z"],
+    "aliases": [
+      "sub_1000ABAD",
+      "?D3DXFindClosestDeviceFormat@@YA?AW4_D3DFORMAT@@PAUIDirect3DDevice8@@KW4_D3DRESOURCETYPE@@PBU_D3DXFORMAT_INFO@@@Z"
+    ],
     "signature": "int d3dx_find_closest_device_format(void *device, unsigned long usage, int resource_type, const void *requested)",
     "comment": "Exact DirectX 8.1 helper that selects the closest device-supported resource format.",
     "create": false
@@ -8406,7 +9321,10 @@
     "program": "grim.dll",
     "address": "0x1000ac8f",
     "name": "d3dx_find_closest_external_format",
-    "aliases": ["sub_1000AC8F", "?D3DXFindClosestExternalFormat@@YA?AW4_D3DFORMAT@@W41@@Z"],
+    "aliases": [
+      "sub_1000AC8F",
+      "?D3DXFindClosestExternalFormat@@YA?AW4_D3DFORMAT@@W41@@Z"
+    ],
     "signature": "int d3dx_find_closest_external_format(int format)",
     "comment": "Exact DirectX 8.1 helper that maps a D3D format to the closest external image format.",
     "create": false
@@ -8415,7 +9333,10 @@
     "program": "grim.dll",
     "address": "0x1000acc0",
     "name": "D3DXLoadSurfaceFromMemory",
-    "aliases": ["FUN_1000acc0", "_D3DXLoadSurfaceFromMemory@40"],
+    "aliases": [
+      "FUN_1000acc0",
+      "_D3DXLoadSurfaceFromMemory@40"
+    ],
     "signature": "int __stdcall D3DXLoadSurfaceFromMemory(void *destination, const void *destination_palette, const void *destination_rect, const void *source, int source_format, unsigned int source_pitch, const void *source_palette, const void *source_rect, unsigned long filter, unsigned long color_key)",
     "comment": "Exact DirectX 8.1 D3DXLoadSurfaceFromMemory implementation.",
     "create": false
@@ -8424,7 +9345,10 @@
     "program": "grim.dll",
     "address": "0x1000ad9f",
     "name": "d3dx_save_surface_to_file",
-    "aliases": ["FUN_1000ad9f", "?SaveSurfaceToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@H@Z"],
+    "aliases": [
+      "FUN_1000ad9f",
+      "?SaveSurfaceToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@H@Z"
+    ],
     "signature": "int d3dx_save_surface_to_file(void *path, int format, void *surface, void *palette, void *rect, int ansi_path)",
     "comment": "Exact DirectX 8.1 internal SaveSurfaceToFile implementation.",
     "create": false
@@ -8433,7 +9357,9 @@
     "program": "grim.dll",
     "address": "0x1000ae52",
     "name": "D3DXSaveSurfaceToFileA",
-    "aliases": ["FUN_1000ae52"],
+    "aliases": [
+      "FUN_1000ae52"
+    ],
     "signature": "int D3DXSaveSurfaceToFileA(char *path, int format, void *surface, void *palette, void *rect)",
     "comment": "D3DX8 static helper; saves a surface to an image path using an optional palette and source rectangle",
     "create": false
@@ -8442,7 +9368,10 @@
     "program": "grim.dll",
     "address": "0x1000ae72",
     "name": "D3DXLoadVolumeFromMemory",
-    "aliases": ["FUN_1000ae72", "_D3DXLoadVolumeFromMemory@44"],
+    "aliases": [
+      "FUN_1000ae72",
+      "_D3DXLoadVolumeFromMemory@44"
+    ],
     "signature": "int __stdcall D3DXLoadVolumeFromMemory(void *destination, const void *destination_palette, const void *destination_box, const void *source, int source_format, unsigned int source_row_pitch, unsigned int source_slice_pitch, const void *source_palette, const void *source_box, unsigned long filter, unsigned long color_key)",
     "comment": "Exact DirectX 8.1 D3DXLoadVolumeFromMemory implementation.",
     "create": false
@@ -8451,7 +9380,10 @@
     "program": "grim.dll",
     "address": "0x1000af45",
     "name": "d3dx_check_texture_requirements_internal",
-    "aliases": ["sub_1000AF45", "?CheckTextureRequirements@@YAJPAUIDirect3DDevice8@@PAI111KPAW4_D3DFORMAT@@W4_D3DPOOL@@W4_D3DRESOURCETYPE@@@Z"],
+    "aliases": [
+      "sub_1000AF45",
+      "?CheckTextureRequirements@@YAJPAUIDirect3DDevice8@@PAI111KPAW4_D3DFORMAT@@W4_D3DPOOL@@W4_D3DRESOURCETYPE@@@Z"
+    ],
     "signature": "int d3dx_check_texture_requirements_internal(void *device, unsigned int *width, unsigned int *height, unsigned int *depth, unsigned int *mip_levels, unsigned long usage, int *format, int pool, int resource_type)",
     "comment": "Exact DirectX 8.1 resource-type-aware texture requirement validator.",
     "create": false
@@ -8460,7 +9392,10 @@
     "program": "grim.dll",
     "address": "0x1000b26f",
     "name": "D3DXCheckTextureRequirements",
-    "aliases": ["FUN_1000b26f", "_D3DXCheckTextureRequirements@28"],
+    "aliases": [
+      "FUN_1000b26f",
+      "_D3DXCheckTextureRequirements@28"
+    ],
     "signature": "int __stdcall D3DXCheckTextureRequirements(void *device, unsigned int *width, unsigned int *height, unsigned int *mip_levels, unsigned long usage, int *format, int pool)",
     "comment": "Exact DirectX 8.1 d3dx8tex.obj body; normalizes texture dimensions, mip count, usage, format, and pool requirements.",
     "create": false
@@ -8469,7 +9404,9 @@
     "program": "grim.dll",
     "address": "0x1000b297",
     "name": "D3DXCreateTexture",
-    "aliases": ["_D3DXCreateTexture@32"],
+    "aliases": [
+      "_D3DXCreateTexture@32"
+    ],
     "signature": "int D3DXCreateTexture(void *device, uint width, uint height, uint mip_levels, uint usage, int format, int pool, void **texture)",
     "comment": "D3DX8 static helper; validates texture requirements then calls IDirect3DDevice8::CreateTexture",
     "create": false
@@ -8478,7 +9415,10 @@
     "program": "grim.dll",
     "address": "0x1000b348",
     "name": "d3dx_lock_volume_scalar_deleting_dtor",
-    "aliases": ["sub_1000B348", "??_ECD3DXLockVolume@@QAEPAXI@Z"],
+    "aliases": [
+      "sub_1000B348",
+      "??_ECD3DXLockVolume@@QAEPAXI@Z"
+    ],
     "signature": "void * d3dx_lock_volume_scalar_deleting_dtor(void *this, unsigned int flags)",
     "comment": "Exact DirectX 8.1 CD3DXLockVolume scalar deleting destructor.",
     "create": false
@@ -8487,7 +9427,10 @@
     "program": "grim.dll",
     "address": "0x1000b3b5",
     "name": "d3dx_eval_color",
-    "aliases": ["sub_1000B3B5", "?EvalColor@@YAMPAUD3DXCOLOR@@K@Z"],
+    "aliases": [
+      "sub_1000B3B5",
+      "?EvalColor@@YAMPAUD3DXCOLOR@@K@Z"
+    ],
     "signature": "float d3dx_eval_color(void *color, unsigned long channel)",
     "comment": "Exact DirectX 8.1 d3dx8tex.obj helper that extracts one normalized D3DXCOLOR channel.",
     "create": false
@@ -8496,7 +9439,9 @@
     "program": "grim.dll",
     "address": "0x1000b3fe",
     "name": "d3dx_copy_texture_filtered",
-    "aliases": ["_D3DXComputeNormalMap@24"],
+    "aliases": [
+      "_D3DXComputeNormalMap@24"
+    ],
     "signature": "int d3dx_copy_texture_filtered(void *destination, void *source, void *destination_options, uint copy_flags, uint filter, float scale)",
     "comment": "Game-facing alias for the exact DirectX 8.1 D3DXComputeNormalMap body used while recreating texture surfaces.",
     "create": false
@@ -8505,7 +9450,10 @@
     "program": "grim.dll",
     "address": "0x1000bbfc",
     "name": "D3DXLoadSurfaceFromSurface",
-    "aliases": ["FUN_1000bbfc", "_D3DXLoadSurfaceFromSurface@32"],
+    "aliases": [
+      "FUN_1000bbfc",
+      "_D3DXLoadSurfaceFromSurface@32"
+    ],
     "signature": "int __stdcall D3DXLoadSurfaceFromSurface(void *destination, const void *destination_palette, const void *destination_rect, void *source, const void *source_palette, const void *source_rect, unsigned long filter, unsigned long color_key)",
     "comment": "Exact DirectX 8.1 D3DXLoadSurfaceFromSurface implementation.",
     "create": false
@@ -8514,7 +9462,10 @@
     "program": "grim.dll",
     "address": "0x1000bda2",
     "name": "D3DXLoadVolumeFromVolume",
-    "aliases": ["FUN_1000bda2", "_D3DXLoadVolumeFromVolume@32"],
+    "aliases": [
+      "FUN_1000bda2",
+      "_D3DXLoadVolumeFromVolume@32"
+    ],
     "signature": "int __stdcall D3DXLoadVolumeFromVolume(void *destination, const void *destination_palette, const void *destination_box, void *source, const void *source_palette, const void *source_box, unsigned long filter, unsigned long color_key)",
     "comment": "Exact DirectX 8.1 D3DXLoadVolumeFromVolume implementation.",
     "create": false
@@ -8523,7 +9474,10 @@
     "program": "grim.dll",
     "address": "0x1000be28",
     "name": "d3dx_save_texture_to_file",
-    "aliases": ["sub_1000BE28", "?SaveTextureToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DBaseTexture8@@PBUtagPALETTEENTRY@@H@Z"],
+    "aliases": [
+      "sub_1000BE28",
+      "?SaveTextureToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DBaseTexture8@@PBUtagPALETTEENTRY@@H@Z"
+    ],
     "signature": "int d3dx_save_texture_to_file(const void *path, int format, void *texture, const void *palette, int level)",
     "comment": "Internal DirectX 8.1 texture encoder selected by D3DXSaveTextureToFileA.",
     "create": false
@@ -8532,7 +9486,9 @@
     "program": "grim.dll",
     "address": "0x1000c1e8",
     "name": "D3DXSaveTextureToFileA",
-    "aliases": ["_D3DXSaveTextureToFileA@16"],
+    "aliases": [
+      "_D3DXSaveTextureToFileA@16"
+    ],
     "signature": "int D3DXSaveTextureToFileA(char *path, int format, void *texture, void *palette)",
     "comment": "D3DX8 static helper; saves a base texture to path using the selected image format and optional palette"
   },
@@ -8540,7 +9496,10 @@
     "program": "grim.dll",
     "address": "0x1000c205",
     "name": "D3DXFilterTexture",
-    "aliases": ["FUN_1000c205", "_D3DXFilterTexture@16"],
+    "aliases": [
+      "FUN_1000c205",
+      "_D3DXFilterTexture@16"
+    ],
     "signature": "int __stdcall D3DXFilterTexture(void *texture, const void *palette, unsigned int source_level, unsigned long filter)",
     "comment": "Exact DirectX 8.1 D3DXFilterTexture implementation.",
     "create": false
@@ -8549,7 +9508,10 @@
     "program": "grim.dll",
     "address": "0x1000c4e9",
     "name": "d3dx_create_texture_from_file_in_memory_ex",
-    "aliases": ["FUN_1000c4e9", "?CreateTextureFromFileInMemoryEx@@YAJPAUIDirect3DDevice8@@PBXIIIIIKW4_D3DFORMAT@@W4_D3DPOOL@@KKKPAU_D3DXIMAGE_INFO@@PAUtagPALETTEENTRY@@W4_D3DRESOURCETYPE@@PAPAUIDirect3DBaseTexture8@@@Z"],
+    "aliases": [
+      "FUN_1000c4e9",
+      "?CreateTextureFromFileInMemoryEx@@YAJPAUIDirect3DDevice8@@PBXIIIIIKW4_D3DFORMAT@@W4_D3DPOOL@@KKKPAU_D3DXIMAGE_INFO@@PAUtagPALETTEENTRY@@W4_D3DRESOURCETYPE@@PAPAUIDirect3DBaseTexture8@@@Z"
+    ],
     "signature": "int d3dx_create_texture_from_file_in_memory_ex(int** arg1, void* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, int arg8, void* arg9, int arg10, int arg11, int** arg12)",
     "comment": "Internal DirectX 8.1 resource-type-aware implementation called by the public in-memory texture wrapper.",
     "create": false
@@ -8558,7 +9520,9 @@
     "program": "grim.dll",
     "address": "0x1000cb5c",
     "name": "D3DXCreateTextureFromFileInMemoryEx",
-    "aliases": ["_D3DXCreateTextureFromFileInMemoryEx@60"],
+    "aliases": [
+      "_D3DXCreateTextureFromFileInMemoryEx@60"
+    ],
     "signature": "int __stdcall D3DXCreateTextureFromFileInMemoryEx(IDirect3DDevice8* device, const void* source_data, unsigned int source_data_size, unsigned int width, unsigned int height, unsigned int mip_levels, unsigned long usage, D3DFORMAT format, D3DPOOL pool, unsigned long filter, unsigned long mip_filter, unsigned long color_key, void* source_info, PALETTEENTRY* palette, IDirect3DTexture8** texture)",
     "comment": "D3DX8 in-memory extended texture loader wrapper; the 15-argument stdcall ABI and fixed wrapper arguments match D3DXCreateTextureFromFileInMemoryEx.",
     "create": false
@@ -8567,16 +9531,50 @@
     "program": "grim.dll",
     "address": "0x1000cb9c",
     "name": "D3DXCreateTextureFromFileExA",
-    "aliases": ["_D3DXCreateTextureFromFileExA@56"],
+    "aliases": [
+      "_D3DXCreateTextureFromFileExA@56"
+    ],
     "signature": "int __stdcall D3DXCreateTextureFromFileExA(IDirect3DDevice8* device, char* path, unsigned int width, unsigned int height, unsigned int mip_levels, unsigned long usage, D3DFORMAT format, D3DPOOL pool, unsigned long filter, unsigned long mip_filter, unsigned long color_key, void* source_info, PALETTEENTRY* palette, IDirect3DTexture8** texture)",
     "comment": "D3DX8 ANSI extended file texture loader wrapper; maps the file and forwards all 14 public arguments to the in-memory implementation",
     "create": false
   },
   {
     "program": "grim.dll",
+    "address": "0x1000cc2c",
+    "name": "d3dx_init_vec2_normalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ce42",
+    "name": "d3dx_init_vec2_transform",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ce69",
+    "name": "d3dx_init_vec3_normalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000ce76",
     "name": "D3DXVec3Normalize",
-    "aliases": ["sub_1000CE76", "_D3DXVec3Normalize@8"],
+    "aliases": [
+      "_D3DXVec3Normalize@8"
+    ],
     "signature": "void * __stdcall D3DXVec3Normalize(void *out, const void *input)",
     "comment": "DirectX 8.1 dispatch thunk selected by the exact D3DXComputeNormalMap call relocation.",
     "create": false
@@ -8602,17 +9600,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000cc3f",
-    "name": "FUN_1000cc3f",
-    "signature": "int FUN_1000cc3f(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000cc3f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_vec2_hermite",
+    "signature": "int d3dx_init_vec2_hermite(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_vec2_hermite(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000cc69",
     "name": "d3dx_c_vec2_hermite",
     "aliases": [
-      "FUN_1000cc69",
       "?c_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
     ],
     "signature": "float* d3dx_c_vec2_hermite(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
@@ -8622,17 +9622,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000ccf7",
-    "name": "FUN_1000ccf7",
-    "signature": "int FUN_1000ccf7(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000ccf7(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_vec2_catmull_rom",
+    "signature": "int d3dx_init_vec2_catmull_rom(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_vec2_catmull_rom(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000cd21",
     "name": "d3dx_c_vec2_catmull_rom",
     "aliases": [
-      "FUN_1000cd21",
       "?c_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
     ],
     "signature": "float* d3dx_c_vec2_catmull_rom(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
@@ -8642,17 +9644,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000cdd0",
-    "name": "FUN_1000cdd0",
-    "signature": "int FUN_1000cdd0(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000cdd0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_vec2_barycentric",
+    "signature": "int d3dx_init_vec2_barycentric(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_vec2_barycentric(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000cdff",
     "name": "d3dx_c_vec2_barycentric",
     "aliases": [
-      "FUN_1000cdff",
       "?c_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
     ],
     "signature": "float* d3dx_c_vec2_barycentric(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
@@ -8661,10 +9665,19 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000ce7c",
+    "name": "d3dx_init_vec3_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000cea6",
     "name": "d3dx_c_vec3_hermite",
     "aliases": [
-      "FUN_1000cea6",
       "?c_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
     ],
     "signature": "float* d3dx_c_vec3_hermite(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
@@ -8674,17 +9687,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000cf54",
-    "name": "FUN_1000cf54",
-    "signature": "int FUN_1000cf54(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000cf54(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_vec3_catmull_rom",
+    "signature": "int d3dx_init_vec3_catmull_rom(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_vec3_catmull_rom(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000cf7e",
     "name": "d3dx_c_vec3_catmull_rom",
     "aliases": [
-      "FUN_1000cf7e",
       "?c_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
     ],
     "signature": "float* d3dx_c_vec3_catmull_rom(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
@@ -8694,17 +9709,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000d04f",
-    "name": "FUN_1000d04f",
-    "signature": "int FUN_1000d04f(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000d04f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_vec3_barycentric",
+    "signature": "int d3dx_init_vec3_barycentric(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_vec3_barycentric(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000d07e",
     "name": "d3dx_c_vec3_barycentric",
     "aliases": [
-      "FUN_1000d07e",
       "?c_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
     ],
     "signature": "float* d3dx_c_vec3_barycentric(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
@@ -8713,10 +9730,49 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000d173",
+    "name": "d3dx_init_vec3_transform_coord",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d1f9",
+    "name": "d3dx_init_vec3_project",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d20a",
+    "name": "d3dx_init_vec3_unproject",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d325",
+    "name": "d3dx_init_vec4_hermite",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000d34f",
     "name": "d3dx_c_vec4_hermite",
     "aliases": [
-      "FUN_1000d34f",
       "?c_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
     ],
     "signature": "float* d3dx_c_vec4_hermite(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
@@ -8726,17 +9782,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000d420",
-    "name": "FUN_1000d420",
-    "signature": "int FUN_1000d420(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000d420(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_vec4_catmull_rom",
+    "signature": "int d3dx_init_vec4_catmull_rom(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_vec4_catmull_rom(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000d44a",
     "name": "d3dx_c_vec4_catmull_rom",
     "aliases": [
-      "FUN_1000d44a",
       "?c_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
     ],
     "signature": "float* d3dx_c_vec4_catmull_rom(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
@@ -8746,17 +9804,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000d53d",
-    "name": "FUN_1000d53d",
-    "signature": "int FUN_1000d53d(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000d53d(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_vec4_barycentric",
+    "signature": "int d3dx_init_vec4_barycentric(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_vec4_barycentric(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000d56c",
     "name": "d3dx_c_vec4_barycentric",
     "aliases": [
-      "FUN_1000d56c",
       "?c_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
     ],
     "signature": "float* d3dx_c_vec4_barycentric(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
@@ -8765,34 +9825,72 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000d766",
+    "name": "d3dx_init_matrix_multiply",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d9af",
+    "name": "d3dx_init_matrix_transpose",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000dc72",
+    "name": "d3dx_init_matrix_inverse",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000e012",
-    "name": "FUN_1000e012",
-    "signature": "int FUN_1000e012(float arg1, float arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall sub_1000e012(float arg1, float arg2, float arg3)",
-    "create": false
+    "name": "d3dx_init_matrix_scaling",
+    "signature": "int d3dx_init_matrix_scaling(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_scaling(float arg1, float arg2, float arg3)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e09c",
-    "name": "FUN_1000e09c",
-    "signature": "int FUN_1000e09c(float arg1, float arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall sub_1000e09c(float arg1, float arg2, float arg3)",
-    "create": false
+    "name": "d3dx_init_matrix_translation",
+    "signature": "int d3dx_init_matrix_translation(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_translation(float arg1, float arg2, float arg3)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e126",
-    "name": "FUN_1000e126",
-    "signature": "int FUN_1000e126(float arg1)",
-    "comment": "[binja] int32_t __stdcall sub_1000e126(float arg1)",
-    "create": false
+    "name": "d3dx_init_matrix_rotation_x",
+    "signature": "int d3dx_init_matrix_rotation_x(float arg1)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_x(float arg1)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e142",
     "name": "d3dx_c_matrix_rotation_x",
     "aliases": [
-      "FUN_1000e142",
       "?c_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "signature": "float* d3dx_c_matrix_rotation_x(float* arg1, float arg2)",
@@ -8802,17 +9900,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000e1bc",
-    "name": "FUN_1000e1bc",
-    "signature": "int FUN_1000e1bc(float arg1)",
-    "comment": "[binja] int32_t __stdcall sub_1000e1bc(float arg1)",
-    "create": false
+    "name": "d3dx_init_matrix_rotation_y",
+    "signature": "int d3dx_init_matrix_rotation_y(float arg1)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_y(float arg1)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e1d8",
     "name": "d3dx_c_matrix_rotation_y",
     "aliases": [
-      "FUN_1000e1d8",
       "?c_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "signature": "float* d3dx_c_matrix_rotation_y(float* arg1, float arg2)",
@@ -8822,17 +9922,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000e253",
-    "name": "FUN_1000e253",
-    "signature": "int FUN_1000e253(float arg1)",
-    "comment": "[binja] int32_t __stdcall sub_1000e253(float arg1)",
-    "create": false
+    "name": "d3dx_init_matrix_rotation_z",
+    "signature": "int d3dx_init_matrix_rotation_z(float arg1)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_z(float arg1)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e26f",
     "name": "d3dx_c_matrix_rotation_z",
     "aliases": [
-      "FUN_1000e26f",
       "?c_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "signature": "float* d3dx_c_matrix_rotation_z(float* arg1, float arg2)",
@@ -8842,17 +9944,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000e2eb",
-    "name": "FUN_1000e2eb",
-    "signature": "int FUN_1000e2eb(int arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall sub_1000e2eb(int32_t arg1, float arg2)",
-    "create": false
+    "name": "d3dx_init_matrix_rotation_axis",
+    "signature": "int d3dx_init_matrix_rotation_axis(int arg1, float arg2)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_axis(int32_t arg1, float arg2)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e30b",
     "name": "d3dx_c_matrix_rotation_axis",
     "aliases": [
-      "FUN_1000e30b",
       "?c_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
     ],
     "signature": "float* d3dx_c_matrix_rotation_axis(float* arg1, float arg2, float arg3)",
@@ -8861,18 +9965,40 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000e40d",
+    "name": "d3dx_init_matrix_rotation_quaternion",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000e502",
-    "name": "FUN_1000e502",
-    "signature": "int FUN_1000e502(float arg1, float arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall sub_1000e502(float arg1, float arg2, float arg3)",
-    "create": false
+    "name": "d3dx_init_matrix_rotation_yaw_pitch_roll",
+    "signature": "int d3dx_init_matrix_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e530",
+    "name": "d3dx_init_matrix_transformation",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e541",
     "name": "d3dx_init_matrix_affine_transformation",
     "aliases": [
-      "FUN_1000e541",
       "?init_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
     ],
     "signature": "int d3dx_init_matrix_affine_transformation(int arg1, float arg2, int arg3, int arg4, int arg5)",
@@ -8884,7 +10010,6 @@
     "address": "0x1000e568",
     "name": "d3dx_c_matrix_affine_transformation",
     "aliases": [
-      "FUN_1000e568",
       "?c_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
     ],
     "signature": "float* d3dx_c_matrix_affine_transformation(float* arg1, float arg2, float* arg3, int arg4, float* arg5)",
@@ -8894,17 +10019,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000e853",
-    "name": "FUN_1000e853",
-    "signature": "int FUN_1000e853(int arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall sub_1000e853(int32_t arg1, float arg2)",
-    "create": false
+    "name": "d3dx_init_quaternion_rotation_axis",
+    "signature": "int d3dx_init_quaternion_rotation_axis(int arg1, float arg2)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_rotation_axis(int32_t arg1, float arg2)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000e873",
     "name": "d3dx_c_quaternion_rotation_axis",
     "aliases": [
-      "FUN_1000e873",
       "?c_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
     ],
     "signature": "float* d3dx_c_quaternion_rotation_axis(float arg1, float arg2, float arg3)",
@@ -8914,17 +10041,49 @@
   {
     "program": "grim.dll",
     "address": "0x1000e8cf",
-    "name": "FUN_1000e8cf",
-    "signature": "int FUN_1000e8cf(float arg1, float arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall sub_1000e8cf(float arg1, float arg2, float arg3)",
-    "create": false
+    "name": "d3dx_init_quaternion_rotation_yaw_pitch_roll",
+    "signature": "int d3dx_init_quaternion_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e9dc",
+    "name": "d3dx_init_quaternion_multiply",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ea92",
+    "name": "d3dx_c_quaternion_normalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?c_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?c_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000eb4b",
+    "name": "d3dx_init_quaternion_inverse",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000ed37",
     "name": "d3dx_init_quaternion_slerp",
     "aliases": [
-      "FUN_1000ed37",
       "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
     ],
     "signature": "int d3dx_init_quaternion_slerp(int arg1, int arg2, float arg3)",
@@ -8934,17 +10093,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000ee44",
-    "name": "FUN_1000ee44",
-    "signature": "int FUN_1000ee44(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000ee44(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
-    "create": false
+    "name": "d3dx_init_quaternion_squad",
+    "signature": "int d3dx_init_quaternion_squad(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_squad(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000ee6e",
     "name": "d3dx_c_quaternion_squad",
     "aliases": [
-      "FUN_1000ee6e",
       "?c_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
     ],
     "signature": "int d3dx_c_quaternion_squad(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
@@ -8953,10 +10114,29 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000eec5",
+    "name": "d3dx_init_quaternion_squad_setup",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000eed6",
+    "name": "d3dx_init_quaternion_barycentric",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000ef05",
     "name": "d3dx_c_quaternion_barycentric",
     "aliases": [
-      "FUN_1000ef05",
       "?c_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
     ],
     "signature": "int* d3dx_c_quaternion_barycentric(int* arg1, int* arg2, int arg3, int arg4, float arg5, float arg6)",
@@ -8965,10 +10145,19 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000ef90",
+    "name": "d3dx_init_plane_normalize",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmath.obj symbol ?init_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?init_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000f296",
     "name": "d3dx_c_vec2_normalize",
     "aliases": [
-      "FUN_1000f296",
       "?c_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     ],
     "signature": "int* d3dx_c_vec2_normalize(int* arg1, float arg2)",
@@ -8980,7 +10169,6 @@
     "address": "0x1000f323",
     "name": "d3dx_c_vec2_transform",
     "aliases": [
-      "FUN_1000f323",
       "?c_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
     ],
     "signature": "float* d3dx_c_vec2_transform(float* arg1, float* arg2, float* arg3)",
@@ -8992,7 +10180,6 @@
     "address": "0x1000f38e",
     "name": "d3dx_c_vec2_transform_coord",
     "aliases": [
-      "FUN_1000f38e",
       "?c_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "signature": "float* d3dx_c_vec2_transform_coord(float* arg1, float* arg2, float* arg3)",
@@ -9004,7 +10191,6 @@
     "address": "0x1000f40e",
     "name": "d3dx_c_vec2_transform_normal",
     "aliases": [
-      "FUN_1000f40e",
       "?c_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "signature": "float* d3dx_c_vec2_transform_normal(float* arg1, float* arg2, float* arg3)",
@@ -9016,7 +10202,6 @@
     "address": "0x1000f44a",
     "name": "d3dx_c_vec3_normalize",
     "aliases": [
-      "FUN_1000f44a",
       "?c_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
     ],
     "signature": "float* d3dx_c_vec3_normalize(float* arg1, float arg2)",
@@ -9028,7 +10213,6 @@
     "address": "0x1000f4ea",
     "name": "d3dx_c_vec3_transform_coord",
     "aliases": [
-      "FUN_1000f4ea",
       "?c_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "signature": "float* d3dx_c_vec3_transform_coord(float* arg1, float* arg2, float* arg3)",
@@ -9040,7 +10224,6 @@
     "address": "0x1000f5a9",
     "name": "d3dx_c_vec3_project",
     "aliases": [
-      "FUN_1000f5a9",
       "?c_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ],
     "signature": "float* d3dx_c_vec3_project(float* arg1, int arg2, int* arg3, int* arg4, int* arg5, int* arg6)",
@@ -9050,17 +10233,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000f8dc",
-    "name": "FUN_1000f8dc",
-    "signature": "float* FUN_1000f8dc(float* arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_1000f8dc(float* arg1, float arg2)",
-    "create": false
+    "name": "d3dx_c_vec4_normalize",
+    "signature": "float* d3dx_c_vec4_normalize(float* arg1, float arg2)",
+    "comment": "[binja] float* __stdcall d3dx_c_vec4_normalize(float* arg1, float arg2)",
+    "create": false,
+    "aliases": [
+      "?c_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1000f995",
     "name": "d3dx_c_matrix_rotation_yaw_pitch_roll",
     "aliases": [
-      "FUN_1000f995",
       "?c_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
     "signature": "int d3dx_c_matrix_rotation_yaw_pitch_roll(int arg1, float arg2, float arg3, float arg4)",
@@ -9072,7 +10257,6 @@
     "address": "0x1000f9ce",
     "name": "d3dx_c_matrix_transformation",
     "aliases": [
-      "FUN_1000f9ce",
       "?c_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
     ],
     "signature": "float* d3dx_c_matrix_transformation(float* arg1, float* arg2, void* arg3, int* arg4, float* arg5, int arg6, float* arg7)",
@@ -9084,7 +10268,6 @@
     "address": "0x1000fc82",
     "name": "d3dx_c_matrix_shadow",
     "aliases": [
-      "FUN_1000fc82",
       "?c_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
     ],
     "signature": "float* d3dx_c_matrix_shadow(float* arg1, float* arg2, int arg3)",
@@ -9096,7 +10279,6 @@
     "address": "0x1000fd5c",
     "name": "d3dx_c_matrix_reflect",
     "aliases": [
-      "FUN_1000fd5c",
       "?c_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
     ],
     "signature": "float* d3dx_c_matrix_reflect(float* arg1, float arg2)",
@@ -9107,7 +10289,9 @@
     "program": "grim.dll",
     "address": "0x100101f5",
     "name": "grim_d3d_debug_set_mute",
-    "aliases": ["?D3DXDebugMute@@YAXH@Z"],
+    "aliases": [
+      "?D3DXDebugMute@@YAXH@Z"
+    ],
     "signature": "void grim_d3d_debug_set_mute(int mute)",
     "comment": "DirectX 8.1 D3DXDebugMute helper; loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output."
   },
@@ -9115,7 +10299,10 @@
     "program": "grim.dll",
     "address": "0x10010285",
     "name": "d3dx_image_ctor",
-    "aliases": ["FUN_10010285", "??0CD3DXImage@@QAE@XZ"],
+    "aliases": [
+      "FUN_10010285",
+      "??0CD3DXImage@@QAE@XZ"
+    ],
     "signature": "void * d3dx_image_ctor(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXImage constructor.",
     "create": false
@@ -9124,7 +10311,10 @@
     "program": "grim.dll",
     "address": "0x1001029e",
     "name": "d3dx_image_destroy",
-    "aliases": ["FUN_1001029e", "??1CD3DXImage@@QAE@XZ"],
+    "aliases": [
+      "FUN_1001029e",
+      "??1CD3DXImage@@QAE@XZ"
+    ],
     "signature": "void d3dx_image_destroy(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXImage destructor.",
     "create": false
@@ -9141,7 +10331,10 @@
     "program": "grim.dll",
     "address": "0x10010313",
     "name": "d3dx_image_initialize",
-    "aliases": ["FUN_10010313", "?Initialize@CD3DXImage@@QAEJPAUD3DX_BLT@@@Z"],
+    "aliases": [
+      "FUN_10010313",
+      "?Initialize@CD3DXImage@@QAEJPAUD3DX_BLT@@@Z"
+    ],
     "signature": "int d3dx_image_initialize(void *this, void *blt)",
     "comment": "Exact DirectX 8.1 CD3DXImage initializer.",
     "create": false
@@ -9158,7 +10351,10 @@
     "program": "grim.dll",
     "address": "0x10010aec",
     "name": "d3dx_image_save_dib",
-    "aliases": ["FUN_10010aec", "?SaveDIB@CD3DXImage@@AAEJPAXH@Z"],
+    "aliases": [
+      "FUN_10010aec",
+      "?SaveDIB@CD3DXImage@@AAEJPAXH@Z"
+    ],
     "signature": "int d3dx_image_save_dib(void *this, void *file, int include_alpha)",
     "comment": "Exact DirectX 8.1 CD3DXImage DIB writer.",
     "create": false
@@ -9167,7 +10363,9 @@
     "program": "grim.dll",
     "address": "0x10010dd0",
     "name": "d3dx_image_jpeg_error_exit",
-    "aliases": ["sub_10010DD0"],
+    "aliases": [
+      "sub_10010DD0"
+    ],
     "signature": "void d3dx_image_jpeg_error_exit(j_common_ptr cinfo)",
     "comment": "Exact DirectX 8.1 CD3DXImage JPEG fatal-error callback; emits the message then longjmps through the loader error state."
   },
@@ -9222,7 +10420,10 @@
     "program": "grim.dll",
     "address": "0x100120d6",
     "name": "d3dx_image_save_dds",
-    "aliases": ["FUN_100120d6", "?SaveDDS@CD3DXImage@@AAEJPAX@Z"],
+    "aliases": [
+      "FUN_100120d6",
+      "?SaveDDS@CD3DXImage@@AAEJPAX@Z"
+    ],
     "signature": "int d3dx_image_save_dds(void *this, void *file)",
     "comment": "Exact DirectX 8.1 CD3DXImage DDS writer.",
     "create": false
@@ -9231,7 +10432,10 @@
     "program": "grim.dll",
     "address": "0x1001237e",
     "name": "d3dx_image_save",
-    "aliases": ["FUN_1001237e", "?Save@CD3DXImage@@QAEJPBXW4_D3DXIMAGE_FILEFORMAT@@H@Z"],
+    "aliases": [
+      "FUN_1001237e",
+      "?Save@CD3DXImage@@QAEJPBXW4_D3DXIMAGE_FILEFORMAT@@H@Z"
+    ],
     "signature": "int d3dx_image_save(void *this, void *path, int format, int ansi_path)",
     "comment": "Exact DirectX 8.1 CD3DXImage save method.",
     "create": false
@@ -9248,7 +10452,10 @@
     "program": "grim.dll",
     "address": "0x10012677",
     "name": "d3dx_image_load",
-    "aliases": ["FUN_10012677", "?Load@CD3DXImage@@QAEJPBXKPAU_D3DXIMAGE_INFO@@H@Z"],
+    "aliases": [
+      "FUN_10012677",
+      "?Load@CD3DXImage@@QAEJPBXKPAU_D3DXIMAGE_INFO@@H@Z"
+    ],
     "signature": "int d3dx_image_load(void *this, const void *data, unsigned int size, void *info, int flags)",
     "comment": "Exact DirectX 8.1 CD3DXImage memory loader.",
     "create": false
@@ -9257,7 +10464,10 @@
     "program": "grim.dll",
     "address": "0x1001284c",
     "name": "d3dx_blt_ctor",
-    "aliases": ["FUN_1001284c", "??0CD3DXBlt@@QAE@XZ"],
+    "aliases": [
+      "FUN_1001284c",
+      "??0CD3DXBlt@@QAE@XZ"
+    ],
     "signature": "void * d3dx_blt_ctor(void *this)",
     "comment": "CD3DXBlt constructor selected by exact DirectX 8.1 texture-loader relocations.",
     "create": false
@@ -9266,7 +10476,10 @@
     "program": "grim.dll",
     "address": "0x10012856",
     "name": "d3dx_blt_dtor",
-    "aliases": ["FUN_10012856", "??1CD3DXBlt@@QAE@XZ"],
+    "aliases": [
+      "FUN_10012856",
+      "??1CD3DXBlt@@QAE@XZ"
+    ],
     "signature": "void d3dx_blt_dtor(void *this)",
     "comment": "CD3DXBlt destructor selected by exact DirectX 8.1 texture-loader relocations.",
     "create": false
@@ -9275,7 +10488,10 @@
     "program": "grim.dll",
     "address": "0x10012881",
     "name": "d3dx_tf_row_dtor",
-    "aliases": ["??1SchedulerPolicy@Concurrency@@QAE@XZ", "??1TF_Row@@QAE@XZ"],
+    "aliases": [
+      "??1SchedulerPolicy@Concurrency@@QAE@XZ",
+      "??1TF_Row@@QAE@XZ"
+    ],
     "signature": "void d3dx_tf_row_dtor(void *this)",
     "comment": "Exact DirectX 8.1 TF_Row destructor from cd3dxblt.obj.",
     "create": false
@@ -9284,7 +10500,10 @@
     "program": "grim.dll",
     "address": "0x1001288a",
     "name": "d3dx_tf_setup_triangle",
-    "aliases": ["sub_1001288A", "?TF_SetupTriangle@@YAPAEIIH@Z"],
+    "aliases": [
+      "sub_1001288A",
+      "?TF_SetupTriangle@@YAPAEIIH@Z"
+    ],
     "signature": "unsigned char * d3dx_tf_setup_triangle(unsigned int width, unsigned int height, int filter)",
     "comment": "Exact DirectX 8.1 triangle-filter setup helper from cd3dxblt.obj.",
     "create": false
@@ -9293,7 +10512,10 @@
     "program": "grim.dll",
     "address": "0x10012b47",
     "name": "d3dx_tf_row_scalar_deleting_dtor",
-    "aliases": ["FUN_10012b47", "??_ETF_Row@@QAEPAXI@Z"],
+    "aliases": [
+      "FUN_10012b47",
+      "??_ETF_Row@@QAEPAXI@Z"
+    ],
     "signature": "void * d3dx_tf_row_scalar_deleting_dtor(void *this, unsigned int flags)",
     "comment": "Exact DirectX 8.1 TF_Row scalar deleting destructor from cd3dxblt.obj.",
     "create": false
@@ -9302,7 +10524,10 @@
     "program": "grim.dll",
     "address": "0x10012b93",
     "name": "d3dx_blt_triangle_3d",
-    "aliases": ["FUN_10012b93", "?BltTriangle3D@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10012b93",
+      "?BltTriangle3D@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_triangle_3d(void *this)",
     "comment": "CD3DXBlt triangle-filter 3D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9311,7 +10536,10 @@
     "program": "grim.dll",
     "address": "0x10013007",
     "name": "d3dx_blt_same_dxtn",
-    "aliases": ["FUN_10013007", "?BltSame_DXTn@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013007",
+      "?BltSame_DXTn@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_same_dxtn(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt same-format DXT path from cd3dxblt.obj.",
     "create": false
@@ -9320,7 +10548,10 @@
     "program": "grim.dll",
     "address": "0x10013195",
     "name": "d3dx_box_filter_2d_a8r8g8b8",
-    "aliases": ["sub_10013195", "?c_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"],
+    "aliases": [
+      "sub_10013195",
+      "?c_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
+    ],
     "signature": "int d3dx_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
     "comment": "Exact DirectX 8.1 scalar A8R8G8B8 box filter from cd3dxblt.obj.",
     "create": false
@@ -9329,7 +10560,10 @@
     "program": "grim.dll",
     "address": "0x100132bb",
     "name": "d3dx_blt_box_2d_a8r8g8b8",
-    "aliases": ["FUN_100132bb", "?BltBox2D_A8R8G8B8@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_100132bb",
+      "?BltBox2D_A8R8G8B8@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_a8r8g8b8(void *this)",
     "comment": "A8R8G8B8 fast-path identity proven by the exact CD3DXBlt caller relocation.",
     "create": false
@@ -9338,7 +10572,10 @@
     "program": "grim.dll",
     "address": "0x100132ec",
     "name": "d3dx_box_filter_2d_x8r8g8b8",
-    "aliases": ["sub_100132EC", "?c_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"],
+    "aliases": [
+      "sub_100132EC",
+      "?c_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"
+    ],
     "signature": "int d3dx_box_filter_2d_x8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
     "comment": "Exact DirectX 8.1 scalar X8R8G8B8 box filter from cd3dxblt.obj.",
     "create": false
@@ -9347,7 +10584,10 @@
     "program": "grim.dll",
     "address": "0x100133d4",
     "name": "d3dx_mmx_box_filter_2d_a8r8g8b8",
-    "aliases": ["sub_100133D4", "?mmx_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"],
+    "aliases": [
+      "sub_100133D4",
+      "?mmx_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
+    ],
     "signature": "int d3dx_mmx_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
     "comment": "Exact DirectX 8.1 MMX A8R8G8B8 box filter from cd3dxblt.obj.",
     "create": false
@@ -9356,7 +10596,10 @@
     "program": "grim.dll",
     "address": "0x100134ea",
     "name": "d3dx_init_box_filter_2d_a8r8g8b8",
-    "aliases": ["sub_100134EA", "?init_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"],
+    "aliases": [
+      "sub_100134EA",
+      "?init_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
+    ],
     "signature": "int d3dx_init_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
     "comment": "Exact DirectX 8.1 A8R8G8B8 box-filter dispatcher from cd3dxblt.obj.",
     "create": false
@@ -9365,7 +10608,10 @@
     "program": "grim.dll",
     "address": "0x10013522",
     "name": "d3dx_init_box_filter_2d_x8r8g8b8",
-    "aliases": ["sub_10013522", "?init_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"],
+    "aliases": [
+      "sub_10013522",
+      "?init_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"
+    ],
     "signature": "int d3dx_init_box_filter_2d_x8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
     "comment": "Exact DirectX 8.1 X8R8G8B8 box-filter dispatcher from cd3dxblt.obj.",
     "create": false
@@ -9374,7 +10620,10 @@
     "program": "grim.dll",
     "address": "0x10013551",
     "name": "d3dx_blt_box_2d_x8r8g8b8",
-    "aliases": ["FUN_10013551", "?BltBox2D_X8R8G8B8@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013551",
+      "?BltBox2D_X8R8G8B8@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_x8r8g8b8(void *this)",
     "comment": "X8R8G8B8 fast-path identity proven by the exact CD3DXBlt caller relocation.",
     "create": false
@@ -9383,7 +10632,10 @@
     "program": "grim.dll",
     "address": "0x10013582",
     "name": "d3dx_blt_box_2d_r5g6b5",
-    "aliases": ["FUN_10013582", "?BltBox2D_R5G6B5@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013582",
+      "?BltBox2D_R5G6B5@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_r5g6b5(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt R5G6B5 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9392,7 +10644,10 @@
     "program": "grim.dll",
     "address": "0x100136d2",
     "name": "d3dx_blt_box_2d_x1r5g5b5",
-    "aliases": ["FUN_100136d2", "?BltBox2D_X1R5G5B5@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_100136d2",
+      "?BltBox2D_X1R5G5B5@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_x1r5g5b5(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt X1R5G5B5 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9401,7 +10656,10 @@
     "program": "grim.dll",
     "address": "0x100137f6",
     "name": "d3dx_blt_box_2d_a1r5g5b5",
-    "aliases": ["FUN_100137f6", "?BltBox2D_A1R5G5B5@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_100137f6",
+      "?BltBox2D_A1R5G5B5@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_a1r5g5b5(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt A1R5G5B5 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9410,7 +10668,10 @@
     "program": "grim.dll",
     "address": "0x10013945",
     "name": "d3dx_blt_box_2d_a4r4g4b4",
-    "aliases": ["FUN_10013945", "?BltBox2D_A4R4G4B4@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013945",
+      "?BltBox2D_A4R4G4B4@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_a4r4g4b4(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt A4R4G4B4 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9419,7 +10680,10 @@
     "program": "grim.dll",
     "address": "0x10013a98",
     "name": "d3dx_blt_box_2d_r3g3b2",
-    "aliases": ["FUN_10013a98", "?BltBox2D_R3G3B2@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013a98",
+      "?BltBox2D_R3G3B2@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_r3g3b2(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt R3G3B2 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9428,7 +10692,10 @@
     "program": "grim.dll",
     "address": "0x10013bd7",
     "name": "d3dx_blt_box_2d_a8",
-    "aliases": ["FUN_10013bd7", "?BltBox2D_A8@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013bd7",
+      "?BltBox2D_A8@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_a8(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt A8 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9437,7 +10704,10 @@
     "program": "grim.dll",
     "address": "0x10013c72",
     "name": "d3dx_blt_box_2d_a8r3g3b2",
-    "aliases": ["FUN_10013c72", "?BltBox2D_A8R3G3B2@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013c72",
+      "?BltBox2D_A8R3G3B2@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_a8r3g3b2(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt A8R3G3B2 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9446,7 +10716,10 @@
     "program": "grim.dll",
     "address": "0x10013dbe",
     "name": "d3dx_blt_box_2d_x4r4g4b4",
-    "aliases": ["FUN_10013dbe", "?BltBox2D_X4R4G4B4@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013dbe",
+      "?BltBox2D_X4R4G4B4@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_x4r4g4b4(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt X4R4G4B4 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9455,7 +10728,10 @@
     "program": "grim.dll",
     "address": "0x10013edf",
     "name": "d3dx_blt_box_2d_a8l8",
-    "aliases": ["FUN_10013edf", "?BltBox2D_A8L8@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10013edf",
+      "?BltBox2D_A8L8@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_a8l8(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt A8L8 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9464,7 +10740,10 @@
     "program": "grim.dll",
     "address": "0x1001402b",
     "name": "d3dx_blt_box_2d_a4l4",
-    "aliases": ["FUN_1001402b", "?BltBox2D_A4L4@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_1001402b",
+      "?BltBox2D_A4L4@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d_a4l4(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt A4L4 box-filter path from cd3dxblt.obj.",
     "create": false
@@ -9473,7 +10752,10 @@
     "program": "grim.dll",
     "address": "0x1001416a",
     "name": "d3dx_blt_same",
-    "aliases": ["FUN_1001416a", "?BltSame@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_1001416a",
+      "?BltSame@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_same(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXBlt same-format path from cd3dxblt.obj.",
     "create": false
@@ -9482,7 +10764,10 @@
     "program": "grim.dll",
     "address": "0x100142a2",
     "name": "d3dx_blt_copy",
-    "aliases": ["FUN_100142a2", "?BltCopy@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_100142a2",
+      "?BltCopy@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_copy(void *this)",
     "comment": "CD3DXBlt copy path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9491,7 +10776,10 @@
     "program": "grim.dll",
     "address": "0x10014393",
     "name": "d3dx_blt_none",
-    "aliases": ["FUN_10014393", "?BltNone@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10014393",
+      "?BltNone@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_none(void *this)",
     "comment": "CD3DXBlt no-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9500,7 +10788,10 @@
     "program": "grim.dll",
     "address": "0x10014595",
     "name": "d3dx_blt_point",
-    "aliases": ["FUN_10014595", "?BltPoint@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10014595",
+      "?BltPoint@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_point(void *this)",
     "comment": "CD3DXBlt point-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9509,7 +10800,10 @@
     "program": "grim.dll",
     "address": "0x10014799",
     "name": "d3dx_blt_box_2d",
-    "aliases": ["FUN_10014799", "?BltBox2D@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10014799",
+      "?BltBox2D@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_2d(void *this)",
     "comment": "CD3DXBlt generic 2D box-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9518,7 +10812,10 @@
     "program": "grim.dll",
     "address": "0x10014bbc",
     "name": "d3dx_blt_box_3d",
-    "aliases": ["FUN_10014bbc", "?BltBox3D@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10014bbc",
+      "?BltBox3D@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_box_3d(void *this)",
     "comment": "CD3DXBlt generic 3D box-filter path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9527,7 +10824,10 @@
     "program": "grim.dll",
     "address": "0x1001504e",
     "name": "d3dx_lf_setup_linear",
-    "aliases": ["sub_1001504E", "?LF_SetupLinear@@YAPAEIIH@Z"],
+    "aliases": [
+      "sub_1001504E",
+      "?LF_SetupLinear@@YAPAEIIH@Z"
+    ],
     "signature": "unsigned char * d3dx_lf_setup_linear(unsigned int width, unsigned int height, int filter)",
     "comment": "Exact DirectX 8.1 linear-filter setup helper from cd3dxblt.obj.",
     "create": false
@@ -9536,7 +10836,10 @@
     "program": "grim.dll",
     "address": "0x1001514e",
     "name": "d3dx_blt_linear_2d",
-    "aliases": ["FUN_1001514e", "?BltLinear2D@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_1001514e",
+      "?BltLinear2D@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_linear_2d(void *this)",
     "comment": "CD3DXBlt linear-filter 2D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9545,7 +10848,10 @@
     "program": "grim.dll",
     "address": "0x10015534",
     "name": "d3dx_blt_linear_3d",
-    "aliases": ["FUN_10015534", "?BltLinear3D@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10015534",
+      "?BltLinear3D@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_linear_3d(void *this)",
     "comment": "CD3DXBlt linear-filter 3D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9554,7 +10860,10 @@
     "program": "grim.dll",
     "address": "0x10015c65",
     "name": "d3dx_blt_triangle_2d",
-    "aliases": ["FUN_10015c65", "?BltTriangle2D@CD3DXBlt@@IAEJXZ"],
+    "aliases": [
+      "FUN_10015c65",
+      "?BltTriangle2D@CD3DXBlt@@IAEJXZ"
+    ],
     "signature": "int d3dx_blt_triangle_2d(void *this)",
     "comment": "CD3DXBlt triangle-filter 2D path identified by the exact DirectX 8.1 Blt dispatch relocations.",
     "create": false
@@ -9563,7 +10872,10 @@
     "program": "grim.dll",
     "address": "0x10016007",
     "name": "d3dx_blt_execute",
-    "aliases": ["FUN_10016007", "?Blt@CD3DXBlt@@QAEJPAUD3DX_BLT@@0K@Z"],
+    "aliases": [
+      "FUN_10016007",
+      "?Blt@CD3DXBlt@@QAEJPAUD3DX_BLT@@0K@Z"
+    ],
     "signature": "int d3dx_blt_execute(void *this, void *destination, void *source, unsigned long filter)",
     "comment": "CD3DXBlt::Blt implementation selected by exact DirectX 8.1 texture-loader relocations.",
     "create": false
@@ -9572,7 +10884,10 @@
     "program": "grim.dll",
     "address": "0x10016121",
     "name": "d3dx_lock_surface_ctor",
-    "aliases": ["FUN_10016121", "??0CD3DXLockSurface@@QAE@XZ"],
+    "aliases": [
+      "FUN_10016121",
+      "??0CD3DXLockSurface@@QAE@XZ"
+    ],
     "signature": "void * d3dx_lock_surface_ctor(void *this)",
     "comment": "CD3DXLockSurface constructor selected by the exact DirectX 8.1 D3DXComputeNormalMap relocation.",
     "create": false
@@ -9581,7 +10896,10 @@
     "program": "grim.dll",
     "address": "0x10016131",
     "name": "d3dx_lock_surface_unlock",
-    "aliases": ["FUN_10016131", "?Unlock@CD3DXLockSurface@@QAEJXZ"],
+    "aliases": [
+      "FUN_10016131",
+      "?Unlock@CD3DXLockSurface@@QAEJXZ"
+    ],
     "signature": "int d3dx_lock_surface_unlock(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXLockSurface::Unlock body.",
     "create": false
@@ -9590,7 +10908,10 @@
     "program": "grim.dll",
     "address": "0x1001619a",
     "name": "d3dx_lock_volume_ctor",
-    "aliases": ["FUN_1001619a", "??0CD3DXLockVolume@@QAE@XZ"],
+    "aliases": [
+      "FUN_1001619a",
+      "??0CD3DXLockVolume@@QAE@XZ"
+    ],
     "signature": "void * d3dx_lock_volume_ctor(void *this)",
     "comment": "CD3DXLockVolume constructor selected by exact DirectX 8.1 volume-loader relocations.",
     "create": false
@@ -9599,7 +10920,10 @@
     "program": "grim.dll",
     "address": "0x100161a0",
     "name": "d3dx_lock_volume_unlock",
-    "aliases": ["FUN_100161a0", "?Unlock@CD3DXLockVolume@@QAEJXZ"],
+    "aliases": [
+      "FUN_100161a0",
+      "?Unlock@CD3DXLockVolume@@QAEJXZ"
+    ],
     "signature": "int d3dx_lock_volume_unlock(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXLockVolume::Unlock body.",
     "create": false
@@ -9608,7 +10932,10 @@
     "program": "grim.dll",
     "address": "0x100161b6",
     "name": "d3dx_lock_surface_dtor",
-    "aliases": ["FUN_100161b6", "??1CD3DXLockSurface@@QAE@XZ"],
+    "aliases": [
+      "FUN_100161b6",
+      "??1CD3DXLockSurface@@QAE@XZ"
+    ],
     "signature": "void d3dx_lock_surface_dtor(void *this)",
     "comment": "CD3DXLockSurface destructor thunk selected by the exact DirectX 8.1 D3DXComputeNormalMap relocation.",
     "create": false
@@ -9617,7 +10944,10 @@
     "program": "grim.dll",
     "address": "0x100161bb",
     "name": "d3dx_lock_surface_lock",
-    "aliases": ["FUN_100161bb", "?Lock@CD3DXLockSurface@@QAEJPAUD3DX_BLT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@KK@Z"],
+    "aliases": [
+      "FUN_100161bb",
+      "?Lock@CD3DXLockSurface@@QAEJPAUD3DX_BLT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@KK@Z"
+    ],
     "signature": "int d3dx_lock_surface_lock(void *this, void *blit, void *surface, const void *palette, const void *rect, unsigned long filter, unsigned long color_key)",
     "comment": "Exact DirectX 8.1 CD3DXLockSurface::Lock body.",
     "create": false
@@ -9626,7 +10956,10 @@
     "program": "grim.dll",
     "address": "0x100165ce",
     "name": "d3dx_lock_volume_dtor",
-    "aliases": ["j_FUN_100161a0", "??1CD3DXLockVolume@@QAE@XZ"],
+    "aliases": [
+      "j_FUN_100161a0",
+      "??1CD3DXLockVolume@@QAE@XZ"
+    ],
     "signature": "void d3dx_lock_volume_dtor(void *this)",
     "comment": "CD3DXLockVolume destructor thunk selected by exact DirectX 8.1 volume-loader relocations.",
     "create": false
@@ -9635,7 +10968,10 @@
     "program": "grim.dll",
     "address": "0x100165d3",
     "name": "d3dx_lock_volume_lock",
-    "aliases": ["FUN_100165d3", "?Lock@CD3DXLockVolume@@QAEJPAUD3DX_BLT@@PAUIDirect3DVolume8@@PBUtagPALETTEENTRY@@PBU_D3DBOX@@KK@Z"],
+    "aliases": [
+      "FUN_100165d3",
+      "?Lock@CD3DXLockVolume@@QAEJPAUD3DX_BLT@@PAUIDirect3DVolume8@@PBUtagPALETTEENTRY@@PBU_D3DBOX@@KK@Z"
+    ],
     "signature": "int d3dx_lock_volume_lock(void *this, void *blit, void *volume, const void *palette, const void *box, unsigned long filter, unsigned long color_key)",
     "comment": "Exact DirectX 8.1 CD3DXLockVolume::Lock body.",
     "create": false
@@ -9701,7 +11037,10 @@
     "program": "grim.dll",
     "address": "0x10017361",
     "name": "d3dx_codec_convert_from",
-    "aliases": ["FUN_10017361", "?ConvertFrom@CD3DXCodec@@QAEJPAV1@@Z"],
+    "aliases": [
+      "FUN_10017361",
+      "?ConvertFrom@CD3DXCodec@@QAEJPAV1@@Z"
+    ],
     "signature": "int d3dx_codec_convert_from(void *this, void *source)",
     "comment": "CD3DXCodec conversion entry identified by the exact DirectX 8.1 CD3DXBlt relocation.",
     "create": false
@@ -10517,7 +11856,9 @@
     "program": "grim.dll",
     "address": "0x1001b50c",
     "name": "grim_pixel_format_create",
-    "aliases": ["?Create@CD3DXCodec@@SAPAV1@PAUD3DX_BLT@@@Z"],
+    "aliases": [
+      "?Create@CD3DXCodec@@SAPAV1@PAUD3DX_BLT@@@Z"
+    ],
     "signature": "void * grim_pixel_format_create(uint *desc)",
     "comment": "DirectX 8.1 CD3DXCodec factory; picks the pixel-format implementation from the blit descriptor."
   },
@@ -10548,7 +11889,10 @@
     "program": "grim.dll",
     "address": "0x1001bca5",
     "name": "d3dx_file_ctor",
-    "aliases": ["FUN_1001bca5", "??0CD3DXFile@@QAE@XZ"],
+    "aliases": [
+      "FUN_1001bca5",
+      "??0CD3DXFile@@QAE@XZ"
+    ],
     "signature": "void * d3dx_file_ctor(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXFile constructor.",
     "create": false
@@ -10557,7 +11901,10 @@
     "program": "grim.dll",
     "address": "0x1001bcb7",
     "name": "d3dx_file_open",
-    "aliases": ["FUN_1001bcb7", "?Open@CD3DXFile@@QAEJPBXH@Z"],
+    "aliases": [
+      "FUN_1001bcb7",
+      "?Open@CD3DXFile@@QAEJPBXH@Z"
+    ],
     "signature": "int d3dx_file_open(void *this, const void *source, int mode)",
     "comment": "CD3DXFile::Open selected by the exact DirectX 8.1 D3DXCreateTextureFromFileExA relocation.",
     "create": false
@@ -10566,7 +11913,10 @@
     "program": "grim.dll",
     "address": "0x1001bdc7",
     "name": "d3dx_file_create",
-    "aliases": ["FUN_1001bdc7", "?Create@CD3DXFile@@QAEJPBXH@Z"],
+    "aliases": [
+      "FUN_1001bdc7",
+      "?Create@CD3DXFile@@QAEJPBXH@Z"
+    ],
     "signature": "int d3dx_file_create(void *this, const void *path, int ansi_path)",
     "comment": "Exact DirectX 8.1 CD3DXFile create method.",
     "create": false
@@ -10583,7 +11933,10 @@
     "program": "grim.dll",
     "address": "0x1001bed2",
     "name": "d3dx_file_dtor",
-    "aliases": ["FUN_1001bed2", "??1CD3DXFile@@QAE@XZ"],
+    "aliases": [
+      "FUN_1001bed2",
+      "??1CD3DXFile@@QAE@XZ"
+    ],
     "signature": "void d3dx_file_dtor(void *this)",
     "comment": "Exact DirectX 8.1 CD3DXFile destructor.",
     "create": false
@@ -10592,7 +11945,10 @@
     "program": "grim.dll",
     "address": "0x1001bf39",
     "name": "d3dx_asm_is_mmx",
-    "aliases": ["FUN_1001bf39", "?_asm_isMMX@@YAHXZ"],
+    "aliases": [
+      "FUN_1001bf39",
+      "?_asm_isMMX@@YAHXZ"
+    ],
     "signature": "int d3dx_asm_is_mmx(void)",
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member.",
     "create": false
@@ -10601,7 +11957,10 @@
     "program": "grim.dll",
     "address": "0x1001bf5e",
     "name": "d3dx_is_mmx_processor",
-    "aliases": ["sub_1001BF5E", "?isMMXprocessor@@YAHXZ"],
+    "aliases": [
+      "sub_1001BF5E",
+      "?isMMXprocessor@@YAHXZ"
+    ],
     "signature": "int d3dx_is_mmx_processor(void)",
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member.",
     "create": false
@@ -10610,7 +11969,10 @@
     "program": "grim.dll",
     "address": "0x1001bff7",
     "name": "d3dx_is_x3d_processor",
-    "aliases": ["FUN_1001bff7", "?isX3Dprocessor@@YAHXZ"],
+    "aliases": [
+      "FUN_1001bff7",
+      "?isX3Dprocessor@@YAHXZ"
+    ],
     "signature": "int d3dx_is_x3d_processor(void)",
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member.",
     "create": false
@@ -10619,7 +11981,10 @@
     "program": "grim.dll",
     "address": "0x1001c02f",
     "name": "d3dx_is_intel_sse_processor",
-    "aliases": ["sub_1001C02F", "?IsIntelSSEProcessor@@YAKXZ"],
+    "aliases": [
+      "sub_1001C02F",
+      "?IsIntelSSEProcessor@@YAKXZ"
+    ],
     "signature": "unsigned int d3dx_is_intel_sse_processor(void)",
     "comment": "Intel SSE feature probe from the pinned DirectX 8.1 cpudetect.obj archive member.",
     "create": false
@@ -10628,7 +11993,10 @@
     "program": "grim.dll",
     "address": "0x1001c188",
     "name": "D3DXCpuOptimizations",
-    "aliases": ["grim_select_renderer_backend", "_D3DXCpuOptimizations@4"],
+    "aliases": [
+      "grim_select_renderer_backend",
+      "_D3DXCpuOptimizations@4"
+    ],
     "signature": "int D3DXCpuOptimizations(int force)",
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
   },
@@ -10851,7 +12219,9 @@
     "program": "grim.dll",
     "address": "0x1001ebc4",
     "name": "png_set_bgr",
-    "aliases": ["?png_set_bgr@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "aliases": [
+      "?png_set_bgr@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ],
     "signature": "void png_set_bgr(png_structp png_ptr)",
     "comment": "Enables libpng's red/blue channel swap transform"
   },
@@ -10859,7 +12229,9 @@
     "program": "grim.dll",
     "address": "0x1001ebcd",
     "name": "png_set_swap",
-    "aliases": ["?png_set_swap@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "aliases": [
+      "?png_set_swap@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ],
     "signature": "void png_set_swap(png_structp png_ptr)",
     "comment": "Enables 16-bit sample byte swapping when the input depth is 16"
   },
@@ -10867,7 +12239,9 @@
     "program": "grim.dll",
     "address": "0x1001ebdf",
     "name": "png_set_packing",
-    "aliases": ["?png_set_packing@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "aliases": [
+      "?png_set_packing@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ],
     "signature": "void png_set_packing(png_structp png_ptr)",
     "comment": "Expands packed sub-byte samples and promotes the user bit depth to eight"
   },
@@ -10875,7 +12249,9 @@
     "program": "grim.dll",
     "address": "0x1001ebf8",
     "name": "png_set_interlace_handling",
-    "aliases": ["?png_set_interlace_handling@D3DX@@YAHPAUpng_struct_def@1@@Z"],
+    "aliases": [
+      "?png_set_interlace_handling@D3DX@@YAHPAUpng_struct_def@1@@Z"
+    ],
     "signature": "int png_set_interlace_handling(png_structp png_ptr)",
     "comment": "Enables Adam7 handling and returns seven passes, or one pass for noninterlaced input"
   },
@@ -10883,7 +12259,9 @@
     "program": "grim.dll",
     "address": "0x1001ec11",
     "name": "png_set_filler",
-    "aliases": ["?png_set_filler@D3DX@@YAXPAUpng_struct_def@1@KH@Z"],
+    "aliases": [
+      "?png_set_filler@D3DX@@YAXPAUpng_struct_def@1@KH@Z"
+    ],
     "signature": "void png_set_filler(png_structp png_ptr, png_uint_32 filler, int filler_loc)",
     "comment": "Configures filler value, placement, and transformed channel count"
   },
@@ -10891,7 +12269,9 @@
     "program": "grim.dll",
     "address": "0x1001ec5e",
     "name": "png_do_swap",
-    "aliases": ["?png_do_swap@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
+    "aliases": [
+      "?png_do_swap@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ],
     "signature": "void png_do_swap(png_row_infop row_info, png_bytep row)",
     "comment": "Swaps the byte order of each 16-bit sample in a decoded row"
   },
@@ -10899,7 +12279,10 @@
     "program": "grim.dll",
     "address": "0x1001ec8b",
     "name": "png_do_bgr",
-    "aliases": ["sub_1001EC8B", "?png_do_bgr@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
+    "aliases": [
+      "sub_1001EC8B",
+      "?png_do_bgr@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ],
     "signature": "void png_do_bgr(png_row_infop row_info, png_bytep row)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 red/blue channel swap transform."
   },
@@ -10907,7 +12290,9 @@
     "program": "grim.dll",
     "address": "0x1001ed4a",
     "name": "png_set_gamma",
-    "aliases": ["?png_set_gamma@D3DX@@YAXPAUpng_struct_def@1@NN@Z"],
+    "aliases": [
+      "?png_set_gamma@D3DX@@YAXPAUpng_struct_def@1@NN@Z"
+    ],
     "signature": "void png_set_gamma(png_structp png_ptr, double screen_gamma, double file_gamma)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma configuration entry."
   },
@@ -10915,7 +12300,9 @@
     "program": "grim.dll",
     "address": "0x1001ed89",
     "name": "png_read_transform_info",
-    "aliases": ["?png_read_transform_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"],
+    "aliases": [
+      "?png_read_transform_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
+    ],
     "signature": "void png_read_transform_info(png_structp png_ptr, png_infop info_ptr)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 post-transform info updater."
   },
@@ -10923,7 +12310,10 @@
     "program": "grim.dll",
     "address": "0x1001ee74",
     "name": "png_do_unpack",
-    "aliases": ["sub_1001EE74", "?png_do_unpack@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
+    "aliases": [
+      "sub_1001EE74",
+      "?png_do_unpack@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ],
     "signature": "void png_do_unpack(png_row_infop row_info, png_bytep row)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 packed-sample expansion transform."
   },
@@ -10931,7 +12321,10 @@
     "program": "grim.dll",
     "address": "0x1001ef84",
     "name": "png_do_unshift",
-    "aliases": ["sub_1001EF84", "?png_do_unshift@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_8_struct@1@@Z"],
+    "aliases": [
+      "sub_1001EF84",
+      "?png_do_unshift@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_8_struct@1@@Z"
+    ],
     "signature": "void png_do_unshift(png_row_infop row_info, png_bytep row, png_color_8p sig_bits)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 significant-bit unshift transform."
   },
@@ -10939,7 +12332,9 @@
     "program": "grim.dll",
     "address": "0x1001f0fb",
     "name": "png_do_chop",
-    "aliases": ["?png_do_chop@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
+    "aliases": [
+      "?png_do_chop@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ],
     "signature": "void png_do_chop(png_row_infop row_info, png_bytep row)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 16-bit-to-8-bit sample transform."
   },
@@ -10947,7 +12342,10 @@
     "program": "grim.dll",
     "address": "0x1001f13f",
     "name": "png_do_read_filler",
-    "aliases": ["sub_1001F13F", "?png_do_read_filler@D3DX@@YAXPAUpng_row_info_struct@1@PAEKK@Z"],
+    "aliases": [
+      "sub_1001F13F",
+      "?png_do_read_filler@D3DX@@YAXPAUpng_row_info_struct@1@PAEKK@Z"
+    ],
     "signature": "void png_do_read_filler(png_row_infop row_info, png_bytep row, png_uint_32 filler, png_uint_32 flags)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 read-side filler-channel transform."
   },
@@ -10955,7 +12353,10 @@
     "program": "grim.dll",
     "address": "0x1001f377",
     "name": "png_do_gamma",
-    "aliases": ["sub_1001F377", "?png_do_gamma@D3DX@@YAXPAUpng_row_info_struct@1@PAE1PAPAGH@Z"],
+    "aliases": [
+      "sub_1001F377",
+      "?png_do_gamma@D3DX@@YAXPAUpng_row_info_struct@1@PAE1PAPAGH@Z"
+    ],
     "signature": "void png_do_gamma(png_row_infop row_info, png_bytep row, png_bytep gamma_table, png_uint_16pp gamma_16_table, int gamma_shift)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 row gamma transform."
   },
@@ -10963,7 +12364,10 @@
     "program": "grim.dll",
     "address": "0x1001f6c5",
     "name": "png_do_expand_palette",
-    "aliases": ["sub_1001F6C5", "?png_do_expand_palette@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_struct@1@1H@Z"],
+    "aliases": [
+      "sub_1001F6C5",
+      "?png_do_expand_palette@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_struct@1@1H@Z"
+    ],
     "signature": "void png_do_expand_palette(png_row_infop row_info, png_bytep row, png_colorp palette, png_bytep trans, int num_trans)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 palette expansion transform."
   },
@@ -10971,7 +12375,10 @@
     "program": "grim.dll",
     "address": "0x1001f8cd",
     "name": "png_do_expand",
-    "aliases": ["sub_1001F8CD", "?png_do_expand@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_16_struct@1@@Z"],
+    "aliases": [
+      "sub_1001F8CD",
+      "?png_do_expand@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_16_struct@1@@Z"
+    ],
     "signature": "void png_do_expand(png_row_infop row_info, png_bytep row, png_color_16p trans_value)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 grayscale, RGB, and transparency expansion transform."
   },
@@ -10979,7 +12386,10 @@
     "program": "grim.dll",
     "address": "0x1001fc1f",
     "name": "png_do_dither",
-    "aliases": ["sub_1001FC1F", "?png_do_dither@D3DX@@YAXPAUpng_row_info_struct@1@PAE11@Z"],
+    "aliases": [
+      "sub_1001FC1F",
+      "?png_do_dither@D3DX@@YAXPAUpng_row_info_struct@1@PAE11@Z"
+    ],
     "signature": "void png_do_dither(png_row_infop row_info, png_bytep row, png_bytep palette_lookup, png_bytep dither_lookup)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 palette dither transform."
   },
@@ -10987,7 +12397,10 @@
     "program": "grim.dll",
     "address": "0x1001fd2d",
     "name": "png_build_gamma_table",
-    "aliases": ["FUN_1001fd2d", "?png_build_gamma_table@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "aliases": [
+      "FUN_1001fd2d",
+      "?png_build_gamma_table@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ],
     "signature": "void png_build_gamma_table(png_structp png_ptr)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma lookup-table builder."
   },
@@ -10995,7 +12408,9 @@
     "program": "grim.dll",
     "address": "0x10020036",
     "name": "png_init_read_transformations",
-    "aliases": ["?png_init_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "aliases": [
+      "?png_init_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ],
     "signature": "void png_init_read_transformations(png_structp png_ptr)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 read-transform initialization."
   },
@@ -11003,7 +12418,10 @@
     "program": "grim.dll",
     "address": "0x10020149",
     "name": "png_do_read_transformations",
-    "aliases": ["FUN_10020149", "?png_do_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "aliases": [
+      "FUN_10020149",
+      "?png_do_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ],
     "signature": "void png_do_read_transformations(png_structp png_ptr)",
     "comment": "Exact DirectX 8.1 libpng 1.0.5 decoded-row transform dispatcher."
   },
@@ -11129,7 +12547,9 @@
     "program": "grim.dll",
     "address": "0x1002060e",
     "name": "grim_dxt_decode_rgb565",
-    "aliases": ["?Decode565@@YAXPAUD3DXCOLOR@@G@Z"],
+    "aliases": [
+      "?Decode565@@YAXPAUD3DXCOLOR@@G@Z"
+    ],
     "signature": "void grim_dxt_decode_rgb565(float *out_rgba, unsigned int rgb565)",
     "comment": "unpacks RGB565 into RGBA floats (alpha=1)"
   },
@@ -11137,7 +12557,9 @@
     "program": "grim.dll",
     "address": "0x1002065a",
     "name": "grim_dxt_unpremultiply_rgba_block",
-    "aliases": ["?DecodePremult@@YAJPAUD3DXCOLOR@@@Z"],
+    "aliases": [
+      "?DecodePremult@@YAJPAUD3DXCOLOR@@@Z"
+    ],
     "signature": "int __fastcall grim_dxt_unpremultiply_rgba_block(float *rgba)",
     "comment": "divides rgb by alpha for a 4x4 RGBA block"
   },
@@ -11145,7 +12567,9 @@
     "program": "grim.dll",
     "address": "0x100206d8",
     "name": "grim_dxt_premultiply_rgba_block",
-    "aliases": ["?EncodePremult@@YAJPAUD3DXCOLOR@@PBU1@@Z"],
+    "aliases": [
+      "?EncodePremult@@YAJPAUD3DXCOLOR@@PBU1@@Z"
+    ],
     "signature": "int grim_dxt_premultiply_rgba_block(float *out_rgba)",
     "comment": "multiplies rgb by alpha for a 4x4 RGBA block"
   },
@@ -11153,7 +12577,9 @@
     "program": "grim.dll",
     "address": "0x10020708",
     "name": "fpu_save_control_word",
-    "aliases": ["?F2IBegin@@YAXXZ"],
+    "aliases": [
+      "?F2IBegin@@YAXXZ"
+    ],
     "signature": "void fpu_save_control_word(void)",
     "comment": "DirectX 8.1 F2IBegin helper; captures the x87 control word into g_ulFPU for DXT integer conversions."
   },
@@ -11161,7 +12587,9 @@
     "program": "grim.dll",
     "address": "0x1002072b",
     "name": "grim_dxt_pack_rgb565",
-    "aliases": ["?Encode565@@YAGPBUD3DXCOLOR@@@Z"],
+    "aliases": [
+      "?Encode565@@YAGPBUD3DXCOLOR@@@Z"
+    ],
     "signature": "unsigned int grim_dxt_pack_rgb565(float *rgb)",
     "comment": "clamps rgb floats and packs into RGB565"
   },
@@ -11169,7 +12597,9 @@
     "program": "grim.dll",
     "address": "0x10020825",
     "name": "grim_dxt5_optimize_alpha_endpoints",
-    "aliases": ["?OptimizeAlpha@@YAXPAM0PBMI@Z"],
+    "aliases": [
+      "?OptimizeAlpha@@YAXPAM0PBMI@Z"
+    ],
     "signature": "void grim_dxt5_optimize_alpha_endpoints(float *min_out, float *max_out, float *alphas, unsigned int mode)",
     "comment": "iteratively chooses DXT5 alpha endpoints for 6/8-alpha modes"
   },
@@ -11177,7 +12607,9 @@
     "program": "grim.dll",
     "address": "0x10020b2a",
     "name": "grim_dxt1_optimize_color_endpoints",
-    "aliases": ["?OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU1@I@Z"],
+    "aliases": [
+      "?OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU1@I@Z"
+    ],
     "signature": "void grim_dxt1_optimize_color_endpoints(float *min_out, float *max_out, float *rgba, float mode)",
     "comment": "optimizes DXT1 color endpoints for 3- or 4-color mode"
   },
@@ -11185,7 +12617,9 @@
     "program": "grim.dll",
     "address": "0x10021095",
     "name": "grim_dxt1_encode_color_block",
-    "aliases": ["?EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z"],
+    "aliases": [
+      "?EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z"
+    ],
     "signature": "int grim_dxt1_encode_color_block(unsigned short *out_block, float mode)",
     "comment": "encodes a 4x4 RGBA block into a DXT1 color block (supports 1-bit alpha mode)"
   },
@@ -11193,7 +12627,9 @@
     "program": "grim.dll",
     "address": "0x10021899",
     "name": "grim_dxt1_decode_color_block",
-    "aliases": ["?D3DXDecodeDXT1@@YAJPAUD3DXCOLOR@@PBE@Z"],
+    "aliases": [
+      "?D3DXDecodeDXT1@@YAJPAUD3DXCOLOR@@PBE@Z"
+    ],
     "signature": "int grim_dxt1_decode_color_block(float *out_rgba, unsigned short *block)",
     "comment": "decodes a DXT1 color block into 16 RGBA floats"
   },
@@ -11201,7 +12637,9 @@
     "program": "grim.dll",
     "address": "0x100219d7",
     "name": "grim_dxt3_decode_block",
-    "aliases": ["?D3DXDecodeDXT3@@YAJPAUD3DXCOLOR@@PBE@Z"],
+    "aliases": [
+      "?D3DXDecodeDXT3@@YAJPAUD3DXCOLOR@@PBE@Z"
+    ],
     "signature": "int grim_dxt3_decode_block(float *out_rgba, unsigned int *block)",
     "comment": "decodes a DXT3 block (explicit alpha + DXT1 color) to RGBA floats"
   },
@@ -11209,7 +12647,9 @@
     "program": "grim.dll",
     "address": "0x10021b96",
     "name": "grim_dxt1_encode_block",
-    "aliases": ["?D3DXEncodeDXT1@@YAJPAEPBUD3DXCOLOR@@@Z"],
+    "aliases": [
+      "?D3DXEncodeDXT1@@YAJPAEPBUD3DXCOLOR@@@Z"
+    ],
     "signature": "int grim_dxt1_encode_block(void *out_block, float *rgba)",
     "comment": "DXT1 codec callback that enables one-bit alpha color encoding"
   },
@@ -11217,7 +12657,9 @@
     "program": "grim.dll",
     "address": "0x10021a5a",
     "name": "grim_dxt5_decode_block",
-    "aliases": ["?D3DXDecodeDXT5@@YAJPAUD3DXCOLOR@@PBE@Z"],
+    "aliases": [
+      "?D3DXDecodeDXT5@@YAJPAUD3DXCOLOR@@PBE@Z"
+    ],
     "signature": "int grim_dxt5_decode_block(float *out_rgba, unsigned char *block)",
     "comment": "decodes a DXT5 block (interpolated alpha + DXT1 color) to RGBA floats"
   },
@@ -11225,7 +12667,9 @@
     "program": "grim.dll",
     "address": "0x10021bae",
     "name": "grim_dxt3_encode_block",
-    "aliases": ["?D3DXEncodeDXT3@@YAJPAEPBUD3DXCOLOR@@@Z"],
+    "aliases": [
+      "?D3DXEncodeDXT3@@YAJPAEPBUD3DXCOLOR@@@Z"
+    ],
     "signature": "void grim_dxt3_encode_block(unsigned int *out_block, float *rgba)",
     "comment": "encodes a 4x4 RGBA block into DXT3 (explicit alpha + DXT1 color)"
   },
@@ -11233,7 +12677,9 @@
     "program": "grim.dll",
     "address": "0x10021cc2",
     "name": "grim_dxt5_encode_block",
-    "aliases": ["?D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z"],
+    "aliases": [
+      "?D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z"
+    ],
     "signature": "int grim_dxt5_encode_block(unsigned char *out_block, float *rgba)",
     "comment": "encodes a 4x4 RGBA block into DXT5 (interpolated alpha + DXT1 color)"
   },
@@ -11269,7 +12715,10 @@
     "program": "grim.dll",
     "address": "0x100224c5",
     "name": "d3dx_x3d_init_fast_table",
-    "aliases": ["grim_init_mmx_sse_functions", "?x3d_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"],
+    "aliases": [
+      "grim_init_mmx_sse_functions",
+      "?x3d_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ],
     "signature": "void d3dx_x3d_init_fast_table(void *table)",
     "comment": "Exact DirectX 8.1 D3DX 3DNow dispatch implementation selected from the pinned d3dxmathx3d.obj archive member."
   },
@@ -11277,7 +12726,10 @@
     "program": "grim.dll",
     "address": "0x1002290c",
     "name": "d3dx_x86_vec3_normalize",
-    "aliases": ["FUN_1002290c", "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"],
+    "aliases": [
+      "FUN_1002290c",
+      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
     "signature": "float* d3dx_x86_vec3_normalize(float* arg1, float* arg2)",
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member.",
     "create": false
@@ -11286,7 +12738,10 @@
     "program": "grim.dll",
     "address": "0x100229d6",
     "name": "d3dx_x86_matrix_multiply",
-    "aliases": ["FUN_100229d6", "?x86_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "aliases": [
+      "FUN_100229d6",
+      "?x86_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
     "signature": "int d3dx_x86_matrix_multiply(int arg1, int arg2, void* arg3)",
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member.",
     "create": false
@@ -11295,7 +12750,10 @@
     "program": "grim.dll",
     "address": "0x10022ab9",
     "name": "d3dx_x86_matrix_multiply_transpose",
-    "aliases": ["FUN_10022ab9", "?x86_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "aliases": [
+      "FUN_10022ab9",
+      "?x86_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
     "signature": "void* d3dx_x86_matrix_multiply_transpose(void* arg1, int arg2, int arg3)",
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member.",
     "create": false
@@ -15097,7 +16555,9 @@
     "program": "grim.dll",
     "address": "0x1004b5b0",
     "name": "seh_prolog",
-    "aliases": ["__EH_prolog"],
+    "aliases": [
+      "__EH_prolog"
+    ],
     "signature": "void seh_prolog(void)",
     "comment": "MSVC SEH prolog helper (sets FS:[0])"
   },
@@ -15161,7 +16621,10 @@
     "program": "grim.dll",
     "address": "0x1004b5cf",
     "name": "grim_vector_destructor_iterator",
-    "aliases": ["FUN_1004b5cf", "??_M@YGXPAXIHP6EX0@Z@Z"],
+    "aliases": [
+      "FUN_1004b5cf",
+      "??_M@YGXPAXIHP6EX0@Z@Z"
+    ],
     "signature": "void grim_vector_destructor_iterator(void *base, unsigned int size, int count, void *destructor)",
     "comment": "VC6 vector-destruction iterator selected by the exact DirectX 8.1 scalar deleting destructor.",
     "create": false
@@ -15170,385 +16633,551 @@
     "program": "grim.dll",
     "address": "0x1002943a",
     "name": "x3d_matrix_multiply",
-    "aliases": ["sub_1002943A", "?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "aliases": [
+      "sub_1002943A",
+      "?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d matrix multiply implementation."
   },
   {
     "program": "grim.dll",
     "address": "0x10027fc6",
     "name": "x3d_quaternion_to_axis_angle",
-    "aliases": ["sub_10027FC6", "?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"],
+    "aliases": [
+      "sub_10027FC6",
+      "?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion-to-axis-angle conversion."
   },
   {
     "program": "grim.dll",
     "address": "0x10028079",
     "name": "x3d_quaternion_rotation_matrix",
-    "aliases": ["sub_10028079", "?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"],
+    "aliases": [
+      "sub_10028079",
+      "?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d matrix-to-quaternion conversion."
   },
   {
     "program": "grim.dll",
     "address": "0x10028295",
     "name": "x3d_quaternion_rotation_matrix_k7",
-    "aliases": ["sub_10028295", "?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"],
+    "aliases": [
+      "sub_10028295",
+      "?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d K7 matrix-to-quaternion conversion."
   },
   {
     "program": "grim.dll",
     "address": "0x100284aa",
     "name": "x3d_quaternion_rotation_yaw_pitch_roll",
-    "aliases": ["sub_100284AA", "?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"],
+    "aliases": [
+      "sub_100284AA",
+      "?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d yaw-pitch-roll quaternion builder."
   },
   {
     "program": "grim.dll",
     "address": "0x1002856f",
     "name": "x3d_quaternion_rotation_axis",
-    "aliases": ["sub_1002856F", "?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"],
+    "aliases": [
+      "sub_1002856F",
+      "?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d axis-angle quaternion builder."
   },
   {
     "program": "grim.dll",
     "address": "0x100285db",
     "name": "x3d_quaternion_slerp",
-    "aliases": ["sub_100285DB", "?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"],
+    "aliases": [
+      "sub_100285DB",
+      "?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion spherical interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x10028712",
     "name": "x3d_quaternion_barycentric",
-    "aliases": ["sub_10028712", "?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"],
+    "aliases": [
+      "sub_10028712",
+      "?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion barycentric interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002879f",
     "name": "x3d_quaternion_squad",
-    "aliases": ["sub_1002879F", "?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"],
+    "aliases": [
+      "sub_1002879F",
+      "?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion squad interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x10028831",
     "name": "x3d_quaternion_inverse",
-    "aliases": ["sub_10028831", "?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"],
+    "aliases": [
+      "sub_10028831",
+      "?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion inverse."
   },
   {
     "program": "grim.dll",
     "address": "0x10028895",
     "name": "x3d_quaternion_ln",
-    "aliases": ["sub_10028895", "?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"],
+    "aliases": [
+      "sub_10028895",
+      "?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion logarithm."
   },
   {
     "program": "grim.dll",
     "address": "0x1002893c",
     "name": "x3d_quaternion_exp",
-    "aliases": ["sub_1002893C", "?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"],
+    "aliases": [
+      "sub_1002893C",
+      "?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion exponential."
   },
   {
     "program": "grim.dll",
     "address": "0x100289e1",
     "name": "x3d_quaternion_squad_setup",
-    "aliases": ["sub_100289E1", "?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"],
+    "aliases": [
+      "sub_100289E1",
+      "?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion squad-control setup."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d321",
     "name": "x3d_vec3_barycentric",
-    "aliases": ["sub_1002D321", "?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"],
+    "aliases": [
+      "sub_1002D321",
+      "?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d vector barycentric interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d392",
     "name": "x3d_vec3_hermite",
-    "aliases": ["sub_1002D392", "?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"],
+    "aliases": [
+      "sub_1002D392",
+      "?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d vector Hermite interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d466",
     "name": "x3d_vec3_catmull_rom",
-    "aliases": ["sub_1002D466", "?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"],
+    "aliases": [
+      "sub_1002D466",
+      "?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d vector Catmull-Rom interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d550",
     "name": "x3d_vec3_transform_coord_inline",
-    "aliases": ["sub_1002D550", "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"],
+    "aliases": [
+      "sub_1002D550",
+      "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d inline coordinate transform."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d5db",
     "name": "x3d_matrix_multiply_inline",
-    "aliases": ["sub_1002D5DB", "?x3d_D3DXMatrixMultiply_inline@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "aliases": [
+      "sub_1002D5DB",
+      "?x3d_D3DXMatrixMultiply_inline@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d inline matrix multiply."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d7a7",
     "name": "x3d_vec3_project",
-    "aliases": ["sub_1002D7A7", "?x3d_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"],
+    "aliases": [
+      "sub_1002D7A7",
+      "?x3d_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d vector projection."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d92f",
     "name": "x3d_vec3_unproject",
-    "aliases": ["sub_1002D92F", "?x3d_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"],
+    "aliases": [
+      "sub_1002D92F",
+      "?x3d_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d vector unprojection."
   },
   {
     "program": "grim.dll",
     "address": "0x1002db55",
     "name": "x3d_vec3_unproject_k7",
-    "aliases": ["sub_1002DB55", "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"],
+    "aliases": [
+      "sub_1002DB55",
+      "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d K7 vector unprojection."
   },
   {
     "program": "grim.dll",
     "address": "0x1002e04a",
     "name": "x3d_vec4_cross",
-    "aliases": ["sub_1002E04A", "?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"],
+    "aliases": [
+      "sub_1002E04A",
+      "?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector cross product."
   },
   {
     "program": "grim.dll",
     "address": "0x1002e17c",
     "name": "x3d_vec4_barycentric",
-    "aliases": ["sub_1002E17C", "?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"],
+    "aliases": [
+      "sub_1002E17C",
+      "?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector barycentric interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002e1ed",
     "name": "x3d_vec4_hermite",
-    "aliases": ["sub_1002E1ED", "?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"],
+    "aliases": [
+      "sub_1002E1ED",
+      "?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector Hermite interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002e2b5",
     "name": "x3d_vec4_catmull_rom",
-    "aliases": ["sub_1002E2B5", "?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"],
+    "aliases": [
+      "sub_1002E2B5",
+      "?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector Catmull-Rom interpolation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002966c",
     "name": "x3d_matrix_determinant",
-    "aliases": ["sub_1002966C", "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"],
+    "aliases": [
+      "sub_1002966C",
+      "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d matrix determinant implementation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002973b",
     "name": "x3d_matrix_translation",
-    "aliases": ["sub_1002973B", "?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"],
+    "aliases": [
+      "sub_1002973B",
+      "?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d translation-matrix builder."
   },
   {
     "program": "grim.dll",
     "address": "0x1002978b",
     "name": "x3d_matrix_shadow",
-    "aliases": ["sub_1002978B", "?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"],
+    "aliases": [
+      "sub_1002978B",
+      "?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d shadow-matrix builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029876",
     "name": "x3d_matrix_reflect",
-    "aliases": ["sub_10029876", "?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"],
+    "aliases": [
+      "sub_10029876",
+      "?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d reflection-matrix builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029952",
     "name": "x3d_matrix_rotation_x",
-    "aliases": ["sub_10029952", "?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"],
+    "aliases": [
+      "sub_10029952",
+      "?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d X-axis rotation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x100299b5",
     "name": "x3d_matrix_rotation_y",
-    "aliases": ["sub_100299B5", "?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"],
+    "aliases": [
+      "sub_100299B5",
+      "?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d Y-axis rotation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029a13",
     "name": "x3d_matrix_rotation_z",
-    "aliases": ["sub_10029A13", "?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"],
+    "aliases": [
+      "sub_10029A13",
+      "?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d Z-axis rotation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029a6c",
     "name": "x3d_matrix_scaling",
-    "aliases": ["sub_10029A6C", "?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"],
+    "aliases": [
+      "sub_10029A6C",
+      "?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d scaling-matrix builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029ab3",
     "name": "x3d_matrix_transpose",
-    "aliases": ["sub_10029AB3", "?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"],
+    "aliases": [
+      "sub_10029AB3",
+      "?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d matrix transpose implementation."
   },
   {
     "program": "grim.dll",
     "address": "0x10029b22",
     "name": "x3d_matrix_identity",
-    "aliases": ["sub_10029B22", "?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z"],
+    "aliases": [
+      "sub_10029B22",
+      "?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d identity-matrix builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029b5b",
     "name": "x3d_matrix_rotation_quaternion",
-    "aliases": ["sub_10029B5B", "?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"],
+    "aliases": [
+      "sub_10029B5B",
+      "?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion rotation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029c2d",
     "name": "x3d_matrix_rotation_quaternion_k7",
-    "aliases": ["sub_10029C2D", "?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"],
+    "aliases": [
+      "sub_10029C2D",
+      "?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d K7 quaternion rotation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10029ce2",
     "name": "x3d_matrix_transformation",
-    "aliases": ["sub_10029CE2", "?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"],
+    "aliases": [
+      "sub_10029CE2",
+      "?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d general transformation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x1002ae7a",
     "name": "x3d_matrix_rotation_yaw_pitch_roll",
-    "aliases": ["sub_1002AE7A", "?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"],
+    "aliases": [
+      "sub_1002AE7A",
+      "?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d yaw-pitch-roll rotation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x1002b01f",
     "name": "x3d_matrix_affine_transformation",
-    "aliases": ["sub_1002B01F", "?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"],
+    "aliases": [
+      "sub_1002B01F",
+      "?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d affine transformation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x1002b553",
     "name": "x3d_matrix_rotation_axis",
-    "aliases": ["sub_1002B553", "?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"],
+    "aliases": [
+      "sub_1002B553",
+      "?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d arbitrary-axis rotation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x1002b66c",
     "name": "x3d_matrix_transformation_k7",
-    "aliases": ["sub_1002B66C", "?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"],
+    "aliases": [
+      "sub_1002B66C",
+      "?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d K7 general transformation builder."
   },
   {
     "program": "grim.dll",
     "address": "0x1002c7c0",
     "name": "x3d_matrix_inverse_k7",
-    "aliases": ["sub_1002C7C0", "?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"],
+    "aliases": [
+      "sub_1002C7C0",
+      "?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d K7 matrix inverse implementation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002caa2",
     "name": "x3d_matrix_multiply_transpose",
-    "aliases": ["sub_1002CAA2", "?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "aliases": [
+      "sub_1002CAA2",
+      "?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d multiply-transpose implementation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d1ce",
     "name": "x3d_matrix_inverse",
-    "aliases": ["sub_1002D1CE", "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"],
+    "aliases": [
+      "sub_1002D1CE",
+      "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d matrix inverse dispatch."
   },
   {
     "program": "grim.dll",
     "address": "0x1002ce9a",
     "name": "x3d_matrix_inverse_inline",
-    "aliases": ["sub_1002CE9A", "?x3d_D3DXMatrixInverse_inline@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"],
+    "aliases": [
+      "sub_1002CE9A",
+      "?x3d_D3DXMatrixInverse_inline@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ],
     "comment": "DirectX 8.1 debug x3d inline matrix inverse helper selected by an exact archive relocation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002d2c2",
     "name": "x3d_vec3_normalize",
-    "aliases": ["sub_1002D2C2", "?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"],
+    "aliases": [
+      "sub_1002D2C2",
+      "?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
     "comment": "DirectX 8.1 debug x3d vector normalization helper selected by an exact archive relocation."
   },
   {
     "program": "grim.dll",
     "address": "0x1002e578",
     "name": "x3d_plane_normalize",
-    "aliases": ["sub_1002E578", "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"],
+    "aliases": [
+      "sub_1002E578",
+      "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ],
     "comment": "DirectX 8.1 debug x3d plane normalization helper selected by exact archive relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1002e5dc",
     "name": "x3d_plane_transform",
-    "aliases": ["sub_1002E5DC", "?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"],
+    "aliases": [
+      "sub_1002E5DC",
+      "?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 debug x3d plane transform."
   },
   {
     "program": "grim.dll",
     "address": "0x10034e00",
     "name": "x3d_atan2",
-    "aliases": ["sub_10034E00", "_a_atan2"],
+    "aliases": [
+      "sub_10034E00",
+      "_a_atan2"
+    ],
     "comment": "Exact DirectX 8.1 D3DX math archive arctangent helper."
   },
   {
     "program": "grim.dll",
     "address": "0x10034f00",
     "name": "x3d_acos",
-    "aliases": ["sub_10034F00", "_a_acos"],
+    "aliases": [
+      "sub_10034F00",
+      "_a_acos"
+    ],
     "comment": "Exact DirectX 8.1 D3DX math archive arccosine helper."
   },
   {
     "program": "grim.dll",
     "address": "0x10035100",
     "name": "x3d_log",
-    "aliases": ["sub_10035100", "_a_log"],
+    "aliases": [
+      "sub_10035100",
+      "_a_log"
+    ],
     "comment": "Exact DirectX 8.1 D3DX math archive logarithm helper."
   },
   {
     "program": "grim.dll",
     "address": "0x100354e0",
     "name": "x3d_sincos",
-    "aliases": ["sub_100354E0", "_a_cos", "_a_sincos"],
+    "aliases": [
+      "sub_100354E0",
+      "_a_cos",
+      "_a_sincos"
+    ],
     "comment": "Exact DirectX 8.1 D3DX math archive sine/cosine helper; the archive exposes same-address _a_cos and _a_sincos aliases."
   },
   {
     "program": "grim.dll",
     "address": "0x10035600",
     "name": "x3d_sin",
-    "aliases": ["sub_10035600", "_a_sin"],
+    "aliases": [
+      "sub_10035600",
+      "_a_sin"
+    ],
     "comment": "Exact DirectX 8.1 D3DX math archive sine helper."
   },
   {
     "program": "grim.dll",
     "address": "0x1004b64f",
     "name": "msvc_array_unwind",
-    "aliases": ["FUN_1004b64f", "?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z"],
+    "aliases": [
+      "FUN_1004b64f",
+      "?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z"
+    ],
     "signature": "void msvc_array_unwind(void *base, unsigned int size, int count, void *destructor)",
     "comment": "Exact VC6 SP6 exception-safe array unwind helper from libcmt.lib.",
     "create": false
@@ -15557,7 +17186,10 @@
     "program": "grim.dll",
     "address": "0x1004b6c3",
     "name": "grim_vector_constructor_iterator_eh",
-    "aliases": ["FUN_1004b6c3", "??_L@YGXPAXIHP6EX0@Z1@Z"],
+    "aliases": [
+      "FUN_1004b6c3",
+      "??_L@YGXPAXIHP6EX0@Z1@Z"
+    ],
     "signature": "void grim_vector_constructor_iterator_eh(void *base, unsigned int size, int count, void *constructor, void *destructor)",
     "comment": "VC6 exception-safe vector-construction iterator proven by exact DirectX 8.1 archive relocations.",
     "create": false
@@ -15567,7 +17199,6 @@
     "address": "0x1000d0e8",
     "name": "d3dx_c_vec3_transform",
     "aliases": [
-      "sub_1000D0E8",
       "?c_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15577,7 +17208,6 @@
     "address": "0x1000d193",
     "name": "d3dx_c_vec3_transform_normal",
     "aliases": [
-      "sub_1000D193",
       "?c_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15587,7 +17217,6 @@
     "address": "0x1000d228",
     "name": "d3dx_c_vec4_cross",
     "aliases": [
-      "sub_1000D228",
       "?c_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15597,7 +17226,6 @@
     "address": "0x1000d5f0",
     "name": "d3dx_c_vec4_transform",
     "aliases": [
-      "sub_1000D5F0",
       "?c_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15605,19 +17233,18 @@
   {
     "program": "grim.dll",
     "address": "0x1000d69c",
-    "name": "d3dx_c_matrix_determinant",
+    "name": "d3dx_c_matrixf_determinant",
     "aliases": [
-      "sub_1000D69C",
       "?c_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
     ],
-    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000d779",
     "name": "d3dx_c_matrix_multiply",
     "aliases": [
-      "sub_1000D779",
       "?c_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15627,7 +17254,6 @@
     "address": "0x1000d9c2",
     "name": "d3dx_c_matrix_transpose",
     "aliases": [
-      "sub_1000D9C2",
       "?c_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15637,7 +17263,6 @@
     "address": "0x1000da3c",
     "name": "d3dx_c_matrix_multiply_transpose",
     "aliases": [
-      "sub_1000DA3C",
       "?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15647,7 +17272,6 @@
     "address": "0x1000dc85",
     "name": "d3dx_c_matrix_inverse",
     "aliases": [
-      "sub_1000DC85",
       "?c_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15657,7 +17281,6 @@
     "address": "0x1000e040",
     "name": "d3dx_c_matrix_scaling",
     "aliases": [
-      "sub_1000E040",
       "?c_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15667,7 +17290,6 @@
     "address": "0x1000e0ca",
     "name": "d3dx_c_matrix_translation",
     "aliases": [
-      "sub_1000E0CA",
       "?c_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15677,7 +17299,6 @@
     "address": "0x1000e420",
     "name": "d3dx_c_matrix_rotation_quaternion",
     "aliases": [
-      "sub_1000E420",
       "?c_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15687,7 +17308,6 @@
     "address": "0x1000e675",
     "name": "d3dx_c_quaternion_to_axis_angle",
     "aliases": [
-      "sub_1000E675",
       "?c_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15697,7 +17317,6 @@
     "address": "0x1000e71f",
     "name": "d3dx_c_quaternion_rotation_matrix",
     "aliases": [
-      "sub_1000E71F",
       "?c_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15707,7 +17326,6 @@
     "address": "0x1000e903",
     "name": "d3dx_c_quaternion_rotation_yaw_pitch_roll",
     "aliases": [
-      "sub_1000E903",
       "?c_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15717,7 +17335,6 @@
     "address": "0x1000e9ef",
     "name": "d3dx_c_quaternion_multiply",
     "aliases": [
-      "sub_1000E9EF",
       "?c_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15727,7 +17344,6 @@
     "address": "0x1000eb5e",
     "name": "d3dx_c_quaternion_inverse",
     "aliases": [
-      "sub_1000EB5E",
       "?c_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15737,7 +17353,6 @@
     "address": "0x1000ec18",
     "name": "d3dx_c_quaternion_ln",
     "aliases": [
-      "sub_1000EC18",
       "?c_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15747,7 +17362,6 @@
     "address": "0x1000ec9c",
     "name": "d3dx_c_quaternion_exp",
     "aliases": [
-      "sub_1000EC9C",
       "?c_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15757,7 +17371,6 @@
     "address": "0x1000ed61",
     "name": "d3dx_c_quaternion_slerp",
     "aliases": [
-      "sub_1000ED61",
       "?c_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15767,7 +17380,6 @@
     "address": "0x1000efa3",
     "name": "d3dx_c_plane_normalize",
     "aliases": [
-      "sub_1000EFA3",
       "?c_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15777,7 +17389,6 @@
     "address": "0x1000f054",
     "name": "d3dx_c_plane_intersect_line",
     "aliases": [
-      "sub_1000F054",
       "?c_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15787,7 +17398,6 @@
     "address": "0x1000f103",
     "name": "d3dx_c_plane_from_point_normal",
     "aliases": [
-      "sub_1000F103",
       "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15797,7 +17407,6 @@
     "address": "0x1000f148",
     "name": "d3dx_c_plane_from_points",
     "aliases": [
-      "sub_1000F148",
       "?c_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15807,7 +17416,6 @@
     "address": "0x1000f1f7",
     "name": "d3dx_c_plane_transform",
     "aliases": [
-      "sub_1000F1F7",
       "?c_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15817,7 +17425,6 @@
     "address": "0x1000f736",
     "name": "d3dx_c_vec3_unproject",
     "aliases": [
-      "sub_1000F736",
       "?c_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15827,7 +17434,6 @@
     "address": "0x1000fe1b",
     "name": "d3dx_c_quaternion_squad_setup",
     "aliases": [
-      "sub_1000FE1B",
       "?c_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
     ],
     "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
@@ -15836,126 +17442,168 @@
     "program": "grim.dll",
     "address": "0x1000d180",
     "name": "D3DXVec3TransformCoord",
-    "aliases": ["sub_1000D180", "_D3DXVec3TransformCoord@12"],
+    "aliases": [
+      "_D3DXVec3TransformCoord@12"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000d773",
     "name": "D3DXMatrixMultiply",
-    "aliases": ["sub_1000D773", "_D3DXMatrixMultiply@12"],
+    "aliases": [
+      "_D3DXMatrixMultiply@12"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000d9bc",
     "name": "D3DXMatrixTranspose",
-    "aliases": ["sub_1000D9BC", "_D3DXMatrixTranspose@8"],
+    "aliases": [
+      "_D3DXMatrixTranspose@8"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000dc7f",
     "name": "D3DXMatrixInverse",
-    "aliases": ["sub_1000DC7F", "_D3DXMatrixInverse@12"],
+    "aliases": [
+      "_D3DXMatrixInverse@12"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000e41a",
     "name": "D3DXMatrixRotationQuaternion",
-    "aliases": ["sub_1000E41A", "_D3DXMatrixRotationQuaternion@8"],
+    "aliases": [
+      "_D3DXMatrixRotationQuaternion@8"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000e8fd",
     "name": "D3DXQuaternionRotationYawPitchRoll",
-    "aliases": ["j_FUN_1000e8cf", "_D3DXQuaternionRotationYawPitchRoll@16"],
+    "aliases": [
+      "_D3DXQuaternionRotationYawPitchRoll@16"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000e9e9",
     "name": "D3DXQuaternionMultiply",
-    "aliases": ["sub_1000E9E9", "_D3DXQuaternionMultiply@12"],
+    "aliases": [
+      "_D3DXQuaternionMultiply@12"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000eb58",
     "name": "D3DXQuaternionInverse",
-    "aliases": ["sub_1000EB58", "_D3DXQuaternionInverse@8"],
+    "aliases": [
+      "_D3DXQuaternionInverse@8"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000ec12",
     "name": "D3DXQuaternionLn",
-    "aliases": ["sub_1000EC12", "_D3DXQuaternionLn@8"],
+    "aliases": [
+      "_D3DXQuaternionLn@8"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000ec96",
     "name": "D3DXQuaternionExp",
-    "aliases": ["sub_1000EC96", "_D3DXQuaternionExp@8"],
+    "aliases": [
+      "_D3DXQuaternionExp@8"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000ed5b",
     "name": "D3DXQuaternionSlerp",
-    "aliases": ["j_FUN_1000ed37", "_D3DXQuaternionSlerp@16"],
+    "aliases": [
+      "_D3DXQuaternionSlerp@16"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1000ef9d",
     "name": "D3DXPlaneNormalize",
-    "aliases": ["sub_1000EF9D", "_D3DXPlaneNormalize@8"],
+    "aliases": [
+      "_D3DXPlaneNormalize@8"
+    ],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   },
   {
     "program": "grim.dll",
     "address": "0x1001bedd",
     "name": "d3dx_get_registry_value",
-    "aliases": ["sub_1001BEDD", "?GetD3DRegValue@@YAHKPADPAXK@Z"],
+    "aliases": [
+      "sub_1001BEDD",
+      "?GetD3DRegValue@@YAHKPADPAXK@Z"
+    ],
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
   },
   {
     "program": "grim.dll",
     "address": "0x1001c0d4",
     "name": "D3DXIsProcessorFeaturePresent",
-    "aliases": ["sub_1001C0D4", "?D3DXIsProcessorFeaturePresent@@YAHI@Z"],
+    "aliases": [
+      "sub_1001C0D4",
+      "?D3DXIsProcessorFeaturePresent@@YAHI@Z"
+    ],
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
   },
   {
     "program": "grim.dll",
     "address": "0x100223f0",
     "name": "d3dx_x3d_get_feature_flags",
-    "aliases": ["sub_100223F0", "?get_feature_flags@@YAIXZ"],
+    "aliases": [
+      "sub_100223F0",
+      "?get_feature_flags@@YAIXZ"
+    ],
     "comment": "Exact DirectX 8.1 D3DX 3DNow dispatch implementation selected from the pinned d3dxmathx3d.obj archive member."
   },
   {
     "program": "grim.dll",
     "address": "0x100226eb",
     "name": "d3dx_x86_vec2_transform",
-    "aliases": ["sub_100226EB", "?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"],
+    "aliases": [
+      "sub_100226EB",
+      "?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
   },
   {
     "program": "grim.dll",
     "address": "0x10022754",
     "name": "d3dx_x86_vec2_transform_normal",
-    "aliases": ["sub_10022754", "?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"],
+    "aliases": [
+      "sub_10022754",
+      "?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
   },
   {
     "program": "grim.dll",
     "address": "0x10022b47",
     "name": "d3dx_x86_init_fast_table",
-    "aliases": ["sub_10022B47", "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"],
+    "aliases": [
+      "sub_10022B47",
+      "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ],
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
   },
   {
@@ -17075,7 +18723,10 @@
     "program": "grim.dll",
     "address": "0x1000b2fd",
     "name": "d3dx_lock_surface_scalar_deleting_dtor",
-    "aliases": ["sub_1000B2FD", "??_ECD3DXLockSurface@@QAEPAXI@Z"],
+    "aliases": [
+      "sub_1000B2FD",
+      "??_ECD3DXLockSurface@@QAEPAXI@Z"
+    ],
     "signature": "void * d3dx_lock_surface_scalar_deleting_dtor(void *this, unsigned int flags)",
     "comment": "Exact DirectX 8.1 CD3DXLockSurface scalar deleting destructor.",
     "create": false
@@ -17084,7 +18735,9 @@
     "program": "grim.dll",
     "address": "0x10053e28",
     "name": "d3dx_bmp_formats",
-    "aliases": ["_g_pBMPFormats"],
+    "aliases": [
+      "_g_pBMPFormats"
+    ],
     "signature": "const int d3dx_bmp_formats[6]",
     "comment": "Six-entry CD3DXImage BMP format preference table from the pinned DirectX 8.1 archive.",
     "create": false
@@ -17093,7 +18746,9 @@
     "program": "grim.dll",
     "address": "0x10053e40",
     "name": "d3dx_dds_formats",
-    "aliases": ["_g_pDDSFormats"],
+    "aliases": [
+      "_g_pDDSFormats"
+    ],
     "signature": "const int d3dx_dds_formats[6]",
     "comment": "Six-entry CD3DXImage DDS format preference table from the pinned DirectX 8.1 archive.",
     "create": false
@@ -17144,7 +18799,9 @@
     "program": "grim.dll",
     "address": "0x10012874",
     "name": "d3dx_tf_row_ctor",
-    "aliases": ["??0TF_Row@@QAE@XZ"],
+    "aliases": [
+      "??0TF_Row@@QAE@XZ"
+    ],
     "signature": "void * d3dx_tf_row_ctor(void *this)",
     "comment": "TF_Row constructor identity proven by exact CD3DXBlt caller relocation.",
     "create": false
@@ -17216,7 +18873,9 @@
     "program": "grim.dll",
     "address": "0x1004b6ad",
     "name": "msvc_array_unwind_filter",
-    "aliases": ["?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"],
+    "aliases": [
+      "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"
+    ],
     "signature": "int msvc_array_unwind_filter(void *exception_pointers)",
     "comment": "VC6 ArrayUnwindFilter identity proven by the exact __ArrayUnwind relocation.",
     "create": false

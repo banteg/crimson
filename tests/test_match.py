@@ -54,6 +54,7 @@ from crimson.match import (
     _scratch_build_key,
     _ScratchIncludeResolver,
     address_in_matching_scope,
+    apply_naming_suggestions,
     build_match_shard_plan,
     claimed_scratch_paths,
     collect_image_totals,
@@ -75,6 +76,7 @@ from crimson.match import (
     load_function_manifest,
     load_matching_scope,
     load_matching_scope_function_dispositions,
+    load_name_map_rows,
     load_reference_catalog,
     load_scratch_config,
     match_function,
@@ -84,6 +86,7 @@ from crimson.match import (
     native_json_program_sha256,
     normalize_function,
     parse_coff_object,
+    prune_placeholder_aliases,
     render_image_total_rows,
     render_naming_debt_summary,
     render_naming_debt_table,
@@ -2393,6 +2396,13 @@ def test_collect_naming_debt_suggests_unique_exact_provider_peer(tmp_path: Path)
     assert peer_row.issues == ("placeholder-alias",)
     assert peer_row.suggestion is None
 
+    pruned = prune_placeholder_aliases(rows, name_map_path=name_map)
+
+    assert pruned == {"aliases_removed": 2, "rows_pruned": 2}
+    mapped_rows = load_name_map_rows(name_map)
+    assert mapped_rows[0]["aliases"] == ["?KnownProvider@@YAXXZ"]
+    assert mapped_rows[1]["aliases"] == ["?KnownProvider@@YAXXZ"]
+
 
 def test_render_naming_debt_table_handles_clean_result() -> None:
     assert render_naming_debt_table([]) == (
@@ -2400,6 +2410,290 @@ def test_render_naming_debt_table_handles_clean_result() -> None:
         "rows=0; suggested=0; issues="
     )
     assert render_naming_debt_summary([]) == "rows=0; suggested=0; issues="
+
+
+def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path) -> None:
+    config = ScratchConfig(
+        directory=tmp_path / "FUN_00401000",
+        function="FUN_00401000",
+        image="crimsonland.exe",
+        compiler="msvc7.0",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol=(
+            "?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+        ),
+        note="directx-8.1-archive-helper",
+        archive="d3dx8.lib",
+        archive_member=r"obj\i386\d3dxmath.obj",
+        archive_sha256="a" * 64,
+    )
+    status = ScratchStatus(
+        config=config,
+        address=0x00401000,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": "FUN_00401000",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    row = collect_naming_debt([status], name_map_path=name_map)[0]
+
+    assert row.suggestion == "d3dx_init_quaternion_squad_setup"
+    assert row.suggestion_sources == (f"provider-symbol:{config.symbol}",)
+
+
+def test_apply_naming_suggestions_replaces_weaker_d3dx_semantic_identity(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "vec2_normalize_dispatch_init_00401000"
+    scratch.mkdir(parents=True)
+    symbol = "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    scratch.joinpath("scratch.conf").write_text(
+        "\n".join(
+            (
+                "IMAGE=crimsonland.exe",
+                "FUNCTION=vec2_normalize_dispatch_init",
+                "ARCHIVE=d3dx8.lib",
+                r"ARCHIVE_MEMBER='obj\i386\d3dxmath.obj'",
+                f"ARCHIVE_SHA256={'a' * 64}",
+                f"SYMBOL='{symbol}'",
+                "NOTE=directx-8.1-archive-vec2-normalize-dispatch-init",
+                "",
+            ),
+        ),
+        encoding="utf-8",
+    )
+    config = load_scratch_config(scratch)
+    status = ScratchStatus(
+        config=config,
+        address=0x00401000,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": "vec2_normalize_dispatch_init",
+                    "signature": "void vec2_normalize_dispatch_init(void)",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    row = collect_naming_debt([status], name_map_path=name_map)[0]
+    result = apply_naming_suggestions(
+        [row],
+        match_root=match_root,
+        name_map_path=name_map,
+    )
+
+    renamed = match_root / "scratches" / "d3dx_init_vec2_normalize"
+    assert row.issues == ("provider-directory-conflict", "provider-name-conflict")
+    assert row.suggestion == "d3dx_init_vec2_normalize"
+    assert not scratch.exists()
+    assert load_scratch_config(renamed).function == "d3dx_init_vec2_normalize"
+    assert load_name_map_rows(name_map)[0]["name"] == "d3dx_init_vec2_normalize"
+    assert result["directories_renamed"] == 1
+
+
+def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratches = match_root / "scratches"
+    placeholder = scratches / "FUN_00401000"
+    jump = scratches / "j_FUN_00401000"
+    peer = scratches / "known_provider"
+    consumer = scratches / "consumer"
+    placeholder.mkdir(parents=True)
+    jump.mkdir()
+    peer.mkdir()
+    consumer.mkdir()
+    archive_hash = "a" * 64
+    placeholder.joinpath("scratch.conf").write_text(
+        "\n".join(
+            (
+                "IMAGE=crimsonland.exe",
+                "FUNCTION=FUN_00401000",
+                "ARCHIVE=provider.lib",
+                "ARCHIVE_MEMBER=known.obj",
+                f"ARCHIVE_SHA256={archive_hash}",
+                "SYMBOL=?KnownProvider@@YAXXZ",
+                "NOTE=unknown-provider-name",
+                "",
+            ),
+        ),
+        encoding="utf-8",
+    )
+    peer.joinpath("scratch.conf").write_text(
+        "\n".join(
+            (
+                "IMAGE=grim.dll",
+                "FUNCTION=known_provider",
+                "ARCHIVE=provider.lib",
+                "ARCHIVE_MEMBER=known.obj",
+                f"ARCHIVE_SHA256={archive_hash}",
+                "SYMBOL=?KnownProvider@@YAXXZ",
+                "NOTE=exact-provider",
+                "",
+            ),
+        ),
+        encoding="utf-8",
+    )
+    jump.joinpath("scratch.conf").write_text(
+        "\n".join(
+            (
+                "IMAGE=crimsonland.exe",
+                "FUNCTION=j_FUN_00401000",
+                "ARCHIVE=provider.lib",
+                "ARCHIVE_MEMBER=known.obj",
+                f"ARCHIVE_SHA256={archive_hash}",
+                "SYMBOL=_PublicProvider@0",
+                "NOTE=exact-provider-jump",
+                "",
+            ),
+        ),
+        encoding="utf-8",
+    )
+    consumer.joinpath("scratch.conf").write_text(
+        "\n".join(
+            (
+                "IMAGE=crimsonland.exe",
+                "FUNCTION=consumer",
+                "ARCHIVE=consumer.lib",
+                "ARCHIVE_MEMBER=consumer.obj",
+                f"ARCHIVE_SHA256={'b' * 64}",
+                "SYMBOL=_consumer",
+                "REFERENCE_ALIASES=_provider:FUN_00401000",
+                "NOTE=consumer",
+                "",
+            ),
+        ),
+        encoding="utf-8",
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": "FUN_00401000",
+                    "aliases": ["sub_00401000", "?KnownProvider@@YAXXZ"],
+                    "signature": "void FUN_00401000(void)",
+                    "comment": "[binja] void sub_401000()",
+                },
+                {
+                    "program": "grim.dll",
+                    "address": "0x10001000",
+                    "name": "known_provider",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+    placeholder_config = load_scratch_config(placeholder)
+    peer_config = load_scratch_config(peer)
+    statuses = [
+        ScratchStatus(
+            config=placeholder_config,
+            address=0x00401000,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        ),
+        ScratchStatus(
+            config=peer_config,
+            address=0x10001000,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        ),
+    ]
+    suggestion = next(
+        row
+        for row in collect_naming_debt(statuses, name_map_path=name_map)
+        if row.suggestion is not None
+    )
+    jump_suggestion = replace(
+        suggestion,
+        address=0x00401020,
+        function="j_FUN_00401000",
+        configured_function="j_FUN_00401000",
+        scratch=jump.as_posix(),
+        placeholder_aliases=(),
+        provider_symbol="_PublicProvider@0",
+        suggestion="public_provider",
+        suggestion_sources=("grim.dll:0x10001020",),
+    )
+
+    result = apply_naming_suggestions(
+        [suggestion, jump_suggestion],
+        match_root=match_root,
+        name_map_path=name_map,
+    )
+
+    renamed = scratches / "crimson_known_provider"
+    assert not placeholder.exists()
+    assert not jump.exists()
+    assert load_scratch_config(renamed).function == "known_provider"
+    assert load_scratch_config(scratches / "public_provider").function == "public_provider"
+    assert load_scratch_config(renamed).note == "exact-archive-known-provider"
+    assert load_scratch_config(consumer).reference_aliases == (("_provider", "known_provider"),)
+    rows = load_name_map_rows(name_map)
+    mapped = next(row for row in rows if row["program"] == "crimsonland.exe")
+    assert mapped["name"] == "known_provider"
+    assert mapped["aliases"] == ["?KnownProvider@@YAXXZ"]
+    assert mapped["signature"] == "void known_provider(void)"
+    assert mapped["comment"] == "[binja] void known_provider()"
+    assert result == {
+        "applied": 2,
+        "aliases_removed": 1,
+        "config_references_updated": 1,
+        "directories_renamed": 2,
+        "map_rows_added": 1,
+        "map_rows_updated": 1,
+        "text_references_updated": 2,
+        "renames": [
+            {
+                "from": placeholder.as_posix(),
+                "to": renamed.as_posix(),
+            },
+            {
+                "from": jump.as_posix(),
+                "to": (scratches / "public_provider").as_posix(),
+            },
+        ],
+    }
 
 
 def test_render_status_rows_includes_prefix() -> None:

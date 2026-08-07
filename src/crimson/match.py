@@ -3180,6 +3180,34 @@ class NamingDebtRow:
     suggestion_sources: tuple[str, ...]
 
 
+def _scratch_image_prefix(image: str) -> str:
+    return {
+        "crimsonland.exe": "crimson",
+        "grim.dll": "grim",
+    }.get(image, Path(image).stem.lower())
+
+
+def _replace_config_assignment(text: str, key: str, value: str) -> str:
+    lines = text.splitlines(keepends=True)
+    matches = [index for index, line in enumerate(lines) if line.startswith(f"{key}=")]
+    if len(matches) != 1:
+        raise ValueError(f"scratch.conf must contain exactly one {key}= assignment")
+    index = matches[0]
+    newline = "\n" if lines[index].endswith("\n") else ""
+    lines[index] = f"{key}={shlex.quote(value)}{newline}"
+    return "".join(lines)
+
+
+def _replace_identity_tokens(text: str, replacements: dict[str, str]) -> tuple[str, int]:
+    replaced = text
+    count = 0
+    for old, new in sorted(replacements.items(), key=lambda item: len(item[0]), reverse=True):
+        pattern = rf"(?<![A-Za-z0-9_]){re.escape(old)}(?![A-Za-z0-9_])"
+        replaced, occurrences = re.subn(pattern, new, replaced, flags=re.IGNORECASE)
+        count += occurrences
+    return replaced, count
+
+
 def scratch_recovery(status: ScratchStatus) -> str:
     if status.state == "match":
         return "exact"
@@ -4898,6 +4926,23 @@ def _archive_provider_key(status: ScratchStatus) -> tuple[str, str] | None:
     return status.config.archive_sha256, status.config.symbol
 
 
+def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
+    """Derive the repository's canonical name from an exact D3DX helper symbol."""
+
+    member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
+    symbol = status.config.symbol or ""
+    if member.casefold() != "d3dxmath.obj":
+        return None
+    match = re.fullmatch(r"\?(init|c)_D3DX([A-Za-z0-9]+)@@.+", symbol)
+    if match is None:
+        return None
+    family, operation = match.groups()
+    operation = operation.replace("BaryCentric", "Barycentric")
+    snake = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", operation)
+    snake = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", snake).lower()
+    return f"d3dx_{family}_{snake}"
+
+
 def collect_naming_debt(
     statuses: Collection[ScratchStatus],
     *,
@@ -4906,8 +4951,9 @@ def collect_naming_debt(
     """Find exact recoveries whose presentation still exposes weaker analyzer names.
 
     Suggestions are deliberately conservative: an exact archive scratch receives a
-    proposed name only when another exact scratch from the same hash-pinned archive
-    symbol has one unique non-placeholder canonical identity.
+    proposed name when another exact scratch from the same hash-pinned archive symbol
+    has one unique canonical identity, or when a recognized D3DX helper's decorated
+    COFF symbol directly encodes the repository's canonical helper name.
     """
 
     exact_statuses = [status for status in statuses if status.state == "match"]
@@ -4929,6 +4975,7 @@ def collect_naming_debt(
     for status in exact_statuses:
         canonical = canonical_names[id(status)]
         map_row = name_rows.get((status.config.image, status.address), {})
+        symbol_suggestion = _d3dx_provider_symbol_suggestion(status)
         placeholder_aliases = tuple(
             str(alias)
             for alias in map_row.get("aliases", ())
@@ -4944,39 +4991,61 @@ def collect_naming_debt(
             issues.append("placeholder-function")
         if is_analyzer_placeholder(status.config.directory.name):
             issues.append("placeholder-directory")
+        elif symbol_suggestion is not None:
+            expected_directories = {
+                symbol_suggestion.casefold(),
+                f"{_scratch_image_prefix(status.config.image)}_{symbol_suggestion}".casefold(),
+            }
+            if status.config.directory.name.casefold() not in expected_directories:
+                issues.append("provider-directory-conflict")
         if placeholder_aliases:
             issues.append("placeholder-alias")
         if placeholder_references:
             issues.append("placeholder-reference")
         if "unknown" in status.config.note.lower():
             issues.append("placeholder-note")
+        if (
+            symbol_suggestion is not None
+            and not is_analyzer_placeholder(canonical)
+            and not is_analyzer_placeholder(status.config.function)
+            and (canonical != symbol_suggestion or status.config.function != symbol_suggestion)
+        ):
+            issues.append("provider-name-conflict")
         if not issues:
             continue
 
         suggestion: str | None = None
         suggestion_sources: tuple[str, ...] = ()
         key = _archive_provider_key(status)
-        if key is not None and "placeholder-function" in issues:
-            peers = [
-                peer
-                for peer in provider_peers[key]
-                if peer.config.image != status.config.image
-                and not is_analyzer_placeholder(canonical_names[id(peer)])
-            ]
-            peer_names = {canonical_names[id(peer)] for peer in peers}
-            if len(peer_names) == 1:
-                candidate = next(iter(peer_names))
-                if candidate != canonical:
-                    suggestion = candidate
-                    suggestion_sources = tuple(
-                        sorted(
-                            {
-                                f"{peer.config.image}:0x{peer.address:08x}"
-                                for peer in peers
-                                if canonical_names[id(peer)] == candidate
-                            },
-                        ),
-                    )
+        if key is not None and (
+            "placeholder-function" in issues
+            or "provider-name-conflict" in issues
+            or "provider-directory-conflict" in issues
+        ):
+            if symbol_suggestion is not None:
+                suggestion = symbol_suggestion
+                suggestion_sources = (f"provider-symbol:{status.config.symbol}",)
+            else:
+                peers = [
+                    peer
+                    for peer in provider_peers[key]
+                    if peer.config.image != status.config.image
+                    and not is_analyzer_placeholder(canonical_names[id(peer)])
+                ]
+                peer_names = {canonical_names[id(peer)] for peer in peers}
+                if len(peer_names) == 1:
+                    candidate = next(iter(peer_names))
+                    if candidate != canonical:
+                        suggestion = candidate
+                        suggestion_sources = tuple(
+                            sorted(
+                                {
+                                    f"{peer.config.image}:0x{peer.address:08x}"
+                                    for peer in peers
+                                    if canonical_names[id(peer)] == candidate
+                                },
+                            ),
+                        )
 
         try:
             scratch = status.config.directory.resolve().relative_to(REPO_ROOT).as_posix()
@@ -4999,6 +5068,314 @@ def collect_naming_debt(
             ),
         )
     return sorted(rows, key=lambda row: (row.image, row.address, row.scratch))
+
+
+def apply_naming_suggestions(
+    rows: Collection[NamingDebtRow],
+    *,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+) -> dict[str, Any]:
+    """Apply deterministic naming suggestions across scratches and the curated map.
+
+    Analyzer-generated names are deliberately removed instead of retained as aliases.
+    Exact decorated provider symbols remain as useful linkage aliases.
+    """
+
+    selected = [row for row in rows if row.suggestion is not None]
+    if not selected:
+        return {
+            "applied": 0,
+            "aliases_removed": 0,
+            "config_references_updated": 0,
+            "directories_renamed": 0,
+            "map_rows_added": 0,
+            "map_rows_updated": 0,
+            "text_references_updated": 0,
+            "renames": [],
+        }
+
+    scratch_root = (match_root / "scratches").resolve()
+    if not scratch_root.is_dir():
+        raise ValueError(f"missing scratch root: {scratch_root}")
+
+    selected_by_source: dict[Path, NamingDebtRow] = {}
+    replacements_by_image: dict[str, dict[str, str]] = defaultdict(dict)
+    for row in selected:
+        assert row.suggestion is not None
+        source = Path(row.scratch)
+        if not source.is_absolute():
+            source = REPO_ROOT / source
+        source = source.resolve()
+        if source.parent != scratch_root or not (source / "scratch.conf").is_file():
+            raise ValueError(f"naming suggestion scratch is outside {scratch_root}: {source}")
+        if source in selected_by_source:
+            raise ValueError(f"duplicate naming suggestion for {source}")
+        selected_by_source[source] = row
+
+        old_names = {
+            row.function,
+            row.configured_function,
+            source.name,
+            *row.placeholder_aliases,
+            f"FUN_{row.address:08X}",
+            f"sub_{row.address:08X}",
+            f"sub_{row.address:X}",
+        }
+        image_replacements = replacements_by_image[row.image]
+        for old_name in old_names:
+            if not old_name or (
+                not is_analyzer_placeholder(old_name)
+                and "provider-name-conflict" not in row.issues
+            ):
+                continue
+            existing = next(
+                (value for key, value in image_replacements.items() if key.casefold() == old_name.casefold()),
+                None,
+            )
+            if existing is not None and existing != row.suggestion:
+                raise ValueError(
+                    f"ambiguous rename for {row.image} {old_name!r}: "
+                    f"{existing!r} vs {row.suggestion!r}",
+                )
+            image_replacements[old_name] = row.suggestion
+
+    planned_destinations: set[Path] = set()
+    directory_renames: list[tuple[Path, Path]] = []
+    occupied = {path.resolve() for path in scratch_root.iterdir() if path.is_dir()}
+    ordered_sources = sorted(
+        selected_by_source.items(),
+        key=lambda item: (
+            item[0].name.casefold().startswith(f"{_scratch_image_prefix(item[1].image)}_"),
+            item[1].image,
+            item[1].address,
+        ),
+    )
+    for source, row in ordered_sources:
+        old_identities = (row.function.casefold(), row.configured_function.casefold())
+        source_identity = source.name.casefold()
+        carries_old_identity = any(
+            source_identity == old or source_identity.startswith(f"{old}_")
+            for old in old_identities
+        )
+        if (
+            "placeholder-directory" not in row.issues
+            and "provider-directory-conflict" not in row.issues
+            and not carries_old_identity
+        ):
+            continue
+        assert row.suggestion is not None
+        destination = scratch_root / row.suggestion
+        if destination.resolve() in occupied or destination.resolve() in planned_destinations:
+            destination = scratch_root / f"{_scratch_image_prefix(row.image)}_{row.suggestion}"
+        resolved_destination = destination.resolve()
+        if resolved_destination in occupied or resolved_destination in planned_destinations:
+            raise ValueError(f"scratch rename destination already exists: {destination}")
+        planned_destinations.add(resolved_destination)
+        directory_renames.append((source, destination))
+
+    suggestion_by_source = {
+        source: row.suggestion
+        for source, row in selected_by_source.items()
+        if row.suggestion is not None
+    }
+    config_updates: dict[Path, str] = {}
+    reference_updates = 0
+    for config_path in sorted(scratch_root.glob("*/scratch.conf")):
+        config = load_scratch_config(config_path.parent)
+        original = config_path.read_text(encoding="utf-8")
+        updated = original
+        suggestion = suggestion_by_source.get(config_path.parent.resolve())
+        if suggestion is not None:
+            updated = _replace_config_assignment(updated, "FUNCTION", suggestion)
+            if "unknown" in config.note.lower():
+                note_slug = re.sub(r"[^a-z0-9]+", "-", suggestion.lower()).strip("-")
+                updated = _replace_config_assignment(updated, "NOTE", f"exact-archive-{note_slug}")
+
+        image_replacements = replacements_by_image.get(config.image, {})
+        folded_replacements = {key.casefold(): value for key, value in image_replacements.items()}
+        rewritten_aliases: list[tuple[str, str]] = []
+        for object_symbol, target_symbol in config.reference_aliases:
+            replacement = folded_replacements.get(target_symbol.casefold(), target_symbol)
+            reference_updates += replacement != target_symbol
+            rewritten_aliases.append((object_symbol, replacement))
+        if tuple(rewritten_aliases) != config.reference_aliases:
+            encoded = ",".join(f"{source}:{target}" for source, target in rewritten_aliases)
+            updated = _replace_config_assignment(updated, "REFERENCE_ALIASES", encoded)
+        if updated != original:
+            config_updates[config_path] = updated
+
+    map_rows = [dict(row) for row in load_name_map_rows(name_map_path)]
+    map_by_key = {
+        (str(row.get("program", "")), parse_int(row["address"])): row
+        for row in map_rows
+    }
+    aliases_removed = 0
+    text_references_updated = 0
+    for map_row in map_rows:
+        program = str(map_row.get("program", ""))
+        replacements = replacements_by_image.get(program, {})
+        if not replacements:
+            continue
+        folded_replacements = {key.casefold() for key in replacements}
+        aliases = map_row.get("aliases")
+        if isinstance(aliases, list):
+            filtered_aliases = [
+                alias
+                for alias in aliases
+                if str(alias).casefold() not in folded_replacements
+            ]
+            aliases_removed += len(aliases) - len(filtered_aliases)
+            if filtered_aliases:
+                map_row["aliases"] = filtered_aliases
+            else:
+                map_row.pop("aliases", None)
+        for field_name in ("signature", "comment"):
+            value = map_row.get(field_name)
+            if isinstance(value, str):
+                replacement, count = _replace_identity_tokens(value, replacements)
+                map_row[field_name] = replacement
+                text_references_updated += count
+
+    map_rows_added = 0
+    map_rows_updated = 0
+    for row in selected_by_source.values():
+        assert row.suggestion is not None
+        key = (row.image, row.address)
+        map_row = map_by_key.get(key)
+        if map_row is None:
+            new_map_row: dict[str, Any] = {
+                "program": row.image,
+                "address": f"0x{row.address:08x}",
+                "name": row.suggestion,
+                "comment": (
+                    f"Exact archive recovery from {row.provider_member or 'provider object'} "
+                    f"symbol {row.provider_symbol or row.suggestion}."
+                ),
+                "create": False,
+            }
+            map_row = new_map_row
+            insertion = len(map_rows)
+            same_program = False
+            for index, candidate in enumerate(map_rows):
+                if str(candidate.get("program", "")) != row.image:
+                    if same_program:
+                        insertion = index
+                        break
+                    continue
+                same_program = True
+                insertion = index + 1
+                if parse_int(candidate["address"]) > row.address:
+                    insertion = index
+                    break
+            map_rows.insert(insertion, map_row)
+            map_by_key[key] = map_row
+            map_rows_added += 1
+        else:
+            map_row["name"] = row.suggestion
+            map_rows_updated += 1
+
+        raw_aliases = map_row.get("aliases", ())
+        if not isinstance(raw_aliases, list):
+            raw_aliases = []
+        existing_aliases = [
+            str(alias)
+            for alias in raw_aliases
+            if not is_analyzer_placeholder(str(alias))
+        ]
+        aliases_removed += len(raw_aliases) - len(existing_aliases)
+        if (
+            row.provider_symbol is not None
+            and row.provider_symbol != row.suggestion
+            and row.provider_symbol not in existing_aliases
+        ):
+            existing_aliases.append(row.provider_symbol)
+        if existing_aliases:
+            map_row["aliases"] = existing_aliases
+        else:
+            map_row.pop("aliases", None)
+
+        row_replacements = replacements_by_image[row.image]
+        for field_name in ("signature", "comment"):
+            value = map_row.get(field_name)
+            if isinstance(value, str):
+                replacement, count = _replace_identity_tokens(value, row_replacements)
+                map_row[field_name] = replacement
+                text_references_updated += count
+        map_row.setdefault("create", False)
+
+    for path, contents in config_updates.items():
+        path.write_text(contents, encoding="utf-8")
+    name_map_path.write_text(json.dumps(map_rows, indent=2) + "\n", encoding="utf-8")
+    for source, destination in directory_renames:
+        source.rename(destination)
+
+    return {
+        "applied": len(selected),
+        "aliases_removed": aliases_removed,
+        "config_references_updated": reference_updates,
+        "directories_renamed": len(directory_renames),
+        "map_rows_added": map_rows_added,
+        "map_rows_updated": map_rows_updated,
+        "text_references_updated": text_references_updated,
+        "renames": [
+            {
+                "from": source.relative_to(REPO_ROOT).as_posix()
+                if source.is_relative_to(REPO_ROOT)
+                else source.as_posix(),
+                "to": destination.relative_to(REPO_ROOT).as_posix()
+                if destination.is_relative_to(REPO_ROOT)
+                else destination.as_posix(),
+            }
+            for source, destination in directory_renames
+        ],
+    }
+
+
+def prune_placeholder_aliases(
+    rows: Collection[NamingDebtRow],
+    *,
+    name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+) -> dict[str, Any]:
+    """Remove audited analyzer aliases while retaining canonical/linkage names."""
+
+    aliases_by_key = {
+        (row.image, row.address): {alias.casefold() for alias in row.placeholder_aliases}
+        for row in rows
+        if row.placeholder_aliases
+    }
+    if not aliases_by_key:
+        return {"aliases_removed": 0, "rows_pruned": 0}
+
+    map_rows = [dict(row) for row in load_name_map_rows(name_map_path)]
+    aliases_removed = 0
+    rows_pruned = 0
+    found: set[tuple[str, int]] = set()
+    for map_row in map_rows:
+        key = (str(map_row.get("program", "")), parse_int(map_row["address"]))
+        stale_aliases = aliases_by_key.get(key)
+        if stale_aliases is None:
+            continue
+        found.add(key)
+        aliases = map_row.get("aliases")
+        if not isinstance(aliases, list):
+            continue
+        filtered = [alias for alias in aliases if str(alias).casefold() not in stale_aliases]
+        removed = len(aliases) - len(filtered)
+        if not removed:
+            continue
+        aliases_removed += removed
+        rows_pruned += 1
+        if filtered:
+            map_row["aliases"] = filtered
+        else:
+            map_row.pop("aliases", None)
+    missing = sorted(set(aliases_by_key) - found)
+    if missing:
+        rendered = ", ".join(f"{image}:0x{address:08x}" for image, address in missing)
+        raise ValueError(f"audited placeholder aliases disappeared from the name map: {rendered}")
+    name_map_path.write_text(json.dumps(map_rows, indent=2) + "\n", encoding="utf-8")
+    return {"aliases_removed": aliases_removed, "rows_pruned": rows_pruned}
 
 
 def naming_debt_payload(row: NamingDebtRow) -> dict[str, Any]:
