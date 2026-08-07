@@ -2238,14 +2238,14 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 371
+    assert payload["summary"]["source_entry_count"] == 382
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 368
-    assert payload["summary"]["typed_entries"] == 318
-    assert payload["summary"]["explicit_size_entries"] == 334
-    assert payload["summary"]["explicit_alignment_entries"] == 334
-    assert payload["summary"]["explicit_initializer_entries"] == 334
-    assert payload["summary"]["fully_specified_entries"] == 334
+    assert payload["summary"]["entry_count"] == 379
+    assert payload["summary"]["typed_entries"] == 329
+    assert payload["summary"]["explicit_size_entries"] == 345
+    assert payload["summary"]["explicit_alignment_entries"] == 345
+    assert payload["summary"]["explicit_initializer_entries"] == 345
+    assert payload["summary"]["fully_specified_entries"] == 345
     assert payload["summary"]["definition_group_entries"] == 215
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2266,6 +2266,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["grim_dxt1_optimize_epsilon"]["type"] == "const float"
     assert observed["grim_dxt_luminance_weights"]["type"] == "const float[3]"
     assert observed["grim_dxt_luminance_inverse"]["type"] == "const float[3]"
+    assert observed["d3dx_sse_math_constants"]["type"] == "unsigned char[448]"
+    assert observed["d3dx_sse2_quaternion_vectors"]["type"] == "unsigned char[160]"
+    assert observed["d3dx_rsqrt_half_vector"]["type"] == "float[4]"
     assert observed["fpu_control_word_saved_dxt"]["type"] == "unsigned long"
     assert observed["d3dx_box_filter_2d_a8r8g8b8_impl"]["type"] == "void *"
     assert observed["d3dx_box_filter_2d_x8r8g8b8_impl"]["type"] == "void *"

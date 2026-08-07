@@ -15917,5 +15917,738 @@
       "?x3d_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
     ],
     "comment": "3DNow plane-intersection helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025c40",
+    "name": "d3dx_sse_vec2_transform_coord",
+    "aliases": [
+      "sub_10025C40",
+      "?sse_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025ca0",
+    "name": "d3dx_sse_vec2_transform_normal",
+    "aliases": [
+      "sub_10025CA0",
+      "?sse_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025ce0",
+    "name": "d3dx_sse_matrix_multiply",
+    "aliases": [
+      "sub_10025CE0",
+      "?sse2_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+      "?sse_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025cee",
+    "name": "d3dx_sse_matrix_multiply_impl",
+    "aliases": [
+      "sub_10025CEE",
+      "?sse_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+      "?sse2_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025e30",
+    "name": "d3dx_sse_vec3_normalize",
+    "aliases": [
+      "sub_10025E30",
+      "?sse_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025e3e",
+    "name": "d3dx_sse_vec3_normalize_impl",
+    "aliases": [
+      "sub_10025E3E",
+      "?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z",
+      "?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025f00",
+    "name": "d3dx_sse_plane_normalize",
+    "aliases": [
+      "sub_10025F00",
+      "?sse_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025f0e",
+    "name": "d3dx_sse_plane_normalize_impl",
+    "aliases": [
+      "sub_10025F0E",
+      "?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z",
+      "?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025fe0",
+    "name": "d3dx_sse_vec4_cross",
+    "aliases": [
+      "sub_10025FE0",
+      "?sse_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025fee",
+    "name": "d3dx_sse_vec4_cross_impl",
+    "aliases": [
+      "sub_10025FEE",
+      "?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z",
+      "?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026090",
+    "name": "d3dx_sse_vec4_normalize",
+    "aliases": [
+      "sub_10026090",
+      "?sse_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026130",
+    "name": "d3dx_sse_vec3_catmull_rom",
+    "aliases": [
+      "sub_10026130",
+      "?sse_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100261f0",
+    "name": "d3dx_sse_vec2_catmull_rom",
+    "aliases": [
+      "sub_100261F0",
+      "?sse_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026280",
+    "name": "d3dx_sse_vec4_catmull_rom",
+    "aliases": [
+      "sub_10026280",
+      "?sse_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026330",
+    "name": "d3dx_sse_vec3_hermite",
+    "aliases": [
+      "sub_10026330",
+      "?sse_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100263f0",
+    "name": "d3dx_sse_vec4_hermite",
+    "aliases": [
+      "sub_100263F0",
+      "?sse_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026490",
+    "name": "d3dx_sse_vec2_hermite",
+    "aliases": [
+      "sub_10026490",
+      "?sse_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026520",
+    "name": "d3dx_sse_vec3_barycentric",
+    "aliases": [
+      "sub_10026520",
+      "?sse_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026580",
+    "name": "d3dx_sse_vec4_barycentric",
+    "aliases": [
+      "sub_10026580",
+      "?sse_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100265d0",
+    "name": "d3dx_sse_vec2_barycentric",
+    "aliases": [
+      "sub_100265D0",
+      "?sse_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026630",
+    "name": "d3dx_sse_plane_intersect_line",
+    "aliases": [
+      "sub_10026630",
+      "?sse_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100266f0",
+    "name": "d3dx_sse_plane_from_points",
+    "aliases": [
+      "sub_100266F0",
+      "?sse_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100266fe",
+    "name": "d3dx_sse_plane_from_points_impl",
+    "aliases": [
+      "sub_100266FE",
+      "?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z",
+      "?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100267e0",
+    "name": "d3dx_sse_matrix_shadow",
+    "aliases": [
+      "sub_100267E0",
+      "?sse_D3DXMatrixShadow@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100267ee",
+    "name": "d3dx_sse_matrix_shadow_impl",
+    "aliases": [
+      "sub_100267EE",
+      "?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z",
+      "?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026970",
+    "name": "d3dx_sse_matrix_reflect",
+    "aliases": [
+      "sub_10026970",
+      "?sse_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002697e",
+    "name": "d3dx_sse_matrix_reflect_impl",
+    "aliases": [
+      "sub_1002697E",
+      "?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z",
+      "?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026a50",
+    "name": "d3dx_sse_quaternion_multiply",
+    "aliases": [
+      "sub_10026A50",
+      "?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026ae0",
+    "name": "d3dx_sse_quaternion_normalize",
+    "aliases": [
+      "sub_10026AE0",
+      "?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026b80",
+    "name": "d3dx_sse_quaternion_inverse",
+    "aliases": [
+      "sub_10026B80",
+      "?sse_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026b8e",
+    "name": "d3dx_sse_quaternion_inverse_impl",
+    "aliases": [
+      "sub_10026B8E",
+      "?sse_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z",
+      "?sse2_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026bf0",
+    "name": "d3dx_sse_quaternion_rotation_matrix",
+    "aliases": [
+      "sub_10026BF0",
+      "?sse_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026d10",
+    "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll",
+    "aliases": [
+      "sub_10026D10",
+      "?sse_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026d1e",
+    "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll_impl",
+    "aliases": [
+      "sub_10026D1E",
+      "?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z",
+      "?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026de0",
+    "name": "d3dx_sse_vec3_transform_normal",
+    "aliases": [
+      "sub_10026DE0",
+      "?sse2_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026dee",
+    "name": "d3dx_sse_vec3_transform_normal_impl",
+    "aliases": [
+      "sub_10026DEE",
+      "?sse_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026ea0",
+    "name": "d3dx_sse_vec3_transform",
+    "aliases": [
+      "sub_10026EA0",
+      "?sse2_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z",
+      "?sse_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026eae",
+    "name": "d3dx_sse_vec3_transform_impl",
+    "aliases": [
+      "sub_10026EAE",
+      "?sse_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026f60",
+    "name": "d3dx_sse_vec3_transform_coord",
+    "aliases": [
+      "sub_10026F60",
+      "?sse2_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10026f6e",
+    "name": "d3dx_sse_vec3_transform_coord_impl",
+    "aliases": [
+      "sub_10026F6E",
+      "?sse_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027060",
+    "name": "d3dx_sse_vec4_transform",
+    "aliases": [
+      "sub_10027060",
+      "?sse2_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002706e",
+    "name": "d3dx_sse_vec4_transform_impl",
+    "aliases": [
+      "sub_1002706E",
+      "?sse_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027120",
+    "name": "d3dx_sse2_vec3_normalize",
+    "aliases": [
+      "sub_10027120",
+      "?sse2_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002712e",
+    "name": "d3dx_sse2_vec3_normalize_impl",
+    "aliases": [
+      "sub_1002712E",
+      "?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z",
+      "?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100271f0",
+    "name": "d3dx_sse2_plane_normalize",
+    "aliases": [
+      "sub_100271F0",
+      "?sse2_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100271fe",
+    "name": "d3dx_sse2_plane_normalize_impl",
+    "aliases": [
+      "sub_100271FE",
+      "?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z",
+      "?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100272d0",
+    "name": "d3dx_sse_matrix_inverse",
+    "aliases": [
+      "sub_100272D0",
+      "?sse2_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z",
+      "?sse_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100272de",
+    "name": "d3dx_sse2_matrix_inverse_impl",
+    "aliases": [
+      "sub_100272DE",
+      "?sse_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z",
+      "?sse2_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027590",
+    "name": "d3dx_sse_matrix_multiply_transpose",
+    "aliases": [
+      "sub_10027590",
+      "?sse2_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+      "?sse_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002759e",
+    "name": "d3dx_sse2_matrix_multiply_transpose_impl",
+    "aliases": [
+      "sub_1002759E",
+      "?sse_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+      "?sse2_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100276f0",
+    "name": "d3dx_sse2_vec4_cross",
+    "aliases": [
+      "sub_100276F0",
+      "?sse2_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100276fe",
+    "name": "d3dx_sse2_vec4_cross_impl",
+    "aliases": [
+      "sub_100276FE",
+      "?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z",
+      "?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100277a0",
+    "name": "d3dx_sse2_matrix_rotation_x",
+    "aliases": [
+      "sub_100277A0",
+      "?sse2_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100277ae",
+    "name": "d3dx_sse2_matrix_rotation_x_impl",
+    "aliases": [
+      "sub_100277AE",
+      "?sse_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z",
+      "?sse2_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027820",
+    "name": "d3dx_sse2_matrix_rotation_y",
+    "aliases": [
+      "sub_10027820",
+      "?sse2_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002782e",
+    "name": "d3dx_sse2_matrix_rotation_y_impl",
+    "aliases": [
+      "sub_1002782E",
+      "?sse_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z",
+      "?sse2_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100278b0",
+    "name": "d3dx_sse_matrix_determinant",
+    "aliases": [
+      "sub_100278B0",
+      "?sse2_D3DXMatrixDeterminant@@YGMPBUD3DXMATRIX@@@Z",
+      "?sse_D3DXMatrixDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100278be",
+    "name": "d3dx_sse2_matrix_determinant_impl",
+    "aliases": [
+      "sub_100278BE",
+      "?sse_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027980",
+    "name": "d3dx_sse2_plane_from_points",
+    "aliases": [
+      "sub_10027980",
+      "?sse2_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002798e",
+    "name": "d3dx_sse2_plane_from_points_impl",
+    "aliases": [
+      "sub_1002798E",
+      "?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z",
+      "?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027a70",
+    "name": "d3dx_sse2_matrix_shadow",
+    "aliases": [
+      "sub_10027A70",
+      "?sse2_D3DXMatrixShadow@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027a7e",
+    "name": "d3dx_sse2_matrix_shadow_impl",
+    "aliases": [
+      "sub_10027A7E",
+      "?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z",
+      "?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027c00",
+    "name": "d3dx_sse2_matrix_reflect",
+    "aliases": [
+      "sub_10027C00",
+      "?sse2_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027c0e",
+    "name": "d3dx_sse2_matrix_reflect_impl",
+    "aliases": [
+      "sub_10027C0E",
+      "?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z",
+      "?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027ce0",
+    "name": "d3dx_sse2_quaternion_rotation_matrix",
+    "aliases": [
+      "sub_10027CE0",
+      "?sse2_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027e00",
+    "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll",
+    "aliases": [
+      "sub_10027E00",
+      "?sse2_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ],
+    "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027e0e",
+    "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll_impl",
+    "aliases": [
+      "sub_10027E0E",
+      "?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z",
+      "?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ],
+    "comment": "Exact DirectX 8.1 optimized math body identified from the pinned SSE and SSE2 archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10034900",
+    "name": "d3dx_sse_sin_cos4",
+    "aliases": [
+      "sub_10034900",
+      "?sse_SinCos4@@YAXQBMQAM1@Z"
+    ],
+    "comment": "DirectX 8.1 SSE trigonometric helper identified by decorated relocations in the pinned optimized math archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10034af0",
+    "name": "d3dx_sse2_sincos",
+    "aliases": [
+      "sub_10034AF0",
+      "?sse2_sincos@@YG_K_K@Z"
+    ],
+    "comment": "DirectX 8.1 SSE2 trigonometric helper identified by decorated relocations in the pinned optimized math archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10034be0",
+    "name": "d3dx_sse2_sin_cos4",
+    "aliases": [
+      "sub_10034BE0",
+      "?sse2_SinCos4@@YAXQBMQAM1@Z"
+    ],
+    "comment": "DirectX 8.1 SSE2 four-lane trigonometric helper identified by decorated relocations in the pinned optimized math archive members."
   }
 ]

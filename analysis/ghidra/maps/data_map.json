@@ -13602,6 +13602,86 @@
       "name": "d3dx_zlib_inflate_mask",
       "program": "grim.dll",
       "type": "unsigned int[17]"
+    },
+    {
+      "address": "0x10055500",
+      "comment": "Exact 448-byte .data section from the pinned DirectX 8.1 d3dxmathsse.obj archive member.",
+      "name": "d3dx_sse_math_constants",
+      "program": "grim.dll",
+      "type": "unsigned char[448]"
+    },
+    {
+      "address": "0x100556c0",
+      "comment": "Exact 64-byte .data section from the pinned DirectX 8.1 d3dxquatsse.obj archive member.",
+      "name": "d3dx_sse_quaternion_constants",
+      "program": "grim.dll",
+      "type": "unsigned char[64]"
+    },
+    {
+      "address": "0x10055700",
+      "comment": "Exact 288-byte .data section from the pinned DirectX 8.1 d3dxmathsse2.obj archive member.",
+      "name": "d3dx_sse2_math_constants",
+      "program": "grim.dll",
+      "type": "unsigned char[288]"
+    },
+    {
+      "address": "0x10055820",
+      "comment": "Exact 32-byte .data section from the pinned DirectX 8.1 d3dxquatsse2.obj archive member.",
+      "name": "d3dx_sse2_quaternion_constants",
+      "program": "grim.dll",
+      "type": "unsigned char[32]"
+    },
+    {
+      "address": "0x1005dbd0",
+      "aliases": ["?fvecf0pt5@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"],
+      "comment": "Four-lane 0.5 initializer used by the DirectX 8.1 SSE reciprocal-square-root helper; linked image storage is zero-initialized before guarded setup.",
+      "name": "d3dx_rsqrt_half_vector",
+      "program": "grim.dll",
+      "type": "float[4]"
+    },
+    {
+      "address": "0x1005dbe0",
+      "aliases": ["?fvecf3pt0@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"],
+      "comment": "Four-lane 3.0 initializer used by the DirectX 8.1 SSE reciprocal-square-root helper; linked image storage is zero-initialized before guarded setup.",
+      "name": "d3dx_rsqrt_three_vector",
+      "program": "grim.dll",
+      "type": "float[4]"
+    },
+    {
+      "address": "0x1005dbf0",
+      "aliases": ["??_B?1??rsqrt_nr@@YA?AVF32vec1@@ABV1@@Z@51"],
+      "comment": "One-time initialization guard for the DirectX 8.1 SSE reciprocal-square-root constants.",
+      "name": "d3dx_rsqrt_init_guard",
+      "program": "grim.dll",
+      "type": "unsigned char"
+    },
+    {
+      "address": "0x1005e000",
+      "comment": "Exact 224-byte .data1 section from the pinned DirectX 8.1 d3dxmathsse.obj archive member.",
+      "name": "d3dx_sse_math_vectors",
+      "program": "grim.dll",
+      "type": "unsigned char[224]"
+    },
+    {
+      "address": "0x1005e0e0",
+      "comment": "Exact 160-byte .data1 section from the pinned DirectX 8.1 d3dxquatsse.obj archive member.",
+      "name": "d3dx_sse_quaternion_vectors",
+      "program": "grim.dll",
+      "type": "unsigned char[160]"
+    },
+    {
+      "address": "0x1005e180",
+      "comment": "Exact 192-byte .data1 section from the pinned DirectX 8.1 d3dxmathsse2.obj archive member.",
+      "name": "d3dx_sse2_math_vectors",
+      "program": "grim.dll",
+      "type": "unsigned char[192]"
+    },
+    {
+      "address": "0x1005e240",
+      "comment": "Exact 160-byte .data1 section from the pinned DirectX 8.1 d3dxquatsse2.obj archive member.",
+      "name": "d3dx_sse2_quaternion_vectors",
+      "program": "grim.dll",
+      "type": "unsigned char[160]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."

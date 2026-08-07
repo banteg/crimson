@@ -1334,6 +1334,46 @@
       "initializer_source": "Pinned DirectX 8.1 d3dxmathx86.obj; Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact 0x1000 mapped bytes at VA 0x100544e0"
     },
     {
+      "address": "0x10055500",
+      "name": "d3dx_sse_math_constants",
+      "size": 448,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 448-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000000000000008000000000000000800000003f0000003f0000003f0000003f00004040000040400000404000004040000000bf0000c03f0000c0bf0000003f000000000000803f00000000000000000000803f000020c000000040000000bf000000bf000000000000003f00000000000000400000803f000000c00000803f0000803f000000000000000000000000000040c0000000c000004040000080bf000000000000803f000000000000000000000080000000800000008000000080000040400000000000000000000000000000003f0000000000000000000000000000008000000080000000800000008000000000ffffffff00000000000000000000000000000000ffffffff00000000000000000000000000000000ffffffffffffffffffffffffffffffff000000000000000000000000000000000000803f00000000000000000000803f00000000000000000000803f00000000000000000000803f000000000000000000000000000000c0000000c0000000c000000000000040400000000000000000000000000000003f000000000000000000000000ffffffffffffffffffffffff0000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x10055500; pinned DirectX 8.1 d3dxmathsse.obj .data"
+    },
+    {
+      "address": "0x100556c0",
+      "name": "d3dx_sse_quaternion_constants",
+      "size": 64,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 64-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "0000003f0000003f0000003f0000003f00004040000040400000404000004040000080bf000080bf000080bf0000803f00000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x100556c0; pinned DirectX 8.1 d3dxquatsse.obj .data"
+    },
+    {
+      "address": "0x10055700",
+      "name": "d3dx_sse2_math_constants",
+      "size": 288,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 288-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse2.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "0000000000000080000000000000008000000080000000800000008000000080000040400000000000000000000000000000003f0000000000000000000000000000008000000080000000800000008000000000ffffffff00000000000000000000000000000000ffffffff00000000000000000000000000000000ffffffffffffffffffffffffffffffff000000000000000000000000000000000000803f00000000000000000000803f00000000000000000000803f00000000000000000000803f000000000000000000000000000000c0000000c0000000c000000000000040400000000000000000000000000000003f000000000000000000000000ffffffffffffffffffffffff0000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x10055700; pinned DirectX 8.1 d3dxmathsse2.obj .data"
+    },
+    {
+      "address": "0x10055820",
+      "name": "d3dx_sse2_quaternion_constants",
+      "size": 32,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 32-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse2.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000080bf000080bf000080bf0000803f00000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x10055820; pinned DirectX 8.1 d3dxquatsse2.obj .data"
+    },
+    {
       "address": "0x1005976c",
       "name": "grim_vertex_capacity",
       "size": 4,
@@ -1482,6 +1522,76 @@
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
       "initializer_hex": "00000000",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005db70"
+    },
+    {
+      "address": "0x1005dbd0",
+      "name": "d3dx_rsqrt_half_vector",
+      "size": 16,
+      "size_source": "Pinned DirectX 8.1 optimized-math relocation identifies the rsqrt_nr fvecf0pt5 static; target movaps accesses prove a complete four-float extent",
+      "alignment": 16,
+      "alignment_source": "Target movaps accesses and VA 0x1005dbd0 prove 16-byte SIMD alignment",
+      "initializer_fill": "00",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact zero-filled linked-image bytes at VA 0x1005dbd0"
+    },
+    {
+      "address": "0x1005dbe0",
+      "name": "d3dx_rsqrt_three_vector",
+      "size": 16,
+      "size_source": "Pinned DirectX 8.1 optimized-math relocation identifies the rsqrt_nr fvecf3pt0 static; target movaps accesses prove a complete four-float extent",
+      "alignment": 16,
+      "alignment_source": "Target movaps accesses and VA 0x1005dbe0 prove 16-byte SIMD alignment",
+      "initializer_fill": "00",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact zero-filled linked-image bytes at VA 0x1005dbe0"
+    },
+    {
+      "address": "0x1005dbf0",
+      "name": "d3dx_rsqrt_init_guard",
+      "size": 1,
+      "size_source": "Pinned DirectX 8.1 optimized-math relocation identifies the rsqrt_nr static initialization guard; target byte accesses prove its extent",
+      "alignment": 1,
+      "alignment_source": "Single-byte guard storage",
+      "initializer_hex": "00",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact linked-image byte at VA 0x1005dbf0"
+    },
+    {
+      "address": "0x1005e000",
+      "name": "d3dx_sse_math_vectors",
+      "size": 224,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 224-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000080280000003f00004040000080280000003f00004040000080280000003f00004040000000000000000000000000000000800000000000000000000000000000000000000000000000000000803f0000803f0000000000000000000000000000000000000000000000000000803f000000000000803f000000000000000000000000000000000000008000000000ffffffff00000000ffffffff000000002aa9933d000000009a99593e7424373f2aa9933d000000009a99593e7424373f0000003f00004040000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1005e000; pinned DirectX 8.1 d3dxmathsse.obj .data1"
+    },
+    {
+      "address": "0x1005e0e0",
+      "name": "d3dx_sse_quaternion_vectors",
+      "size": 160,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 160-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000000800000000000000000000000800000000000000000000000800000008000000000000000800000000000000080010000000200000000000000000000000000803f0000003f0000803e0000803f0000803f0000003f0000803e0000803f000000000000008000000080000000000000003f0000003f0000003f0000003f0000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1005e0e0; pinned DirectX 8.1 d3dxquatsse.obj .data1"
+    },
+    {
+      "address": "0x1005e180",
+      "name": "d3dx_sse2_math_vectors",
+      "size": 192,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 192-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse2.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000080280000003f00004040000080280000003f00004040000080280000003f00004040000000000000000000000000000000800000000000000000000000000000000000000000000000000000803f0000803f0000000000000000000000000000000000000000000000000000803f000000000000803f000000000000000000000000000000000000008000000000ffffffff00000000ffffffff000000000000003f00004040000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1005e180; pinned DirectX 8.1 d3dxmathsse2.obj .data1"
+    },
+    {
+      "address": "0x1005e240",
+      "name": "d3dx_sse2_quaternion_vectors",
+      "size": 160,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 160-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse2.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "feff7f3ffeff7f3ffeff7f3ffeff7f3f0000803f0000803f0000803f0000803f00000080000000800000008000000080010000000200000000000000000000000000803f0000003f0000803e0000803f0000803f0000003f0000803e0000803f000000000000008000000080000000000000003f0000003f0000003f0000003f0000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1005e240; pinned DirectX 8.1 d3dxquatsse2.obj .data1"
     }
   ],
   "groups": [
