@@ -504,7 +504,7 @@ def test_port_scope_has_audited_function_dispositions() -> None:
             "platform-replaced",
         ),
         ("grim.dll", "grim_window_proc", "platform-replaced"),
-        ("grim.dll", "jpeg_CreateDecompress", "third-party"),
+        ("grim.dll", "grim_jaz_jpeg_create_decompress", "third-party"),
     }
 
 
@@ -2519,6 +2519,155 @@ def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path
     assert codec_dtor_row.suggestion == "d3dx_codec_scalar_deleting_dtor"
 
 
+def test_collect_naming_debt_suggests_exact_d3dx_image_and_jpeg_symbols(
+    tmp_path: Path,
+) -> None:
+    image_config = ScratchConfig(
+        directory=tmp_path / "grim_load_image_jpg",
+        function="grim_load_image_jpg",
+        image="grim.dll",
+        compiler="msvc7.0",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol="?LoadJPG@CD3DXImage@@AAEJPBXK@Z",
+        note="directx-8.1-archive-load-jpg",
+        archive="d3dx8.lib",
+        archive_member=r"obj\i386\cd3dximage.obj",
+        archive_sha256="a" * 64,
+    )
+    jpeg_config = replace(
+        image_config,
+        directory=tmp_path / "d3dx_jpeg_create_decompress",
+        function="sub_1001C265",
+        symbol="?jpeg_CreateDecompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z",
+        archive_member=r"obj\i386\jdapimin.obj",
+    )
+    statuses = [
+        ScratchStatus(
+            config=config,
+            address=address,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        )
+        for config, address in ((image_config, 0x10010000), (jpeg_config, 0x1001C265))
+    ]
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "grim.dll",
+                    "address": "0x10010000",
+                    "name": "grim_load_image_jpg",
+                },
+                {
+                    "program": "grim.dll",
+                    "address": "0x1001c265",
+                    "name": "sub_1001C265",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(statuses, name_map_path=name_map)
+    image_row = next(row for row in rows if row.address == 0x10010000)
+    jpeg_row = next(row for row in rows if row.address == 0x1001C265)
+
+    assert image_row.suggestion == "d3dx_image_load_jpg"
+    assert image_row.issues == ("provider-directory-conflict", "provider-name-conflict")
+    assert jpeg_row.suggestion == "d3dx_jpeg_create_decompress"
+    assert jpeg_row.issues == ("placeholder-function",)
+
+
+def test_apply_naming_suggestions_namespaces_exact_source_provider_symbol(
+    tmp_path: Path,
+) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "grim_jaz_jpeg_consume_input"
+    scratch.mkdir(parents=True)
+    scratch.joinpath("scratch.conf").write_text(
+        "IMAGE=grim.dll\n"
+        "FUNCTION=jpeg_consume_input\n"
+        "SYMBOL=jpeg_consume_input\n"
+        "SOURCE=../../third_party/sources/ijg-libjpeg-6a/jdapimin.c\n"
+        "NOTE=ijg-6a-stock-consume-input\n",
+        encoding="utf-8",
+    )
+    status = ScratchStatus(
+        config=load_scratch_config(scratch),
+        address=0x10009BA0,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "grim.dll",
+                    "address": "0x10009ba0",
+                    "name": "jpeg_consume_input",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+    matching_scope = tmp_path / "matching_scope.json"
+    matching_scope.write_text(
+        json.dumps(
+            {
+                "schema": 2,
+                "scopes": {
+                    "port": {
+                        "programs": {},
+                        "function_dispositions": {
+                            "grim.dll": [
+                                {
+                                    "address": "0x10009ba0",
+                                    "name": "jpeg_consume_input",
+                                    "disposition": "third-party",
+                                    "reason": "IJG libjpeg 6a",
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    row = collect_naming_debt([status], name_map_path=name_map)[0]
+    result = apply_naming_suggestions(
+        [row],
+        match_root=match_root,
+        name_map_path=name_map,
+        matching_scope_path=matching_scope,
+    )
+
+    assert row.suggestion == "grim_jaz_jpeg_consume_input"
+    assert row.suggestion_sources == ("source-symbol:jpeg_consume_input",)
+    assert load_scratch_config(scratch).function == "grim_jaz_jpeg_consume_input"
+    mapped = load_name_map_rows(name_map)[0]
+    assert mapped["name"] == "grim_jaz_jpeg_consume_input"
+    assert "aliases" not in mapped
+    assert result["map_rows_updated"] == 1
+    scope_payload = json.loads(matching_scope.read_text(encoding="utf-8"))
+    disposition = scope_payload["scopes"]["port"]["function_dispositions"]["grim.dll"][0]
+    assert disposition["name"] == "grim_jaz_jpeg_consume_input"
+    assert result["scope_dispositions_updated"] == 1
+
+
 def test_apply_naming_suggestions_replaces_weaker_d3dx_semantic_identity(tmp_path: Path) -> None:
     match_root = tmp_path / "match"
     scratch = match_root / "scratches" / "vec2_normalize_dispatch_init_00401000"
@@ -2742,6 +2891,7 @@ def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tm
         "directories_renamed": 2,
         "map_rows_added": 1,
         "map_rows_updated": 1,
+        "scope_dispositions_updated": 0,
         "text_references_updated": 2,
         "renames": [
             {

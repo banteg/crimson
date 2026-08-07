@@ -230,37 +230,37 @@
           },
           {
             "address": "0x10009A50",
-            "name": "jpeg_CreateDecompress",
+            "name": "grim_jaz_jpeg_create_decompress",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a jdapimin entrypoint in Grim's separately linked JAZ decoder cluster; the DirectX 8.1 archive copy is namespaced and byte-distinct."
           },
           {
             "address": "0x10009B20",
-            "name": "jpeg_destroy_decompress",
+            "name": "grim_jpeg_destroy_decompress",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a decompressor teardown wrapper in Grim's separately linked JAZ decoder cluster."
           },
           {
             "address": "0x10009B30",
-            "name": "jpeg_read_header",
+            "name": "grim_jaz_jpeg_read_header",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a header parser entrypoint in Grim's separately linked JAZ decoder cluster."
           },
           {
             "address": "0x10009BA0",
-            "name": "jpeg_consume_input",
+            "name": "grim_jaz_jpeg_consume_input",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a input-state dispatcher in Grim's separately linked JAZ decoder cluster."
           },
           {
             "address": "0x10009C60",
-            "name": "default_decompress_parms",
+            "name": "grim_jaz_jpeg_default_decompress_parms",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a default output-parameter initializer in Grim's separately linked JAZ decoder cluster."
           },
           {
             "address": "0x10009E00",
-            "name": "jpeg_finish_decompress",
+            "name": "grim_jaz_jpeg_finish_decompress",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a decompressor completion entrypoint in Grim's separately linked JAZ decoder cluster."
           },

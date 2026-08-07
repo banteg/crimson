@@ -4933,6 +4933,25 @@ def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
 
     member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
     symbol = status.config.symbol or ""
+    if member.casefold() == "cd3dximage.obj":
+        if symbol == "??_GCD3DXImage@@QAEPAXI@Z":
+            return "d3dx_image_scalar_deleting_dtor"
+        if symbol.startswith("?d3dx_png_read_fn@@"):
+            return "d3dx_png_read_fn"
+        image_match = re.fullmatch(r"\?Load([A-Z0-9]*)@CD3DXImage@@.+", symbol)
+        if image_match is None:
+            return None
+        suffix = image_match.group(1).lower()
+        return f"d3dx_image_load_{suffix}" if suffix else "d3dx_image_load"
+    if member.casefold() == "jdapimin.obj":
+        jpeg_match = re.fullmatch(r"\?([A-Za-z0-9_]+)@D3DX@@.+", symbol)
+        if jpeg_match is None:
+            return None
+        operation = jpeg_match.group(1).replace(
+            "jpeg_CreateDecompress",
+            "jpeg_create_decompress",
+        )
+        return f"d3dx_{operation.lower()}"
     if member.casefold() == "cd3dxcodec.obj":
         if symbol == "??_GCD3DXCodec@@UAEPAXI@Z":
             return "d3dx_codec_scalar_deleting_dtor"
@@ -4962,6 +4981,36 @@ def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
     snake = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", snake).lower()
     implementation_suffix = "_impl" if implementation_marker is not None else ""
     return f"d3dx_{family}_{snake}{implementation_suffix}"
+
+
+def _source_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
+    """Derive contextual identities from exact, versioned third-party source."""
+
+    source = status.config.source.replace("\\", "/").casefold()
+    symbol = status.config.symbol or ""
+    if (
+        status.config.image == "grim.dll"
+        and source.endswith("third_party/sources/ijg-libjpeg-6a/jdapimin.c")
+        and symbol
+        in {
+            "default_decompress_parms",
+            "jpeg_CreateDecompress",
+            "jpeg_consume_input",
+            "jpeg_finish_decompress",
+            "jpeg_read_header",
+        }
+    ):
+        operation = symbol.replace("jpeg_CreateDecompress", "jpeg_create_decompress").lower()
+        if not operation.startswith("jpeg_"):
+            operation = f"jpeg_{operation}"
+        return f"grim_jaz_{operation}"
+    if (
+        status.config.image == "grim.dll"
+        and source.endswith("shared/grim_jpeg_source_callbacks.cpp")
+        and symbol == "grim_jpeg_destroy_decompress"
+    ):
+        return symbol
+    return None
 
 
 def collect_naming_debt(
@@ -5010,7 +5059,9 @@ def collect_naming_debt(
     for status in exact_statuses:
         canonical = canonical_names[id(status)]
         map_row = name_rows.get((status.config.image, status.address), {})
-        symbol_suggestion = _d3dx_provider_symbol_suggestion(status)
+        archive_symbol_suggestion = _d3dx_provider_symbol_suggestion(status)
+        source_symbol_suggestion = _source_provider_symbol_suggestion(status)
+        symbol_suggestion = archive_symbol_suggestion or source_symbol_suggestion
         placeholder_aliases = tuple(
             str(alias)
             for alias in map_row.get("aliases", ())
@@ -5071,15 +5122,20 @@ def collect_naming_debt(
         suggestion: str | None = None
         suggestion_sources: tuple[str, ...] = ()
         key = _archive_provider_key(status)
-        if key is not None and (
+        if (
             "placeholder-function" in issues
             or "provider-name-conflict" in issues
             or "provider-directory-conflict" in issues
         ):
             if symbol_suggestion is not None:
                 suggestion = symbol_suggestion
-                suggestion_sources = (f"provider-symbol:{status.config.symbol}",)
-            else:
+                source_kind = (
+                    "provider-symbol"
+                    if archive_symbol_suggestion is not None
+                    else "source-symbol"
+                )
+                suggestion_sources = (f"{source_kind}:{status.config.symbol}",)
+            elif key is not None:
                 peers = [
                     peer
                     for peer in provider_peers[key]
@@ -5130,6 +5186,7 @@ def apply_naming_suggestions(
     *,
     match_root: Path = DEFAULT_MATCH_ROOT,
     name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+    matching_scope_path: Path = DEFAULT_MATCHING_SCOPE_PATH,
 ) -> dict[str, Any]:
     """Apply deterministic naming suggestions across scratches and the curated map.
 
@@ -5146,6 +5203,7 @@ def apply_naming_suggestions(
             "directories_renamed": 0,
             "map_rows_added": 0,
             "map_rows_updated": 0,
+            "scope_dispositions_updated": 0,
             "text_references_updated": 0,
             "renames": [],
         }
@@ -5341,6 +5399,7 @@ def apply_naming_suggestions(
         aliases_removed += len(raw_aliases) - len(existing_aliases)
         if (
             row.provider_symbol is not None
+            and row.provider_member is not None
             and row.provider_symbol != row.suggestion
             and row.provider_symbol not in existing_aliases
         ):
@@ -5359,9 +5418,46 @@ def apply_naming_suggestions(
                 text_references_updated += count
         map_row.setdefault("create", False)
 
+    scope_dispositions_updated = 0
+    scope_payload: dict[str, Any] | None = None
+    if matching_scope_path.exists():
+        scope_payload = json.loads(matching_scope_path.read_text(encoding="utf-8"))
+        selected_by_key = {
+            (row.image, row.address): row
+            for row in selected_by_source.values()
+        }
+        for scope_definition in scope_payload.get("scopes", {}).values():
+            dispositions = scope_definition.get("function_dispositions", {})
+            for image, image_rows in dispositions.items():
+                for disposition in image_rows:
+                    key = (str(image), parse_int(disposition["address"]))
+                    selected_row = selected_by_key.get(key)
+                    if selected_row is None:
+                        continue
+                    assert selected_row.suggestion is not None
+                    old_name = str(disposition["name"])
+                    if old_name == selected_row.suggestion:
+                        continue
+                    allowed_old_names = {
+                        selected_row.function.casefold(),
+                        selected_row.configured_function.casefold(),
+                    }
+                    if old_name.casefold() not in allowed_old_names:
+                        raise ValueError(
+                            f"unexpected matching-scope identity for {image}:"
+                            f"0x{selected_row.address:08x}: {old_name!r}",
+                        )
+                    disposition["name"] = selected_row.suggestion
+                    scope_dispositions_updated += 1
+
     for path, contents in config_updates.items():
         path.write_text(contents, encoding="utf-8")
     name_map_path.write_text(json.dumps(map_rows, indent=2) + "\n", encoding="utf-8")
+    if scope_payload is not None and scope_dispositions_updated:
+        matching_scope_path.write_text(
+            json.dumps(scope_payload, indent=2) + "\n",
+            encoding="utf-8",
+        )
     for source, destination in directory_renames:
         source.rename(destination)
 
@@ -5372,6 +5468,7 @@ def apply_naming_suggestions(
         "directories_renamed": len(directory_renames),
         "map_rows_added": map_rows_added,
         "map_rows_updated": map_rows_updated,
+        "scope_dispositions_updated": scope_dispositions_updated,
         "text_references_updated": text_references_updated,
         "renames": [
             {

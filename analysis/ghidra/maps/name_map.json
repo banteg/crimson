@@ -10004,44 +10004,50 @@
   {
     "program": "grim.dll",
     "address": "0x10009a50",
-    "name": "jpeg_CreateDecompress",
-    "signature": "void jpeg_CreateDecompress(void *context, int version, unsigned int struct_size)",
-    "comment": "IJG libjpeg 6a jdapimin entrypoint in the separately linked plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_create_decompress",
+    "signature": "void grim_jaz_jpeg_create_decompress(void *context, int version, unsigned int struct_size)",
+    "comment": "IJG libjpeg 6a jdapimin entrypoint in the separately linked plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10009b20",
-    "name": "jpeg_destroy_decompress",
-    "signature": "void jpeg_destroy_decompress(void *context)",
-    "comment": "IJG libjpeg 6a decompressor teardown wrapper; exact from the VC6 source-derived JAZ provider"
+    "name": "grim_jpeg_destroy_decompress",
+    "signature": "void grim_jpeg_destroy_decompress(void *context)",
+    "comment": "IJG libjpeg 6a decompressor teardown wrapper; exact from the VC6 source-derived JAZ provider",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10009b30",
-    "name": "jpeg_read_header",
-    "signature": "int jpeg_read_header(void *context, int require_image)",
-    "comment": "IJG libjpeg 6a header parser entrypoint in the separately linked plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_read_header",
+    "signature": "int grim_jaz_jpeg_read_header(void *context, int require_image)",
+    "comment": "IJG libjpeg 6a header parser entrypoint in the separately linked plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10009ba0",
-    "name": "jpeg_consume_input",
-    "signature": "int jpeg_consume_input(void *context)",
-    "comment": "IJG libjpeg 6a input-state dispatcher in the separately linked plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_consume_input",
+    "signature": "int grim_jaz_jpeg_consume_input(void *context)",
+    "comment": "IJG libjpeg 6a input-state dispatcher in the separately linked plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10009c60",
-    "name": "default_decompress_parms",
-    "signature": "void default_decompress_parms(void *context)",
-    "comment": "IJG libjpeg 6a jdapimin default output-parameter initializer in the plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_default_decompress_parms",
+    "signature": "void grim_jaz_jpeg_default_decompress_parms(void *context)",
+    "comment": "IJG libjpeg 6a jdapimin default output-parameter initializer in the plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10009e00",
-    "name": "jpeg_finish_decompress",
-    "signature": "int jpeg_finish_decompress(void *context)",
-    "comment": "IJG libjpeg 6a decompressor completion entrypoint in the separately linked plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_finish_decompress",
+    "signature": "int grim_jaz_jpeg_finish_decompress(void *context)",
+    "comment": "IJG libjpeg 6a decompressor completion entrypoint in the separately linked plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -11269,10 +11275,13 @@
   {
     "program": "grim.dll",
     "address": "0x100102f7",
-    "name": "FUN_100102f7",
-    "signature": "void* FUN_100102f7(void* arg1, char arg2)",
-    "comment": "[binja] void* __thiscall sub_100102f7(void* arg1, char arg2)",
-    "create": false
+    "name": "d3dx_image_scalar_deleting_dtor",
+    "signature": "void* d3dx_image_scalar_deleting_dtor(void* arg1, char arg2)",
+    "comment": "[binja] void* __thiscall d3dx_image_scalar_deleting_dtor(void* arg1, char arg2)",
+    "create": false,
+    "aliases": [
+      "??_GCD3DXImage@@QAEPAXI@Z"
+    ]
   },
   {
     "program": "grim.dll",
@@ -11288,10 +11297,13 @@
   {
     "program": "grim.dll",
     "address": "0x100103d6",
-    "name": "FUN_100103d6",
-    "signature": "int FUN_100103d6(int* arg1, void* arg2, void* arg3)",
-    "comment": "[binja] int32_t __thiscall sub_100103d6(int32_t* arg1, void* arg2, void* arg3)",
-    "create": false
+    "name": "d3dx_image_load_dib",
+    "signature": "int d3dx_image_load_dib(int* arg1, void* arg2, void* arg3)",
+    "comment": "[binja] int32_t __thiscall d3dx_image_load_dib(int32_t* arg1, void* arg2, void* arg3)",
+    "create": false,
+    "aliases": [
+      "?LoadDIB@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "program": "grim.dll",
@@ -11321,42 +11333,67 @@
   {
     "program": "grim.dll",
     "address": "0x10010e13",
-    "name": "grim_load_image_jpg",
-    "signature": "int grim_load_image_jpg(int* arg1, int arg2, int arg3)",
-    "comment": "[binja] int32_t __thiscall sub_10010e13(int32_t* arg1, int32_t arg2, int32_t arg3)",
-    "create": false
+    "name": "d3dx_image_load_jpg",
+    "signature": "int d3dx_image_load_jpg(int* arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t __thiscall d3dx_image_load_jpg(int32_t* arg1, int32_t arg2, int32_t arg3)",
+    "create": false,
+    "aliases": [
+      "?LoadJPG@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10011083",
-    "name": "FUN_10011083",
-    "signature": "int FUN_10011083(int* arg1, void* arg2, int arg3)",
-    "comment": "[binja] int32_t __thiscall sub_10011083(int32_t* arg1, void* arg2, int32_t arg3)",
-    "create": false
+    "name": "d3dx_image_load_tga",
+    "signature": "int d3dx_image_load_tga(int* arg1, void* arg2, int arg3)",
+    "comment": "[binja] int32_t __thiscall d3dx_image_load_tga(int32_t* arg1, void* arg2, int32_t arg3)",
+    "create": false,
+    "aliases": [
+      "?LoadTGA@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1001152a",
-    "name": "grim_load_image_pnm",
-    "signature": "int grim_load_image_pnm(int* arg1, char* arg2, int arg3)",
-    "comment": "[binja] int32_t __thiscall sub_1001152a(int32_t* arg1, char* arg2, int32_t arg3)",
-    "create": false
+    "name": "d3dx_image_load_ppm",
+    "signature": "int d3dx_image_load_ppm(int* arg1, char* arg2, int arg3)",
+    "comment": "[binja] int32_t __thiscall d3dx_image_load_ppm(int32_t* arg1, char* arg2, int32_t arg3)",
+    "create": false,
+    "aliases": [
+      "?LoadPPM@CD3DXImage@@AAEJPBXK@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100117b0",
+    "name": "d3dx_png_read_fn",
+    "comment": "Exact archive recovery from obj\\i386\\cd3dximage.obj symbol ?d3dx_png_read_fn@@YAXPAUpng_struct_def@D3DX@@PAEI@Z.",
+    "create": false,
+    "aliases": [
+      "?d3dx_png_read_fn@@YAXPAUpng_struct_def@D3DX@@PAEI@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x100117ff",
-    "name": "grim_load_image_png",
-    "signature": "int grim_load_image_png(int* arg1, void* arg2, void* arg3)",
-    "comment": "[binja] int32_t __thiscall sub_100117ff(int32_t* arg1, void* arg2, void* arg3)",
-    "create": false
+    "name": "d3dx_image_load_png",
+    "signature": "int d3dx_image_load_png(int* arg1, void* arg2, void* arg3)",
+    "comment": "[binja] int32_t __thiscall d3dx_image_load_png(int32_t* arg1, void* arg2, void* arg3)",
+    "create": false,
+    "aliases": [
+      "?LoadPNG@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10011d95",
-    "name": "grim_load_image_dds",
-    "signature": "int grim_load_image_dds(int* arg1, uint arg2, int* arg3)",
-    "comment": "[binja] int32_t __thiscall sub_10011d95(int32_t* arg1, uint32_t arg2, int32_t* arg3)",
-    "create": false
+    "name": "d3dx_image_load_dds",
+    "signature": "int d3dx_image_load_dds(int* arg1, uint arg2, int* arg3)",
+    "comment": "[binja] int32_t __thiscall d3dx_image_load_dds(int32_t* arg1, uint32_t arg2, int32_t* arg3)",
+    "create": false,
+    "aliases": [
+      "?LoadDDS@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "program": "grim.dll",
@@ -11383,10 +11420,13 @@
   {
     "program": "grim.dll",
     "address": "0x10012647",
-    "name": "grim_load_image_bmp",
-    "signature": "int grim_load_image_bmp(short* arg1, void* arg2)",
-    "comment": "[binja] int32_t __stdcall sub_10012647(int16_t* arg1, void* arg2)",
-    "create": false
+    "name": "d3dx_image_load_bmp",
+    "signature": "int d3dx_image_load_bmp(short* arg1, void* arg2)",
+    "comment": "[binja] int32_t __stdcall d3dx_image_load_bmp(int16_t* arg1, void* arg2)",
+    "create": false,
+    "aliases": [
+      "?LoadBMP@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "program": "grim.dll",
@@ -12980,6 +13020,66 @@
     ],
     "signature": "int D3DXCpuOptimizations(int force)",
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c265",
+    "name": "d3dx_jpeg_create_decompress",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_create_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z.",
+    "create": false,
+    "aliases": [
+      "?jpeg_CreateDecompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c325",
+    "name": "d3dx_jpeg_destroy_decompress",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jpeg_destroy_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z.",
+    "create": false,
+    "aliases": [
+      "?jpeg_destroy_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c32a",
+    "name": "d3dx_default_decompress_parms",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z.",
+    "create": false,
+    "aliases": [
+      "?default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c49d",
+    "name": "d3dx_jpeg_consume_input",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_consume_input@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z.",
+    "create": false,
+    "aliases": [
+      "?jpeg_consume_input@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c537",
+    "name": "d3dx_jpeg_finish_decompress",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_finish_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z.",
+    "create": false,
+    "aliases": [
+      "?jpeg_finish_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c5de",
+    "name": "d3dx_jpeg_read_header",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_read_header@D3DX@@YAHPAUjpeg_decompress_struct@1@E@Z.",
+    "create": false,
+    "aliases": [
+      "?jpeg_read_header@D3DX@@YAHPAUjpeg_decompress_struct@1@E@Z"
+    ]
   },
   {
     "program": "grim.dll",

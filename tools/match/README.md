@@ -616,7 +616,10 @@ base and optimized helpers may also derive canonical `d3dx_init_*`,
 `d3dx_c_*`, `d3dx_sse*_*`, or `d3dx_x86_*` names directly from their exact
 decorated COFF symbols, including the `$$1` implementation suffix. Exact
 `CD3DXCodec_<FORMAT>::Encode` symbols similarly derive `d3dx_pixel_encode_*`
-identities. This also reports
+identities. Pinned `CD3DXImage::Load*` and D3DX-namespaced IJG entry points
+derive the corresponding `d3dx_image_*` and `d3dx_jpeg_*` identities. Exact
+IJG 6a source recoveries use `grim_jaz_jpeg_*` so their plain C symbols do not
+collide with the separate D3DX-namespaced copy. This also reports
 `provider-name-conflict` when an older semantic name is meaningful but weaker
 than that exact identity, and `provider-directory-conflict` when only the
 scratch directory still carries the superseded identity. Real
@@ -624,7 +627,8 @@ decorated/linkage symbols remain useful aliases;
 generated names such as `FUN_*`, `sub_*`, and `unknown_libname_*` are naming
 debt once a stronger identity is proven.
 `--apply-suggestions` updates canonical map rows, exact scratch `FUNCTION`
-assignments, and scratch reference aliases together. It removes superseded
+assignments, scratch reference aliases, and matching-scope disposition names
+together. It removes superseded
 analyzer aliases and gives a renamed scratch an image prefix when the canonical
 directory is already occupied by the cross-image provider peer.
 `--prune-placeholder-aliases` removes only the generated aliases reported on

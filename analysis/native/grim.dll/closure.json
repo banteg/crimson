@@ -1,5 +1,5 @@
 {
-  "audit_digest": "46cef794e8e967befa2afc7222a5eaecd59882b98a28e8445c82a9f2232318fe",
+  "audit_digest": "c11f180d7680833613e00aac243f871795f343566a79a5d91d5bcea0c70fb925",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -18330,12 +18330,12 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "1e575797df32115e1c385528eeb0c459d0777f8603e3fc0ba0e77737e2b3804f"
+        "sha256": "2cf4b87f9d620ab07f9ccd89a7c4e702a5f7e034953a8f6ec29c7377fe4b73e1"
       },
       {
         "path": "analysis/matching_scope.json",
         "repository_relative": true,
-        "sha256": "5c822b8cfe25fc3901b0ea3d332cb72431486ad55168d1bcf0ea7c801aab6d04"
+        "sha256": "f4a2642b434e9c4f7cadfff993fe5c084b949be9dfb816bda3836f3bc720ff0a"
       }
     ]
   },
@@ -19745,9 +19745,9 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 268474960,
-          "disposition": "third-party",
-          "function": "jpeg_CreateDecompress"
+          "address": 268550757,
+          "disposition": "outside-port-scope",
+          "function": "d3dx_jpeg_create_decompress"
         }
       ],
       "category": "excluded_function",
@@ -19765,9 +19765,9 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 268475168,
-          "disposition": "third-party",
-          "function": "jpeg_destroy_decompress"
+          "address": 268550949,
+          "disposition": "outside-port-scope",
+          "function": "d3dx_jpeg_destroy_decompress"
         }
       ],
       "category": "excluded_function",
@@ -19785,9 +19785,9 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 268475904,
-          "disposition": "third-party",
-          "function": "jpeg_finish_decompress"
+          "address": 268551479,
+          "disposition": "outside-port-scope",
+          "function": "d3dx_jpeg_finish_decompress"
         }
       ],
       "category": "excluded_function",
@@ -19805,9 +19805,9 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 268475184,
-          "disposition": "third-party",
-          "function": "jpeg_read_header"
+          "address": 268551646,
+          "disposition": "outside-port-scope",
+          "function": "d3dx_jpeg_read_header"
         }
       ],
       "category": "excluded_function",

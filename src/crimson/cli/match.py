@@ -1050,6 +1050,7 @@ def cmd_match_naming_audit(
                         f"applied={result['applied']}",
                         f"map_added={result['map_rows_added']}",
                         f"map_updated={result['map_rows_updated']}",
+                        f"scope_updated={result['scope_dispositions_updated']}",
                         f"directories={result['directories_renamed']}",
                         f"references={result['config_references_updated']}",
                         f"aliases_removed={result['aliases_removed']}",
