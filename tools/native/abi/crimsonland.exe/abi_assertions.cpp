@@ -27,9 +27,19 @@ struct crimson_int_alignment_probe_t {
     int value;
 };
 
+struct crimson_unsigned_int_alignment_probe_t {
+    char prefix;
+    unsigned int value;
+};
+
 struct crimson_float_alignment_probe_t {
     char prefix;
     float value;
+};
+
+struct crimson_double_alignment_probe_t {
+    char prefix;
+    double value;
 };
 
 struct crimson_pointer_alignment_probe_t {
@@ -93,6 +103,7 @@ CRIMSON_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 CRIMSON_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
 CRIMSON_ABI_ASSERT(long_is_32_bit, sizeof(long) == 4);
 CRIMSON_ABI_ASSERT(float_is_32_bit, sizeof(float) == 4);
+CRIMSON_ABI_ASSERT(double_is_64_bit, sizeof(double) == 8);
 CRIMSON_ABI_ASSERT(bool_is_one_byte, sizeof(bool) == 1);
 CRIMSON_ABI_ASSERT(unsigned_char_is_one_byte, sizeof(unsigned char) == 1);
 CRIMSON_ABI_ASSERT(game_mode_id_is_32_bit, sizeof(game_mode_id_t) == 4);
@@ -133,8 +144,14 @@ CRIMSON_ABI_ASSERT(
     default_int_alignment_is_four,
     offsetof(crimson_int_alignment_probe_t, value) == 4);
 CRIMSON_ABI_ASSERT(
+    default_unsigned_int_alignment_is_four,
+    offsetof(crimson_unsigned_int_alignment_probe_t, value) == 4);
+CRIMSON_ABI_ASSERT(
     default_float_alignment_is_four,
     offsetof(crimson_float_alignment_probe_t, value) == 4);
+CRIMSON_ABI_ASSERT(
+    default_double_alignment_is_eight,
+    offsetof(crimson_double_alignment_probe_t, value) == 8);
 CRIMSON_ABI_ASSERT(
     default_pointer_alignment_is_four,
     offsetof(crimson_pointer_alignment_probe_t, value) == 4);

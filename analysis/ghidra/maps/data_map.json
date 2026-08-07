@@ -1589,6 +1589,16 @@
       "type": "char[6]"
     },
     {
+      "address": "0x0047b184",
+      "aliases": [
+        "___app_type"
+      ],
+      "comment": "VC6 CRT application type selected during startup; bound by four zero-addend libcmt references.",
+      "name": "crt_app_type",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0047b1c0",
       "comment": "CRT ctype lookup table pointer (used by crt_isctype).",
       "name": "crt_ctype_table",
@@ -1596,11 +1606,91 @@
       "type": "unsigned short *"
     },
     {
+      "address": "0x0047b3cc",
+      "aliases": [
+        "___mb_cur_max"
+      ],
+      "comment": "VC6 CRT maximum multibyte character width; bound by 29 zero-addend libcmt references across 11 object members.",
+      "name": "crt_mb_cur_max",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0047b3d0",
+      "aliases": [
+        "___decimal_point"
+      ],
+      "comment": "VC6 CRT decimal-point character used by formatted input and floating conversion.",
+      "name": "crt_decimal_point",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x0047b6f0",
+      "aliases": [
+        "___tlsindex"
+      ],
+      "comment": "VC6 CRT thread-local-storage index shared by thread-data allocation and lookup.",
+      "name": "crt_tls_index",
+      "program": "crimsonland.exe",
+      "type": "DWORD"
+    },
+    {
       "address": "0x0047b7c0",
       "comment": "45-entry CRT dosmaperr table (Win32 error -> errno mapping, 0x168 bytes).",
       "name": "crt_dosmaperr_table",
       "program": "crimsonland.exe",
       "type": "crt_dosmaperr_entry_t[45]"
+    },
+    {
+      "address": "0x0047db10",
+      "aliases": [
+        "___old_sbh_p_starting_region"
+      ],
+      "comment": "VC6 small-block heap starting-region cursor, consistently bound by the sbheap archive member.",
+      "name": "crt_sbh_starting_region",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x0047dbb8",
+      "aliases": [
+        "__d_inf"
+      ],
+      "comment": "VC6 floating-point positive-infinity constant used by exception and pow helpers.",
+      "name": "crt_double_infinity",
+      "program": "crimsonland.exe",
+      "type": "double"
+    },
+    {
+      "address": "0x0047de70",
+      "aliases": [
+        "__timezone"
+      ],
+      "comment": "VC6 CRT seconds-west-of-UTC timezone value.",
+      "name": "crt_timezone",
+      "program": "crimsonland.exe",
+      "type": "long"
+    },
+    {
+      "address": "0x0047de74",
+      "aliases": [
+        "__daylight"
+      ],
+      "comment": "VC6 CRT daylight-saving-time enabled flag.",
+      "name": "crt_daylight",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0047de78",
+      "aliases": [
+        "__dstbias"
+      ],
+      "comment": "VC6 CRT daylight-saving-time bias in seconds.",
+      "name": "crt_dst_bias",
+      "program": "crimsonland.exe",
+      "type": "long"
     },
     {
       "address": "0x0047e448",
@@ -10774,11 +10864,101 @@
       "type": "int"
     },
     {
+      "address": "0x004d9964",
+      "aliases": [
+        "__adjust_fdiv"
+      ],
+      "comment": "VC6 Pentium FDIV workaround dispatch flag initialized by the CRT floating-point startup helper.",
+      "name": "crt_adjust_fdiv",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d9968",
+      "aliases": [
+        "_dstflag_cache"
+      ],
+      "comment": "VC6 CRT cached daylight-saving-time state used by local-time conversion.",
+      "name": "crt_dst_flag_cache",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004d99a0",
       "comment": "CRT environ pointer (char**), built by crt_build_environ from the environment block.",
       "name": "crt_environ",
       "program": "crimsonland.exe",
       "type": "char **"
+    },
+    {
+      "address": "0x004d99a8",
+      "aliases": [
+        "__wenviron"
+      ],
+      "comment": "VC6 CRT wide-character environment vector.",
+      "name": "crt_wenviron",
+      "program": "crimsonland.exe",
+      "type": "wchar_t **"
+    },
+    {
+      "address": "0x004d99c4",
+      "aliases": [
+        "__aenvptr"
+      ],
+      "comment": "VC6 CRT raw ANSI environment block pointer consumed during environment-vector construction.",
+      "name": "crt_ansi_environment_block",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004d99cc",
+      "aliases": [
+        "___error_mode"
+      ],
+      "comment": "VC6 CRT runtime-error output mode.",
+      "name": "crt_error_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d99d0",
+      "aliases": [
+        "__cflush"
+      ],
+      "comment": "VC6 CRT count of explicitly allocated stream buffers.",
+      "name": "crt_cflush",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d9a5c",
+      "aliases": [
+        "___lc_codepage"
+      ],
+      "comment": "VC6 CRT active locale code page, consistently bound across locale and multibyte helpers.",
+      "name": "crt_locale_codepage",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x004d9a70",
+      "aliases": [
+        "___old_sbh_decommitable_pages"
+      ],
+      "comment": "VC6 small-block heap count of pages eligible for decommit.",
+      "name": "crt_sbh_decommitable_pages",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x004d9cb0",
+      "aliases": [
+        "_fSystemSet"
+      ],
+      "comment": "VC6 multibyte-codepage flag indicating that a system code page was selected.",
+      "name": "crt_mb_system_codepage_set",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004d9d00",
@@ -10802,6 +10982,106 @@
       "type": "char[64]"
     },
     {
+      "address": "0x004da164",
+      "aliases": [
+        "___mbcodepage"
+      ],
+      "comment": "VC6 CRT active multibyte code page.",
+      "name": "crt_mb_codepage",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004da17c",
+      "aliases": [
+        "___ismbcodepage"
+      ],
+      "comment": "VC6 CRT flag indicating whether the active code page is multibyte.",
+      "name": "crt_is_mb_codepage",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004da180",
+      "aliases": [
+        "__mbcasemap"
+      ],
+      "comment": "VC6 CRT multibyte case-mapping table.",
+      "name": "crt_mb_case_map",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[256]"
+    },
+    {
+      "address": "0x004da384",
+      "aliases": [
+        "___mblcid"
+      ],
+      "comment": "VC6 CRT locale identifier associated with the active multibyte code page.",
+      "name": "crt_mb_lcid",
+      "program": "crimsonland.exe",
+      "type": "LCID"
+    },
+    {
+      "address": "0x004da388",
+      "aliases": [
+        "___sbh_sizeHeaderList"
+      ],
+      "comment": "VC6 small-block heap allocated capacity of the region-header list.",
+      "name": "crt_sbh_header_list_capacity",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x004da38c",
+      "aliases": [
+        "___sbh_indGroupDefer"
+      ],
+      "comment": "VC6 small-block heap deferred group index.",
+      "name": "crt_sbh_deferred_group_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004da390",
+      "aliases": [
+        "___sbh_pHeaderScan"
+      ],
+      "comment": "VC6 small-block heap region-header scan cursor.",
+      "name": "crt_sbh_header_scan",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x004da394",
+      "aliases": [
+        "___sbh_pHeaderDefer"
+      ],
+      "comment": "VC6 small-block heap deferred region-header cursor; bound by 13 references in sbheap.obj.",
+      "name": "crt_sbh_header_defer",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x004da398",
+      "aliases": [
+        "___sbh_cntHeaderList"
+      ],
+      "comment": "VC6 small-block heap active region-header count.",
+      "name": "crt_sbh_header_count",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x004da39c",
+      "aliases": [
+        "___sbh_pHeaderList"
+      ],
+      "comment": "VC6 small-block heap region-header list pointer.",
+      "name": "crt_sbh_header_list",
+      "program": "crimsonland.exe",
+      "type": "void **"
+    },
+    {
       "address": "0x004da3a4",
       "comment": "CRT process heap handle used by crt_free_base/crt_realloc (HeapAlloc/HeapFree).",
       "name": "crt_heap_handle",
@@ -10812,6 +11092,26 @@
       "address": "0x004da3a8",
       "comment": "CRT heap mode flag used by crt_free paths.",
       "name": "crt_heap_mode",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004da3ac",
+      "aliases": [
+        "___setlc_active"
+      ],
+      "comment": "VC6 CRT locale-update activity counter.",
+      "name": "crt_setlocale_active",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004da3b0",
+      "aliases": [
+        "___unguarded_readlc_active"
+      ],
+      "comment": "VC6 CRT unguarded locale-reader activity counter.",
+      "name": "crt_unguarded_locale_read_active",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -10840,6 +11140,36 @@
       "address": "0x004db4e0",
       "comment": "CRT stream count used for iterating crt_stream_table.",
       "name": "crt_stream_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004db4e4",
+      "aliases": [
+        "__acmdln"
+      ],
+      "comment": "VC6 CRT raw ANSI command-line pointer.",
+      "name": "crt_ansi_command_line",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x004db4e8",
+      "aliases": [
+        "___env_initialized"
+      ],
+      "comment": "VC6 CRT environment-vector initialization flag.",
+      "name": "crt_environment_initialized",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004db4ec",
+      "aliases": [
+        "___mbctype_initialized"
+      ],
+      "comment": "VC6 CRT multibyte character table initialization flag.",
+      "name": "crt_mbctype_initialized",
       "program": "crimsonland.exe",
       "type": "int"
     },
