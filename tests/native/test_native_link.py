@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 398
+    assert payload["summary"]["source_entry_count"] == 405
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 395
-    assert payload["summary"]["typed_entries"] == 345
+    assert payload["summary"]["entry_count"] == 402
+    assert payload["summary"]["typed_entries"] == 352
     assert payload["summary"]["explicit_size_entries"] == 349
     assert payload["summary"]["explicit_alignment_entries"] == 349
     assert payload["summary"]["explicit_initializer_entries"] == 349
@@ -2309,6 +2309,13 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
         "const unsigned char[8]"
     )
     assert observed["d3dx_jpeg_mmx_zero"]["type"] == "unsigned char[8]"
+    assert observed["grim_crt_xc_a"]["type"] == "void *"
+    assert observed["grim_crt_xc_z"]["type"] == "void *"
+    assert observed["grim_crt_proc_attached"]["type"] == "int"
+    assert observed["grim_crt_adjust_fdiv"]["type"] == "int"
+    assert observed["grim_crt_raw_dll_main"]["type"] == "void *"
+    assert observed["grim_crt_onexit_end"]["type"] == "void *"
+    assert observed["grim_crt_onexit_begin"]["type"] == "void *"
     assert observed["d3dx_jpeg_base_dither_matrix"]["type"] == (
         "const unsigned char[16][16]"
     )

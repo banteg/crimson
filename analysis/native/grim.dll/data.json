@@ -1,5 +1,5 @@
 {
-  "audit_digest": "d24c1f241c9abb546c823ff62fa58cd8f7d7ac0873085100100de3eae4f858ca",
+  "audit_digest": "2511af1c8b47b5d7316a59012828a3cc2e07bd4aaafa47c35c9b814a4836a99c",
   "entries": [
     {
       "address": 268747320,
@@ -4167,6 +4167,44 @@
       "size": null,
       "size_source": null,
       "type": "unsigned int[30]"
+    },
+    {
+      "address": 268775424,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Visual C++ 6 CRT C-initializer range start sentinel used by _initterm.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_crt_xc_a",
+      "section": ".data",
+      "section_offset": 0,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "void *"
+    },
+    {
+      "address": 268775476,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Visual C++ 6 CRT C-initializer range end sentinel used by _initterm.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_crt_xc_z",
+      "section": ".data",
+      "section_offset": 52,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "void *"
     },
     {
       "address": 268775488,
@@ -9036,6 +9074,25 @@
       "type": "float"
     },
     {
+      "address": 268819292,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Visual C++ 6 CRT process-attach reference count used by the DLL startup path.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_crt_proc_attached",
+      "section": ".data",
+      "section_offset": 43868,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "int"
+    },
+    {
       "address": 268819296,
       "aliases": [
         "?pDSM_D3D8D@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"
@@ -9156,6 +9213,82 @@
       "size": null,
       "size_source": null,
       "type": "unsigned char[8]"
+    },
+    {
+      "address": 268819392,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Visual C++ 6 CRT floating-point divide adjustment state copied from the runtime import.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_crt_adjust_fdiv",
+      "section": ".data",
+      "section_offset": 43968,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "int"
+    },
+    {
+      "address": 268819396,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Visual C++ 6 CRT optional raw DLL entrypoint callback.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_crt_raw_dll_main",
+      "section": ".data",
+      "section_offset": 43972,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "void *"
+    },
+    {
+      "address": 268819400,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Visual C++ 6 CRT end pointer for the dynamically allocated on-exit table.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_crt_onexit_end",
+      "section": ".data",
+      "section_offset": 43976,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "void *"
+    },
+    {
+      "address": 268819404,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Visual C++ 6 CRT begin pointer for the dynamically allocated on-exit table.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_crt_onexit_begin",
+      "section": ".data",
+      "section_offset": 43980,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "void *"
     },
     {
       "address": 268819408,
@@ -9349,7 +9482,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "d9aae90302622ef5649e6e5fe1eec6e4c7dafde4b1f6553248c25f0de4d593d4",
+    "data_map_sha256": "ac32fe51e6a4472077bef7d5136d20c1b0eb767d4060b406b4e03ae67dc840d4",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55",
     "reference_image": {
@@ -9365,7 +9498,7 @@
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 395,
+    "entry_count": 402,
     "explicit_alignment_entries": 349,
     "explicit_initializer_entries": 349,
     "explicit_size_entries": 349,
@@ -9378,13 +9511,13 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 245,
+      ".data": 252,
       ".data1": 6,
       ".rdata": 144
     },
-    "source_entry_count": 398,
-    "typed_entries": 345,
-    "unique_addresses": 395,
+    "source_entry_count": 405,
+    "typed_entries": 352,
+    "unique_addresses": 402,
     "untyped_entries": 50
   }
 }

@@ -11061,6 +11061,20 @@
       "type": "const size_t[2]"
     },
     {
+      "address": "0x10053000",
+      "comment": "Visual C++ 6 CRT C-initializer range start sentinel used by _initterm.",
+      "name": "grim_crt_xc_a",
+      "program": "grim.dll",
+      "type": "void *"
+    },
+    {
+      "address": "0x10053034",
+      "comment": "Visual C++ 6 CRT C-initializer range end sentinel used by _initterm.",
+      "name": "grim_crt_xc_z",
+      "program": "grim.dll",
+      "type": "void *"
+    },
+    {
       "address": "0x10053044",
       "comment": "Base key-repeat delay used by grim_was_key_pressed (held repeat uses 20% of this value).",
       "name": "grim_key_repeat_delay",
@@ -12504,6 +12518,13 @@
       "type": "float"
     },
     {
+      "address": "0x1005db5c",
+      "comment": "Visual C++ 6 CRT process-attach reference count used by the DLL startup path.",
+      "name": "grim_crt_proc_attached",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
       "address": "0x1005db68",
       "comment": "Four-byte DirectX 8.1 x87 control-word slot used by the cd3dxblt linear-filter helper.",
       "name": "fpu_control_word_saved_blt",
@@ -13719,6 +13740,34 @@
       "name": "d3dx_jpeg_mmx_zero",
       "program": "grim.dll",
       "type": "unsigned char[8]"
+    },
+    {
+      "address": "0x1005dbc0",
+      "comment": "Visual C++ 6 CRT floating-point divide adjustment state copied from the runtime import.",
+      "name": "grim_crt_adjust_fdiv",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005dbc4",
+      "comment": "Visual C++ 6 CRT optional raw DLL entrypoint callback.",
+      "name": "grim_crt_raw_dll_main",
+      "program": "grim.dll",
+      "type": "void *"
+    },
+    {
+      "address": "0x1005dbc8",
+      "comment": "Visual C++ 6 CRT end pointer for the dynamically allocated on-exit table.",
+      "name": "grim_crt_onexit_end",
+      "program": "grim.dll",
+      "type": "void *"
+    },
+    {
+      "address": "0x1005dbcc",
+      "comment": "Visual C++ 6 CRT begin pointer for the dynamically allocated on-exit table.",
+      "name": "grim_crt_onexit_begin",
+      "program": "grim.dll",
+      "type": "void *"
     },
     {
       "address": "0x1005dbd0",
