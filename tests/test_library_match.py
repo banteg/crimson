@@ -303,6 +303,16 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert len(addend_bindings) == 1
     assert addend_bindings[0].target_address == 0x00401000
     assert addend_bindings[0].addends == (4,)
+    addend_writes = write_archive_scratch_configs(
+        addend_report,
+        match_root=tmp_path / "generated-addend-inferred",
+        expected_sha256=addend_report.archive_sha256,
+        note_prefix="test-archive",
+        infer_reference_aliases=True,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+    )
+    assert addend_writes[0].reference_aliases == (("_probe", "native_probe"),)
 
     symbol_unique_writes = write_archive_scratch_configs(
         symbol_unique_report,

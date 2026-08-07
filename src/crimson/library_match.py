@@ -581,7 +581,7 @@ def infer_archive_reference_aliases(
     metadata_path: Path,
     include_symbol_unique: bool = False,
 ) -> dict[int, tuple[tuple[str, str], ...]]:
-    """Infer conservative object-to-image aliases from exact aligned references."""
+    """Infer conservative object-to-image aliases from exact normalized references."""
     evidence, catalog = _archive_reference_evidence(
         report,
         functions_path=functions_path,
@@ -597,8 +597,6 @@ def infer_archive_reference_aliases(
         inferred: dict[str, tuple[str, int, str]] = {}
         conflicted: set[str] = set()
         for item in by_match.get(archive_match.address, ()):
-            if item.addend != 0:
-                continue
             target_names = tuple(
                 name
                 for name in catalog.names_by_address.get(item.target_address, ())
@@ -633,7 +631,7 @@ def infer_archive_reference_bindings(
     metadata_path: Path,
     include_symbol_unique: bool = False,
 ) -> tuple[ArchiveReferenceBinding, ...]:
-    """Report stable zero-addend archive symbols bound to one image address."""
+    """Report stable addend-normalized archive symbols bound to one image address."""
     evidence, catalog = _archive_reference_evidence(
         report,
         functions_path=functions_path,

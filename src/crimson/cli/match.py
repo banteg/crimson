@@ -416,7 +416,7 @@ def cmd_match_archive(
     write_reference_aliases: bool = typer.Option(
         False,
         "--write-reference-aliases",
-        help="add aliases only for aligned zero-addend references to known image symbols",
+        help="add aliases for stable addend-normalized references to known image symbols",
     ),
     scratch_note_prefix: str = typer.Option(
         "archive",
