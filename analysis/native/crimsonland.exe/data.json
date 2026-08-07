@@ -1,5 +1,5 @@
 {
-  "audit_digest": "551216607cb7ad8b79c7f4578da7267e902a134c983235b77baf4c139d1de655",
+  "audit_digest": "fdec7dbd6abd530d52a238673be700fe19554fbadc29e00c447f0e7a30b11380",
   "entries": [
     {
       "address": 4211888,
@@ -278,6 +278,94 @@
       "type": "GUID"
     },
     {
+      "address": 4651488,
+      "aliases": [
+        "$T318"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table occupying ehvecctr.obj's complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff00000000eb194600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_ehvec_ctor_scope_table",
+      "section": ".rdata",
+      "section_offset": 1992,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": 4651504,
+      "aliases": [
+        "$T16547"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table for the vector destructor, occupying its complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff000000006b1a4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_ehvec_dtor_scope_table",
+      "section": ".rdata",
+      "section_offset": 2008,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": 4651520,
+      "aliases": [
+        "$T16560"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table for array unwind, occupying ehvecdtr.obj's complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffffbf1a4600c91a4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_array_unwind_scope_table",
+      "section": ".rdata",
+      "section_offset": 2024,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": 4651624,
+      "aliases": [
+        "$T17734"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table occupying wincrt0.obj's complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff0f31460023314600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_start_scope_table",
+      "section": ".rdata",
+      "section_offset": 2128,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
       "address": 4651736,
       "aliases": [
         "___lookuptable"
@@ -298,6 +386,226 @@
       "size": 92,
       "size_source": "analysis/ghidra/maps/data_map.json: VC6 output lookup-table extent through the adjacent wide null-string literal; tools/native/abi/crimsonland.exe/abi_assertions.cpp: uchar_array_92_is_0x5c",
       "type": "unsigned char[92]"
+    },
+    {
+      "address": 4651928,
+      "aliases": [
+        "$T16793"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying hooks.obj's complete 0x18-byte terminate .rdata section.",
+      "definition_group": "literal-compiler-rdata-00018",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff00000000a45f460000000000905f4600945f4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_terminate_scope_table",
+      "section": ".rdata",
+      "section_offset": 2432,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 24,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x18-byte .rdata section",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": 4651952,
+      "aliases": [
+        "$T16811"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying hooks.obj's complete 0x18-byte inconsistency-handler .rdata section.",
+      "definition_group": "literal-compiler-rdata-00018",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff00000000fa5f460000000000e65f4600ea5f4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_inconsistency_scope_table",
+      "section": ".rdata",
+      "section_offset": 2456,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 24,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x18-byte .rdata section",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": 4651976,
+      "aliases": [
+        "??_C@_13A@?$AA?$AA?$AA?$AA@"
+      ],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "Four-NUL VC6 COMDAT string literal shared by the narrow wrappers around Windows locale APIs.",
+      "definition_group": "literal-compiler-string-00004",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at the merged COMDAT VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_four_nul_literal",
+      "section": ".rdata",
+      "section_offset": 2480,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "libcmt.lib a_cmp.obj, a_map.obj, and a_str.obj: ??_C@_13A@?$AA?$AA?$AA?$AA@ occupies its complete four-byte COMDAT .rdata section",
+      "type": "char[4]"
+    },
+    {
+      "address": 4651984,
+      "aliases": [
+        "$T17629"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying a_map.obj's complete 0x18-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-00018",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffffe1654600e5654600ffffffff9566460099664600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_lcmap_string_scope_table",
+      "section": ".rdata",
+      "section_offset": 2488,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 24,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x18-byte .rdata section",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": 4653008,
+      "aliases": [
+        "$T17333"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table for FrameUnwindToState, occupying frame.obj's complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffffb7994600c1994600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_frame_unwind_scope_table",
+      "section": ".rdata",
+      "section_offset": 3512,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": 4653024,
+      "aliases": [
+        "$T17354"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local two-entry SEH scope table for CallCatchBlock, occupying frame.obj's complete 0x18-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-00018",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff00000000309b4600000000000e9b4600189b4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_call_catch_block_scope_table",
+      "section": ".rdata",
+      "section_offset": 3528,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 24,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x18-byte .rdata section",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": 4653048,
+      "aliases": [
+        "$T17369"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table for BuildCatchObject, occupying frame.obj's complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff669d46006a9d4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_build_catch_object_scope_table",
+      "section": ".rdata",
+      "section_offset": 3552,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": 4653064,
+      "aliases": [
+        "$T17381"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table for _DestructExceptionObject, occupying frame.obj's complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffffc89d4600d19d4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_destruct_exception_scope_table",
+      "section": ".rdata",
+      "section_offset": 3568,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": 4653080,
+      "aliases": [
+        "$T17610"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local SEH scope table occupying a_str.obj's complete 0x0c-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffffc7a94600cba94600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_get_string_type_a_scope_table",
+      "section": ".rdata",
+      "section_offset": 3584,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": 4653496,
+      "aliases": [
+        "$T17643"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying a_cmp.obj's complete 0x18-byte .rdata section.",
+      "definition_group": "literal-compiler-rdata-00018",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff26e546002ae54600ffffffff95e5460099e54600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_compare_string_a_scope_table",
+      "section": ".rdata",
+      "section_offset": 4000,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 24,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x18-byte .rdata section",
+      "type": "unsigned char[24]"
     },
     {
       "address": 4657152,
@@ -24880,6 +25188,28 @@
       "type": "char"
     },
     {
+      "address": 4895144,
+      "aliases": [
+        "??_C@_01A@?$AA?$AA@"
+      ],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "Two-NUL VC6 COMDAT string literal shared by the narrow wrappers around Windows locale APIs.",
+      "definition_group": "literal-compiler-string-00002",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at the merged COMDAT VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_two_nul_literal",
+      "section": ".data",
+      "section_offset": 237992,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 2,
+      "size_source": "libcmt.lib a_cmp.obj, a_map.obj, and a_str.obj: ??_C@_01A@?$AA?$AA@ occupies its complete two-byte COMDAT .rdata section",
+      "type": "char[2]"
+    },
+    {
       "address": 4895152,
       "aliases": [],
       "alignment": 4,
@@ -35123,9 +35453,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "4ae1568df43be6541264768fd08598104d9bacca8256ac96a26dcd63dea68729",
+    "data_map_sha256": "e7a6926337a2e983c20373e3b308f3c3c15bb33599f02f4ae554615ee2785310",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "01fa0b9925a4a61bf464a6b656d0cc33a60e790128a90fbdbe012fa3ede01f28",
+    "definitions_sha256": "5e4bdaf2e14c661f695106b8ca85d28f61f33e54b497225e3be880793ec85d2a",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -35134,17 +35464,17 @@
     "segments_sha256": "65e2a4e6a7d63516ac68264a83f3d001d2476b750d982afe1fbc72d25eae9b44"
   },
   "summary": {
-    "alias_names": 153,
-    "alias_rows": 153,
+    "alias_names": 168,
+    "alias_rows": 168,
     "code_label_entries": 6,
-    "definition_group_entries": 1576,
-    "definition_groups": 166,
-    "entry_count": 1666,
-    "explicit_alignment_entries": 1666,
-    "explicit_initializer_entries": 1666,
-    "explicit_size_entries": 1666,
-    "fixed_array_types": 303,
-    "fully_specified_entries": 1666,
+    "definition_group_entries": 1591,
+    "definition_groups": 170,
+    "entry_count": 1681,
+    "explicit_alignment_entries": 1681,
+    "explicit_initializer_entries": 1681,
+    "explicit_size_entries": 1681,
+    "fixed_array_types": 318,
+    "fully_specified_entries": 1681,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 5,
@@ -35152,13 +35482,13 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 1660,
-      ".rdata": 5,
+      ".data": 1661,
+      ".rdata": 19,
       ".text": 1
     },
-    "source_entry_count": 1672,
-    "typed_entries": 1666,
-    "unique_addresses": 1662,
+    "source_entry_count": 1687,
+    "typed_entries": 1681,
+    "unique_addresses": 1677,
     "untyped_entries": 0
   }
 }

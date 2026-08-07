@@ -2477,17 +2477,17 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1672
+    assert payload["summary"]["source_entry_count"] == 1687
     assert payload["summary"]["code_label_entries"] == 6
-    assert payload["summary"]["entry_count"] == 1666
-    assert payload["summary"]["typed_entries"] == 1666
+    assert payload["summary"]["entry_count"] == 1681
+    assert payload["summary"]["typed_entries"] == 1681
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1666
-    assert payload["summary"]["explicit_alignment_entries"] == 1666
-    assert payload["summary"]["explicit_initializer_entries"] == 1666
-    assert payload["summary"]["fully_specified_entries"] == 1666
-    assert payload["summary"]["definition_group_entries"] == 1576
-    assert payload["summary"]["definition_groups"] == 166
+    assert payload["summary"]["explicit_size_entries"] == 1681
+    assert payload["summary"]["explicit_alignment_entries"] == 1681
+    assert payload["summary"]["explicit_initializer_entries"] == 1681
+    assert payload["summary"]["fully_specified_entries"] == 1681
+    assert payload["summary"]["definition_group_entries"] == 1591
+    assert payload["summary"]["definition_groups"] == 170
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2618,6 +2618,16 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["crt_file_mode"]["definition_group"] == (
         "mapped-bss-zero-int32"
     )
+    assert defined["crt_ehvec_ctor_scope_table"]["size"] == 0x0C
+    assert defined["crt_start_scope_table"]["initializer_hex"] == (
+        "ffffffff0f31460023314600"
+    )
+    assert defined["crt_call_catch_block_scope_table"]["size"] == 0x18
+    assert defined["crt_compare_string_a_scope_table"]["definition_group"] == (
+        "literal-compiler-rdata-00018"
+    )
+    assert defined["crt_four_nul_literal"]["initializer_hex"] == "00000000"
+    assert defined["crt_two_nul_literal"]["initializer_hex"] == "0000"
     assert defined["crt_windows_minor"]["definition_group"] == (
         "mapped-bss-zero-uint32"
     )

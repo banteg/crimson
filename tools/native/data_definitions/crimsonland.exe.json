@@ -89,6 +89,135 @@
       ]
     },
     {
+      "name": "literal-compiler-rdata-0000c",
+      "types": [
+        "unsigned char[12]"
+      ],
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "members": [
+        [
+          "0x0046f9e0",
+          "crt_ehvec_ctor_scope_table",
+          "ffffffff00000000eb194600"
+        ],
+        [
+          "0x0046f9f0",
+          "crt_ehvec_dtor_scope_table",
+          "ffffffff000000006b1a4600"
+        ],
+        [
+          "0x0046fa00",
+          "crt_array_unwind_scope_table",
+          "ffffffffbf1a4600c91a4600"
+        ],
+        [
+          "0x0046fa68",
+          "crt_start_scope_table",
+          "ffffffff0f31460023314600"
+        ],
+        [
+          "0x0046ffd0",
+          "crt_frame_unwind_scope_table",
+          "ffffffffb7994600c1994600"
+        ],
+        [
+          "0x0046fff8",
+          "crt_build_catch_object_scope_table",
+          "ffffffff669d46006a9d4600"
+        ],
+        [
+          "0x00470008",
+          "crt_destruct_exception_scope_table",
+          "ffffffffc89d4600d19d4600"
+        ],
+        [
+          "0x00470018",
+          "crt_get_string_type_a_scope_table",
+          "ffffffffc7a94600cba94600"
+        ]
+      ]
+    },
+    {
+      "name": "literal-compiler-rdata-00018",
+      "types": [
+        "unsigned char[24]"
+      ],
+      "size": 24,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x18-byte .rdata section",
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "members": [
+        [
+          "0x0046fb98",
+          "crt_terminate_scope_table",
+          "ffffffff00000000a45f460000000000905f4600945f4600"
+        ],
+        [
+          "0x0046fbb0",
+          "crt_inconsistency_scope_table",
+          "ffffffff00000000fa5f460000000000e65f4600ea5f4600"
+        ],
+        [
+          "0x0046fbd0",
+          "crt_lcmap_string_scope_table",
+          "ffffffffe1654600e5654600ffffffff9566460099664600"
+        ],
+        [
+          "0x0046ffe0",
+          "crt_call_catch_block_scope_table",
+          "ffffffff00000000309b4600000000000e9b4600189b4600"
+        ],
+        [
+          "0x004701b8",
+          "crt_compare_string_a_scope_table",
+          "ffffffff26e546002ae54600ffffffff95e5460099e54600"
+        ]
+      ]
+    },
+    {
+      "name": "literal-compiler-string-00004",
+      "types": [
+        "char[4]"
+      ],
+      "size": 4,
+      "size_source": "libcmt.lib a_cmp.obj, a_map.obj, and a_str.obj: ??_C@_13A@?$AA?$AA?$AA?$AA@ occupies its complete four-byte COMDAT .rdata section",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at the merged COMDAT VA",
+      "members": [
+        [
+          "0x0046fbc8",
+          "crt_four_nul_literal"
+        ]
+      ]
+    },
+    {
+      "name": "literal-compiler-string-00002",
+      "types": [
+        "char[2]"
+      ],
+      "size": 2,
+      "size_source": "libcmt.lib a_cmp.obj, a_map.obj, and a_str.obj: ??_C@_01A@?$AA?$AA@ occupies its complete two-byte COMDAT .rdata section",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_hex": "0000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at the merged COMDAT VA",
+      "members": [
+        [
+          "0x004ab1a8",
+          "crt_two_nul_literal"
+        ]
+      ]
+    },
+    {
       "name": "literal-pointer-array-000c0",
       "types": [
         "void *[48]"

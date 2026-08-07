@@ -72,6 +72,46 @@
       "type": "GUID"
     },
     {
+      "address": "0x0046f9e0",
+      "aliases": [
+        "$T318"
+      ],
+      "comment": "VC6 compiler-local SEH scope table occupying ehvecctr.obj's complete 0x0c-byte .rdata section.",
+      "name": "crt_ehvec_ctor_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x0046f9f0",
+      "aliases": [
+        "$T16547"
+      ],
+      "comment": "VC6 compiler-local SEH scope table for the vector destructor, occupying its complete 0x0c-byte .rdata section.",
+      "name": "crt_ehvec_dtor_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x0046fa00",
+      "aliases": [
+        "$T16560"
+      ],
+      "comment": "VC6 compiler-local SEH scope table for array unwind, occupying ehvecdtr.obj's complete 0x0c-byte .rdata section.",
+      "name": "crt_array_unwind_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x0046fa68",
+      "aliases": [
+        "$T17734"
+      ],
+      "comment": "VC6 compiler-local SEH scope table occupying wincrt0.obj's complete 0x0c-byte .rdata section.",
+      "name": "crt_start_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
       "address": "0x0046fad8",
       "aliases": [
         "___lookuptable"
@@ -80,6 +120,106 @@
       "name": "crt_output_lookup_table",
       "program": "crimsonland.exe",
       "type": "unsigned char[92]"
+    },
+    {
+      "address": "0x0046fb98",
+      "aliases": [
+        "$T16793"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying hooks.obj's complete 0x18-byte terminate .rdata section.",
+      "name": "crt_terminate_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0046fbb0",
+      "aliases": [
+        "$T16811"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying hooks.obj's complete 0x18-byte inconsistency-handler .rdata section.",
+      "name": "crt_inconsistency_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0046fbc8",
+      "aliases": [
+        "??_C@_13A@?$AA?$AA?$AA?$AA@"
+      ],
+      "comment": "Four-NUL VC6 COMDAT string literal shared by the narrow wrappers around Windows locale APIs.",
+      "name": "crt_four_nul_literal",
+      "program": "crimsonland.exe",
+      "type": "char[4]"
+    },
+    {
+      "address": "0x0046fbd0",
+      "aliases": [
+        "$T17629"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying a_map.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_lcmap_string_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0046ffd0",
+      "aliases": [
+        "$T17333"
+      ],
+      "comment": "VC6 compiler-local SEH scope table for FrameUnwindToState, occupying frame.obj's complete 0x0c-byte .rdata section.",
+      "name": "crt_frame_unwind_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x0046ffe0",
+      "aliases": [
+        "$T17354"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table for CallCatchBlock, occupying frame.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_call_catch_block_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0046fff8",
+      "aliases": [
+        "$T17369"
+      ],
+      "comment": "VC6 compiler-local SEH scope table for BuildCatchObject, occupying frame.obj's complete 0x0c-byte .rdata section.",
+      "name": "crt_build_catch_object_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x00470008",
+      "aliases": [
+        "$T17381"
+      ],
+      "comment": "VC6 compiler-local SEH scope table for _DestructExceptionObject, occupying frame.obj's complete 0x0c-byte .rdata section.",
+      "name": "crt_destruct_exception_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x00470018",
+      "aliases": [
+        "$T17610"
+      ],
+      "comment": "VC6 compiler-local SEH scope table occupying a_str.obj's complete 0x0c-byte .rdata section.",
+      "name": "crt_get_string_type_a_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x004701b8",
+      "aliases": [
+        "$T17643"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying a_cmp.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_compare_string_a_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
     },
     {
       "address": "0x00471000",
@@ -8502,6 +8642,16 @@
       "name": "startup_loading_fade_complete",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x004ab1a8",
+      "aliases": [
+        "??_C@_01A@?$AA?$AA@"
+      ],
+      "comment": "Two-NUL VC6 COMDAT string literal shared by the narrow wrappers around Windows locale APIs.",
+      "name": "crt_two_nul_literal",
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004ab1b0",
