@@ -33,6 +33,7 @@ ANALYZER_PLACEHOLDER_RE = re.compile(
     r"nullsub_[0-9]+|j_(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|nullsub_[0-9]+))$",
     re.IGNORECASE,
 )
+ANALYZER_ADDRESS_NAME_RE = re.compile(r"^(?:j_)?(?:FUN_|sub_)([0-9a-f]+)$", re.IGNORECASE)
 MATCH_SCOPE_SCHEMA = 2
 MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset(
     {
@@ -3174,6 +3175,7 @@ class NamingDebtRow:
     issues: tuple[str, ...]
     placeholder_aliases: tuple[str, ...]
     placeholder_references: tuple[str, ...]
+    reference_suggestions: tuple[tuple[str, str, str], ...]
     provider_symbol: str | None
     provider_member: str | None
     suggestion: str | None
@@ -4973,6 +4975,20 @@ def collect_naming_debt(
         id(status): _status_canonical_name(status, name_rows)
         for status in exact_statuses
     }
+    raw_name_addresses: dict[str, dict[str, tuple[int, ...]]] = {}
+    for image in {status.config.image for status in exact_statuses}:
+        functions_path = default_functions_path(image)
+        addresses: dict[str, list[int]] = defaultdict(list)
+        if functions_path.exists():
+            for entry in json.loads(functions_path.read_text(encoding="utf-8")):
+                name = str(entry.get("name", ""))
+                address = parse_int(entry["address"])
+                if name and address not in addresses[name.casefold()]:
+                    addresses[name.casefold()].append(address)
+        raw_name_addresses[image] = {
+            name: tuple(values)
+            for name, values in addresses.items()
+        }
     provider_peers: dict[tuple[str, str], list[ScratchStatus]] = defaultdict(list)
     for status in exact_statuses:
         key = _archive_provider_key(status)
@@ -4994,6 +5010,25 @@ def collect_naming_debt(
             for _, target in status.config.reference_aliases
             if is_analyzer_placeholder(target)
         )
+        reference_suggestions: list[tuple[str, str, str]] = []
+        for object_symbol, target in status.config.reference_aliases:
+            if not is_analyzer_placeholder(target):
+                continue
+            address_match = ANALYZER_ADDRESS_NAME_RE.fullmatch(target)
+            candidate_addresses = (
+                (int(address_match.group(1), 16),)
+                if address_match is not None
+                else raw_name_addresses.get(status.config.image, {}).get(target.casefold(), ())
+            )
+            if len(candidate_addresses) != 1:
+                continue
+            target_row = name_rows.get((status.config.image, candidate_addresses[0]))
+            if target_row is None or bool(target_row.get("exclude")):
+                continue
+            target_name = str(target_row["name"])
+            if is_analyzer_placeholder(target_name) or target_name.casefold() == target.casefold():
+                continue
+            reference_suggestions.append((object_symbol, target, target_name))
         issues: list[str] = []
         if is_analyzer_placeholder(canonical) or is_analyzer_placeholder(status.config.function):
             issues.append("placeholder-function")
@@ -5069,6 +5104,7 @@ def collect_naming_debt(
                 issues=tuple(issues),
                 placeholder_aliases=placeholder_aliases,
                 placeholder_references=placeholder_references,
+                reference_suggestions=tuple(reference_suggestions),
                 provider_symbol=status.config.symbol,
                 provider_member=status.config.archive_member,
                 suggestion=suggestion,
@@ -5340,6 +5376,76 @@ def apply_naming_suggestions(
     }
 
 
+def rewrite_placeholder_references(
+    rows: Collection[NamingDebtRow],
+    *,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+) -> dict[str, Any]:
+    """Replace unambiguous analyzer targets with canonical mapped identities."""
+
+    replacements_by_image: dict[str, dict[str, tuple[str, str]]] = defaultdict(dict)
+    for row in rows:
+        image_replacements = replacements_by_image[row.image]
+        for _, old_target, canonical_target in row.reference_suggestions:
+            key = old_target.casefold()
+            existing = image_replacements.get(key)
+            if existing is not None and existing[1] != canonical_target:
+                raise ValueError(
+                    f"ambiguous reference rename for {row.image} {old_target!r}: "
+                    f"{existing[1]!r} vs {canonical_target!r}",
+                )
+            image_replacements[key] = (old_target, canonical_target)
+
+    scratch_root = (match_root / "scratches").resolve()
+    if not scratch_root.is_dir():
+        raise ValueError(f"missing scratch root: {scratch_root}")
+
+    configs_updated = 0
+    references_updated = 0
+    updated_files: list[str] = []
+    for config_path in sorted(scratch_root.glob("*/scratch.conf")):
+        config = load_scratch_config(config_path.parent)
+        image_replacements = replacements_by_image.get(config.image, {})
+        if not image_replacements or not config.reference_aliases:
+            continue
+        rewritten_aliases: list[tuple[str, str]] = []
+        config_reference_updates = 0
+        for object_symbol, target_symbol in config.reference_aliases:
+            replacement = image_replacements.get(target_symbol.casefold())
+            if replacement is None:
+                rewritten_aliases.append((object_symbol, target_symbol))
+                continue
+            rewritten_aliases.append((object_symbol, replacement[1]))
+            config_reference_updates += replacement[1] != target_symbol
+        if not config_reference_updates:
+            continue
+        original = config_path.read_text(encoding="utf-8")
+        encoded = ",".join(f"{source}:{target}" for source, target in rewritten_aliases)
+        updated = _replace_config_assignment(original, "REFERENCE_ALIASES", encoded)
+        config_path.write_text(updated, encoding="utf-8")
+        configs_updated += 1
+        references_updated += config_reference_updates
+        try:
+            updated_files.append(config_path.relative_to(REPO_ROOT).as_posix())
+        except ValueError:
+            updated_files.append(config_path.as_posix())
+
+    return {
+        "configs_updated": configs_updated,
+        "references_updated": references_updated,
+        "mappings": [
+            {
+                "image": image,
+                "from": old_target,
+                "to": canonical_target,
+            }
+            for image, replacements in sorted(replacements_by_image.items())
+            for old_target, canonical_target in sorted(replacements.values())
+        ],
+        "updated_files": updated_files,
+    }
+
+
 def prune_placeholder_aliases(
     rows: Collection[NamingDebtRow],
     *,
@@ -5396,6 +5502,14 @@ def naming_debt_payload(row: NamingDebtRow) -> dict[str, Any]:
         "issues": list(row.issues),
         "placeholder_aliases": list(row.placeholder_aliases),
         "placeholder_references": list(row.placeholder_references),
+        "reference_suggestions": [
+            {
+                "object_symbol": object_symbol,
+                "from": old_target,
+                "to": canonical_target,
+            }
+            for object_symbol, old_target, canonical_target in row.reference_suggestions
+        ],
         "provider_symbol": row.provider_symbol,
         "provider_member": row.provider_member,
         "suggestion": row.suggestion,

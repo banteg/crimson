@@ -605,6 +605,7 @@ uv run crimson match naming-audit --suggested-only --image crimsonland.exe
 uv run crimson match naming-audit --provider-member d3dxmath.obj --apply-suggestions
 uv run crimson match naming-audit --provider-member d3dxmathsse.obj,d3dxmathsse2.obj --apply-suggestions
 uv run crimson match naming-audit --provider-member d3dxmath.obj --prune-placeholder-aliases
+uv run crimson match naming-audit --rewrite-placeholder-references
 uv run crimson match naming-audit --json --check
 ```
 
@@ -626,6 +627,10 @@ analyzer aliases and gives a renamed scratch an image prefix when the canonical
 directory is already occupied by the cross-image provider peer.
 `--prune-placeholder-aliases` removes only the generated aliases reported on
 the selected exact rows; decorated provider and linkage aliases are retained.
+`--rewrite-placeholder-references` replaces an analyzer target only when its
+encoded address or unique raw identity resolves to one non-placeholder name in
+the curated map. It updates every scratch for that image which uses the audited
+target while leaving decorated object/linkage symbols untouched.
 
 ## No Fakematching
 

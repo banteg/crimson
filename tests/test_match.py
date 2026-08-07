@@ -100,6 +100,7 @@ from crimson.match import (
     render_triage_rows,
     resolve_function,
     resolve_function_with_scope_hint,
+    rewrite_placeholder_references,
     run_match,
     sort_profile_statuses,
     sort_triage_rows,
@@ -2717,6 +2718,77 @@ def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tm
                 "to": (scratches / "public_provider").as_posix(),
             },
         ],
+    }
+
+
+def test_rewrite_placeholder_references_uses_unique_canonical_map_name(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    consumer = match_root / "scratches" / "consumer"
+    consumer.mkdir(parents=True)
+    consumer.joinpath("scratch.conf").write_text(
+        "IMAGE=crimsonland.exe\n"
+        "FUNCTION=consumer\n"
+        "REFERENCE_ALIASES=_target:FUN_00401000,_provider:?KnownTarget@@YAXXZ\n"
+        "NOTE=exact-consumer\n",
+        encoding="utf-8",
+    )
+    status = ScratchStatus(
+        config=load_scratch_config(consumer),
+        address=0x00402000,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": "known_target",
+                },
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00402000",
+                    "name": "consumer",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    row = collect_naming_debt([status], name_map_path=name_map)[0]
+
+    assert row.reference_suggestions == (("_target", "FUN_00401000", "known_target"),)
+    assert naming_debt_payload(row)["reference_suggestions"] == [
+        {
+            "object_symbol": "_target",
+            "from": "FUN_00401000",
+            "to": "known_target",
+        },
+    ]
+
+    result = rewrite_placeholder_references([row], match_root=match_root)
+
+    assert load_scratch_config(consumer).reference_aliases == (
+        ("_target", "known_target"),
+        ("_provider", "?KnownTarget@@YAXXZ"),
+    )
+    assert result == {
+        "configs_updated": 1,
+        "references_updated": 1,
+        "mappings": [
+            {
+                "image": "crimsonland.exe",
+                "from": "FUN_00401000",
+                "to": "known_target",
+            },
+        ],
+        "updated_files": [consumer.joinpath("scratch.conf").as_posix()],
     }
 
 

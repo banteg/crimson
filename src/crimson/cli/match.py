@@ -954,6 +954,11 @@ def cmd_match_naming_audit(
         "--prune-placeholder-aliases",
         help="remove audited analyzer aliases from selected exact name-map rows",
     ),
+    rewrite_references: bool = typer.Option(
+        False,
+        "--rewrite-placeholder-references",
+        help="replace unambiguous analyzer reference targets with canonical map names",
+    ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
     summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate naming debt only"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
@@ -985,11 +990,27 @@ def cmd_match_naming_audit(
         and (not suggested_only or row.suggestion is not None)
     ]
     selected_rows = rows
-    if apply_suggestions and prune_aliases:
+    if sum((apply_suggestions, prune_aliases, rewrite_references)) > 1:
         raise typer.BadParameter(
-            "choose either --apply-suggestions or --prune-placeholder-aliases",
+            "choose only one naming-audit mutation option",
             param_hint="--apply-suggestions",
         )
+    if rewrite_references:
+        if suggested_only or limit is not None or summary_only or check:
+            raise typer.BadParameter(
+                "reference rewriting cannot be combined with suggestion, limit, summary, or check filters",
+                param_hint="--rewrite-placeholder-references",
+            )
+        result = matchlib.rewrite_placeholder_references(selected_rows, match_root=match_root)
+        if as_json:
+            typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        else:
+            typer.echo(
+                f"configs_updated={result['configs_updated']} "
+                f"references_updated={result['references_updated']} "
+                f"mappings={len(result['mappings'])}",
+            )
+        return
     if prune_aliases:
         if suggested_only or limit is not None or summary_only or check:
             raise typer.BadParameter(
