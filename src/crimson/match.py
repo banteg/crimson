@@ -86,6 +86,7 @@ BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
 ADDRESS_REFERENCE_KEY_RE = re.compile(r"^address:0x([0-9a-fA-F]+)$")
 LOCAL_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"\r\n]+)"', re.MULTILINE)
 VC6_SINGLE_DELETE_UNWIND_KEY = "compiler:vc6-cxx-frame-handler:single-delete-unwind"
+VC6_UNWIND_ONLY_KEY = "compiler:vc6-cxx-frame-handler:unwind-only"
 VC6_LOCAL_JUMP_TABLE_KEY = "compiler:vc6-local-jump-table"
 VC6_LOCAL_SWITCH_PARTITION_KEY = "compiler:vc6-local-switch-partition"
 VC6_PROVEN_COPY_LOAD_KEY = "compiler:vc6-proven-copy-load"
@@ -1303,6 +1304,95 @@ def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> s
     return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
 
 
+def _vc6_frame_slot_key(displacement: int) -> str:
+    signed = displacement if displacement < 0x80 else displacement - 0x100
+    operator = "+" if signed >= 0 else "-"
+    return f"ebp{operator}0x{abs(signed):02x}"
+
+
+def _coff_vc6_unwind_only_key(
+    obj: CoffObject,
+    function: CoffSymbol,
+    function_end: int,
+    symbol: CoffSymbol,
+) -> str | None:
+    """Recognize a one-state VC6 base-destructor cleanup graph.
+
+    The compiler-local handler address is not a selectable function symbol.
+    Accept it only when the complete graph is present and its cleanup tail
+    reaches the same external destructor referenced by the protected function.
+    """
+
+    if not symbol.name.startswith("$L") or symbol.section_number <= 0:
+        return None
+    handler_section = obj.sections[symbol.section_number - 1]
+    handler = handler_section.data[symbol.value : symbol.value + 10]
+    if len(handler) != 10 or handler[:1] != b"\xb8" or handler[5:6] != b"\xe9":
+        return None
+    if handler[1:5] != b"\x00" * 4 or handler[6:10] != b"\x00" * 4:
+        return None
+
+    func_info_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 1)
+    frame_handler_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 6)
+    if (
+        func_info_symbol is None
+        or func_info_symbol.section_number <= 0
+        or frame_handler_symbol is None
+        or _symbol_lookup_name(frame_handler_symbol.name) != "CxxFrameHandler"
+    ):
+        return None
+
+    func_info_section = obj.sections[func_info_symbol.section_number - 1]
+    base = func_info_symbol.value
+    # VC6 consumes 28 bytes here. Do not inspect the following contribution:
+    # the linker is free to place an unrelated unwind-map entry immediately
+    # after this FuncInfo record.
+    func_info = func_info_section.data[base : base + 28]
+    if len(func_info) != 28 or struct.unpack_from("<II", func_info) != (0x19930520, 1):
+        return None
+    if func_info[8:12] != b"\x00" * 4 or func_info[12:28] != b"\x00" * 16:
+        return None
+
+    unwind_map_symbol = _coff_relocation_symbol(obj, func_info_section, base + 8)
+    if unwind_map_symbol is None or unwind_map_symbol.section_number <= 0:
+        return None
+    unwind_map_section = obj.sections[unwind_map_symbol.section_number - 1]
+    unwind_base = unwind_map_symbol.value
+    unwind_entry = unwind_map_section.data[unwind_base : unwind_base + 8]
+    if len(unwind_entry) != 8 or struct.unpack_from("<i", unwind_entry)[0] != -1:
+        return None
+    if unwind_entry[4:8] != b"\x00" * 4:
+        return None
+
+    cleanup_symbol = _coff_relocation_symbol(obj, unwind_map_section, unwind_base + 4)
+    if cleanup_symbol is None or cleanup_symbol.section_number <= 0:
+        return None
+    cleanup_section = obj.sections[cleanup_symbol.section_number - 1]
+    cleanup = cleanup_section.data[cleanup_symbol.value : cleanup_symbol.value + 8]
+    if len(cleanup) != 8 or cleanup[:2] != bytes.fromhex("8b4d"):
+        return None
+    if cleanup[3:4] != b"\xe9" or cleanup[4:8] != b"\x00" * 4:
+        return None
+
+    cleanup_target = _coff_relocation_symbol(obj, cleanup_section, cleanup_symbol.value + 4)
+    if (
+        cleanup_target is None
+        or cleanup_target.storage_class != IMAGE_SYM_CLASS_EXTERNAL
+        or cleanup_target.symbol_type & SYM_TYPE_FUNCTION == 0
+        or not cleanup_target.name.startswith("??1")
+        or function.section_number <= 0
+    ):
+        return None
+    function_section = obj.sections[function.section_number - 1]
+    if not any(
+        function.value <= relocation.virtual_address < function_end
+        and relocation.symbol_index == cleanup_target.raw_index
+        for relocation in function_section.relocations
+    ):
+        return None
+    return f"{VC6_UNWIND_ONLY_KEY}:ecx=[{_vc6_frame_slot_key(cleanup[2])}]"
+
+
 def _local_jump_table_key(offsets: list[int]) -> str | None:
     if len(offsets) < 2:
         return None
@@ -1655,7 +1745,13 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
         addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
         key, explained = _object_reference_key(symbol, addend)
         alternate_keys: tuple[str, ...] = ()
-        if compiler_key := _coff_vc6_single_delete_unwind_key(obj, symbol):
+        compiler_key = _coff_vc6_unwind_only_key(
+            obj,
+            target,
+            end,
+            symbol,
+        ) or _coff_vc6_single_delete_unwind_key(obj, symbol)
+        if compiler_key:
             key = compiler_key
             explained = True
         elif switch_partition_key := switch_partition_keys.get((symbol.raw_index, addend)):
@@ -1788,6 +1884,47 @@ def _image_vc6_single_delete_unwind_key(
     return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
 
 
+def _image_vc6_unwind_only_key(
+    image: LoadedImage | None,
+    reference_catalog: ReferenceCatalog | None,
+    address: int,
+    direct_branch_targets: Collection[int],
+) -> str | None:
+    if image is None or reference_catalog is None:
+        return None
+    handler = _image_bytes(image, address, 10)
+    if handler is None or handler[:1] != b"\xb8" or handler[5:6] != b"\xe9":
+        return None
+
+    func_info_address = struct.unpack_from("<I", handler, 1)[0]
+    frame_handler_address = address + 10 + struct.unpack_from("<i", handler, 6)[0]
+    if not any(
+        _symbol_lookup_name(name) == "CxxFrameHandler"
+        for name in reference_catalog.names_by_address.get(frame_handler_address, ())
+    ):
+        return None
+
+    func_info = _image_bytes(image, func_info_address, 28)
+    if func_info is None or struct.unpack_from("<II", func_info) != (0x19930520, 1):
+        return None
+    if func_info[12:28] != b"\x00" * 16:
+        return None
+
+    unwind_map_address = struct.unpack_from("<I", func_info, 8)[0]
+    unwind_entry = _image_bytes(image, unwind_map_address, 8)
+    if unwind_entry is None or struct.unpack_from("<i", unwind_entry)[0] != -1:
+        return None
+    cleanup_address = struct.unpack_from("<I", unwind_entry, 4)[0]
+    cleanup = _image_bytes(image, cleanup_address, 8)
+    if cleanup is None or cleanup[:2] != bytes.fromhex("8b4d") or cleanup[3:4] != b"\xe9":
+        return None
+
+    cleanup_target = cleanup_address + 8 + struct.unpack_from("<i", cleanup, 4)[0]
+    if cleanup_target not in direct_branch_targets:
+        return None
+    return f"{VC6_UNWIND_ONLY_KEY}:ecx=[{_vc6_frame_slot_key(cleanup[2])}]"
+
+
 def _format_memory_operand(insn, operand, masked_disp: bool) -> str:
     mem = operand.mem
     parts: list[str] = []
@@ -1823,6 +1960,18 @@ def disassemble_normalized_function(
     relocation_offsets = relocation_offsets or frozenset()
     relocation_by_offset = {reference.offset: reference for reference in relocation_references}
     size = len(data)
+    direct_branch_targets = (
+        frozenset(
+            int(operand.imm)
+            for instruction in md.disasm(data, base_address)
+            if capstone.CS_GRP_JUMP in instruction.groups
+            or capstone.CS_GRP_CALL in instruction.groups
+            for operand in instruction.operands
+            if operand.type == capstone.x86.X86_OP_IMM
+        )
+        if image is not None and reference_catalog is not None
+        else frozenset()
+    )
 
     def is_masked_value(value: int) -> bool:
         return address_range is not None and address_range[0] <= value < address_range[1]
@@ -1899,6 +2048,13 @@ def disassemble_normalized_function(
                 keys.append(string_key)
             if byte_count is not None and (raw := _image_bytes(image, value, byte_count)) is not None:
                 keys.append(f"bytes{byte_count}:{raw.hex()}")
+        if compiler_key := _image_vc6_unwind_only_key(
+            image,
+            reference_catalog,
+            value,
+            direct_branch_targets,
+        ):
+            keys.append(compiler_key)
         if compiler_key := _image_vc6_single_delete_unwind_key(image, reference_catalog, value):
             keys.append(compiler_key)
         if jump_table_key := _image_local_jump_table_key(

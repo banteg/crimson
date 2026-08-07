@@ -577,8 +577,10 @@ reference audit.
 VC6 exception-chain references against the absolute `__except_list` symbol are
 resolved to the linked `fs:[0]` operand. Compiler-local frame-handler labels are
 accepted only when the matcher proves the full handler graph: thunk to
-`__CxxFrameHandler`, FuncInfo fields, unwind-map entry, cleanup funclet stack
-offset, and call to scalar `operator delete`.
+`__CxxFrameHandler`, the 28-byte VC6 FuncInfo fields, unwind-map entry, and
+cleanup funclet. Recognized cleanup shapes either call scalar `operator delete`
+or tail-jump to the same base destructor directly referenced by the protected
+function. The unwind-map record may be linked before or after FuncInfo.
 
 Compiler-local sparse switches are audited by mapping each byte lookup entry
 through its companion absolute jump table and comparing the resulting

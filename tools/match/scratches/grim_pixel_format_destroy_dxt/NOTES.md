@@ -12,10 +12,11 @@ before the base vertex-space converter destructor runs.
 
 MSVC 6.5 with `/O1 /G6 /W3 /GR- /GX /MD` reproduces the native 49-instruction
 control-flow graph and reaches 75.51% similarity with a 14-instruction exact
-prefix. Six relocations are resolved. The remaining unresolved relocation is
-the compiler-generated local exception-handler label; it is not exposed as a
-selectable COFF function symbol and is therefore not assigned a fabricated
-alias.
+prefix. All seven relocations are resolved. The compiler-generated local
+exception-handler label is proven structurally from its complete VC6 graph:
+the handler thunk, 28-byte FuncInfo, one-state unwind map, `ebp-0x14` cleanup
+funclet, and tail jump to the same base destructor called by the protected
+function. No fabricated alias is required.
 
 The byte-level delta is confined to loop allocation and one inner-loop
 precheck. Native assigns the outer counter to `ebx` and the row cursor to
@@ -29,5 +30,5 @@ cursor types, explicit `register`, and natural guard/lifetime rewrites also do
 not recover the native allocation.
 
 No inline assembly, volatile state, dummy dependency, or fake relocation is
-retained. The source is classified `semantic-complete` with `compiler` and
-`references` residuals.
+retained. The source is classified `semantic-complete` with a `compiler`
+residual.

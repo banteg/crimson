@@ -18,6 +18,7 @@ from crimson.match import (
     VC6_LOCAL_SWITCH_PARTITION_KEY,
     VC6_PROVEN_COPY_LOAD_KEY,
     VC6_SINGLE_DELETE_UNWIND_KEY,
+    VC6_UNWIND_ONLY_KEY,
     WORKER_CLAIM_KIND,
     WORKER_OUTCOME_FILE,
     WORKER_OUTCOME_KIND,
@@ -43,7 +44,9 @@ from crimson.match import (
     TriageRow,
     _coff_local_jump_table_key,
     _coff_vc6_single_delete_unwind_key,
+    _coff_vc6_unwind_only_key,
     _exception_summary,
+    _image_vc6_unwind_only_key,
     _local_switch_partition_key,
     _region_hints,
     _scratch_build_key,
@@ -1349,6 +1352,125 @@ def test_match_function_audits_complete_vc6_delete_unwind_graph() -> None:
 
     assert result.exact
     assert result.masked_operand_audit.ok_count == 1
+
+
+def _build_vc6_unwind_only_object() -> CoffObject:
+    function = bytes.fromhex("b800000000e800000000c3")
+    cleanup = bytes.fromhex("8b4dece900000000")
+    handler = bytes.fromhex("b800000000e900000000")
+    func_info = struct.pack("<II", 0x19930520, 1) + b"\x00" * 24
+    unwind_entry = struct.pack("<iI", -1, 0)
+    return CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=function,
+                characteristics=0x20,
+                relocations=(
+                    CoffRelocation(1, 2, 6),
+                    CoffRelocation(6, 6, 20),
+                ),
+            ),
+            CoffSection(
+                name=".text$x",
+                data=cleanup + handler,
+                characteristics=0x20,
+                relocations=(
+                    CoffRelocation(4, 6, 20),
+                    CoffRelocation(9, 3, 6),
+                    CoffRelocation(14, 5, 20),
+                ),
+            ),
+            CoffSection(
+                name=".xdata$x",
+                data=func_info + unwind_entry,
+                characteristics=0,
+                relocations=(
+                    CoffRelocation(8, 4, 6),
+                    CoffRelocation(36, 1, 6),
+                ),
+            ),
+        ),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "$Lcleanup", 0, 2, 0, 6),
+            CoffSymbol(2, "$Lhandler", 8, 2, 0, 6),
+            CoffSymbol(3, "$Tinfo", 0, 3, 0, 3),
+            CoffSymbol(4, "$Tunwind", 32, 3, 0, 3),
+            CoffSymbol(5, "___CxxFrameHandler", 0, 0, 0x20, 2),
+            CoffSymbol(6, "??1base@@UAE@XZ", 0, 0, 0x20, 2),
+        ),
+    )
+
+
+def test_match_function_audits_complete_vc6_unwind_only_graph() -> None:
+    image_base = 0x400000
+    handler_address = 0x400100
+    unwind_map_address = 0x400180
+    func_info_address = 0x400200
+    cleanup_address = 0x400300
+    frame_handler_address = 0x400400
+    base_destructor_address = 0x400500
+    mapped = bytearray(0x1000)
+
+    handler = b"\xb8" + struct.pack("<I", func_info_address)
+    handler += b"\xe9" + struct.pack("<i", frame_handler_address - (handler_address + 10))
+    mapped[0x100:0x10A] = handler
+    func_info = struct.pack("<II", 0x19930520, 1)
+    func_info += struct.pack("<I", unwind_map_address) + b"\x00" * 20
+    mapped[0x200:0x220] = func_info
+    mapped[0x180:0x188] = struct.pack("<iI", -1, cleanup_address)
+    cleanup = bytes.fromhex("8b4dece9")
+    cleanup += struct.pack("<i", base_destructor_address - (cleanup_address + 8))
+    mapped[0x300:0x308] = cleanup
+
+    function = b"\xb8" + struct.pack("<I", handler_address)
+    function += b"\xe8" + struct.pack("<i", base_destructor_address - (image_base + 10)) + b"\xc3"
+    catalog = ReferenceCatalog(
+        {
+            frame_handler_address: ("__CxxFrameHandler",),
+            base_destructor_address: ("base_destroy",),
+        },
+    ).with_object_aliases((("??1base@@UAE@XZ", "base_destroy"),))
+
+    loaded_image = LoadedImage(bytes(mapped), image_base, len(mapped))
+    key = f"{VC6_UNWIND_ONLY_KEY}:ecx=[ebp-0x14]"
+    assert _image_vc6_unwind_only_key(
+        loaded_image,
+        catalog,
+        handler_address,
+        {base_destructor_address},
+    ) == key
+    assert _image_vc6_unwind_only_key(loaded_image, catalog, handler_address, set()) is None
+
+    result = match_function(
+        function,
+        extract_object_function(_build_vc6_unwind_only_object(), "_probe"),
+        image=loaded_image,
+        target_va=image_base,
+        reference_catalog=catalog,
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 2
+
+
+def test_recognizes_complete_vc6_unwind_only_graph_in_coff() -> None:
+    obj = _build_vc6_unwind_only_object()
+    key = f"{VC6_UNWIND_ONLY_KEY}:ecx=[ebp-0x14]"
+
+    assert _coff_vc6_unwind_only_key(obj, obj.symbols[0], 11, obj.symbols[2]) == key
+
+    missing_direct_cleanup = replace(
+        obj,
+        sections=(replace(obj.sections[0], relocations=obj.sections[0].relocations[:1]), *obj.sections[1:]),
+    )
+    assert _coff_vc6_unwind_only_key(
+        missing_direct_cleanup,
+        missing_direct_cleanup.symbols[0],
+        11,
+        missing_direct_cleanup.symbols[2],
+    ) is None
 
 
 def test_recognizes_complete_vc6_delete_unwind_graph_in_coff() -> None:
