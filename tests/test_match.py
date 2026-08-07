@@ -574,7 +574,8 @@ def test_matching_workspace_stays_inside_port_scope() -> None:
 
 def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
     (tmp_path / "scratch.conf").write_text(
-        "FUNCTION=foo RECOVERY=semantic-complete RESIDUAL=compiler,references\n",
+        "FUNCTION=foo RECOVERY=semantic-complete RESIDUAL=compiler,references "
+        "AUTO_INLINE_OFF=select_colors,create_index\n",
         encoding="utf-8",
     )
 
@@ -582,6 +583,17 @@ def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
 
     assert config.recovery == "semantic-complete"
     assert config.residuals == ("compiler", "references")
+    assert config.auto_inline_off == ("select_colors", "create_index")
+
+
+def test_scratch_config_rejects_invalid_auto_inline_identifier(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=foo AUTO_INLINE_OFF='valid,bad-name'\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="invalid AUTO_INLINE_OFF identifiers 'bad-name'"):
+        load_scratch_config(tmp_path)
 
 
 def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
@@ -609,6 +621,11 @@ def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
             "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
             + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo SOURCE=foo.c",
             "cannot combine ARCHIVE and SOURCE",
+        ),
+        (
+            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo AUTO_INLINE_OFF=foo",
+            "cannot combine ARCHIVE and AUTO_INLINE_OFF",
         ),
     ),
 )
@@ -2692,6 +2709,62 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert len(commands) == 3
     assert Path(commands[0][0]).is_absolute()
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
+
+
+def test_compile_scratch_stages_auto_inline_boundaries(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    match_root = tmp_path / "match"
+    scratch = tmp_path / "scratch"
+    compiler = match_root / "compilers" / "msvc6.5" / "Bin"
+    scratch.mkdir()
+    compiler.mkdir(parents=True)
+    source = scratch / "scratch.c"
+    original = (
+        "#define LOCAL(type) static type\n"
+        "LOCAL(void)\n"
+        "helper(void)\n"
+        "/* a comment with { braces } */\n"
+        "{\n"
+        "  const char *brace = \"}\";\n"
+        "}\n"
+    )
+    source.write_text(original, encoding="utf-8")
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=helper SOURCE=scratch.c AUTO_INLINE_OFF=helper\n",
+        encoding="utf-8",
+    )
+    (match_root / "cl.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+    (compiler / "CL.EXE").write_bytes(b"compiler")
+    config = load_scratch_config(scratch)
+    staged_sources: list[str] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        cwd = Path(str(kwargs["cwd"]))
+        staged_sources.append((cwd / "scratch.c").read_text(encoding="utf-8"))
+        (cwd / "scratch.obj").write_bytes(b"object")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    obj = compile_scratch(config, match_root)
+
+    assert obj.read_bytes() == b"object"
+    assert source.read_text(encoding="utf-8") == original
+    assert staged_sources == [
+        original.replace(
+            "LOCAL(void)\nhelper(void)\n/* a comment with { braces } */\n{\n"
+            "  const char *brace = \"}\";\n}\n",
+            "#pragma auto_inline(off)\n"
+            "LOCAL(void)\nhelper(void)\n/* a comment with { braces } */\n{\n"
+            "  const char *brace = \"}\";\n}\n"
+            "#pragma auto_inline(on)\n",
+        ),
+    ]
+
+    with pytest.raises(ValueError, match="AUTO_INLINE_OFF=missing.*found 0"):
+        compile_scratch(replace(config, auto_inline_off=("missing",)), match_root)
 
 
 def test_compile_scratch_extracts_hash_pinned_archive_member(tmp_path: Path) -> None:

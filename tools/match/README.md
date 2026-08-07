@@ -190,6 +190,7 @@ SYMBOL=probe
 END=0x00401156
 COMPILER=msvc6.5
 CFLAGS="/O2 /GB /W3 /GR-"
+AUTO_INLINE_OFF=select_ncolors,create_colorindex
 REFERENCE_ALIASES='$E2:widget_idle_color_destroy,$E3:widget_hover_color_destroy'
 RECOVERY=semantic-complete
 RESIDUAL=compiler
@@ -219,6 +220,13 @@ names are reused across translation units. Each comma-separated
 `object-symbol:image-symbol` pair scopes that candidate symbol to one uniquely
 named native address; normal masked-reference auditing still compares the
 resolved address.
+
+`AUTO_INLINE_OFF` is a comma-separated list of line-leading function names.
+For source scratches, the compiler staging step wraps each named definition in
+MSVC `auto_inline(off)` / `auto_inline(on)` pragmas without changing the
+canonical source file. Use it only when native disassembly proves that a helper
+survived as a call while neighboring helpers from the same translation unit
+were inlined. Archive scratches cannot use this setting.
 
 `RECOVERY` can be `incomplete` or `semantic-complete`. Use the latter when the
 port behavior is understood even though byte identity is blocked.

@@ -2668,6 +2668,7 @@ SCRATCH_CONFIG_KEYS = frozenset(
         "ARCHIVE",
         "ARCHIVE_MEMBER",
         "ARCHIVE_SHA256",
+        "AUTO_INLINE_OFF",
         "CFLAGS",
         "COMPILER",
         "END",
@@ -2700,6 +2701,7 @@ class ScratchConfig:
     archive: str | None = None
     archive_member: str | None = None
     archive_sha256: str | None = None
+    auto_inline_off: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -2875,6 +2877,24 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         unknown = ", ".join(sorted(unknown_residuals))
         raise ValueError(f"{directory}/scratch.conf has invalid RESIDUAL values {unknown}; use {allowed}")
 
+    auto_inline_off = tuple(
+        dict.fromkeys(
+            value.strip()
+            for value in values.get("AUTO_INLINE_OFF", "").split(",")
+            if value.strip()
+        ),
+    )
+    invalid_auto_inline = [
+        value
+        for value in auto_inline_off
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", value) is None
+    ]
+    if invalid_auto_inline:
+        invalid = ", ".join(repr(value) for value in invalid_auto_inline)
+        raise ValueError(
+            f"{directory}/scratch.conf has invalid AUTO_INLINE_OFF identifiers {invalid}",
+        )
+
     archive = values.get("ARCHIVE")
     archive_member = values.get("ARCHIVE_MEMBER")
     archive_sha256 = values.get("ARCHIVE_SHA256")
@@ -2888,6 +2908,10 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             joined = ", ".join(unexpected)
             raise ValueError(f"{directory}/scratch.conf sets {joined} without ARCHIVE")
     else:
+        if auto_inline_off:
+            raise ValueError(
+                f"{directory}/scratch.conf cannot combine ARCHIVE and AUTO_INLINE_OFF",
+            )
         missing = [
             key
             for key in ("ARCHIVE_MEMBER", "ARCHIVE_SHA256", "SYMBOL")
@@ -2917,6 +2941,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         archive=archive,
         archive_member=archive_member,
         archive_sha256=archive_sha256.lower() if archive_sha256 is not None else None,
+        auto_inline_off=auto_inline_off,
     )
 
 
@@ -2927,13 +2952,119 @@ FORBIDDEN_SOURCE_PATTERNS = (
 )
 
 
-def validate_scratch_source(source: Path) -> None:
-    text = source.read_text(encoding="latin1")
+def _validate_scratch_source_text(text: str, source: Path) -> None:
     for pattern in FORBIDDEN_SOURCE_PATTERNS:
         if pattern.search(text):
             raise ValueError(
                 f"{source}: inline assembly/naked functions are not allowed in scratches (no fakematching)",
             )
+
+
+def validate_scratch_source(source: Path) -> None:
+    _validate_scratch_source_text(source.read_text(encoding="latin1"), source)
+
+
+def _matching_c_delimiter(text: str, start: int, opening: str, closing: str) -> int:
+    if start >= len(text) or text[start] != opening:
+        raise ValueError(f"expected {opening!r} at source offset {start}")
+    depth = 0
+    index = start
+    while index < len(text):
+        char = text[index]
+        if text.startswith("//", index):
+            newline = text.find("\n", index + 2)
+            index = len(text) if newline < 0 else newline + 1
+            continue
+        if text.startswith("/*", index):
+            end = text.find("*/", index + 2)
+            if end < 0:
+                raise ValueError("unterminated block comment in scratch source")
+            index = end + 2
+            continue
+        if char in {'"', "'"}:
+            quote = char
+            index += 1
+            while index < len(text):
+                if text[index] == "\\":
+                    index += 2
+                    continue
+                if text[index] == quote:
+                    index += 1
+                    break
+                index += 1
+            else:
+                raise ValueError("unterminated string or character literal in scratch source")
+            continue
+        if char == opening:
+            depth += 1
+        elif char == closing:
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    raise ValueError(f"unmatched {opening!r} in scratch source")
+
+
+def _skip_c_trivia(text: str, start: int) -> int:
+    index = start
+    while index < len(text):
+        if text[index].isspace():
+            index += 1
+            continue
+        if text.startswith("//", index):
+            newline = text.find("\n", index + 2)
+            index = len(text) if newline < 0 else newline + 1
+            continue
+        if text.startswith("/*", index):
+            end = text.find("*/", index + 2)
+            if end < 0:
+                raise ValueError("unterminated block comment in scratch source")
+            index = end + 2
+            continue
+        break
+    return index
+
+
+def _apply_auto_inline_boundaries(
+    source_text: str,
+    symbols: Collection[str],
+    *,
+    source: Path,
+) -> str:
+    insertions: list[tuple[int, str]] = []
+    for symbol in symbols:
+        pattern = re.compile(rf"(?m)^(?P<indent>[ \t]*){re.escape(symbol)}[ \t]*\(")
+        definitions: list[tuple[re.Match[str], int]] = []
+        for match in pattern.finditer(source_text):
+            opening = source_text.find("(", match.start(), match.end())
+            signature_end = _matching_c_delimiter(source_text, opening, "(", ")")
+            body_start = _skip_c_trivia(source_text, signature_end + 1)
+            if body_start < len(source_text) and source_text[body_start] == "{":
+                definitions.append((match, body_start))
+        if len(definitions) != 1:
+            raise ValueError(
+                f"{source}: AUTO_INLINE_OFF={symbol} must identify exactly one "
+                f"line-leading function definition, found {len(definitions)}",
+            )
+        match, body_start = definitions[0]
+        body_end = _matching_c_delimiter(source_text, body_start, "{", "}")
+        declaration_start = match.start()
+        if declaration_start > 0:
+            previous_end = declaration_start - 1
+            previous_start = source_text.rfind("\n", 0, previous_end) + 1
+            previous_line = source_text[previous_start:previous_end].strip()
+            if re.fullmatch(r"(?:LOCAL|METHODDEF|GLOBAL)\s*\([^\n)]*\)", previous_line):
+                declaration_start = previous_start
+        insertions.extend(
+            (
+                (declaration_start, "#pragma auto_inline(off)\n"),
+                (body_end + 1, "\n#pragma auto_inline(on)"),
+            ),
+        )
+    transformed = source_text
+    for offset, replacement in sorted(insertions, reverse=True):
+        transformed = transformed[:offset] + replacement + transformed[offset:]
+    return transformed
 
 
 def _scratch_archive_path(config: ScratchConfig) -> Path:
@@ -3077,6 +3208,7 @@ def _scratch_build_key(
     return {
         "compiler": config.compiler,
         "argv": list(_scratch_compile_argv(config, match_root)),
+        "auto_inline_off": list(config.auto_inline_off),
         "dependencies": [
             [str(path.relative_to(match_root) if path.is_relative_to(match_root) else path), _mtime_ns(path)]
             for path in dependencies
@@ -3100,6 +3232,7 @@ def _scratch_profile_digest(config: ScratchConfig) -> str:
             "compiler": config.compiler,
             "cflags": shlex.split(config.cflags),
             "source": config.source,
+            "auto_inline_off": list(config.auto_inline_off),
             "image": config.image,
             "function": config.function,
             "end_va": config.end_va,
@@ -3215,7 +3348,15 @@ def validate_scratch_config(config: ScratchConfig) -> None:
     if config.archive is not None:
         _archive_scratch_object_bytes(config)
         return
-    validate_scratch_source(config.directory / config.source)
+    source = config.directory / config.source
+    validate_scratch_source(source)
+    if config.auto_inline_off:
+        transformed = _apply_auto_inline_boundaries(
+            source.read_bytes().decode("latin1"),
+            config.auto_inline_off,
+            source=source,
+        )
+        _validate_scratch_source_text(transformed, source)
 
 
 def _scratch_object_is_current(
@@ -3246,7 +3387,6 @@ def compile_scratch(
     include_resolver: _ScratchIncludeResolver | None = None,
     force: bool = False,
 ) -> Path:
-    import shutil
     import subprocess
     import tempfile
 
@@ -3273,6 +3413,12 @@ def compile_scratch(
 
     source = config.directory / config.source
     validate_scratch_source(source)
+    staged_source_text = _apply_auto_inline_boundaries(
+        source.read_bytes().decode("latin1"),
+        config.auto_inline_off,
+        source=source,
+    )
+    _validate_scratch_source_text(staged_source_text, source)
     build_dir = _scratch_build_directory(config)
     obj_name = Path(config.source).with_suffix(".obj").name
     obj_path = build_dir / obj_name
@@ -3290,7 +3436,7 @@ def compile_scratch(
         temp_dir = Path(temp_name)
         temp_source = temp_dir / Path(config.source).name
         temp_obj = temp_dir / obj_name
-        shutil.copyfile(source, temp_source)
+        temp_source.write_bytes(staged_source_text.encode("latin1"))
         completed = subprocess.run(
             command,
             cwd=temp_dir,
