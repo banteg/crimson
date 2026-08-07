@@ -1629,6 +1629,16 @@
       "type": "int"
     },
     {
+      "address": "0x0047b1a8",
+      "aliases": [
+        "__cfltcvt_tab"
+      ],
+      "comment": "VC6 floating-conversion dispatch table; six aligned function-pointer slots bound by normalized libcmt addends.",
+      "name": "crt_cfltcvt_table",
+      "program": "crimsonland.exe",
+      "type": "void *[6]"
+    },
+    {
       "address": "0x0047b1c0",
       "comment": "CRT ctype lookup table pointer (used by crt_isctype).",
       "name": "crt_ctype_table",
@@ -1654,6 +1664,16 @@
       "name": "crt_decimal_point",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x0047b3d8",
+      "aliases": [
+        "__iob"
+      ],
+      "comment": "VC6 static stdio table: twenty contiguous 32-byte FILE records, bound through normalized libcmt member addends.",
+      "name": "crt_iob",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[640]"
     },
     {
       "address": "0x0047b6f0",
@@ -1791,6 +1811,56 @@
       "name": "crt_dst_bias",
       "program": "crimsonland.exe",
       "type": "long"
+    },
+    {
+      "address": "0x0047defc",
+      "aliases": [
+        "__tzname"
+      ],
+      "comment": "VC6 standard/daylight timezone-name pointer pair, bound through normalized libcmt addends.",
+      "name": "crt_tz_names",
+      "program": "crimsonland.exe",
+      "type": "char *[2]"
+    },
+    {
+      "address": "0x0047df08",
+      "aliases": [
+        "_dststart"
+      ],
+      "comment": "VC6 cached daylight-saving start rule as three 32-bit fields.",
+      "name": "crt_dst_start_rule",
+      "program": "crimsonland.exe",
+      "type": "int[3]"
+    },
+    {
+      "address": "0x0047df18",
+      "aliases": [
+        "_dstend"
+      ],
+      "comment": "VC6 cached daylight-saving end rule as three 32-bit fields.",
+      "name": "crt_dst_end_rule",
+      "program": "crimsonland.exe",
+      "type": "int[3]"
+    },
+    {
+      "address": "0x0047df24",
+      "aliases": [
+        "__lpdays"
+      ],
+      "comment": "VC6 cumulative month-day offsets for leap years, including the -1 sentinel.",
+      "name": "crt_leap_year_days",
+      "program": "crimsonland.exe",
+      "type": "int[13]"
+    },
+    {
+      "address": "0x0047df58",
+      "aliases": [
+        "__days"
+      ],
+      "comment": "VC6 cumulative month-day offsets for common years, including the -1 sentinel.",
+      "name": "crt_month_days",
+      "program": "crimsonland.exe",
+      "type": "int[13]"
     },
     {
       "address": "0x0047e088",
@@ -11209,6 +11279,16 @@
       "name": "crt_timezone_api_used",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d9b98",
+      "aliases": [
+        "_tzinfo"
+      ],
+      "comment": "VC6 zero-initialized timezone cache aggregate; exact 0xac-byte extent ends at crt_last_timezone_state.",
+      "name": "crt_timezone_info",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[172]"
     },
     {
       "address": "0x004d9c44",

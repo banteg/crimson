@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "c8a521b26932bdc1797b7f50b1a3204b24b710af335ec08275184c033cda9542"
+        "sha256": "d7289ec280433e35b82c02cefd16847bf1d583a7c18e6558ab5bddc9e6d67a1b"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/422fc44399cda4f9/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "c8a521b26932bdc1797b7f50b1a3204b24b710af335ec08275184c033cda9542",
+    "source_sha256": "d7289ec280433e35b82c02cefd16847bf1d583a7c18e6558ab5bddc9e6d67a1b",
     "status": "passed"
   },
-  "audit_digest": "1c8946f7956019d38d8f9d3cd016dc246cda18304dbb682e6d4dd802f8d64a70",
+  "audit_digest": "91689b50b2a31145897a6735d8d3836da09a1fb9840b7192624caff173702b8b",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "052632aaf418f3c8d037899c78658553db6c749d4c42f59aed528e1882ceefd9"
+        "sha256": "28842a228845bc90db1e007a204cf1329435867f9cf64165dda7a6be48ff5681"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -88055,7 +88055,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "052632aaf418f3c8d037899c78658553db6c749d4c42f59aed528e1882ceefd9"
+        "sha256": "28842a228845bc90db1e007a204cf1329435867f9cf64165dda7a6be48ff5681"
       }
     ],
     "toolchain": {

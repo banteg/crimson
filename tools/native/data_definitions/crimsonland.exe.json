@@ -102,6 +102,111 @@
       ]
     },
     {
+      "name": "literal-pointer-array-00018",
+      "types": [
+        "void *[6]"
+      ],
+      "size": 24,
+      "size_source": "analysis/ghidra/maps/data_map.json: six-slot VC6 floating-conversion dispatch table; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_array_6_is_0x18",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        [
+          "0x0047b1a8",
+          "crt_cfltcvt_table",
+          "c5a84600c5a84600c5a84600c5a84600c5a84600c5a84600"
+        ]
+      ]
+    },
+    {
+      "name": "literal-uchar-array-00280",
+      "types": [
+        "unsigned char[640]"
+      ],
+      "size": 640,
+      "size_source": "analysis/ghidra/maps/data_map.json: twenty contiguous 32-byte VC6 FILE records; tools/native/abi/crimsonland.exe/abi_assertions.cpp: uchar_array_640_is_0x280",
+      "alignment": 4,
+      "alignment_source": "VC6 FILE records contain aligned 32-bit fields and the table starts on a four-byte boundary",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        [
+          "0x0047b3d8",
+          "crt_iob",
+          "e0a44d0000000000e0a44d0001010000000000000000000000100000000000000000000000000000000000000200000001000000000000000000000000000000000000000000000000000000020000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        ]
+      ]
+    },
+    {
+      "name": "literal-char-pointer-array-00008",
+      "types": [
+        "char *[2]"
+      ],
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: standard/daylight timezone-name pointer pair; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_array_2_is_0x08",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        [
+          "0x0047defc",
+          "crt_tz_names",
+          "7cde4700bcde4700"
+        ]
+      ]
+    },
+    {
+      "name": "literal-int-array-0000c",
+      "types": [
+        "int[3]"
+      ],
+      "size": 12,
+      "size_source": "analysis/ghidra/maps/data_map.json: three-field VC6 daylight-saving rule; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_array_3_is_0x0c",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        [
+          "0x0047df08",
+          "crt_dst_start_rule",
+          "ffffffff0000000000000000"
+        ],
+        [
+          "0x0047df18",
+          "crt_dst_end_rule",
+          "ffffffff0000000000000000"
+        ]
+      ]
+    },
+    {
+      "name": "literal-int-array-00034",
+      "types": [
+        "int[13]"
+      ],
+      "size": 52,
+      "size_source": "analysis/ghidra/maps/data_map.json: sentinel plus twelve cumulative month offsets; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_array_13_is_0x34",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
+      "member_initializer_hex": true,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "members": [
+        [
+          "0x0047df24",
+          "crt_leap_year_days",
+          "ffffffff1e0000003b0000005a0000007800000097000000b5000000d4000000f300000011010000300100004e0100006d010000"
+        ],
+        [
+          "0x0047df58",
+          "crt_month_days",
+          "ffffffff1e0000003a000000590000007700000096000000b4000000d3000000f2000000100100002f0100004d0100006c010000"
+        ]
+      ]
+    },
+    {
       "name": "literal-uchar-array-00084",
       "types": ["unsigned char[132]"],
       "size": 132,
@@ -3001,6 +3106,19 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
       "members": [
         ["0x004da280", "crt_mb_ctype"]
+      ]
+    },
+    {
+      "name": "mapped-bss-zero-uchar-array-000ac",
+      "types": ["unsigned char[172]"],
+      "size": 172,
+      "size_source": "analysis/ghidra/maps/data_map.json: exact VC6 timezone-cache extent through crt_last_timezone_state; tools/native/abi/crimsonland.exe/abi_assertions.cpp: uchar_array_172_is_0xac",
+      "alignment": 4,
+      "alignment_source": "VC6 timezone cache consists of aligned 32-bit fields and starts on a four-byte boundary",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "members": [
+        ["0x004d9b98", "crt_timezone_info"]
       ]
     },
     {

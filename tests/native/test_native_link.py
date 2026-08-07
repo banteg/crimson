@@ -2477,17 +2477,17 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1624
+    assert payload["summary"]["source_entry_count"] == 1632
     assert payload["summary"]["code_label_entries"] == 6
-    assert payload["summary"]["entry_count"] == 1618
-    assert payload["summary"]["typed_entries"] == 1618
+    assert payload["summary"]["entry_count"] == 1626
+    assert payload["summary"]["typed_entries"] == 1626
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1618
-    assert payload["summary"]["explicit_alignment_entries"] == 1618
-    assert payload["summary"]["explicit_initializer_entries"] == 1618
-    assert payload["summary"]["fully_specified_entries"] == 1618
-    assert payload["summary"]["definition_group_entries"] == 1528
-    assert payload["summary"]["definition_groups"] == 140
+    assert payload["summary"]["explicit_size_entries"] == 1626
+    assert payload["summary"]["explicit_alignment_entries"] == 1626
+    assert payload["summary"]["explicit_initializer_entries"] == 1626
+    assert payload["summary"]["fully_specified_entries"] == 1626
+    assert payload["summary"]["definition_group_entries"] == 1536
+    assert payload["summary"]["definition_groups"] == 146
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2586,8 +2586,16 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["renderer_dispatch_table"]["size"] == 57 * 4
     assert defined["vec2_normalize_impl"]["initializer_hex"] == "1d2f4500"
     assert defined["renderer_dispatch_defaults"]["size"] == 57 * 4
+    assert defined["crt_cfltcvt_table"]["size"] == 6 * 4
+    assert defined["crt_iob"]["size"] == 20 * 32
     assert defined["crt_ctype_table"]["initializer_hex"] == "cab14700"
     assert defined["crt_dosmaperr_table"]["size"] == 45 * 8
+    assert defined["crt_tz_names"]["initializer_hex"] == "7cde4700bcde4700"
+    assert defined["crt_dst_start_rule"]["size"] == 3 * 4
+    assert defined["crt_dst_end_rule"]["size"] == 3 * 4
+    assert defined["crt_leap_year_days"]["size"] == 13 * 4
+    assert defined["crt_month_days"]["size"] == 13 * 4
+    assert defined["crt_timezone_info"]["initializer_fill"] == "00"
     assert defined["ui_perk_prompt_on_activate"]["definition_group"] == (
         "zero-pointer32"
     )

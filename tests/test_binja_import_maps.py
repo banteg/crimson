@@ -572,12 +572,20 @@ def test_data_map_preserves_recovered_crt_and_weapon_alias_types():
     }
 
     expected = {
+        "0x0047b1a8": ("crt_cfltcvt_table", "void *[6]"),
         "0x0047b1c0": ("crt_ctype_table", "unsigned short *"),
+        "0x0047b3d8": ("crt_iob", "unsigned char[640]"),
         "0x0047b7c0": (
             "crt_dosmaperr_table",
             "crt_dosmaperr_entry_t[45]",
         ),
+        "0x0047defc": ("crt_tz_names", "char *[2]"),
+        "0x0047df08": ("crt_dst_start_rule", "int[3]"),
+        "0x0047df18": ("crt_dst_end_rule", "int[3]"),
+        "0x0047df24": ("crt_leap_year_days", "int[13]"),
+        "0x0047df58": ("crt_month_days", "int[13]"),
         "0x004d7a90": ("weapon_hud_icon_id", "int"),
+        "0x004d9b98": ("crt_timezone_info", "unsigned char[172]"),
         "0x004da3a8": ("crt_heap_mode", "int"),
         "0x004db4f0": ("crt_onexit_table_end", "crt_onexit_fn_t *"),
         "0x004db4f4": ("crt_onexit_table_begin", "crt_onexit_fn_t *"),

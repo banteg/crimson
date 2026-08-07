@@ -84,6 +84,12 @@ struct crimson_u16_alignment_probe_t {
 
 CRIMSON_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 CRIMSON_ABI_ASSERT(
+    pointer_array_2_is_0x08,
+    sizeof(char *[2]) == 0x08);
+CRIMSON_ABI_ASSERT(
+    pointer_array_6_is_0x18,
+    sizeof(void *[6]) == 0x18);
+CRIMSON_ABI_ASSERT(
     pointer_array_9_is_0x24,
     sizeof(char *[9]) == 0x24);
 CRIMSON_ABI_ASSERT(
@@ -96,6 +102,12 @@ CRIMSON_ABI_ASSERT(
     pointer_array_57_is_0xe4,
     sizeof(void *[57]) == 0xe4);
 CRIMSON_ABI_ASSERT(char_array_128_is_0x80, sizeof(char[128]) == 0x80);
+CRIMSON_ABI_ASSERT(
+    uchar_array_172_is_0xac,
+    sizeof(unsigned char[172]) == 0xac);
+CRIMSON_ABI_ASSERT(
+    uchar_array_640_is_0x280,
+    sizeof(unsigned char[640]) == 0x280);
 CRIMSON_ABI_ASSERT(
     highscore_line_buffers_are_0x668,
     sizeof(char[10][164]) == 0x668);
@@ -171,6 +183,7 @@ CRIMSON_ABI_ASSERT(vec2_array_64_is_0x200, sizeof(vec2f_t[64]) == 0x200);
 CRIMSON_ABI_ASSERT(float_array_64_is_0x100, sizeof(float[64]) == 0x100);
 CRIMSON_ABI_ASSERT(int_array_3_is_0x0c, sizeof(int[3]) == 0x0c);
 CRIMSON_ABI_ASSERT(int_array_4_is_0x10, sizeof(int[4]) == 0x10);
+CRIMSON_ABI_ASSERT(int_array_13_is_0x34, sizeof(int[13]) == 0x34);
 CRIMSON_ABI_ASSERT(int_array_36_is_0x90, sizeof(int[36]) == 0x90);
 CRIMSON_ABI_ASSERT(int_array_64_is_0x100, sizeof(int[64]) == 0x100);
 CRIMSON_ABI_ASSERT(cvar_float_is_16_bytes, sizeof(cvar_float_t) == 0x10);
