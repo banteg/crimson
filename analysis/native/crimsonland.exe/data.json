@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ad45940f34e9c9b5ff4ae5af367166cf485a4d270d1feb99b534841b103b90eb",
+  "audit_digest": "0e77cec0e4748787d398878630d2848c988ef088ba6d41bc84fdc6ccfcdf70f4",
   "entries": [
     {
       "address": 4211888,
@@ -36047,7 +36047,7 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "a87e400b84e9aa47ab2387370c75b5cfb98c22191c43e4fa370182e223fd841e",
+    "data_map_sha256": "52089641f442d438a9b71e6b25e8ac80f42fd35624cbe25650e4d8911c64dd23",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
     "definitions_sha256": "1d052532cf34173b1e9ac8a1a4878a41df8cca0a7121e9512bc3ffe36baaf660",
     "reference_image": {
@@ -36060,7 +36060,7 @@
   "summary": {
     "alias_names": 195,
     "alias_rows": 195,
-    "code_label_entries": 8,
+    "code_label_entries": 54,
     "definition_group_entries": 1618,
     "definition_groups": 172,
     "entry_count": 1708,
@@ -36080,7 +36080,7 @@
       ".rdata": 45,
       ".text": 1
     },
-    "source_entry_count": 1716,
+    "source_entry_count": 1762,
     "typed_entries": 1708,
     "unique_addresses": 1704,
     "untyped_entries": 0

@@ -2477,8 +2477,8 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1716
-    assert payload["summary"]["code_label_entries"] == 8
+    assert payload["summary"]["source_entry_count"] == 1762
+    assert payload["summary"]["code_label_entries"] == 54
     assert payload["summary"]["entry_count"] == 1708
     assert payload["summary"]["typed_entries"] == 1708
     assert payload["summary"]["untyped_entries"] == 0

@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "ad45940f34e9c9b5ff4ae5af367166cf485a4d270d1feb99b534841b103b90eb",
+  "audit_digest": "0e77cec0e4748787d398878630d2848c988ef088ba6d41bc84fdc6ccfcdf70f4",
   "data_object_count": 1,
   "data_objects": [
     {

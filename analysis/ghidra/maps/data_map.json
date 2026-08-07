@@ -11,6 +11,464 @@
       "type": "uint8_t[237]"
     },
     {
+      "address": "0x004565c6",
+      "aliases": [
+        "$L48087"
+      ],
+      "comment": "Local cpudetect.obj control-flow label bound by the pinned DirectX 8.1 archive relocation.",
+      "kind": "code_label",
+      "name": "d3dx_cpudetect_label_48087",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00456d69",
+      "aliases": [
+        "?x86_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Portable D3DX vector-transform entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x86_vec3_transform",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00456df4",
+      "aliases": [
+        "?x86_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Portable D3DX vector-transform entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x86_vec3_transform_normal",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00456e53",
+      "aliases": [
+        "?x86_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Portable D3DX vector-transform entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x86_vec4_transform",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00457250",
+      "aliases": [
+        "?sse_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+        "?sse2_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_vec3_transform_coord",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00457350",
+      "aliases": [
+        "?sse_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_vec3_normalize",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00457420",
+      "aliases": [
+        "?sse_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_plane_normalize",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00457500",
+      "aliases": [
+        "?sse_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_vec4_cross",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00457c10",
+      "aliases": [
+        "?sse_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_plane_from_points",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00457d00",
+      "aliases": [
+        "?sse_D3DXMatrixShadow@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_matrix_shadow",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00457e90",
+      "aliases": [
+        "?sse_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_matrix_reflect",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004580a0",
+      "aliases": [
+        "?sse_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_quaternion_inverse",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458230",
+      "aliases": [
+        "?sse_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+      ],
+      "comment": "SSE D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458300",
+      "aliases": [
+        "?sse_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+        "?sse2_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_vec3_transform_normal",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004583c0",
+      "aliases": [
+        "?sse_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z",
+        "?sse2_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_vec3_transform",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458480",
+      "aliases": [
+        "?sse_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+        "?sse2_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_vec4_transform",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458540",
+      "aliases": [
+        "?sse_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+        "?sse2_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_matrix_multiply",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458690",
+      "aliases": [
+        "?sse2_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_vec3_normalize",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458760",
+      "aliases": [
+        "?sse2_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_plane_normalize",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458840",
+      "aliases": [
+        "?sse_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z",
+        "?sse2_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_matrix_inverse",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458b00",
+      "aliases": [
+        "?sse_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+        "?sse2_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_matrix_multiply_transpose",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458c60",
+      "aliases": [
+        "?sse2_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_vec4_cross",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458d10",
+      "aliases": [
+        "?sse2_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_matrix_rotation_x",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458d90",
+      "aliases": [
+        "?sse2_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_matrix_rotation_y",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458e20",
+      "aliases": [
+        "?sse_D3DXMatrixDeterminant@@YGMPBUD3DXMATRIX@@@Z",
+        "?sse2_D3DXMatrixDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "Shared SSE/SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocations.",
+      "kind": "code_label",
+      "name": "d3dx_sse_matrix_determinant",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458ef0",
+      "aliases": [
+        "?sse2_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_plane_from_points",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00458fe0",
+      "aliases": [
+        "?sse2_D3DXMatrixShadow@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_matrix_shadow",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00459170",
+      "aliases": [
+        "?sse2_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_matrix_reflect",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00459370",
+      "aliases": [
+        "?sse2_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+      ],
+      "comment": "SSE2 D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00459440",
+      "aliases": [
+        "?x3d_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_quaternion_multiply",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004594d9",
+      "aliases": [
+        "?x3d_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_quaternion_normalize",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045e75a",
+      "aliases": [
+        "?x3d_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec3_transform",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045e7cb",
+      "aliases": [
+        "?x3d_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec3_transform_normal",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f218",
+      "aliases": [
+        "?x3d_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec2_transform",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f26d",
+      "aliases": [
+        "?x3d_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec2_transform_normal",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f2a6",
+      "aliases": [
+        "?x3d_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec2_transform_coord",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f30a",
+      "aliases": [
+        "?x3d_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec2_hermite",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f3a2",
+      "aliases": [
+        "?x3d_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec2_barycentric",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f3eb",
+      "aliases": [
+        "?x3d_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec2_normalize",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f42e",
+      "aliases": [
+        "?x3d_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec2_catmull_rom",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f4d9",
+      "aliases": [
+        "?x3d_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec4_transform",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f55b",
+      "aliases": [
+        "?x3d_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_vec4_normalize",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f903",
+      "aliases": [
+        "?x3d_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_plane_from_point_normal",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045f946",
+      "aliases": [
+        "?x3d_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_plane_from_points",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0045fa2a",
+      "aliases": [
+        "?x3d_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+      ],
+      "comment": "3DNow D3DX function entry bound by the pinned DirectX 8.1 fast-table relocation.",
+      "kind": "code_label",
+      "name": "d3dx_x3d_plane_intersect_line",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00460ef6",
       "aliases": [
         "___from_strstr_to_strchr"
@@ -58,6 +516,16 @@
       "comment": "VC6 cfltcvt sign-test helper entry, omitted as a function by the static-analysis exports but referenced directly by fpinit.obj.",
       "kind": "code_label",
       "name": "crt_positive",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0046e96e",
+      "aliases": [
+        "$L48090"
+      ],
+      "comment": "Local cpudetect.obj control-flow label bound by the pinned DirectX 8.1 archive relocation.",
+      "kind": "code_label",
+      "name": "d3dx_cpudetect_label_48090",
       "program": "crimsonland.exe"
     },
     {

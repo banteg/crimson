@@ -666,12 +666,13 @@ def test_data_map_classifies_instruction_annotations_as_code_labels():
     )
     rows = json.loads(map_path.read_text())["entries"]
 
-    assert {
+    code_label_names = {
         row["name"]
         for row in rows
         if row.get("program") == "crimsonland.exe"
         and row.get("kind") == "code_label"
-    } == {
+    }
+    legacy_names = {
         "game_startup_intro_mute_callsite",
         "game_startup_theme_play_callsite",
         "game_startup_intro_play_callsite",
@@ -681,6 +682,10 @@ def test_data_map_classifies_instruction_annotations_as_code_labels():
         "crt_cropzeros",
         "crt_positive",
     }
+    d3dx_names = {name for name in code_label_names if name.startswith("d3dx_")}
+
+    assert code_label_names == legacy_names | d3dx_names
+    assert len(d3dx_names) == 46
 
 
 def test_data_map_symbol_type_distinguishes_data_and_code_labels(monkeypatch):
