@@ -14886,6 +14886,7 @@
     "program": "grim.dll",
     "address": "0x1004b5b0",
     "name": "seh_prolog",
+    "aliases": ["__EH_prolog"],
     "signature": "void seh_prolog(void)",
     "comment": "MSVC SEH prolog helper (sets FS:[0])"
   },
@@ -15307,9 +15308,10 @@
   {
     "program": "grim.dll",
     "address": "0x1004b64f",
-    "name": "FUN_1004b64f",
-    "signature": "void * FUN_1004b64f(int arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] struct _EXCEPTION_REGISTRATION_RECORD* __stdcall sub_1004b64f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "name": "msvc_array_unwind",
+    "aliases": ["FUN_1004b64f", "?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z"],
+    "signature": "void msvc_array_unwind(void *base, unsigned int size, int count, void *destructor)",
+    "comment": "Exact VC6 SP6 exception-safe array unwind helper from libcmt.lib.",
     "create": false
   },
   {
@@ -16970,5 +16972,38 @@
     "name": "d3dx_blt_triangle_2d_eh_handler",
     "signature": "void d3dx_blt_triangle_2d_eh_handler(void)",
     "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltTriangle2D."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b6ad",
+    "name": "msvc_array_unwind_filter",
+    "aliases": ["unknown_libname_3", "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"],
+    "signature": "int msvc_array_unwind_filter(void *exception_pointers)",
+    "comment": "VC6 ArrayUnwindFilter identity proven by the exact __ArrayUnwind relocation.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100516b8",
+    "name": "msvc_vector_destructor_iterator_scope_table",
+    "signature": "const int msvc_vector_destructor_iterator_scope_table[4]",
+    "comment": "VC6 SEH scope table referenced by the exact vector-destructor iterator.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100516c8",
+    "name": "msvc_array_unwind_scope_table",
+    "signature": "const int msvc_array_unwind_scope_table[4]",
+    "comment": "VC6 SEH scope table referenced by the exact __ArrayUnwind helper.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100516d8",
+    "name": "msvc_vector_constructor_iterator_eh_scope_table",
+    "signature": "const int msvc_vector_constructor_iterator_eh_scope_table[4]",
+    "comment": "VC6 SEH scope table referenced by the exact exception-safe vector constructor iterator.",
+    "create": false
   }
 ]
