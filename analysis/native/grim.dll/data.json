@@ -1,5 +1,5 @@
 {
-  "audit_digest": "938c27d21ed0d5ce16ce38cb4f1c6d612974018f2fb2572e0a2123ee0da73820",
+  "audit_digest": "02a159d7d9808cbbcac21031526c46dc1cfc3d92204ba7562e1e4ee90de32cb6",
   "entries": [
     {
       "address": 268747320,
@@ -444,7 +444,9 @@
     },
     {
       "address": 268747656,
-      "aliases": [],
+      "aliases": [
+        "_g_D3DXFormatUnknown"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_format_info_alignment_is_four",
       "comment": "Fallback 36-byte descriptor returned when a D3D pixel format is not registered.",
@@ -463,7 +465,9 @@
     },
     {
       "address": 268747696,
-      "aliases": [],
+      "aliases": [
+        "_g_pD3DXFormatInfo"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_format_info_alignment_is_four",
       "comment": "Start of the 36-byte D3D pixel-format descriptor table.",
@@ -3634,7 +3638,9 @@
     },
     {
       "address": 268778576,
-      "aliases": [],
+      "aliases": [
+        "_g_pD3DXFormatInfoLim"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "comment": "One-past-the-end pointer for the registered D3D pixel-format descriptor table.",
@@ -7701,7 +7707,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "e8af6cf368501567f86f57009766407363121f9bc769b0b39328cbaca9ca2b7f",
+    "data_map_sha256": "b9afc944d2dc2d4a1db61ff284a0481998012ce0737ddbb72ed30b1814f7d750",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7712,8 +7718,8 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 13,
-    "alias_rows": 13,
+    "alias_names": 16,
+    "alias_rows": 16,
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,

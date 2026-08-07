@@ -8173,22 +8173,25 @@
     "program": "grim.dll",
     "address": "0x1000aaa6",
     "name": "grim_format_info_lookup",
+    "aliases": ["?D3DXGetFormatInfo@@YAPBU_D3DXFORMAT_INFO@@W4_D3DFORMAT@@@Z"],
     "signature": "int * grim_format_info_lookup(int format)",
-    "comment": "returns pointer to the D3D format descriptor entry (fallbacks to default)"
+    "comment": "DirectX 8.1 archive-proven D3DXGetFormatInfo body; returns the matching format descriptor or the unknown-format fallback."
   },
   {
     "program": "grim.dll",
     "address": "0x1000ae4f",
     "name": "grim_yuv_cache_entry_init",
+    "aliases": ["??0D3DXCOLOR@@QAE@XZ"],
     "signature": "void * grim_yuv_cache_entry_init(void *this)",
-    "comment": "empty default constructor for one 16-byte YUV channel-cache entry"
+    "comment": "Empty default constructor reused for 16-byte color entries; exact D3DXComputeNormalMap relocation proves the D3DXCOLOR constructor alias."
   },
   {
     "program": "grim.dll",
     "address": "0x1000b393",
     "name": "grim_vector_constructor_iterator",
+    "aliases": ["??_H@YGXPAXIHP6EPAX0@Z@Z"],
     "signature": "void grim_vector_constructor_iterator(void *base, unsigned int size, int count, void *constructor)",
-    "comment": "VC6 vector-construction iterator used for arrays of non-trivial objects"
+    "comment": "VC6 vector-construction iterator; the decorated runtime alias is proven by the exact DirectX 8.1 archive body."
   },
   {
     "program": "grim.dll",
@@ -8234,25 +8237,37 @@
   {
     "program": "grim.dll",
     "address": "0x1000b26f",
-    "name": "FUN_1000b26f",
-    "signature": "int FUN_1000b26f(int** arg1, int* arg2, int* arg3, int* arg4, int arg5, int arg6, int arg7)",
-    "comment": "[binja] int32_t __stdcall sub_1000b26f(int32_t** arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7)",
+    "name": "D3DXCheckTextureRequirements",
+    "aliases": ["FUN_1000b26f", "_D3DXCheckTextureRequirements@28"],
+    "signature": "int __stdcall D3DXCheckTextureRequirements(void *device, unsigned int *width, unsigned int *height, unsigned int *mip_levels, unsigned long usage, int *format, int pool)",
+    "comment": "Exact DirectX 8.1 d3dx8tex.obj body; normalizes texture dimensions, mip count, usage, format, and pool requirements.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000b297",
     "name": "D3DXCreateTexture",
+    "aliases": ["_D3DXCreateTexture@32"],
     "signature": "int D3DXCreateTexture(void *device, uint width, uint height, uint mip_levels, uint usage, int format, int pool, void **texture)",
     "comment": "D3DX8 static helper; validates texture requirements then calls IDirect3DDevice8::CreateTexture",
     "create": false
   },
   {
     "program": "grim.dll",
+    "address": "0x1000b3b5",
+    "name": "d3dx_eval_color",
+    "aliases": ["sub_1000B3B5", "?EvalColor@@YAMPAUD3DXCOLOR@@K@Z"],
+    "signature": "float d3dx_eval_color(void *color, unsigned long channel)",
+    "comment": "Exact DirectX 8.1 d3dx8tex.obj helper that extracts one normalized D3DXCOLOR channel.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000b3fe",
     "name": "d3dx_copy_texture_filtered",
+    "aliases": ["_D3DXComputeNormalMap@24"],
     "signature": "int d3dx_copy_texture_filtered(void *destination, void *source, void *destination_options, uint copy_flags, uint filter, float scale)",
-    "comment": "internal D3DX8 texture resampler used to copy a live texture into a recreated surface",
+    "comment": "Game-facing alias for the exact DirectX 8.1 D3DXComputeNormalMap body used while recreating texture surfaces.",
     "create": false
   },
   {
@@ -8273,8 +8288,18 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000be28",
+    "name": "d3dx_save_texture_to_file",
+    "aliases": ["sub_1000BE28", "?SaveTextureToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DBaseTexture8@@PBUtagPALETTEENTRY@@H@Z"],
+    "signature": "int d3dx_save_texture_to_file(const void *path, int format, void *texture, const void *palette, int level)",
+    "comment": "Internal DirectX 8.1 texture encoder selected by D3DXSaveTextureToFileA.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000c1e8",
     "name": "D3DXSaveTextureToFileA",
+    "aliases": ["_D3DXSaveTextureToFileA@16"],
     "signature": "int D3DXSaveTextureToFileA(char *path, int format, void *texture, void *palette)",
     "comment": "D3DX8 static helper; saves a base texture to path using the selected image format and optional palette"
   },
@@ -8289,15 +8314,17 @@
   {
     "program": "grim.dll",
     "address": "0x1000c4e9",
-    "name": "FUN_1000c4e9",
-    "signature": "int FUN_1000c4e9(int** arg1, void* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, int arg8, void* arg9, int arg10, int arg11, int** arg12)",
-    "comment": "[binja] int32_t sub_1000c4e9(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, void* arg9, int32_t arg10, int32_t arg11, int32_t** arg12)",
+    "name": "d3dx_create_texture_from_file_in_memory_ex",
+    "aliases": ["FUN_1000c4e9", "?CreateTextureFromFileInMemoryEx@@YAJPAUIDirect3DDevice8@@PBXIIIIIKW4_D3DFORMAT@@W4_D3DPOOL@@KKKPAU_D3DXIMAGE_INFO@@PAUtagPALETTEENTRY@@W4_D3DRESOURCETYPE@@PAPAUIDirect3DBaseTexture8@@@Z"],
+    "signature": "int d3dx_create_texture_from_file_in_memory_ex(int** arg1, void* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, int arg8, void* arg9, int arg10, int arg11, int** arg12)",
+    "comment": "Internal DirectX 8.1 resource-type-aware implementation called by the public in-memory texture wrapper.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000cb5c",
     "name": "D3DXCreateTextureFromFileInMemoryEx",
+    "aliases": ["_D3DXCreateTextureFromFileInMemoryEx@60"],
     "signature": "int __stdcall D3DXCreateTextureFromFileInMemoryEx(IDirect3DDevice8* device, const void* source_data, unsigned int source_data_size, unsigned int width, unsigned int height, unsigned int mip_levels, unsigned long usage, D3DFORMAT format, D3DPOOL pool, unsigned long filter, unsigned long mip_filter, unsigned long color_key, void* source_info, PALETTEENTRY* palette, IDirect3DTexture8** texture)",
     "comment": "D3DX8 in-memory extended texture loader wrapper; the 15-argument stdcall ABI and fixed wrapper arguments match D3DXCreateTextureFromFileInMemoryEx.",
     "create": false
@@ -8306,8 +8333,18 @@
     "program": "grim.dll",
     "address": "0x1000cb9c",
     "name": "D3DXCreateTextureFromFileExA",
+    "aliases": ["_D3DXCreateTextureFromFileExA@56"],
     "signature": "int __stdcall D3DXCreateTextureFromFileExA(IDirect3DDevice8* device, char* path, unsigned int width, unsigned int height, unsigned int mip_levels, unsigned long usage, D3DFORMAT format, D3DPOOL pool, unsigned long filter, unsigned long mip_filter, unsigned long color_key, void* source_info, PALETTEENTRY* palette, IDirect3DTexture8** texture)",
     "comment": "D3DX8 ANSI extended file texture loader wrapper; maps the file and forwards all 14 public arguments to the in-memory implementation",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ce76",
+    "name": "D3DXVec3Normalize",
+    "aliases": ["sub_1000CE76", "_D3DXVec3Normalize@8"],
+    "signature": "void * __stdcall D3DXVec3Normalize(void *out, const void *input)",
+    "comment": "DirectX 8.1 dispatch thunk selected by the exact D3DXComputeNormalMap call relocation.",
     "create": false
   },
   {
@@ -9062,9 +9099,10 @@
   {
     "program": "grim.dll",
     "address": "0x10016121",
-    "name": "FUN_10016121",
-    "signature": "int* FUN_10016121(int* arg1)",
-    "comment": "[binja] int32_t* __fastcall sub_10016121(int32_t* arg1)",
+    "name": "d3dx_lock_surface_ctor",
+    "aliases": ["FUN_10016121", "??0CD3DXLockSurface@@QAE@XZ"],
+    "signature": "void * d3dx_lock_surface_ctor(void *this)",
+    "comment": "CD3DXLockSurface constructor selected by the exact DirectX 8.1 D3DXComputeNormalMap relocation.",
     "create": false
   },
   {
@@ -9094,17 +9132,19 @@
   {
     "program": "grim.dll",
     "address": "0x100161b6",
-    "name": "FUN_100161b6",
-    "signature": "int FUN_100161b6(char* arg1)",
-    "comment": "[binja] int32_t __fastcall j_sub_10016131(char* arg1)",
+    "name": "d3dx_lock_surface_dtor",
+    "aliases": ["FUN_100161b6", "??1CD3DXLockSurface@@QAE@XZ"],
+    "signature": "void d3dx_lock_surface_dtor(void *this)",
+    "comment": "CD3DXLockSurface destructor thunk selected by the exact DirectX 8.1 D3DXComputeNormalMap relocation.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x100161bb",
-    "name": "FUN_100161bb",
-    "signature": "int FUN_100161bb(char* arg1, int* arg2, int* arg3, int arg4, int* arg5, int arg6, int arg7)",
-    "comment": "[binja] int32_t __thiscall sub_100161bb(char* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6, int32_t arg7)",
+    "name": "d3dx_lock_surface_lock",
+    "aliases": ["FUN_100161bb", "?Lock@CD3DXLockSurface@@QAEJPAUD3DX_BLT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@KK@Z"],
+    "signature": "int d3dx_lock_surface_lock(void *this, void *blit, void *surface, const void *palette, const void *rect, unsigned long filter, unsigned long color_key)",
+    "comment": "Exact DirectX 8.1 CD3DXLockSurface::Lock body.",
     "create": false
   },
   {
@@ -9991,8 +10031,9 @@
     "program": "grim.dll",
     "address": "0x1001b50c",
     "name": "grim_pixel_format_create",
+    "aliases": ["?Create@CD3DXCodec@@SAPAV1@PAUD3DX_BLT@@@Z"],
     "signature": "void * grim_pixel_format_create(uint *desc)",
-    "comment": "factory: picks pixel format implementation from FourCC/D3DFORMAT"
+    "comment": "DirectX 8.1 CD3DXCodec factory; picks the pixel-format implementation from the blit descriptor."
   },
   {
     "program": "grim.dll",
@@ -10020,17 +10061,19 @@
   {
     "program": "grim.dll",
     "address": "0x1001bca5",
-    "name": "FUN_1001bca5",
-    "signature": "int* FUN_1001bca5(int* arg1)",
-    "comment": "[binja] int32_t* __fastcall sub_1001bca5(int32_t* arg1)",
+    "name": "d3dx_file_ctor",
+    "aliases": ["FUN_1001bca5", "??0CD3DXFile@@QAE@XZ"],
+    "signature": "void * d3dx_file_ctor(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXFile constructor.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001bcb7",
-    "name": "FUN_1001bcb7",
-    "signature": "int FUN_1001bcb7(int* arg1, int* arg2, int* arg3)",
-    "comment": "[binja] int32_t __thiscall sub_1001bcb7(int32_t* arg1, int32_t* arg2, int32_t* arg3)",
+    "name": "d3dx_file_open",
+    "aliases": ["FUN_1001bcb7", "?Open@CD3DXFile@@QAEJPBXH@Z"],
+    "signature": "int d3dx_file_open(void *this, const void *source, int mode)",
+    "comment": "CD3DXFile::Open selected by the exact DirectX 8.1 D3DXCreateTextureFromFileExA relocation.",
     "create": false
   },
   {
@@ -10052,9 +10095,10 @@
   {
     "program": "grim.dll",
     "address": "0x1001bed2",
-    "name": "FUN_1001bed2",
-    "signature": "void FUN_1001bed2(int* arg1)",
-    "comment": "[binja] void __fastcall sub_1001bed2(int32_t* arg1)",
+    "name": "d3dx_file_dtor",
+    "aliases": ["FUN_1001bed2", "??1CD3DXFile@@QAE@XZ"],
+    "signature": "void d3dx_file_dtor(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXFile destructor.",
     "create": false
   },
   {

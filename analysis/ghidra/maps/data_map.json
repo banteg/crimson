@@ -12842,6 +12842,7 @@
     },
     {
       "address": "0x1004c388",
+      "aliases": ["_g_D3DXFormatUnknown"],
       "comment": "Fallback 36-byte descriptor returned when a D3D pixel format is not registered.",
       "name": "grim_format_info_default",
       "program": "grim.dll",
@@ -12849,6 +12850,7 @@
     },
     {
       "address": "0x1004c3b0",
+      "aliases": ["_g_pD3DXFormatInfo"],
       "comment": "Start of the 36-byte D3D pixel-format descriptor table.",
       "name": "grim_format_info_entries",
       "program": "grim.dll",
@@ -12856,6 +12858,7 @@
     },
     {
       "address": "0x10053c50",
+      "aliases": ["_g_pD3DXFormatInfoLim"],
       "comment": "One-past-the-end pointer for the registered D3D pixel-format descriptor table.",
       "name": "grim_format_info_end",
       "program": "grim.dll",
