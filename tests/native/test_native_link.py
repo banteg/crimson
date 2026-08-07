@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 390
+    assert payload["summary"]["source_entry_count"] == 398
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 387
-    assert payload["summary"]["typed_entries"] == 337
+    assert payload["summary"]["entry_count"] == 395
+    assert payload["summary"]["typed_entries"] == 345
     assert payload["summary"]["explicit_size_entries"] == 349
     assert payload["summary"]["explicit_alignment_entries"] == 349
     assert payload["summary"]["explicit_initializer_entries"] == 349
@@ -2299,6 +2299,16 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["grim_jpeg_quant1_rgb_order"]["type"] == "const int[3]"
     assert observed["grim_jpeg_idct_float_factor_1_082392200"]["type"] == "const float"
     assert observed["d3dx_jpeg_mmx_idct_enabled"]["type"] == "unsigned char"
+    assert observed["d3dx_jpeg_idct_aanscales"]["type"] == "const short[64]"
+    assert observed["d3dx_jpeg_idct_aanscalefactor"]["type"] == "const double[8]"
+    assert observed["d3dx_jpeg_mmx_sub128"]["type"] == "const unsigned char[8]"
+    assert observed["d3dx_jpeg_mmx_vu_mul"]["type"] == "const unsigned char[8]"
+    assert observed["d3dx_jpeg_mmx_yv_mul"]["type"] == "const unsigned char[8]"
+    assert observed["d3dx_jpeg_mmx_yu_mul"]["type"] == "const unsigned char[8]"
+    assert observed["d3dx_jpeg_mmx_high_dword_mask"]["type"] == (
+        "const unsigned char[8]"
+    )
+    assert observed["d3dx_jpeg_mmx_zero"]["type"] == "unsigned char[8]"
     assert observed["d3dx_jpeg_base_dither_matrix"]["type"] == (
         "const unsigned char[16][16]"
     )

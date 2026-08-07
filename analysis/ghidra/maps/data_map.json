@@ -13458,6 +13458,20 @@
       "type": "const float[2]"
     },
     {
+      "address": "0x1004f510",
+      "comment": "Archive-confirmed IJG 6a fixed-point AA&N inverse-DCT scale table.",
+      "name": "d3dx_jpeg_idct_aanscales",
+      "program": "grim.dll",
+      "type": "const short[64]"
+    },
+    {
+      "address": "0x1004f590",
+      "comment": "Archive-confirmed IJG 6a floating-point AA&N inverse-DCT scale factors.",
+      "name": "d3dx_jpeg_idct_aanscalefactor",
+      "program": "grim.dll",
+      "type": "const double[8]"
+    },
+    {
       "address": "0x1004f5d0",
       "comment": "Archive-confirmed IJG 6a 16-by-16 Bayer ordered-dither matrix.",
       "name": "d3dx_jpeg_base_dither_matrix",
@@ -13649,6 +13663,41 @@
       "type": "unsigned char[32]"
     },
     {
+      "address": "0x10055840",
+      "comment": "Archive-confirmed packed 16-bit 128 bias used by the IJG 6a MMX YCbCr-to-RGB kernel.",
+      "name": "d3dx_jpeg_mmx_sub128",
+      "program": "grim.dll",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": "0x10055848",
+      "comment": "Archive-confirmed packed chroma multiplier pair used by the IJG 6a MMX YCbCr-to-RGB kernel.",
+      "name": "d3dx_jpeg_mmx_vu_mul",
+      "program": "grim.dll",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": "0x10055850",
+      "comment": "Archive-confirmed packed luma and V multiplier pair used by the IJG 6a MMX YCbCr-to-RGB kernel.",
+      "name": "d3dx_jpeg_mmx_yv_mul",
+      "program": "grim.dll",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": "0x10055858",
+      "comment": "Archive-confirmed packed luma and U multiplier pair used by the IJG 6a MMX YCbCr-to-RGB kernel.",
+      "name": "d3dx_jpeg_mmx_yu_mul",
+      "program": "grim.dll",
+      "type": "const unsigned char[8]"
+    },
+    {
+      "address": "0x10055860",
+      "comment": "Archive-confirmed high-dword mask used by the IJG 6a MMX YCbCr-to-RGB kernel.",
+      "name": "d3dx_jpeg_mmx_high_dword_mask",
+      "program": "grim.dll",
+      "type": "const unsigned char[8]"
+    },
+    {
       "address": "0x1005db60",
       "aliases": ["?pDSM_D3D8D@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"],
       "comment": "Zero-initialized DirectX 8.1 debug-runtime D3DXDebugMute callback cache.",
@@ -13663,6 +13712,13 @@
       "name": "d3dx_debug_mute_d3d8_callback",
       "program": "grim.dll",
       "type": "void (__cdecl *)(int)"
+    },
+    {
+      "address": "0x1005dba0",
+      "comment": "Zero-initialized packed constant used by the IJG 6a MMX YCbCr-to-RGB kernel.",
+      "name": "d3dx_jpeg_mmx_zero",
+      "program": "grim.dll",
+      "type": "unsigned char[8]"
     },
     {
       "address": "0x1005dbd0",

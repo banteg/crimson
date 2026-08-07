@@ -1,5 +1,5 @@
 {
-  "audit_digest": "1d29e372cbb4e0288306d2b14aa6faa224f34dec238ee1264b52bb741a1bc295",
+  "audit_digest": "d24c1f241c9abb546c823ff62fa58cd8f7d7ac0873085100100de3eae4f858ca",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -18321,7 +18321,7 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "adc21a7959cebebb3d1e661082688d2901cc0f669ca3a75c2ccfc151d3e96e37"
+        "sha256": "d9aae90302622ef5649e6e5fe1eec6e4c7dafde4b1f6553248c25f0de4d593d4"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
