@@ -10390,14 +10390,22 @@
     "program": "grim.dll",
     "address": "0x1001e191",
     "name": "png_create_read_struct",
+    "aliases": [
+      "?png_create_read_struct@D3DX@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@Z3@Z"
+    ],
     "signature": "png_structp png_create_read_struct(char * user_png_ver, png_voidp error_ptr, void * error_fn, void * warn_fn)",
     "comment": "allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr callbacks"
   },
   {
     "program": "grim.dll",
     "address": "0x1001e294",
-    "name": "FUN_1001e294",
-    "signature": "void FUN_1001e294(png_structp png_ptr, uint *param_2)"
+    "name": "png_read_info",
+    "aliases": [
+      "FUN_1001e294",
+      "?png_read_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
+    ],
+    "signature": "void png_read_info(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Reads PNG chunks through the first IDAT and populates the caller-visible info structure"
   },
   {
     "program": "grim.dll",
@@ -10410,6 +10418,9 @@
     "program": "grim.dll",
     "address": "0x1001e427",
     "name": "png_read_row",
+    "aliases": [
+      "?png_read_row@D3DX@@YAXPAUpng_struct_def@1@PAE1@Z"
+    ],
     "signature": "void png_read_row(png_structp png_ptr, png_bytep row, png_bytep display_row)",
     "comment": "Archive-confirmed libpng 1.0.5 row decoder"
   },
@@ -10423,8 +10434,24 @@
   {
     "program": "grim.dll",
     "address": "0x1001e81b",
-    "name": "FUN_1001e81b",
-    "signature": "void FUN_1001e81b(png_structp png_ptr, undefined4 *param_2, undefined4 *param_3)"
+    "name": "png_read_destroy",
+    "aliases": [
+      "FUN_1001e81b",
+      "?png_read_destroy@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@1@Z"
+    ],
+    "signature": "void png_read_destroy(png_structp png_ptr, png_infop info_ptr, png_infop end_info_ptr)",
+    "comment": "Releases allocations owned by the libpng read and info structures"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e93e",
+    "name": "png_destroy_read_struct",
+    "aliases": [
+      "sub_1001E93E",
+      "?png_destroy_read_struct@D3DX@@YAXPAPAUpng_struct_def@1@PAPAUpng_info_struct@1@1@Z"
+    ],
+    "signature": "void png_destroy_read_struct(png_structpp png_ptr_ptr, png_infopp info_ptr_ptr, png_infopp end_info_ptr_ptr)",
+    "comment": "Destroys the libpng read structures and clears their caller-owned pointers"
   },
   {
     "program": "grim.dll",
@@ -10464,8 +10491,13 @@
   {
     "program": "grim.dll",
     "address": "0x1001ea59",
-    "name": "FUN_1001ea59",
-    "signature": "undefined4 FUN_1001ea59(png_structp png_ptr, uint *param_2, uint *param_3, uint *param_4, uint *param_5, uint *param_6, uint *param_7, uint *param_8, uint *param_9)"
+    "name": "png_get_IHDR",
+    "aliases": [
+      "FUN_1001ea59",
+      "?png_get_IHDR@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAK2PAH3333@Z"
+    ],
+    "signature": "png_uint_32 png_get_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_type, int *compression_type, int *filter_type)",
+    "comment": "Returns the decoded IHDR dimensions and format fields"
   },
   {
     "program": "grim.dll",
@@ -10473,6 +10505,17 @@
     "name": "png_get_PLTE",
     "signature": "png_uint_32 png_get_PLTE(png_structp png_ptr, png_infop info_ptr, png_colorp *palette, int *num_palette)",
     "comment": "Returns the stored PNG palette and color count when the PLTE field is valid"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001eb5d",
+    "name": "png_get_tRNS",
+    "aliases": [
+      "sub_1001EB5D",
+      "?png_get_tRNS@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAPAEPAHPAPAUpng_color_16_struct@1@@Z"
+    ],
+    "signature": "png_uint_32 png_get_tRNS(png_structp png_ptr, png_infop info_ptr, png_bytep *trans, int *num_trans, png_color_16p *trans_values)",
+    "comment": "Returns the stored transparency table and transparent-color value"
   },
   {
     "program": "grim.dll",
@@ -10646,7 +10689,8 @@
     "address": "0x1002031c",
     "name": "png_set_IHDR",
     "aliases": [
-      "FUN_1002031c"
+      "FUN_1002031c",
+      "?png_set_IHDR@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@KKHHHHH@Z"
     ],
     "signature": "void png_set_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type)",
     "comment": "Stores validated IHDR dimensions and format fields and marks the header valid"
@@ -10711,9 +10755,13 @@
   {
     "program": "grim.dll",
     "address": "0x1002057e",
-    "name": "png_free_thunk",
-    "signature": "void png_free(png_structp png_ptr, void * ptr)",
-    "comment": "thunk to png_free (jmp 0x10024777)"
+    "name": "png_zfree",
+    "aliases": [
+      "png_free_thunk",
+      "?png_zfree@D3DX@@YAXPAX0@Z"
+    ],
+    "signature": "void png_zfree(void * png_ptr, void * ptr)",
+    "comment": "zlib free callback thunk to png_free (jmp 0x10024777)"
   },
   {
     "program": "grim.dll",
@@ -10732,10 +10780,13 @@
   {
     "program": "grim.dll",
     "address": "0x100205da",
-    "name": "FUN_100205da",
-    "signature": "void FUN_100205da(int arg1)",
-    "comment": "[binja] void sub_100205da(int32_t arg1)",
-    "create": false
+    "name": "png_info_destroy",
+    "aliases": [
+      "FUN_100205da",
+      "?png_info_destroy@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
+    ],
+    "signature": "void png_info_destroy(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Releases heap allocations owned by one libpng info structure"
   },
   {
     "program": "grim.dll",
@@ -11266,9 +11317,13 @@
   {
     "program": "grim.dll",
     "address": "0x10024734",
-    "name": "png_free_ptr",
-    "signature": "void png_free_ptr(void * ptr)",
-    "comment": "free wrapper for png allocations"
+    "name": "png_destroy_struct",
+    "aliases": [
+      "png_free_ptr",
+      "?png_destroy_struct@D3DX@@YAXPAX@Z"
+    ],
+    "signature": "void png_destroy_struct(void * ptr)",
+    "comment": "Frees a libpng structure allocated by png_create_struct"
   },
   {
     "program": "grim.dll",
@@ -11351,10 +11406,11 @@
     "address": "0x10024dc0",
     "name": "png_read_filter_row",
     "aliases": [
-      "FUN_10024dc0"
+      "FUN_10024dc0",
+      "?png_read_filter_row@D3DX@@YAXPAUpng_struct_def@1@PAUpng_row_info_struct@1@PAE2H@Z"
     ],
     "signature": "void png_read_filter_row(png_structp png_ptr, png_row_infop row_info, png_bytep row, png_bytep prev_row, int filter)",
-    "comment": "Archive-confirmed libpng 1.0.5 PNG row-filter reversal with a compiler residual"
+    "comment": "Archive-confirmed libpng 1.0.5 PNG row-filter reversal"
   },
   {
     "program": "grim.dll",
@@ -11385,10 +11441,11 @@
     "address": "0x10025359",
     "name": "png_handle_PLTE",
     "aliases": [
-      "grim_png_read_PLTE"
+      "grim_png_read_PLTE",
+      "?png_handle_PLTE@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@K@Z"
     ],
     "signature": "void png_handle_PLTE(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
-    "comment": "Archive-confirmed libpng 1.0.5 PLTE parser with a compiler residual"
+    "comment": "Archive-confirmed libpng 1.0.5 PLTE parser"
   },
   {
     "program": "grim.dll",

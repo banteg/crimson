@@ -724,6 +724,96 @@
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cdf0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
     },
     {
+      "address": "0x1004e1dc",
+      "name": "png_pass_mask",
+      "size": 28,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete seven-entry _png_pass_mask section; analysis/ghidra/maps/data_map.json: const int[7]",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_hex": "80000000080000008800000022000000aa00000055000000ff000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e1dc; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e1f8",
+      "name": "png_pass_dsp_mask",
+      "size": 28,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete seven-entry _png_pass_dsp_mask section; analysis/ghidra/maps/data_map.json: const int[7]",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_hex": "ff0000000f000000ff00000033000000ff00000055000000ff000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e1f8; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e214",
+      "name": "png_IHDR",
+      "size": 5,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_IHDR section; analysis/ghidra/maps/data_map.json: const png_byte[5]",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 pngread.obj COFF section alignment",
+      "initializer_hex": "4948445200",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e214; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e21c",
+      "name": "png_read_IDAT",
+      "size": 5,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_IDAT section; analysis/ghidra/maps/data_map.json: const png_byte[5]",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 pngread.obj COFF section alignment",
+      "initializer_hex": "4944415400",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e21c; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e224",
+      "name": "png_IEND",
+      "size": 5,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_IEND section; analysis/ghidra/maps/data_map.json: const png_byte[5]",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 pngread.obj COFF section alignment",
+      "initializer_hex": "49454e4400",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e224; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e22c",
+      "name": "png_PLTE",
+      "size": 5,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_PLTE section; analysis/ghidra/maps/data_map.json: const png_byte[5]",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 pngread.obj COFF section alignment",
+      "initializer_hex": "504c544500",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e22c; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e234",
+      "name": "png_gAMA",
+      "size": 5,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_gAMA section; analysis/ghidra/maps/data_map.json: const png_byte[5]",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 pngread.obj COFF section alignment",
+      "initializer_hex": "67414d4100",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e234; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e23c",
+      "name": "png_sRGB",
+      "size": 5,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_sRGB section; analysis/ghidra/maps/data_map.json: const png_byte[5]",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 pngread.obj COFF section alignment",
+      "initializer_hex": "7352474200",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e23c; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
+      "address": "0x1004e244",
+      "name": "png_tRNS",
+      "size": 5,
+      "size_source": "Pinned DirectX 8.1 pngread.obj: complete five-byte _png_tRNS section; analysis/ghidra/maps/data_map.json: const png_byte[5]",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 pngread.obj COFF section alignment",
+      "initializer_hex": "74524e5300",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e244; pinned DirectX 8.1 pngread.obj .rdata"
+    },
+    {
       "address": "0x1004e51c",
       "name": "grim_png_signature",
       "size": 8,

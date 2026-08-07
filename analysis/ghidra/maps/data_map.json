@@ -13046,6 +13046,69 @@
       "type": "ui_button_t"
     },
     {
+      "address": "0x1004e1dc",
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 display-pass mask table used by png_read_row.",
+      "name": "png_pass_mask",
+      "program": "grim.dll",
+      "type": "const int[7]"
+    },
+    {
+      "address": "0x1004e1f8",
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 display-pass mask table used when a display row is supplied.",
+      "name": "png_pass_dsp_mask",
+      "program": "grim.dll",
+      "type": "const int[7]"
+    },
+    {
+      "address": "0x1004e214",
+      "comment": "Archive-confirmed libpng 1.0.5 IHDR chunk-name constant used by pngread.obj.",
+      "name": "png_IHDR",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": "0x1004e21c",
+      "comment": "Archive-confirmed libpng 1.0.5 IDAT chunk-name constant used by pngread.obj; distinct from the pngrutil.obj copy.",
+      "name": "png_read_IDAT",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": "0x1004e224",
+      "comment": "Archive-confirmed libpng 1.0.5 IEND chunk-name constant used by pngread.obj.",
+      "name": "png_IEND",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": "0x1004e22c",
+      "comment": "Archive-confirmed libpng 1.0.5 PLTE chunk-name constant used by pngread.obj.",
+      "name": "png_PLTE",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": "0x1004e234",
+      "comment": "Archive-confirmed libpng 1.0.5 gAMA chunk-name constant used by pngread.obj.",
+      "name": "png_gAMA",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": "0x1004e23c",
+      "comment": "Archive-confirmed libpng 1.0.5 sRGB chunk-name constant used by pngread.obj.",
+      "name": "png_sRGB",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": "0x1004e244",
+      "comment": "Archive-confirmed libpng 1.0.5 tRNS chunk-name constant used by pngread.obj.",
+      "name": "png_tRNS",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
       "address": "0x1004e51c",
       "aliases": [
         "png_sig"
