@@ -478,13 +478,11 @@ def _archive_reference_evidence(
     metadata_path: Path,
     include_symbol_unique: bool = False,
 ) -> tuple[tuple[_ArchiveReferenceEvidence, ...], matchlib.ReferenceCatalog]:
-    members: dict[str, bytes] = {}
+    members: dict[str, list[bytes]] = defaultdict(list)
     for member in parse_coff_archive(report.archive.read_bytes()):
         if member.name in {"/", "//"}:
             continue
-        if member.name in members:
-            raise ValueError(f"archive contains duplicate member name {member.name!r}")
-        members[member.name] = member.data
+        members[member.name].append(member.data)
 
     manifest = matchlib.load_function_manifest(
         functions_path,
@@ -501,20 +499,34 @@ def _archive_reference_evidence(
         ):
             continue
         candidate = archive_match.candidates[0]
-        member_data = members.get(candidate.member)
-        if member_data is None:
+        member_variants = members.get(candidate.member)
+        if member_variants is None:
             raise ValueError(f"archive member {candidate.member!r} disappeared during alias inference")
-        obj = matchlib.parse_coff_object(member_data)
-        function = matchlib.extract_object_function(obj, candidate.symbol)
-        result = matchlib.match_function(
-            image.function_bytes(archive_match.address, archive_match.end),
-            function,
-            image=image,
-            target_va=archive_match.address,
-            reference_catalog=catalog,
-        )
-        if result.ratio != 1.0:
+
+        target_data = image.function_bytes(archive_match.address, archive_match.end)
+        matching_variants: dict[matchlib.ObjectFunction, matchlib.MatchResult] = {}
+        for member_data in member_variants:
+            try:
+                obj = matchlib.parse_coff_object(member_data)
+                function = matchlib.extract_object_function(obj, candidate.symbol)
+            except (IndexError, struct.error, ValueError):
+                continue
+            result = matchlib.match_function(
+                target_data,
+                function,
+                image=image,
+                target_va=archive_match.address,
+                reference_catalog=catalog,
+            )
+            if result.ratio == 1.0:
+                matching_variants.setdefault(function, result)
+
+        # Microsoft archives may legitimately repeat a member name. Resolve
+        # the candidate lazily by its exact function body, and decline to infer
+        # aliases when same-named variants disagree about relocation metadata.
+        if len(matching_variants) != 1:
             continue
+        function, result = next(iter(matching_variants.items()))
 
         for entry in result.masked_operand_audit.entries:
             if entry.status not in {"unresolved", "mismatch"}:

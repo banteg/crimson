@@ -80,9 +80,18 @@ def _ar_member(name: bytes, payload: bytes) -> bytes:
     return header + payload + (b"\n" if len(payload) & 1 else b"")
 
 
+def _build_archive_members(members: list[tuple[str, bytes]]) -> bytes:
+    long_names = b""
+    encoded_members: list[bytes] = []
+    for member_name, payload in members:
+        name_offset = len(long_names)
+        long_names += f"{member_name}/\n".encode()
+        encoded_members.append(_ar_member(f"/{name_offset}".encode(), payload))
+    return AR_MAGIC + _ar_member(b"//", long_names) + b"".join(encoded_members)
+
+
 def _build_archive(member_name: str, payload: bytes) -> bytes:
-    long_names = f"{member_name}/\n".encode()
-    return AR_MAGIC + _ar_member(b"//", long_names) + _ar_member(b"/0", payload)
+    return _build_archive_members([(member_name, payload)])
 
 
 def test_parse_coff_archive_resolves_microsoft_long_names() -> None:
@@ -390,6 +399,61 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert cli_payload["filters"] == {"missing_scratches": True}
     assert cli_payload["summary"]["matched_functions"] == 0
     assert cli_payload["exclusions"] == {"target_functions": 1, "target_bytes": 6}
+
+
+def test_archive_reference_inference_tolerates_duplicate_member_names(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    object_code = bytes.fromhex("a100000000c3")
+    linked_code = bytes.fromhex("a100104000c3")
+    archive_path = tmp_path / "probe.lib"
+    archive_path.write_bytes(
+        _build_archive_members(
+            [
+                (r"obj\i386\duplicate.obj", b"first non-object"),
+                (r"obj\i386\duplicate.obj", b"second non-object"),
+                (
+                    r"obj\i386\probe.obj",
+                    _build_object(object_code, relocations=(1,)),
+                ),
+            ],
+        ),
+    )
+    image_path = tmp_path / "game.exe"
+    image_path.write_bytes(b"unused")
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x00401000","end":"0x00401006",'
+        '"name":"native_probe","size":6,"library":false}]',
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "metadata.json"
+    metadata_path.write_text('{"image_base":"0x00400000"}', encoding="utf-8")
+    mapped = bytearray(0x2000)
+    mapped[0x1000:0x1006] = linked_code
+    monkeypatch.setattr(
+        "crimson.library_match.matchlib.load_image",
+        lambda path, image_base=None: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
+    )
+
+    report = match_coff_archive(
+        archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401006,
+    )
+    bindings = infer_archive_reference_bindings(
+        report,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+    )
+
+    assert len(bindings) == 1
+    assert bindings[0].object_symbols == ("_probe",)
+    assert bindings[0].target_address == 0x00401000
 
 
 def test_archive_match_does_not_index_vc_code_packets(
