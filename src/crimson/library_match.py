@@ -145,8 +145,8 @@ def parse_coff_archive(data: bytes) -> tuple[CoffArchiveMember, ...]:
 
 def _archive_function_index(
     members: tuple[CoffArchiveMember, ...],
-) -> tuple[dict[tuple[str, ...], list[_NormalizedArchiveFunction]], int, int]:
-    index: dict[tuple[str, ...], list[_NormalizedArchiveFunction]] = defaultdict(list)
+) -> tuple[dict[tuple[int, int], list[_NormalizedArchiveFunction]], int, int]:
+    index: dict[tuple[int, int], list[_NormalizedArchiveFunction]] = defaultdict(list)
     object_members = 0
     object_functions = 0
     for member in members:
@@ -193,9 +193,12 @@ def _archive_function_index(
                 for offset in function.relocation_offsets
                 if offset + 4 <= significant_size
             )
-            lines = tuple(line.text for line in disassembly)
+            # Relocations can link to values the target normalizer cannot
+            # recognize as addresses, notably VC6's FS:[0] SEH chain. Keep
+            # this index structural and let _candidate_matches verify every
+            # unrelocated byte after masking the candidate's relocations.
             object_functions += 1
-            index[lines].append(
+            index[(significant_size, len(disassembly))].append(
                 _NormalizedArchiveFunction(
                     candidate=ArchiveCandidate(
                         member=member.name,
@@ -273,7 +276,9 @@ def match_coff_archive(
             base_address=function.address,
         )
         candidates = tuple(
-            candidate.candidate for candidate in index.get(lines, ()) if _candidate_matches(target_data, candidate)
+            candidate.candidate
+            for candidate in index.get((len(target_data), len(lines)), ())
+            if _candidate_matches(target_data, candidate)
         )
         if candidates:
             matches.append(

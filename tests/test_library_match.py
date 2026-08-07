@@ -234,6 +234,48 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert cli_payload["exclusions"] == {"target_functions": 1, "target_bytes": 6}
 
 
+def test_archive_match_accepts_zero_valued_linked_relocation(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    linked_code = bytes.fromhex("64890d00000000c3")
+    archive_path = tmp_path / "probe.lib"
+    archive_path.write_bytes(
+        _build_archive(
+            r"obj\i386\probe.obj",
+            _build_object(linked_code, relocations=(3,)),
+        ),
+    )
+    image_path = tmp_path / "game.exe"
+    image_path.write_bytes(b"unused")
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x00401000","end":"0x00401008","name":"native_probe","size":8,"library":false}]',
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "metadata.json"
+    metadata_path.write_text('{"image_base":"0x00400000"}', encoding="utf-8")
+    mapped = bytearray(0x2000)
+    mapped[0x1000:0x1008] = linked_code
+    monkeypatch.setattr(
+        "crimson.library_match.matchlib.load_image",
+        lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
+    )
+
+    report = match_coff_archive(
+        archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401008,
+    )
+
+    assert report.matched_functions == 1
+    assert report.unique_functions == 1
+    assert report.matches[0].candidates[0].symbol == "_probe"
+
+
 def test_archive_match_trims_untargeted_terminal_padding(
     tmp_path: Path,
     monkeypatch,
