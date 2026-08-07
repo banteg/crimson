@@ -894,6 +894,36 @@
       "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6a0"
     },
     {
+      "address": "0x1004e6a8",
+      "name": "x3d_const3dn_2_2",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000004000000040",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6a8"
+    },
+    {
+      "address": "0x1004e6b0",
+      "name": "x3d_const3dn_3_2",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_vec3.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000404000000040",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6b0"
+    },
+    {
+      "address": "0x1004e6b8",
+      "name": "x3d_const3dn_sign_bit_lo",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000008000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6b8"
+    },
+    {
       "address": "0x1004e6c0",
       "name": "x3d_const3dn_sign_bit_hi",
       "size": 8,
@@ -902,6 +932,46 @@
       "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
       "initializer_hex": "0000000000000080",
       "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6c0"
+    },
+    {
+      "address": "0x1004e6c8",
+      "name": "x3d_const3dn_sign_bits",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000008000000080",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6c8"
+    },
+    {
+      "address": "0x1004e6d8",
+      "name": "x3d_const3dn_sign_mask_hi",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "ffffffffffffff7f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6d8"
+    },
+    {
+      "address": "0x1004e6e0",
+      "name": "x3d_const3dn_sign_masks",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "ffffff7fffffff7f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6e0"
+    },
+    {
+      "address": "0x1004e6e8",
+      "name": "x3d_const3dn_epsilon",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000003400000034",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6e8"
     },
     {
       "address": "0x1004e6f0",
@@ -914,6 +984,26 @@
       "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6f0"
     },
     {
+      "address": "0x1004e708",
+      "name": "x3d_const3dn_halves",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000003f0000003f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e708"
+    },
+    {
+      "address": "0x1004e710",
+      "name": "x3d_const3dn_flt_min",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj and objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d quaternion/vector COFF sections and linked VA alignment",
+      "initializer_hex": "0000800000008000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e710"
+    },
+    {
       "address": "0x1004e718",
       "name": "x3d_negate_low",
       "size": 8,
@@ -924,6 +1014,26 @@
       "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e718"
     },
     {
+      "address": "0x1004e720",
+      "name": "x3d_negate_high",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj and objd\\i386\\x3d_vec3.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d quaternion/vector COFF sections and linked VA alignment",
+      "initializer_hex": "0000000000000080",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e720"
+    },
+    {
+      "address": "0x1004e728",
+      "name": "x3d_const_1",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj and objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d quaternion/vector COFF sections and linked VA alignment",
+      "initializer_hex": "0000803f0000803f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e728"
+    },
+    {
       "address": "0x1004e730",
       "name": "x3d_const_half",
       "size": 8,
@@ -932,6 +1042,26 @@
       "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
       "initializer_hex": "0000003f0000003f",
       "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e730"
+    },
+    {
+      "address": "0x1004e738",
+      "name": "x3d_const_2",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_vec3.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000004000000040",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e738"
+    },
+    {
+      "address": "0x1004e740",
+      "name": "x3d_const_3",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_vec3.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_vec3.obj COFF section and linked VA alignment",
+      "initializer_hex": "0000404000004040",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e740"
     },
     {
       "address": "0x1004e760",
@@ -982,6 +1112,26 @@
       "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
       "initializer_hex": "000000c00000803f",
       "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e780"
+    },
+    {
+      "address": "0x1004e788",
+      "name": "x3d_const_niner",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "58ff7f3f58ff7f3f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e788"
+    },
+    {
+      "address": "0x1004f3a0",
+      "name": "x3d_const3dn_neg_quarters",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_quat.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_quat.obj COFF section and linked VA alignment",
+      "initializer_hex": "000080be000080be",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004f3a0"
     },
     {
       "address": "0x1004fe74",

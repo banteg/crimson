@@ -13164,12 +13164,68 @@
       "type": "const float[2]"
     },
     {
+      "address": "0x1004e6a8",
+      "aliases": ["?const3dn_2_2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [2.0, 2.0] used by the debug x3d quaternion kernels.",
+      "name": "x3d_const3dn_2_2",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e6b0",
+      "aliases": ["?const3dn_3_2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [3.0, 2.0] used by the debug x3d vector kernels.",
+      "name": "x3d_const3dn_3_2",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e6b8",
+      "aliases": ["?const3dn_SignBitLo@@3T__m64@@B"],
+      "comment": "Packed low-lane sign-bit mask used by the debug x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_bit_lo",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
       "address": "0x1004e6c0",
       "aliases": ["?const3dn_SignBitHi@@3T__m64@@B"],
       "comment": "Packed high-lane sign-bit mask used by the debug x3d matrix kernels.",
       "name": "x3d_const3dn_sign_bit_hi",
       "program": "grim.dll",
       "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e6c8",
+      "aliases": ["?const3dn_SignBits@@3T__m64@@B"],
+      "comment": "Packed two-lane sign-bit mask used by the debug x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_bits",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e6d8",
+      "aliases": ["?const3dn_SignMaskHi@@3T__m64@@B"],
+      "comment": "Packed high-lane absolute-value mask used by the debug x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_mask_hi",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e6e0",
+      "aliases": ["?const3dn_SignMasks@@3T__m64@@B"],
+      "comment": "Packed two-lane absolute-value mask used by the debug x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_masks",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e6e8",
+      "aliases": ["?const3dn_epsilon@@3T__m64@@B"],
+      "comment": "Packed 3DNow float-epsilon pair used by the debug x3d quaternion kernels.",
+      "name": "x3d_const3dn_epsilon",
+      "program": "grim.dll",
+      "type": "const float[2]"
     },
     {
       "address": "0x1004e6f0",
@@ -13180,6 +13236,22 @@
       "type": "const uint32_t[2]"
     },
     {
+      "address": "0x1004e708",
+      "aliases": ["?const3dn_halves@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.5, 0.5] used by the debug x3d quaternion kernels.",
+      "name": "x3d_const3dn_halves",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e710",
+      "aliases": ["?const3dn_FltMin@@3T__m64@@B"],
+      "comment": "Packed 3DNow FLT_MIN pair used as a normalization threshold by the debug x3d kernels.",
+      "name": "x3d_const3dn_flt_min",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
       "address": "0x1004e718",
       "aliases": ["?g_negate_low@@3T__m64@@B"],
       "comment": "Packed low-lane sign-bit mask used by the debug x3d matrix kernels.",
@@ -13188,10 +13260,42 @@
       "type": "const uint32_t[2]"
     },
     {
+      "address": "0x1004e720",
+      "aliases": ["?g_negate_high@@3T__m64@@B"],
+      "comment": "Packed high-lane sign-bit mask used by the debug x3d quaternion and vector kernels.",
+      "name": "x3d_negate_high",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e728",
+      "aliases": ["?g_const_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, 1.0] used by the debug x3d quaternion and vector kernels.",
+      "name": "x3d_const_1",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
       "address": "0x1004e730",
       "aliases": ["?g_const_half@@3T__m64@@B"],
       "comment": "Packed 3DNow float pair [0.5, 0.5] used by the debug x3d rotation kernels.",
       "name": "x3d_const_half",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e738",
+      "aliases": ["?g_const_2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [2.0, 2.0] used by the debug x3d vector kernels.",
+      "name": "x3d_const_2",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e740",
+      "aliases": ["?g_const_3@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [3.0, 3.0] used by the debug x3d vector kernels.",
+      "name": "x3d_const_3",
       "program": "grim.dll",
       "type": "const float[2]"
     },
@@ -13232,6 +13336,14 @@
       "aliases": ["?g_const_n2_1@@3T__m64@@B"],
       "comment": "Packed 3DNow float pair [-2.0, 1.0] used by the debug x3d reflection kernel.",
       "name": "x3d_const_n2_1",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e788",
+      "aliases": ["?g_const_niner@@3T__m64@@B"],
+      "comment": "Packed 3DNow near-one clamp pair used by the debug x3d quaternion slerp kernel.",
+      "name": "x3d_const_niner",
       "program": "grim.dll",
       "type": "const float[2]"
     },
@@ -13279,6 +13391,14 @@
       "name": "d3dx_zlib_crc_table",
       "program": "grim.dll",
       "type": "const unsigned long[256]"
+    },
+    {
+      "address": "0x1004f3a0",
+      "aliases": ["_const3dn_NegQuarters"],
+      "comment": "Packed 3DNow float pair [-0.25, -0.25] used by the debug x3d quaternion squad setup kernel.",
+      "name": "x3d_const3dn_neg_quarters",
+      "program": "grim.dll",
+      "type": "const float[2]"
     },
     {
       "address": "0x1004f5d0",

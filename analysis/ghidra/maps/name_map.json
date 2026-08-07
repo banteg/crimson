@@ -14793,6 +14793,146 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10027fc6",
+    "name": "x3d_quaternion_to_axis_angle",
+    "aliases": ["sub_10027FC6", "?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion-to-axis-angle conversion."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10028079",
+    "name": "x3d_quaternion_rotation_matrix",
+    "aliases": ["sub_10028079", "?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d matrix-to-quaternion conversion."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10028295",
+    "name": "x3d_quaternion_rotation_matrix_k7",
+    "aliases": ["sub_10028295", "?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d K7 matrix-to-quaternion conversion."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100284aa",
+    "name": "x3d_quaternion_rotation_yaw_pitch_roll",
+    "aliases": ["sub_100284AA", "?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d yaw-pitch-roll quaternion builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002856f",
+    "name": "x3d_quaternion_rotation_axis",
+    "aliases": ["sub_1002856F", "?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d axis-angle quaternion builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100285db",
+    "name": "x3d_quaternion_slerp",
+    "aliases": ["sub_100285DB", "?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion spherical interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10028712",
+    "name": "x3d_quaternion_barycentric",
+    "aliases": ["sub_10028712", "?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion barycentric interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002879f",
+    "name": "x3d_quaternion_squad",
+    "aliases": ["sub_1002879F", "?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion squad interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10028831",
+    "name": "x3d_quaternion_inverse",
+    "aliases": ["sub_10028831", "?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion inverse."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10028895",
+    "name": "x3d_quaternion_ln",
+    "aliases": ["sub_10028895", "?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion logarithm."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002893c",
+    "name": "x3d_quaternion_exp",
+    "aliases": ["sub_1002893C", "?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion exponential."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100289e1",
+    "name": "x3d_quaternion_squad_setup",
+    "aliases": ["sub_100289E1", "?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion squad-control setup."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d321",
+    "name": "x3d_vec3_barycentric",
+    "aliases": ["sub_1002D321", "?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d vector barycentric interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d392",
+    "name": "x3d_vec3_hermite",
+    "aliases": ["sub_1002D392", "?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d vector Hermite interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d466",
+    "name": "x3d_vec3_catmull_rom",
+    "aliases": ["sub_1002D466", "?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d vector Catmull-Rom interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d550",
+    "name": "x3d_vec3_transform_coord_inline",
+    "aliases": ["sub_1002D550", "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d inline coordinate transform."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d5db",
+    "name": "x3d_matrix_multiply_inline",
+    "aliases": ["sub_1002D5DB", "?x3d_D3DXMatrixMultiply_inline@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d inline matrix multiply."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d7a7",
+    "name": "x3d_vec3_project",
+    "aliases": ["sub_1002D7A7", "?x3d_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d vector projection."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d92f",
+    "name": "x3d_vec3_unproject",
+    "aliases": ["sub_1002D92F", "?x3d_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d vector unprojection."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002db55",
+    "name": "x3d_vec3_unproject_k7",
+    "aliases": ["sub_1002DB55", "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d K7 vector unprojection."
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002966c",
     "name": "x3d_matrix_determinant",
     "aliases": ["sub_1002966C", "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"],
@@ -14954,10 +15094,31 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10034e00",
+    "name": "x3d_atan2",
+    "aliases": ["sub_10034E00", "_a_atan2"],
+    "comment": "3DNow arctangent helper selected by the exact debug x3d quaternion archive relocation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10034f00",
+    "name": "x3d_acos",
+    "aliases": ["sub_10034F00", "_a_acos"],
+    "comment": "3DNow arccosine helper selected by exact debug x3d quaternion archive relocations."
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100354e0",
     "name": "x3d_sincos",
     "aliases": ["sub_100354E0", "a_cos", "a_sincos"],
     "comment": "3DNow trigonometric helper selected by the debug x3d rotation archive relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10035600",
+    "name": "x3d_sin",
+    "aliases": ["sub_10035600", "_a_sin"],
+    "comment": "3DNow sine helper selected by exact debug x3d quaternion archive relocations."
   },
   {
     "program": "grim.dll",
