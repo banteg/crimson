@@ -397,6 +397,11 @@ def cmd_match_archive(
         help="expected archive SHA-256",
     ),
     show_matches: bool = typer.Option(False, "--show-matches", help="list exact function matches"),
+    show_reference_bindings: bool = typer.Option(
+        False,
+        "--show-reference-bindings",
+        help="list stable zero-addend object symbols bound to one image address",
+    ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum listed matches"),
     write_scratches: bool = typer.Option(
         False,
@@ -454,6 +459,18 @@ def cmd_match_archive(
         raise typer.Exit(code=2) from exc
 
     hash_ok = expected_sha256 is None or report.archive_sha256 == expected_sha256.lower()
+    reference_bindings: tuple[library_match.ArchiveReferenceBinding, ...] = ()
+    if show_reference_bindings:
+        try:
+            reference_bindings = library_match.infer_archive_reference_bindings(
+                report,
+                functions_path=functions or matchlib.default_functions_path(image_name),
+                metadata_path=metadata or matchlib.default_metadata_path(image_name),
+                include_symbol_unique=write_symbol_unique,
+            )
+        except Exception as exc:
+            typer.echo(f"archive reference binding failed: {str(exc).splitlines()[0]}", err=True)
+            raise typer.Exit(code=2) from exc
     written_scratches: tuple[library_match.ArchiveScratchWrite, ...] = ()
     if write_scratches:
         try:
@@ -476,6 +493,11 @@ def cmd_match_archive(
         payload["expected_sha256"] = expected_sha256
         payload["hash_ok"] = hash_ok
         payload["filters"] = {"missing_scratches": missing_scratches}
+        if show_reference_bindings:
+            payload["reference_bindings"] = library_match.archive_reference_bindings_payload(
+                reference_bindings,
+                limit=limit,
+            )
         payload["written_scratches"] = {
             "count": len(written_scratches),
             "include_symbol_unique": write_symbol_unique,
@@ -487,13 +509,17 @@ def cmd_match_archive(
         }
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
-        typer.echo(
-            library_match.render_archive_match_report(
-                report,
-                show_matches=show_matches,
-                limit=limit,
-            ),
+        rendered = library_match.render_archive_match_report(
+            report,
+            show_matches=show_matches,
+            limit=limit,
         )
+        if show_reference_bindings:
+            rendered += "\n" + library_match.render_archive_reference_bindings(
+                reference_bindings,
+                limit=limit,
+            )
+        typer.echo(rendered)
         if not hash_ok:
             typer.echo(
                 f"hash mismatch: expected={expected_sha256} actual={report.archive_sha256}",

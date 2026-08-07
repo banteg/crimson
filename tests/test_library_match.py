@@ -14,6 +14,8 @@ from crimson.cli.match import match_app
 from crimson.library_match import (
     AR_MAGIC,
     archive_match_payload,
+    archive_reference_bindings_payload,
+    infer_archive_reference_bindings,
     match_coff_archive,
     parse_coff_archive,
     render_archive_match_report,
@@ -228,6 +230,29 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert inferred_writes[0].reference_aliases == (("_probe", "native_probe"),)
     inferred_config = load_scratch_config(inferred_writes[0].directory)
     assert inferred_config.reference_aliases == (("_probe", "native_probe"),)
+
+    bindings = infer_archive_reference_bindings(
+        report,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+    )
+    assert len(bindings) == 1
+    assert bindings[0].object_symbols == ("_probe",)
+    assert bindings[0].target_address == 0x00401000
+    assert bindings[0].occurrences == 1
+    assert bindings[0].functions == ((0x00401000, "native_probe"),)
+    assert bindings[0].target_names == ("native_probe",)
+    assert archive_reference_bindings_payload(bindings)["bindings"] == [
+        {
+            "lookup_name": "probe",
+            "object_symbols": ["_probe"],
+            "target_address": "0x00401000",
+            "target_names": ["native_probe"],
+            "occurrences": 1,
+            "functions": [{"address": "0x00401000", "name": "native_probe"}],
+            "members": [r"obj\i386\probe.obj"],
+        },
+    ]
 
     symbol_unique_writes = write_archive_scratch_configs(
         symbol_unique_report,

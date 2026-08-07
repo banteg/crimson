@@ -102,6 +102,27 @@ class ArchiveScratchWrite:
 
 
 @dataclass(frozen=True, slots=True)
+class ArchiveReferenceBinding:
+    lookup_name: str
+    object_symbols: tuple[str, ...]
+    target_address: int
+    occurrences: int
+    functions: tuple[tuple[int, str], ...]
+    members: tuple[str, ...]
+    target_names: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class _ArchiveReferenceEvidence:
+    match_address: int
+    match_name: str
+    member: str
+    object_symbol: str
+    lookup_name: str
+    target_address: int
+
+
+@dataclass(frozen=True, slots=True)
 class _NormalizedArchiveFunction:
     candidate: ArchiveCandidate
     data: bytes
@@ -448,14 +469,13 @@ def _write_text_atomic(path: Path, text: str) -> None:
         temp_path.unlink(missing_ok=True)
 
 
-def infer_archive_reference_aliases(
+def _archive_reference_evidence(
     report: ArchiveMatchReport,
     *,
     functions_path: Path,
     metadata_path: Path,
     include_symbol_unique: bool = False,
-) -> dict[int, tuple[tuple[str, str], ...]]:
-    """Infer conservative object-to-image aliases from exact aligned references."""
+) -> tuple[tuple[_ArchiveReferenceEvidence, ...], matchlib.ReferenceCatalog]:
     members: dict[str, bytes] = {}
     for member in parse_coff_archive(report.archive.read_bytes()):
         if member.name in {"/", "//"}:
@@ -472,7 +492,7 @@ def infer_archive_reference_aliases(
     )
     image = matchlib.load_image(report.image, manifest.image_base)
     catalog = matchlib.load_reference_catalog(manifest, functions_path=functions_path)
-    aliases_by_address: dict[int, tuple[tuple[str, str], ...]] = {}
+    evidence: list[_ArchiveReferenceEvidence] = []
     for archive_match in report.matches:
         if not archive_match.unique and not (
             include_symbol_unique and archive_match.symbol_unique
@@ -504,8 +524,6 @@ def infer_archive_reference_aliases(
             for reference in function.relocation_references
             if reference.addend != 0
         }
-        inferred: dict[str, tuple[str, int]] = {}
-        conflicted: set[str] = set()
         for entry in result.masked_operand_audit.entries:
             if entry.status != "unresolved":
                 continue
@@ -524,36 +542,157 @@ def infer_archive_reference_aliases(
                 or any(character in object_symbol for character in ",:")
             ):
                 continue
+            evidence.append(
+                _ArchiveReferenceEvidence(
+                    match_address=archive_match.address,
+                    match_name=archive_match.name,
+                    member=candidate.member,
+                    object_symbol=object_symbol,
+                    lookup_name=matchlib._symbol_lookup_name(object_symbol),
+                    target_address=target_reference.value,
+                ),
+            )
+    return tuple(evidence), catalog
+
+
+def infer_archive_reference_aliases(
+    report: ArchiveMatchReport,
+    *,
+    functions_path: Path,
+    metadata_path: Path,
+    include_symbol_unique: bool = False,
+) -> dict[int, tuple[tuple[str, str], ...]]:
+    """Infer conservative object-to-image aliases from exact aligned references."""
+    evidence, catalog = _archive_reference_evidence(
+        report,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        include_symbol_unique=include_symbol_unique,
+    )
+    by_match: dict[int, list[_ArchiveReferenceEvidence]] = defaultdict(list)
+    for item in evidence:
+        by_match[item.match_address].append(item)
+
+    aliases_by_address: dict[int, tuple[tuple[str, str], ...]] = {}
+    for archive_match in report.matches:
+        inferred: dict[str, tuple[str, int, str]] = {}
+        conflicted: set[str] = set()
+        for item in by_match.get(archive_match.address, ()):
             target_names = tuple(
                 name
-                for name in catalog.names_by_address.get(target_reference.value, ())
+                for name in catalog.names_by_address.get(item.target_address, ())
                 if catalog.knows_name(name) and not any(character in name for character in ",:")
             )
             if not target_names:
                 continue
             target_name = target_names[0]
-            lookup_name = matchlib._symbol_lookup_name(object_symbol)
-            previous = inferred.get(lookup_name)
-            current = (target_name, target_reference.value)
-            if previous is not None and previous != current:
-                conflicted.add(lookup_name)
+            previous = inferred.get(item.lookup_name)
+            current = (target_name, item.target_address, item.object_symbol)
+            if previous is not None and previous[:2] != current[:2]:
+                conflicted.add(item.lookup_name)
                 continue
-            inferred[lookup_name] = current
+            inferred[item.lookup_name] = current
         aliases_by_address[archive_match.address] = tuple(
             sorted(
                 (
-                    next(
-                        reference.symbol_name
-                        for reference in function.relocation_references
-                        if matchlib._symbol_lookup_name(reference.symbol_name) == lookup_name
-                    ),
+                    object_symbol,
                     target_name,
                 )
-                for lookup_name, (target_name, _) in inferred.items()
+                for lookup_name, (target_name, _, object_symbol) in inferred.items()
                 if lookup_name not in conflicted
             ),
         )
     return aliases_by_address
+
+
+def infer_archive_reference_bindings(
+    report: ArchiveMatchReport,
+    *,
+    functions_path: Path,
+    metadata_path: Path,
+    include_symbol_unique: bool = False,
+) -> tuple[ArchiveReferenceBinding, ...]:
+    """Report stable zero-addend archive symbols bound to one image address."""
+    evidence, catalog = _archive_reference_evidence(
+        report,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        include_symbol_unique=include_symbol_unique,
+    )
+    by_lookup: dict[str, list[_ArchiveReferenceEvidence]] = defaultdict(list)
+    for item in evidence:
+        by_lookup[item.lookup_name].append(item)
+
+    bindings: list[ArchiveReferenceBinding] = []
+    for lookup_name, items in by_lookup.items():
+        target_addresses = {item.target_address for item in items}
+        if len(target_addresses) != 1:
+            continue
+        target_address = next(iter(target_addresses))
+        bindings.append(
+            ArchiveReferenceBinding(
+                lookup_name=lookup_name,
+                object_symbols=tuple(sorted({item.object_symbol for item in items})),
+                target_address=target_address,
+                occurrences=len(items),
+                functions=tuple(sorted({(item.match_address, item.match_name) for item in items})),
+                members=tuple(sorted({item.member for item in items})),
+                target_names=tuple(catalog.names_by_address.get(target_address, ())),
+            ),
+        )
+    return tuple(sorted(bindings, key=lambda item: (-item.occurrences, item.lookup_name)))
+
+
+def archive_reference_bindings_payload(
+    bindings: tuple[ArchiveReferenceBinding, ...],
+    *,
+    limit: int | None = None,
+) -> dict[str, object]:
+    if limit is not None and limit < 1:
+        raise ValueError("archive reference binding listing limit must be positive")
+    listed = bindings if limit is None else bindings[:limit]
+    return {
+        "count": len(bindings),
+        "returned": len(listed),
+        "limit": limit,
+        "truncated": len(listed) < len(bindings),
+        "bindings": [
+            {
+                "lookup_name": binding.lookup_name,
+                "object_symbols": list(binding.object_symbols),
+                "target_address": f"0x{binding.target_address:08x}",
+                "target_names": list(binding.target_names),
+                "occurrences": binding.occurrences,
+                "functions": [
+                    {"address": f"0x{address:08x}", "name": name}
+                    for address, name in binding.functions
+                ],
+                "members": list(binding.members),
+            }
+            for binding in listed
+        ],
+    }
+
+
+def render_archive_reference_bindings(
+    bindings: tuple[ArchiveReferenceBinding, ...],
+    *,
+    limit: int | None = None,
+) -> str:
+    payload = archive_reference_bindings_payload(bindings, limit=limit)
+    lines = [
+        f"reference_bindings={payload['count']} returned={payload['returned']}"
+        + (" truncated=true" if payload["truncated"] else ""),
+    ]
+    for binding in bindings if limit is None else bindings[:limit]:
+        target = ",".join(binding.target_names) if binding.target_names else "unmapped"
+        symbols = ",".join(binding.object_symbols)
+        lines.append(
+            f"reference_binding={symbols} target=0x{binding.target_address:08x} "
+            f"occurrences={binding.occurrences} functions={len(binding.functions)} "
+            f"target_names={target}",
+        )
+    return "\n".join(lines)
 
 
 def write_archive_scratch_configs(

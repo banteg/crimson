@@ -234,6 +234,12 @@ only zero-addend relocations that align with an already unique function, data,
 or import name in the target catalog; unknown addresses and conflicting
 inferences remain unresolved.
 
+Use `--show-reference-bindings` to list the still-unresolved zero-addend object
+symbols that consistently align with one image address. The report rejects
+conflicting addresses and includes occurrence, function, and archive-member
+evidence; it is read-only so a newly discovered CRT global still has to be
+named in the data map before generated aliases can consume it.
+
 `REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
 names are reused across translation units. Each comma-separated
 `object-symbol:image-symbol` pair scopes that candidate symbol to one uniquely
