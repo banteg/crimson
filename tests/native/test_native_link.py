@@ -2477,17 +2477,17 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1656
+    assert payload["summary"]["source_entry_count"] == 1672
     assert payload["summary"]["code_label_entries"] == 6
-    assert payload["summary"]["entry_count"] == 1650
-    assert payload["summary"]["typed_entries"] == 1650
+    assert payload["summary"]["entry_count"] == 1666
+    assert payload["summary"]["typed_entries"] == 1666
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1650
-    assert payload["summary"]["explicit_alignment_entries"] == 1650
-    assert payload["summary"]["explicit_initializer_entries"] == 1650
-    assert payload["summary"]["fully_specified_entries"] == 1650
-    assert payload["summary"]["definition_group_entries"] == 1560
-    assert payload["summary"]["definition_groups"] == 155
+    assert payload["summary"]["explicit_size_entries"] == 1666
+    assert payload["summary"]["explicit_alignment_entries"] == 1666
+    assert payload["summary"]["explicit_initializer_entries"] == 1666
+    assert payload["summary"]["fully_specified_entries"] == 1666
+    assert payload["summary"]["definition_group_entries"] == 1576
+    assert payload["summary"]["definition_groups"] == 166
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2604,6 +2604,20 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["crt_codepage_ctype_flags"]["initializer_hex"] == "01020408"
     assert defined["crt_codepage_info"]["size"] == 5 * 0x30
     assert defined["crt_gmt_cache"]["initializer_fill"] == "00"
+    assert defined["crt_lock_table"]["size"] == 48 * 4
+    assert defined["crt_lock_table"]["definition_group"] == (
+        "literal-pointer-array-000c0"
+    )
+    assert defined["crt_old_small_block_heap"]["size"] == 0x2020
+    assert defined["crt_fdiv_risc_table"]["size"] == 0x10
+    assert defined["crt_fprem_risc_table"]["size"] == 0x18
+    assert defined["crt_fdiv_dispatch_table"]["size"] == 0x102
+    assert defined["crt_pow10_positive"]["size"] == 0x160
+    assert defined["crt_pow10_negative"]["size"] == 0x15C
+    assert defined["crt_standard_buffers"]["initializer_fill"] == "00"
+    assert defined["crt_file_mode"]["definition_group"] == (
+        "mapped-bss-zero-int32"
+    )
     assert defined["crt_windows_minor"]["definition_group"] == (
         "mapped-bss-zero-uint32"
     )

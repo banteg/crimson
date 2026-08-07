@@ -104,6 +104,9 @@ CRIMSON_ABI_ASSERT(
     pointer_array_32_is_0x80,
     sizeof(char *[32]) == 0x80);
 CRIMSON_ABI_ASSERT(
+    pointer_array_48_is_0xc0,
+    sizeof(void *[48]) == 0xc0);
+CRIMSON_ABI_ASSERT(
     pointer_array_57_is_0xe4,
     sizeof(void *[57]) == 0xe4);
 CRIMSON_ABI_ASSERT(char_array_128_is_0x80, sizeof(char[128]) == 0x80);

@@ -1776,6 +1776,16 @@
       "type": "DWORD"
     },
     {
+      "address": "0x0047b6f4",
+      "aliases": [
+        "__locktable"
+      ],
+      "comment": "VC6 48-slot CRT lock-pointer table; the exact 0xc0-byte extent is the complete mlock.obj .data section.",
+      "name": "crt_lock_table",
+      "program": "crimsonland.exe",
+      "type": "void *[48]"
+    },
+    {
       "address": "0x0047b7c0",
       "comment": "45-entry CRT dosmaperr table (Win32 error -> errno mapping, 0x168 bytes).",
       "name": "crt_dosmaperr_table",
@@ -1841,6 +1851,16 @@
       "name": "crt_exception_action_count",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x0047baf0",
+      "aliases": [
+        "___old_small_block_heap"
+      ],
+      "comment": "VC6 embedded old small-block-heap region; exact 0x2020-byte extent ends at ___old_sbh_p_starting_region in sbheap.obj.",
+      "name": "crt_old_small_block_heap",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[8224]"
     },
     {
       "address": "0x0047db10",
@@ -1941,6 +1961,106 @@
       "name": "crt_x87_underflow_value",
       "program": "crimsonland.exe",
       "type": "unsigned char[10]"
+    },
+    {
+      "address": "0x0047dd10",
+      "aliases": [
+        "fdiv_risc_table"
+      ],
+      "comment": "VC6 Pentium FDIV classification table; extent comes from adjacent adj_fdiv.obj symbols.",
+      "name": "crt_fdiv_risc_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[16]"
+    },
+    {
+      "address": "0x0047dd20",
+      "aliases": [
+        "fdiv_scale_1"
+      ],
+      "comment": "VC6 FDIV scale constant at adj_fdiv.obj .data offset 0x10.",
+      "name": "crt_fdiv_scale_1",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[4]"
+    },
+    {
+      "address": "0x0047dd24",
+      "aliases": [
+        "fdiv_scale_2"
+      ],
+      "comment": "VC6 FDIV scale constant at adj_fdiv.obj .data offset 0x14.",
+      "name": "crt_fdiv_scale_2",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[4]"
+    },
+    {
+      "address": "0x0047dd28",
+      "aliases": [
+        "one_shl_63"
+      ],
+      "comment": "VC6 FDIV helper constant at adj_fdiv.obj .data offset 0x18.",
+      "name": "crt_fdiv_one_shl_63",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[4]"
+    },
+    {
+      "address": "0x0047dd2c",
+      "aliases": [
+        "fprem_risc_table"
+      ],
+      "comment": "VC6 FPREM classification table at adj_fdiv.obj .data offset 0x1c.",
+      "name": "crt_fprem_risc_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0047dd44",
+      "aliases": [
+        "one_shl_64"
+      ],
+      "comment": "VC6 FDIV helper constant at adj_fdiv.obj .data offset 0x34.",
+      "name": "crt_fdiv_one_shl_64",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[8]"
+    },
+    {
+      "address": "0x0047dd4c",
+      "aliases": [
+        "one_shr_64"
+      ],
+      "comment": "VC6 FDIV helper constant at adj_fdiv.obj .data offset 0x3c.",
+      "name": "crt_fdiv_one_shr_64",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[16]"
+    },
+    {
+      "address": "0x0047dd5c",
+      "aliases": [
+        "half"
+      ],
+      "comment": "VC6 FDIV half constant at adj_fdiv.obj .data offset 0x4c.",
+      "name": "crt_fdiv_half",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[8]"
+    },
+    {
+      "address": "0x0047dd64",
+      "aliases": [
+        "big_number"
+      ],
+      "comment": "VC6 FDIV 80-bit large-number constant at adj_fdiv.obj .data offset 0x54.",
+      "name": "crt_fdiv_big_number",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[10]"
+    },
+    {
+      "address": "0x0047dd6e",
+      "aliases": [
+        "dispatch_table"
+      ],
+      "comment": "VC6 FDIV dispatch table occupying the remainder of adj_fdiv.obj's exact 0x160-byte .data section.",
+      "name": "crt_fdiv_dispatch_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[258]"
     },
     {
       "address": "0x0047de70",
@@ -2051,6 +2171,26 @@
       "name": "crt_matherr_flag",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x0047e180",
+      "aliases": [
+        "__pow10pos"
+      ],
+      "comment": "VC6 positive powers-of-ten table; exact 0x160-byte extent is fixed by constpow.obj's __pow10neg symbol.",
+      "name": "crt_pow10_positive",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[352]"
+    },
+    {
+      "address": "0x0047e2e0",
+      "aliases": [
+        "__pow10neg"
+      ],
+      "comment": "VC6 negative powers-of-ten table occupying the remaining 0x15c bytes of constpow.obj .data.",
+      "name": "crt_pow10_negative",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[348]"
     },
     {
       "address": "0x0047e448",
@@ -11431,6 +11571,16 @@
       "type": "int"
     },
     {
+      "address": "0x004d9a68",
+      "aliases": [
+        "__stdbuf"
+      ],
+      "comment": "VC6 stdout/stderr temporary-buffer pointer pair; exact eight-byte BSS section from _sftbuf.obj.",
+      "name": "crt_standard_buffers",
+      "program": "crimsonland.exe",
+      "type": "char *[2]"
+    },
+    {
       "address": "0x004d9a70",
       "aliases": [
         "___old_sbh_decommitable_pages"
@@ -11637,6 +11787,16 @@
       ],
       "comment": "VC6 CRT SIGTERM action state.",
       "name": "crt_term_action",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d9cd8",
+      "aliases": [
+        "__fmode"
+      ],
+      "comment": "VC6 process default file-translation mode from txtmode.obj's four-byte BSS definition.",
+      "name": "crt_file_mode",
       "program": "crimsonland.exe",
       "type": "int"
     },
