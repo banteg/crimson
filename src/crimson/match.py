@@ -4931,16 +4931,24 @@ def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
 
     member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
     symbol = status.config.symbol or ""
-    if member.casefold() != "d3dxmath.obj":
+    if member.casefold() not in {
+        "d3dxmath.obj",
+        "d3dxmathsse.obj",
+        "d3dxmathsse2.obj",
+        "d3dxmathx86.obj",
+        "d3dxquatsse.obj",
+        "d3dxquatsse2.obj",
+    }:
         return None
-    match = re.fullmatch(r"\?(init|c)_D3DX([A-Za-z0-9]+)@@.+", symbol)
+    match = re.fullmatch(r"\?(init|c|sse|sse2|x86)_D3DX([A-Za-z0-9]+)(\$\$1)?@@.+", symbol)
     if match is None:
         return None
-    family, operation = match.groups()
+    family, operation, implementation_marker = match.groups()
     operation = operation.replace("BaryCentric", "Barycentric")
     snake = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", operation)
     snake = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", snake).lower()
-    return f"d3dx_{family}_{snake}"
+    implementation_suffix = "_impl" if implementation_marker is not None else ""
+    return f"d3dx_{family}_{snake}{implementation_suffix}"
 
 
 def collect_naming_debt(

@@ -937,7 +937,7 @@ def cmd_match_naming_audit(
     provider_member: str | None = typer.Option(
         None,
         "--provider-member",
-        help="restrict to one archive member path or basename",
+        help="comma-separated archive member paths or basenames",
     ),
     suggested_only: bool = typer.Option(
         False,
@@ -968,16 +968,18 @@ def cmd_match_naming_audit(
 
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
     rows = matchlib.collect_naming_debt(statuses, name_map_path=name_map)
+    provider_members = _parse_csv(provider_member)
     rows = [
         row
         for row in rows
         if (image is None or row.image == image)
         and (
-            provider_member is None
-            or row.provider_member == provider_member
+            provider_members is None
+            or row.provider_member in provider_members
             or (
                 row.provider_member is not None
-                and row.provider_member.replace("\\", "/").rsplit("/", 1)[-1] == provider_member
+                and row.provider_member.replace("\\", "/").rsplit("/", 1)[-1]
+                in provider_members
             )
         )
         and (not suggested_only or row.suggestion is not None)

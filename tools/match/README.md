@@ -603,6 +603,7 @@ reference aliases, or notes:
 uv run crimson match naming-audit --summary-only
 uv run crimson match naming-audit --suggested-only --image crimsonland.exe
 uv run crimson match naming-audit --provider-member d3dxmath.obj --apply-suggestions
+uv run crimson match naming-audit --provider-member d3dxmathsse.obj,d3dxmathsse2.obj --apply-suggestions
 uv run crimson match naming-audit --provider-member d3dxmath.obj --prune-placeholder-aliases
 uv run crimson match naming-audit --json --check
 ```
@@ -610,8 +611,9 @@ uv run crimson match naming-audit --json --check
 Suggestions are intentionally narrow. The command proposes a canonical name
 when another exact scratch for the same hash-pinned archive and COFF symbol
 already has one unique non-placeholder identity. Recognized DirectX 8.1 D3DX
-helpers may also derive the canonical `d3dx_init_*` or `d3dx_c_*` name directly
-from their exact decorated COFF symbol. The latter also reports
+base and optimized helpers may also derive canonical `d3dx_init_*`,
+`d3dx_c_*`, `d3dx_sse*_*`, or `d3dx_x86_*` names directly from their exact
+decorated COFF symbols, including the `$$1` implementation suffix. This also reports
 `provider-name-conflict` when an older semantic name is meaningful but weaker
 than that exact identity, and `provider-directory-conflict` when only the
 scratch directory still carries the superseded identity. Real

@@ -6123,6 +6123,26 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00456542",
+    "name": "d3dx_is_x3d_processor",
+    "comment": "Exact archive recovery from obj\\i386\\cpudetect.obj symbol ?isX3Dprocessor@@YAHXZ.",
+    "create": false,
+    "aliases": [
+      "?isX3Dprocessor@@YAHXZ"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045657a",
+    "name": "d3dx_is_intel_sse_processor",
+    "comment": "Exact archive recovery from obj\\i386\\cpudetect.obj symbol ?IsIntelSSEProcessor@@YAKXZ.",
+    "create": false,
+    "aliases": [
+      "?IsIntelSSEProcessor@@YAKXZ"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0045661f",
     "name": "renderer_processor_feature_available",
     "signature": "int renderer_processor_feature_available(unsigned long feature)",
@@ -6165,31 +6185,497 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00456ccb",
+    "name": "d3dx_x86_vec2_transform",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmathx86.obj symbol ?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00456d34",
+    "name": "d3dx_x86_vec2_transform_normal",
+    "comment": "Exact archive recovery from obj\\i386\\d3dxmathx86.obj symbol ?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00456eec",
-    "name": "FUN_00456eec",
-    "signature": "float * FUN_00456eec(float *arg1, float *arg2)",
-    "comment": "[binja] float* __stdcall sub_456eec(float* arg1, float* arg2)"
+    "name": "d3dx_x86_vec3_normalize",
+    "signature": "float * d3dx_x86_vec3_normalize(float *arg1, float *arg2)",
+    "comment": "[binja] float* __stdcall d3dx_x86_vec3_normalize(float* arg1, float* arg2)",
+    "aliases": [
+      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00456fb6",
-    "name": "FUN_00456fb6",
-    "signature": "int FUN_00456fb6(int arg1, int arg2, void *arg3)",
-    "comment": "[binja] int32_t __stdcall sub_456fb6(int32_t arg1, int32_t arg2, void* arg3)"
+    "name": "d3dx_x86_matrix_multiply",
+    "signature": "int d3dx_x86_matrix_multiply(int arg1, int arg2, void *arg3)",
+    "comment": "[binja] int32_t __stdcall d3dx_x86_matrix_multiply(int32_t arg1, int32_t arg2, void* arg3)",
+    "aliases": [
+      "?x86_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00457099",
-    "name": "FUN_00457099",
-    "signature": "void * FUN_00457099(void *arg1, int arg2, int arg3)",
-    "comment": "[binja] void* __stdcall sub_457099(void* arg1, int32_t arg2, int32_t arg3)"
+    "name": "d3dx_x86_matrix_multiply_transpose",
+    "signature": "void * d3dx_x86_matrix_multiply_transpose(void *arg1, int arg2, int arg3)",
+    "comment": "[binja] void* __stdcall d3dx_x86_matrix_multiply_transpose(void* arg1, int32_t arg2, int32_t arg3)",
+    "aliases": [
+      "?x86_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00457127",
-    "name": "renderer_patch_portable",
-    "signature": "void renderer_patch_portable(void **table)",
-    "comment": "Applies the portable baseline entries before optional CPU-specific dispatch patches."
+    "name": "d3dx_x86_init_fast_table",
+    "signature": "void d3dx_x86_init_fast_table(void **table)",
+    "comment": "Applies the portable baseline entries before optional CPU-specific dispatch patches.",
+    "aliases": [
+      "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457170",
+    "name": "d3dx_sse_vec2_transform",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004571b0",
+    "name": "d3dx_sse_vec2_transform_coord",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457210",
+    "name": "d3dx_sse_vec2_transform_normal",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045725e",
+    "name": "d3dx_sse_vec3_transform_coord_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045735e",
+    "name": "d3dx_sse_vec3_normalize_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045742e",
+    "name": "d3dx_sse_plane_normalize_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045750e",
+    "name": "d3dx_sse_vec4_cross_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004575b0",
+    "name": "d3dx_sse_vec4_normalize",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457650",
+    "name": "d3dx_sse_vec3_catmull_rom",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457710",
+    "name": "d3dx_sse_vec2_catmull_rom",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004577a0",
+    "name": "d3dx_sse_vec4_catmull_rom",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457850",
+    "name": "d3dx_sse_vec3_hermite",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457910",
+    "name": "d3dx_sse_vec4_hermite",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004579b0",
+    "name": "d3dx_sse_vec2_hermite",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457a40",
+    "name": "d3dx_sse_vec3_barycentric",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457aa0",
+    "name": "d3dx_sse_vec4_barycentric",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457af0",
+    "name": "d3dx_sse_vec2_barycentric",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457b50",
+    "name": "d3dx_sse_plane_intersect_line",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457c1e",
+    "name": "d3dx_sse_plane_from_points_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457d0e",
+    "name": "d3dx_sse_matrix_shadow_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457e9e",
+    "name": "d3dx_sse_matrix_reflect_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse.obj symbol ?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457f70",
+    "name": "d3dx_sse_quaternion_multiply",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxquatsse.obj symbol ?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458000",
+    "name": "d3dx_sse_quaternion_normalize",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxquatsse.obj symbol ?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004580ae",
+    "name": "d3dx_sse_quaternion_inverse_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxquatsse.obj symbol ?sse_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458110",
+    "name": "d3dx_sse_quaternion_rotation_matrix",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxquatsse.obj symbol ?sse_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045823e",
+    "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxquatsse.obj symbol ?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045830e",
+    "name": "d3dx_sse2_vec3_transform_normal_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004583ce",
+    "name": "d3dx_sse2_vec3_transform_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045848e",
+    "name": "d3dx_sse2_vec4_transform_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045854e",
+    "name": "d3dx_sse2_matrix_multiply_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045869e",
+    "name": "d3dx_sse2_vec3_normalize_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045876e",
+    "name": "d3dx_sse2_plane_normalize_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045884e",
+    "name": "d3dx_sse2_matrix_inverse_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458b0e",
+    "name": "d3dx_sse2_matrix_multiply_transpose_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458c6e",
+    "name": "d3dx_sse2_vec4_cross_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458d1e",
+    "name": "d3dx_sse2_matrix_rotation_x_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458d9e",
+    "name": "d3dx_sse2_matrix_rotation_y_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458e2e",
+    "name": "d3dx_sse2_matrix_determinant_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458efe",
+    "name": "d3dx_sse2_plane_from_points_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00458fee",
+    "name": "d3dx_sse2_matrix_shadow_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045917e",
+    "name": "d3dx_sse2_matrix_reflect_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxmathsse2.obj symbol ?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459250",
+    "name": "d3dx_sse2_quaternion_rotation_matrix",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxquatsse2.obj symbol ?sse2_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045937e",
+    "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll_impl",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxquatsse2.obj symbol ?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6225,6 +6711,36 @@
     "name": "vec3_unproject",
     "signature": "float * vec3_unproject(float *out, float *vec, float *viewport, float *world, float *view, float *proj)",
     "comment": "unprojects a screen-space vec3 using inverse matrices and viewport"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045fbd0",
+    "name": "d3dx_sse_sin_cos4",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxtrigsse.obj symbol ?sse_SinCos4@@YAXQBMQAM1@Z.",
+    "create": false,
+    "aliases": [
+      "?sse_SinCos4@@YAXQBMQAM1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045fdc0",
+    "name": "d3dx_sse2_sincos",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxtrigsse2.obj symbol ?sse2_sincos@@YG_K_K@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_sincos@@YG_K_K@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045feb0",
+    "name": "d3dx_sse2_sin_cos4",
+    "comment": "Exact archive recovery from objf\\i386\\d3dxtrigsse2.obj symbol ?sse2_SinCos4@@YAXQBMQAM1@Z.",
+    "create": false,
+    "aliases": [
+      "?sse2_SinCos4@@YAXQBMQAM1@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6843,9 +7359,13 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004636c8",
-    "name": "FUN_004636c8",
-    "signature": "void * FUN_004636c8(void)",
-    "comment": "[binja] void* const __EH_prolog()"
+    "name": "seh_prolog",
+    "signature": "void * seh_prolog(void)",
+    "comment": "[binja] void* const __EH_prolog()",
+    "aliases": [
+      "__EH_prolog"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",

@@ -2439,6 +2439,17 @@ def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path
         candidate_instructions=2,
         error=None,
     )
+    optimized_config = replace(
+        config,
+        directory=tmp_path / "FUN_00401020",
+        function="FUN_00401020",
+        symbol=(
+            "?sse2_D3DXVec3TransformNormal$$1@@"
+            "YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+        ),
+        archive_member=r"objf\i386\d3dxmathsse2.obj",
+    )
+    optimized_status = replace(status, config=optimized_config, address=0x00401020)
     name_map = tmp_path / "name_map.json"
     name_map.write_text(
         json.dumps(
@@ -2448,15 +2459,28 @@ def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path
                     "address": "0x00401000",
                     "name": "FUN_00401000",
                 },
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401020",
+                    "name": "FUN_00401020",
+                },
             ],
         ),
         encoding="utf-8",
     )
 
-    row = collect_naming_debt([status], name_map_path=name_map)[0]
+    rows = collect_naming_debt([status, optimized_status], name_map_path=name_map)
+    row = next(candidate for candidate in rows if candidate.address == status.address)
+    optimized_row = next(
+        candidate for candidate in rows if candidate.address == optimized_status.address
+    )
 
     assert row.suggestion == "d3dx_init_quaternion_squad_setup"
     assert row.suggestion_sources == (f"provider-symbol:{config.symbol}",)
+    assert optimized_row.suggestion == "d3dx_sse2_vec3_transform_normal_impl"
+    assert optimized_row.suggestion_sources == (
+        f"provider-symbol:{optimized_config.symbol}",
+    )
 
 
 def test_apply_naming_suggestions_replaces_weaker_d3dx_semantic_identity(tmp_path: Path) -> None:
