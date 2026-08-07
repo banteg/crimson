@@ -595,6 +595,22 @@ search evidence, not per-object provenance. Establish toolchain ancestry from
 PE/COFF records or identified archive members; for link-sensitive code, check
 `/MD` vs `/MT` first.
 
+Audit exact recoveries whose current presentation still exposes analyzer
+placeholders in canonical names, scratch directories, curated aliases,
+reference aliases, or notes:
+
+```sh
+uv run crimson match naming-audit --summary-only
+uv run crimson match naming-audit --suggested-only --image crimsonland.exe
+uv run crimson match naming-audit --json --check
+```
+
+Suggestions are intentionally narrow. The command proposes a canonical name
+only when another exact scratch for the same hash-pinned archive and COFF symbol
+already has one unique non-placeholder identity. Real decorated/linkage symbols
+remain useful aliases; generated names such as `FUN_*`, `sub_*`, and
+`unknown_libname_*` are naming debt once a stronger identity is proven.
+
 ## No Fakematching
 
 A match is useful only when the source is a plausible reconstruction of the

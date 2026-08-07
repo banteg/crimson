@@ -5645,6 +5645,18 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00461ae1",
+    "name": "crt_array_unwind_filter",
+    "aliases": [
+      "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z",
+      "?FrameUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"
+    ],
+    "signature": "int crt_array_unwind_filter(void *exception_pointers)",
+    "comment": "Exact VC6 unwind filter; identical ArrayUnwindFilter and FrameUnwindFilter COMDATs coalesce here.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00461af7",
     "name": "crt_fread",
     "aliases": [
@@ -6757,7 +6769,7 @@
     "program": "crimsonland.exe",
     "address": "0x0046b740",
     "name": "crt_fdiv_main_routine",
-    "aliases": ["unknown_libname_5", "_fdiv_main_routine"],
+    "aliases": ["_fdiv_main_routine"],
     "comment": "Exact VC6 SP6 Pentium FDIV workaround core from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
@@ -6765,8 +6777,72 @@
     "program": "crimsonland.exe",
     "address": "0x0046b857",
     "name": "crt_adj_fdiv_r",
-    "aliases": ["unknown_libname_6", "__adj_fdiv_r"],
+    "aliases": ["__adj_fdiv_r"],
     "comment": "Exact VC6 SP6 64-way x87 division dispatcher from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046bcf6",
+    "name": "crt_fdivp_sti_st",
+    "aliases": ["__fdivp_sti_st"],
+    "comment": "Exact VC6 SP6 x87 FDIVP wrapper from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046bd09",
+    "name": "crt_fdivrp_sti_st",
+    "aliases": ["__fdivrp_sti_st"],
+    "comment": "Exact VC6 SP6 x87 FDIVRP wrapper from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046bf1c",
+    "name": "crt_safe_fdiv",
+    "aliases": ["__safe_fdiv"],
+    "comment": "Exact VC6 SP6 safe x87 FDIV wrapper from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046bf31",
+    "name": "crt_safe_fdivr",
+    "aliases": ["__safe_fdivr"],
+    "comment": "Exact VC6 SP6 safe x87 FDIVR wrapper from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046bf46",
+    "name": "crt_fprem_common",
+    "aliases": ["__fprem_common"],
+    "comment": "Exact VC6 SP6 shared x87 FPREM core from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c14c",
+    "name": "crt_adj_fprem",
+    "aliases": ["__adj_fprem"],
+    "comment": "Exact VC6 SP6 adjusted x87 FPREM wrapper from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c1fe",
+    "name": "crt_fprem1_common",
+    "aliases": ["__fprem1_common"],
+    "comment": "Exact VC6 SP6 shared x87 FPREM1 core from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c404",
+    "name": "crt_adj_fprem1",
+    "aliases": ["__adj_fprem1"],
+    "comment": "Exact VC6 SP6 adjusted x87 FPREM1 wrapper from libcmt.lib adj_fdiv.obj.",
     "create": false
   },
   {
@@ -17064,7 +17140,7 @@
     "program": "grim.dll",
     "address": "0x10012874",
     "name": "d3dx_tf_row_ctor",
-    "aliases": ["unknown_libname_2", "??0TF_Row@@QAE@XZ"],
+    "aliases": ["??0TF_Row@@QAE@XZ"],
     "signature": "void * d3dx_tf_row_ctor(void *this)",
     "comment": "TF_Row constructor identity proven by exact CD3DXBlt caller relocation.",
     "create": false
@@ -17136,7 +17212,7 @@
     "program": "grim.dll",
     "address": "0x1004b6ad",
     "name": "msvc_array_unwind_filter",
-    "aliases": ["unknown_libname_3", "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"],
+    "aliases": ["?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"],
     "signature": "int msvc_array_unwind_filter(void *exception_pointers)",
     "comment": "VC6 ArrayUnwindFilter identity proven by the exact __ArrayUnwind relocation.",
     "create": false

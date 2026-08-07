@@ -924,6 +924,62 @@ def cmd_match_status(
         raise typer.Exit(code=1)
 
 
+@match_app.command("naming-audit")
+def cmd_match_naming_audit(
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
+    image: str | None = typer.Option(None, "--image", help="show rows for one image"),
+    suggested_only: bool = typer.Option(
+        False,
+        "--suggested-only",
+        help="show only deterministic same-provider naming suggestions",
+    ),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
+    summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate naming debt only"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail when selected naming debt remains"),
+    scope: Literal["port", "all"] = typer.Option(
+        "all",
+        "--scope",
+        help="matching ownership scope",
+    ),
+) -> None:
+    """Report exact recoveries that still expose weaker analyzer names."""
+
+    statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
+    rows = matchlib.collect_naming_debt(statuses)
+    rows = [
+        row
+        for row in rows
+        if (image is None or row.image == image)
+        and (not suggested_only or row.suggestion is not None)
+    ]
+    selected_rows = rows
+    displayed_rows = selected_rows[:limit] if limit is not None else selected_rows
+    if as_json:
+        typer.echo(
+            json.dumps(
+                {
+                    "scope": scope,
+                    "summary": matchlib.naming_debt_summary_payload(selected_rows),
+                    "rows": (
+                        []
+                        if summary_only
+                        else [matchlib.naming_debt_payload(row) for row in displayed_rows]
+                    ),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
+    elif summary_only:
+        typer.echo(matchlib.render_naming_debt_summary(selected_rows))
+    else:
+        typer.echo(matchlib.render_naming_debt_table(displayed_rows))
+    if check and selected_rows:
+        raise typer.Exit(code=1)
+
+
 @match_app.command("triage")
 def cmd_match_triage(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),

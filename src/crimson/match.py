@@ -28,6 +28,11 @@ DEFAULT_NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.j
 DEFAULT_MATCHING_SCOPE_PATH = REPO_ROOT / "analysis" / "matching_scope.json"
 DEFAULT_NATIVE_ANALYSIS_ROOT = REPO_ROOT / "analysis" / "native"
 DEFAULT_MATCH_SCOPE = "port"
+ANALYZER_PLACEHOLDER_RE = re.compile(
+    r"^(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|unknown(?:_libname)?(?:_[0-9]+)?|"
+    r"nullsub_[0-9]+|j_(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|nullsub_[0-9]+))$",
+    re.IGNORECASE,
+)
 MATCH_SCOPE_SCHEMA = 2
 MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset(
     {
@@ -3159,6 +3164,22 @@ class ScratchStatus:
         return max(0.0, self.target_size - self.fuzzy_weighted_bytes)
 
 
+@dataclass(frozen=True, slots=True)
+class NamingDebtRow:
+    image: str
+    address: int
+    function: str
+    configured_function: str
+    scratch: str
+    issues: tuple[str, ...]
+    placeholder_aliases: tuple[str, ...]
+    placeholder_references: tuple[str, ...]
+    provider_symbol: str | None
+    provider_member: str | None
+    suggestion: str | None
+    suggestion_sources: tuple[str, ...]
+
+
 def scratch_recovery(status: ScratchStatus) -> str:
     if status.state == "match":
         return "exact"
@@ -4855,6 +4876,186 @@ def collect_scratch_statuses(
     for status in matched:
         statuses_by_directory[status.config.directory] = status
     return [statuses_by_directory[config.directory] for config in configs]
+
+
+def is_analyzer_placeholder(name: str) -> bool:
+    """Return whether ``name`` is only an analyzer-generated identity."""
+
+    return ANALYZER_PLACEHOLDER_RE.fullmatch(name) is not None
+
+
+def _status_canonical_name(
+    status: ScratchStatus,
+    name_rows: dict[tuple[str, int], dict[str, Any]],
+) -> str:
+    row = name_rows.get((status.config.image, status.address))
+    return str(row["name"]) if row is not None else status.config.function
+
+
+def _archive_provider_key(status: ScratchStatus) -> tuple[str, str] | None:
+    if status.config.archive_sha256 is None or status.config.symbol is None:
+        return None
+    return status.config.archive_sha256, status.config.symbol
+
+
+def collect_naming_debt(
+    statuses: Collection[ScratchStatus],
+    *,
+    name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+) -> list[NamingDebtRow]:
+    """Find exact recoveries whose presentation still exposes weaker analyzer names.
+
+    Suggestions are deliberately conservative: an exact archive scratch receives a
+    proposed name only when another exact scratch from the same hash-pinned archive
+    symbol has one unique non-placeholder canonical identity.
+    """
+
+    exact_statuses = [status for status in statuses if status.state == "match"]
+    name_rows = {
+        (str(row.get("program", "")), parse_int(row["address"])): row
+        for row in load_name_map_rows(name_map_path)
+    }
+    canonical_names = {
+        id(status): _status_canonical_name(status, name_rows)
+        for status in exact_statuses
+    }
+    provider_peers: dict[tuple[str, str], list[ScratchStatus]] = defaultdict(list)
+    for status in exact_statuses:
+        key = _archive_provider_key(status)
+        if key is not None:
+            provider_peers[key].append(status)
+
+    rows: list[NamingDebtRow] = []
+    for status in exact_statuses:
+        canonical = canonical_names[id(status)]
+        map_row = name_rows.get((status.config.image, status.address), {})
+        placeholder_aliases = tuple(
+            str(alias)
+            for alias in map_row.get("aliases", ())
+            if is_analyzer_placeholder(str(alias))
+        )
+        placeholder_references = tuple(
+            target
+            for _, target in status.config.reference_aliases
+            if is_analyzer_placeholder(target)
+        )
+        issues: list[str] = []
+        if is_analyzer_placeholder(canonical) or is_analyzer_placeholder(status.config.function):
+            issues.append("placeholder-function")
+        if is_analyzer_placeholder(status.config.directory.name):
+            issues.append("placeholder-directory")
+        if placeholder_aliases:
+            issues.append("placeholder-alias")
+        if placeholder_references:
+            issues.append("placeholder-reference")
+        if "unknown" in status.config.note.lower():
+            issues.append("placeholder-note")
+        if not issues:
+            continue
+
+        suggestion: str | None = None
+        suggestion_sources: tuple[str, ...] = ()
+        key = _archive_provider_key(status)
+        if key is not None and "placeholder-function" in issues:
+            peers = [
+                peer
+                for peer in provider_peers[key]
+                if peer.config.image != status.config.image
+                and not is_analyzer_placeholder(canonical_names[id(peer)])
+            ]
+            peer_names = {canonical_names[id(peer)] for peer in peers}
+            if len(peer_names) == 1:
+                candidate = next(iter(peer_names))
+                if candidate != canonical:
+                    suggestion = candidate
+                    suggestion_sources = tuple(
+                        sorted(
+                            {
+                                f"{peer.config.image}:0x{peer.address:08x}"
+                                for peer in peers
+                                if canonical_names[id(peer)] == candidate
+                            },
+                        ),
+                    )
+
+        try:
+            scratch = status.config.directory.resolve().relative_to(REPO_ROOT).as_posix()
+        except ValueError:
+            scratch = status.config.directory.as_posix()
+        rows.append(
+            NamingDebtRow(
+                image=status.config.image,
+                address=status.address,
+                function=canonical,
+                configured_function=status.config.function,
+                scratch=scratch,
+                issues=tuple(issues),
+                placeholder_aliases=placeholder_aliases,
+                placeholder_references=placeholder_references,
+                provider_symbol=status.config.symbol,
+                provider_member=status.config.archive_member,
+                suggestion=suggestion,
+                suggestion_sources=suggestion_sources,
+            ),
+        )
+    return sorted(rows, key=lambda row: (row.image, row.address, row.scratch))
+
+
+def naming_debt_payload(row: NamingDebtRow) -> dict[str, Any]:
+    return {
+        "image": row.image,
+        "address": row.address,
+        "function": row.function,
+        "configured_function": row.configured_function,
+        "scratch": row.scratch,
+        "issues": list(row.issues),
+        "placeholder_aliases": list(row.placeholder_aliases),
+        "placeholder_references": list(row.placeholder_references),
+        "provider_symbol": row.provider_symbol,
+        "provider_member": row.provider_member,
+        "suggestion": row.suggestion,
+        "suggestion_sources": list(row.suggestion_sources),
+    }
+
+
+def naming_debt_summary_payload(rows: Collection[NamingDebtRow]) -> dict[str, Any]:
+    issue_counts = Counter(issue for row in rows for issue in row.issues)
+    return {
+        "row_count": len(rows),
+        "suggested_count": sum(row.suggestion is not None for row in rows),
+        "issues": {issue: issue_counts[issue] for issue in sorted(issue_counts)},
+    }
+
+
+def render_naming_debt_summary(rows: Collection[NamingDebtRow]) -> str:
+    summary = naming_debt_summary_payload(rows)
+    return (
+        f"rows={summary['row_count']}; suggested={summary['suggested_count']}; issues="
+        + ",".join(f"{issue}:{count}" for issue, count in summary["issues"].items())
+    )
+
+
+def render_naming_debt_table(rows: Collection[NamingDebtRow]) -> str:
+    header = ("image", "address", "function", "suggestion", "issues", "symbol", "scratch")
+    rendered = [
+        header,
+        *(
+            (
+                row.image,
+                f"0x{row.address:08x}",
+                row.function,
+                row.suggestion or "-",
+                ",".join(row.issues),
+                row.provider_symbol or "-",
+                row.scratch,
+            )
+            for row in rows
+        ),
+    ]
+    widths = [max(len(row[column]) for row in rendered) for column in range(len(header))]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rendered]
+    lines.append(f"\n{render_naming_debt_summary(rows)}")
+    return "\n".join(lines)
 
 
 STATUS_HEADER = (

@@ -57,6 +57,7 @@ from crimson.match import (
     build_match_shard_plan,
     claimed_scratch_paths,
     collect_image_totals,
+    collect_naming_debt,
     collect_native_link_statuses,
     collect_scratch_statuses,
     collect_triage_rows,
@@ -70,6 +71,7 @@ from crimson.match import (
     evaluate_source_probe,
     extract_object_function,
     inspect_match_function,
+    is_analyzer_placeholder,
     load_function_manifest,
     load_matching_scope,
     load_matching_scope_function_dispositions,
@@ -78,10 +80,13 @@ from crimson.match import (
     match_function,
     match_result_payload,
     matching_scope_function_disposition_payloads,
+    naming_debt_payload,
     native_json_program_sha256,
     normalize_function,
     parse_coff_object,
     render_image_total_rows,
+    render_naming_debt_summary,
+    render_naming_debt_table,
     render_native_link_status_markdown,
     render_probe_result,
     render_profile_table,
@@ -2283,6 +2288,118 @@ def test_validate_command_reports_directory_errors_without_traceback(tmp_path: P
     assert completed.exit_code == 1
     assert "missing.cpp" in completed.output
     assert "Traceback" not in completed.output
+
+
+def test_is_analyzer_placeholder_rejects_only_weak_generated_names() -> None:
+    assert is_analyzer_placeholder("FUN_00401000")
+    assert is_analyzer_placeholder("sub_1000ABCD")
+    assert is_analyzer_placeholder("unknown_libname_7")
+    assert is_analyzer_placeholder("j_nullsub_11")
+    assert not is_analyzer_placeholder("crt_array_unwind_filter")
+    assert not is_analyzer_placeholder("j_config_init_defaults")
+    assert not is_analyzer_placeholder("?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z")
+
+
+def test_collect_naming_debt_suggests_unique_exact_provider_peer(tmp_path: Path) -> None:
+    archive_hash = "a" * 64
+    placeholder_config = ScratchConfig(
+        directory=tmp_path / "FUN_00401000",
+        function="FUN_00401000",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2 /GB /W3 /GR-",
+        source="",
+        end_va=None,
+        symbol="?KnownProvider@@YAXXZ",
+        note="unknown provider name",
+        reference_aliases=(("object_target", "sub_00402000"),),
+        archive="provider.lib",
+        archive_member="known.obj",
+        archive_sha256=archive_hash,
+    )
+    peer_config = replace(
+        placeholder_config,
+        directory=tmp_path / "known_provider",
+        function="known_provider",
+        image="grim.dll",
+        note="exact provider",
+        reference_aliases=(),
+    )
+    statuses = [
+        ScratchStatus(
+            config=placeholder_config,
+            address=0x00401000,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        ),
+        ScratchStatus(
+            config=peer_config,
+            address=0x10001000,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        ),
+    ]
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": "FUN_00401000",
+                    "aliases": ["sub_00401000", "?KnownProvider@@YAXXZ"],
+                },
+                {
+                    "program": "grim.dll",
+                    "address": "0x10001000",
+                    "name": "known_provider",
+                    "aliases": ["sub_10001000", "?KnownProvider@@YAXXZ"],
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(statuses, name_map_path=name_map)
+
+    assert len(rows) == 2
+    row = next(candidate for candidate in rows if candidate.image == "crimsonland.exe")
+    assert row.function == "FUN_00401000"
+    assert row.suggestion == "known_provider"
+    assert row.suggestion_sources == ("grim.dll:0x10001000",)
+    assert row.issues == (
+        "placeholder-function",
+        "placeholder-directory",
+        "placeholder-alias",
+        "placeholder-reference",
+        "placeholder-note",
+    )
+    assert row.placeholder_aliases == ("sub_00401000",)
+    assert row.placeholder_references == ("sub_00402000",)
+    assert naming_debt_payload(row)["provider_symbol"] == "?KnownProvider@@YAXXZ"
+    rendered = render_naming_debt_table(rows)
+    assert "FUN_00401000" in rendered
+    assert "known_provider" in rendered
+    assert "suggested=1" in rendered
+    peer_row = next(candidate for candidate in rows if candidate.image == "grim.dll")
+    assert peer_row.issues == ("placeholder-alias",)
+    assert peer_row.suggestion is None
+
+
+def test_render_naming_debt_table_handles_clean_result() -> None:
+    assert render_naming_debt_table([]) == (
+        "image  address  function  suggestion  issues  symbol  scratch\n\n"
+        "rows=0; suggested=0; issues="
+    )
+    assert render_naming_debt_summary([]) == "rows=0; suggested=0; issues="
 
 
 def test_render_status_rows_includes_prefix() -> None:
