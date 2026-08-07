@@ -8983,6 +8983,14 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10010dd0",
+    "name": "d3dx_image_jpeg_error_exit",
+    "aliases": ["sub_10010DD0"],
+    "signature": "void d3dx_image_jpeg_error_exit(j_common_ptr cinfo)",
+    "comment": "Exact DirectX 8.1 CD3DXImage JPEG fatal-error callback; emits the message then longjmps through the loader error state."
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10010dec",
     "name": "nullsub_2",
     "signature": "void nullsub_2(void)",

@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "4ed92201b9ed643ff17e979f42205416225a154413912206c0f6288c491eb247",
+  "audit_digest": "a1b9638fac2569fc6f5b0c4320ef5a275e3430b8dbe87baff4b1aa9a5853737d",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -17074,7 +17074,7 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "9631e56e70205828974bdc66f18053c7902b92a79f535ab36293c7b82a1c75a8"
+        "sha256": "bb08a9c5caf9fba0cc22a822b46eebafaf79da0ca6802dff829b8ab6c72de247"
       },
       {
         "path": "analysis/matching_scope.json",
