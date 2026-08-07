@@ -958,6 +958,7 @@ def test_normalize_strips_untargeted_terminal_padding() -> None:
         + bytes.fromhex("8d4900")
         + bytes.fromhex("8db600000000")
         + bytes.fromhex("8dbf00000000")
+        + bytes.fromhex("8bf6")
         + (b"\x00" * 4)
         + (b"\x90" * 4)
     )

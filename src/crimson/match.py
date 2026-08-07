@@ -83,6 +83,7 @@ PADDING_LINE_TEXT = {
     "lea esi, dword [esi]",
     "lea esp, dword [esp]",
     "mov edi, edi",
+    "mov esi, esi",
     "nop",
 }
 BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
