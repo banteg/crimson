@@ -119,7 +119,7 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     mapped[0x1000:0x1006] = linked_code
     monkeypatch.setattr(
         "crimson.library_match.matchlib.load_image",
-        lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
+        lambda path, image_base=None: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 
     report = match_coff_archive(
@@ -214,6 +214,20 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert config.symbol == "_probe"
     assert config.note == "test-archive-native-probe"
     assert (config.directory / cast(str, config.archive)).resolve() == archive_path.resolve()
+
+    inferred_root = tmp_path / "generated-inferred"
+    inferred_writes = write_archive_scratch_configs(
+        report,
+        match_root=inferred_root,
+        expected_sha256=report.archive_sha256,
+        note_prefix="test-archive",
+        infer_reference_aliases=True,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+    )
+    assert inferred_writes[0].reference_aliases == (("_probe", "native_probe"),)
+    inferred_config = load_scratch_config(inferred_writes[0].directory)
+    assert inferred_config.reference_aliases == (("_probe", "native_probe"),)
 
     symbol_unique_writes = write_archive_scratch_configs(
         symbol_unique_report,

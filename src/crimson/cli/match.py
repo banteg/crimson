@@ -408,6 +408,11 @@ def cmd_match_archive(
         "--write-symbol-unique",
         help="also write matches whose duplicate members share one symbol",
     ),
+    write_reference_aliases: bool = typer.Option(
+        False,
+        "--write-reference-aliases",
+        help="add aliases only for aligned zero-addend references to known image symbols",
+    ),
     scratch_note_prefix: str = typer.Option(
         "archive",
         "--scratch-note-prefix",
@@ -423,6 +428,8 @@ def cmd_match_archive(
         raise typer.BadParameter("--write-scratches requires --expected-sha256")
     if write_symbol_unique and not write_scratches:
         raise typer.BadParameter("--write-symbol-unique requires --write-scratches")
+    if write_reference_aliases and not write_scratches:
+        raise typer.BadParameter("--write-reference-aliases requires --write-scratches")
     image_name = image.name
     try:
         excluded_addresses: frozenset[int] = frozenset()
@@ -457,6 +464,9 @@ def cmd_match_archive(
                 expected_sha256=expected_sha256,
                 note_prefix=scratch_note_prefix,
                 include_symbol_unique=write_symbol_unique,
+                infer_reference_aliases=write_reference_aliases,
+                functions_path=functions or matchlib.default_functions_path(image_name),
+                metadata_path=metadata or matchlib.default_metadata_path(image_name),
             )
         except Exception as exc:
             typer.echo(f"archive scratch write failed: {str(exc).splitlines()[0]}", err=True)
@@ -469,6 +479,7 @@ def cmd_match_archive(
         payload["written_scratches"] = {
             "count": len(written_scratches),
             "include_symbol_unique": write_symbol_unique,
+            "infer_reference_aliases": write_reference_aliases,
             "directories": [
                 str(write.directory.relative_to(match_root))
                 for write in written_scratches

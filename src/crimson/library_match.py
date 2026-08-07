@@ -98,6 +98,7 @@ class ArchiveScratchWrite:
     directory: Path
     match: ArchiveFunctionMatch
     candidate: ArchiveCandidate
+    reference_aliases: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -447,6 +448,114 @@ def _write_text_atomic(path: Path, text: str) -> None:
         temp_path.unlink(missing_ok=True)
 
 
+def infer_archive_reference_aliases(
+    report: ArchiveMatchReport,
+    *,
+    functions_path: Path,
+    metadata_path: Path,
+    include_symbol_unique: bool = False,
+) -> dict[int, tuple[tuple[str, str], ...]]:
+    """Infer conservative object-to-image aliases from exact aligned references."""
+    members: dict[str, bytes] = {}
+    for member in parse_coff_archive(report.archive.read_bytes()):
+        if member.name in {"/", "//"}:
+            continue
+        if member.name in members:
+            raise ValueError(f"archive contains duplicate member name {member.name!r}")
+        members[member.name] = member.data
+
+    manifest = matchlib.load_function_manifest(
+        functions_path,
+        metadata_path=metadata_path,
+        image_name=report.image.name,
+        scope="all",
+    )
+    image = matchlib.load_image(report.image, manifest.image_base)
+    catalog = matchlib.load_reference_catalog(manifest, functions_path=functions_path)
+    aliases_by_address: dict[int, tuple[tuple[str, str], ...]] = {}
+    for archive_match in report.matches:
+        if not archive_match.unique and not (
+            include_symbol_unique and archive_match.symbol_unique
+        ):
+            continue
+        candidate = archive_match.candidates[0]
+        member_data = members.get(candidate.member)
+        if member_data is None:
+            raise ValueError(f"archive member {candidate.member!r} disappeared during alias inference")
+        obj = matchlib.parse_coff_object(member_data)
+        function = matchlib.extract_object_function(obj, candidate.symbol)
+        result = matchlib.match_function(
+            image.function_bytes(archive_match.address, archive_match.end),
+            function,
+            image=image,
+            target_va=archive_match.address,
+            reference_catalog=catalog,
+        )
+        if result.ratio != 1.0:
+            continue
+
+        zero_addend_symbols = {
+            reference.symbol_name
+            for reference in function.relocation_references
+            if reference.addend == 0
+        }
+        nonzero_addend_symbols = {
+            reference.symbol_name
+            for reference in function.relocation_references
+            if reference.addend != 0
+        }
+        inferred: dict[str, tuple[str, int]] = {}
+        conflicted: set[str] = set()
+        for entry in result.masked_operand_audit.entries:
+            if entry.status != "unresolved":
+                continue
+            if len(entry.candidate_references) != 1 or len(entry.target_references) != 1:
+                continue
+            object_reference = entry.candidate_references[0]
+            target_reference = entry.target_references[0]
+            object_symbol = object_reference.text
+            if (
+                object_reference.source != "reloc"
+                or target_reference.source != "image"
+                or target_reference.value is None
+                or object_symbol.startswith("__imp_")
+                or object_symbol not in zero_addend_symbols
+                or object_symbol in nonzero_addend_symbols
+                or any(character in object_symbol for character in ",:")
+            ):
+                continue
+            target_names = tuple(
+                name
+                for name in catalog.names_by_address.get(target_reference.value, ())
+                if catalog.knows_name(name) and not any(character in name for character in ",:")
+            )
+            if not target_names:
+                continue
+            target_name = target_names[0]
+            lookup_name = matchlib._symbol_lookup_name(object_symbol)
+            previous = inferred.get(lookup_name)
+            current = (target_name, target_reference.value)
+            if previous is not None and previous != current:
+                conflicted.add(lookup_name)
+                continue
+            inferred[lookup_name] = current
+        aliases_by_address[archive_match.address] = tuple(
+            sorted(
+                (
+                    next(
+                        reference.symbol_name
+                        for reference in function.relocation_references
+                        if matchlib._symbol_lookup_name(reference.symbol_name) == lookup_name
+                    ),
+                    target_name,
+                )
+                for lookup_name, (target_name, _) in inferred.items()
+                if lookup_name not in conflicted
+            ),
+        )
+    return aliases_by_address
+
+
 def write_archive_scratch_configs(
     report: ArchiveMatchReport,
     *,
@@ -454,6 +563,9 @@ def write_archive_scratch_configs(
     expected_sha256: str,
     note_prefix: str,
     include_symbol_unique: bool = False,
+    infer_reference_aliases: bool = False,
+    functions_path: Path | None = None,
+    metadata_path: Path | None = None,
 ) -> tuple[ArchiveScratchWrite, ...]:
     """Materialize pinned configs for unambiguous archive matches."""
     expected = expected_sha256.lower()
@@ -465,6 +577,17 @@ def write_archive_scratch_configs(
         )
     if not note_prefix.strip():
         raise ValueError("archive scratch note prefix must not be empty")
+
+    aliases_by_address = (
+        infer_archive_reference_aliases(
+            report,
+            functions_path=functions_path or matchlib.default_functions_path(report.image.name),
+            metadata_path=metadata_path or matchlib.default_metadata_path(report.image.name),
+            include_symbol_unique=include_symbol_unique,
+        )
+        if infer_reference_aliases
+        else {}
+    )
 
     scratches_root = match_root / "scratches"
     reserved_directories: set[Path] = set()
@@ -487,6 +610,7 @@ def write_archive_scratch_configs(
                 directory=directory,
                 match=archive_match,
                 candidate=candidate,
+                reference_aliases=aliases_by_address.get(archive_match.address, ()),
             ),
         )
 
@@ -494,18 +618,26 @@ def write_archive_scratch_configs(
     for write in planned:
         relative_archive = Path(os.path.relpath(archive_path, start=write.directory.resolve()))
         note = f"{note_prefix}-{_scratch_note_suffix(write.match.name, write.match.address)}"
-        config = "\n".join(
-            (
-                _scratch_assignment("IMAGE", report.image.name),
-                _scratch_assignment("FUNCTION", write.match.name),
-                _scratch_assignment("ARCHIVE", relative_archive.as_posix()),
-                _scratch_assignment("ARCHIVE_MEMBER", write.candidate.member),
-                _scratch_assignment("ARCHIVE_SHA256", report.archive_sha256),
-                _scratch_assignment("SYMBOL", write.candidate.symbol),
-                _scratch_assignment("NOTE", note),
-                "",
-            ),
-        )
+        config_lines = [
+            _scratch_assignment("IMAGE", report.image.name),
+            _scratch_assignment("FUNCTION", write.match.name),
+            _scratch_assignment("ARCHIVE", relative_archive.as_posix()),
+            _scratch_assignment("ARCHIVE_MEMBER", write.candidate.member),
+            _scratch_assignment("ARCHIVE_SHA256", report.archive_sha256),
+            _scratch_assignment("SYMBOL", write.candidate.symbol),
+        ]
+        if write.reference_aliases:
+            config_lines.append(
+                _scratch_assignment(
+                    "REFERENCE_ALIASES",
+                    ",".join(
+                        f"{object_symbol}:{target_symbol}"
+                        for object_symbol, target_symbol in write.reference_aliases
+                    ),
+                ),
+            )
+        config_lines.extend((_scratch_assignment("NOTE", note), ""))
+        config = "\n".join(config_lines)
         _write_text_atomic(write.directory / "scratch.conf", config)
     return tuple(planned)
 

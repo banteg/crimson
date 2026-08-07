@@ -221,6 +221,7 @@ Scan an established provider range and materialize only unambiguous matches:
 uv run crimson match archive path/to/provider.lib \
   --start 0x00460000 --end 0x00468000 --missing-scratches \
   --expected-sha256 <sha256> --write-scratches \
+  --write-reference-aliases \
   --scratch-note-prefix provider-release
 ```
 
@@ -228,7 +229,10 @@ Writing requires both the pinned digest and `--missing-scratches`, never
 overwrites an existing directory, and defaults to archive-member-unique hits.
 Pass `--write-symbol-unique` only when duplicate matching members expose the
 same function symbol; the generated scratch still has to pass the normal
-reference audit before it counts as exact.
+reference audit before it counts as exact. `--write-reference-aliases` adds
+only zero-addend relocations that align with an already unique function, data,
+or import name in the target catalog; unknown addresses and conflicting
+inferences remain unresolved.
 
 `REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
 names are reused across translation units. Each comma-separated
