@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
 
+import pytest
 from typer.testing import CliRunner
 
 from crimson.cli.match import match_app
@@ -16,8 +17,15 @@ from crimson.library_match import (
     match_coff_archive,
     parse_coff_archive,
     render_archive_match_report,
+    write_archive_scratch_configs,
 )
-from crimson.match import CoffObject, CoffSection, CoffSymbol, LoadedImage
+from crimson.match import (
+    CoffObject,
+    CoffSection,
+    CoffSymbol,
+    LoadedImage,
+    load_scratch_config,
+)
 
 
 def _build_object(
@@ -189,6 +197,41 @@ def test_archive_match_requires_exact_unrelocated_bytes(
         symbol_unique_match,
         candidates=(candidate, conflicting_candidate),
     ).symbol_unique
+
+    generated_root = tmp_path / "generated"
+    writes = write_archive_scratch_configs(
+        report,
+        match_root=generated_root,
+        expected_sha256=report.archive_sha256,
+        note_prefix="test-archive",
+    )
+    assert len(writes) == 1
+    config = load_scratch_config(writes[0].directory)
+    assert config.image == "game.exe"
+    assert config.function == "native_probe"
+    assert config.archive_member == r"obj\i386\probe.obj"
+    assert config.archive_sha256 == report.archive_sha256
+    assert config.symbol == "_probe"
+    assert config.note == "test-archive-native-probe"
+    assert (config.directory / cast(str, config.archive)).resolve() == archive_path.resolve()
+
+    symbol_unique_writes = write_archive_scratch_configs(
+        symbol_unique_report,
+        match_root=tmp_path / "generated-symbol-unique",
+        expected_sha256=symbol_unique_report.archive_sha256,
+        note_prefix="test-archive",
+        include_symbol_unique=True,
+    )
+    assert len(symbol_unique_writes) == 1
+    assert symbol_unique_writes[0].candidate.member == candidate.member
+
+    with pytest.raises(ValueError, match="archive SHA-256 mismatch"):
+        write_archive_scratch_configs(
+            report,
+            match_root=tmp_path / "wrong-hash",
+            expected_sha256="0" * 64,
+            note_prefix="test-archive",
+        )
 
     repeated_report = replace(
         report,

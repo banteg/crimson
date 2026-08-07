@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import os
+import re
+import shlex
 import struct
+import tempfile
 from collections import Counter, defaultdict
 from collections.abc import Collection
 from dataclasses import dataclass
@@ -87,6 +91,13 @@ class ArchiveMatchReport:
     @property
     def symbol_unique_bytes(self) -> int:
         return sum(match.size for match in self.matches if match.symbol_unique)
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveScratchWrite:
+    directory: Path
+    match: ArchiveFunctionMatch
+    candidate: ArchiveCandidate
 
 
 @dataclass(frozen=True, slots=True)
@@ -402,6 +413,101 @@ def archive_match_payload(
             for match in listed_matches
         ],
     }
+
+
+def _scratch_directory_slug(name: str, address: int) -> str:
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "_", name).strip("._-")
+    return slug or f"sub_{address:08x}"
+
+
+def _scratch_note_suffix(name: str, address: int) -> str:
+    suffix = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    return suffix or f"sub-{address:08x}"
+
+
+def _scratch_assignment(key: str, value: str) -> str:
+    return f"{key}={shlex.quote(value)}"
+
+
+def _write_text_atomic(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as handle:
+        handle.write(text)
+        temp_path = Path(handle.name)
+    try:
+        os.replace(temp_path, path)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+def write_archive_scratch_configs(
+    report: ArchiveMatchReport,
+    *,
+    match_root: Path,
+    expected_sha256: str,
+    note_prefix: str,
+    include_symbol_unique: bool = False,
+) -> tuple[ArchiveScratchWrite, ...]:
+    """Materialize pinned configs for unambiguous archive matches."""
+    expected = expected_sha256.lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise ValueError("expected archive SHA-256 must be 64 hexadecimal characters")
+    if report.archive_sha256 != expected:
+        raise ValueError(
+            f"archive SHA-256 mismatch: expected {expected}, got {report.archive_sha256}",
+        )
+    if not note_prefix.strip():
+        raise ValueError("archive scratch note prefix must not be empty")
+
+    scratches_root = match_root / "scratches"
+    reserved_directories: set[Path] = set()
+    planned: list[ArchiveScratchWrite] = []
+    for archive_match in report.matches:
+        if not archive_match.unique and not (
+            include_symbol_unique and archive_match.symbol_unique
+        ):
+            continue
+        candidate = archive_match.candidates[0]
+        slug = _scratch_directory_slug(archive_match.name, archive_match.address)
+        directory = scratches_root / slug
+        if directory.exists() or directory in reserved_directories:
+            directory = scratches_root / f"{slug}_{archive_match.address:08x}"
+        if directory.exists() or directory in reserved_directories:
+            raise FileExistsError(f"refusing to overwrite archive scratch directory {directory}")
+        reserved_directories.add(directory)
+        planned.append(
+            ArchiveScratchWrite(
+                directory=directory,
+                match=archive_match,
+                candidate=candidate,
+            ),
+        )
+
+    archive_path = report.archive.resolve()
+    for write in planned:
+        relative_archive = Path(os.path.relpath(archive_path, start=write.directory.resolve()))
+        note = f"{note_prefix}-{_scratch_note_suffix(write.match.name, write.match.address)}"
+        config = "\n".join(
+            (
+                _scratch_assignment("IMAGE", report.image.name),
+                _scratch_assignment("FUNCTION", write.match.name),
+                _scratch_assignment("ARCHIVE", relative_archive.as_posix()),
+                _scratch_assignment("ARCHIVE_MEMBER", write.candidate.member),
+                _scratch_assignment("ARCHIVE_SHA256", report.archive_sha256),
+                _scratch_assignment("SYMBOL", write.candidate.symbol),
+                _scratch_assignment("NOTE", note),
+                "",
+            ),
+        )
+        _write_text_atomic(write.directory / "scratch.conf", config)
+    return tuple(planned)
 
 
 def render_archive_match_report(

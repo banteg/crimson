@@ -398,10 +398,31 @@ def cmd_match_archive(
     ),
     show_matches: bool = typer.Option(False, "--show-matches", help="list exact function matches"),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum listed matches"),
+    write_scratches: bool = typer.Option(
+        False,
+        "--write-scratches",
+        help="write strictly unique matches as pinned scratch configs",
+    ),
+    write_symbol_unique: bool = typer.Option(
+        False,
+        "--write-symbol-unique",
+        help="also write matches whose duplicate members share one symbol",
+    ),
+    scratch_note_prefix: str = typer.Option(
+        "archive",
+        "--scratch-note-prefix",
+        help="NOTE prefix for generated scratch configs",
+    ),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
     check: bool = typer.Option(False, "--check", help="fail on hash mismatch or zero matches"),
 ) -> None:
     """Match historical COFF library members directly against a linked PE range."""
+    if write_scratches and not missing_scratches:
+        raise typer.BadParameter("--write-scratches requires --missing-scratches")
+    if write_scratches and expected_sha256 is None:
+        raise typer.BadParameter("--write-scratches requires --expected-sha256")
+    if write_symbol_unique and not write_scratches:
+        raise typer.BadParameter("--write-symbol-unique requires --write-scratches")
     image_name = image.name
     try:
         excluded_addresses: frozenset[int] = frozenset()
@@ -426,11 +447,33 @@ def cmd_match_archive(
         raise typer.Exit(code=2) from exc
 
     hash_ok = expected_sha256 is None or report.archive_sha256 == expected_sha256.lower()
+    written_scratches: tuple[library_match.ArchiveScratchWrite, ...] = ()
+    if write_scratches:
+        try:
+            assert expected_sha256 is not None
+            written_scratches = library_match.write_archive_scratch_configs(
+                report,
+                match_root=match_root,
+                expected_sha256=expected_sha256,
+                note_prefix=scratch_note_prefix,
+                include_symbol_unique=write_symbol_unique,
+            )
+        except Exception as exc:
+            typer.echo(f"archive scratch write failed: {str(exc).splitlines()[0]}", err=True)
+            raise typer.Exit(code=2) from exc
     if as_json:
         payload = library_match.archive_match_payload(report, limit=limit)
         payload["expected_sha256"] = expected_sha256
         payload["hash_ok"] = hash_ok
         payload["filters"] = {"missing_scratches": missing_scratches}
+        payload["written_scratches"] = {
+            "count": len(written_scratches),
+            "include_symbol_unique": write_symbol_unique,
+            "directories": [
+                str(write.directory.relative_to(match_root))
+                for write in written_scratches
+            ],
+        }
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
         typer.echo(
@@ -444,6 +487,11 @@ def cmd_match_archive(
             typer.echo(
                 f"hash mismatch: expected={expected_sha256} actual={report.archive_sha256}",
                 err=True,
+            )
+        if write_scratches:
+            typer.echo(
+                f"written_scratch_configs={len(written_scratches)} "
+                f"root={match_root / 'scratches'}",
             )
     if check and (not hash_ok or report.matched_functions == 0):
         raise typer.Exit(code=1)

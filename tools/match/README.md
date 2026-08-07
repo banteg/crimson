@@ -215,6 +215,21 @@ forbidden, and the extracted member still passes the ordinary instruction and
 reference audit. This promotes an exact pinned-library match into checkpoints
 without treating a whole archive or an ambiguous member hit as recovered code.
 
+Scan an established provider range and materialize only unambiguous matches:
+
+```sh
+uv run crimson match archive path/to/provider.lib \
+  --start 0x00460000 --end 0x00468000 --missing-scratches \
+  --expected-sha256 <sha256> --write-scratches \
+  --scratch-note-prefix provider-release
+```
+
+Writing requires both the pinned digest and `--missing-scratches`, never
+overwrites an existing directory, and defaults to archive-member-unique hits.
+Pass `--write-symbol-unique` only when duplicate matching members expose the
+same function symbol; the generated scratch still has to pass the normal
+reference audit before it counts as exact.
+
 `REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
 names are reused across translation units. Each comma-separated
 `object-symbol:image-symbol` pair scopes that candidate symbol to one uniquely
