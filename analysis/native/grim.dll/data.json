@@ -1,5 +1,5 @@
 {
-  "audit_digest": "32438f717f0ec6d565f4639a00db86bebaecebba154c2b06b3678c3c61c74a80",
+  "audit_digest": "98b5d36745087b0f96ac07fdbf4d0b1a83c56ab1fb3856183c0a342d1f305c00",
   "entries": [
     {
       "address": 268747320,
@@ -4563,6 +4563,27 @@
       "type": "void *[57]"
     },
     {
+      "address": 268779208,
+      "aliases": [
+        "_g_pDDSFormatDDPF"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed 34-entry DirectX 8.1 table mapping D3DFORMAT values to DDS pixel-format descriptors.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_dds_pixel_format_table",
+      "section": ".data",
+      "section_offset": 3784,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "unsigned char[1224]"
+    },
+    {
       "address": 268780432,
       "aliases": [
         "?g_pBoxFilter2D_A8R8G8B8@@3P6AJPAI0IIII@ZA"
@@ -8859,6 +8880,48 @@
       "type": "float"
     },
     {
+      "address": 268819296,
+      "aliases": [
+        "?pDSM_D3D8D@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Zero-initialized DirectX 8.1 debug-runtime D3DXDebugMute callback cache.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_debug_mute_d3d8d_callback",
+      "section": ".data",
+      "section_offset": 43872,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "void (__cdecl *)(int)"
+    },
+    {
+      "address": 268819300,
+      "aliases": [
+        "?pDSM_D3D8@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Zero-initialized DirectX 8.1 retail-runtime D3DXDebugMute callback cache.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_debug_mute_d3d8_callback",
+      "section": ".data",
+      "section_offset": 43876,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "void (__cdecl *)(int)"
+    },
+    {
       "address": 268819304,
       "aliases": [],
       "alignment": 4,
@@ -9111,7 +9174,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "3792870603e70fab57fb026fe69ae3358eaebccfcfcdf7b6de11cff6f7e06dd9",
+    "data_map_sha256": "346644863a20c52ded720e2ac4b8541ed07e6118ca37e5d9f8a0576cbd93c25c",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55",
     "reference_image": {
@@ -9122,16 +9185,16 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 76,
-    "alias_rows": 71,
+    "alias_names": 79,
+    "alias_rows": 74,
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 383,
+    "entry_count": 386,
     "explicit_alignment_entries": 349,
     "explicit_initializer_entries": 349,
     "explicit_size_entries": 349,
-    "fixed_array_types": 156,
+    "fixed_array_types": 157,
     "fully_specified_entries": 349,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -9140,13 +9203,13 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 235,
+      ".data": 238,
       ".data1": 6,
       ".rdata": 142
     },
-    "source_entry_count": 386,
-    "typed_entries": 333,
-    "unique_addresses": 383,
+    "source_entry_count": 389,
+    "typed_entries": 336,
+    "unique_addresses": 386,
     "untyped_entries": 50
   }
 }

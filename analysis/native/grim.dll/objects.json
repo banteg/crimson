@@ -58,13 +58,13 @@
     ],
     "config": "tools/native/abi/grim.dll/scratch.conf",
     "config_sha256": "5e76d0e969b2a775b73d701b7301d305629f61ca5eb9a8c5c4bc393d8751f30c",
-    "object": "tools/native/abi/grim.dll/build/msvc6.5/528f168a972345bf/abi_assertions.obj",
+    "object": "tools/native/abi/grim.dll/build/msvc6.5/9b1c7c0da14c92ef/abi_assertions.obj",
     "object_sha256": "323e77dd04cd87886eae26d4a13eb1b06bfc7f94f8ea7740cb446d70e6e59a5c",
     "source": "tools/native/abi/grim.dll/abi_assertions.cpp",
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "32438f717f0ec6d565f4639a00db86bebaecebba154c2b06b3678c3c61c74a80",
+  "audit_digest": "98b5d36745087b0f96ac07fdbf4d0b1a83c56ab1fb3856183c0a342d1f305c00",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4262,7 +4262,7 @@
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "b8fd00ab7f69972efca7618a116e69950f3999b11180e36742a49928f6725249",
+  "object_list_sha256": "eb6da6dbbf0d286c465d672062e887228a7f3d5598007064dfb23df15f85c79d",
   "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
     {
@@ -4345,7 +4345,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/abc7bc9c37545a6f/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/79ab851ee4c3df0f/scratch.obj",
       "object_function_symbol": "_j_nullsub_11",
       "object_sha256": "228f19a696ccbe14a5c8a994b07a2f79b45036d1fdff79b97d4651766020bd01",
       "scratch": "tools/match/scratches/grim_j_nullsub_11",
@@ -4437,7 +4437,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_11/build/msvc6.5/4913a45decabc783/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_11/build/msvc6.5/58d1324b6c91909d/scratch.obj",
       "object_function_symbol": "_nullsub_11",
       "object_sha256": "dc7ad7dc0d3a99312781a6975c3e1c77bc5df430c9d68d5c377a7a8169b47d8e",
       "scratch": "tools/match/scratches/grim_nullsub_11",
@@ -4529,7 +4529,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/a00d0efef6024b69/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/20611174d997d585/scratch.obj",
       "object_function_symbol": "_j_nullsub_12",
       "object_sha256": "708a55323bac5965d39dd9a123ce5cc10f308fba5c99133a9a080e3a077cef27",
       "scratch": "tools/match/scratches/grim_j_nullsub_12",
@@ -4621,7 +4621,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_12/build/msvc6.5/c9de8b337488f5ac/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_12/build/msvc6.5/04eee2a778aa98bc/scratch.obj",
       "object_function_symbol": "_nullsub_12",
       "object_sha256": "1118307f33492f89a6325a7136b8e6abb7aeb978408afd0e8725d503ccf713f4",
       "scratch": "tools/match/scratches/grim_nullsub_12",
@@ -4713,7 +4713,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/bb42387350f9ad9d/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/f21a962b4b07bfc0/scratch.obj",
       "object_function_symbol": "_j_nullsub_13",
       "object_sha256": "4f91e9a5e6aa17d0739c90087f8d4aff8190d8f08f2179433c70b64da1c48124",
       "scratch": "tools/match/scratches/grim_j_nullsub_13",
@@ -4805,7 +4805,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_13/build/msvc6.5/335d1bcc313c6645/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_13/build/msvc6.5/05501f63e31974e5/scratch.obj",
       "object_function_symbol": "_nullsub_13",
       "object_sha256": "8f876dfba7441bab5e3072588529c4cfa7c43c3fed6bbe422ebfacdb64699afc",
       "scratch": "tools/match/scratches/grim_nullsub_13",
@@ -4897,7 +4897,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/8540dc1a10e2f5cf/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/6e2f0708f203ad0b/scratch.obj",
       "object_function_symbol": "_j_nullsub_14",
       "object_sha256": "9432c65aaa4cb2899cca0b1157c8c2d017e155386242cf8288b37016c3643b4d",
       "scratch": "tools/match/scratches/grim_j_nullsub_14",
@@ -4989,7 +4989,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_14/build/msvc6.5/2306003499ff909b/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_14/build/msvc6.5/8430b3e6f589b59a/scratch.obj",
       "object_function_symbol": "_nullsub_14",
       "object_sha256": "638ecbe7e08a9735cc11b53353503672640af0895603926b8c0d7817b5e2a212",
       "scratch": "tools/match/scratches/grim_nullsub_14",
@@ -5081,7 +5081,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/40403d10559cb108/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/2c7961f37aa93b34/scratch.obj",
       "object_function_symbol": "_j_nullsub_15",
       "object_sha256": "1f12be885e2ad276da3fbe4b36951b6b6c7125913aa6dcc0e6691bc5a86ad548",
       "scratch": "tools/match/scratches/grim_j_nullsub_15",
@@ -5173,7 +5173,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_15/build/msvc6.5/e6aaa0b3218ebbe6/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_15/build/msvc6.5/9f4066e5f2c49a33/scratch.obj",
       "object_function_symbol": "_nullsub_15",
       "object_sha256": "70e799e9b0686dce34c3f908e0ef3e31420151df1614623760ff387311b31ad4",
       "scratch": "tools/match/scratches/grim_nullsub_15",
@@ -5265,7 +5265,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/545b2fa57f83c3b0/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/a578c5a87c21348b/scratch.obj",
       "object_function_symbol": "_j_nullsub_16",
       "object_sha256": "81e36743ec5e31e4a30fb2d1c1c62ff9422132fa567c1a01fcf04ab64ef540b3",
       "scratch": "tools/match/scratches/grim_j_nullsub_16",
@@ -5357,7 +5357,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_16/build/msvc6.5/82c635b9d64ee3d0/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_16/build/msvc6.5/c5df5c1d9616e790/scratch.obj",
       "object_function_symbol": "_nullsub_16",
       "object_sha256": "65518c80115c8be4308acbfb6e38fe39eb89711a3a2fb82106aeec6acbd65422",
       "scratch": "tools/match/scratches/grim_nullsub_16",
@@ -5449,7 +5449,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/b5f250daa1493beb/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/7eae35fc923c53c4/scratch.obj",
       "object_function_symbol": "_j_nullsub_17",
       "object_sha256": "7691568136d64cb8956c82097f0a70ecb1d196d09cbd6192fca6ff42c036e653",
       "scratch": "tools/match/scratches/grim_j_nullsub_17",
@@ -5541,7 +5541,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_17/build/msvc6.5/32fc732b13254b76/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_17/build/msvc6.5/99fa410b17e56bc8/scratch.obj",
       "object_function_symbol": "_nullsub_17",
       "object_sha256": "9f7d522688fba81283d9299bf53812f927eacb2f348b8bda20ff94153dc1eeee",
       "scratch": "tools/match/scratches/grim_nullsub_17",
@@ -5633,7 +5633,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/f4ac4730fb3469fd/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/59edc0f7af826b5f/scratch.obj",
       "object_function_symbol": "_j_nullsub_18",
       "object_sha256": "8cd054ab26504c3ace6fef8261eb67fc345141b71b10981db9d8febcc39fbe4d",
       "scratch": "tools/match/scratches/grim_j_nullsub_18",
@@ -5725,7 +5725,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_18/build/msvc6.5/75345d881e0fc7b4/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_18/build/msvc6.5/45e152490fa6fec0/scratch.obj",
       "object_function_symbol": "_nullsub_18",
       "object_sha256": "46e0f642e8b72fb89a5e67dd8f8e36cd68658d759a73ebb2d7ea3f0ab2a3faf5",
       "scratch": "tools/match/scratches/grim_nullsub_18",
@@ -5817,7 +5817,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/30824791affd3825/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/1640cbda9bd7c1b1/scratch.obj",
       "object_function_symbol": "_j_nullsub_19",
       "object_sha256": "599b2cc5b3df1cb82e7e514ef3112af98636177c1b955c68c63176d62b35788a",
       "scratch": "tools/match/scratches/grim_j_nullsub_19",
@@ -5909,7 +5909,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_19/build/msvc6.5/e19a10ba2c8730e9/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_19/build/msvc6.5/26a3fd79322debfe/scratch.obj",
       "object_function_symbol": "_nullsub_19",
       "object_sha256": "e03d7b0f972d2ea26bdb2b5335b831bba76c7c67bf4ac44bcc21aa60d77fbe53",
       "scratch": "tools/match/scratches/grim_nullsub_19",
@@ -6001,7 +6001,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_missing_frame_callback/build/msvc6.5/a002a7157055cf3e/scratch.obj",
+      "object": "tools/match/scratches/grim_missing_frame_callback/build/msvc6.5/9eb85928079aa1c1/scratch.obj",
       "object_function_symbol": "_grim_missing_frame_callback",
       "object_sha256": "f433e423f71d9770f88746b3be848a44482875ecb21af4696a2ce8f304f4d3de",
       "scratch": "tools/match/scratches/grim_missing_frame_callback",
@@ -6093,7 +6093,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_default_device_callback/build/msvc6.5/183cc64416a7a030/scratch.obj",
+      "object": "tools/match/scratches/grim_default_device_callback/build/msvc6.5/2b47843139e1c458/scratch.obj",
       "object_function_symbol": "_grim_default_device_callback",
       "object_sha256": "4d783d8595c5f18004d1c8599f97f0c0ae8ecaf71abb34e49f4b6e066dec6849",
       "scratch": "tools/match/scratches/grim_default_device_callback",
@@ -6185,7 +6185,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_noop/build/msvc6.5/09d752796616e51e/scratch.obj",
+      "object": "tools/match/scratches/grim_noop/build/msvc6.5/1c694a99ab93af9a/scratch.obj",
       "object_function_symbol": "_grim_noop",
       "object_sha256": "adba255f7e5be291dd193e39e50cd9ac30a14e7b977021e39d5e1d205352d037",
       "scratch": "tools/match/scratches/grim_noop",
@@ -6277,7 +6277,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_config_defaults_init_thunk/build/msvc6.5/eae4e698075e2e7a/scratch.obj",
+      "object": "tools/match/scratches/grim_config_defaults_init_thunk/build/msvc6.5/e132a75058db8e3d/scratch.obj",
       "object_function_symbol": "_grim_config_defaults_init_thunk",
       "object_sha256": "bc704a8da00a84c7ceedfba6f45a1073c39333d36ac3f62365bd13bee876b36d",
       "scratch": "tools/match/scratches/grim_config_defaults_init_thunk",
@@ -6384,7 +6384,7 @@
         "state": "wip",
         "target_instructions": 140
       },
-      "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+      "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/ac94ecc0000c935c/scratch.obj",
       "object_function_symbol": "_grim_config_defaults_init",
       "object_sha256": "5f37ec6cfe442281ad3911c9df5c3848832f77c05315ce458859cf9f036055ff",
       "scratch": "tools/match/scratches/grim_config_defaults_init",
@@ -6491,7 +6491,7 @@
         "state": "match",
         "target_instructions": 232
       },
-      "object": "tools/match/scratches/grim_apply_render_state/build/msvc6.5/c53c287184ecb2ea/scratch.obj",
+      "object": "tools/match/scratches/grim_apply_render_state/build/msvc6.5/b933394e24eca8dd/scratch.obj",
       "object_function_symbol": "?grim_apply_render_state@@YAXXZ",
       "object_sha256": "59ff94c44db1c058a21f096d8697f9bf462034f9c758c5312ee495766e310af9",
       "scratch": "tools/match/scratches/grim_apply_render_state",
@@ -6588,7 +6588,7 @@
         "state": "match",
         "target_instructions": 19
       },
-      "object": "tools/match/scratches/grim_is_texture_format_supported/build/msvc6.5/cbdfe1ae1c52e511/scratch.obj",
+      "object": "tools/match/scratches/grim_is_texture_format_supported/build/msvc6.5/d996c7abf0d0d98b/scratch.obj",
       "object_function_symbol": "?grim_is_texture_format_supported@@YA_NW4_D3DFORMAT@@@Z",
       "object_sha256": "008fed0901fbac3b4fbbe8829e6cf3445cbcb732dbdf80fc8fd4e8f5b1af5ea4",
       "scratch": "tools/match/scratches/grim_is_texture_format_supported",
@@ -6690,7 +6690,7 @@
         "state": "match",
         "target_instructions": 67
       },
-      "object": "tools/match/scratches/grim_select_texture_format/build/msvc6.5/0970a8219c13e62e/scratch.obj",
+      "object": "tools/match/scratches/grim_select_texture_format/build/msvc6.5/377296cc06ac076c/scratch.obj",
       "object_function_symbol": "?grim_select_texture_format@@YA_NXZ",
       "object_sha256": "2171b87d68941be95681d73aed6e5e151384e8cc67e9d551fc0aea832f23b484",
       "scratch": "tools/match/scratches/grim_select_texture_format",
@@ -6787,7 +6787,7 @@
         "state": "match",
         "target_instructions": 13
       },
-      "object": "tools/match/scratches/grim_timing_init/build/msvc6.5/29c7e1205c6af6fa/scratch.obj",
+      "object": "tools/match/scratches/grim_timing_init/build/msvc6.5/610db835ee201437/scratch.obj",
       "object_function_symbol": "?grim_timing_init@@YAXXZ",
       "object_sha256": "68c1c882436287fd6ec81c00a94628a6b108b3bb045925164871fee648c43762",
       "scratch": "tools/match/scratches/grim_timing_init",
@@ -6884,7 +6884,7 @@
         "state": "match",
         "target_instructions": 53
       },
-      "object": "tools/match/scratches/grim_timing_update/build/msvc6.5/1d57bc888dd4cb33/scratch.obj",
+      "object": "tools/match/scratches/grim_timing_update/build/msvc6.5/f181b8ccd0330a95/scratch.obj",
       "object_function_symbol": "?grim_timing_update@@YAXXZ",
       "object_sha256": "c950fc1240003241186b984b96bd148a4eddcd721c17a362586a5ce62766671a",
       "scratch": "tools/match/scratches/grim_timing_update",
@@ -6986,7 +6986,7 @@
         "state": "match",
         "target_instructions": 38
       },
-      "object": "tools/match/scratches/grim_texture_init/build/msvc6.5/1e9113b0f4084711/scratch.obj",
+      "object": "tools/match/scratches/grim_texture_init/build/msvc6.5/fc846842c30dfbd5/scratch.obj",
       "object_function_symbol": "??0GrimTexture@@QAE@PAD@Z",
       "object_sha256": "8a9fd26f2a76b2574f77e69f1e7762042b52b19b2638a22f7a030eb100aeecff",
       "scratch": "tools/match/scratches/grim_texture_init",
@@ -7088,7 +7088,7 @@
         "state": "match",
         "target_instructions": 25
       },
-      "object": "tools/match/scratches/grim_texture_release/build/msvc6.5/474431c5c9015026/scratch.obj",
+      "object": "tools/match/scratches/grim_texture_release/build/msvc6.5/3e1d9364b9bd8942/scratch.obj",
       "object_function_symbol": "??1GrimTexture@@QAE@XZ",
       "object_sha256": "630d2ad78ddcaa64208b49134c41ab28d169baa2e8a150772a33b864edefa87c",
       "scratch": "tools/match/scratches/grim_texture_release",
@@ -7180,7 +7180,7 @@
         "state": "match",
         "target_instructions": 50
       },
-      "object": "tools/match/scratches/grim_path_has_extension/build/msvc6.5/ef04d0a5d91e2405/scratch.obj",
+      "object": "tools/match/scratches/grim_path_has_extension/build/msvc6.5/00f79b94db42082a/scratch.obj",
       "object_function_symbol": "_grim_path_has_extension",
       "object_sha256": "3b8aea38ec304f52e43bc7e7d45a55d63e7a4ceb8fb8cc7633c4b52b9c00a979",
       "scratch": "tools/match/scratches/grim_path_has_extension",
@@ -7276,7 +7276,7 @@
         "state": "match",
         "target_instructions": 252
       },
-      "object": "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
+      "object": "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/3242db88e23502e7/scratch.obj",
       "object_function_symbol": "?grim_decode_jaz_texture@@YAPAEPAEIPAIPAH2@Z",
       "object_sha256": "6fb7b6f4cb341370b4903f646326eeba81fee48b4f82c31a8bb78297c0bed1a5",
       "scratch": "tools/match/scratches/grim_decode_jaz_texture",
@@ -7395,7 +7395,7 @@
         "state": "match",
         "target_instructions": 14
       },
-      "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/095675e8fc249479/scratch.obj",
+      "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/12144aa0b1c57754/scratch.obj",
       "object_function_symbol": "_grim_jaz_jpeg_error_exit",
       "object_sha256": "8176ba15455013f1d49e1e03998689d3a0ca6d626fc52c33e12c80aaf274e382",
       "scratch": "tools/match/scratches/grim_jaz_jpeg_error_exit",
@@ -7506,7 +7506,7 @@
         "state": "wip",
         "target_instructions": 235
       },
-      "object": "tools/match/scratches/grim_texture_load_file/build/msvc6.5/432726981df38261/scratch.obj",
+      "object": "tools/match/scratches/grim_texture_load_file/build/msvc6.5/bdfe39cc6c991eca/scratch.obj",
       "object_function_symbol": "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z",
       "object_sha256": "284051f4dd3de67e53c2c02e396a91cdbff5c05972030897b08d333d0064b683",
       "scratch": "tools/match/scratches/grim_texture_load_file",
@@ -7608,7 +7608,7 @@
         "state": "match",
         "target_instructions": 44
       },
-      "object": "tools/match/scratches/grim_texture_name_equals/build/msvc6.5/d34ae53895189043/scratch.obj",
+      "object": "tools/match/scratches/grim_texture_name_equals/build/msvc6.5/7da4ee5dafba235a/scratch.obj",
       "object_function_symbol": "?grim_texture_name_equals@GrimTexture@@QAE_NPAD@Z",
       "object_sha256": "e0b5c6a5ef76110395bdebef6aa3ef9d43503721041b357ce7de7b277c497a66",
       "scratch": "tools/match/scratches/grim_texture_name_equals",
@@ -7710,7 +7710,7 @@
         "state": "match",
         "target_instructions": 33
       },
-      "object": "tools/match/scratches/grim_find_texture_by_name/build/msvc6.5/74fb16573fa22e69/scratch.obj",
+      "object": "tools/match/scratches/grim_find_texture_by_name/build/msvc6.5/1fc8e90cedbd3497/scratch.obj",
       "object_function_symbol": "_grim_find_texture_by_name",
       "object_sha256": "d6c931fcf268d8bfeae81574993c3a58e052db457d3429331fe00f57fd40296b",
       "scratch": "tools/match/scratches/grim_find_texture_by_name",
@@ -7802,7 +7802,7 @@
         "state": "match",
         "target_instructions": 10
       },
-      "object": "tools/match/scratches/grim_find_free_texture_slot/build/msvc6.5/a71fa000542a0bba/scratch.obj",
+      "object": "tools/match/scratches/grim_find_free_texture_slot/build/msvc6.5/ea589a643ad3f16a/scratch.obj",
       "object_function_symbol": "_grim_find_free_texture_slot",
       "object_sha256": "6f3d9cde1e8dd7eae792e53c2768899844db789d5b08bb6de2847f399b733a1d",
       "scratch": "tools/match/scratches/grim_find_free_texture_slot",
@@ -7906,7 +7906,7 @@
         "state": "match",
         "target_instructions": 80
       },
-      "object": "tools/match/scratches/grim_load_texture_internal/build/msvc6.5/b75eb0c92e74f66c/scratch.obj",
+      "object": "tools/match/scratches/grim_load_texture_internal/build/msvc6.5/db738e938272daef/scratch.obj",
       "object_function_symbol": "?grim_load_texture_internal@@YA_NPAD0@Z",
       "object_sha256": "382b5e9bfa0a5f896ec0dfcd9b4caaa0b0f04a1335f3e1062c523ae0bcf4574b",
       "scratch": "tools/match/scratches/grim_load_texture_internal",
@@ -8005,7 +8005,7 @@
         "state": "wip",
         "target_instructions": 425
       },
-      "object": "tools/match/scratches/grim_state_init/build/msvc6.5/140cb1199565deea/scratch.obj",
+      "object": "tools/match/scratches/grim_state_init/build/msvc6.5/874ace8a2492ea38/scratch.obj",
       "object_function_symbol": "?grim_state_init@@YAXXZ",
       "object_sha256": "3a150df2920cad4833e322e8ec1e93631c9c4b4ef3a62d6d0f66e25e0ddde8de",
       "scratch": "tools/match/scratches/grim_state_init",
@@ -8097,7 +8097,7 @@
         "state": "match",
         "target_instructions": 51
       },
-      "object": "tools/match/scratches/grim_lookup_blob_load/build/msvc6.5/ac90aa7b28f8aa12/scratch.obj",
+      "object": "tools/match/scratches/grim_lookup_blob_load/build/msvc6.5/caa76cdc0eefe5aa/scratch.obj",
       "object_function_symbol": "?grim_lookup_blob_load@@YA_NPAD@Z",
       "object_sha256": "3077f07ae3a77d3e9d0f9017d1d88c1fcaf60e54aada74e6fb0b104c8bc3feff",
       "scratch": "tools/match/scratches/grim_lookup_blob_load",
@@ -8189,7 +8189,7 @@
         "state": "match",
         "target_instructions": 66
       },
-      "object": "tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/7b940d93d29042dc/scratch.obj",
+      "object": "tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/b72393ffe445f36b/scratch.obj",
       "object_function_symbol": "?grim_lookup_blob_find@@YAPADPAD@Z",
       "object_sha256": "a21df3b882db3d08cf3c7ec201019d47851da0f0d2630909bda173a82a8e288d",
       "scratch": "tools/match/scratches/grim_lookup_blob_find",
@@ -8281,7 +8281,7 @@
         "state": "match",
         "target_instructions": 66
       },
-      "object": "tools/match/scratches/grim_lookup_blob_size_for_path/build/msvc6.5/b121032ea6f2f161/scratch.obj",
+      "object": "tools/match/scratches/grim_lookup_blob_size_for_path/build/msvc6.5/6e3d9dcf9243523e/scratch.obj",
       "object_function_symbol": "?grim_lookup_blob_size_for_path@@YAIPAD@Z",
       "object_sha256": "eea1323551f01dd0006551766c564615ec0aa89a60d4b7025cb7819cf93d1eea",
       "scratch": "tools/match/scratches/grim_lookup_blob_size_for_path",
@@ -8378,7 +8378,7 @@
         "state": "match",
         "target_instructions": 7
       },
-      "object": "tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/5f9aca6fa304b14e/scratch.obj",
+      "object": "tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/ea04541a90570d37/scratch.obj",
       "object_function_symbol": "?grim_set_key_char_buffer@IGrim2D_cpp@@UAEXPAEPAHH@Z",
       "object_sha256": "5c5683f2884dec510dc297c6cfe837767269b277e9ca237f56756d8857548aa4",
       "scratch": "tools/match/scratches/grim_set_key_char_buffer",
@@ -8475,7 +8475,7 @@
         "state": "match",
         "target_instructions": 22
       },
-      "object": "tools/match/scratches/grim_get_key_char/build/msvc6.5/3917d9dc5c02f9d6/scratch.obj",
+      "object": "tools/match/scratches/grim_get_key_char/build/msvc6.5/6d9d6aa086f4f055/scratch.obj",
       "object_function_symbol": "?grim_get_key_char@IGrim2D_cpp@@UAEHXZ",
       "object_sha256": "f320b32ac1cbf5068b8f484a7d81b20d39a46d8bcc447aa7b21c5ea9422e6da5",
       "scratch": "tools/match/scratches/grim_get_key_char",
@@ -8572,7 +8572,7 @@
         "state": "match",
         "target_instructions": 4
       },
-      "object": "tools/match/scratches/grim_release/build/msvc6.5/67d4f92482feb68f/scratch.obj",
+      "object": "tools/match/scratches/grim_release/build/msvc6.5/ab0465289855b477/scratch.obj",
       "object_function_symbol": "?grim_release@IGrim2D_cpp@@UAEXXZ",
       "object_sha256": "061f910f341420319d45332435d6390ca8d60910682853a574655196dc4c1b65",
       "scratch": "tools/match/scratches/grim_release",
@@ -8669,7 +8669,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_set_paused/build/msvc6.5/7335248fb3f9fc63/scratch.obj",
+      "object": "tools/match/scratches/grim_set_paused/build/msvc6.5/95586d86906d2f1e/scratch.obj",
       "object_function_symbol": "?grim_set_paused@IGrim2D_cpp@@UAEXH@Z",
       "object_sha256": "d8f279841034ddf435793e95e064675ee9f906c7d9e9e8b5431914bf0b85cc57",
       "scratch": "tools/match/scratches/grim_set_paused",
@@ -8766,7 +8766,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_version/build/msvc6.5/a7d29f5c493d8f14/scratch.obj",
+      "object": "tools/match/scratches/grim_get_version/build/msvc6.5/54da35a4fa3802c4/scratch.obj",
       "object_function_symbol": "?grim_get_version@IGrim2D_cpp@@UAEMXZ",
       "object_sha256": "db5746a07fd7a5f17247ed8bc423b25a988421db4adcb75c47a91db35b27d328",
       "scratch": "tools/match/scratches/grim_get_version",
@@ -8873,7 +8873,7 @@
         "state": "match",
         "target_instructions": 93
       },
-      "object": "tools/match/scratches/grim_init_system/build/msvc6.5/c3dcc912ec7cc8bb/scratch.obj",
+      "object": "tools/match/scratches/grim_init_system/build/msvc6.5/acfdbc66ecd8f91e/scratch.obj",
       "object_function_symbol": "?grim_init_system@IGrim2D_cpp@@UAE_NXZ",
       "object_sha256": "8834935c48e82dcaea16dc93963a0565091e5504398e56eabd036fb4c96a87a6",
       "scratch": "tools/match/scratches/grim_init_system",
@@ -8970,7 +8970,7 @@
         "state": "match",
         "target_instructions": 8
       },
-      "object": "tools/match/scratches/grim_shutdown/build/msvc6.5/8dbb94cd02e37a06/scratch.obj",
+      "object": "tools/match/scratches/grim_shutdown/build/msvc6.5/11fb47577925344b/scratch.obj",
       "object_function_symbol": "?grim_shutdown@IGrim2D_cpp@@UAEXXZ",
       "object_sha256": "8c9939538f51e5ea94f8a7022e34744f5ab67297e2df0e0ee0535c03b79f9825",
       "scratch": "tools/match/scratches/grim_shutdown",
@@ -9067,7 +9067,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_apply_settings/build/msvc6.5/5e91d143e1978233/scratch.obj",
+      "object": "tools/match/scratches/grim_apply_settings/build/msvc6.5/f3d37ff0bdab2452/scratch.obj",
       "object_function_symbol": "?grim_apply_settings@IGrim2D_cpp@@UAE_NXZ",
       "object_sha256": "2511ca32958eb5cd767320ba2fe2647496c774629fc43952c3dd824600033865",
       "scratch": "tools/match/scratches/grim_apply_settings",
@@ -9164,7 +9164,7 @@
         "state": "match",
         "target_instructions": 468
       },
-      "object": "tools/match/scratches/grim_set_texture_stage_ops/build/msvc6.5/ae5db46d960bfb74/scratch.obj",
+      "object": "tools/match/scratches/grim_set_texture_stage_ops/build/msvc6.5/6f329768062f1576/scratch.obj",
       "object_function_symbol": "?grim_set_texture_stage_ops@@YAEI@Z",
       "object_sha256": "92031d0acaefb808c38405d64eedd2f4d030b348b14279575ce1412ecb3e9e2d",
       "scratch": "tools/match/scratches/grim_set_texture_stage_ops",
@@ -9266,7 +9266,7 @@
         "state": "wip",
         "target_instructions": 443
       },
-      "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/5267400e704d1dd7/scratch.obj",
+      "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/c3062e9c8f6b9176/scratch.obj",
       "object_function_symbol": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z",
       "object_sha256": "b7faf5589642a1325d3900607895f496e8986a516a6caedcc34e0b9c676d584b",
       "scratch": "tools/match/scratches/grim_set_config_var",
@@ -9363,7 +9363,7 @@
         "state": "match",
         "target_instructions": 32
       },
-      "object": "tools/match/scratches/grim_get_config_var/build/msvc6.5/08ff53a2f164561f/scratch.obj",
+      "object": "tools/match/scratches/grim_get_config_var/build/msvc6.5/d517da5885ff6a9a/scratch.obj",
       "object_function_symbol": "?grim_get_config_var@IGrim2D_cpp@@UAE?AUgrim_config_value_t@@H@Z",
       "object_sha256": "b6298a5359dbbd354837360f6bcef9995538ca0591e299305c7c4ab3f61bfcf1",
       "scratch": "tools/match/scratches/grim_get_config_var",
@@ -9455,7 +9455,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_error_text/build/msvc6.5/fe39f69a3b47c928/scratch.obj",
+      "object": "tools/match/scratches/grim_get_error_text/build/msvc6.5/e308ff216be8f74b/scratch.obj",
       "object_function_symbol": "_grim_get_error_text",
       "object_sha256": "234be6869a6bfaa6fb8ca5f9b1784954e5aa45efc761cb419a3384995576ca05",
       "scratch": "tools/match/scratches/grim_get_error_text",
@@ -9562,7 +9562,7 @@
         "state": "match",
         "target_instructions": 45
       },
-      "object": "tools/match/scratches/grim_clear_color/build/msvc6.5/ae7d1a074aca7b08/scratch.obj",
+      "object": "tools/match/scratches/grim_clear_color/build/msvc6.5/9ee087175c440c87/scratch.obj",
       "object_function_symbol": "?grim_clear_color@IGrim2D_cpp@@UAEXMMMM@Z",
       "object_sha256": "fcefd78a2613c737ab3e038f79cf432b7da701727c1ccce3db037596481479b8",
       "scratch": "tools/match/scratches/grim_clear_color",
@@ -9669,7 +9669,7 @@
         "state": "match",
         "target_instructions": 89
       },
-      "object": "tools/match/scratches/grim_set_render_target/build/msvc6.5/e3c7163af561c94b/scratch.obj",
+      "object": "tools/match/scratches/grim_set_render_target/build/msvc6.5/9cb487a80de6d579/scratch.obj",
       "object_function_symbol": "?grim_set_render_target@IGrim2D_cpp@@UAE_NH@Z",
       "object_sha256": "ada2d60c2ff773f5c38544ba0b9718bbe8a2372d487cefee505c5fea8ff112ce",
       "scratch": "tools/match/scratches/grim_set_render_target",
@@ -9761,7 +9761,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_time_ms/build/msvc6.5/63cc4d3861d7865d/scratch.obj",
+      "object": "tools/match/scratches/grim_get_time_ms/build/msvc6.5/aa4d56bb56b220bb/scratch.obj",
       "object_function_symbol": "_grim_get_time_ms",
       "object_sha256": "64c5d5ca014e8d60c66d1fd4970a0eb157de21f5f2ffb83e6728a6a01363a973",
       "scratch": "tools/match/scratches/grim_get_time_ms",
@@ -9858,7 +9858,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_set_time_ms/build/msvc6.5/c74ebfde329d8351/scratch.obj",
+      "object": "tools/match/scratches/grim_set_time_ms/build/msvc6.5/11660d94a7a1b279/scratch.obj",
       "object_function_symbol": "?grim_set_time_ms@IGrim2D_cpp@@UAEXH@Z",
       "object_sha256": "769528dc0bfabf504589c1b616f3f75b711dd83758d8c56d2a6f6156bc6e4f30",
       "scratch": "tools/match/scratches/grim_set_time_ms",
@@ -9950,7 +9950,7 @@
         "state": "match",
         "target_instructions": 9
       },
-      "object": "tools/match/scratches/grim_get_frame_dt/build/msvc6.5/ee92514cee7b5fd5/scratch.obj",
+      "object": "tools/match/scratches/grim_get_frame_dt/build/msvc6.5/aa644f31bbd16142/scratch.obj",
       "object_function_symbol": "_grim_get_frame_dt",
       "object_sha256": "03fdcfd0c5388bba1068e53ddb460c5c85196c1992a49f0b33364211ad4792fa",
       "scratch": "tools/match/scratches/grim_get_frame_dt",
@@ -10047,7 +10047,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_fps/build/msvc6.5/cb0bff97f19e92cb/scratch.obj",
+      "object": "tools/match/scratches/grim_get_fps/build/msvc6.5/ecf6eb0f59f50fff/scratch.obj",
       "object_function_symbol": "?grim_get_fps@IGrim2D_cpp@@UAEMXZ",
       "object_sha256": "b4a351c8610790e2966c15bf2b6d60eb46f06d251160a4f6cc1a262102da17a4",
       "scratch": "tools/match/scratches/grim_get_fps",
@@ -10144,7 +10144,7 @@
         "state": "match",
         "target_instructions": 23
       },
-      "object": "tools/match/scratches/grim_joystick_up_active/build/msvc6.5/84c81401dc952864/scratch.obj",
+      "object": "tools/match/scratches/grim_joystick_up_active/build/msvc6.5/e91c530e3dcbae42/scratch.obj",
       "object_function_symbol": "?grim_joystick_up_active@@YAHXZ",
       "object_sha256": "bcb067641163b7ba4de801095681d711042f24a3b97d29afbe4b56614938c3ee",
       "scratch": "tools/match/scratches/grim_joystick_up_active",
@@ -10241,7 +10241,7 @@
         "state": "match",
         "target_instructions": 21
       },
-      "object": "tools/match/scratches/grim_joystick_down_active/build/msvc6.5/b4c8b35b4e45b4f2/scratch.obj",
+      "object": "tools/match/scratches/grim_joystick_down_active/build/msvc6.5/a088eb425d806178/scratch.obj",
       "object_function_symbol": "?grim_joystick_down_active@@YAHXZ",
       "object_sha256": "e682c986e7a8e0eb9aa8490c97d613f0974c436f2d9ab1f78261eddc4bbbb482",
       "scratch": "tools/match/scratches/grim_joystick_down_active",
@@ -10338,7 +10338,7 @@
         "state": "match",
         "target_instructions": 23
       },
-      "object": "tools/match/scratches/grim_joystick_left_active/build/msvc6.5/76cc9523156c147b/scratch.obj",
+      "object": "tools/match/scratches/grim_joystick_left_active/build/msvc6.5/b3b3cb40087bbdb7/scratch.obj",
       "object_function_symbol": "?grim_joystick_left_active@@YAHXZ",
       "object_sha256": "5e05d1e83e630efb91c39bb869bc59d426a42684a824287effa3f4feba846743",
       "scratch": "tools/match/scratches/grim_joystick_left_active",
@@ -10435,7 +10435,7 @@
         "state": "match",
         "target_instructions": 21
       },
-      "object": "tools/match/scratches/grim_joystick_right_active/build/msvc6.5/a7b70c6993461473/scratch.obj",
+      "object": "tools/match/scratches/grim_joystick_right_active/build/msvc6.5/d042e7f571c2c294/scratch.obj",
       "object_function_symbol": "?grim_joystick_right_active@@YAHXZ",
       "object_sha256": "3f8380bf4a44cc187d87cd0c97984d13a8d8fd17902ee025fd9ccee19e1657c4",
       "scratch": "tools/match/scratches/grim_joystick_right_active",
@@ -10537,7 +10537,7 @@
         "state": "wip",
         "target_instructions": 175
       },
-      "object": "tools/match/scratches/grim_is_key_active/build/msvc6.5/7f27063469fc1f83/scratch.obj",
+      "object": "tools/match/scratches/grim_is_key_active/build/msvc6.5/734c51d94292c3ca/scratch.obj",
       "object_function_symbol": "?grim_is_key_active@IGrim2D_cpp@@UAEEH@Z",
       "object_sha256": "08affa62ba77fdc517578197bfa15a5d292de5cd38ba4cca087207ccc12174b9",
       "scratch": "tools/match/scratches/grim_is_key_active",
@@ -10639,7 +10639,7 @@
         "state": "match",
         "target_instructions": 88
       },
-      "object": "tools/match/scratches/grim_get_config_float/build/msvc6.5/14915453aac00ed0/scratch.obj",
+      "object": "tools/match/scratches/grim_get_config_float/build/msvc6.5/f2c287b2f2a09821/scratch.obj",
       "object_function_symbol": "?grim_get_config_float@IGrim2D_cpp@@UAEMH@Z",
       "object_sha256": "1ac1674b89ea81c600fd93ea80aa4fd91bde573b13827484dd91bfc1c73d098a",
       "scratch": "tools/match/scratches/grim_get_config_float",
@@ -10810,7 +10810,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/4ff8e21897266674/scratch.obj",
+      "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/510f0978c5d05ca9/scratch.obj",
       "object_function_symbol": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z",
       "object_sha256": "4496d15db8f93ff9fe7fb5172341d675432e3f184228fd935ac7c891e13ce92f",
       "scratch": "tools/match/scratches/grim_set_slot_int",
@@ -10909,7 +10909,7 @@
         "state": "match",
         "target_instructions": 5
       },
-      "object": "tools/match/scratches/grim_is_key_down/build/msvc6.5/d878c33b608b7f1e/scratch.obj",
+      "object": "tools/match/scratches/grim_is_key_down/build/msvc6.5/1169381c6592c840/scratch.obj",
       "object_function_symbol": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z",
       "object_sha256": "afafc5645f4db1c5b252266650def0c180a8765711c853546fd7ff3c4ef5a08e",
       "scratch": "tools/match/scratches/grim_is_key_down",
@@ -11006,7 +11006,7 @@
         "state": "match",
         "target_instructions": 34
       },
-      "object": "tools/match/scratches/grim_flush_input/build/msvc6.5/6b9db6930d325121/scratch.obj",
+      "object": "tools/match/scratches/grim_flush_input/build/msvc6.5/6bd15d6b88d5d78a/scratch.obj",
       "object_function_symbol": "?grim_flush_input@IGrim2D_cpp@@UAEXXZ",
       "object_sha256": "88f61813fff34a274e940d4b081616f15c09aa45cfa6865454d109b8a1f65e25",
       "scratch": "tools/match/scratches/grim_flush_input",
@@ -11103,7 +11103,7 @@
         "state": "match",
         "target_instructions": 31
       },
-      "object": "tools/match/scratches/grim_was_key_pressed/build/msvc6.5/f6dda3089274d5fe/scratch.obj",
+      "object": "tools/match/scratches/grim_was_key_pressed/build/msvc6.5/a19f28e3036a4de6/scratch.obj",
       "object_function_symbol": "?grim_was_key_pressed@IGrim2D_cpp@@UAE_NI@Z",
       "object_sha256": "b05df5fbf5cd01a6384786348fcdd40c9e03b16c54b80c33dfd739d0b9c27c0d",
       "scratch": "tools/match/scratches/grim_was_key_pressed",
@@ -11200,7 +11200,7 @@
         "state": "match",
         "target_instructions": 11
       },
-      "object": "tools/match/scratches/grim_is_mouse_button_down/build/msvc6.5/87c85710f5475198/scratch.obj",
+      "object": "tools/match/scratches/grim_is_mouse_button_down/build/msvc6.5/5f3f4a88170fd9ea/scratch.obj",
       "object_function_symbol": "?grim_is_mouse_button_down@IGrim2D_cpp@@UAEEH@Z",
       "object_sha256": "4cb74fb908293f5326050e6c3b5798ff76f72ac7111b2f6425939dc204ee67d1",
       "scratch": "tools/match/scratches/grim_is_mouse_button_down",
@@ -11297,7 +11297,7 @@
         "state": "match",
         "target_instructions": 51
       },
-      "object": "tools/match/scratches/grim_was_mouse_button_pressed/build/msvc6.5/b9cfd7507a6e8286/scratch.obj",
+      "object": "tools/match/scratches/grim_was_mouse_button_pressed/build/msvc6.5/6ca6f0bba642aa9e/scratch.obj",
       "object_function_symbol": "?grim_was_mouse_button_pressed@IGrim2D_cpp@@UAE_NH@Z",
       "object_sha256": "325df59a22dfb5dd659ea932faa1d7a80d6bec2dce4bc583215d711d35846861",
       "scratch": "tools/match/scratches/grim_was_mouse_button_pressed",
@@ -11394,7 +11394,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_mouse_dx/build/msvc6.5/a73101c636b69b55/scratch.obj",
+      "object": "tools/match/scratches/grim_get_mouse_dx/build/msvc6.5/b8d084912bac4622/scratch.obj",
       "object_function_symbol": "?grim_get_mouse_dx@IGrim2D_cpp@@UAEMXZ",
       "object_sha256": "4f5a4116fde97e3a68e3250783c699371f070fac917dbf90364521e959967e9d",
       "scratch": "tools/match/scratches/grim_get_mouse_dx",
@@ -11491,7 +11491,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_mouse_dy/build/msvc6.5/f8776d6b5922c1f3/scratch.obj",
+      "object": "tools/match/scratches/grim_get_mouse_dy/build/msvc6.5/6a4694099a944121/scratch.obj",
       "object_function_symbol": "?grim_get_mouse_dy@IGrim2D_cpp@@UAEMXZ",
       "object_sha256": "e5c4d93c9f82e40861841e1e2971ae269e484a19cc15c67d0f10fd761f4baf16",
       "scratch": "tools/match/scratches/grim_get_mouse_dy",
@@ -11588,7 +11588,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_get_mouse_dx_indexed/build/msvc6.5/4d213a2dd0994a0d/scratch.obj",
+      "object": "tools/match/scratches/grim_get_mouse_dx_indexed/build/msvc6.5/01c2f1ba147e34ab/scratch.obj",
       "object_function_symbol": "?grim_get_mouse_dx_indexed@IGrim2D_cpp@@UAEMH@Z",
       "object_sha256": "2b765df3696f40d30eeab0b61b23d7284b54715c271b53d75e997edb3d30b2fe",
       "scratch": "tools/match/scratches/grim_get_mouse_dx_indexed",
@@ -11685,7 +11685,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_get_mouse_dy_indexed/build/msvc6.5/471f99c23d5ca079/scratch.obj",
+      "object": "tools/match/scratches/grim_get_mouse_dy_indexed/build/msvc6.5/9a9ceecb11ae4903/scratch.obj",
       "object_function_symbol": "?grim_get_mouse_dy_indexed@IGrim2D_cpp@@UAEMH@Z",
       "object_sha256": "7ac98fa2c8a585842297ca8f463eaa069c7350c562cdf2291e8b25ee5b8d745e",
       "scratch": "tools/match/scratches/grim_get_mouse_dy_indexed",
@@ -11777,7 +11777,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_mouse_x/build/msvc6.5/e1206e6e6cb30d89/scratch.obj",
+      "object": "tools/match/scratches/grim_get_mouse_x/build/msvc6.5/cc54047c5f2be964/scratch.obj",
       "object_function_symbol": "_grim_get_mouse_x",
       "object_sha256": "05e533b5e84da78fd1020c440a2eaa001f78ade6dd551b260676bf668ed08890",
       "scratch": "tools/match/scratches/grim_get_mouse_x",
@@ -11874,7 +11874,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_mouse_y/build/msvc6.5/5598dabe9a30a983/scratch.obj",
+      "object": "tools/match/scratches/grim_get_mouse_y/build/msvc6.5/c4a95391bb877750/scratch.obj",
       "object_function_symbol": "?grim_get_mouse_y@IGrim2D_cpp@@UAEMXZ",
       "object_sha256": "fd73888a5d2fed4262bdee4c372dec4335b4c9a08f2b1a4a82d76fcb18bf9ff8",
       "scratch": "tools/match/scratches/grim_get_mouse_y",
@@ -11971,7 +11971,7 @@
         "state": "match",
         "target_instructions": 9
       },
-      "object": "tools/match/scratches/grim_set_mouse_pos/build/msvc6.5/f0cf74280b42fd8d/scratch.obj",
+      "object": "tools/match/scratches/grim_set_mouse_pos/build/msvc6.5/1a253c996381adaa/scratch.obj",
       "object_function_symbol": "?grim_set_mouse_pos@IGrim2D_cpp@@UAEXMM@Z",
       "object_sha256": "3b3de252c985aec6d28150a41f2bc21166fd828794830a1b26998de6214f430c",
       "scratch": "tools/match/scratches/grim_set_mouse_pos",
@@ -12063,7 +12063,7 @@
         "state": "match",
         "target_instructions": 7
       },
-      "object": "tools/match/scratches/grim_get_mouse_wheel_delta/build/msvc6.5/b2644aa75b26f7bd/scratch.obj",
+      "object": "tools/match/scratches/grim_get_mouse_wheel_delta/build/msvc6.5/c8d4265cd320ed08/scratch.obj",
       "object_function_symbol": "_grim_get_mouse_wheel_delta",
       "object_sha256": "988e2bc87cb3a591463c9309b8a9648af50e34320822ba51801b0fc315144a33",
       "scratch": "tools/match/scratches/grim_get_mouse_wheel_delta",
@@ -12165,7 +12165,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_joystick_x/build/msvc6.5/b675a42895f4304e/scratch.obj",
+      "object": "tools/match/scratches/grim_get_joystick_x/build/msvc6.5/dfeb126052da35b3/scratch.obj",
       "object_function_symbol": "?grim_get_joystick_x@IGrim2D_cpp@@UAEHXZ",
       "object_sha256": "78f2750e34254973f97730433537778002416f2d32283fbb7bbb82a42c9bd67d",
       "scratch": "tools/match/scratches/grim_get_joystick_x",
@@ -12267,7 +12267,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_joystick_y/build/msvc6.5/c96645dfead39df4/scratch.obj",
+      "object": "tools/match/scratches/grim_get_joystick_y/build/msvc6.5/f53a08c5674b6d2f/scratch.obj",
       "object_function_symbol": "?grim_get_joystick_y@IGrim2D_cpp@@UAEHXZ",
       "object_sha256": "bbb746a83cf3e6bc39ffed61b76ce782a8a2e348e8ada095199916bb2ae79a52",
       "scratch": "tools/match/scratches/grim_get_joystick_y",
@@ -12369,7 +12369,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_get_joystick_z/build/msvc6.5/8457aceecf9a666c/scratch.obj",
+      "object": "tools/match/scratches/grim_get_joystick_z/build/msvc6.5/18f65c90f2365aaa/scratch.obj",
       "object_function_symbol": "?grim_get_joystick_z@IGrim2D_cpp@@UAEHXZ",
       "object_sha256": "8fa10bd107c88dd96988c40bb7a7948186848775d0143b93ed08697dd58c0714",
       "scratch": "tools/match/scratches/grim_get_joystick_z",
@@ -12471,7 +12471,7 @@
         "state": "match",
         "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_get_joystick_pov/build/msvc6.5/a55f4f3b30207336/scratch.obj",
+      "object": "tools/match/scratches/grim_get_joystick_pov/build/msvc6.5/6c799b3aac00b868/scratch.obj",
       "object_function_symbol": "?grim_get_joystick_pov@IGrim2D_cpp@@UAEHH@Z",
       "object_sha256": "9b9eb55549f93c907ca4aa13d3f2b9189145292821411c099db0c34af1200c35",
       "scratch": "tools/match/scratches/grim_get_joystick_pov",
@@ -12568,7 +12568,7 @@
         "state": "match",
         "target_instructions": 5
       },
-      "object": "tools/match/scratches/grim_is_joystick_button_down/build/msvc6.5/8284d384ef1df26a/scratch.obj",
+      "object": "tools/match/scratches/grim_is_joystick_button_down/build/msvc6.5/4709b0a978547926/scratch.obj",
       "object_function_symbol": "?grim_is_joystick_button_down@IGrim2D_cpp@@UAEEH@Z",
       "object_sha256": "df001a7ce3167275ce8e825bc1dc2dc2886285f55e1601580082d88e25ce3319",
       "scratch": "tools/match/scratches/grim_is_joystick_button_down",
@@ -12677,7 +12677,7 @@
         "state": "match",
         "target_instructions": 81
       },
-      "object": "tools/match/scratches/grim_create_texture/build/msvc6.5/2e3f89a773bb4ef0/scratch.obj",
+      "object": "tools/match/scratches/grim_create_texture/build/msvc6.5/1938b9f65efbfb9e/scratch.obj",
       "object_function_symbol": "?grim_create_texture@IGrim2D_cpp@@UAE_NPADHH@Z",
       "object_sha256": "5b8cbce789b7fa3479662dd7252ea5daeda2843863f883123dd0d487c7106872",
       "scratch": "tools/match/scratches/grim_create_texture",
@@ -12784,7 +12784,7 @@
         "state": "match",
         "target_instructions": 7
       },
-      "object": "tools/match/scratches/grim_load_texture/build/msvc6.5/06958b754a445259/scratch.obj",
+      "object": "tools/match/scratches/grim_load_texture/build/msvc6.5/0147b4a86422a9cf/scratch.obj",
       "object_function_symbol": "?grim_load_texture@IGrim2D_cpp@@UAE_NPAD0@Z",
       "object_sha256": "411f11396f255e970f0ddbb4251e999cca5a7fd3eaf9488f97fce4a71821bf1a",
       "scratch": "tools/match/scratches/grim_load_texture",
@@ -12891,7 +12891,7 @@
         "state": "match",
         "target_instructions": 20
       },
-      "object": "tools/match/scratches/grim_destroy_texture/build/msvc6.5/d2100d509119e51e/scratch.obj",
+      "object": "tools/match/scratches/grim_destroy_texture/build/msvc6.5/dc9ec74595d6b917/scratch.obj",
       "object_function_symbol": "?grim_destroy_texture@IGrim2D_cpp@@UAEXH@Z",
       "object_sha256": "e996e7da59c8ff67f05d50e4409b827bebf34a1df424910c95f08750c6c11d74",
       "scratch": "tools/match/scratches/grim_destroy_texture",
@@ -12998,7 +12998,7 @@
         "state": "match",
         "target_instructions": 5
       },
-      "object": "tools/match/scratches/grim_get_texture_handle/build/msvc6.5/3d940420dd285394/scratch.obj",
+      "object": "tools/match/scratches/grim_get_texture_handle/build/msvc6.5/1c3fd172ae1d1473/scratch.obj",
       "object_function_symbol": "?grim_get_texture_handle@IGrim2D_cpp@@UAEHPAD@Z",
       "object_sha256": "3c1ecbf8bc9a5f155dba4f0797ab5fcdc6d1ac2eea5fa2491b3a34762eb44872",
       "scratch": "tools/match/scratches/grim_get_texture_handle",
@@ -13105,7 +13105,7 @@
         "state": "match",
         "target_instructions": 57
       },
-      "object": "tools/match/scratches/grim_recreate_texture/build/msvc6.5/8c3a043a739ff95e/scratch.obj",
+      "object": "tools/match/scratches/grim_recreate_texture/build/msvc6.5/a72acfbe1046bb3d/scratch.obj",
       "object_function_symbol": "?grim_recreate_texture@IGrim2D_cpp@@UAE_NH@Z",
       "object_sha256": "6821ab7d3dcf5eb9075940376efd693e99b2ee73f8de1d95feafaf53234e1205",
       "scratch": "tools/match/scratches/grim_recreate_texture",
@@ -13207,7 +13207,7 @@
         "state": "match",
         "target_instructions": 20
       },
-      "object": "tools/match/scratches/grim_bind_texture/build/msvc6.5/78ac64bf61d28fa1/scratch.obj",
+      "object": "tools/match/scratches/grim_bind_texture/build/msvc6.5/459ad4a6fafa437f/scratch.obj",
       "object_function_symbol": "?grim_bind_texture@IGrim2D_cpp@@UAEXHH@Z",
       "object_sha256": "55eb0a2df8380e72f578c5f13163532b5762ba51ee63ea49f66a615139ad9dfe",
       "scratch": "tools/match/scratches/grim_bind_texture",
@@ -13304,7 +13304,7 @@
         "state": "match",
         "target_instructions": 32
       },
-      "object": "tools/match/scratches/grim_draw_fullscreen_quad/build/msvc6.5/13902773aafaea21/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_fullscreen_quad/build/msvc6.5/5e32ab4f891eb52e/scratch.obj",
       "object_function_symbol": "?grim_draw_fullscreen_quad@IGrim2D_cpp@@UAEXH@Z",
       "object_sha256": "3187435928cbba685d636449617414105c2ddafb04e7201676c20f75b351b655",
       "scratch": "tools/match/scratches/grim_draw_fullscreen_quad",
@@ -13406,7 +13406,7 @@
         "state": "match",
         "target_instructions": 72
       },
-      "object": "tools/match/scratches/grim_draw_rect_filled/build/msvc6.5/14154dd68e419f02/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_rect_filled/build/msvc6.5/7c8037634ebfd189/scratch.obj",
       "object_function_symbol": "?grim_draw_rect_filled@IGrim2D_cpp@@UAEXPAMMM0@Z",
       "object_sha256": "3ccb5b18f05684aa76781e27b72eadc727df165499a505ce6479dd1437892e47",
       "scratch": "tools/match/scratches/grim_draw_rect_filled",
@@ -13508,7 +13508,7 @@
         "state": "match",
         "target_instructions": 83
       },
-      "object": "tools/match/scratches/grim_draw_fullscreen_color/build/msvc6.5/5db2e573aa94f355/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_fullscreen_color/build/msvc6.5/7a5420f7706a3fa1/scratch.obj",
       "object_function_symbol": "?grim_draw_fullscreen_color@IGrim2D_cpp@@UAEXMMMM@Z",
       "object_sha256": "1ad95c4bb136415fc9e00bf6d3ca204ebb3912c619837a21756b65681fd78271",
       "scratch": "tools/match/scratches/grim_draw_fullscreen_color",
@@ -13610,7 +13610,7 @@
         "state": "match",
         "target_instructions": 27
       },
-      "object": "tools/match/scratches/grim_begin_batch/build/msvc6.5/484538efa8876dff/scratch.obj",
+      "object": "tools/match/scratches/grim_begin_batch/build/msvc6.5/0280355784c02dee/scratch.obj",
       "object_function_symbol": "?grim_begin_batch@IGrim2D_cpp@@UAEXXZ",
       "object_sha256": "c32ba637ad1e788f2571ece5b5489e9d9e763210b13ca5fe6b01d729a088c38b",
       "scratch": "tools/match/scratches/grim_begin_batch",
@@ -13712,7 +13712,7 @@
         "state": "match",
         "target_instructions": 36
       },
-      "object": "tools/match/scratches/grim_end_batch/build/msvc6.5/b614bb15894637b5/scratch.obj",
+      "object": "tools/match/scratches/grim_end_batch/build/msvc6.5/68d0f438768ddf1f/scratch.obj",
       "object_function_symbol": "?grim_end_batch@IGrim2D_cpp@@UAEXXZ",
       "object_sha256": "a8b14a361b4fe2607e19ff23bab6792c274f721e01011c3132635d00cb237bf3",
       "scratch": "tools/match/scratches/grim_end_batch",
@@ -13814,7 +13814,7 @@
         "state": "match",
         "target_instructions": 115
       },
-      "object": "tools/match/scratches/grim_draw_circle_filled/build/msvc6.5/204de07adb812c01/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_circle_filled/build/msvc6.5/e6a4cddbd8d7c1ad/scratch.obj",
       "object_function_symbol": "?grim_draw_circle_filled@IGrim2D_cpp@@UAEXMMM@Z",
       "object_sha256": "0c91c85b19651cf678788ef9a66eaebcafe3f9d2c064340da130d714750224d1",
       "scratch": "tools/match/scratches/grim_draw_circle_filled",
@@ -13916,7 +13916,7 @@
         "state": "match",
         "target_instructions": 120
       },
-      "object": "tools/match/scratches/grim_draw_circle_outline/build/msvc6.5/75ab53dda4f00f52/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_circle_outline/build/msvc6.5/af6cf2763f7a901d/scratch.obj",
       "object_function_symbol": "?grim_draw_circle_outline@IGrim2D_cpp@@UAEXMMM@Z",
       "object_sha256": "04c07fa010ae6b63aef932c75b3bbb9c94fe6f0d2142f2185d6bf13dfdd7d469",
       "scratch": "tools/match/scratches/grim_draw_circle_outline",
@@ -14008,7 +14008,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/01aa71b3f3130d5d/scratch.obj",
+      "object": "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/0dc782c62f1d36c8/scratch.obj",
       "object_function_symbol": "_j_nullsub_20",
       "object_sha256": "e6671037c7aca3d8be2c9a3a2bb8184553c4f7e2d890e28ae21a34242fb2991d",
       "scratch": "tools/match/scratches/grim_j_nullsub_20",
@@ -14100,7 +14100,7 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_20/build/msvc6.5/4331ab1c7a5947b3/scratch.obj",
+      "object": "tools/match/scratches/grim_nullsub_20/build/msvc6.5/01223f069ef89fc5/scratch.obj",
       "object_function_symbol": "_nullsub_20",
       "object_sha256": "ce151ed498476a9f1fc8ce0431b409dfc69445db719554ec52b8fcf3cc3071c9",
       "scratch": "tools/match/scratches/grim_nullsub_20",
@@ -14197,7 +14197,7 @@
         "state": "match",
         "target_instructions": 19
       },
-      "object": "tools/match/scratches/grim_set_rotation/build/msvc6.5/b13b36e9f2726543/scratch.obj",
+      "object": "tools/match/scratches/grim_set_rotation/build/msvc6.5/526bbe5ac9a00d76/scratch.obj",
       "object_function_symbol": "?grim_set_rotation@IGrim2D_cpp@@UAEXM@Z",
       "object_sha256": "52edf141c35cf1336dabcd21c67bca99cd3a2e97fb5f9705e15b3a4ae10e5f60",
       "scratch": "tools/match/scratches/grim_set_rotation",
@@ -14294,7 +14294,7 @@
         "state": "match",
         "target_instructions": 42
       },
-      "object": "tools/match/scratches/grim_set_color/build/msvc6.5/d93fc9d31f65d1ea/scratch.obj",
+      "object": "tools/match/scratches/grim_set_color/build/msvc6.5/21fd2da407130823/scratch.obj",
       "object_function_symbol": "?grim_set_color@IGrim2D_cpp@@UAEXMMMM@Z",
       "object_sha256": "e5495fd409af931b39f9c92ff69420cf98243e1637f80d0a156c13506c14ee75",
       "scratch": "tools/match/scratches/grim_set_color",
@@ -14391,7 +14391,7 @@
         "state": "match",
         "target_instructions": 25
       },
-      "object": "tools/match/scratches/grim_set_color_ptr/build/msvc6.5/196055685e170263/scratch.obj",
+      "object": "tools/match/scratches/grim_set_color_ptr/build/msvc6.5/cab50a0c1e02d851/scratch.obj",
       "object_function_symbol": "?grim_set_color_ptr@IGrim2D_cpp@@UAEXPAM@Z",
       "object_sha256": "69be3a4ce6891d48c797d1a53c3457469a4b021d835d5b09469dd110450dfe26",
       "scratch": "tools/match/scratches/grim_set_color_ptr",
@@ -14534,7 +14534,7 @@
         "state": "match",
         "target_instructions": 40
       },
-      "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/fc34495933bed833/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_line/build/msvc6.5/e0687a1558158451/scratch.obj",
       "object_function_symbol": "?grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z",
       "object_sha256": "c03f35c2ce1fcd7cc385c06a1039464179a96f0fa4e14ab1bc252ca2687efed8",
       "scratch": "tools/match/scratches/grim_draw_line",
@@ -14633,7 +14633,7 @@
         "state": "match",
         "target_instructions": 27
       },
-      "object": "tools/match/scratches/grim_set_color_slot/build/msvc6.5/c833c916fee0df40/scratch.obj",
+      "object": "tools/match/scratches/grim_set_color_slot/build/msvc6.5/caf5d3d99dc92d02/scratch.obj",
       "object_function_symbol": "?grim_set_color_slot@IGrim2D_cpp@@UAEXHMMMM@Z",
       "object_sha256": "6f2c391e78284a6d88ac01c7a1486c782d30838d392e9458c0b14edb3305f2d4",
       "scratch": "tools/match/scratches/grim_set_color_slot",
@@ -14730,7 +14730,7 @@
         "state": "match",
         "target_instructions": 31
       },
-      "object": "tools/match/scratches/grim_set_atlas_frame/build/msvc6.5/e038d2fa73ea084e/scratch.obj",
+      "object": "tools/match/scratches/grim_set_atlas_frame/build/msvc6.5/21f31ad70f998cd2/scratch.obj",
       "object_function_symbol": "?grim_set_atlas_frame@IGrim2D_cpp@@UAEXHH@Z",
       "object_sha256": "54c72ab90b5d8031d75daf237d5cc886fc532ec52dc791f56a8913746300adb8",
       "scratch": "tools/match/scratches/grim_set_atlas_frame",
@@ -14827,7 +14827,7 @@
         "state": "match",
         "target_instructions": 31
       },
-      "object": "tools/match/scratches/grim_set_sub_rect/build/msvc6.5/49c6dcc6bea797bd/scratch.obj",
+      "object": "tools/match/scratches/grim_set_sub_rect/build/msvc6.5/c48defa8f4c2ac5e/scratch.obj",
       "object_function_symbol": "?grim_set_sub_rect@IGrim2D_cpp@@UAEXHHHH@Z",
       "object_sha256": "8d0a8257eddcc0a1338b40654f2721d2476ff1ebe964f7800dc24aa9cf34e0e4",
       "scratch": "tools/match/scratches/grim_set_sub_rect",
@@ -14924,7 +14924,7 @@
         "state": "match",
         "target_instructions": 17
       },
-      "object": "tools/match/scratches/grim_set_uv/build/msvc6.5/1305550478609ce4/scratch.obj",
+      "object": "tools/match/scratches/grim_set_uv/build/msvc6.5/78bd866a33381bf9/scratch.obj",
       "object_function_symbol": "?grim_set_uv@IGrim2D_cpp@@UAEXMMMM@Z",
       "object_sha256": "3190521ee6335e8f348226b63fd63b97738253c0ee2a9499356c43d64bbb32ef",
       "scratch": "tools/match/scratches/grim_set_uv",
@@ -15021,7 +15021,7 @@
         "state": "match",
         "target_instructions": 6
       },
-      "object": "tools/match/scratches/grim_set_uv_point/build/msvc6.5/a1e33802bc43712a/scratch.obj",
+      "object": "tools/match/scratches/grim_set_uv_point/build/msvc6.5/acb5b72936ace44a/scratch.obj",
       "object_function_symbol": "?grim_set_uv_point@IGrim2D_cpp@@UAEXHMM@Z",
       "object_sha256": "557548ff09ca7f7bb8058f601c9657f7ba3c3e4f072b9f5b53bd7fb97b395bcb",
       "scratch": "tools/match/scratches/grim_set_uv_point",
@@ -15123,7 +15123,7 @@
         "state": "match",
         "target_instructions": 37
       },
-      "object": "tools/match/scratches/grim_flush_batch/build/msvc6.5/bcf76a5399ab68fe/scratch.obj",
+      "object": "tools/match/scratches/grim_flush_batch/build/msvc6.5/a9713624d11e11bf/scratch.obj",
       "object_function_symbol": "?grim_flush_batch@IGrim2D_cpp@@UAEXXZ",
       "object_sha256": "1d11c7f1380de966801ed5979bf7f81aa641e3677967c8d92f126f3df323ff39",
       "scratch": "tools/match/scratches/grim_flush_batch",
@@ -15220,7 +15220,7 @@
         "state": "match",
         "target_instructions": 54
       },
-      "object": "tools/match/scratches/grim_submit_vertices_offset_color/build/msvc6.5/74b043d9d8a18d56/scratch.obj",
+      "object": "tools/match/scratches/grim_submit_vertices_offset_color/build/msvc6.5/fffb219c84c8e81d/scratch.obj",
       "object_function_symbol": "?grim_submit_vertices_offset_color@IGrim2D_cpp@@UAEXPAMH0PAK@Z",
       "object_sha256": "2318a06ab80a3ff3116592b0272ebadfac3c3c4e0ef41c98b06d6962f5010a52",
       "scratch": "tools/match/scratches/grim_submit_vertices_offset_color",
@@ -15317,7 +15317,7 @@
         "state": "match",
         "target_instructions": 72
       },
-      "object": "tools/match/scratches/grim_submit_vertices_transform_color/build/msvc6.5/429be25ec9b4313d/scratch.obj",
+      "object": "tools/match/scratches/grim_submit_vertices_transform_color/build/msvc6.5/7f8cbc184e42fa54/scratch.obj",
       "object_function_symbol": "?grim_submit_vertices_transform_color@IGrim2D_cpp@@UAEXPAMH00PAK@Z",
       "object_sha256": "2aeb427c25ae9586006eca5b163812465853cd6ec8fe30a8c616f945dd46bfed",
       "scratch": "tools/match/scratches/grim_submit_vertices_transform_color",
@@ -15414,7 +15414,7 @@
         "state": "match",
         "target_instructions": 64
       },
-      "object": "tools/match/scratches/grim_submit_vertices_transform/build/msvc6.5/ad7842c8d691a802/scratch.obj",
+      "object": "tools/match/scratches/grim_submit_vertices_transform/build/msvc6.5/241232107cc29150/scratch.obj",
       "object_function_symbol": "?grim_submit_vertices_transform@IGrim2D_cpp@@UAEXPAMH00@Z",
       "object_sha256": "ff4d70366be4880a563050e42964047f726df877b62a5c85215bb6d2f76dc05e",
       "scratch": "tools/match/scratches/grim_submit_vertices_transform",
@@ -15511,7 +15511,7 @@
         "state": "match",
         "target_instructions": 50
       },
-      "object": "tools/match/scratches/grim_submit_vertices_offset/build/msvc6.5/a7411fc94d20b5be/scratch.obj",
+      "object": "tools/match/scratches/grim_submit_vertices_offset/build/msvc6.5/630f3baa1674c711/scratch.obj",
       "object_function_symbol": "?grim_submit_vertices_offset@IGrim2D_cpp@@UAEXPAMH0@Z",
       "object_sha256": "743862529d58bea4a6e8ad52484634087ae9623ac5c8819b2022af97af9f0020",
       "scratch": "tools/match/scratches/grim_submit_vertices_offset",
@@ -15608,7 +15608,7 @@
         "state": "match",
         "target_instructions": 14
       },
-      "object": "tools/match/scratches/grim_draw_quad_xy/build/msvc6.5/e0e7c3daaf97e273/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_quad_xy/build/msvc6.5/92cdb9c7fd6dddaa/scratch.obj",
       "object_function_symbol": "?grim_draw_quad_xy@IGrim2D_cpp@@UAEXPAMMM@Z",
       "object_sha256": "eff49f1073a66aa68413d3a72992d23b4c4d45f6515d04f85de3a7eabd501726",
       "scratch": "tools/match/scratches/grim_draw_quad_xy",
@@ -15705,7 +15705,7 @@
         "state": "match",
         "target_instructions": 236
       },
-      "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/2c22f6677f07597b/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
       "object_function_symbol": "?grim_draw_quad_rotated_matrix@IGrim2D_cpp@@UAEXMMMM@Z",
       "object_sha256": "eef3df205155bcbc62c6acca2657408c3eba38bd5df331d5f60a8f87cd672fd3",
       "scratch": "tools/match/scratches/grim_draw_quad_rotated_matrix",
@@ -15802,7 +15802,7 @@
         "state": "match",
         "target_instructions": 195
       },
-      "object": "tools/match/scratches/grim_draw_quad/build/msvc6.5/a0ea873bac428a3e/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_quad/build/msvc6.5/cfac7c3eeebe8520/scratch.obj",
       "object_function_symbol": "?grim_draw_quad@IGrim2D_cpp@@UAEXMMMM@Z",
       "object_sha256": "9464d779af849145635700b29d5a9a957adbe2d2528de12e6561075e2995efb3",
       "scratch": "tools/match/scratches/grim_draw_quad",
@@ -15899,7 +15899,7 @@
         "state": "match",
         "target_instructions": 35
       },
-      "object": "tools/match/scratches/grim_submit_vertex_raw/build/msvc6.5/708c86172a2482f7/scratch.obj",
+      "object": "tools/match/scratches/grim_submit_vertex_raw/build/msvc6.5/528b0c1469a20e5e/scratch.obj",
       "object_function_symbol": "?grim_submit_vertex_raw@IGrim2D_cpp@@UAEXPAM@Z",
       "object_sha256": "ed1958b11c8a7f395afcc48b362030163343cc10d86123b704b1ccad62a56abd",
       "scratch": "tools/match/scratches/grim_submit_vertex_raw",
@@ -15996,7 +15996,7 @@
         "state": "match",
         "target_instructions": 25
       },
-      "object": "tools/match/scratches/grim_submit_quad_raw/build/msvc6.5/3d65fccfa77e061b/scratch.obj",
+      "object": "tools/match/scratches/grim_submit_quad_raw/build/msvc6.5/8f093975f80747d2/scratch.obj",
       "object_function_symbol": "?grim_submit_quad_raw@IGrim2D_cpp@@UAEXPAM@Z",
       "object_sha256": "b647a635e88fb75734c33c15889f972e155c22328fc383d80d14207594b906fe",
       "scratch": "tools/match/scratches/grim_submit_quad_raw",
@@ -16098,7 +16098,7 @@
         "state": "match",
         "target_instructions": 125
       },
-      "object": "tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/79322b207cadfdb2/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/9475e8886a6c8051/scratch.obj",
       "object_function_symbol": "?grim_draw_rect_outline@IGrim2D_cpp@@UAEXPAMMM@Z",
       "object_sha256": "b6987e833d95cfe83d7e07a64aa210513a2d1d31e3a490db18c98a8d38c03dbd",
       "scratch": "tools/match/scratches/grim_draw_rect_outline",
@@ -16195,7 +16195,7 @@
         "state": "match",
         "target_instructions": 130
       },
-      "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/5439656fa4c68009/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
       "object_function_symbol": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z",
       "object_sha256": "c169328d63295fa5f4bc73107e5b1c1e9ee1d6fe792dcc9f5de9e2364cc6602b",
       "scratch": "tools/match/scratches/grim_draw_quad_points",
@@ -16297,7 +16297,7 @@
         "state": "wip",
         "target_instructions": 308
       },
-      "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/a418a209a028cca2/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
       "object_function_symbol": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z",
       "object_sha256": "1bb1448909f0d57528192c202adf560a5cfb6eda8df91d0ddfc91f883fe6d897",
       "scratch": "tools/match/scratches/grim_draw_text_mono",
@@ -16394,7 +16394,7 @@
         "state": "match",
         "target_instructions": 45
       },
-      "object": "tools/match/scratches/grim_measure_text_width/build/msvc6.5/d92216dc1e3bc4bc/scratch.obj",
+      "object": "tools/match/scratches/grim_measure_text_width/build/msvc6.5/b601781bd804f376/scratch.obj",
       "object_function_symbol": "?grim_measure_text_width@IGrim2D_cpp@@UAEHPAD@Z",
       "object_sha256": "5c6e54c19235e8dec547ed2ef18d8c4f15b8f44dae2ed4504203fc439b31999f",
       "scratch": "tools/match/scratches/grim_measure_text_width",
@@ -16491,7 +16491,7 @@
         "state": "match",
         "target_instructions": 153
       },
-      "object": "tools/match/scratches/grim_draw_text_small/build/msvc6.5/386617bbaecb2767/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_text_small/build/msvc6.5/680928f0dbbf7b92/scratch.obj",
       "object_function_symbol": "?grim_draw_text_small@IGrim2D_cpp@@UAEXMMPAD@Z",
       "object_sha256": "c3e0980818236028512afaa025e47c6b092c962992bb1ef6e10317e559c6ad27",
       "scratch": "tools/match/scratches/grim_draw_text_small",
@@ -16588,7 +16588,7 @@
         "state": "match",
         "target_instructions": 16
       },
-      "object": "tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/0da2787600884a67/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/62779ab124db7c83/scratch.obj",
       "object_function_symbol": "?grim_draw_text_mono_fmt@IGrim2D_cpp@@UAAXMMPADZZ",
       "object_sha256": "664f5bcf7cb501b42eb675846988e97a1c6f9b4703af60b753577e61fcd508ad",
       "scratch": "tools/match/scratches/grim_draw_text_mono_fmt",
@@ -16685,7 +16685,7 @@
         "state": "match",
         "target_instructions": 16
       },
-      "object": "tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/09a3a809a19097fd/scratch.obj",
+      "object": "tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/185e7d6937e599c3/scratch.obj",
       "object_function_symbol": "?grim_draw_text_small_fmt@IGrim2D_cpp@@UAAXMMPADZZ",
       "object_sha256": "1697c9963425c0f7af5419be732de2c3ba62701e8cf68924a3b5c0ad75069e75",
       "scratch": "tools/match/scratches/grim_draw_text_small_fmt",
@@ -16782,7 +16782,7 @@
         "state": "match",
         "target_instructions": 28
       },
-      "object": "tools/match/scratches/grim_get_interface/build/msvc6.5/b8e41d673a8df839/scratch.obj",
+      "object": "tools/match/scratches/grim_get_interface/build/msvc6.5/1b2a70442d9cdc51/scratch.obj",
       "object_function_symbol": "_GRIM__GetInterface",
       "object_sha256": "a04aaf5fafe6953ce7ac46ea1acfbca3f4dddce74fa4c14f421caf70a57a08d0",
       "scratch": "tools/match/scratches/grim_get_interface",
@@ -16874,7 +16874,7 @@
         "state": "match",
         "target_instructions": 10
       },
-      "object": "tools/match/scratches/grim_dll_main/build/msvc6.5/8c75a983c02b4a93/scratch.obj",
+      "object": "tools/match/scratches/grim_dll_main/build/msvc6.5/689f2dbb447dd654/scratch.obj",
       "object_function_symbol": "_DllMain@12",
       "object_sha256": "fe1cc8b6a27c0adfe1499df568d7199872c1b87b2e51e142940be1ef3a59985e",
       "scratch": "tools/match/scratches/grim_dll_main",
@@ -17039,7 +17039,7 @@
         "state": "match",
         "target_instructions": 2
       },
-      "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
+      "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/de0a392047f07957/scratch.obj",
       "object_function_symbol": "??0GrimJazDecodeScope@@QAE@XZ",
       "object_sha256": "110d327c593c4c8ab70d654a9c3c1e9fbe184c4ea34188c6bfad83d6b6edf58f",
       "scratch": "tools/match/scratches/grim_jaz_decompress_payload",

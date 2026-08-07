@@ -12957,6 +12957,14 @@
       "type": "void *[57]"
     },
     {
+      "address": "0x10053ec8",
+      "aliases": ["_g_pDDSFormatDDPF"],
+      "comment": "Archive-confirmed 34-entry DirectX 8.1 table mapping D3DFORMAT values to DDS pixel-format descriptors.",
+      "name": "d3dx_dds_pixel_format_table",
+      "program": "grim.dll",
+      "type": "unsigned char[1224]"
+    },
+    {
       "address": "0x10054498",
       "aliases": ["_isMMX", "isMMX"],
       "comment": "Cached MMX capability result used by the DirectX 8.1 CPU-detection helpers.",
@@ -13630,6 +13638,22 @@
       "name": "d3dx_sse2_quaternion_constants",
       "program": "grim.dll",
       "type": "unsigned char[32]"
+    },
+    {
+      "address": "0x1005db60",
+      "aliases": ["?pDSM_D3D8D@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"],
+      "comment": "Zero-initialized DirectX 8.1 debug-runtime D3DXDebugMute callback cache.",
+      "name": "d3dx_debug_mute_d3d8d_callback",
+      "program": "grim.dll",
+      "type": "void (__cdecl *)(int)"
+    },
+    {
+      "address": "0x1005db64",
+      "aliases": ["?pDSM_D3D8@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"],
+      "comment": "Zero-initialized DirectX 8.1 retail-runtime D3DXDebugMute callback cache.",
+      "name": "d3dx_debug_mute_d3d8_callback",
+      "program": "grim.dll",
+      "type": "void (__cdecl *)(int)"
     },
     {
       "address": "0x1005dbd0",

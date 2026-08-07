@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 386
+    assert payload["summary"]["source_entry_count"] == 389
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 383
-    assert payload["summary"]["typed_entries"] == 333
+    assert payload["summary"]["entry_count"] == 386
+    assert payload["summary"]["typed_entries"] == 336
     assert payload["summary"]["explicit_size_entries"] == 349
     assert payload["summary"]["explicit_alignment_entries"] == 349
     assert payload["summary"]["explicit_initializer_entries"] == 349
@@ -2271,6 +2271,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["d3dx_sse_trig_constants"]["type"] == "unsigned char[736]"
     assert observed["d3dx_sse2_trig_table"]["type"] == "unsigned char[768]"
     assert observed["d3dx_rsqrt_half_vector"]["type"] == "float[4]"
+    assert observed["d3dx_dds_pixel_format_table"]["type"] == "unsigned char[1224]"
+    assert observed["d3dx_debug_mute_d3d8_callback"]["type"] == "void (__cdecl *)(int)"
+    assert observed["d3dx_debug_mute_d3d8d_callback"]["type"] == "void (__cdecl *)(int)"
     assert observed["fpu_control_word_saved_dxt"]["type"] == "unsigned long"
     assert observed["d3dx_box_filter_2d_a8r8g8b8_impl"]["type"] == "void *"
     assert observed["d3dx_box_filter_2d_x8r8g8b8_impl"]["type"] == "void *"
