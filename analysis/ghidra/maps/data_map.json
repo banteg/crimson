@@ -14451,6 +14451,214 @@
       "type": "void *[4]"
     },
     {
+      "address": "0x0046f880",
+      "aliases": ["?const3dn_0_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.0, 1.0] used by the x3d matrix kernels.",
+      "name": "x3d_const3dn_0_1",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f890",
+      "aliases": ["?const3dn_1_N1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, -1.0] used by the x3d matrix kernels.",
+      "name": "x3d_const3dn_1_n1",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f8a0",
+      "aliases": ["?const3dn_1_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, 1.0] used by the x3d matrix kernels.",
+      "name": "x3d_const3dn_1_1",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f8a8",
+      "aliases": ["?const3dn_2_2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [2.0, 2.0] used by the x3d quaternion kernels.",
+      "name": "x3d_const3dn_2_2",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f8b0",
+      "aliases": ["?const3dn_3_2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [3.0, 2.0] used by the x3d vector kernels.",
+      "name": "x3d_const3dn_3_2",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f8b8",
+      "aliases": ["?const3dn_SignBitLo@@3T__m64@@B"],
+      "comment": "Packed low-lane sign-bit mask used by the x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_bit_lo",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f8c0",
+      "aliases": ["?const3dn_SignBitHi@@3T__m64@@B"],
+      "comment": "Packed high-lane sign-bit mask used by the x3d matrix kernels.",
+      "name": "x3d_const3dn_sign_bit_hi",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f8c8",
+      "aliases": ["?const3dn_SignBits@@3T__m64@@B"],
+      "comment": "Packed two-lane sign-bit mask used by the x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_bits",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f8d8",
+      "aliases": ["?const3dn_SignMaskHi@@3T__m64@@B"],
+      "comment": "Packed high-lane absolute-value mask used by the x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_mask_hi",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f8e0",
+      "aliases": ["?const3dn_SignMasks@@3T__m64@@B"],
+      "comment": "Packed two-lane absolute-value mask used by the x3d quaternion kernels.",
+      "name": "x3d_const3dn_sign_masks",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f8e8",
+      "aliases": ["?const3dn_epsilon@@3T__m64@@B"],
+      "comment": "Packed 3DNow float-epsilon pair used by the x3d quaternion kernels.",
+      "name": "x3d_const3dn_epsilon",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f8f0",
+      "aliases": ["?const3dn_dwordLo@@3T__m64@@B"],
+      "comment": "Packed low-dword mask used by the x3d matrix kernels.",
+      "name": "x3d_const3dn_dword_lo",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f908",
+      "aliases": ["?const3dn_halves@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.5, 0.5] used by the x3d quaternion kernels.",
+      "name": "x3d_const3dn_halves",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f910",
+      "aliases": ["?const3dn_FltMin@@3T__m64@@B"],
+      "comment": "Packed 3DNow FLT_MIN pair used as a normalization threshold by the x3d kernels.",
+      "name": "x3d_const3dn_flt_min",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f918",
+      "aliases": ["?g_negate_low@@3T__m64@@B"],
+      "comment": "Packed low-lane sign-bit mask used by the x3d matrix kernels.",
+      "name": "x3d_negate_low",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f920",
+      "aliases": ["?g_negate_high@@3T__m64@@B"],
+      "comment": "Packed high-lane sign-bit mask used by the x3d quaternion and vector kernels.",
+      "name": "x3d_negate_high",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f928",
+      "aliases": ["?g_const_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, 1.0] used by the x3d quaternion and vector kernels.",
+      "name": "x3d_const_1",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f930",
+      "aliases": ["?g_const_half@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.5, 0.5] used by the x3d rotation kernels.",
+      "name": "x3d_const_half",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f938",
+      "aliases": ["?g_const_2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [2.0, 2.0] used by the x3d vector kernels.",
+      "name": "x3d_const_2",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f940",
+      "aliases": ["?g_const_3@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [3.0, 3.0] used by the x3d vector kernels.",
+      "name": "x3d_const_3",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f960",
+      "aliases": ["?g_const_0_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.0, 1.0] used by the x3d matrix kernels.",
+      "name": "x3d_const_0_1",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f968",
+      "aliases": ["?g_const_1_0@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, 0.0] used by the x3d matrix kernels.",
+      "name": "x3d_const_1_0",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f970",
+      "aliases": ["?g_const_nh_nl@@3T__m64@@B"],
+      "comment": "Packed two-lane sign-bit mask used by the x3d rotation kernels.",
+      "name": "x3d_const_negate_high_low",
+      "program": "crimsonland.exe",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x0046f978",
+      "aliases": ["?g_const_n2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [-2.0, -2.0] used by the x3d reflection kernel.",
+      "name": "x3d_const_n2",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f980",
+      "aliases": ["?g_const_n2_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [-2.0, 1.0] used by the x3d reflection kernel.",
+      "name": "x3d_const_n2_1",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x0046f988",
+      "aliases": ["?g_const_niner@@3T__m64@@B"],
+      "comment": "Packed 3DNow near-one clamp pair used by the x3d quaternion slerp kernel.",
+      "name": "x3d_const_niner",
+      "program": "crimsonland.exe",
+      "type": "const float[2]"
+    },
+    {
       "address": "0x004795a0",
       "comment": "Active 57-entry vector and matrix dispatch table; reset from renderer_dispatch_defaults and patched for the selected CPU backend.",
       "name": "renderer_dispatch_table",
