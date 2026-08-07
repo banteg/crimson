@@ -92,6 +92,7 @@ from crimson.match import (
     render_triage_rows,
     resolve_function,
     resolve_function_with_scope_hint,
+    run_match,
     sort_profile_statuses,
     sort_triage_rows,
     triage_row_payload,
@@ -649,7 +650,7 @@ def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
     (tmp_path / "scratch.conf").write_text(
         "FUNCTION=foo ARCHIVE=provider.lib "
         "ARCHIVE_MEMBER='obj\\i386\\foo.obj' "
-        f"ARCHIVE_SHA256={'a' * 64} SYMBOL=_foo\n",
+        f"ARCHIVE_SHA256={'a' * 64} SYMBOL=_foo ARCHIVE_EXTENT=section-tail\n",
         encoding="utf-8",
     )
 
@@ -659,6 +660,7 @@ def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
     assert config.archive == "provider.lib"
     assert config.archive_member == r"obj\i386\foo.obj"
     assert config.archive_sha256 == "a" * 64
+    assert config.archive_extent == "section-tail"
 
 
 def test_scratch_config_parses_structural_import_thunk(tmp_path: Path) -> None:
@@ -689,6 +691,7 @@ def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
     "config, message",
     (
         ("FUNCTION=foo ARCHIVE_MEMBER=foo.obj", "without ARCHIVE"),
+        ("FUNCTION=foo ARCHIVE_EXTENT=section-tail", "without ARCHIVE"),
         ("FUNCTION=foo ARCHIVE=provider.lib", "must set ARCHIVE_MEMBER, ARCHIVE_SHA256, SYMBOL"),
         (
             "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
@@ -699,6 +702,11 @@ def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
             "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
             + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo AUTO_INLINE_OFF=foo",
             "cannot combine ARCHIVE and AUTO_INLINE_OFF",
+        ),
+        (
+            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_EXTENT=bogus",
+            "invalid ARCHIVE_EXTENT",
         ),
     ),
 )
@@ -962,7 +970,7 @@ def test_extract_object_function_recovers_implicit_same_section_branch() -> None
         relocation_references=function.relocation_references,
     )
     assert disassembly[0].text == "call ADDR"
-    assert disassembly[0].masked_references[0].keys == ("name:callee",)
+    assert disassembly[0].masked_references[0].keys == ("local:+0x6",)
 
 
 def test_extract_object_function_recovers_implicit_branch_to_function_tail() -> None:
@@ -1013,6 +1021,23 @@ def test_extract_object_function_excludes_appended_local_jump_table() -> None:
     ) == ("jmp dword [eax*4+ADDR]", "mov eax, 0x1", "ret", "ret")
 
 
+def test_extract_object_function_can_include_external_symbol_section_tail() -> None:
+    code = bytes.fromhex("31c0c390c3")
+    obj = CoffObject(
+        sections=(CoffSection(name=".text", data=code, characteristics=0x20, relocations=()),),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "_helper", 3, 1, 0x20, 3),
+        ),
+    )
+
+    symbol = extract_object_function(obj, "probe")
+    section_tail = extract_object_function(obj, "probe", extent="section-tail")
+
+    assert symbol.data == code[:3]
+    assert section_tail.data == code
+
+
 def test_normalize_masks_relocated_and_absolute_operands() -> None:
     code = bytes.fromhex("a134124a00c3")
     assert normalize_function(code, relocation_offsets=frozenset({1}))[0] == "mov eax, dword [ADDR]"
@@ -1049,6 +1074,13 @@ def test_normalize_labels_intra_function_branches() -> None:
     code = bytes.fromhex("7402") + bytes.fromhex("31c0") + bytes.fromhex("c3")
     assert normalize_function(code)[0] == "je L4"
     assert normalize_function(code, base_address=0x445F00)[0] == "je L4"
+
+
+def test_normalize_keeps_out_of_image_branch_entry_relative() -> None:
+    code = bytes.fromhex("e978563412")
+
+    assert normalize_function(code)[0] == normalize_function(code, base_address=0x445F00)[0]
+    assert normalize_function(code)[0] == "jmp R+0x1234567d"
 
 
 def test_normalize_masks_relocated_call_targets() -> None:
@@ -1162,6 +1194,92 @@ def test_match_function_audits_masked_reference_identity(
     assert result.ratio == 1.0
     assert result.masked_operand_audit.entries[0].status == expected_status
     assert result.exact is exact
+
+
+def test_match_function_materializes_local_dir32_relocation() -> None:
+    function_address = 0x401000
+    local_target_offset = 6
+    target = (
+        b"\xb8"
+        + struct.pack("<I", function_address + local_target_offset)
+        + bytes.fromhex("c3c3")
+    )
+    candidate = ObjectFunction(
+        name="_probe",
+        data=bytes.fromhex("b800000000c3c3"),
+        relocation_offsets=frozenset({1}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=1,
+                symbol_name="_helper",
+                key="name:helper",
+                explained=True,
+                local_target_offset=local_target_offset,
+                relocation_type=0x06,
+            ),
+        ),
+    )
+
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0x10000),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog({}),
+    )
+    wrong = match_function(
+        b"\xb8" + struct.pack("<I", function_address + local_target_offset + 1) + bytes.fromhex("c3c3"),
+        candidate,
+        image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0x10000),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog({}),
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+    assert not wrong.exact
+    assert wrong.masked_operand_audit.mismatch_count == 1
+
+
+def test_run_match_forwards_object_extent(monkeypatch, tmp_path: Path) -> None:
+    observed: dict[str, str] = {}
+    manifest = FunctionManifest(
+        image_name="game.exe",
+        image_base=0x401000,
+        functions=(FunctionSymbol(name="probe", address=0x401000, end=0x401001, size=1),),
+    )
+    obj_path = tmp_path / "probe.obj"
+    obj_path.write_bytes(b"object")
+    image_path = tmp_path / "game.exe"
+    image_path.write_bytes(b"image")
+
+    monkeypatch.setattr("crimson.match.load_function_manifest", lambda *args, **kwargs: manifest)
+    monkeypatch.setattr(
+        "crimson.match.load_image",
+        lambda *args, **kwargs: LoadedImage(b"\xc3", 0x401000, 1),
+    )
+    monkeypatch.setattr("crimson.match.load_reference_catalog", lambda *args, **kwargs: ReferenceCatalog({}))
+    monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
+
+    def fake_extract(obj, name, *, extent: str = "symbol") -> ObjectFunction:
+        observed["extent"] = extent
+        return ObjectFunction("_probe", b"\xc3", frozenset())
+
+    monkeypatch.setattr("crimson.match.extract_object_function", fake_extract)
+
+    result = run_match(
+        obj_path=obj_path,
+        function="probe",
+        image_path=image_path,
+        functions_path=tmp_path / "functions.json",
+        metadata_path=tmp_path / "metadata.json",
+        symbol_name="_probe",
+        object_extent="section-tail",
+        scope="all",
+    )
+
+    assert result.exact
+    assert observed == {"extent": "section-tail"}
 
 
 def test_match_function_accepts_first_load_from_proven_vc6_copy_range() -> None:
@@ -3621,7 +3739,11 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
     monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
     monkeypatch.setattr(
         "crimson.match.extract_object_function",
-        lambda obj, symbol: ObjectFunction(name="foo", data=b"\xc3", relocation_offsets=frozenset()),
+        lambda obj, symbol, *, extent="symbol": ObjectFunction(
+            name="foo",
+            data=b"\xc3",
+            relocation_offsets=frozenset(),
+        ),
     )
     monkeypatch.setattr(Path, "read_bytes", lambda self: b"")
 

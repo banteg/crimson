@@ -1892,6 +1892,7 @@ def build_native_object_set(
             functions_path=functions_path,
             metadata_path=metadata_path,
             symbol_name=status.config.symbol,
+            object_extent=status.config.archive_extent,
             end_va=status.config.end_va,
             reference_aliases=status.config.reference_aliases,
             scope=scope,
@@ -1907,7 +1908,11 @@ def build_native_object_set(
                 f"{status.config.directory.name}: compile inputs changed during native audit",
             )
         coff = matchlib.parse_coff_object(object_data)
-        object_function = matchlib.extract_object_function(coff, status.config.symbol)
+        object_function = matchlib.extract_object_function(
+            coff,
+            status.config.symbol,
+            extent=status.config.archive_extent,
+        )
         input_hashes = dict(inputs_after)
         config_path = (status.config.directory / "scratch.conf").resolve()
         source_path = (status.config.directory / status.config.source).resolve()

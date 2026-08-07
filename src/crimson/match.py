@@ -62,6 +62,7 @@ IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080
 IMAGE_SCN_LNK_COMDAT = 0x00001000
 IMAGE_SCN_LNK_NRELOC_OVFL = 0x01000000
 IMAGE_SCN_MEM_WRITE = 0x80000000
+IMAGE_REL_I386_DIR32 = 0x06
 IMAGE_REL_I386_REL32 = 0x14
 IMAGE_REL_I386_WIDTHS = {
     0x0000: 0,
@@ -738,6 +739,7 @@ class ObjectRelocationReference:
     read_only_data: bool = False
     local_target_offset: int | None = None
     alternate_keys: tuple[str, ...] = ()
+    relocation_type: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -1723,12 +1725,13 @@ def _coff_implicit_direct_branch_references(
     *,
     explicit_offsets: frozenset[int],
 ) -> tuple[ObjectRelocationReference, ...]:
-    """Recover same-section branch symbols resolved by the VC6 assembler.
+    """Recover same-section branches resolved by the VC6 assembler.
 
     MASM can encode a direct relative call or jump between symbols in one
-    ``.text`` section without leaving a COFF relocation. Only accept branches
-    that land exactly on one unambiguous function or code-label symbol; all
-    other immediates remain literal and therefore continue to mismatch.
+    ``.text`` section without leaving a COFF relocation. Accept destinations
+    that remain inside that section, recording a symbol when one is
+    unambiguous and otherwise preserving the exact entry-relative offset.
+    Destinations outside the section remain literal and continue to mismatch.
     """
 
     try:
@@ -1807,23 +1810,39 @@ def _coff_implicit_direct_branch_references(
         if target.value <= destination < end:
             continue
         resolved = destination_symbol(destination)
-        if resolved is None:
+        if resolved is None and not 0 <= destination < len(section.data):
             continue
-        symbol, addend = resolved
-        key, explained = _object_reference_key(symbol, addend)
+        if resolved is None:
+            symbol_name = f"{section.name}+0x{destination:x}"
+            addend = 0
+            key = None
+            explained = True
+        else:
+            symbol, addend = resolved
+            symbol_name = symbol.name
+            key, explained = _object_reference_key(symbol, addend)
         references.append(
             ObjectRelocationReference(
                 offset=offset,
-                symbol_name=symbol.name,
+                symbol_name=symbol_name,
                 key=key,
                 explained=explained,
                 addend=addend,
+                local_target_offset=destination - target.value,
             ),
         )
     return tuple(references)
 
 
-def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectFunction:
+def extract_object_function(
+    obj: CoffObject,
+    name: str | None = None,
+    *,
+    extent: str = "symbol",
+) -> ObjectFunction:
+    if extent not in ARCHIVE_EXTENT_VALUES:
+        allowed = ", ".join(sorted(ARCHIVE_EXTENT_VALUES))
+        raise ValueError(f"invalid object function extent {extent!r}; use {allowed}")
     explicit_code_label = False
     candidates = [symbol for symbol in obj.symbols if _is_function_symbol(symbol)]
     if name is not None:
@@ -1862,7 +1881,10 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
         and symbol.section_number == target.section_number
         and symbol.value > target.value
     )
-    end = siblings[0] if siblings else len(section.data)
+    if extent == "section-tail" or not siblings:
+        end = len(section.data)
+    else:
+        end = siblings[0]
     if (jump_table_start := _coff_trailing_jump_table_start(obj, target, end)) is not None:
         end = jump_table_start
     symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
@@ -1938,11 +1960,18 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
                 ),
                 local_target_offset=(
                     symbol.value + addend - target.value
-                    if relocation.relocation_type == IMAGE_REL_I386_REL32
+                    if (
+                        relocation.relocation_type == IMAGE_REL_I386_REL32
+                        or (
+                            relocation.relocation_type == IMAGE_REL_I386_DIR32
+                            and symbol.storage_class != IMAGE_SYM_CLASS_EXTERNAL
+                        )
+                    )
                     and symbol.section_number == target.section_number
                     and target.value <= symbol.value + addend < end
                     else None
                 ),
+                relocation_type=relocation.relocation_type,
                 alternate_keys=alternate_keys,
             ),
         )
@@ -2164,7 +2193,10 @@ def disassemble_normalized_function(
         keys = tuple(dict.fromkeys((*keys, *reference.alternate_keys)))
         explained = reference.explained
         symbol_data = reference.symbol_data or b""
-        if reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(symbol_data)):
+        if reference.local_target_offset is not None:
+            keys = (f"local:{reference.local_target_offset:+#x}",)
+            explained = True
+        elif reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(symbol_data)):
             keys = (string_key,)
             explained = True
         elif reference.symbol_name.startswith("__real@") and len(symbol_data) >= byte_count:
@@ -2209,6 +2241,7 @@ def disassemble_normalized_function(
         byte_count: int | None = None,
     ) -> MaskedReference:
         keys = list(reference_catalog.keys_for_address(value) if reference_catalog is not None else ())
+        keys.append(f"local:{value - base_address:+#x}")
         if image is not None:
             available = image.mapped[value - image.image_base :] if image.image_base <= value else b""
             if string_key := _printable_string_key(available):
@@ -2299,6 +2332,7 @@ def disassemble_normalized_function(
                     and is_branch
                     and imm_relocation is not None
                     and imm_relocation.local_target_offset is not None
+                    and 0 <= imm_relocation.local_target_offset < size
                 ):
                     operands.append(f"L{imm_relocation.local_target_offset:x}")
                 elif imm_masked:
@@ -2316,6 +2350,8 @@ def disassemble_normalized_function(
                 elif is_masked_value(value):
                     operands.append("ADDR")
                     masked_references.append(image_reference(value, operand_index=operand_index, kind="imm"))
+                elif is_branch:
+                    operands.append(f"R{target_offset:+#x}")
                 else:
                     operands.append(f"0x{value:x}" if value >= 0 else f"-0x{-value:x}")
             elif operand.type == capstone.x86.X86_OP_MEM:
@@ -2630,6 +2666,18 @@ def match_function(
     reference_catalog: ReferenceCatalog | None = None,
 ) -> MatchResult:
     address_range = (image.image_base, image.image_base + image.size_of_image)
+    candidate_data = bytearray(candidate.data)
+    materialized_local_offsets: set[int] = set()
+    for reference in candidate.relocation_references:
+        if (
+            reference.relocation_type == IMAGE_REL_I386_DIR32
+            and reference.local_target_offset is not None
+            and 0 <= reference.offset <= len(candidate_data) - 4
+        ):
+            linked_value = struct.pack("<I", target_va + reference.local_target_offset)
+            if target_data[reference.offset : reference.offset + 4] == linked_value:
+                candidate_data[reference.offset : reference.offset + 4] = linked_value
+                materialized_local_offsets.add(reference.offset)
     target_disassembly = disassemble_normalized_function(
         target_data,
         address_range=address_range,
@@ -2638,9 +2686,13 @@ def match_function(
         image=image,
     )
     candidate_disassembly = disassemble_normalized_function(
-        candidate.data,
-        relocation_offsets=candidate.relocation_offsets,
-        relocation_references=candidate.relocation_references,
+        bytes(candidate_data),
+        relocation_offsets=candidate.relocation_offsets - materialized_local_offsets,
+        relocation_references=tuple(
+            reference
+            for reference in candidate.relocation_references
+            if reference.offset not in materialized_local_offsets
+        ),
         address_range=address_range,
         reference_catalog=reference_catalog,
         image=image,
@@ -2893,6 +2945,7 @@ def run_match(
     functions_path: Path = DEFAULT_FUNCTIONS_PATH,
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     symbol_name: str | None = None,
+    object_extent: str = "symbol",
     end_va: int | None = None,
     reference_aliases: tuple[tuple[str, str], ...] = (),
     scope: str | None = None,
@@ -2924,7 +2977,7 @@ def run_match(
             end_override=end_va,
         )
     obj = parse_coff_object(Path(obj_path).read_bytes())
-    candidate = extract_object_function(obj, symbol_name)
+    candidate = extract_object_function(obj, symbol_name, extent=object_extent)
     _, start, end = resolved
     image = load_image(image_path, manifest.image_base)
     catalog = load_reference_catalog(manifest, functions_path=functions_path).with_object_aliases(
@@ -2947,6 +3000,7 @@ def run_match_dump(
     functions_path: Path = DEFAULT_FUNCTIONS_PATH,
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     symbol_name: str | None = None,
+    object_extent: str = "symbol",
     end_va: int | None = None,
     scope: str | None = None,
 ) -> MatchDump:
@@ -2957,7 +3011,7 @@ def run_match_dump(
         scope=scope,
     )
     obj = parse_coff_object(Path(obj_path).read_bytes())
-    candidate = extract_object_function(obj, symbol_name)
+    candidate = extract_object_function(obj, symbol_name, extent=object_extent)
     _, start, end = resolve_function(manifest, function, end_override=end_va)
     image = load_image(image_path, manifest.image_base)
     catalog = load_reference_catalog(manifest, functions_path=functions_path)
@@ -2986,9 +3040,11 @@ DEFAULT_SCRATCH_COMPILER = "msvc6.5"
 DEFAULT_SCRATCH_CFLAGS = "/O2 /GB /W3 /GR-"
 RECOVERY_VALUES = frozenset({"incomplete", "semantic-complete"})
 RESIDUAL_VALUES = frozenset({"analysis", "compiler", "references"})
+ARCHIVE_EXTENT_VALUES = frozenset({"symbol", "section-tail"})
 SCRATCH_CONFIG_KEYS = frozenset(
     {
         "ARCHIVE",
+        "ARCHIVE_EXTENT",
         "ARCHIVE_MEMBER",
         "ARCHIVE_SHA256",
         "AUTO_INLINE_OFF",
@@ -3025,6 +3081,7 @@ class ScratchConfig:
     archive: str | None = None
     archive_member: str | None = None
     archive_sha256: str | None = None
+    archive_extent: str = "symbol"
     import_thunk: str | None = None
     auto_inline_off: tuple[str, ...] = ()
     include_overlay: Path | None = None
@@ -3224,12 +3281,14 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
     archive = values.get("ARCHIVE")
     archive_member = values.get("ARCHIVE_MEMBER")
     archive_sha256 = values.get("ARCHIVE_SHA256")
+    archive_extent = values.get("ARCHIVE_EXTENT", "symbol")
     import_thunk = values.get("IMPORT_THUNK")
     if import_thunk is not None:
         unexpected = sorted(
             key
             for key in (
                 "ARCHIVE",
+                "ARCHIVE_EXTENT",
                 "ARCHIVE_MEMBER",
                 "ARCHIVE_SHA256",
                 "AUTO_INLINE_OFF",
@@ -3249,7 +3308,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
     if archive is None:
         unexpected = sorted(
             key
-            for key in ("ARCHIVE_MEMBER", "ARCHIVE_SHA256")
+            for key in ("ARCHIVE_EXTENT", "ARCHIVE_MEMBER", "ARCHIVE_SHA256")
             if key in values
         )
         if unexpected:
@@ -3272,6 +3331,11 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             raise ValueError(f"{directory}/scratch.conf cannot combine ARCHIVE and SOURCE")
         if archive_sha256 is None or re.fullmatch(r"[0-9a-fA-F]{64}", archive_sha256) is None:
             raise ValueError(f"{directory}/scratch.conf ARCHIVE_SHA256 must be 64 hexadecimal characters")
+        if archive_extent not in ARCHIVE_EXTENT_VALUES:
+            allowed = ", ".join(sorted(ARCHIVE_EXTENT_VALUES))
+            raise ValueError(
+                f"{directory}/scratch.conf has invalid ARCHIVE_EXTENT={archive_extent!r}; use {allowed}",
+            )
 
     return ScratchConfig(
         directory=directory,
@@ -3289,6 +3353,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         archive=archive,
         archive_member=archive_member,
         archive_sha256=archive_sha256.lower() if archive_sha256 is not None else None,
+        archive_extent=archive_extent,
         import_thunk=import_thunk,
         auto_inline_off=auto_inline_off,
     )
@@ -3559,6 +3624,7 @@ def _scratch_build_key(
     if config.archive is not None:
         return {
             "archive": config.archive,
+            "archive_extent": config.archive_extent,
             "archive_member": config.archive_member,
             "archive_sha256": config.archive_sha256,
             "symbol": config.symbol,
@@ -3595,6 +3661,7 @@ def _scratch_profile_digest(config: ScratchConfig) -> str:
     elif config.archive is not None:
         payload = {
             "archive": config.archive,
+            "archive_extent": config.archive_extent,
             "archive_member": config.archive_member,
             "archive_sha256": config.archive_sha256,
             "image": config.image,
@@ -3702,7 +3769,7 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
     if config.symbol is None:
         raise ValueError(f"{config.directory}/scratch.conf archive scratch must set SYMBOL")
     try:
-        extract_object_function(obj, config.symbol)
+        extract_object_function(obj, config.symbol, extent=config.archive_extent)
     except ValueError as exc:
         defining_members: list[str] = []
         for candidate in archive_members:
@@ -3710,7 +3777,11 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
                 continue
             try:
                 candidate_obj = parse_coff_object(candidate.data)
-                extract_object_function(candidate_obj, config.symbol)
+                extract_object_function(
+                    candidate_obj,
+                    config.symbol,
+                    extent=config.archive_extent,
+                )
             except (IndexError, struct.error, ValueError):
                 continue
             defining_members.append(candidate.name)
@@ -3956,6 +4027,7 @@ def evaluate_scratch(
             functions_path=functions_path,
             metadata_path=metadata_path,
             symbol_name=config.symbol,
+            object_extent=config.archive_extent,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
         )
@@ -4649,7 +4721,11 @@ def collect_scratch_statuses(
             target_data = image.function_bytes(start, end)
             obj_path = compile_scratch(config, match_root, include_resolver=include_resolver)
             obj = parse_coff_object(obj_path.read_bytes())
-            candidate = extract_object_function(obj, config.symbol)
+            candidate = extract_object_function(
+                obj,
+                config.symbol,
+                extent=config.archive_extent,
+            )
             result = match_function(
                 target_data,
                 candidate,
@@ -5678,6 +5754,8 @@ def render_status_rows(
             build = f"import:{status.config.import_thunk}"
         elif status.config.archive is not None:
             build = f"archive:{status.config.archive_member}"
+            if status.config.archive_extent != "symbol":
+                build += f":{status.config.archive_extent}"
         else:
             build = f"{status.config.compiler} {status.config.cflags}"
         rows.append(

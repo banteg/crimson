@@ -207,6 +207,7 @@ ARCHIVE=../../../native/providers/build/provider/provider.lib
 ARCHIVE_MEMBER='objf\i386\provider.obj'
 ARCHIVE_SHA256=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 SYMBOL='?decorated_provider_symbol@@YGXXZ'
+ARCHIVE_EXTENT=section-tail
 ```
 
 Archive scratches are provenance-bound alternatives to source scratches:
@@ -214,6 +215,14 @@ Archive scratches are provenance-bound alternatives to source scratches:
 forbidden, and the extracted member still passes the ordinary instruction and
 reference audit. This promotes an exact pinned-library match into checkpoints
 without treating a whole archive or an ambiguous member hit as recovered code.
+`ARCHIVE_EXTENT=section-tail` is optional and covers assembler objects whose
+public entry symbol is followed by COFF-local function labels that Binary Ninja,
+IDA, or Ghidra recover as one linked function. The archive scanner considers
+this larger extent only for external entry symbols and records it explicitly in
+generated configs; ordinary compiled functions continue to use the default
+single-symbol extent. Pass `--object-extent section-tail` to the low-level
+`match diff` or `match dump` commands when inspecting one of these objects
+without a scratch config.
 
 Scan an established provider range and materialize only unambiguous matches:
 

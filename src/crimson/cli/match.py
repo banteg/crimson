@@ -214,6 +214,11 @@ def cmd_match_diff(
     metadata: Path = typer.Option(matchlib.DEFAULT_METADATA_PATH, "--metadata", help="IDA metadata manifest"),
     end: str | None = typer.Option(None, "--end", help="override target end VA"),
     symbol: str | None = typer.Option(None, "--symbol", help="candidate object function symbol filter"),
+    object_extent: Literal["symbol", "section-tail"] = typer.Option(
+        "symbol",
+        "--object-extent",
+        help="candidate extraction extent",
+    ),
     full: bool = typer.Option(False, "--full", help="print the full normalized unified diff"),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for --regions"),
@@ -229,6 +234,7 @@ def cmd_match_diff(
             functions_path=functions,
             metadata_path=metadata,
             symbol_name=symbol,
+            object_extent=object_extent,
             end_va=_parse_hex(end),
         )
     except Exception as exc:
@@ -272,6 +278,7 @@ def cmd_match_scratch(
             functions_path=matchlib.default_functions_path(config.image),
             metadata_path=matchlib.default_metadata_path(config.image),
             symbol_name=config.symbol,
+            object_extent=config.archive_extent,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
             scope=scope,
@@ -299,6 +306,11 @@ def cmd_match_dump(
     metadata: Path = typer.Option(matchlib.DEFAULT_METADATA_PATH, "--metadata", help="IDA metadata manifest"),
     end: str | None = typer.Option(None, "--end", help="override target end VA"),
     symbol: str | None = typer.Option(None, "--symbol", help="candidate object function symbol filter"),
+    object_extent: Literal["symbol", "section-tail"] = typer.Option(
+        "symbol",
+        "--object-extent",
+        help="candidate extraction extent",
+    ),
     start_offset: int = typer.Option(0, "--start-offset", min=0, help="skip normalized instructions"),
     count: int | None = typer.Option(None, "--count", min=1, help="maximum normalized instructions to print"),
 ) -> None:
@@ -311,6 +323,7 @@ def cmd_match_dump(
             functions_path=functions,
             metadata_path=metadata,
             symbol_name=symbol,
+            object_extent=object_extent,
             end_va=_parse_hex(end),
         )
     except Exception as exc:
@@ -1160,6 +1173,7 @@ def cmd_match_inspect(
                 functions_path=matchlib.default_functions_path(config.image),
                 metadata_path=matchlib.default_metadata_path(config.image),
                 symbol_name=config.symbol,
+                object_extent=config.archive_extent,
                 end_va=config.end_va,
                 reference_aliases=config.reference_aliases,
                 scope=scope,

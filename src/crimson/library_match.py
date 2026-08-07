@@ -31,6 +31,7 @@ class ArchiveCandidate:
     size: int
     relocation_count: int
     compiler_id: int | None = None
+    extent: str = "symbol"
 
     @property
     def compiler_product(self) -> int | None:
@@ -56,7 +57,7 @@ class ArchiveFunctionMatch:
 
     @property
     def symbol_unique(self) -> bool:
-        return len({candidate.symbol for candidate in self.candidates}) == 1
+        return len({(candidate.symbol, candidate.extent) for candidate in self.candidates}) == 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -193,8 +194,8 @@ def parse_coff_archive(data: bytes) -> tuple[CoffArchiveMember, ...]:
 
 def _archive_function_index(
     members: tuple[CoffArchiveMember, ...],
-) -> tuple[dict[tuple[int, int], list[_NormalizedArchiveFunction]], int, int]:
-    index: dict[tuple[int, int], list[_NormalizedArchiveFunction]] = defaultdict(list)
+) -> tuple[dict[int, list[_NormalizedArchiveFunction]], int, int]:
+    index: dict[int, list[_NormalizedArchiveFunction]] = defaultdict(list)
     object_members = 0
     object_functions = 0
     for member in members:
@@ -223,48 +224,65 @@ def _archive_function_index(
             ),
         )
         for function_name in function_names:
-            function = matchlib.extract_object_function(obj, function_name)
-            disassembly = matchlib.disassemble_normalized_function(
-                function.data,
-                relocation_offsets=function.relocation_offsets,
-            )
-            if not disassembly:
-                continue
-            significant_size = disassembly[-1].offset + disassembly[-1].size
-            relocation_offsets = frozenset(
-                offset
-                for offset in function.relocation_offsets
-                if offset + 4 <= significant_size
-            )
-            normalized_function = matchlib.ObjectFunction(
-                name=function.name,
-                data=function.data[:significant_size],
-                relocation_offsets=relocation_offsets,
-                relocation_references=tuple(
-                    reference
-                    for reference in function.relocation_references
-                    if reference.offset < significant_size
-                ),
-            )
-            # Relocations can link to values the target normalizer cannot
-            # recognize as addresses, notably VC6's FS:[0] SEH chain. Keep
-            # this index structural and let _candidate_matches verify every
-            # unrelocated byte after masking the candidate's relocations.
             object_functions += 1
-            index[(significant_size, len(disassembly))].append(
-                _NormalizedArchiveFunction(
-                    candidate=ArchiveCandidate(
-                        member=member.name,
-                        symbol=function.name,
-                        size=significant_size,
-                        relocation_count=len(relocation_offsets),
-                        compiler_id=compiler_id,
-                    ),
-                    function=normalized_function,
-                    data=normalized_function.data,
+            extents = ["symbol"]
+            if any(
+                symbol.name == function_name
+                and symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+                for symbol in obj.symbols
+            ):
+                extents.append("section-tail")
+            previous_function: matchlib.ObjectFunction | None = None
+            for extent in extents:
+                function = matchlib.extract_object_function(
+                    obj,
+                    function_name,
+                    extent=extent,
+                )
+                if function == previous_function:
+                    continue
+                previous_function = function
+                disassembly = matchlib.disassemble_normalized_function(
+                    function.data,
+                    relocation_offsets=function.relocation_offsets,
+                )
+                if not disassembly:
+                    continue
+                significant_size = disassembly[-1].offset + disassembly[-1].size
+                relocation_offsets = frozenset(
+                    offset
+                    for offset in function.relocation_offsets
+                    if offset + 4 <= significant_size
+                )
+                normalized_function = matchlib.ObjectFunction(
+                    name=function.name,
+                    data=function.data[:significant_size],
                     relocation_offsets=relocation_offsets,
-                ),
-            )
+                    relocation_references=tuple(
+                        reference
+                        for reference in function.relocation_references
+                        if reference.offset < significant_size
+                    ),
+                )
+                # Relocations can link to values the target normalizer cannot
+                # recognize as addresses, notably VC6's FS:[0] SEH chain. Keep
+                # this index structural and let _candidate_matches verify every
+                # unrelocated byte after masking the candidate's relocations.
+                index[significant_size].append(
+                    _NormalizedArchiveFunction(
+                        candidate=ArchiveCandidate(
+                            member=member.name,
+                            symbol=function.name,
+                            size=significant_size,
+                            relocation_count=len(relocation_offsets),
+                            compiler_id=compiler_id,
+                            extent=extent,
+                        ),
+                        function=normalized_function,
+                        data=normalized_function.data,
+                        relocation_offsets=relocation_offsets,
+                    ),
+                )
     return index, object_members, object_functions
 
 
@@ -337,7 +355,7 @@ def match_coff_archive(
         )
         structural_candidates = tuple(
             candidate
-            for candidate in index.get((len(target_data), len(lines)), ())
+            for candidate in index.get(len(target_data), ())
             if _candidate_matches(target_data, candidate)
         )
         candidates = tuple(
@@ -453,6 +471,7 @@ def archive_match_payload(
                     {
                         "member": candidate.member,
                         "symbol": candidate.symbol,
+                        "extent": candidate.extent,
                         "size": candidate.size,
                         "relocations": candidate.relocation_count,
                         "compiler": (
@@ -542,7 +561,11 @@ def _archive_reference_evidence(
         for member_data in member_variants:
             try:
                 obj = matchlib.parse_coff_object(member_data)
-                function = matchlib.extract_object_function(obj, candidate.symbol)
+                function = matchlib.extract_object_function(
+                    obj,
+                    candidate.symbol,
+                    extent=candidate.extent,
+                )
             except (IndexError, struct.error, ValueError):
                 continue
             result = matchlib.match_function(
@@ -821,6 +844,10 @@ def write_archive_scratch_configs(
             _scratch_assignment("ARCHIVE_SHA256", report.archive_sha256),
             _scratch_assignment("SYMBOL", write.candidate.symbol),
         ]
+        if write.candidate.extent != "symbol":
+            config_lines.append(
+                _scratch_assignment("ARCHIVE_EXTENT", write.candidate.extent),
+            )
         if write.reference_aliases:
             config_lines.append(
                 _scratch_assignment(
@@ -868,10 +895,10 @@ def render_archive_match_report(
         for match in selected:
             candidates = ", ".join(
                 (
-                    f"{candidate.member}:{candidate.symbol} "
+                    f"{candidate.member}:{candidate.symbol}:{candidate.extent} "
                     f"[product-{candidate.compiler_product}/build-{candidate.compiler_build}]"
                     if candidate.compiler_id is not None
-                    else f"{candidate.member}:{candidate.symbol}"
+                    else f"{candidate.member}:{candidate.symbol}:{candidate.extent}"
                 )
                 for candidate in match.candidates
             )

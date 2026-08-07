@@ -36,6 +36,7 @@ def _build_object(
     symbol: str = "_probe",
     relocations: tuple[int, ...] = (),
     compiler_id: int | None = None,
+    extra_function_symbols: tuple[tuple[str, int, int], ...] = (),
 ) -> bytes:
     header_size = 20
     section_header_size = 40
@@ -43,7 +44,11 @@ def _build_object(
     relocation_offset = code_offset + len(code)
     symtab_offset = relocation_offset + len(relocations) * 10
     symbol_records = struct.pack("<8sIhHBB", symbol.encode(), 0, 1, 0x20, 2, 0)
-    symbol_count = 1
+    symbol_records += b"".join(
+        struct.pack("<8sIhHBB", name.encode(), value, 1, 0x20, storage_class, 0)
+        for name, value, storage_class in extra_function_symbols
+    )
+    symbol_count = 1 + len(extra_function_symbols)
     if compiler_id is not None:
         symbol_records += struct.pack("<8sIhHBB", b"@comp.id", compiler_id, -1, 0, 3, 0)
         symbol_count += 1
@@ -674,3 +679,70 @@ def test_archive_match_trims_untargeted_terminal_padding(
     assert report.matched_functions == 1
     assert report.unique_functions == 1
     assert report.matches[0].candidates[0].size == len(linked_code)
+
+
+def test_archive_match_indexes_external_symbol_section_tail(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    linked_code = bytes.fromhex("31c0c390c3")
+    archive_path = tmp_path / "probe.lib"
+    archive_path.write_bytes(
+        _build_archive(
+            r"obj\i386\probe.obj",
+            _build_object(
+                linked_code,
+                extra_function_symbols=(("_helper", 3, 3),),
+            ),
+        ),
+    )
+    image_path = tmp_path / "game.exe"
+    image_path.write_bytes(b"unused")
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x00401000","end":"0x00401005","name":"native_probe","size":5,"library":false}]',
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "metadata.json"
+    metadata_path.write_text('{"image_base":"0x00400000"}', encoding="utf-8")
+    mapped = bytearray(0x2000)
+    mapped[0x1000:0x1005] = linked_code
+    monkeypatch.setattr(
+        "crimson.library_match.matchlib.load_image",
+        lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
+    )
+
+    report = match_coff_archive(
+        archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401005,
+    )
+
+    assert report.object_functions == 2
+    assert report.matched_functions == 1
+    assert report.unique_functions == 1
+    candidate = report.matches[0].candidates[0]
+    assert candidate.symbol == "_probe"
+    assert candidate.extent == "section-tail"
+    payload_matches = cast(
+        "list[dict[str, object]]",
+        archive_match_payload(report)["matches"],
+    )
+    payload_candidates = cast(
+        "list[dict[str, object]]",
+        payload_matches[0]["candidates"],
+    )
+    assert payload_candidates[0]["extent"] == "section-tail"
+
+    writes = write_archive_scratch_configs(
+        report,
+        match_root=tmp_path / "match",
+        expected_sha256=report.archive_sha256,
+        note_prefix="provider",
+    )
+
+    assert len(writes) == 1
+    assert load_scratch_config(writes[0].directory).archive_extent == "section-tail"
