@@ -837,6 +837,20 @@ def test_extract_object_function_prefers_exact_decorated_symbol() -> None:
     assert extract_object_function(obj, "_foo").name == "_foo"
 
 
+def test_extract_object_function_keeps_vc_code_packets_in_extent() -> None:
+    code = bytes.fromhex("31c0c3b801000000c3")
+    obj = CoffObject(
+        sections=(CoffSection(".text", code, 0x20, ()),),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "TAG_PACKET_0", 3, 1, 0x20, 3),
+            CoffSymbol(2, "TAG_PACKET_1", 8, 1, 0x20, 3),
+        ),
+    )
+
+    assert extract_object_function(obj, "probe").data == code
+
+
 def test_extract_object_function_collects_relocations() -> None:
     code = bytes.fromhex("a100000000c3")
     obj = parse_coff_object(build_object(code, [("_foo", 0)], [1]))

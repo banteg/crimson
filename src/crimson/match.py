@@ -1194,6 +1194,7 @@ def _is_function_symbol(symbol: CoffSymbol) -> bool:
         symbol.section_number > 0
         and symbol.symbol_type & SYM_TYPE_FUNCTION != 0
         and symbol.storage_class in (IMAGE_SYM_CLASS_EXTERNAL, IMAGE_SYM_CLASS_STATIC)
+        and re.fullmatch(r"TAG_PACKET_\d+", symbol.name) is None
     )
 
 
