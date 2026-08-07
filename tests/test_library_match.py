@@ -128,6 +128,9 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert report.matched_functions == 1
     assert report.matched_bytes == 6
     assert report.unique_functions == 1
+    assert report.symbol_unique_functions == 1
+    assert report.symbol_unique_bytes == 6
+    assert report.matches[0].symbol_unique
     assert report.matches[0].candidates[0].symbol == "_probe"
     assert report.matches[0].candidates[0].relocation_count == 1
     assert report.excluded_target_functions == 0
@@ -157,6 +160,36 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert "matched=1/1" in rendered
     assert "[product-29/build-9178]" in rendered
 
+    duplicate_candidate = replace(candidate, member=r"obj\i386\duplicate.obj")
+    symbol_unique_match = replace(
+        report.matches[0],
+        candidates=(candidate, duplicate_candidate),
+    )
+    symbol_unique_report = replace(
+        report,
+        unique_functions=0,
+        unique_bytes=0,
+        matches=(symbol_unique_match,),
+    )
+    assert not symbol_unique_match.unique
+    assert symbol_unique_match.symbol_unique
+    assert symbol_unique_report.symbol_unique_functions == 1
+    assert symbol_unique_report.symbol_unique_bytes == 6
+    symbol_unique_payload = cast(
+        "list[dict[str, object]]",
+        archive_match_payload(symbol_unique_report)["matches"],
+    )
+    assert symbol_unique_payload[0]["symbol_unique"] is True
+    assert "symbol-unique:2" in render_archive_match_report(
+        symbol_unique_report,
+        show_matches=True,
+    )
+    conflicting_candidate = replace(duplicate_candidate, symbol="_other")
+    assert not replace(
+        symbol_unique_match,
+        candidates=(candidate, conflicting_candidate),
+    ).symbol_unique
+
     repeated_report = replace(
         report,
         matched_functions=2,
@@ -173,6 +206,8 @@ def test_archive_match_requires_exact_unrelocated_bytes(
         "matched_bytes": 12,
         "unique_functions": 2,
         "unique_bytes": 12,
+        "symbol_unique_functions": 2,
+        "symbol_unique_bytes": 12,
     }
     assert limited_payload["listing"] == {
         "returned_matches": 1,

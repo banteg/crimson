@@ -50,6 +50,10 @@ class ArchiveFunctionMatch:
     def unique(self) -> bool:
         return len(self.candidates) == 1
 
+    @property
+    def symbol_unique(self) -> bool:
+        return len({candidate.symbol for candidate in self.candidates}) == 1
+
 
 @dataclass(frozen=True, slots=True)
 class ArchiveMatchReport:
@@ -75,6 +79,14 @@ class ArchiveMatchReport:
     def member_counts(self) -> tuple[tuple[str, int], ...]:
         counts = Counter(match.candidates[0].member for match in self.matches if match.unique)
         return tuple(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+
+    @property
+    def symbol_unique_functions(self) -> int:
+        return sum(match.symbol_unique for match in self.matches)
+
+    @property
+    def symbol_unique_bytes(self) -> int:
+        return sum(match.size for match in self.matches if match.symbol_unique)
 
 
 @dataclass(frozen=True, slots=True)
@@ -351,6 +363,8 @@ def archive_match_payload(
             "matched_bytes": report.matched_bytes,
             "unique_functions": report.unique_functions,
             "unique_bytes": report.unique_bytes,
+            "symbol_unique_functions": report.symbol_unique_functions,
+            "symbol_unique_bytes": report.symbol_unique_bytes,
         },
         "exclusions": {
             "target_functions": report.excluded_target_functions,
@@ -370,6 +384,7 @@ def archive_match_payload(
                 "size": match.size,
                 "instructions": match.instruction_count,
                 "unique": match.unique,
+                "symbol_unique": match.symbol_unique,
                 "candidates": [
                     {
                         "member": candidate.member,
@@ -413,7 +428,9 @@ def render_archive_match_report(
             f"excluded_bytes={report.excluded_target_bytes} "
             f"matched={report.matched_functions}/{report.target_functions} "
             f"bytes={report.matched_bytes}/{report.target_bytes} "
-            f"unique={report.unique_functions} unique_bytes={report.unique_bytes}"
+            f"unique={report.unique_functions} unique_bytes={report.unique_bytes} "
+            f"symbol_unique={report.symbol_unique_functions} "
+            f"symbol_unique_bytes={report.symbol_unique_bytes}"
         ),
     ]
     for member, count in report.member_counts:
@@ -430,7 +447,12 @@ def render_archive_match_report(
                 )
                 for candidate in match.candidates
             )
-            state = "unique" if match.unique else f"ambiguous:{len(match.candidates)}"
+            if match.unique:
+                state = "unique"
+            elif match.symbol_unique:
+                state = f"symbol-unique:{len(match.candidates)}"
+            else:
+                state = f"ambiguous:{len(match.candidates)}"
             lines.append(
                 f"0x{match.address:08x} {match.name} bytes={match.size} "
                 f"insns={match.instruction_count} {state} <- {candidates}",
