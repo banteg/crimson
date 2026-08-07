@@ -720,6 +720,55 @@ def test_load_reference_catalog_includes_curated_decorated_aliases(tmp_path: Pat
     )
 
 
+def test_reference_catalog_prefers_decorated_member_scope(tmp_path: Path) -> None:
+    surface = "?Lock@CD3DXLockSurface@@QAEJXZ"
+    volume = "?Lock@CD3DXLockVolume@@QAEJXZ"
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        "["
+        '{"program":"grim.dll","address":"0x100161BB",'
+        f'"name":"surface_lock","aliases":["{surface}"]}},'
+        '{"program":"grim.dll","address":"0x100165D3",'
+        f'"name":"volume_lock","aliases":["{volume}"]}}'
+        "]\n",
+        encoding="utf-8",
+    )
+    manifest = FunctionManifest(image_name="grim.dll", image_base=0x10000000, functions=())
+
+    catalog = load_reference_catalog(
+        manifest,
+        functions_path=tmp_path / "missing-functions.json",
+        data_map_path=tmp_path / "missing-data-map.json",
+        name_map_path=name_map_path,
+    )
+
+    assert catalog.knows_name(surface)
+    assert catalog.knows_name(volume)
+    assert not catalog.knows_name("Lock")
+    assert "address:0x100161bb" in catalog.keys_for_object_reference(surface, 0)
+    assert "address:0x100165d3" in catalog.keys_for_object_reference(volume, 0)
+
+
+def test_reference_catalog_scoped_alias_overrides_decorated_local_variant() -> None:
+    configured = "?$S1@?P@??ui_render@@9@4EA"
+    emitted = "?$S1@?4??ui_render@@9@4EA"
+    wrong_address = 0x4912B0
+    target_address = 0x480340
+    catalog = ReferenceCatalog(
+        {
+            wrong_address: (emitted,),
+            target_address: ("ui_init_flags",),
+        },
+        {
+            emitted: (wrong_address,),
+            "$S1": (wrong_address,),
+            "ui_init_flags": (target_address,),
+        },
+    ).with_object_aliases(((configured, "ui_init_flags"),))
+
+    assert "address:0x00480340" in catalog.keys_for_object_reference(emitted, 0)
+
+
 def test_load_reference_catalog_preserves_scoped_data_aliases(tmp_path: Path) -> None:
     local_name = "?half_vector@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4UVector@@A"
     data_map_path = tmp_path / "data_map.json"

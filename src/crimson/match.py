@@ -323,6 +323,7 @@ class ReferenceCatalog:
     names_by_address: dict[int, tuple[str, ...]]
     addresses_by_name: dict[str, tuple[int, ...]] = field(default_factory=dict)
     import_addresses: frozenset[int] = frozenset()
+    object_alias_addresses: dict[str, tuple[int, ...]] = field(default_factory=dict)
 
     def keys_for_address(self, address: int) -> tuple[str, ...]:
         return (
@@ -336,24 +337,26 @@ class ReferenceCatalog:
         keys = [f"name:{canonical}{_format_addend(addend)}"]
         if lookup_name != canonical:
             keys.append(f"name:{lookup_name}{_format_addend(addend)}")
-        addresses = self._addresses_for_name(
-            lookup_name,
-            imported=_is_import_symbol(symbol_name),
-        )
+        addresses = self._addresses_for_symbol(symbol_name)
         if len(addresses) == 1:
             keys.append(f"address:0x{addresses[0] + addend:08x}")
         return tuple(dict.fromkeys(keys))
 
     def knows_name(self, symbol_name: str) -> bool:
-        return (
-            len(
-                self._addresses_for_name(
-                    _symbol_lookup_name(symbol_name),
-                    imported=_is_import_symbol(symbol_name),
-                ),
-            )
-            == 1
-        )
+        return len(self._addresses_for_symbol(symbol_name)) == 1
+
+    def _addresses_for_symbol(self, symbol_name: str) -> tuple[int, ...]:
+        imported = _is_import_symbol(symbol_name)
+        lookup_name = _symbol_lookup_name(symbol_name)
+        if not imported and (addresses := self.object_alias_addresses.get(lookup_name)) is not None:
+            return addresses
+        canonical = _canonical_symbol_name(symbol_name)
+        addresses = self._addresses_for_name(canonical, imported=imported)
+        if addresses:
+            return addresses
+        if lookup_name != canonical:
+            return self._addresses_for_name(lookup_name, imported=imported)
+        return ()
 
     def _addresses_for_name(self, name: str, *, imported: bool) -> tuple[int, ...]:
         addresses = self.addresses_by_name.get(name)
@@ -373,18 +376,15 @@ class ReferenceCatalog:
         if not aliases:
             return self
 
-        addresses_by_name = dict(self.addresses_by_name)
+        object_alias_addresses = dict(self.object_alias_addresses)
         for object_symbol, target_symbol in aliases:
-            target_addresses = self._addresses_for_name(
-                _symbol_lookup_name(target_symbol),
-                imported=False,
-            )
+            target_addresses = self._addresses_for_symbol(target_symbol)
             if len(target_addresses) != 1:
                 raise ValueError(
                     f"reference alias target {target_symbol!r} must resolve to exactly one image address",
                 )
-            addresses_by_name[_symbol_lookup_name(object_symbol)] = target_addresses
-        return replace(self, addresses_by_name=addresses_by_name)
+            object_alias_addresses[_symbol_lookup_name(object_symbol)] = target_addresses
+        return replace(self, object_alias_addresses=object_alias_addresses)
 
 
 def load_reference_catalog(
@@ -447,7 +447,11 @@ def load_reference_catalog(
     addresses_by_name: dict[str, list[int]] = {}
     for address, values in names_by_address.items():
         for name in values:
-            addresses_by_name.setdefault(_symbol_lookup_name(name), []).append(address)
+            canonical = _canonical_symbol_name(name)
+            lookup_name = _symbol_lookup_name(name)
+            addresses_by_name.setdefault(canonical, []).append(address)
+            if lookup_name != canonical:
+                addresses_by_name.setdefault(lookup_name, []).append(address)
     return ReferenceCatalog(
         names_by_address,
         {name: tuple(dict.fromkeys(addresses)) for name, addresses in addresses_by_name.items()},

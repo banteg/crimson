@@ -561,6 +561,11 @@ waiting for a full IDA artifact regeneration. Curated `aliases` on those
 entries also connect decorated C++ constructor and destructor references to
 their proven native addresses.
 
+Decorated C++ aliases are resolved by their complete symbol before falling
+back to a short display name. This keeps same-named methods on different
+classes, such as surface and volume `Lock` helpers, distinct during the
+reference audit.
+
 VC6 exception-chain references against the absolute `__except_list` symbol are
 resolved to the linked `fs:[0]` operand. Compiler-local frame-handler labels are
 accepted only when the matcher proves the full handler graph: thunk to
