@@ -4521,6 +4521,26 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: VC6 CRT _dosmaperr table bytes at VA 0x0047b7c0..0x0047b928"
     },
     {
+      "address": "0x0047dce0",
+      "name": "crt_double_format_descriptor",
+      "size": 24,
+      "size_source": "Pinned VC6 SP6 libcmt intrncvt.obj: _DoubleFormat at .data offset 0x00 followed by _FloatFormat at 0x18",
+      "alignment": 8,
+      "alignment_source": "Pinned VC6 SP6 libcmt intrncvt.obj .data characteristics 0xc0400040 encode eight-byte alignment",
+      "initializer_hex": "0004000001fcffff350000000b00000040000000ff030000",
+      "initializer_source": "Pinned VC6 SP6 libcmt intrncvt.obj and Binary Ninja crimsonland.exe session: exact mapped bytes at VA 0x0047dce0"
+    },
+    {
+      "address": "0x0047dcf8",
+      "name": "crt_float_format_descriptor",
+      "size": 24,
+      "size_source": "Pinned VC6 SP6 libcmt intrncvt.obj: _FloatFormat at .data offset 0x18 through the complete 0x30-byte section extent",
+      "alignment": 8,
+      "alignment_source": "Pinned VC6 SP6 libcmt intrncvt.obj .data characteristics 0xc0400040 encode eight-byte alignment",
+      "initializer_hex": "8000000081ffffff1800000008000000200000007f000000",
+      "initializer_source": "Pinned VC6 SP6 libcmt intrncvt.obj and Binary Ninja crimsonland.exe session: exact mapped bytes at VA 0x0047dcf8"
+    },
+    {
       "address": "0x0047eea0",
       "name": "console_log_queue",
       "size": 44,

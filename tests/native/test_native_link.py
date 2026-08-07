@@ -2477,15 +2477,15 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1817
+    assert payload["summary"]["source_entry_count"] == 1819
     assert payload["summary"]["code_label_entries"] == 54
-    assert payload["summary"]["entry_count"] == 1763
-    assert payload["summary"]["typed_entries"] == 1763
+    assert payload["summary"]["entry_count"] == 1765
+    assert payload["summary"]["typed_entries"] == 1765
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1763
-    assert payload["summary"]["explicit_alignment_entries"] == 1763
-    assert payload["summary"]["explicit_initializer_entries"] == 1763
-    assert payload["summary"]["fully_specified_entries"] == 1763
+    assert payload["summary"]["explicit_size_entries"] == 1765
+    assert payload["summary"]["explicit_alignment_entries"] == 1765
+    assert payload["summary"]["explicit_initializer_entries"] == 1765
+    assert payload["summary"]["fully_specified_entries"] == 1765
     assert payload["summary"]["definition_group_entries"] == 1656
     assert payload["summary"]["definition_groups"] == 174
     assert {
@@ -2637,6 +2637,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["crt_runtime_errors"]["size"] == 18 * 8
     assert defined["crt_x87_overflow_value"]["size"] == 10
     assert defined["crt_x87_underflow_value"]["size"] == 10
+    assert defined["crt_double_format_descriptor"]["size"] == 24
+    assert defined["crt_double_format_descriptor"]["alignment"] == 8
+    assert defined["crt_float_format_descriptor"]["size"] == 24
+    assert defined["crt_float_format_descriptor"]["alignment"] == 8
     assert defined["crt_codepage_ctype_flags"]["initializer_hex"] == "01020408"
     assert defined["crt_codepage_info"]["size"] == 5 * 0x30
     assert defined["crt_gmt_cache"]["initializer_fill"] == "00"

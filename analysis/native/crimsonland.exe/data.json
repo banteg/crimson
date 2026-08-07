@@ -1,5 +1,5 @@
 {
-  "audit_digest": "b869c715b9ab7cc1fa306981e829dd40a6b881e91e3d00e2e2732d69867d733d",
+  "audit_digest": "f07efa436890923cfbbb695ba8e4cb9eabba1abe1597d0fd86dba24c26aceda1",
   "entries": [
     {
       "address": 4211888,
@@ -7445,6 +7445,48 @@
       "size": 10,
       "size_source": "analysis/ghidra/maps/data_map.json: x87 80-bit constants loaded with fld tword; tools/native/abi/crimsonland.exe/abi_assertions.cpp: uchar_array_10_is_0x0a",
       "type": "unsigned char[10]"
+    },
+    {
+      "address": 4709600,
+      "aliases": [
+        "_DoubleFormat"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned VC6 SP6 libcmt intrncvt.obj .data characteristics 0xc0400040 encode eight-byte alignment",
+      "comment": "VC6 24-byte double-conversion format descriptor from the pinned libcmt intrncvt.obj member.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0004000001fcffff350000000b00000040000000ff030000",
+      "initializer_source": "Pinned VC6 SP6 libcmt intrncvt.obj and Binary Ninja crimsonland.exe session: exact mapped bytes at VA 0x0047dce0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_double_format_descriptor",
+      "section": ".data",
+      "section_offset": 52448,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 24,
+      "size_source": "Pinned VC6 SP6 libcmt intrncvt.obj: _DoubleFormat at .data offset 0x00 followed by _FloatFormat at 0x18",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": 4709624,
+      "aliases": [
+        "_FloatFormat"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned VC6 SP6 libcmt intrncvt.obj .data characteristics 0xc0400040 encode eight-byte alignment",
+      "comment": "VC6 24-byte float-conversion format descriptor from the pinned libcmt intrncvt.obj member.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "8000000081ffffff1800000008000000200000007f000000",
+      "initializer_source": "Pinned VC6 SP6 libcmt intrncvt.obj and Binary Ninja crimsonland.exe session: exact mapped bytes at VA 0x0047dcf8",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_float_format_descriptor",
+      "section": ".data",
+      "section_offset": 52472,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 24,
+      "size_source": "Pinned VC6 SP6 libcmt intrncvt.obj: _FloatFormat at .data offset 0x18 through the complete 0x30-byte section extent",
+      "type": "unsigned char[24]"
     },
     {
       "address": 4709648,
@@ -37223,9 +37265,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "e91e312687d738a2c4ce34da3d5fa00f43f8b725688c49a43d76392e7635d087",
+    "data_map_sha256": "7f4eb121150934e8f0aecb7786526a4b4bd7b83145d8b95f42b84eb73fad046c",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "814249e50bd2ad747795f23ecae327e13583cd967a610eb1f2841ff92a953d49",
+    "definitions_sha256": "b453b2e3c448255bc4dfd3a93922109cf62c85b104bfcbed63c109f87066e054",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -37234,17 +37276,17 @@
     "segments_sha256": "65e2a4e6a7d63516ac68264a83f3d001d2476b750d982afe1fbc72d25eae9b44"
   },
   "summary": {
-    "alias_names": 241,
-    "alias_rows": 238,
+    "alias_names": 243,
+    "alias_rows": 240,
     "code_label_entries": 54,
     "definition_group_entries": 1656,
     "definition_groups": 174,
-    "entry_count": 1763,
-    "explicit_alignment_entries": 1763,
-    "explicit_initializer_entries": 1763,
-    "explicit_size_entries": 1763,
-    "fixed_array_types": 361,
-    "fully_specified_entries": 1763,
+    "entry_count": 1765,
+    "explicit_alignment_entries": 1765,
+    "explicit_initializer_entries": 1765,
+    "explicit_size_entries": 1765,
+    "fixed_array_types": 363,
+    "fully_specified_entries": 1765,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 5,
@@ -37252,14 +37294,14 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 1711,
+      ".data": 1713,
       ".data1": 6,
       ".rdata": 45,
       ".text": 1
     },
-    "source_entry_count": 1817,
-    "typed_entries": 1763,
-    "unique_addresses": 1759,
+    "source_entry_count": 1819,
+    "typed_entries": 1765,
+    "unique_addresses": 1761,
     "untyped_entries": 0
   }
 }

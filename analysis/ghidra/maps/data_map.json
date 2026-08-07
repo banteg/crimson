@@ -3031,6 +3031,26 @@
       "type": "unsigned char[10]"
     },
     {
+      "address": "0x0047dce0",
+      "aliases": [
+        "_DoubleFormat"
+      ],
+      "comment": "VC6 24-byte double-conversion format descriptor from the pinned libcmt intrncvt.obj member.",
+      "name": "crt_double_format_descriptor",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0047dcf8",
+      "aliases": [
+        "_FloatFormat"
+      ],
+      "comment": "VC6 24-byte float-conversion format descriptor from the pinned libcmt intrncvt.obj member.",
+      "name": "crt_float_format_descriptor",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
       "address": "0x0047dd10",
       "aliases": [
         "fdiv_risc_table"
