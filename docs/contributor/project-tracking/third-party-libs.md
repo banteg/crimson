@@ -356,6 +356,17 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   bodies byte-for-byte (4,104 bytes, 1,322 instructions, 12 references). The
   private `start_iMCU_row` and `smoothing_ok` helpers are inlined into their
   callers, so no synthetic target functions are recorded for them.
+- Matcher corpus: the same official `jdcoefct.c` reproduces D3DX's
+  `decompress_data` body under `/O1 /G6` (358 bytes, 122 instructions). The
+  independently linked provider retains its own coefficient-controller state
+  and function identity.
+- Matcher corpus: the newly pinned and provenance-checked `jmemmgr.c`
+  reproduces seventeen memory-manager bodies across the D3DX and JAZ copies
+  (3,328 bytes, 1,380 instructions, 34 references). Ten D3DX bodies use the
+  provider's `/O1 /G6` code-generation profiles; seven JAZ request,
+  realization, access, and backing-store bodies use `/O2 /G6`. The two D3DX
+  accessors remain honest one-instruction compiler/source residuals rather
+  than being shaped to force byte identity.
 - Matcher corpus: the newly pinned `jdhuff.c` and private `jdhuff.h` dependency
   are provenance checked. Under VC6 `/O2 /Ob2 /G6`, all six separately
   emitted baseline Huffman-decoder bodies reproduce byte-for-byte (2,528

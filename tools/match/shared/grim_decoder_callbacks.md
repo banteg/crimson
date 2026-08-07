@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred sixty-four exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred eighty-two exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -264,6 +264,19 @@ fatal cleanup instead of exiting the host process, and routes diagnostics to
 a Win32 message box titled `JPEG Error` instead of stderr. Live Binary Ninja
 and Ghidra bounds restore the 22-byte fatal callback omitted by IDA.
 
-Altogether the one hundred eighty-two exact functions cover 32,833 bytes
-and 11,568 instructions in the explicit `all` scope, with every external
+The pinned IJG 6a `jmemmgr.c` now recovers seventeen more memory-manager
+bodies across both decoder copies. The D3DX provider contributes its small,
+large, sample-array, coefficient-array, virtual-array, backing-store, and pool
+cleanup paths under the matching `/O1 /G6` profiles. The JAZ provider adds
+both virtual-array requestors, realization, accessors, and backing-store loops
+under `/O2 /G6`. Together they cover 3,328 bytes and 1,380 instructions with
+all 34 calls and data references resolved. The two remaining D3DX accessors
+are deliberately excluded: stock source differs only in its byte-clear opcode,
+but no unproven source shaping is used to claim an exact match.
+
+The D3DX coefficient controller's `decompress_data` loop adds another 358
+exact bytes and 122 instructions directly from `jdcoefct.c` under `/O1 /G6`.
+
+Altogether the two hundred exact functions cover 36,519 bytes
+and 13,070 instructions in the explicit `all` scope, with every external
 relocation resolved.

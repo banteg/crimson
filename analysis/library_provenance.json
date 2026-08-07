@@ -157,6 +157,11 @@
           "sha256": "079586edfbbb27fe214f96ffb2fe72b2715de95c607ed9d02657e8c64d45e345"
         },
         {
+          "path": "jpeg-6a/jmemmgr.c",
+          "size": 40884,
+          "sha256": "daf660c78c28f21ad2fd9bb1c6e9d2e9ec172b08eaaa203766ee3b7fd6ead953"
+        },
+        {
           "path": "jpeg-6a/jdct.h",
           "size": 7041,
           "sha256": "4cde9d7c12ffc920e1dd525c6b7f41f88a3ea573af8c66a4b6d0d6ed3d7fd770"
@@ -1002,6 +1007,11 @@
       "source_artifact": "ijg-libjpeg-6a",
       "member": "jpeg-6a/jmemsys.h",
       "path": "third_party/headers/jmemsys.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jmemmgr.c",
+      "path": "third_party/sources/ijg-libjpeg-6a/jmemmgr.c"
     },
     {
       "source_artifact": "ijg-libjpeg-6a",

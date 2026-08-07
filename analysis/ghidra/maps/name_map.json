@@ -10693,34 +10693,95 @@
   {
     "program": "grim.dll",
     "address": "0x1002318f",
-    "name": "FUN_1002318f",
-    "signature": "void* FUN_1002318f(int* arg1, int* arg2, int* arg3)",
-    "comment": "[binja] void* sub_1002318f(int32_t* arg1, int32_t* arg2, int32_t* arg3)",
+    "name": "d3dx_jpeg_alloc_small",
+    "aliases": [
+      "FUN_1002318f"
+    ],
+    "signature": "void *d3dx_jpeg_alloc_small(j_common_ptr cinfo, int pool_id, size_t size)",
+    "comment": "Archive-confirmed IJG 6a small-object pool allocator in the D3DX provider",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1002328b",
-    "name": "FUN_1002328b",
-    "signature": "void* FUN_1002328b(uint arg1, int arg2, int arg3)",
-    "comment": "[binja] void* sub_1002328b(uint32_t arg1, int32_t arg2, int32_t arg3)",
+    "name": "d3dx_jpeg_alloc_large",
+    "aliases": [
+      "FUN_1002328b"
+    ],
+    "signature": "void FAR *d3dx_jpeg_alloc_large(j_common_ptr cinfo, int pool_id, size_t size)",
+    "comment": "Archive-confirmed IJG 6a large-object pool allocator in the D3DX provider",
     "create": false
   },
   {
     "program": "grim.dll",
+    "address": "0x10023319",
+    "name": "d3dx_jpeg_alloc_sarray",
+    "signature": "JSAMPARRAY d3dx_jpeg_alloc_sarray(j_common_ptr cinfo, int pool_id, JDIMENSION samples_per_row, JDIMENSION rows)",
+    "comment": "Archive-confirmed IJG 6a sample-array allocator in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100233ab",
+    "name": "d3dx_jpeg_alloc_barray",
+    "signature": "JBLOCKARRAY d3dx_jpeg_alloc_barray(j_common_ptr cinfo, int pool_id, JDIMENSION blocks_per_row, JDIMENSION rows)",
+    "comment": "Archive-confirmed IJG 6a coefficient-block array allocator in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10023449",
-    "name": "FUN_10023449",
-    "signature": "void* FUN_10023449(int* arg1, int* arg2, char arg3, int arg4, int arg5, int arg6)",
-    "comment": "[binja] void* sub_10023449(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)",
+    "name": "d3dx_jpeg_request_virt_sarray",
+    "aliases": [
+      "FUN_10023449"
+    ],
+    "signature": "jvirt_sarray_ptr d3dx_jpeg_request_virt_sarray(j_common_ptr cinfo, int pool_id, boolean pre_zero, JDIMENSION samples_per_row, JDIMENSION rows, JDIMENSION max_access)",
+    "comment": "Archive-confirmed IJG 6a virtual sample-array request in the D3DX provider",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x100234aa",
-    "name": "FUN_100234aa",
-    "signature": "void* FUN_100234aa(int* arg1, int* arg2, char arg3, int arg4, int arg5, int arg6)",
-    "comment": "[binja] void* sub_100234aa(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)",
+    "name": "d3dx_jpeg_request_virt_barray",
+    "aliases": [
+      "FUN_100234aa"
+    ],
+    "signature": "jvirt_barray_ptr d3dx_jpeg_request_virt_barray(j_common_ptr cinfo, int pool_id, boolean pre_zero, JDIMENSION blocks_per_row, JDIMENSION rows, JDIMENSION max_access)",
+    "comment": "Archive-confirmed IJG 6a virtual coefficient-array request in the D3DX provider",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002350b",
+    "name": "d3dx_jpeg_realize_virt_arrays",
+    "signature": "void d3dx_jpeg_realize_virt_arrays(j_common_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a virtual-array realization in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002368a",
+    "name": "d3dx_jpeg_do_sarray_io",
+    "signature": "void d3dx_jpeg_do_sarray_io(j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)",
+    "comment": "Archive-confirmed IJG 6a virtual sample-array backing-store transfer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023712",
+    "name": "d3dx_jpeg_do_barray_io",
+    "signature": "void d3dx_jpeg_do_barray_io(j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)",
+    "comment": "Archive-confirmed IJG 6a virtual coefficient-array backing-store transfer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002379d",
+    "name": "d3dx_jpeg_access_virt_sarray",
+    "signature": "JSAMPARRAY d3dx_jpeg_access_virt_sarray(j_common_ptr cinfo, jvirt_sarray_ptr ptr, JDIMENSION start_row, JDIMENSION rows, boolean writable)",
+    "comment": "Archive-confirmed IJG 6a virtual sample-array accessor in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100238bb",
+    "name": "d3dx_jpeg_access_virt_barray",
+    "signature": "JBLOCKARRAY d3dx_jpeg_access_virt_barray(j_common_ptr cinfo, jvirt_barray_ptr ptr, JDIMENSION start_row, JDIMENSION rows, boolean writable)",
+    "comment": "Archive-confirmed IJG 6a virtual coefficient-array accessor in the D3DX provider"
   },
   {
     "program": "grim.dll",
@@ -10735,6 +10796,13 @@
     "name": "d3dx_jpeg_self_destruct",
     "signature": "void d3dx_jpeg_self_destruct(j_common_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a memory-manager teardown in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023aef",
+    "name": "d3dx_jpeg_init_memory_mgr",
+    "signature": "void d3dx_jpeg_init_memory_mgr(j_common_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a memory-manager initializer in the D3DX provider"
   },
   {
     "program": "grim.dll",
@@ -10976,6 +11044,22 @@
     "name": "d3dx_jpeg_open_backing_store",
     "signature": "void d3dx_jpeg_open_backing_store(j_common_ptr cinfo, backing_store_ptr info, long total_bytes_needed)",
     "comment": "Archive-confirmed IJG 6a unsupported backing-store error path"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004ea00",
+    "name": "d3dx_jpeg_first_pool_slop",
+    "signature": "const size_t d3dx_jpeg_first_pool_slop[2]",
+    "comment": "Archive-confirmed IJG 6a first-allocation pool slop table in the D3DX provider",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004ea08",
+    "name": "d3dx_jpeg_extra_pool_slop",
+    "signature": "const size_t d3dx_jpeg_extra_pool_slop[2]",
+    "comment": "Archive-confirmed IJG 6a subsequent-allocation pool slop table in the D3DX provider",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -11889,25 +11973,146 @@
   {
     "program": "grim.dll",
     "address": "0x1003d0d0",
-    "name": "jinit_memory_mgr",
-    "signature": "void jinit_memory_mgr(void *context)",
-    "comment": "IJG libjpeg 6a memory-manager initializer"
+    "name": "grim_jpeg_init_memory_mgr",
+    "aliases": [
+      "jinit_memory_mgr"
+    ],
+    "signature": "void grim_jpeg_init_memory_mgr(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a memory-manager initializer with C++ allocation shim"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d210",
+    "name": "grim_jpeg_alloc_small",
+    "aliases": [
+      "alloc_small"
+    ],
+    "signature": "void *grim_jpeg_alloc_small(j_common_ptr cinfo, int pool_id, size_t size)",
+    "comment": "JAZ IJG 6a small-object pool allocator"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d360",
+    "name": "grim_jpeg_alloc_large",
+    "aliases": [
+      "alloc_large"
+    ],
+    "signature": "void *grim_jpeg_alloc_large(j_common_ptr cinfo, int pool_id, size_t size)",
+    "comment": "JAZ IJG 6a large-object pool allocator"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d420",
+    "name": "grim_jpeg_alloc_sarray",
+    "aliases": [
+      "alloc_sarray"
+    ],
+    "signature": "JSAMPARRAY grim_jpeg_alloc_sarray(j_common_ptr cinfo, int pool_id, JDIMENSION samples_per_row, JDIMENSION rows)",
+    "comment": "JAZ IJG 6a sample-array allocator"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d4d0",
+    "name": "grim_jpeg_alloc_barray",
+    "aliases": [
+      "alloc_barray"
+    ],
+    "signature": "JBLOCKARRAY grim_jpeg_alloc_barray(j_common_ptr cinfo, int pool_id, JDIMENSION blocks_per_row, JDIMENSION rows)",
+    "comment": "JAZ IJG 6a coefficient-block array allocator"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d580",
+    "name": "grim_jpeg_request_virt_sarray",
+    "aliases": [
+      "request_virt_sarray"
+    ],
+    "signature": "jvirt_sarray_ptr grim_jpeg_request_virt_sarray(j_common_ptr cinfo, int pool_id, boolean pre_zero, JDIMENSION samples_per_row, JDIMENSION rows, JDIMENSION max_access)",
+    "comment": "JAZ IJG 6a virtual sample-array request"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d5f0",
+    "name": "grim_jpeg_request_virt_barray",
+    "aliases": [
+      "request_virt_barray"
+    ],
+    "signature": "jvirt_barray_ptr grim_jpeg_request_virt_barray(j_common_ptr cinfo, int pool_id, boolean pre_zero, JDIMENSION blocks_per_row, JDIMENSION rows, JDIMENSION max_access)",
+    "comment": "JAZ IJG 6a virtual coefficient-array request"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d660",
+    "name": "grim_jpeg_realize_virt_arrays",
+    "aliases": [
+      "realize_virt_arrays"
+    ],
+    "signature": "void grim_jpeg_realize_virt_arrays(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a virtual-array realization"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d7e0",
+    "name": "grim_jpeg_access_virt_sarray",
+    "aliases": [
+      "access_virt_sarray"
+    ],
+    "signature": "JSAMPARRAY grim_jpeg_access_virt_sarray(j_common_ptr cinfo, jvirt_sarray_ptr ptr, JDIMENSION start_row, JDIMENSION rows, boolean writable)",
+    "comment": "JAZ IJG 6a virtual sample-array accessor"
   },
   {
     "program": "grim.dll",
     "address": "0x1003d930",
-    "name": "FUN_1003d930",
-    "signature": "int FUN_1003d930(int* arg1)",
-    "comment": "[binja] int32_t sub_1003d930(int32_t* arg1)",
+    "name": "grim_jpeg_do_sarray_io",
+    "aliases": [
+      "do_sarray_io",
+      "FUN_1003d930"
+    ],
+    "signature": "void grim_jpeg_do_sarray_io(j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)",
+    "comment": "JAZ IJG 6a virtual sample-array backing-store transfer",
     "create": false
   },
   {
     "program": "grim.dll",
+    "address": "0x1003d9d0",
+    "name": "grim_jpeg_access_virt_barray",
+    "aliases": [
+      "access_virt_barray"
+    ],
+    "signature": "JBLOCKARRAY grim_jpeg_access_virt_barray(j_common_ptr cinfo, jvirt_barray_ptr ptr, JDIMENSION start_row, JDIMENSION rows, boolean writable)",
+    "comment": "JAZ IJG 6a virtual coefficient-array accessor"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003db20",
-    "name": "FUN_1003db20",
-    "signature": "int FUN_1003db20(int arg1)",
-    "comment": "[binja] int32_t sub_1003db20(int32_t arg1)",
+    "name": "grim_jpeg_do_barray_io",
+    "aliases": [
+      "do_barray_io",
+      "FUN_1003db20"
+    ],
+    "signature": "void grim_jpeg_do_barray_io(j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)",
+    "comment": "JAZ IJG 6a virtual coefficient-array backing-store transfer",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003dbc0",
+    "name": "grim_jpeg_free_pool",
+    "aliases": [
+      "free_pool"
+    ],
+    "signature": "void grim_jpeg_free_pool(j_common_ptr cinfo, int pool_id)",
+    "comment": "JAZ IJG 6a memory-pool release"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003dcc0",
+    "name": "grim_jpeg_self_destruct",
+    "aliases": [
+      "self_destruct"
+    ],
+    "signature": "void grim_jpeg_self_destruct(j_common_ptr cinfo)",
+    "comment": "JAZ IJG 6a memory-manager teardown"
   },
   {
     "program": "grim.dll",
@@ -12137,6 +12342,9 @@
     "program": "grim.dll",
     "address": "0x1003e510",
     "name": "grim_jpeg_zero_far",
+    "aliases": [
+      "jzero_far"
+    ],
     "signature": "void grim_jpeg_zero_far(void *target, unsigned int size)",
     "comment": "Archive-confirmed IJG 6a far-buffer clear in the JAZ decoder copy"
   },
