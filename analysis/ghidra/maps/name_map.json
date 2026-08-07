@@ -9257,9 +9257,10 @@
   {
     "program": "grim.dll",
     "address": "0x10016131",
-    "name": "FUN_10016131",
-    "signature": "int FUN_10016131(char* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10016131(char* arg1)",
+    "name": "d3dx_lock_surface_unlock",
+    "aliases": ["FUN_10016131", "?Unlock@CD3DXLockSurface@@QAEJXZ"],
+    "signature": "int d3dx_lock_surface_unlock(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXLockSurface::Unlock body.",
     "create": false
   },
   {
@@ -9274,9 +9275,10 @@
   {
     "program": "grim.dll",
     "address": "0x100161a0",
-    "name": "FUN_100161a0",
-    "signature": "int FUN_100161a0(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_100161a0(int32_t* arg1)",
+    "name": "d3dx_lock_volume_unlock",
+    "aliases": ["FUN_100161a0", "?Unlock@CD3DXLockVolume@@QAEJXZ"],
+    "signature": "int d3dx_lock_volume_unlock(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXLockVolume::Unlock body.",
     "create": false
   },
   {

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "d5c5166f5c3d4bd1e6106d88533e93b0e47da17f2d00d0233bce377a2575798d",
+  "audit_digest": "b811a1eadaa685d9a82155e9e2222ebec4e22a649aeb7de85212ccbd6cc9ebfa",
   "entries": [
     {
       "address": 268747320,
@@ -2635,6 +2635,63 @@
       "size": 8,
       "size_source": "third_party/headers/png.h: png_sig[8]; pinned DirectX 8.1 d3dx8.lib obj\\i386\\png.obj:?png_sig_cmp; tools/match/scratches/grim_png_sig_cmp",
       "type": "uint8_t[8]"
+    },
+    {
+      "address": 268756260,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_guid_alignment_is_four",
+      "comment": "Direct3D 8 volume-texture interface identifier selected by the exact CD3DXLockVolume relocation.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "faaa8a4b0f14ba429131597eafaa2ead",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e524; pinned DirectX 8.1 cd3dxlock.obj relocation",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "IID_IDirect3DVolumeTexture8",
+      "section": ".rdata",
+      "section_offset": 9064,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: const GUID; tools/native/abi/grim.dll/abi_assertions.cpp: guid_is_0x10",
+      "type": "const GUID"
+    },
+    {
+      "address": 268756276,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_guid_alignment_is_four",
+      "comment": "Direct3D 8 2D-texture interface identifier selected by the exact CD3DXLockSurface relocation.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "75d5cde46628014fb12e7eece1ec9358",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e534; pinned DirectX 8.1 cd3dxlock.obj relocation",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "IID_IDirect3DTexture8",
+      "section": ".rdata",
+      "section_offset": 9080,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: const GUID; tools/native/abi/grim.dll/abi_assertions.cpp: guid_is_0x10",
+      "type": "const GUID"
+    },
+    {
+      "address": 268756292,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_guid_alignment_is_four",
+      "comment": "Direct3D 8 base-texture interface identifier selected by the exact CD3DXLockSurface relocation.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "fa1c21b4b9519f4aab78db99b2bb678e",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e544; pinned DirectX 8.1 cd3dxlock.obj relocation",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "IID_IDirect3DBaseTexture8",
+      "section": ".rdata",
+      "section_offset": 9096,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: const GUID; tools/native/abi/grim.dll/abi_assertions.cpp: guid_is_0x10",
+      "type": "const GUID"
     },
     {
       "address": 268756316,
@@ -8084,9 +8141,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "8bb873c013d2d646fdaa95867cc37f086600242accf8f5b1b30fa1a318a02c22",
+    "data_map_sha256": "b51feb64e88eee14b01dc7d53a044802d72aa4da0b6acaeac47cc850ebda12bf",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "a258c19cb0f3b5f597bbf8513a9bb90113a8302fad130f9b325d2c1a47e24bcb",
+    "definitions_sha256": "cb4a1bb4edd0c5ba252e268e746458e9cc41e6f9b1a40ff11b3ddc7b8cec95e5",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -8100,12 +8157,12 @@
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 333,
-    "explicit_alignment_entries": 299,
-    "explicit_initializer_entries": 299,
-    "explicit_size_entries": 299,
+    "entry_count": 336,
+    "explicit_alignment_entries": 302,
+    "explicit_initializer_entries": 302,
+    "explicit_size_entries": 302,
     "fixed_array_types": 112,
-    "fully_specified_entries": 299,
+    "fully_specified_entries": 302,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -8114,11 +8171,11 @@
     "referenced_entries": 0,
     "section_counts": {
       ".data": 221,
-      ".rdata": 112
+      ".rdata": 115
     },
-    "source_entry_count": 336,
-    "typed_entries": 283,
-    "unique_addresses": 333,
+    "source_entry_count": 339,
+    "typed_entries": 286,
+    "unique_addresses": 336,
     "untyped_entries": 50
   }
 }

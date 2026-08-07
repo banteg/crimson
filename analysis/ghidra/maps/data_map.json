@@ -13119,6 +13119,27 @@
       "type": "uint8_t[8]"
     },
     {
+      "address": "0x1004e524",
+      "comment": "Direct3D 8 volume-texture interface identifier selected by the exact CD3DXLockVolume relocation.",
+      "name": "IID_IDirect3DVolumeTexture8",
+      "program": "grim.dll",
+      "type": "const GUID"
+    },
+    {
+      "address": "0x1004e534",
+      "comment": "Direct3D 8 2D-texture interface identifier selected by the exact CD3DXLockSurface relocation.",
+      "name": "IID_IDirect3DTexture8",
+      "program": "grim.dll",
+      "type": "const GUID"
+    },
+    {
+      "address": "0x1004e544",
+      "comment": "Direct3D 8 base-texture interface identifier selected by the exact CD3DXLockSurface relocation.",
+      "name": "IID_IDirect3DBaseTexture8",
+      "program": "grim.dll",
+      "type": "const GUID"
+    },
+    {
       "address": "0x1004ea90",
       "comment": "Archive-confirmed libpng 1.0.5 Adam7 horizontal pass starting columns.",
       "name": "png_pass_start",

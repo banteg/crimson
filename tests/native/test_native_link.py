@@ -2238,14 +2238,14 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 336
+    assert payload["summary"]["source_entry_count"] == 339
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 333
-    assert payload["summary"]["typed_entries"] == 283
-    assert payload["summary"]["explicit_size_entries"] == 299
-    assert payload["summary"]["explicit_alignment_entries"] == 299
-    assert payload["summary"]["explicit_initializer_entries"] == 299
-    assert payload["summary"]["fully_specified_entries"] == 299
+    assert payload["summary"]["entry_count"] == 336
+    assert payload["summary"]["typed_entries"] == 286
+    assert payload["summary"]["explicit_size_entries"] == 302
+    assert payload["summary"]["explicit_alignment_entries"] == 302
+    assert payload["summary"]["explicit_initializer_entries"] == 302
+    assert payload["summary"]["fully_specified_entries"] == 302
     assert payload["summary"]["definition_group_entries"] == 215
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2276,6 +2276,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["png_IHDR"]["type"] == "const png_byte[5]"
     assert observed["png_read_IDAT"]["type"] == "const png_byte[5]"
     assert observed["png_tRNS"]["type"] == "const png_byte[5]"
+    assert observed["IID_IDirect3DVolumeTexture8"]["type"] == "const GUID"
+    assert observed["IID_IDirect3DTexture8"]["type"] == "const GUID"
+    assert observed["IID_IDirect3DBaseTexture8"]["type"] == "const GUID"
     assert observed["d3dx_jpeg_std_message_table"]["type"] == "const char *[120]"
     assert observed["grim_jpeg_first_pool_slop"]["type"] == "const size_t[2]"
     assert observed["grim_jpeg_extra_pool_slop"]["type"] == "const size_t[2]"
