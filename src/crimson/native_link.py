@@ -1893,6 +1893,7 @@ def build_native_object_set(
             metadata_path=metadata_path,
             symbol_name=status.config.symbol,
             object_extent=status.config.archive_extent,
+            object_end_symbol=status.config.archive_end_symbol,
             end_va=status.config.end_va,
             reference_aliases=status.config.reference_aliases,
             scope=scope,
@@ -1912,6 +1913,7 @@ def build_native_object_set(
             coff,
             status.config.symbol,
             extent=status.config.archive_extent,
+            end_symbol=status.config.archive_end_symbol,
         )
         input_hashes = dict(inputs_after)
         config_path = (status.config.directory / "scratch.conf").resolve()

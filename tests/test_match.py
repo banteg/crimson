@@ -663,6 +663,19 @@ def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
     assert config.archive_extent == "section-tail"
 
 
+def test_scratch_config_parses_archive_end_symbol(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=foo ARCHIVE=provider.lib "
+        "ARCHIVE_MEMBER='obj\\i386\\foo.obj' "
+        f"ARCHIVE_SHA256={'a' * 64} SYMBOL=_foo ARCHIVE_END_SYMBOL=_foo_end\n",
+        encoding="utf-8",
+    )
+
+    config = load_scratch_config(tmp_path)
+
+    assert config.archive_end_symbol == "_foo_end"
+
+
 def test_scratch_config_parses_structural_import_thunk(tmp_path: Path) -> None:
     (tmp_path / "scratch.conf").write_text(
         "FUNCTION=sprintf IMPORT_THUNK=sprintf\n",
@@ -691,6 +704,7 @@ def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
     "config, message",
     (
         ("FUNCTION=foo ARCHIVE_MEMBER=foo.obj", "without ARCHIVE"),
+        ("FUNCTION=foo ARCHIVE_END_SYMBOL=_foo_end", "without ARCHIVE"),
         ("FUNCTION=foo ARCHIVE_EXTENT=section-tail", "without ARCHIVE"),
         ("FUNCTION=foo ARCHIVE=provider.lib", "must set ARCHIVE_MEMBER, ARCHIVE_SHA256, SYMBOL"),
         (
@@ -707,6 +721,12 @@ def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
             "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
             + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_EXTENT=bogus",
             "invalid ARCHIVE_EXTENT",
+        ),
+        (
+            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
+            "ARCHIVE_EXTENT=section-tail ARCHIVE_END_SYMBOL=_foo_end",
+            "cannot combine ARCHIVE_END_SYMBOL",
         ),
     ),
 )
@@ -1038,6 +1058,29 @@ def test_extract_object_function_can_include_external_symbol_section_tail() -> N
     assert section_tail.data == code
 
 
+def test_extract_object_function_can_end_at_explicit_code_symbol() -> None:
+    code = bytes.fromhex("31c0c390c3c3")
+    obj = CoffObject(
+        sections=(CoffSection(name=".text", data=code, characteristics=0x20, relocations=()),),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "_local_entry", 3, 1, 0x20, 3),
+            CoffSymbol(2, "_probe_end", 5, 1, 0x20, 2),
+        ),
+    )
+
+    function = extract_object_function(obj, "probe", end_symbol="_probe_end")
+
+    assert function.data == code[:5]
+    with pytest.raises(ValueError, match="cannot be combined"):
+        extract_object_function(
+            obj,
+            "probe",
+            extent="section-tail",
+            end_symbol="_probe_end",
+        )
+
+
 def test_normalize_masks_relocated_and_absolute_operands() -> None:
     code = bytes.fromhex("a134124a00c3")
     assert normalize_function(code, relocation_offsets=frozenset({1}))[0] == "mov eax, dword [ADDR]"
@@ -1129,6 +1172,15 @@ def test_normalize_strips_untargeted_terminal_padding() -> None:
         + (b"\x90" * 4)
     )
     assert normalize_function(code) == ("ret",)
+
+
+def test_normalize_strips_untargeted_padding_after_tail_jump() -> None:
+    code = bytes.fromhex("e9000000008da424000000008bff")
+
+    assert normalize_function(
+        code,
+        relocation_offsets=frozenset({1}),
+    ) == ("jmp ADDR",)
 
 
 def test_common_prefix_length() -> None:
@@ -1241,8 +1293,8 @@ def test_match_function_materializes_local_dir32_relocation() -> None:
     assert wrong.masked_operand_audit.mismatch_count == 1
 
 
-def test_run_match_forwards_object_extent(monkeypatch, tmp_path: Path) -> None:
-    observed: dict[str, str] = {}
+def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> None:
+    observed: list[tuple[str, str | None]] = []
     manifest = FunctionManifest(
         image_name="game.exe",
         image_base=0x401000,
@@ -1261,8 +1313,14 @@ def test_run_match_forwards_object_extent(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr("crimson.match.load_reference_catalog", lambda *args, **kwargs: ReferenceCatalog({}))
     monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
 
-    def fake_extract(obj, name, *, extent: str = "symbol") -> ObjectFunction:
-        observed["extent"] = extent
+    def fake_extract(
+        obj,
+        name,
+        *,
+        extent: str = "symbol",
+        end_symbol: str | None = None,
+    ) -> ObjectFunction:
+        observed.append((extent, end_symbol))
         return ObjectFunction("_probe", b"\xc3", frozenset())
 
     monkeypatch.setattr("crimson.match.extract_object_function", fake_extract)
@@ -1279,7 +1337,21 @@ def test_run_match_forwards_object_extent(monkeypatch, tmp_path: Path) -> None:
     )
 
     assert result.exact
-    assert observed == {"extent": "section-tail"}
+    assert observed == [("section-tail", None)]
+
+    result = run_match(
+        obj_path=obj_path,
+        function="probe",
+        image_path=image_path,
+        functions_path=tmp_path / "functions.json",
+        metadata_path=tmp_path / "metadata.json",
+        symbol_name="_probe",
+        object_end_symbol="_probe_end",
+        scope="all",
+    )
+
+    assert result.exact
+    assert observed[-1] == ("symbol", "_probe_end")
 
 
 def test_match_function_accepts_first_load_from_proven_vc6_copy_range() -> None:
@@ -3739,7 +3811,7 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
     monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
     monkeypatch.setattr(
         "crimson.match.extract_object_function",
-        lambda obj, symbol, *, extent="symbol": ObjectFunction(
+        lambda obj, symbol, *, extent="symbol", end_symbol=None: ObjectFunction(
             name="foo",
             data=b"\xc3",
             relocation_offsets=frozenset(),
@@ -3802,7 +3874,11 @@ def test_collect_status_can_limit_evaluation_to_selected_directories(
     monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
     monkeypatch.setattr(
         "crimson.match.extract_object_function",
-        lambda obj, symbol: ObjectFunction(name="selected", data=b"\xc3", relocation_offsets=frozenset()),
+        lambda obj, symbol, **kwargs: ObjectFunction(
+            name="selected",
+            data=b"\xc3",
+            relocation_offsets=frozenset(),
+        ),
     )
     monkeypatch.setattr(Path, "read_bytes", lambda self: b"")
 

@@ -207,7 +207,9 @@ ARCHIVE=../../../native/providers/build/provider/provider.lib
 ARCHIVE_MEMBER='objf\i386\provider.obj'
 ARCHIVE_SHA256=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 SYMBOL='?decorated_provider_symbol@@YGXXZ'
+# Choose at most one explicit aggregate boundary:
 ARCHIVE_EXTENT=section-tail
+# ARCHIVE_END_SYMBOL='?next_entry@@YAXXZ'
 ```
 
 Archive scratches are provenance-bound alternatives to source scratches:
@@ -223,6 +225,11 @@ generated configs; ordinary compiled functions continue to use the default
 single-symbol extent. Pass `--object-extent section-tail` to the low-level
 `match diff` or `match dump` commands when inspecting one of these objects
 without a scratch config.
+`ARCHIVE_END_SYMBOL` instead selects an explicit exclusive code-symbol
+boundary in the same COFF section. It is useful when callable entry labels sit
+inside one aggregate assembler routine; it cannot be combined with a
+non-default `ARCHIVE_EXTENT`. The low-level equivalent is
+`--object-end-symbol`.
 
 Scan an established provider range and materialize only unambiguous matches:
 

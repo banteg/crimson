@@ -1839,10 +1839,13 @@ def extract_object_function(
     name: str | None = None,
     *,
     extent: str = "symbol",
+    end_symbol: str | None = None,
 ) -> ObjectFunction:
     if extent not in ARCHIVE_EXTENT_VALUES:
         allowed = ", ".join(sorted(ARCHIVE_EXTENT_VALUES))
         raise ValueError(f"invalid object function extent {extent!r}; use {allowed}")
+    if end_symbol is not None and extent != "symbol":
+        raise ValueError("object end symbol cannot be combined with a non-symbol extent")
     explicit_code_label = False
     candidates = [symbol for symbol in obj.symbols if _is_function_symbol(symbol)]
     if name is not None:
@@ -1881,7 +1884,25 @@ def extract_object_function(
         and symbol.section_number == target.section_number
         and symbol.value > target.value
     )
-    if extent == "section-tail" or not siblings:
+    if end_symbol is not None:
+        end_candidates = [
+            symbol
+            for symbol in obj.symbols
+            if symbol.name == end_symbol
+            and symbol.section_number == target.section_number
+            and (_is_function_symbol(symbol) or _is_code_label_symbol(symbol))
+        ]
+        if len(end_candidates) != 1:
+            raise ValueError(
+                f"end symbol {end_symbol!r} must name exactly one code symbol "
+                f"in section {section.name!r}",
+            )
+        end = end_candidates[0].value
+        if not target.value < end <= len(section.data):
+            raise ValueError(
+                f"end symbol {end_symbol!r} must follow function symbol {target.name!r}",
+            )
+    elif extent == "section-tail" or not siblings:
         end = len(section.data)
     else:
         end = siblings[0]
@@ -2395,7 +2416,8 @@ def _strip_trailing_padding_lines(lines: tuple[DisassemblyLine, ...]) -> tuple[D
         trim_start -= 1
     if trim_start == len(lines) or trim_start == 0:
         return lines
-    if not lines[trim_start - 1].text.startswith("ret"):
+    terminator = lines[trim_start - 1].text
+    if not terminator.startswith(("ret", "jmp ")):
         return lines
 
     padding_offsets = {line.offset for line in lines[trim_start:]}
@@ -2946,6 +2968,7 @@ def run_match(
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     symbol_name: str | None = None,
     object_extent: str = "symbol",
+    object_end_symbol: str | None = None,
     end_va: int | None = None,
     reference_aliases: tuple[tuple[str, str], ...] = (),
     scope: str | None = None,
@@ -2977,7 +3000,12 @@ def run_match(
             end_override=end_va,
         )
     obj = parse_coff_object(Path(obj_path).read_bytes())
-    candidate = extract_object_function(obj, symbol_name, extent=object_extent)
+    candidate = extract_object_function(
+        obj,
+        symbol_name,
+        extent=object_extent,
+        end_symbol=object_end_symbol,
+    )
     _, start, end = resolved
     image = load_image(image_path, manifest.image_base)
     catalog = load_reference_catalog(manifest, functions_path=functions_path).with_object_aliases(
@@ -3001,6 +3029,7 @@ def run_match_dump(
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     symbol_name: str | None = None,
     object_extent: str = "symbol",
+    object_end_symbol: str | None = None,
     end_va: int | None = None,
     scope: str | None = None,
 ) -> MatchDump:
@@ -3011,7 +3040,12 @@ def run_match_dump(
         scope=scope,
     )
     obj = parse_coff_object(Path(obj_path).read_bytes())
-    candidate = extract_object_function(obj, symbol_name, extent=object_extent)
+    candidate = extract_object_function(
+        obj,
+        symbol_name,
+        extent=object_extent,
+        end_symbol=object_end_symbol,
+    )
     _, start, end = resolve_function(manifest, function, end_override=end_va)
     image = load_image(image_path, manifest.image_base)
     catalog = load_reference_catalog(manifest, functions_path=functions_path)
@@ -3044,6 +3078,7 @@ ARCHIVE_EXTENT_VALUES = frozenset({"symbol", "section-tail"})
 SCRATCH_CONFIG_KEYS = frozenset(
     {
         "ARCHIVE",
+        "ARCHIVE_END_SYMBOL",
         "ARCHIVE_EXTENT",
         "ARCHIVE_MEMBER",
         "ARCHIVE_SHA256",
@@ -3082,6 +3117,7 @@ class ScratchConfig:
     archive_member: str | None = None
     archive_sha256: str | None = None
     archive_extent: str = "symbol"
+    archive_end_symbol: str | None = None
     import_thunk: str | None = None
     auto_inline_off: tuple[str, ...] = ()
     include_overlay: Path | None = None
@@ -3282,12 +3318,14 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
     archive_member = values.get("ARCHIVE_MEMBER")
     archive_sha256 = values.get("ARCHIVE_SHA256")
     archive_extent = values.get("ARCHIVE_EXTENT", "symbol")
+    archive_end_symbol = values.get("ARCHIVE_END_SYMBOL")
     import_thunk = values.get("IMPORT_THUNK")
     if import_thunk is not None:
         unexpected = sorted(
             key
             for key in (
                 "ARCHIVE",
+                "ARCHIVE_END_SYMBOL",
                 "ARCHIVE_EXTENT",
                 "ARCHIVE_MEMBER",
                 "ARCHIVE_SHA256",
@@ -3308,7 +3346,12 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
     if archive is None:
         unexpected = sorted(
             key
-            for key in ("ARCHIVE_EXTENT", "ARCHIVE_MEMBER", "ARCHIVE_SHA256")
+            for key in (
+                "ARCHIVE_END_SYMBOL",
+                "ARCHIVE_EXTENT",
+                "ARCHIVE_MEMBER",
+                "ARCHIVE_SHA256",
+            )
             if key in values
         )
         if unexpected:
@@ -3336,6 +3379,16 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             raise ValueError(
                 f"{directory}/scratch.conf has invalid ARCHIVE_EXTENT={archive_extent!r}; use {allowed}",
             )
+        if archive_end_symbol is not None:
+            if archive_extent != "symbol":
+                raise ValueError(
+                    f"{directory}/scratch.conf cannot combine ARCHIVE_END_SYMBOL "
+                    "and non-symbol ARCHIVE_EXTENT",
+                )
+            if "\x00" in archive_end_symbol or re.search(r"\s", archive_end_symbol):
+                raise ValueError(
+                    f"{directory}/scratch.conf ARCHIVE_END_SYMBOL must be one COFF symbol",
+                )
 
     return ScratchConfig(
         directory=directory,
@@ -3354,6 +3407,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         archive_member=archive_member,
         archive_sha256=archive_sha256.lower() if archive_sha256 is not None else None,
         archive_extent=archive_extent,
+        archive_end_symbol=archive_end_symbol,
         import_thunk=import_thunk,
         auto_inline_off=auto_inline_off,
     )
@@ -3624,6 +3678,7 @@ def _scratch_build_key(
     if config.archive is not None:
         return {
             "archive": config.archive,
+            "archive_end_symbol": config.archive_end_symbol,
             "archive_extent": config.archive_extent,
             "archive_member": config.archive_member,
             "archive_sha256": config.archive_sha256,
@@ -3661,6 +3716,7 @@ def _scratch_profile_digest(config: ScratchConfig) -> str:
     elif config.archive is not None:
         payload = {
             "archive": config.archive,
+            "archive_end_symbol": config.archive_end_symbol,
             "archive_extent": config.archive_extent,
             "archive_member": config.archive_member,
             "archive_sha256": config.archive_sha256,
@@ -3769,7 +3825,12 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
     if config.symbol is None:
         raise ValueError(f"{config.directory}/scratch.conf archive scratch must set SYMBOL")
     try:
-        extract_object_function(obj, config.symbol, extent=config.archive_extent)
+        extract_object_function(
+            obj,
+            config.symbol,
+            extent=config.archive_extent,
+            end_symbol=config.archive_end_symbol,
+        )
     except ValueError as exc:
         defining_members: list[str] = []
         for candidate in archive_members:
@@ -3781,6 +3842,7 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
                     candidate_obj,
                     config.symbol,
                     extent=config.archive_extent,
+                    end_symbol=config.archive_end_symbol,
                 )
             except (IndexError, struct.error, ValueError):
                 continue
@@ -4028,6 +4090,7 @@ def evaluate_scratch(
             metadata_path=metadata_path,
             symbol_name=config.symbol,
             object_extent=config.archive_extent,
+            object_end_symbol=config.archive_end_symbol,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
         )
@@ -4725,6 +4788,7 @@ def collect_scratch_statuses(
                 obj,
                 config.symbol,
                 extent=config.archive_extent,
+                end_symbol=config.archive_end_symbol,
             )
             result = match_function(
                 target_data,
@@ -5756,6 +5820,8 @@ def render_status_rows(
             build = f"archive:{status.config.archive_member}"
             if status.config.archive_extent != "symbol":
                 build += f":{status.config.archive_extent}"
+            if status.config.archive_end_symbol is not None:
+                build += f":until={status.config.archive_end_symbol}"
         else:
             build = f"{status.config.compiler} {status.config.cflags}"
         rows.append(
