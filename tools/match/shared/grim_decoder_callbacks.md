@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred eighty-two exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred eighty-six exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -274,9 +274,13 @@ all 34 calls and data references resolved. The two remaining D3DX accessors
 are deliberately excluded: stock source differs only in its byte-clear opcode,
 but no unproven source shaping is used to claim an exact match.
 
-The D3DX coefficient controller's `decompress_data` loop adds another 358
-exact bytes and 122 instructions directly from `jdcoefct.c` under `/O1 /G6`.
+The D3DX coefficient controller adds its full-buffer and single-pass output
+loops, full-buffer and suspended input consumers, and module initializer
+directly from `jdcoefct.c` under `/O1 /G6`. These five bodies cover 1,498
+bytes and 503 instructions with all 11 references resolved. The progressive
+smoothed-output loop remains a stock-source compiler residual and is not
+shaped to force byte identity.
 
-Altogether the two hundred exact functions cover 36,519 bytes
-and 13,070 instructions in the explicit `all` scope, with every external
+Altogether the two hundred four exact functions cover 37,659 bytes
+and 13,451 instructions in the explicit `all` scope, with every external
 relocation resolved.

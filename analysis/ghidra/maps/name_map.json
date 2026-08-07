@@ -11084,6 +11084,27 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002ecec",
+    "name": "d3dx_jpeg_decompress_onepass",
+    "signature": "int d3dx_jpeg_decompress_onepass(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
+    "comment": "Archive-confirmed IJG 6a single-pass coefficient decompressor in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002eec6",
+    "name": "d3dx_jpeg_dummy_consume_data",
+    "signature": "int d3dx_jpeg_dummy_consume_data(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a suspended coefficient consumer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002eec9",
+    "name": "d3dx_jpeg_consume_data",
+    "signature": "int d3dx_jpeg_consume_data(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a full-buffer coefficient consumer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002f068",
     "name": "d3dx_jpeg_decompress_data",
     "signature": "int d3dx_jpeg_decompress_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
@@ -11109,6 +11130,13 @@
     "name": "d3dx_jpeg_start_coefficient_output_pass",
     "signature": "void d3dx_jpeg_start_coefficient_output_pass(j_decompress_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a coefficient-controller output-pass selector"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002f809",
+    "name": "d3dx_jpeg_init_d_coef_controller",
+    "signature": "void d3dx_jpeg_init_d_coef_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
+    "comment": "Archive-confirmed IJG 6a coefficient-controller initializer in the D3DX provider"
   },
   {
     "program": "grim.dll",

@@ -356,10 +356,13 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   bodies byte-for-byte (4,104 bytes, 1,322 instructions, 12 references). The
   private `start_iMCU_row` and `smoothing_ok` helpers are inlined into their
   callers, so no synthetic target functions are recorded for them.
-- Matcher corpus: the same official `jdcoefct.c` reproduces D3DX's
-  `decompress_data` body under `/O1 /G6` (358 bytes, 122 instructions). The
-  independently linked provider retains its own coefficient-controller state
-  and function identity.
+- Matcher corpus: the same official `jdcoefct.c` reproduces five D3DX bodies
+  under `/O1 /G6`: full-buffer and single-pass output, full-buffer and dummy
+  input consumption, and controller initialization (1,498 bytes, 503
+  instructions, 11 references). Live Binary Ninja boundaries recover the
+  three previously unnamed local bodies. The independently linked provider
+  retains its own coefficient-controller state and function identity; its
+  progressive smoothed-output loop remains an honest stock-source residual.
 - Matcher corpus: the newly pinned and provenance-checked `jmemmgr.c`
   reproduces seventeen memory-manager bodies across the D3DX and JAZ copies
   (3,328 bytes, 1,380 instructions, 34 references). Ten D3DX bodies use the
