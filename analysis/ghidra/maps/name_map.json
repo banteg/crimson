@@ -16650,5 +16650,165 @@
       "?sse2_SinCos4@@YAXQBMQAM1@Z"
     ],
     "comment": "DirectX 8.1 SSE2 four-lane trigonometric helper identified by decorated relocations in the pinned optimized math archive members."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c82f",
+    "name": "d3dx_jpeg_get_soi",
+    "aliases": [
+      "sub_1001C82F",
+      "?get_soi@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c8bd",
+    "name": "d3dx_jpeg_get_sof",
+    "aliases": [
+      "sub_1001C8BD",
+      "?get_sof@D3DX@@YAEPAUjpeg_decompress_struct@1@EE@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001cbb8",
+    "name": "d3dx_jpeg_get_sos",
+    "aliases": [
+      "sub_1001CBB8",
+      "?get_sos@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ce6a",
+    "name": "d3dx_jpeg_get_app0",
+    "aliases": [
+      "sub_1001CE6A",
+      "?get_app0@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001d0a6",
+    "name": "d3dx_jpeg_get_app14",
+    "aliases": [
+      "sub_1001D0A6",
+      "?get_app14@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001d220",
+    "name": "d3dx_jpeg_get_dac",
+    "aliases": [
+      "sub_1001D220",
+      "?get_dac@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001d377",
+    "name": "d3dx_jpeg_get_dht",
+    "aliases": [
+      "sub_1001D377",
+      "?get_dht@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001d60b",
+    "name": "d3dx_jpeg_get_dqt",
+    "aliases": [
+      "sub_1001D60B",
+      "?get_dqt@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001d834",
+    "name": "d3dx_jpeg_get_dri",
+    "aliases": [
+      "sub_1001D834",
+      "?get_dri@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001d90b",
+    "name": "d3dx_jpeg_skip_variable",
+    "aliases": [
+      "sub_1001D90B",
+      "?skip_variable@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001d9a7",
+    "name": "d3dx_jpeg_next_marker",
+    "aliases": [
+      "sub_1001D9A7",
+      "?next_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001da7e",
+    "name": "d3dx_jpeg_first_marker",
+    "aliases": [
+      "sub_1001DA7E",
+      "?first_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001db15",
+    "name": "d3dx_jpeg_read_markers",
+    "aliases": [
+      "sub_1001DB15",
+      "?read_markers@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001dd02",
+    "name": "d3dx_jpeg_read_restart_marker",
+    "aliases": [
+      "sub_1001DD02",
+      "?read_restart_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001dd80",
+    "name": "d3dx_jpeg_resync_to_restart",
+    "aliases": [
+      "sub_1001DD80",
+      "?jpeg_resync_to_restart@D3DX@@YAEPAUjpeg_decompress_struct@1@H@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001de99",
+    "name": "d3dx_jpeg_init_marker_reader",
+    "aliases": [
+      "sub_1001DE99",
+      "?jinit_marker_reader@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
   }
 ]
