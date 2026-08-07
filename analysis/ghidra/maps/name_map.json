@@ -6755,6 +6755,22 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046b740",
+    "name": "crt_fdiv_main_routine",
+    "aliases": ["unknown_libname_5", "_fdiv_main_routine"],
+    "comment": "Exact VC6 SP6 Pentium FDIV workaround core from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046b857",
+    "name": "crt_adj_fdiv_r",
+    "aliases": ["unknown_libname_6", "__adj_fdiv_r"],
+    "comment": "Exact VC6 SP6 64-way x87 division dispatcher from libcmt.lib adj_fdiv.obj.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046c4cb",
     "name": "FUN_0046c4cb",
     "signature": "int * FUN_0046c4cb(int arg1, int *arg2, uint arg3)",
