@@ -128,7 +128,7 @@ def build_object(code: bytes, symbols: list[tuple[str, int]], relocations: list[
     return header + section + code + reloc_records + symbol_records + string_table
 
 
-def build_archive(member_name: str, payload: bytes) -> bytes:
+def build_archive_members(members: list[tuple[str, bytes]]) -> bytes:
     def member(name: bytes, data: bytes) -> bytes:
         header = (
             name.ljust(16)
@@ -141,8 +141,17 @@ def build_archive(member_name: str, payload: bytes) -> bytes:
         )
         return header + data + (b"\n" if len(data) & 1 else b"")
 
-    long_names = f"{member_name}/\n".encode()
-    return b"!<arch>\n" + member(b"//", long_names) + member(b"/0", payload)
+    long_names = b""
+    encoded_members: list[bytes] = []
+    for member_name, payload in members:
+        offset = len(long_names)
+        long_names += f"{member_name}/\n".encode()
+        encoded_members.append(member(f"/{offset}".encode(), payload))
+    return b"!<arch>\n" + member(b"//", long_names) + b"".join(encoded_members)
+
+
+def build_archive(member_name: str, payload: bytes) -> bytes:
+    return build_archive_members([(member_name, payload)])
 
 
 def test_load_manifest_resolves_known_function() -> None:
@@ -924,7 +933,14 @@ def test_normalize_resolves_coff_rel32_self_call_as_local_label() -> None:
 
 
 def test_normalize_strips_untargeted_terminal_padding() -> None:
-    code = bytes.fromhex("c3") + bytes.fromhex("8d4900") + (b"\x00" * 4) + (b"\x90" * 4)
+    code = (
+        bytes.fromhex("c3")
+        + bytes.fromhex("8d4900")
+        + bytes.fromhex("8db600000000")
+        + bytes.fromhex("8dbf00000000")
+        + (b"\x00" * 4)
+        + (b"\x90" * 4)
+    )
     assert normalize_function(code) == ("ret",)
 
 
@@ -2707,6 +2723,33 @@ def test_compile_scratch_extracts_hash_pinned_archive_member(tmp_path: Path) -> 
         compile_scratch(replace(config, archive_sha256="0" * 64), match_root)
     with pytest.raises(ValueError, match="expected exactly one archive member"):
         compile_scratch(replace(config, archive_member="missing.obj"), match_root)
+
+
+def test_compile_scratch_suggests_member_defining_missing_symbol(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "foo"
+    scratch.mkdir(parents=True)
+    archive_data = build_archive_members(
+        [
+            ("wrong.obj", build_object(b"\xc3", [("_wrong", 0)], [])),
+            ("right.obj", build_object(b"\xc3", [("_foo", 0)], [])),
+        ],
+    )
+    archive = scratch / "provider.lib"
+    archive.write_bytes(archive_data)
+    digest = hashlib.sha256(archive_data).hexdigest()
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=wrong.obj "
+        f"ARCHIVE_SHA256={digest} SYMBOL=_foo\n",
+        encoding="utf-8",
+    )
+    config = load_scratch_config(scratch)
+
+    with pytest.raises(
+        ValueError,
+        match=r"missing function symbol '_foo'; defining archive members: 'right.obj'",
+    ):
+        compile_scratch(config, match_root)
 
 
 def test_validate_command_accepts_pinned_archive_scratch(tmp_path: Path) -> None:

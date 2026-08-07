@@ -77,6 +77,8 @@ PADDING_LINE_TEXT = {
     "add byte [eax], al",
     "int3",
     "lea ecx, dword [ecx]",
+    "lea edi, dword [edi]",
+    "lea esi, dword [esi]",
     "mov edi, edi",
     "nop",
 }
@@ -3163,9 +3165,10 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
             f"expected {config.archive_sha256}, got {observed_sha256}",
         )
 
+    archive_members = parse_coff_archive(archive_data)
     members = tuple(
         member
-        for member in parse_coff_archive(archive_data)
+        for member in archive_members
         if member.name == config.archive_member
     )
     if len(members) != 1:
@@ -3185,8 +3188,25 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
     try:
         extract_object_function(obj, config.symbol)
     except ValueError as exc:
+        defining_members: list[str] = []
+        for candidate in archive_members:
+            if candidate.name in {"/", "//", config.archive_member}:
+                continue
+            try:
+                candidate_obj = parse_coff_object(candidate.data)
+                extract_object_function(candidate_obj, config.symbol)
+            except (IndexError, struct.error, ValueError):
+                continue
+            defining_members.append(candidate.name)
+        hint = (
+            "; defining archive members: "
+            + ", ".join(repr(name) for name in defining_members)
+            if defining_members
+            else ""
+        )
         raise ValueError(
-            f"{archive_path}:{config.archive_member}: missing function symbol {config.symbol!r}",
+            f"{archive_path}:{config.archive_member}: "
+            f"missing function symbol {config.symbol!r}{hint}",
         ) from exc
     return obj_data
 
