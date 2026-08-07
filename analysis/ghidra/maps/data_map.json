@@ -2297,6 +2297,17 @@
       "type": "char[6]"
     },
     {
+      "address": "0x00479780",
+      "aliases": [
+        "_invSqrtTab",
+        "invSqrtTab"
+      ],
+      "comment": "1024-entry inverse-square-root lookup table used by the optimized D3DX vector normalizers.",
+      "name": "d3dx_inverse_sqrt_table",
+      "program": "crimsonland.exe",
+      "type": "uint32_t[1024]"
+    },
+    {
       "address": "0x0047a7a0",
       "comment": "Exact 448-byte .data section from the pinned DirectX 8.1 d3dxmathsse.obj archive member.",
       "name": "d3dx_sse_math_constants",
@@ -2323,6 +2334,20 @@
       "name": "d3dx_sse2_quaternion_constants",
       "program": "crimsonland.exe",
       "type": "unsigned char[32]"
+    },
+    {
+      "address": "0x0047aae0",
+      "comment": "Exact 736-byte .data section from the pinned DirectX 8.1 d3dxtrigsse.obj archive member.",
+      "name": "d3dx_sse_trig_constants",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[736]"
+    },
+    {
+      "address": "0x0047adc0",
+      "comment": "Exact 544-byte .data section from the pinned DirectX 8.1 d3dxtrigsse2.obj archive member.",
+      "name": "d3dx_sse2_trig_constants",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[544]"
     },
     {
       "address": "0x0047b018",
@@ -13154,6 +13179,20 @@
       "name": "d3dx_sse2_quaternion_vectors",
       "program": "crimsonland.exe",
       "type": "unsigned char[160]"
+    },
+    {
+      "address": "0x004dc2e0",
+      "comment": "Exact 768-byte .data1 section from the pinned DirectX 8.1 d3dxtrigsse.obj archive member.",
+      "name": "d3dx_sse_trig_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[768]"
+    },
+    {
+      "address": "0x004dc5e0",
+      "comment": "Exact 768-byte .data1 section from the pinned DirectX 8.1 d3dxtrigsse2.obj archive member.",
+      "name": "d3dx_sse2_trig_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[768]"
     },
     {
       "address": "0x10022114",
