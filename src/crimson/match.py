@@ -446,6 +446,8 @@ def load_reference_catalog(
         for entry in load_name_map_rows(name_map_path):
             if entry.get("program") != manifest.image_name:
                 continue
+            if bool(entry.get("exclude")):
+                continue
             address = parse_int(entry["address"])
             entry_names = (str(entry["name"]), *(str(alias) for alias in entry.get("aliases", [])))
             for name in entry_names:
@@ -505,6 +507,7 @@ def load_function_manifest(
     name_overrides: dict[int, str] = {}
     end_overrides: dict[int, int] = {}
     included_library_addresses: set[int] = set()
+    excluded_addresses: set[int] = set()
     created_rows: list[dict[str, Any]] = []
     if name_map_path is not None and name_map_path.exists():
         name_rows = load_name_map_rows(name_map_path)
@@ -512,6 +515,9 @@ def load_function_manifest(
             if row.get("program") != resolved_image_name:
                 continue
             address = parse_int(row["address"])
+            if bool(row.get("exclude")):
+                excluded_addresses.add(address)
+                continue
             name_overrides[address] = str(row["name"])
             if not bool(row.get("create")) and row.get("end") is not None:
                 end_overrides[address] = parse_int(row["end"])
@@ -528,6 +534,13 @@ def load_function_manifest(
         for row in rows
         if not bool(row.get("external"))
     }
+    unknown_exclusions = excluded_addresses - manifest_names_by_address.keys()
+    if unknown_exclusions:
+        addresses = ", ".join(f"0x{address:x}" for address in sorted(unknown_exclusions))
+        raise ValueError(
+            f"{name_map_path}: {resolved_image_name} exclusions are absent from the "
+            f"function manifest: {addresses}",
+        )
     for row in created_rows:
         address = parse_int(row["address"])
         manifest_names_by_address.setdefault(address, str(row["name"]))
@@ -554,6 +567,8 @@ def load_function_manifest(
     for row in rows:
         address = parse_int(row["address"])
         if bool(row.get("external")):
+            continue
+        if address in excluded_addresses:
             continue
         if scope is None and bool(row.get("library")) and address not in included_library_addresses:
             continue

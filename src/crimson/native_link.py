@@ -2564,6 +2564,8 @@ def load_native_symbol_catalog(
         for row in matchlib.load_name_map_rows(name_map_path):
             if row.get("program") != image:
                 continue
+            if bool(row.get("exclude")):
+                continue
             address = matchlib.parse_int(row["address"])
             aliases_by_address[address].extend(
                 [str(row["name"]), *(str(alias) for alias in row.get("aliases", []))],

@@ -227,6 +227,49 @@ def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
     assert end == 0x1000A323
 
 
+def test_load_manifest_excludes_curated_false_function(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x1003A4F4","end":"0x1003A4F7","name":"nullsub_7","size":3},'
+        '{"address":"0x1003A500","end":"0x1003A501","name":"real_function","size":1}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1003A4F4",'
+        '"name":"nullsub_7","exclude":true}]\n',
+        encoding="utf-8",
+    )
+
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=None,
+        image_name="grim.dll",
+        name_map_path=name_map_path,
+    )
+
+    assert [function.name for function in manifest.functions] == ["real_function"]
+
+
+def test_load_manifest_rejects_stale_curated_exclusion(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text("[]\n", encoding="utf-8")
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1003A4F4",'
+        '"name":"nullsub_7","exclude":true}]\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="exclusions are absent.*0x1003a4f4"):
+        load_function_manifest(
+            functions_path,
+            metadata_path=None,
+            image_name="grim.dll",
+            name_map_path=name_map_path,
+        )
+
+
 def test_load_manifest_rejects_duplicate_curated_address(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(
