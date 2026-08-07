@@ -2561,7 +2561,7 @@ def load_native_symbol_catalog(
 
     aliases_by_address: dict[int, list[str]] = defaultdict(list)
     if name_map_path.exists():
-        for row in json.loads(name_map_path.read_text(encoding="utf-8")):
+        for row in matchlib.load_name_map_rows(name_map_path):
             if row.get("program") != image:
                 continue
             address = matchlib.parse_int(row["address"])

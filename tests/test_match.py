@@ -176,6 +176,29 @@ def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
     assert end == 0x1000A323
 
 
+def test_load_manifest_rejects_duplicate_curated_address(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x1000A310","end":"0x1000A323",'
+        '"name":"sub_1000A310","size":19}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1000A310","name":"recovered_name"},'
+        '{"program":"grim.dll","address":"0x1000A310","name":"stale_name"}]\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate name-map entry.*grim.dll:0x1000a310"):
+        load_function_manifest(
+            functions_path,
+            metadata_path=None,
+            image_name="grim.dll",
+            name_map_path=name_map_path,
+        )
+
+
 def test_load_manifest_applies_curated_end_override(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(

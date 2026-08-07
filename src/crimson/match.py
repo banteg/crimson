@@ -12,7 +12,7 @@ from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_VERSION = "1.9.93-gog"
@@ -93,6 +93,31 @@ def parse_int(value: str | int) -> int:
     if isinstance(value, int):
         return value
     return int(value, 0)
+
+
+def load_name_map_rows(path: Path) -> tuple[dict[str, Any], ...]:
+    """Load curated symbols while rejecting ambiguous address overrides."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, list):
+        raise TypeError(f"{path}: name map must contain a JSON array")
+
+    rows: list[dict[str, Any]] = []
+    seen: dict[tuple[str, int], int] = {}
+    for index, row in enumerate(payload):
+        if not isinstance(row, dict):
+            raise TypeError(f"{path}: name-map row {index} must be an object")
+        typed_row = cast(dict[str, Any], row)
+        program = str(typed_row.get("program", ""))
+        address = parse_int(typed_row["address"])
+        key = (program, address)
+        if key in seen:
+            raise ValueError(
+                f"{path}: duplicate name-map entry for {program}:0x{address:x} "
+                f"at rows {seen[key]} and {index}",
+            )
+        seen[key] = index
+        rows.append(typed_row)
+    return tuple(rows)
 
 
 def default_image_path(image: str = DEFAULT_IMAGE_NAME) -> Path:
@@ -410,7 +435,7 @@ def load_reference_catalog(
                 if name not in names.setdefault(address, []):
                     names[address].append(name)
     if name_map_path is not None and name_map_path.exists():
-        for entry in json.loads(name_map_path.read_text(encoding="utf-8")):
+        for entry in load_name_map_rows(name_map_path):
             if entry.get("program") != manifest.image_name:
                 continue
             address = parse_int(entry["address"])
@@ -470,7 +495,7 @@ def load_function_manifest(
     included_library_addresses: set[int] = set()
     created_rows: list[dict[str, Any]] = []
     if name_map_path is not None and name_map_path.exists():
-        name_rows = json.loads(name_map_path.read_text(encoding="utf-8"))
+        name_rows = load_name_map_rows(name_map_path)
         for row in name_rows:
             if row.get("program") != resolved_image_name:
                 continue
