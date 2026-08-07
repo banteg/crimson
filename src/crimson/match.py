@@ -3027,6 +3027,7 @@ class ScratchConfig:
     archive_sha256: str | None = None
     import_thunk: str | None = None
     auto_inline_off: tuple[str, ...] = ()
+    include_overlay: Path | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -3569,7 +3570,7 @@ def _scratch_build_key(
                 for path in dependencies
             ],
         }
-    return {
+    key: dict[str, Any] = {
         "compiler": config.compiler,
         "argv": list(_scratch_compile_argv(config, match_root)),
         "auto_inline_off": list(config.auto_inline_off),
@@ -3578,6 +3579,9 @@ def _scratch_build_key(
             for path in dependencies
         ],
     }
+    if config.include_overlay is not None:
+        key["include_overlay"] = str(config.include_overlay.resolve())
+    return key
 
 
 def _scratch_profile_digest(config: ScratchConfig) -> str:
@@ -3609,6 +3613,8 @@ def _scratch_profile_digest(config: ScratchConfig) -> str:
             "end_va": config.end_va,
             "symbol": config.symbol,
         }
+        if config.include_overlay is not None:
+            payload["include_overlay"] = str(config.include_overlay.resolve())
     encoded = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
     return hashlib.sha256(encoded).hexdigest()[:16]
 
@@ -3879,10 +3885,17 @@ def compile_scratch(
         temp_source = temp_dir / Path(config.source).name
         temp_obj = temp_dir / obj_name
         temp_source.write_bytes(staged_source_text.encode("latin1"))
+        environment: dict[str, str] = dict(os.environ)
+        environment["MSVC_VER"] = config.compiler
+        environment.pop("CRIMSON_MATCH_INCLUDE_OVERLAY", None)
+        if config.include_overlay is not None:
+            environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(
+                config.include_overlay.resolve(),
+            )
         completed = subprocess.run(
             command,
             cwd=temp_dir,
-            env={**os.environ, "MSVC_VER": config.compiler},
+            env=environment,
             capture_output=True,
             text=True,
             check=False,
@@ -4021,8 +4034,9 @@ def evaluate_source_overlay(
     source_text: str,
     *,
     match_root: Path = DEFAULT_MATCH_ROOT,
+    source_path: Path | None = None,
 ) -> ScratchStatus:
-    """Evaluate one temporary source overlay without touching the scratch."""
+    """Evaluate one temporary source or included-header overlay."""
 
     import tempfile
 
@@ -4030,17 +4044,48 @@ def evaluate_source_overlay(
         raise ValueError("source overlays are unavailable for non-source scratches")
     match_root = match_root.resolve()
     source_name = Path(config.source).name
+    configured_source_path = (config.directory / config.source).resolve()
+    overlay_source_path = (source_path or configured_source_path).resolve()
+    if overlay_source_path == configured_source_path:
+        overlay_relative_path = Path(source_name)
+    else:
+        overlay_relative_path = next(
+            (
+                overlay_source_path.relative_to(root)
+                for root in (config.directory.resolve(), match_root / "include")
+                if overlay_source_path.is_relative_to(root)
+            ),
+            None,
+        )
+        if overlay_relative_path is None:
+            raise ValueError(
+                "overlay source must be the configured scratch source, a scratch-local file, "
+                "or a file under the match include directory",
+            )
     with tempfile.TemporaryDirectory(prefix=f"crimson-match-probe-{config.directory.name}-") as temp_name:
         shadow_directory = Path(temp_name)
         (shadow_directory / "scratch.conf").write_text(
             (config.directory / "scratch.conf").read_text(encoding="utf-8"),
             encoding="utf-8",
         )
-        (shadow_directory / source_name).write_text(source_text, encoding="utf-8")
+        shadow_source_path = shadow_directory / source_name
+        if overlay_source_path != configured_source_path:
+            shadow_source_path.write_text(
+                configured_source_path.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+        shadow_overlay_path = shadow_directory / overlay_relative_path
+        shadow_overlay_path.parent.mkdir(parents=True, exist_ok=True)
+        shadow_overlay_path.write_text(source_text, encoding="utf-8")
         shadow_config = replace(
             config,
             directory=shadow_directory,
             source=source_name,
+            include_overlay=(
+                shadow_directory
+                if overlay_source_path != configured_source_path
+                else None
+            ),
         )
         return evaluate_scratch(shadow_config, match_root)
 

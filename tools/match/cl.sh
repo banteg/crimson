@@ -60,6 +60,10 @@ fi
 INCLUDE="Z:$(echo "$MSVC_ROOT/Include" | tr '/' '\\')"
 INCLUDE="$INCLUDE;Z:$(echo "$MATCH_ROOT/include" | tr '/' '\\')"
 INCLUDE="$INCLUDE;Z:$(echo "$REPO_ROOT/third_party/headers" | tr '/' '\\')"
+if [ -n "${CRIMSON_MATCH_INCLUDE_OVERLAY:-}" ]; then
+    OVERLAY_INCLUDE="Z:$(echo "$CRIMSON_MATCH_INCLUDE_OVERLAY" | tr '/' '\\')"
+    INCLUDE="$OVERLAY_INCLUDE;$INCLUDE"
+fi
 export INCLUDE
 
 CL_EXE="$MSVC_ROOT/Bin/CL.EXE"

@@ -475,6 +475,20 @@ uv run crimson match mutate tools/match/scratches/player_update \
   --stop-on-improvement --record --json
 ```
 
+By default the plan mutates the configured scratch source. Pass `--source`
+when the recovered implementation lives in a scratch-local header or under
+`tools/match/include`; the selected file is shadowed ahead of the canonical
+include roots while the configured translation unit remains unchanged:
+
+```sh
+uv run crimson match mutate tools/match/scratches/config_init_defaults \
+  --spec tools/match/scratches/config_init_defaults/saved-name-loop-lifetime-mutations.json \
+  --source tools/match/include/crimson_config_defaults_impl.h --record
+```
+
+Recorded sweeps include the absolute `mutation_source` so include-backed
+experiments remain distinguishable from ordinary top-level-source sweeps.
+
 Every variant builds in an isolated temporary scratch and is ranked by the
 canonical match score, exact/reference-clean state, prefix, and instruction
 shape. Time budgets are soft: the current batch finishes, then no more variants

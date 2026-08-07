@@ -179,8 +179,10 @@ def test_mutation_sweep_evaluates_baseline_once_and_ranks_variants(
         source_text: str,
         *,
         match_root: Path,
+        source_path: Path | None,
     ) -> ScratchStatus:
         del match_root
+        assert source_path == tmp_path / "shared.h"
         ratio = 0.75 if "y + x" in source_text else 0.6
         return _status(replace(profile, directory=Path("/tmp/shadow")), ratio)
 
@@ -191,6 +193,7 @@ def test_mutation_sweep_evaluates_baseline_once_and_ranks_variants(
         config,
         spec,
         source_text="int value = x + y;\n",
+        source_path=tmp_path / "shared.h",
         jobs=1,
         stop_on_improvement=True,
     )
@@ -272,6 +275,8 @@ def test_mutate_cli_writes_only_an_improving_winner(
     scratch.mkdir()
     source = scratch / "scratch.cpp"
     source.write_text("int value = x + y;\n", encoding="utf-8")
+    included_source = scratch / "shared_impl.h"
+    included_source.write_text("int value = x + y;\n", encoding="utf-8")
     (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
     spec_path = tmp_path / "mutations.json"
     _write_spec(spec_path)
@@ -336,6 +341,8 @@ def test_mutate_cli_writes_only_an_improving_winner(
             str(scratch),
             "--spec",
             str(spec_path),
+            "--source",
+            str(included_source),
             "--write-best",
             str(output),
             "--record",
@@ -349,6 +356,7 @@ def test_mutate_cli_writes_only_an_improving_winner(
     payload = json.loads(completed.output)
     assert payload["best_improves"] is True
     assert payload["best_source_written_to"] == str(output)
+    assert payload["mutation_source"] == str(included_source)
     assert payload["recorded_to"] == str(scratch / "experiments.jsonl")
     assert payload["coverage_by_changes"][1] == {
         "changes": 2,

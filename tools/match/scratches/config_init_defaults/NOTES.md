@@ -107,3 +107,15 @@ VC6.0, 6.5, and 6.6 with `/GB`, `/G5`, `/Ob1`, explicit `/Ot`, `/Oa`, and
 `/Ow` all reproduce the same one-swap result. `/G6`, `/Os`, `/Op`, `/Oy-`,
 the processor-pack compiler, and MSVC 7 regress. The remaining delta is
 therefore bounded as compiler scheduling rather than missing behavior.
+
+## Included-source lifetime sweep
+
+`saved-name-loop-lifetime-mutations.json` uses the mutation harness's included
+source overlay to evaluate all nine planned loop-scope, declaration-order,
+loop-form, and typed cursor variants directly against the shared
+`crimson_config_defaults_impl.h`. Five variants are byte-identical to the
+**99.29%**, 140/140, `83/0/0` baseline; the remaining four regress. No variant
+moves the native cursor-publication/order-offset swap in the required
+direction, so the canonical shared implementation remains unchanged. The
+complete run is recorded in `experiments.jsonl` with spec SHA-256
+`ccc9a6f77bc46718bbdb468315a53d0975843a586e442529b1f14e1edecf4144`.

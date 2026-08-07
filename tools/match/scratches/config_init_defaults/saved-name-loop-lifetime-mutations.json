@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "saved-name-loop-lifetime",
+      "find": "    i = 0;\n    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);\n    do {\n        *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + saved_order_offset) = i;\n        strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[i], \"default\");\n        saved_order_offset += sizeof(int);\n        ++i;\n    } while (saved_order_offset < (int)offsetof(crimson_cfg_t, saved_names));\n",
+      "replacements": [
+        {
+          "name": "offset-before-index",
+          "text": "    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);\n    i = 0;\n    do {\n        *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + saved_order_offset) = i;\n        strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[i], \"default\");\n        saved_order_offset += sizeof(int);\n        ++i;\n    } while (saved_order_offset < (int)offsetof(crimson_cfg_t, saved_names));\n"
+        },
+        {
+          "name": "scoped-index-then-offset",
+          "text": "    {\n        int slot = 0;\n        int order_offset = offsetof(crimson_cfg_t, saved_name_order);\n        do {\n            *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + order_offset) = slot;\n            strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[slot], \"default\");\n            order_offset += sizeof(int);\n            ++slot;\n        } while (order_offset < (int)offsetof(crimson_cfg_t, saved_names));\n    }\n"
+        },
+        {
+          "name": "scoped-offset-then-index",
+          "text": "    {\n        int order_offset = offsetof(crimson_cfg_t, saved_name_order);\n        int slot = 0;\n        do {\n            *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + order_offset) = slot;\n            strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[slot], \"default\");\n            order_offset += sizeof(int);\n            ++slot;\n        } while (order_offset < (int)offsetof(crimson_cfg_t, saved_names));\n    }\n"
+        },
+        {
+          "name": "scoped-for-loop",
+          "text": "    {\n        int slot = 0;\n        for (\n            int order_offset = offsetof(crimson_cfg_t, saved_name_order);\n            order_offset < (int)offsetof(crimson_cfg_t, saved_names);\n            order_offset += sizeof(int)) {\n            *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + order_offset) = slot;\n            strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[slot], \"default\");\n            ++slot;\n        }\n    }\n"
+        },
+        {
+          "name": "loop-local-name-pointer",
+          "text": "    i = 0;\n    saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);\n    do {\n        char *saved_name = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[i];\n        *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + saved_order_offset) = i;\n        strcpy(saved_name, \"default\");\n        saved_order_offset += sizeof(int);\n        ++i;\n    } while (saved_order_offset < (int)offsetof(crimson_cfg_t, saved_names));\n"
+        },
+        {
+          "name": "byte-name-cursor",
+          "text": "    {\n        int slot = 0;\n        int order_offset = offsetof(crimson_cfg_t, saved_name_order);\n        char *saved_name = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[0];\n        do {\n            *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + order_offset) = slot;\n            strcpy(saved_name, \"default\");\n            saved_name += sizeof(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[0]);\n            order_offset += sizeof(int);\n            ++slot;\n        } while (order_offset < (int)offsetof(crimson_cfg_t, saved_names));\n    }\n"
+        },
+        {
+          "name": "typed-name-cursor",
+          "text": "    {\n        int slot = 0;\n        int order_offset = offsetof(crimson_cfg_t, saved_name_order);\n        char (*saved_name)[27] = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names;\n        do {\n            *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + order_offset) = slot;\n            strcpy(*saved_name, \"default\");\n            ++saved_name;\n            order_offset += sizeof(int);\n            ++slot;\n        } while (order_offset < (int)offsetof(crimson_cfg_t, saved_names));\n    }\n"
+        },
+        {
+          "name": "named-offset-bound",
+          "text": "    {\n        const int order_begin = offsetof(crimson_cfg_t, saved_name_order);\n        const int order_end = offsetof(crimson_cfg_t, saved_names);\n        int slot = 0;\n        int order_offset = order_begin;\n        do {\n            *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + order_offset) = slot;\n            strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[slot], \"default\");\n            order_offset += sizeof(int);\n            ++slot;\n        } while (order_offset < order_end);\n    }\n"
+        },
+        {
+          "name": "integer-order-cursor",
+          "text": "    {\n        int slot = 0;\n        int *order = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_name_order;\n        do {\n            *order = slot;\n            strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[slot], \"default\");\n            ++order;\n            ++slot;\n        } while ((char *)order < (char *)CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

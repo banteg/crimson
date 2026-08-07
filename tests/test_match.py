@@ -6,6 +6,7 @@ import struct
 import subprocess
 from dataclasses import replace
 from pathlib import Path
+from typing import cast
 
 import pytest
 from typer.testing import CliRunner
@@ -65,6 +66,7 @@ from crimson.match import (
     diff_regions,
     disassemble_normalized_function,
     evaluate_profile_matrix,
+    evaluate_source_overlay,
     evaluate_source_probe,
     extract_object_function,
     inspect_match_function,
@@ -3029,9 +3031,11 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
         note="",
     )
     commands: list[list[str]] = []
+    environments: list[dict[str, str]] = []
 
     def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         commands.append(command)
+        environments.append(cast(dict[str, str], kwargs["env"]))
         cwd = Path(str(kwargs["cwd"]))
         (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
@@ -3039,10 +3043,19 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     monkeypatch.setattr(subprocess, "run", fake_run)
     monkeypatch.chdir(tmp_path)
 
-    optimized = compile_scratch(config, Path("match"))
+    overlay = tmp_path / "overlay"
+    overlay.mkdir()
+    optimized = compile_scratch(
+        replace(config, include_overlay=overlay),
+        Path("match"),
+    )
     unoptimized = compile_scratch(replace(config, cflags="/Od"), Path("match"))
-    cached = compile_scratch(config, Path("match"))
-    forced = compile_scratch(config, Path("match"), force=True)
+    cached = compile_scratch(replace(config, include_overlay=overlay), Path("match"))
+    forced = compile_scratch(
+        replace(config, include_overlay=overlay),
+        Path("match"),
+        force=True,
+    )
 
     assert optimized != unoptimized
     assert optimized.parent != unoptimized.parent
@@ -3052,6 +3065,8 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert len(commands) == 3
     assert Path(commands[0][0]).is_absolute()
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
+    assert environments[0]["CRIMSON_MATCH_INCLUDE_OVERLAY"] == str(overlay)
+    assert "CRIMSON_MATCH_INCLUDE_OVERLAY" not in environments[1]
 
 
 def test_compile_scratch_stages_auto_inline_boundaries(
@@ -3308,6 +3323,67 @@ def test_source_probe_uses_temporary_shadow_without_touching_scratch(
     assert observed_directories[1] != scratch
     assert not observed_directories[1].exists()
     assert "delta: match=+25.00% fuzzy=+25" in render_probe_result(result)
+
+
+def test_source_overlay_can_shadow_an_included_match_header(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    match_root = tmp_path / "match"
+    include_root = match_root / "include"
+    include_root.mkdir(parents=True)
+    header = include_root / "shared_impl.h"
+    header.write_text("baseline header\n", encoding="utf-8")
+    scratch = match_root / "scratches" / "foo"
+    scratch.mkdir(parents=True)
+    source = scratch / "scratch.cpp"
+    source.write_text('#include "shared_impl.h"\n', encoding="utf-8")
+    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
+    config = ScratchConfig(
+        directory=scratch,
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    observed: list[tuple[str, str]] = []
+
+    def fake_evaluate(probe_config: ScratchConfig, root: Path) -> ScratchStatus:
+        assert root == match_root.resolve()
+        observed.append(
+            (
+                (probe_config.directory / probe_config.source).read_text(encoding="utf-8"),
+                (probe_config.directory / "shared_impl.h").read_text(encoding="utf-8"),
+            ),
+        )
+        return ScratchStatus(
+            config=probe_config,
+            address=0x401000,
+            target_size=10,
+            ratio=0.75,
+            prefix_instructions=2,
+            target_instructions=4,
+            candidate_instructions=4,
+            error=None,
+        )
+
+    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+
+    status = evaluate_source_overlay(
+        config,
+        "variant header\n",
+        source_path=header,
+        match_root=match_root,
+    )
+
+    assert status.ratio == 0.75
+    assert observed == [('#include "shared_impl.h"\n', "variant header\n")]
+    assert source.read_text(encoding="utf-8") == '#include "shared_impl.h"\n'
+    assert header.read_text(encoding="utf-8") == "baseline header\n"
 
 
 def test_probe_command_records_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

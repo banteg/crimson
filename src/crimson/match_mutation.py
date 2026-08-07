@@ -338,6 +338,7 @@ def evaluate_mutation_sweep(
     spec: MutationSpec,
     *,
     source_text: str,
+    source_path: Path | None = None,
     match_root: Path = matchlib.DEFAULT_MATCH_ROOT,
     compiler: str | None = None,
     cflags: str | None = None,
@@ -369,6 +370,7 @@ def evaluate_mutation_sweep(
             profile,
             variant.source_text,
             match_root=match_root,
+            source_path=source_path,
         )
         return MutationEvaluation(variant=variant, status=status, baseline=baseline)
 

@@ -596,6 +596,11 @@ def cmd_match_probe(
 def cmd_match_mutate(
     directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),
     spec: Path = typer.Option(..., "--spec", help="JSON mutation plan"),
+    source: Path | None = typer.Option(
+        None,
+        "--source",
+        help="scratch source or included match header to mutate (default: configured source)",
+    ),
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
     compiler: str | None = typer.Option(None, "--compiler", help="profile used for baseline and variants"),
     cflags: str | None = typer.Option(None, "--cflags", help="flags used for baseline and variants"),
@@ -627,18 +632,19 @@ def cmd_match_mutate(
     record: bool = typer.Option(False, "--record", help="append the complete sweep to experiments.jsonl"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
 ) -> None:
-    """Compile and rank bounded source mutations without touching the scratch."""
+    """Compile and rank bounded source mutations without touching tracked files."""
     try:
         config = matchlib.load_scratch_config(directory.resolve())
         mutation_spec = match_mutation.load_mutation_spec(spec.resolve())
-        source_path = (config.directory / config.source).resolve()
+        source_path = source.resolve() if source is not None else (config.directory / config.source).resolve()
         if write_best is not None and write_best.resolve() == source_path:
-            raise ValueError("--write-best cannot overwrite the tracked scratch source")
+            raise ValueError("--write-best cannot overwrite the mutated source")
         source_text = source_path.read_text(encoding="utf-8")
         sweep = match_mutation.evaluate_mutation_sweep(
             config,
             mutation_spec,
             source_text=source_text,
+            source_path=source_path,
             match_root=match_root,
             compiler=compiler,
             cflags=cflags,
@@ -666,6 +672,7 @@ def cmd_match_mutate(
             "kind": "mutation-sweep",
             "recorded_at": datetime.now(UTC).isoformat(),
             "best_source_written_to": written_to,
+            "mutation_source": str(source_path),
             **match_mutation.mutation_sweep_payload(sweep),
         }
         with record_path.open("a", encoding="utf-8") as handle:
@@ -675,6 +682,7 @@ def cmd_match_mutate(
     if as_json:
         payload = match_mutation.mutation_sweep_payload(sweep, limit=top)
         payload["best_source_written_to"] = written_to
+        payload["mutation_source"] = str(source_path)
         payload["recorded_to"] = recorded_to
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
