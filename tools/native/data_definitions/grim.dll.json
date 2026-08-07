@@ -734,6 +734,16 @@
       "initializer_source": "libpng 1.0.5 PNG signature; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at VA 0x1004e51c"
     },
     {
+      "address": "0x1004e5cc",
+      "name": "grim_dxt1_optimize_epsilon",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: const float; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "initializer_hex": "00008037",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at VA 0x1004e5cc"
+    },
+    {
       "address": "0x1004fe74",
       "name": "c_dfDIJoystick2",
       "size": 24,
@@ -982,6 +992,16 @@
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
       "initializer_hex": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005d3f4"
+    },
+    {
+      "address": "0x1005db70",
+      "name": "fpu_control_word_saved_dxt",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: DirectX 8.1 g_ulFPU unsigned long; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005db70"
     }
   ],
   "groups": [
@@ -1262,16 +1282,18 @@
     },
     {
       "name": "literal-dxt-float3-0000c",
-      "types": ["float[3]"],
+      "types": ["float[3]", "const float[3]"],
       "size": 12,
-      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT1 weight tables; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
+      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT weight vectors; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "member_initializer_hex": true,
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at each member VA",
       "members": [
         ["0x1004e5f4", "grim_dxt1_color_weights_max_3", "000000000000003f0000803f"],
-        ["0x1004e600", "grim_dxt1_color_weights_min_3", "0000803f0000003f00000000"]
+        ["0x1004e600", "grim_dxt1_color_weights_min_3", "0000803f0000003f00000000"],
+        ["0x100544c0", "grim_dxt_luminance_weights", "3015983e0000803f3467ce3d"],
+        ["0x100544d0", "grim_dxt_luminance_inverse", "2e7657400000803fddc11e41"]
       ]
     },
     {
@@ -1494,8 +1516,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
       "members": [
-        ["0x1005db6c", "fpu_control_word_saved_ftol"],
-        ["0x1005db70", "fpu_control_word_saved_dxt"]
+        ["0x1005db6c", "fpu_control_word_saved_ftol"]
       ]
     },
     {

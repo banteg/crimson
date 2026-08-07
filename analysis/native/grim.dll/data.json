@@ -1,5 +1,5 @@
 {
-  "audit_digest": "dcef27736f283932d4b72d62b123f5b07fd7053d0974e6979ce107197dba8f68",
+  "audit_digest": "6a6a7930d5446d8c7566003ec98cda31cfd6105fd3a73f733dc98eafd1718060",
   "entries": [
     {
       "address": 268747320,
@@ -2467,7 +2467,9 @@
     },
     {
       "address": 268756316,
-      "aliases": [],
+      "aliases": [
+        "?pD8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT5 alpha optimization: max-endpoint weights for 8-alpha mode.",
@@ -2487,7 +2489,9 @@
     },
     {
       "address": 268756348,
-      "aliases": [],
+      "aliases": [
+        "?pC8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT5 alpha optimization: min-endpoint weights for 8-alpha mode.",
@@ -2507,7 +2511,9 @@
     },
     {
       "address": 268756380,
-      "aliases": [],
+      "aliases": [
+        "?pD6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT5 alpha optimization: max-endpoint weights for 6-alpha mode.",
@@ -2527,7 +2533,9 @@
     },
     {
       "address": 268756404,
-      "aliases": [],
+      "aliases": [
+        "?pC6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT5 alpha optimization: min-endpoint weights for 6-alpha mode.",
@@ -2546,8 +2554,31 @@
       "type": "float[6]"
     },
     {
+      "address": 268756428,
+      "aliases": [
+        "?fEpsilon@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4MB"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "comment": "DirectX 8.1 OptimizeRGB convergence epsilon.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00008037",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at VA 0x1004e5cc",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_dxt1_optimize_epsilon",
+      "section": ".rdata",
+      "section_offset": 9232,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: const float; tools/native/abi/grim.dll/abi_assertions.cpp: float_is_32_bit",
+      "type": "const float"
+    },
+    {
       "address": 268756436,
-      "aliases": [],
+      "aliases": [
+        "?pD4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT1 color optimization: max-endpoint weights for 4-color mode.",
@@ -2567,7 +2598,9 @@
     },
     {
       "address": 268756452,
-      "aliases": [],
+      "aliases": [
+        "?pC4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT1 color optimization: min-endpoint weights for 4-color mode.",
@@ -2587,7 +2620,9 @@
     },
     {
       "address": 268756468,
-      "aliases": [],
+      "aliases": [
+        "?pD3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT1 color optimization: max-endpoint weights for 3-color mode.",
@@ -2602,12 +2637,14 @@
       "section_offset": 9272,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 12,
-      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT1 weight tables; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
+      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT weight vectors; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
       "type": "float[3]"
     },
     {
       "address": 268756480,
-      "aliases": [],
+      "aliases": [
+        "?pC3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "DXT1 color optimization: min-endpoint weights for 3-color mode.",
@@ -2622,12 +2659,14 @@
       "section_offset": 9284,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 12,
-      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT1 weight tables; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
+      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT weight vectors; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
       "type": "float[3]"
     },
     {
       "address": 268756496,
-      "aliases": [],
+      "aliases": [
+        "?pSteps4@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
       "comment": "DXT1 index mapping table for 4-color mode.",
@@ -2647,7 +2686,9 @@
     },
     {
       "address": 268756512,
-      "aliases": [],
+      "aliases": [
+        "?pSteps3@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
       "comment": "DXT1 index mapping table for 3-color mode.",
@@ -2667,7 +2708,9 @@
     },
     {
       "address": 268756540,
-      "aliases": [],
+      "aliases": [
+        "?pSteps8@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
       "comment": "DXT5 alpha index mapping table for 8-alpha mode.",
@@ -2687,7 +2730,9 @@
     },
     {
       "address": 268756572,
-      "aliases": [],
+      "aliases": [
+        "?pSteps6@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
       "comment": "DXT5 alpha index mapping table for 6-alpha mode.",
@@ -3697,6 +3742,50 @@
       "size": 128,
       "size_source": "analysis/ghidra/maps/data_map.json: 32-entry neutral dither pattern; tools/native/abi/grim.dll/abi_assertions.cpp: dither_pattern_is_0x80",
       "type": "float[32]"
+    },
+    {
+      "address": 268780736,
+      "aliases": [
+        "_g_Luminance"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "comment": "DirectX 8.1 DXT luminance weights used while optimizing and encoding color endpoints.",
+      "definition_group": "literal-dxt-float3-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "3015983e0000803f3467ce3d",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_dxt_luminance_weights",
+      "section": ".data",
+      "section_offset": 5312,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 12,
+      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT weight vectors; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
+      "type": "const float[3]"
+    },
+    {
+      "address": 268780752,
+      "aliases": [
+        "_g_LuminanceInv"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
+      "comment": "DirectX 8.1 reciprocal DXT luminance weights used to reconstruct optimized RGB endpoints.",
+      "definition_group": "literal-dxt-float3-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "2e7657400000803fddc11e41",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_dxt_luminance_inverse",
+      "section": ".data",
+      "section_offset": 5328,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 12,
+      "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT weight vectors; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
+      "type": "const float[3]"
     },
     {
       "address": 268784872,
@@ -7696,24 +7785,24 @@
     },
     {
       "address": 268819312,
-      "aliases": [],
-      "alignment": 2,
-      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_short_alignment_is_two",
-      "comment": "Saved x87 FPU control word used by DXT encode helpers (fnstcw/fldcw).",
-      "definition_group": "zero-ushort16",
+      "aliases": [
+        "_g_ulFPU"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
+      "comment": "Four-byte DirectX 8.1 g_ulFPU slot whose low word stores the x87 control word used by DXT encode helpers.",
       "definition_state": "fully-specified",
-      "initializer_fill": "00",
-      "initializer_hex": null,
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x1005db70",
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "fpu_control_word_saved_dxt",
       "section": ".data",
       "section_offset": 43888,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
-      "size": 2,
-      "size_source": "analysis/ghidra/maps/data_map.json: recovered unsigned-short FPU control words; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_short_is_16_bit",
-      "type": "unsigned short"
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: DirectX 8.1 g_ulFPU unsigned long; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "type": "unsigned long"
     }
   ],
   "image": "grim.dll",
@@ -7728,9 +7817,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "ed435c6b039eeeac2c076e4ab8e009f3de65c0ca7ad92c9ed3c913d77bd83bbe",
+    "data_map_sha256": "93524848321fd7adc9e7fd772fab98dee30c82cbbb590beef828d06472827ebe",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
+    "definitions_sha256": "be9116c53f2f2820cb2557e176b83cf12c95823c6951d8dec7b835862e1c6004",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -7739,17 +7828,17 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 17,
-    "alias_rows": 17,
+    "alias_names": 33,
+    "alias_rows": 33,
     "code_label_entries": 3,
-    "definition_group_entries": 214,
+    "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 317,
-    "explicit_alignment_entries": 283,
-    "explicit_initializer_entries": 283,
-    "explicit_size_entries": 283,
-    "fixed_array_types": 100,
-    "fully_specified_entries": 283,
+    "entry_count": 320,
+    "explicit_alignment_entries": 286,
+    "explicit_initializer_entries": 286,
+    "explicit_size_entries": 286,
+    "fixed_array_types": 102,
+    "fully_specified_entries": 286,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -7757,12 +7846,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 215,
-      ".rdata": 102
+      ".data": 217,
+      ".rdata": 103
     },
-    "source_entry_count": 320,
-    "typed_entries": 267,
-    "unique_addresses": 317,
+    "source_entry_count": 323,
+    "typed_entries": 270,
+    "unique_addresses": 320,
     "untyped_entries": 50
   }
 }

@@ -10880,6 +10880,7 @@
     },
     {
       "address": "0x1004e55c",
+      "aliases": ["?pD8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
       "comment": "DXT5 alpha optimization: max-endpoint weights for 8-alpha mode.",
       "name": "grim_dxt5_alpha_weights_max_8",
       "program": "grim.dll",
@@ -10887,6 +10888,7 @@
     },
     {
       "address": "0x1004e57c",
+      "aliases": ["?pC8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
       "comment": "DXT5 alpha optimization: min-endpoint weights for 8-alpha mode.",
       "name": "grim_dxt5_alpha_weights_min_8",
       "program": "grim.dll",
@@ -10894,6 +10896,7 @@
     },
     {
       "address": "0x1004e59c",
+      "aliases": ["?pD6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
       "comment": "DXT5 alpha optimization: max-endpoint weights for 6-alpha mode.",
       "name": "grim_dxt5_alpha_weights_max_6",
       "program": "grim.dll",
@@ -10901,13 +10904,23 @@
     },
     {
       "address": "0x1004e5b4",
+      "aliases": ["?pC6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
       "comment": "DXT5 alpha optimization: min-endpoint weights for 6-alpha mode.",
       "name": "grim_dxt5_alpha_weights_min_6",
       "program": "grim.dll",
       "type": "float[6]"
     },
     {
+      "address": "0x1004e5cc",
+      "aliases": ["?fEpsilon@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4MB"],
+      "comment": "DirectX 8.1 OptimizeRGB convergence epsilon.",
+      "name": "grim_dxt1_optimize_epsilon",
+      "program": "grim.dll",
+      "type": "const float"
+    },
+    {
       "address": "0x1004e5d4",
+      "aliases": ["?pD4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
       "comment": "DXT1 color optimization: max-endpoint weights for 4-color mode.",
       "name": "grim_dxt1_color_weights_max_4",
       "program": "grim.dll",
@@ -10915,6 +10928,7 @@
     },
     {
       "address": "0x1004e5e4",
+      "aliases": ["?pC4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
       "comment": "DXT1 color optimization: min-endpoint weights for 4-color mode.",
       "name": "grim_dxt1_color_weights_min_4",
       "program": "grim.dll",
@@ -10922,6 +10936,7 @@
     },
     {
       "address": "0x1004e5f4",
+      "aliases": ["?pD3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
       "comment": "DXT1 color optimization: max-endpoint weights for 3-color mode.",
       "name": "grim_dxt1_color_weights_max_3",
       "program": "grim.dll",
@@ -10929,6 +10944,7 @@
     },
     {
       "address": "0x1004e600",
+      "aliases": ["?pC3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
       "comment": "DXT1 color optimization: min-endpoint weights for 3-color mode.",
       "name": "grim_dxt1_color_weights_min_3",
       "program": "grim.dll",
@@ -10936,6 +10952,7 @@
     },
     {
       "address": "0x1004e610",
+      "aliases": ["?pSteps4@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"],
       "comment": "DXT1 index mapping table for 4-color mode.",
       "name": "grim_dxt1_index_map_4color",
       "program": "grim.dll",
@@ -10943,6 +10960,7 @@
     },
     {
       "address": "0x1004e620",
+      "aliases": ["?pSteps3@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"],
       "comment": "DXT1 index mapping table for 3-color mode.",
       "name": "grim_dxt1_index_map_3color",
       "program": "grim.dll",
@@ -10950,6 +10968,7 @@
     },
     {
       "address": "0x1004e63c",
+      "aliases": ["?pSteps8@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"],
       "comment": "DXT5 alpha index mapping table for 8-alpha mode.",
       "name": "grim_dxt5_alpha_index_map_8",
       "program": "grim.dll",
@@ -10957,10 +10976,27 @@
     },
     {
       "address": "0x1004e65c",
+      "aliases": ["?pSteps6@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"],
       "comment": "DXT5 alpha index mapping table for 6-alpha mode.",
       "name": "grim_dxt5_alpha_index_map_6",
       "program": "grim.dll",
       "type": "unsigned int[6]"
+    },
+    {
+      "address": "0x100544c0",
+      "aliases": ["_g_Luminance"],
+      "comment": "DirectX 8.1 DXT luminance weights used while optimizing and encoding color endpoints.",
+      "name": "grim_dxt_luminance_weights",
+      "program": "grim.dll",
+      "type": "const float[3]"
+    },
+    {
+      "address": "0x100544d0",
+      "aliases": ["_g_LuminanceInv"],
+      "comment": "DirectX 8.1 reciprocal DXT luminance weights used to reconstruct optimized RGB endpoints.",
+      "name": "grim_dxt_luminance_inverse",
+      "program": "grim.dll",
+      "type": "const float[3]"
     },
     {
       "address": "0x1004fe74",
@@ -12443,10 +12479,11 @@
     },
     {
       "address": "0x1005db70",
-      "comment": "Saved x87 FPU control word used by DXT encode helpers (fnstcw/fldcw).",
+      "aliases": ["_g_ulFPU"],
+      "comment": "Four-byte DirectX 8.1 g_ulFPU slot whose low word stores the x87 control word used by DXT encode helpers.",
       "name": "fpu_control_word_saved_dxt",
       "program": "grim.dll",
-      "type": "unsigned short"
+      "type": "unsigned long"
     },
     {
       "address": "0x0042b556",
