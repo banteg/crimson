@@ -1,5 +1,5 @@
 {
-  "audit_digest": "4d44446a5c103ef105f9a8df6b9454ea84edcef872c007316e27c1185bbe3dfb",
+  "audit_digest": "b1dbe1a9dc8beec62ea7029f5231f7e1600e1d6dd0acb536d66450fabe8ed960",
   "entries": [
     {
       "address": 268747320,
@@ -2719,6 +2719,84 @@
       "type": "const int[7]"
     },
     {
+      "address": 268757704,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 vertical pass starting rows.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "png_pass_ystart",
+      "section": ".rdata",
+      "section_offset": 10508,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const int[7]"
+    },
+    {
+      "address": 268757732,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 vertical pass increments.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "png_pass_yinc",
+      "section": ".rdata",
+      "section_offset": 10536,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const int[7]"
+    },
+    {
+      "address": 268757760,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed libpng 1.0.5 IDAT chunk name constant.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "png_IDAT",
+      "section": ".rdata",
+      "section_offset": 10564,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const png_byte[5]"
+    },
+    {
+      "address": 268758928,
+      "aliases": [
+        "crc_table"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Archive-confirmed zlib 1.1.3 CRC-32 lookup table embedded in the D3DX image codec provider.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_zlib_crc_table",
+      "section": ".rdata",
+      "section_offset": 11732,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const unsigned long[256]"
+    },
+    {
       "address": 268760528,
       "aliases": [],
       "alignment": null,
@@ -2967,6 +3045,48 @@
       "size": 16,
       "size_source": "third_party/headers/dinput.h: DirectInput GUID declarations; tools/native/abi/grim.dll/abi_assertions.cpp: guid_is_0x10",
       "type": "GUID"
+    },
+    {
+      "address": 268764480,
+      "aliases": [
+        "first_pool_slop"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "JAZ provider IJG 6a initial allocation slop for permanent and image pools.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_jpeg_first_pool_slop",
+      "section": ".rdata",
+      "section_offset": 17284,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const size_t[2]"
+    },
+    {
+      "address": 268764488,
+      "aliases": [
+        "extra_pool_slop"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "JAZ provider IJG 6a subsequent allocation slop for permanent and image pools.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_jpeg_extra_pool_slop",
+      "section": ".rdata",
+      "section_offset": 17292,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const size_t[2]"
     },
     {
       "address": 268765264,
@@ -7581,7 +7701,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "572d2755c8f08a8bb9d5a7a346d60ca2aa967a2b284fd143eaef9cd83763859b",
+    "data_map_sha256": "e8af6cf368501567f86f57009766407363121f9bc769b0b39328cbaca9ca2b7f",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7592,16 +7712,16 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 10,
-    "alias_rows": 10,
+    "alias_names": 13,
+    "alias_rows": 13,
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 310,
+    "entry_count": 316,
     "explicit_alignment_entries": 283,
     "explicit_initializer_entries": 283,
     "explicit_size_entries": 283,
-    "fixed_array_types": 93,
+    "fixed_array_types": 99,
     "fully_specified_entries": 283,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -7611,11 +7731,11 @@
     "referenced_entries": 0,
     "section_counts": {
       ".data": 215,
-      ".rdata": 95
+      ".rdata": 101
     },
-    "source_entry_count": 313,
-    "typed_entries": 260,
-    "unique_addresses": 310,
+    "source_entry_count": 319,
+    "typed_entries": 266,
+    "unique_addresses": 316,
     "untyped_entries": 50
   }
 }
