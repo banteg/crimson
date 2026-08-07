@@ -1,5 +1,5 @@
 {
-  "audit_digest": "1285cfdee0d1070338d4e1fa8175e5712ba54244223514587c08283d9eab1dbb",
+  "audit_digest": "7be4b858a668d91413119badc980aabbdb927b3b5fbf0b510030d5dbfd70e0c2",
   "entries": [
     {
       "address": 268747320,
@@ -9918,6 +9918,25 @@
       "type": "unsigned long"
     },
     {
+      "address": 268819328,
+      "aliases": [],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "Exact 32-byte zero-initialized .bss section from the pinned DirectX 8.1 d3dxmathsse.obj archive member.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse_math_bss",
+      "section": ".data",
+      "section_offset": 43904,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "unsigned char[32]"
+    },
+    {
       "address": 268819360,
       "aliases": [],
       "alignment": null,
@@ -10204,7 +10223,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "b7058658ec10a74d2c6a4d424bf66ebfa3ca94122d9f7ae9ee7314acca1aee80",
+    "data_map_sha256": "efeb57d51ca085381ec0cef4f7366ed73d465ef847bcac7ea16417ec26c4e580",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55",
     "reference_image": {
@@ -10220,11 +10239,11 @@
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 440,
+    "entry_count": 441,
     "explicit_alignment_entries": 349,
     "explicit_initializer_entries": 349,
     "explicit_size_entries": 349,
-    "fixed_array_types": 166,
+    "fixed_array_types": 167,
     "fully_specified_entries": 349,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -10233,13 +10252,13 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 290,
+      ".data": 291,
       ".data1": 6,
       ".rdata": 144
     },
-    "source_entry_count": 443,
-    "typed_entries": 390,
-    "unique_addresses": 440,
+    "source_entry_count": 444,
+    "typed_entries": 391,
+    "unique_addresses": 441,
     "untyped_entries": 50
   }
 }

@@ -13735,6 +13735,13 @@
       "type": "void (__cdecl *)(int)"
     },
     {
+      "address": "0x1005db80",
+      "comment": "Exact 32-byte zero-initialized .bss section from the pinned DirectX 8.1 d3dxmathsse.obj archive member.",
+      "name": "d3dx_sse_math_bss",
+      "program": "grim.dll",
+      "type": "unsigned char[32]"
+    },
+    {
       "address": "0x1005dba0",
       "comment": "Zero-initialized packed constant used by the IJG 6a MMX YCbCr-to-RGB kernel.",
       "name": "d3dx_jpeg_mmx_zero",

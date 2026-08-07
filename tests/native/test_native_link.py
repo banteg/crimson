@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 443
+    assert payload["summary"]["source_entry_count"] == 444
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 440
-    assert payload["summary"]["typed_entries"] == 390
+    assert payload["summary"]["entry_count"] == 441
+    assert payload["summary"]["typed_entries"] == 391
     assert payload["summary"]["explicit_size_entries"] == 349
     assert payload["summary"]["explicit_alignment_entries"] == 349
     assert payload["summary"]["explicit_initializer_entries"] == 349
@@ -2270,6 +2270,7 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["d3dx_sse2_quaternion_vectors"]["type"] == "unsigned char[160]"
     assert observed["d3dx_sse_trig_constants"]["type"] == "unsigned char[736]"
     assert observed["d3dx_sse2_trig_table"]["type"] == "unsigned char[768]"
+    assert observed["d3dx_sse_math_bss"]["type"] == "unsigned char[32]"
     assert observed["d3dx_x87_math_pi_over_4_head_tail"]["type"] == "uint64_t"
     assert observed["d3dx_x87_math_sign"]["type"] == "uint32_t"
     assert observed["d3dx_rsqrt_half_vector"]["type"] == "float[4]"
