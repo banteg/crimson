@@ -11005,6 +11005,26 @@
       "type": "GUID"
     },
     {
+      "address": "0x10050540",
+      "aliases": [
+        "first_pool_slop"
+      ],
+      "comment": "JAZ provider IJG 6a initial allocation slop for permanent and image pools.",
+      "name": "grim_jpeg_first_pool_slop",
+      "program": "grim.dll",
+      "type": "const size_t[2]"
+    },
+    {
+      "address": "0x10050548",
+      "aliases": [
+        "extra_pool_slop"
+      ],
+      "comment": "JAZ provider IJG 6a subsequent allocation slop for permanent and image pools.",
+      "name": "grim_jpeg_extra_pool_slop",
+      "program": "grim.dll",
+      "type": "const size_t[2]"
+    },
+    {
       "address": "0x10053044",
       "comment": "Base key-repeat delay used by grim_was_key_pressed (held repeat uses 20% of this value).",
       "name": "grim_key_repeat_delay",
