@@ -517,7 +517,7 @@ def _archive_reference_evidence(
             continue
 
         for entry in result.masked_operand_audit.entries:
-            if entry.status != "unresolved":
+            if entry.status not in {"unresolved", "mismatch"}:
                 continue
             if len(entry.candidate_references) != 1 or len(entry.target_references) != 1:
                 continue

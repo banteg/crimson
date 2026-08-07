@@ -112,7 +112,12 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     image_path.write_bytes(b"unused")
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(
-        '[{"address":"0x00401000","end":"0x00401006","name":"native_probe","size":6,"library":false}]',
+        "["
+        '{"address":"0x00401000","end":"0x00401006",'
+        '"name":"native_probe","size":6,"library":false},'
+        '{"address":"0x00401100","end":"0x00401101",'
+        '"name":"probe","size":1,"library":false}'
+        "]",
         encoding="utf-8",
     )
     metadata_path = tmp_path / "metadata.json"
