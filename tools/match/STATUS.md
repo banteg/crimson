@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 310 | 260 | 283 | 283 | 283 |
 
 Artifact freshness issues:
-- `grim.dll`: **stale** — 1 recorded file inputs changed or missing
+- `grim.dll`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
 

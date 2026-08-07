@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 313
+    assert payload["summary"]["source_entry_count"] == 316
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 310
-    assert payload["summary"]["typed_entries"] == 260
+    assert payload["summary"]["entry_count"] == 313
+    assert payload["summary"]["typed_entries"] == 263
     assert payload["summary"]["explicit_size_entries"] == 283
     assert payload["summary"]["explicit_alignment_entries"] == 283
     assert payload["summary"]["explicit_initializer_entries"] == 283
@@ -2289,6 +2289,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["d3dx_zlib_inflate_mask"]["type"] == "unsigned int[17]"
     assert observed["png_pass_start"]["type"] == "const int[7]"
     assert observed["png_pass_inc"]["type"] == "const int[7]"
+    assert observed["png_pass_ystart"]["type"] == "const int[7]"
+    assert observed["png_pass_yinc"]["type"] == "const int[7]"
+    assert observed["png_IDAT"]["type"] == "const png_byte[5]"
     assert observed["grim_window_proc_dc_flag"]["type"] == "unsigned char"
     assert observed["grim_window_proc_dc_flag"]["definition_state"] == "unknown"
     assert observed["grim_window_proc_paint_flag"]["type"] == "unsigned char"

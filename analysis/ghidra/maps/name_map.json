@@ -11130,6 +11130,16 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100258c8",
+    "name": "png_read_finish_row",
+    "aliases": [
+      "sub_100258c8"
+    ],
+    "signature": "void png_read_finish_row(png_structp png_ptr)",
+    "comment": "Archive-confirmed libpng 1.0.5 row completion, Adam7 pass advance, and IDAT drain"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002e65a",
     "name": "d3dx_jpeg_get_small",
     "aliases": [

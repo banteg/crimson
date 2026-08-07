@@ -12971,6 +12971,27 @@
       "type": "const int[7]"
     },
     {
+      "address": "0x1004eac8",
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 vertical pass starting rows.",
+      "name": "png_pass_ystart",
+      "program": "grim.dll",
+      "type": "const int[7]"
+    },
+    {
+      "address": "0x1004eae4",
+      "comment": "Archive-confirmed libpng 1.0.5 Adam7 vertical pass increments.",
+      "name": "png_pass_yinc",
+      "program": "grim.dll",
+      "type": "const int[7]"
+    },
+    {
+      "address": "0x1004eb00",
+      "comment": "Archive-confirmed libpng 1.0.5 IDAT chunk name constant.",
+      "name": "png_IDAT",
+      "program": "grim.dll",
+      "type": "const png_byte[5]"
+    },
+    {
       "address": "0x1004f5d0",
       "comment": "Archive-confirmed IJG 6a 16-by-16 Bayer ordered-dither matrix.",
       "name": "d3dx_jpeg_base_dither_matrix",
