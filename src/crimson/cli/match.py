@@ -407,7 +407,7 @@ def cmd_match_archive(
 
     hash_ok = expected_sha256 is None or report.archive_sha256 == expected_sha256.lower()
     if as_json:
-        payload = library_match.archive_match_payload(report)
+        payload = library_match.archive_match_payload(report, limit=limit)
         payload["expected_sha256"] = expected_sha256
         payload["hash_ok"] = hash_ok
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))

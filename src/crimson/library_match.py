@@ -294,7 +294,22 @@ def match_coff_archive(
     )
 
 
-def archive_match_payload(report: ArchiveMatchReport) -> dict[str, object]:
+def _listed_archive_matches(
+    report: ArchiveMatchReport,
+    *,
+    limit: int | None,
+) -> tuple[ArchiveFunctionMatch, ...]:
+    if limit is not None and limit < 1:
+        raise ValueError("archive match listing limit must be positive")
+    return report.matches if limit is None else report.matches[:limit]
+
+
+def archive_match_payload(
+    report: ArchiveMatchReport,
+    *,
+    limit: int | None = None,
+) -> dict[str, object]:
+    listed_matches = _listed_archive_matches(report, limit=limit)
     return {
         "archive": str(report.archive),
         "archive_sha256": report.archive_sha256,
@@ -313,6 +328,11 @@ def archive_match_payload(report: ArchiveMatchReport) -> dict[str, object]:
             "matched_bytes": report.matched_bytes,
             "unique_functions": report.unique_functions,
             "unique_bytes": report.unique_bytes,
+        },
+        "listing": {
+            "returned_matches": len(listed_matches),
+            "limit": limit,
+            "truncated": len(listed_matches) < len(report.matches),
         },
         "members": [{"name": member, "unique_matches": count} for member, count in report.member_counts],
         "matches": [
@@ -342,7 +362,7 @@ def archive_match_payload(report: ArchiveMatchReport) -> dict[str, object]:
                     for candidate in match.candidates
                 ],
             }
-            for match in report.matches
+            for match in listed_matches
         ],
     }
 
@@ -370,7 +390,7 @@ def render_archive_match_report(
     for member, count in report.member_counts:
         lines.append(f"member={member} unique_matches={count}")
     if show_matches:
-        selected = report.matches if limit is None else report.matches[:limit]
+        selected = _listed_archive_matches(report, limit=limit)
         for match in selected:
             candidates = ", ".join(
                 (

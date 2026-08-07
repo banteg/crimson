@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import struct
+from dataclasses import replace
 from pathlib import Path
 from typing import cast
 
@@ -144,6 +145,30 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     rendered = render_archive_match_report(report, show_matches=True)
     assert "matched=1/1" in rendered
     assert "[product-29/build-9178]" in rendered
+
+    repeated_report = replace(
+        report,
+        matched_functions=2,
+        matched_bytes=12,
+        unique_functions=2,
+        unique_bytes=12,
+        matches=(report.matches[0], report.matches[0]),
+    )
+    limited_payload = archive_match_payload(repeated_report, limit=1)
+    assert limited_payload["summary"] == {
+        "target_functions": 1,
+        "target_bytes": 6,
+        "matched_functions": 2,
+        "matched_bytes": 12,
+        "unique_functions": 2,
+        "unique_bytes": 12,
+    }
+    assert limited_payload["listing"] == {
+        "returned_matches": 1,
+        "limit": 1,
+        "truncated": True,
+    }
+    assert len(cast("list[object]", limited_payload["matches"])) == 1
 
 
 def test_archive_match_trims_untargeted_terminal_padding(
