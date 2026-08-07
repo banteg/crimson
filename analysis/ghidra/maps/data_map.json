@@ -12941,6 +12941,14 @@
       "type": "grim_format_info_t *"
     },
     {
+      "address": "0x10053c58",
+      "aliases": ["?g_D3DXFastTable@@3UD3DXFASTTABLE@@A", "g_D3DXFastTable"],
+      "comment": "Active 57-entry D3DX vector and matrix dispatch table; reset and patched by D3DXCpuOptimizations for the selected CPU backend.",
+      "name": "d3dx_fast_table",
+      "program": "grim.dll",
+      "type": "void *[57]"
+    },
+    {
       "address": "0x1004cae4",
       "comment": "Virtual method table restored by the vertex-space converter destructor and base pixel-format initializer.",
       "name": "grim_vertex_space_converter_vtable",

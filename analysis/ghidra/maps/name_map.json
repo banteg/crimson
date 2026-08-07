@@ -8402,8 +8402,11 @@
     "program": "grim.dll",
     "address": "0x1000cbff",
     "name": "float_near_equal",
+    "aliases": [
+      "?WithinEpsilon@@YAHMM@Z"
+    ],
     "signature": "int float_near_equal(float a, float b)",
-    "comment": "returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)"
+    "comment": "Exact DirectX 8.1 retail D3DX floating-point epsilon comparison selected from the pinned d3dxmath.obj archive member."
   },
   {
     "program": "grim.dll",
@@ -8424,9 +8427,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000cc69",
-    "name": "FUN_1000cc69",
-    "signature": "float* FUN_1000cc69(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000cc69(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "name": "d3dx_c_vec2_hermite",
+    "aliases": [
+      "FUN_1000cc69",
+      "?c_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ],
+    "signature": "float* d3dx_c_vec2_hermite(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8440,9 +8447,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000cd21",
-    "name": "FUN_1000cd21",
-    "signature": "float* FUN_1000cd21(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000cd21(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "name": "d3dx_c_vec2_catmull_rom",
+    "aliases": [
+      "FUN_1000cd21",
+      "?c_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ],
+    "signature": "float* d3dx_c_vec2_catmull_rom(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8456,17 +8467,25 @@
   {
     "program": "grim.dll",
     "address": "0x1000cdff",
-    "name": "FUN_1000cdff",
-    "signature": "float* FUN_1000cdff(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000cdff(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "name": "d3dx_c_vec2_barycentric",
+    "aliases": [
+      "FUN_1000cdff",
+      "?c_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ],
+    "signature": "float* d3dx_c_vec2_barycentric(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000cea6",
-    "name": "FUN_1000cea6",
-    "signature": "float* FUN_1000cea6(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000cea6(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "name": "d3dx_c_vec3_hermite",
+    "aliases": [
+      "FUN_1000cea6",
+      "?c_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ],
+    "signature": "float* d3dx_c_vec3_hermite(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8480,9 +8499,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000cf7e",
-    "name": "FUN_1000cf7e",
-    "signature": "float* FUN_1000cf7e(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000cf7e(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "name": "d3dx_c_vec3_catmull_rom",
+    "aliases": [
+      "FUN_1000cf7e",
+      "?c_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ],
+    "signature": "float* d3dx_c_vec3_catmull_rom(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8496,17 +8519,25 @@
   {
     "program": "grim.dll",
     "address": "0x1000d07e",
-    "name": "FUN_1000d07e",
-    "signature": "float* FUN_1000d07e(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000d07e(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "name": "d3dx_c_vec3_barycentric",
+    "aliases": [
+      "FUN_1000d07e",
+      "?c_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ],
+    "signature": "float* d3dx_c_vec3_barycentric(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000d34f",
-    "name": "FUN_1000d34f",
-    "signature": "float* FUN_1000d34f(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000d34f(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "name": "d3dx_c_vec4_hermite",
+    "aliases": [
+      "FUN_1000d34f",
+      "?c_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ],
+    "signature": "float* d3dx_c_vec4_hermite(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8520,9 +8551,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000d44a",
-    "name": "FUN_1000d44a",
-    "signature": "float* FUN_1000d44a(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000d44a(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "name": "d3dx_c_vec4_catmull_rom",
+    "aliases": [
+      "FUN_1000d44a",
+      "?c_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ],
+    "signature": "float* d3dx_c_vec4_catmull_rom(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8536,9 +8571,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000d56c",
-    "name": "FUN_1000d56c",
-    "signature": "float* FUN_1000d56c(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
-    "comment": "[binja] float* __stdcall sub_1000d56c(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "name": "d3dx_c_vec4_barycentric",
+    "aliases": [
+      "FUN_1000d56c",
+      "?c_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ],
+    "signature": "float* d3dx_c_vec4_barycentric(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8568,9 +8607,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000e142",
-    "name": "FUN_1000e142",
-    "signature": "float* FUN_1000e142(float* arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_1000e142(float* arg1, float arg2)",
+    "name": "d3dx_c_matrix_rotation_x",
+    "aliases": [
+      "FUN_1000e142",
+      "?c_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_rotation_x(float* arg1, float arg2)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8584,9 +8627,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000e1d8",
-    "name": "FUN_1000e1d8",
-    "signature": "float* FUN_1000e1d8(float* arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_1000e1d8(float* arg1, float arg2)",
+    "name": "d3dx_c_matrix_rotation_y",
+    "aliases": [
+      "FUN_1000e1d8",
+      "?c_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_rotation_y(float* arg1, float arg2)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8600,9 +8647,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000e26f",
-    "name": "FUN_1000e26f",
-    "signature": "float* FUN_1000e26f(float* arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_1000e26f(float* arg1, float arg2)",
+    "name": "d3dx_c_matrix_rotation_z",
+    "aliases": [
+      "FUN_1000e26f",
+      "?c_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_rotation_z(float* arg1, float arg2)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8616,9 +8667,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000e30b",
-    "name": "FUN_1000e30b",
-    "signature": "float* FUN_1000e30b(float* arg1, float arg2, float arg3)",
-    "comment": "[binja] float* __stdcall sub_1000e30b(float* arg1, float arg2, float arg3)",
+    "name": "d3dx_c_matrix_rotation_axis",
+    "aliases": [
+      "FUN_1000e30b",
+      "?c_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_rotation_axis(float* arg1, float arg2, float arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8632,17 +8687,25 @@
   {
     "program": "grim.dll",
     "address": "0x1000e541",
-    "name": "FUN_1000e541",
-    "signature": "int FUN_1000e541(int arg1, float arg2, int arg3, int arg4, int arg5)",
-    "comment": "[binja] int32_t __stdcall sub_1000e541(int32_t arg1, float arg2, int32_t arg3, int32_t arg4, int32_t arg5)",
+    "name": "d3dx_init_matrix_affine_transformation",
+    "aliases": [
+      "FUN_1000e541",
+      "?init_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ],
+    "signature": "int d3dx_init_matrix_affine_transformation(int arg1, float arg2, int arg3, int arg4, int arg5)",
+    "comment": "Exact DirectX 8.1 retail D3DX initialization helper selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000e568",
-    "name": "FUN_1000e568",
-    "signature": "float* FUN_1000e568(float* arg1, float arg2, float* arg3, int arg4, float* arg5)",
-    "comment": "[binja] float* __stdcall sub_1000e568(float* arg1, float arg2, float* arg3, int32_t arg4, float* arg5)",
+    "name": "d3dx_c_matrix_affine_transformation",
+    "aliases": [
+      "FUN_1000e568",
+      "?c_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_affine_transformation(float* arg1, float arg2, float* arg3, int arg4, float* arg5)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8656,9 +8719,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000e873",
-    "name": "FUN_1000e873",
-    "signature": "float* FUN_1000e873(float arg1, float arg2, float arg3)",
-    "comment": "[binja] float* __stdcall sub_1000e873(float arg1, float arg2, float arg3)",
+    "name": "d3dx_c_quaternion_rotation_axis",
+    "aliases": [
+      "FUN_1000e873",
+      "?c_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ],
+    "signature": "float* d3dx_c_quaternion_rotation_axis(float arg1, float arg2, float arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8672,9 +8739,13 @@
   {
     "program": "grim.dll",
     "address": "0x1000ed37",
-    "name": "FUN_1000ed37",
-    "signature": "int FUN_1000ed37(int arg1, int arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall sub_1000ed37(int32_t arg1, int32_t arg2, float arg3)",
+    "name": "d3dx_init_quaternion_slerp",
+    "aliases": [
+      "FUN_1000ed37",
+      "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ],
+    "signature": "int d3dx_init_quaternion_slerp(int arg1, int arg2, float arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX initialization helper selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8688,73 +8759,109 @@
   {
     "program": "grim.dll",
     "address": "0x1000ee6e",
-    "name": "FUN_1000ee6e",
-    "signature": "int FUN_1000ee6e(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
-    "comment": "[binja] int32_t __stdcall sub_1000ee6e(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "name": "d3dx_c_quaternion_squad",
+    "aliases": [
+      "FUN_1000ee6e",
+      "?c_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ],
+    "signature": "int d3dx_c_quaternion_squad(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000ef05",
-    "name": "FUN_1000ef05",
-    "signature": "int* FUN_1000ef05(int* arg1, int* arg2, int arg3, int arg4, float arg5, float arg6)",
-    "comment": "[binja] int32_t* __stdcall sub_1000ef05(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "name": "d3dx_c_quaternion_barycentric",
+    "aliases": [
+      "FUN_1000ef05",
+      "?c_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ],
+    "signature": "int* d3dx_c_quaternion_barycentric(int* arg1, int* arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f296",
-    "name": "FUN_1000f296",
-    "signature": "int* FUN_1000f296(int* arg1, float arg2)",
-    "comment": "[binja] int32_t* __stdcall sub_1000f296(int32_t* arg1, float arg2)",
+    "name": "d3dx_c_vec2_normalize",
+    "aliases": [
+      "FUN_1000f296",
+      "?c_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    ],
+    "signature": "int* d3dx_c_vec2_normalize(int* arg1, float arg2)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f323",
-    "name": "FUN_1000f323",
-    "signature": "float* FUN_1000f323(float* arg1, float* arg2, float* arg3)",
-    "comment": "[binja] float* __stdcall sub_1000f323(float* arg1, float* arg2, float* arg3)",
+    "name": "d3dx_c_vec2_transform",
+    "aliases": [
+      "FUN_1000f323",
+      "?c_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ],
+    "signature": "float* d3dx_c_vec2_transform(float* arg1, float* arg2, float* arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f38e",
-    "name": "FUN_1000f38e",
-    "signature": "float* FUN_1000f38e(float* arg1, float* arg2, float* arg3)",
-    "comment": "[binja] float* __stdcall sub_1000f38e(float* arg1, float* arg2, float* arg3)",
+    "name": "d3dx_c_vec2_transform_coord",
+    "aliases": [
+      "FUN_1000f38e",
+      "?c_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "signature": "float* d3dx_c_vec2_transform_coord(float* arg1, float* arg2, float* arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f40e",
-    "name": "FUN_1000f40e",
-    "signature": "float* FUN_1000f40e(float* arg1, float* arg2, float* arg3)",
-    "comment": "[binja] float* __stdcall sub_1000f40e(float* arg1, float* arg2, float* arg3)",
+    "name": "d3dx_c_vec2_transform_normal",
+    "aliases": [
+      "FUN_1000f40e",
+      "?c_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "signature": "float* d3dx_c_vec2_transform_normal(float* arg1, float* arg2, float* arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f44a",
-    "name": "FUN_1000f44a",
-    "signature": "float* FUN_1000f44a(float* arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_1000f44a(float* arg1, float arg2)",
+    "name": "d3dx_c_vec3_normalize",
+    "aliases": [
+      "FUN_1000f44a",
+      "?c_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ],
+    "signature": "float* d3dx_c_vec3_normalize(float* arg1, float arg2)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f4ea",
-    "name": "FUN_1000f4ea",
-    "signature": "float* FUN_1000f4ea(float* arg1, float* arg2, float* arg3)",
-    "comment": "[binja] float* __stdcall sub_1000f4ea(float* arg1, float* arg2, float* arg3)",
+    "name": "d3dx_c_vec3_transform_coord",
+    "aliases": [
+      "FUN_1000f4ea",
+      "?c_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "signature": "float* d3dx_c_vec3_transform_coord(float* arg1, float* arg2, float* arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f5a9",
-    "name": "FUN_1000f5a9",
-    "signature": "float* FUN_1000f5a9(float* arg1, int arg2, int* arg3, int* arg4, int* arg5, int* arg6)",
-    "comment": "[binja] float* __stdcall sub_1000f5a9(float* arg1, int32_t arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)",
+    "name": "d3dx_c_vec3_project",
+    "aliases": [
+      "FUN_1000f5a9",
+      "?c_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ],
+    "signature": "float* d3dx_c_vec3_project(float* arg1, int arg2, int* arg3, int* arg4, int* arg5, int* arg6)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -8768,33 +8875,49 @@
   {
     "program": "grim.dll",
     "address": "0x1000f995",
-    "name": "FUN_1000f995",
-    "signature": "int FUN_1000f995(int arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall sub_1000f995(int32_t arg1, float arg2, float arg3, float arg4)",
+    "name": "d3dx_c_matrix_rotation_yaw_pitch_roll",
+    "aliases": [
+      "FUN_1000f995",
+      "?c_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
+    "signature": "int d3dx_c_matrix_rotation_yaw_pitch_roll(int arg1, float arg2, float arg3, float arg4)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000f9ce",
-    "name": "FUN_1000f9ce",
-    "signature": "float* FUN_1000f9ce(float* arg1, float* arg2, void* arg3, int* arg4, float* arg5, int arg6, float* arg7)",
-    "comment": "[binja] float* __stdcall sub_1000f9ce(float* arg1, float* arg2, void* arg3, int32_t* arg4, float* arg5, int32_t arg6, float* arg7)",
+    "name": "d3dx_c_matrix_transformation",
+    "aliases": [
+      "FUN_1000f9ce",
+      "?c_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_transformation(float* arg1, float* arg2, void* arg3, int* arg4, float* arg5, int arg6, float* arg7)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000fc82",
-    "name": "FUN_1000fc82",
-    "signature": "float* FUN_1000fc82(float* arg1, float* arg2, int arg3)",
-    "comment": "[binja] float* __stdcall sub_1000fc82(float* arg1, float* arg2, int32_t arg3)",
+    "name": "d3dx_c_matrix_shadow",
+    "aliases": [
+      "FUN_1000fc82",
+      "?c_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_shadow(float* arg1, float* arg2, int arg3)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000fd5c",
-    "name": "FUN_1000fd5c",
-    "signature": "float* FUN_1000fd5c(float* arg1, float arg2)",
-    "comment": "[binja] float* __stdcall sub_1000fd5c(float* arg1, float arg2)",
+    "name": "d3dx_c_matrix_reflect",
+    "aliases": [
+      "FUN_1000fd5c",
+      "?c_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ],
+    "signature": "float* d3dx_c_matrix_reflect(float* arg1, float arg2)",
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member.",
     "create": false
   },
   {
@@ -10300,9 +10423,10 @@
   {
     "program": "grim.dll",
     "address": "0x1001c188",
-    "name": "grim_select_renderer_backend",
-    "signature": "int grim_select_renderer_backend(int force)",
-    "comment": "copies the render backend vtable and selects D3DX/alt paths based on config"
+    "name": "D3DXCpuOptimizations",
+    "aliases": ["grim_select_renderer_backend", "_D3DXCpuOptimizations@4"],
+    "signature": "int D3DXCpuOptimizations(int force)",
+    "comment": "DirectX 8.1 D3DX CPU-dispatch selector: resets the fast table and installs MMX, 3DNow, or SSE implementations according to processor support."
   },
   {
     "program": "grim.dll",
@@ -15170,5 +15294,359 @@
     "signature": "int FUN_1004b6c3(int arg1, int arg2, int arg3, int arg4)",
     "comment": "[binja] int32_t __stdcall sub_1004b6c3(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d0e8",
+    "name": "d3dx_c_vec3_transform",
+    "aliases": [
+      "sub_1000D0E8",
+      "?c_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d193",
+    "name": "d3dx_c_vec3_transform_normal",
+    "aliases": [
+      "sub_1000D193",
+      "?c_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d228",
+    "name": "d3dx_c_vec4_cross",
+    "aliases": [
+      "sub_1000D228",
+      "?c_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d5f0",
+    "name": "d3dx_c_vec4_transform",
+    "aliases": [
+      "sub_1000D5F0",
+      "?c_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d69c",
+    "name": "d3dx_c_matrix_determinant",
+    "aliases": [
+      "sub_1000D69C",
+      "?c_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d779",
+    "name": "d3dx_c_matrix_multiply",
+    "aliases": [
+      "sub_1000D779",
+      "?c_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d9c2",
+    "name": "d3dx_c_matrix_transpose",
+    "aliases": [
+      "sub_1000D9C2",
+      "?c_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000da3c",
+    "name": "d3dx_c_matrix_multiply_transpose",
+    "aliases": [
+      "sub_1000DA3C",
+      "?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000dc85",
+    "name": "d3dx_c_matrix_inverse",
+    "aliases": [
+      "sub_1000DC85",
+      "?c_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e040",
+    "name": "d3dx_c_matrix_scaling",
+    "aliases": [
+      "sub_1000E040",
+      "?c_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e0ca",
+    "name": "d3dx_c_matrix_translation",
+    "aliases": [
+      "sub_1000E0CA",
+      "?c_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e420",
+    "name": "d3dx_c_matrix_rotation_quaternion",
+    "aliases": [
+      "sub_1000E420",
+      "?c_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e675",
+    "name": "d3dx_c_quaternion_to_axis_angle",
+    "aliases": [
+      "sub_1000E675",
+      "?c_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e71f",
+    "name": "d3dx_c_quaternion_rotation_matrix",
+    "aliases": [
+      "sub_1000E71F",
+      "?c_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e903",
+    "name": "d3dx_c_quaternion_rotation_yaw_pitch_roll",
+    "aliases": [
+      "sub_1000E903",
+      "?c_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e9ef",
+    "name": "d3dx_c_quaternion_multiply",
+    "aliases": [
+      "sub_1000E9EF",
+      "?c_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000eb5e",
+    "name": "d3dx_c_quaternion_inverse",
+    "aliases": [
+      "sub_1000EB5E",
+      "?c_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ec18",
+    "name": "d3dx_c_quaternion_ln",
+    "aliases": [
+      "sub_1000EC18",
+      "?c_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ec9c",
+    "name": "d3dx_c_quaternion_exp",
+    "aliases": [
+      "sub_1000EC9C",
+      "?c_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ed61",
+    "name": "d3dx_c_quaternion_slerp",
+    "aliases": [
+      "sub_1000ED61",
+      "?c_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000efa3",
+    "name": "d3dx_c_plane_normalize",
+    "aliases": [
+      "sub_1000EFA3",
+      "?c_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f054",
+    "name": "d3dx_c_plane_intersect_line",
+    "aliases": [
+      "sub_1000F054",
+      "?c_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f103",
+    "name": "d3dx_c_plane_from_point_normal",
+    "aliases": [
+      "sub_1000F103",
+      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f148",
+    "name": "d3dx_c_plane_from_points",
+    "aliases": [
+      "sub_1000F148",
+      "?c_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f1f7",
+    "name": "d3dx_c_plane_transform",
+    "aliases": [
+      "sub_1000F1F7",
+      "?c_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f736",
+    "name": "d3dx_c_vec3_unproject",
+    "aliases": [
+      "sub_1000F736",
+      "?c_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000fe1b",
+    "name": "d3dx_c_quaternion_squad_setup",
+    "aliases": [
+      "sub_1000FE1B",
+      "?c_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ],
+    "comment": "Exact DirectX 8.1 retail D3DX scalar implementation selected from the pinned d3dxmath.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d180",
+    "name": "D3DXVec3TransformCoord",
+    "aliases": ["sub_1000D180", "_D3DXVec3TransformCoord@12"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d773",
+    "name": "D3DXMatrixMultiply",
+    "aliases": ["sub_1000D773", "_D3DXMatrixMultiply@12"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d9bc",
+    "name": "D3DXMatrixTranspose",
+    "aliases": ["sub_1000D9BC", "_D3DXMatrixTranspose@8"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000dc7f",
+    "name": "D3DXMatrixInverse",
+    "aliases": ["sub_1000DC7F", "_D3DXMatrixInverse@12"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e41a",
+    "name": "D3DXMatrixRotationQuaternion",
+    "aliases": ["sub_1000E41A", "_D3DXMatrixRotationQuaternion@8"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e8fd",
+    "name": "D3DXQuaternionRotationYawPitchRoll",
+    "aliases": ["j_FUN_1000e8cf", "_D3DXQuaternionRotationYawPitchRoll@16"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e9e9",
+    "name": "D3DXQuaternionMultiply",
+    "aliases": ["sub_1000E9E9", "_D3DXQuaternionMultiply@12"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000eb58",
+    "name": "D3DXQuaternionInverse",
+    "aliases": ["sub_1000EB58", "_D3DXQuaternionInverse@8"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ec12",
+    "name": "D3DXQuaternionLn",
+    "aliases": ["sub_1000EC12", "_D3DXQuaternionLn@8"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ec96",
+    "name": "D3DXQuaternionExp",
+    "aliases": ["sub_1000EC96", "_D3DXQuaternionExp@8"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ed5b",
+    "name": "D3DXQuaternionSlerp",
+    "aliases": ["j_FUN_1000ed37", "_D3DXQuaternionSlerp@16"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ef9d",
+    "name": "D3DXPlaneNormalize",
+    "aliases": ["sub_1000EF9D", "_D3DXPlaneNormalize@8"],
+    "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
   }
 ]

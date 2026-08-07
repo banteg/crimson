@@ -1,5 +1,5 @@
 {
-  "audit_digest": "fe6e2511598adaf6f2063a5ceaf1f3b48f92547fe61b55a75eb546c535791b08",
+  "audit_digest": "33a0acc0d4df60be9c5752f8b39ae3f459b1ad6654f0f94fe3c7a7b035459f11",
   "entries": [
     {
       "address": 268747320,
@@ -4519,6 +4519,28 @@
       "type": "grim_format_info_t *"
     },
     {
+      "address": 268778584,
+      "aliases": [
+        "?g_D3DXFastTable@@3UD3DXFASTTABLE@@A",
+        "g_D3DXFastTable"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "Active 57-entry D3DX vector and matrix dispatch table; reset and patched by D3DXCpuOptimizations for the selected CPU backend.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "42ce0010dbd00010e3d5001066d700102fda00105cce001086d1001069ce001018d300104fce001073d100108fd60010f6f000103bf10010f9d100100ad200101bd200103fcc001072dc0010dce9001085ea001090ef001047f0001068e6001012e70010cfe800109ce000104ee600105be6001053e8001026e10010bce1001053e2001012e00010eaf1001037ed0010d6ee0010afd900100de4001030e5001002e5001041e50010ebe2001044ee00104beb0010c5ee00102ccc0010f7cc0010d0cd00107cce001054cf00104fd0001025d3001020d400103dd500100000000000000000",
+      "initializer_source": "Pinned DirectX 8.1 d3dxmath.obj and cpudetect.obj dispatch-table model; Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact 0xe4 mapped bytes at VA 0x10053c58",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_fast_table",
+      "section": ".data",
+      "section_offset": 3160,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 228,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete void *[57] dispatch table; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *[57]"
+    },
+    {
       "address": 268780432,
       "aliases": [
         "?g_pBoxFilter2D_A8R8G8B8@@3P6AJPAI0IIII@ZA"
@@ -8708,9 +8730,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "0e338c4f1fef3e6152921e695831c3d1e06fa7bb21ca4200c8120c04bee334cc",
+    "data_map_sha256": "ea477559f7c6d982500b8630ec0da244bb4c17b250322cd90ec09d17a40fd638",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "d7a74a430fdbfb768252fbc401e6dca0f57c743e53437e284140865862c5f5fb",
+    "definitions_sha256": "b039b4f193d05d8bba8f8a0f24c1235b485c1d8883e07b96c52a2c5cdde810e8",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -8719,17 +8741,17 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 63,
-    "alias_rows": 63,
+    "alias_names": 65,
+    "alias_rows": 64,
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 363,
-    "explicit_alignment_entries": 329,
-    "explicit_initializer_entries": 329,
-    "explicit_size_entries": 329,
-    "fixed_array_types": 139,
-    "fully_specified_entries": 329,
+    "entry_count": 364,
+    "explicit_alignment_entries": 330,
+    "explicit_initializer_entries": 330,
+    "explicit_size_entries": 330,
+    "fixed_array_types": 140,
+    "fully_specified_entries": 330,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -8737,12 +8759,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 221,
+      ".data": 222,
       ".rdata": 142
     },
-    "source_entry_count": 366,
-    "typed_entries": 313,
-    "unique_addresses": 363,
+    "source_entry_count": 367,
+    "typed_entries": 314,
+    "unique_addresses": 364,
     "untyped_entries": 50
   }
 }

@@ -1254,6 +1254,16 @@
       "initializer_source": "Binary Ninja grim.dll session: pointer value 0x1004c9bc is exactly one past grim_format_info_entries[43]; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10053c50"
     },
     {
+      "address": "0x10053c58",
+      "name": "d3dx_fast_table",
+      "size": 228,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete void *[57] dispatch table; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "42ce0010dbd00010e3d5001066d700102fda00105cce001086d1001069ce001018d300104fce001073d100108fd60010f6f000103bf10010f9d100100ad200101bd200103fcc001072dc0010dce9001085ea001090ef001047f0001068e6001012e70010cfe800109ce000104ee600105be6001053e8001026e10010bce1001053e2001012e00010eaf1001037ed0010d6ee0010afd900100de4001030e5001002e5001041e50010ebe2001044ee00104beb0010c5ee00102ccc0010f7cc0010d0cd00107cce001054cf00104fd0001025d3001020d400103dd500100000000000000000",
+      "initializer_source": "Pinned DirectX 8.1 d3dxmath.obj and cpudetect.obj dispatch-table model; Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact 0xe4 mapped bytes at VA 0x10053c58"
+    },
+    {
       "address": "0x10054390",
       "name": "d3dx_box_filter_2d_a8r8g8b8_impl",
       "size": 4,
