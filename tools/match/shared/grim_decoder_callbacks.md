@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes two hundred exact callback, state, and cleanup
+The image-decoder cluster contributes two hundred six exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -314,6 +314,15 @@ provider's 65,520-byte allocation ceiling exactly; neighboring pool functions
 use a binary-confirmed C++ allocation shim and remain unclaimed until that
 provider source variant is reconstructed.
 
-Altogether the two hundred eighteen exact functions cover 40,173 bytes
-and 14,397 instructions in the explicit `all` scope, with every external
+The D3DX main-buffer controller now compiles directly from pinned `jdmainct.c`.
+Six newly exact pointer-list, edge-row, pass-setup, and controller-initializer
+bodies add 1,150 bytes and 416 instructions; the existing two-pass crank
+callback now uses the same official translation unit instead of a local helper.
+The simple and context-row processing loops are semantic-complete build-9178
+residuals: every instruction and reference agrees except for one byte-clear
+opcode in each body, and the full historical compiler matrix reproduces no
+exact alternative.
+
+Altogether the two hundred twenty-four exact functions cover 41,323 bytes
+and 14,813 instructions in the explicit `all` scope, with every external
 relocation resolved.

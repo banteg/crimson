@@ -11074,6 +11074,62 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002e68c",
+    "name": "d3dx_jpeg_alloc_funny_pointers",
+    "signature": "void d3dx_jpeg_alloc_funny_pointers(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a main-controller context-row pointer-list allocator"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e734",
+    "name": "d3dx_jpeg_make_funny_pointers",
+    "signature": "void d3dx_jpeg_make_funny_pointers(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a main-controller context-row pointer-list builder"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e865",
+    "name": "d3dx_jpeg_set_wraparound_pointers",
+    "signature": "void d3dx_jpeg_set_wraparound_pointers(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a main-controller wraparound-row pointer setup"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e939",
+    "name": "d3dx_jpeg_set_bottom_pointers",
+    "signature": "void d3dx_jpeg_set_bottom_pointers(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a main-controller bottom-row pointer setup"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e9cf",
+    "name": "d3dx_jpeg_process_data_simple_main",
+    "signature": "void d3dx_jpeg_process_data_simple_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a context-free main-controller data path"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002ea37",
+    "name": "d3dx_jpeg_process_data_context_main",
+    "signature": "void d3dx_jpeg_process_data_context_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a context-row main-controller data path"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002eb62",
+    "name": "d3dx_jpeg_start_pass_main",
+    "signature": "void d3dx_jpeg_start_pass_main(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)",
+    "comment": "Archive-confirmed IJG 6a main-controller pass initializer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002ebca",
+    "name": "d3dx_jpeg_init_d_main_controller",
+    "signature": "void d3dx_jpeg_init_d_main_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
+    "comment": "Archive-confirmed IJG 6a decompression main-controller initializer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004ea00",
     "name": "d3dx_jpeg_first_pool_slop",
     "signature": "const size_t d3dx_jpeg_first_pool_slop[2]",
