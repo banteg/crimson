@@ -10352,8 +10352,12 @@
   {
     "program": "grim.dll",
     "address": "0x1002031c",
-    "name": "FUN_1002031c",
-    "signature": "void FUN_1002031c(png_structp png_ptr, uint *param_2, uint param_3, uint param_4, char param_5, byte param_6, undefined1 param_7, undefined1 param_8, undefined1 param_9)"
+    "name": "png_set_IHDR",
+    "aliases": [
+      "FUN_1002031c"
+    ],
+    "signature": "void png_set_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type)",
+    "comment": "Stores validated IHDR dimensions and format fields and marks the header valid"
   },
   {
     "program": "grim.dll",
@@ -11018,9 +11022,33 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100248e1",
+    "name": "png_combine_row",
+    "aliases": [
+      "sub_100248e1"
+    ],
+    "signature": "void png_combine_row(png_structp png_ptr, png_bytep row, int mask)",
+    "comment": "Archive-confirmed libpng 1.0.5 progressive interlace row combiner"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024af7",
+    "name": "png_do_read_interlace",
+    "aliases": [
+      "sub_10024af7"
+    ],
+    "signature": "void png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass, png_uint_32 transformations)",
+    "comment": "Archive-confirmed libpng 1.0.5 Adam7 row expansion"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10024dc0",
-    "name": "FUN_10024dc0",
-    "signature": "void FUN_10024dc0(png_structp png_ptr, int param_2, byte *param_3, byte *param_4, int param_5)"
+    "name": "png_read_filter_row",
+    "aliases": [
+      "FUN_10024dc0"
+    ],
+    "signature": "void png_read_filter_row(png_structp png_ptr, png_row_infop row_info, png_bytep row, png_bytep prev_row, int filter)",
+    "comment": "Archive-confirmed libpng 1.0.5 PNG row-filter reversal with a compiler residual"
   },
   {
     "program": "grim.dll",
@@ -11039,14 +11067,22 @@
   {
     "program": "grim.dll",
     "address": "0x10025163",
-    "name": "grim_png_read_IHDR",
-    "signature": "void grim_png_read_IHDR(png_structp png_ptr, uint *param_2, int param_3)"
+    "name": "png_handle_IHDR",
+    "aliases": [
+      "grim_png_read_IHDR"
+    ],
+    "signature": "void png_handle_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Archive-confirmed libpng 1.0.5 IHDR parser and validator"
   },
   {
     "program": "grim.dll",
     "address": "0x10025359",
-    "name": "grim_png_read_PLTE",
-    "signature": "void grim_png_read_PLTE(void *this, png_structp png_ptr, int param_2, uint param_3)"
+    "name": "png_handle_PLTE",
+    "aliases": [
+      "grim_png_read_PLTE"
+    ],
+    "signature": "void png_handle_PLTE(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Archive-confirmed libpng 1.0.5 PLTE parser with a compiler residual"
   },
   {
     "program": "grim.dll",
@@ -11058,20 +11094,32 @@
   {
     "program": "grim.dll",
     "address": "0x100254cd",
-    "name": "FUN_100254cd",
-    "signature": "void FUN_100254cd(png_structp png_ptr, int param_2, uint param_3)"
+    "name": "png_handle_gAMA",
+    "aliases": [
+      "FUN_100254cd"
+    ],
+    "signature": "void png_handle_gAMA(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Archive-confirmed libpng 1.0.5 gAMA parser under the provider feature profile"
   },
   {
     "program": "grim.dll",
     "address": "0x100255d8",
-    "name": "FUN_100255d8",
-    "signature": "void FUN_100255d8(png_structp png_ptr, int param_2, uint param_3)"
+    "name": "png_handle_sRGB",
+    "aliases": [
+      "FUN_100255d8"
+    ],
+    "signature": "void png_handle_sRGB(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Archive-confirmed libpng 1.0.5 sRGB parser under the provider feature profile"
   },
   {
     "program": "grim.dll",
     "address": "0x100256c7",
-    "name": "FUN_100256c7",
-    "signature": "void FUN_100256c7(png_structp png_ptr, int param_2, uint param_3)"
+    "name": "png_handle_tRNS",
+    "aliases": [
+      "FUN_100256c7"
+    ],
+    "signature": "void png_handle_tRNS(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Archive-confirmed libpng 1.0.5 transparency parser under the provider feature profile"
   },
   {
     "program": "grim.dll",
