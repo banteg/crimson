@@ -686,6 +686,19 @@ def test_scratch_config_parses_archive_end_symbol(tmp_path: Path) -> None:
     assert config.archive_end_symbol == "_foo_end"
 
 
+def test_scratch_config_parses_archive_symbol_size(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=foo ARCHIVE=provider.lib "
+        "ARCHIVE_MEMBER='obj\\i386\\foo.obj' "
+        f"ARCHIVE_SHA256={'a' * 64} SYMBOL='$L123' ARCHIVE_SIZE=9\n",
+        encoding="utf-8",
+    )
+
+    config = load_scratch_config(tmp_path)
+
+    assert config.archive_size == 9
+
+
 def test_scratch_config_parses_structural_import_thunk(tmp_path: Path) -> None:
     (tmp_path / "scratch.conf").write_text(
         "FUNCTION=sprintf IMPORT_THUNK=sprintf\n",
@@ -715,6 +728,7 @@ def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
     (
         ("FUNCTION=foo ARCHIVE_MEMBER=foo.obj", "without ARCHIVE"),
         ("FUNCTION=foo ARCHIVE_END_SYMBOL=_foo_end", "without ARCHIVE"),
+        ("FUNCTION=foo ARCHIVE_SIZE=9", "without ARCHIVE"),
         ("FUNCTION=foo ARCHIVE_EXTENT=section-tail", "without ARCHIVE"),
         ("FUNCTION=foo ARCHIVE=provider.lib", "must set ARCHIVE_MEMBER, ARCHIVE_SHA256, SYMBOL"),
         (
@@ -737,6 +751,23 @@ def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
             + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
             "ARCHIVE_EXTENT=section-tail ARCHIVE_END_SYMBOL=_foo_end",
             "cannot combine ARCHIVE_END_SYMBOL",
+        ),
+        (
+            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
+            "ARCHIVE_EXTENT=section-tail ARCHIVE_SIZE=9",
+            "cannot combine ARCHIVE_SIZE",
+        ),
+        (
+            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
+            "ARCHIVE_END_SYMBOL=_foo_end ARCHIVE_SIZE=9",
+            "cannot combine ARCHIVE_SIZE",
+        ),
+        (
+            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_SIZE=0",
+            "ARCHIVE_SIZE must be positive",
         ),
     ),
 )
@@ -1129,6 +1160,25 @@ def test_extract_object_function_can_end_at_explicit_code_symbol() -> None:
         )
 
 
+def test_extract_object_function_can_use_explicit_code_label_size() -> None:
+    code = bytes.fromhex("31c0c390c3c3")
+    obj = CoffObject(
+        sections=(CoffSection(name=".text", data=code, characteristics=0x20, relocations=()),),
+        symbols=(
+            CoffSymbol(0, "$Lhandler", 3, 1, 0, 6),
+            CoffSymbol(1, "$Lret", 4, 1, 0, 6),
+        ),
+    )
+
+    function = extract_object_function(obj, "$Lhandler", size=2)
+
+    assert function.data == code[3:5]
+    with pytest.raises(ValueError, match="cannot be combined"):
+        extract_object_function(obj, "$Lhandler", end_symbol="$Lret", size=2)
+    with pytest.raises(ValueError, match="exceeds section"):
+        extract_object_function(obj, "$Lhandler", size=4)
+
+
 def test_normalize_masks_relocated_and_absolute_operands() -> None:
     code = bytes.fromhex("a134124a00c3")
     assert normalize_function(code, relocation_offsets=frozenset({1}))[0] == "mov eax, dword [ADDR]"
@@ -1342,7 +1392,7 @@ def test_match_function_materializes_local_dir32_relocation() -> None:
 
 
 def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> None:
-    observed: list[tuple[str, str | None]] = []
+    observed: list[tuple[str, str | None, int | None]] = []
     manifest = FunctionManifest(
         image_name="game.exe",
         image_base=0x401000,
@@ -1367,8 +1417,9 @@ def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> No
         *,
         extent: str = "symbol",
         end_symbol: str | None = None,
+        size: int | None = None,
     ) -> ObjectFunction:
-        observed.append((extent, end_symbol))
+        observed.append((extent, end_symbol, size))
         return ObjectFunction("_probe", b"\xc3", frozenset())
 
     monkeypatch.setattr("crimson.match.extract_object_function", fake_extract)
@@ -1385,7 +1436,7 @@ def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> No
     )
 
     assert result.exact
-    assert observed == [("section-tail", None)]
+    assert observed == [("section-tail", None, None)]
 
     result = run_match(
         obj_path=obj_path,
@@ -1399,7 +1450,21 @@ def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> No
     )
 
     assert result.exact
-    assert observed[-1] == ("symbol", "_probe_end")
+    assert observed[-1] == ("symbol", "_probe_end", None)
+
+    result = run_match(
+        obj_path=obj_path,
+        function="probe",
+        image_path=image_path,
+        functions_path=tmp_path / "functions.json",
+        metadata_path=tmp_path / "metadata.json",
+        symbol_name="_probe",
+        object_size=9,
+        scope="all",
+    )
+
+    assert result.exact
+    assert observed[-1] == ("symbol", None, 9)
 
 
 def test_match_function_accepts_first_load_from_proven_vc6_copy_range() -> None:
@@ -2958,6 +3023,20 @@ def test_collect_naming_debt_canonicalizes_weak_exact_vc6_symbols(tmp_path: Path
             symbol="_flsall",
             archive_member=r"build\intel\mt_obj\fflush.obj",
         ),
+        replace(
+            base_config,
+            directory=tmp_path / "FUN_00401080",
+            function="FUN_00401080",
+            symbol="$L17371",
+            archive_member=r"build\intel\mt_obj\free.obj",
+        ),
+        replace(
+            base_config,
+            directory=tmp_path / "FUN_004010a0",
+            function="FUN_004010a0",
+            symbol="__fptrap",
+            archive_member=r"build\intel\mt_obj\crt0fp.obj",
+        ),
     ]
     statuses = [
         ScratchStatus(
@@ -2994,8 +3073,10 @@ def test_collect_naming_debt_canonicalizes_weak_exact_vc6_symbols(tmp_path: Path
         "crt_cp_to_lcid",
         "crt_scan_input",
         "crt_flsall",
+        "crt_free_sbh_unlock_cleanup",
+        "crt_fptrap",
     ]
-    assert rows[-1].issues == (
+    assert rows[3].issues == (
         "provider-directory-conflict",
         "provider-name-conflict",
     )
@@ -5104,7 +5185,7 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
     monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
     monkeypatch.setattr(
         "crimson.match.extract_object_function",
-        lambda obj, symbol, *, extent="symbol", end_symbol=None: ObjectFunction(
+        lambda obj, symbol, *, extent="symbol", end_symbol=None, size=None: ObjectFunction(
             name="foo",
             data=b"\xc3",
             relocation_offsets=frozenset(),

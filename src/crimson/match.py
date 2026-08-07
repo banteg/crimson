@@ -1858,12 +1858,20 @@ def extract_object_function(
     *,
     extent: str = "symbol",
     end_symbol: str | None = None,
+    size: int | None = None,
 ) -> ObjectFunction:
     if extent not in ARCHIVE_EXTENT_VALUES:
         allowed = ", ".join(sorted(ARCHIVE_EXTENT_VALUES))
         raise ValueError(f"invalid object function extent {extent!r}; use {allowed}")
     if end_symbol is not None and extent != "symbol":
         raise ValueError("object end symbol cannot be combined with a non-symbol extent")
+    if size is not None:
+        if extent != "symbol":
+            raise ValueError("object symbol size cannot be combined with a non-symbol extent")
+        if end_symbol is not None:
+            raise ValueError("object symbol size cannot be combined with an end symbol")
+        if size <= 0:
+            raise ValueError("object symbol size must be positive")
     explicit_code_label = False
     candidates = [symbol for symbol in obj.symbols if _is_function_symbol(symbol)]
     if name is not None:
@@ -1902,7 +1910,13 @@ def extract_object_function(
         and symbol.section_number == target.section_number
         and symbol.value > target.value
     )
-    if end_symbol is not None:
+    if size is not None:
+        end = target.value + size
+        if end > len(section.data):
+            raise ValueError(
+                f"symbol {target.name!r} size {size} exceeds section {section.name!r}",
+            )
+    elif end_symbol is not None:
         end_candidates = [
             symbol
             for symbol in obj.symbols
@@ -2987,6 +3001,7 @@ def run_match(
     symbol_name: str | None = None,
     object_extent: str = "symbol",
     object_end_symbol: str | None = None,
+    object_size: int | None = None,
     end_va: int | None = None,
     reference_aliases: tuple[tuple[str, str], ...] = (),
     scope: str | None = None,
@@ -3023,6 +3038,7 @@ def run_match(
         symbol_name,
         extent=object_extent,
         end_symbol=object_end_symbol,
+        size=object_size,
     )
     _, start, end = resolved
     image = load_image(image_path, manifest.image_base)
@@ -3048,6 +3064,7 @@ def run_match_dump(
     symbol_name: str | None = None,
     object_extent: str = "symbol",
     object_end_symbol: str | None = None,
+    object_size: int | None = None,
     end_va: int | None = None,
     scope: str | None = None,
 ) -> MatchDump:
@@ -3063,6 +3080,7 @@ def run_match_dump(
         symbol_name,
         extent=object_extent,
         end_symbol=object_end_symbol,
+        size=object_size,
     )
     _, start, end = resolve_function(manifest, function, end_override=end_va)
     image = load_image(image_path, manifest.image_base)
@@ -3100,6 +3118,7 @@ SCRATCH_CONFIG_KEYS = frozenset(
         "ARCHIVE_EXTENT",
         "ARCHIVE_MEMBER",
         "ARCHIVE_SHA256",
+        "ARCHIVE_SIZE",
         "AUTO_INLINE_OFF",
         "CFLAGS",
         "COMPILER",
@@ -3136,6 +3155,7 @@ class ScratchConfig:
     archive_sha256: str | None = None
     archive_extent: str = "symbol"
     archive_end_symbol: str | None = None
+    archive_size: int | None = None
     import_thunk: str | None = None
     auto_inline_off: tuple[str, ...] = ()
     include_overlay: Path | None = None
@@ -3382,6 +3402,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
     archive_sha256 = values.get("ARCHIVE_SHA256")
     archive_extent = values.get("ARCHIVE_EXTENT", "symbol")
     archive_end_symbol = values.get("ARCHIVE_END_SYMBOL")
+    archive_size = parse_int(values["ARCHIVE_SIZE"]) if "ARCHIVE_SIZE" in values else None
     import_thunk = values.get("IMPORT_THUNK")
     if import_thunk is not None:
         unexpected = sorted(
@@ -3392,6 +3413,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
                 "ARCHIVE_EXTENT",
                 "ARCHIVE_MEMBER",
                 "ARCHIVE_SHA256",
+                "ARCHIVE_SIZE",
                 "AUTO_INLINE_OFF",
                 "CFLAGS",
                 "COMPILER",
@@ -3414,6 +3436,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
                 "ARCHIVE_EXTENT",
                 "ARCHIVE_MEMBER",
                 "ARCHIVE_SHA256",
+                "ARCHIVE_SIZE",
             )
             if key in values
         )
@@ -3452,6 +3475,19 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
                 raise ValueError(
                     f"{directory}/scratch.conf ARCHIVE_END_SYMBOL must be one COFF symbol",
                 )
+        if archive_size is not None:
+            if archive_extent != "symbol":
+                raise ValueError(
+                    f"{directory}/scratch.conf cannot combine ARCHIVE_SIZE "
+                    "and non-symbol ARCHIVE_EXTENT",
+                )
+            if archive_end_symbol is not None:
+                raise ValueError(
+                    f"{directory}/scratch.conf cannot combine ARCHIVE_SIZE "
+                    "and ARCHIVE_END_SYMBOL",
+                )
+            if archive_size <= 0:
+                raise ValueError(f"{directory}/scratch.conf ARCHIVE_SIZE must be positive")
 
     return ScratchConfig(
         directory=directory,
@@ -3471,6 +3507,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         archive_sha256=archive_sha256.lower() if archive_sha256 is not None else None,
         archive_extent=archive_extent,
         archive_end_symbol=archive_end_symbol,
+        archive_size=archive_size,
         import_thunk=import_thunk,
         auto_inline_off=auto_inline_off,
     )
@@ -3745,6 +3782,7 @@ def _scratch_build_key(
             "archive_extent": config.archive_extent,
             "archive_member": config.archive_member,
             "archive_sha256": config.archive_sha256,
+            "archive_size": config.archive_size,
             "symbol": config.symbol,
             "dependencies": [
                 [
@@ -3783,6 +3821,7 @@ def _scratch_profile_digest(config: ScratchConfig) -> str:
             "archive_extent": config.archive_extent,
             "archive_member": config.archive_member,
             "archive_sha256": config.archive_sha256,
+            "archive_size": config.archive_size,
             "image": config.image,
             "function": config.function,
             "end_va": config.end_va,
@@ -3893,6 +3932,7 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
             config.symbol,
             extent=config.archive_extent,
             end_symbol=config.archive_end_symbol,
+            size=config.archive_size,
         )
     except ValueError as exc:
         defining_members: list[str] = []
@@ -3906,6 +3946,7 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
                     config.symbol,
                     extent=config.archive_extent,
                     end_symbol=config.archive_end_symbol,
+                    size=config.archive_size,
                 )
             except (IndexError, struct.error, ValueError):
                 continue
@@ -4154,6 +4195,7 @@ def evaluate_scratch(
             symbol_name=config.symbol,
             object_extent=config.archive_extent,
             object_end_symbol=config.archive_end_symbol,
+            object_size=config.archive_size,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
         )
@@ -4852,6 +4894,7 @@ def collect_scratch_statuses(
                 config.symbol,
                 extent=config.archive_extent,
                 end_symbol=config.archive_end_symbol,
+                size=config.archive_size,
             )
             result = match_function(
                 target_data,
@@ -5120,8 +5163,12 @@ def _crt_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
         ("87except.obj", "__87except"): "crt_x87_exception",
         ("_file.obj", "___endstdio"): "crt_end_stdio",
         ("_file.obj", "___initstdio"): "crt_init_stdio",
+        ("calloc.obj", "$L17381"): "crt_calloc_sbh_unlock_cleanup",
+        ("calloc.obj", "$L17385"): "crt_calloc_old_sbh_unlock_cleanup",
         ("common.obj", "__convertTOStoQNaN"): "crt_convert_tos_to_qnan",
         ("crt0dat.obj", "__exit"): "crt_immediate_exit",
+        ("free.obj", "$L17371"): "crt_free_sbh_unlock_cleanup",
+        ("free.obj", "$L17375"): "crt_free_old_sbh_unlock_cleanup",
         ("fflush.obj", "_flsall"): "crt_flsall",
         ("fp8.obj", "__setdefaultprecision"): "crt_set_default_precision",
         ("input.obj", "__inc"): "crt_scan_inc",
@@ -5129,7 +5176,13 @@ def _crt_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
         ("input.obj", "__un_inc"): "crt_scan_un_inc",
         ("input.obj", "__whiteout"): "crt_scan_whiteout",
         ("ismbbyte.obj", "_x_ismbbtype"): "crt_ismbbtype",
+        ("malloc.obj", "$L17390"): "crt_heap_alloc_sbh_unlock_cleanup",
+        ("malloc.obj", "$L17394"): "crt_heap_alloc_old_sbh_unlock_cleanup",
+        ("msize.obj", "$L17132"): "crt_msize_sbh_unlock_cleanup",
+        ("msize.obj", "$L17136"): "crt_msize_old_sbh_unlock_cleanup",
         ("onexit.obj", "___onexitinit"): "crt_onexit_init",
+        ("realloc.obj", "$L17775"): "crt_realloc_sbh_unlock_cleanup",
+        ("realloc.obj", "$L17779"): "crt_realloc_old_sbh_unlock_cleanup",
         ("trnsctrl.obj", "___CxxFrameHandler"): "crt_cxx_frame_handler_entry",
         ("tzset.obj", "__isindst"): "crt_is_in_dst",
         ("tzset.obj", "__isindst_lk"): "crt_is_in_dst_lk",
@@ -6952,6 +7005,8 @@ def render_status_rows(
                 build += f":{status.config.archive_extent}"
             if status.config.archive_end_symbol is not None:
                 build += f":until={status.config.archive_end_symbol}"
+            if status.config.archive_size is not None:
+                build += f":size={status.config.archive_size}"
         else:
             build = f"{status.config.compiler} {status.config.cflags}"
         rows.append(

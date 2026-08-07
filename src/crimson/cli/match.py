@@ -224,6 +224,12 @@ def cmd_match_diff(
         "--object-end-symbol",
         help="exclusive COFF code symbol boundary",
     ),
+    object_size: int | None = typer.Option(
+        None,
+        "--object-size",
+        min=1,
+        help="explicit candidate byte size for a COFF code label",
+    ),
     full: bool = typer.Option(False, "--full", help="print the full normalized unified diff"),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for --regions"),
@@ -241,6 +247,7 @@ def cmd_match_diff(
             symbol_name=symbol,
             object_extent=object_extent,
             object_end_symbol=object_end_symbol,
+            object_size=object_size,
             end_va=_parse_hex(end),
         )
     except Exception as exc:
@@ -286,6 +293,7 @@ def cmd_match_scratch(
             symbol_name=config.symbol,
             object_extent=config.archive_extent,
             object_end_symbol=config.archive_end_symbol,
+            object_size=config.archive_size,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
             scope=scope,
@@ -323,6 +331,12 @@ def cmd_match_dump(
         "--object-end-symbol",
         help="exclusive COFF code symbol boundary",
     ),
+    object_size: int | None = typer.Option(
+        None,
+        "--object-size",
+        min=1,
+        help="explicit candidate byte size for a COFF code label",
+    ),
     start_offset: int = typer.Option(0, "--start-offset", min=0, help="skip normalized instructions"),
     count: int | None = typer.Option(None, "--count", min=1, help="maximum normalized instructions to print"),
 ) -> None:
@@ -337,6 +351,7 @@ def cmd_match_dump(
             symbol_name=symbol,
             object_extent=object_extent,
             object_end_symbol=object_end_symbol,
+            object_size=object_size,
             end_va=_parse_hex(end),
         )
     except Exception as exc:
@@ -1378,6 +1393,7 @@ def cmd_match_inspect(
                 symbol_name=config.symbol,
                 object_extent=config.archive_extent,
                 object_end_symbol=config.archive_end_symbol,
+                object_size=config.archive_size,
                 end_va=config.end_va,
                 reference_aliases=config.reference_aliases,
                 scope=scope,

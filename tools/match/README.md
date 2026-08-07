@@ -210,6 +210,7 @@ SYMBOL='?decorated_provider_symbol@@YGXXZ'
 # Choose at most one explicit aggregate boundary:
 ARCHIVE_EXTENT=section-tail
 # ARCHIVE_END_SYMBOL='?next_entry@@YAXXZ'
+# ARCHIVE_SIZE=9
 ```
 
 Archive scratches are provenance-bound alternatives to source scratches:
@@ -230,6 +231,10 @@ boundary in the same COFF section. It is useful when callable entry labels sit
 inside one aggregate assembler routine; it cannot be combined with a
 non-default `ARCHIVE_EXTENT`. The low-level equivalent is
 `--object-end-symbol`.
+`ARCHIVE_SIZE` supplies a positive byte size for a proven COFF code label whose
+object does not encode a function extent. It is mutually exclusive with both
+`ARCHIVE_END_SYMBOL` and a non-default `ARCHIVE_EXTENT`; the low-level
+equivalent is `--object-size`.
 
 Scan an established provider range and materialize only unambiguous matches:
 
