@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred eighty-six exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred ninety-four exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -281,6 +281,21 @@ bytes and 503 instructions with all 11 references resolved. The progressive
 smoothed-output loop remains a stock-source compiler residual and is not
 shaped to force byte identity.
 
-Altogether the two hundred four exact functions cover 37,659 bytes
-and 13,451 instructions in the explicit `all` scope, with every external
+Live Binary Ninja analysis and the official `jdhuff.c` and `jdphuff.c` source
+now identify all fourteen D3DX baseline and progressive Huffman routines plus
+their five private lookup tables. The available historical compiler matrix
+does not reproduce those product-29/build-9178 bodies exactly, so these names
+are retained as analysis evidence without scratch claims or source shaping.
+
+The inverse-DCT manager initializer, all five postprocessing-controller
+routines, and the two previously missing separate-upsampler controller
+routines add 1,445 exact bytes and 545 instructions from `jddctmgr.c`,
+`jdpostct.c`, and `jdsample.c`. The remaining eight already-exact upsampling
+leaves now compile directly from the pinned official `jdsample.c` instead of
+the older local helper transcription. The larger inverse-DCT pass selector is
+mapped but remains excluded: its single sign-extension difference points to
+an unverified provider header variant rather than a source fact we can claim.
+
+Altogether the two hundred twelve exact functions cover 39,104 bytes
+and 13,996 instructions in the explicit `all` scope, with every external
 relocation resolved.

@@ -11140,18 +11140,189 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002f901",
+    "name": "d3dx_jpeg_make_d_derived_tbl",
+    "signature": "void d3dx_jpeg_make_d_derived_tbl(j_decompress_ptr cinfo, JHUFF_TBL *htbl, d_derived_tbl **pdtbl)",
+    "comment": "Archive-confirmed IJG 6a derived Huffman-table builder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002faab",
+    "name": "d3dx_jpeg_fill_bit_buffer",
+    "signature": "boolean d3dx_jpeg_fill_bit_buffer(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, int nbits)",
+    "comment": "Archive-confirmed IJG 6a entropy bit-buffer refill in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002fb95",
+    "name": "d3dx_jpeg_huff_decode",
+    "signature": "int d3dx_jpeg_huff_decode(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, d_derived_tbl *htbl, int min_bits)",
+    "comment": "Archive-confirmed IJG 6a out-of-line Huffman decoder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002fc7f",
+    "name": "d3dx_jpeg_process_huff_restart",
+    "signature": "boolean d3dx_jpeg_process_huff_restart(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a baseline Huffman restart handler in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002fcdd",
+    "name": "d3dx_jpeg_decode_mcu_huff",
+    "signature": "boolean d3dx_jpeg_decode_mcu_huff(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "Archive-confirmed IJG 6a baseline Huffman MCU decoder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100300aa",
+    "name": "d3dx_jpeg_start_pass_huff_decoder",
+    "signature": "void d3dx_jpeg_start_pass_huff_decoder(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a baseline Huffman scan initializer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100301d9",
+    "name": "d3dx_jpeg_init_huff_decoder",
+    "signature": "void d3dx_jpeg_init_huff_decoder(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a baseline Huffman decoder initializer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10030213",
+    "name": "d3dx_jpeg_process_phuff_restart",
+    "signature": "boolean d3dx_jpeg_process_phuff_restart(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a progressive Huffman restart handler in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003026e",
+    "name": "d3dx_jpeg_decode_mcu_dc_first",
+    "signature": "boolean d3dx_jpeg_decode_mcu_dc_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "Archive-confirmed IJG 6a progressive initial-DC MCU decoder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003046b",
+    "name": "d3dx_jpeg_decode_mcu_ac_first",
+    "signature": "boolean d3dx_jpeg_decode_mcu_ac_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "Archive-confirmed IJG 6a progressive initial-AC MCU decoder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10030694",
+    "name": "d3dx_jpeg_decode_mcu_dc_refine",
+    "signature": "boolean d3dx_jpeg_decode_mcu_dc_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "Archive-confirmed IJG 6a progressive refining-DC MCU decoder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10030776",
+    "name": "d3dx_jpeg_decode_mcu_ac_refine",
+    "signature": "boolean d3dx_jpeg_decode_mcu_ac_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
+    "comment": "Archive-confirmed IJG 6a progressive refining-AC MCU decoder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10030ae4",
+    "name": "d3dx_jpeg_start_pass_phuff_decoder",
+    "signature": "void d3dx_jpeg_start_pass_phuff_decoder(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a progressive Huffman scan initializer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10030d87",
+    "name": "d3dx_jpeg_init_phuff_decoder",
+    "signature": "void d3dx_jpeg_init_phuff_decoder(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a progressive Huffman decoder initializer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10030de8",
+    "name": "d3dx_jpeg_start_pass_inverse_dct",
+    "signature": "void d3dx_jpeg_start_pass_inverse_dct(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a inverse-DCT output-pass selector in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10030f9f",
+    "name": "d3dx_jpeg_init_inverse_dct",
+    "signature": "void d3dx_jpeg_init_inverse_dct(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a inverse-DCT manager initializer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10031013",
+    "name": "d3dx_jpeg_post_process_1pass",
+    "signature": "void d3dx_jpeg_post_process_1pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a one-pass postprocessor in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10031078",
-    "name": "FUN_10031078",
-    "signature": "int FUN_10031078(int arg1, int arg2, int arg3, int arg4, int* arg5)",
-    "comment": "[binja] int32_t sub_10031078(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t* arg5)",
-    "create": false
+    "name": "d3dx_jpeg_post_process_prepass",
+    "signature": "void d3dx_jpeg_post_process_prepass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer prepass in the D3DX provider"
   },
   {
     "program": "grim.dll",
     "address": "0x10031108",
-    "name": "FUN_10031108",
-    "signature": "int FUN_10031108(void* arg1, int arg2, int* arg3, int arg4)",
-    "comment": "[binja] int32_t sub_10031108(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
+    "name": "d3dx_jpeg_post_process_2pass",
+    "signature": "void d3dx_jpeg_post_process_2pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a two-pass quantizer output stage in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10031194",
+    "name": "d3dx_jpeg_start_pass_dpost",
+    "signature": "void d3dx_jpeg_start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)",
+    "comment": "Archive-confirmed IJG 6a postprocessor pass selector in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003123a",
+    "name": "d3dx_jpeg_init_d_post_controller",
+    "signature": "void d3dx_jpeg_init_d_post_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
+    "comment": "Archive-confirmed IJG 6a postprocessor controller initializer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004e8c0",
+    "name": "d3dx_jpeg_natural_order",
+    "signature": "const int d3dx_jpeg_natural_order[80]",
+    "comment": "Archive-confirmed IJG 6a natural coefficient order table in the D3DX provider",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004f3a8",
+    "name": "d3dx_jpeg_huff_extend_test",
+    "signature": "const int d3dx_jpeg_huff_extend_test[16]",
+    "comment": "Archive-confirmed IJG 6a baseline Huffman sign-extension threshold table",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004f3e8",
+    "name": "d3dx_jpeg_huff_extend_offset",
+    "signature": "const int d3dx_jpeg_huff_extend_offset[16]",
+    "comment": "Archive-confirmed IJG 6a baseline Huffman sign-extension offset table",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004f490",
+    "name": "d3dx_jpeg_phuff_extend_test",
+    "signature": "const int d3dx_jpeg_phuff_extend_test[16]",
+    "comment": "Archive-confirmed IJG 6a progressive Huffman sign-extension threshold table",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004f4d0",
+    "name": "d3dx_jpeg_phuff_extend_offset",
+    "signature": "const int d3dx_jpeg_phuff_extend_offset[16]",
+    "comment": "Archive-confirmed IJG 6a progressive Huffman sign-extension offset table",
     "create": false
   },
   {
@@ -11164,10 +11335,9 @@
   {
     "program": "grim.dll",
     "address": "0x100312d7",
-    "name": "FUN_100312d7",
-    "signature": "int* FUN_100312d7(void* arg1, int arg2, int* arg3, int arg4, int* arg5, int arg6)",
-    "comment": "[binja] int32_t* sub_100312d7(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6)",
-    "create": false
+    "name": "d3dx_jpeg_sep_upsample",
+    "signature": "void d3dx_jpeg_sep_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
+    "comment": "Archive-confirmed IJG 6a separate-upsampling controller in the D3DX provider"
   },
   {
     "program": "grim.dll",
@@ -11217,6 +11387,13 @@
     "name": "d3dx_jpeg_h2v2_fancy_upsample",
     "signature": "void d3dx_jpeg_h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "Archive-confirmed IJG 6a horizontal and vertical two-to-one triangle-filter upsampler"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100316f9",
+    "name": "d3dx_jpeg_init_upsampler",
+    "signature": "void d3dx_jpeg_init_upsampler(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a separate-upsampler initializer in the D3DX provider"
   },
   {
     "program": "grim.dll",
