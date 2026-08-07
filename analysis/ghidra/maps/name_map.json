@@ -7778,37 +7778,77 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00463325",
-    "name": "FUN_00463325",
-    "signature": "int FUN_00463325(int arg1, void *arg2)",
-    "comment": "[binja] int32_t sub_463325(int32_t arg1, void* const arg2)"
+    "name": "crt_call_member_function_0",
+    "signature": "int crt_call_member_function_0(int arg1, void *arg2)",
+    "comment": "[binja] int32_t crt_call_member_function_0(int32_t arg1, void* const arg2)",
+    "aliases": [
+      "?_CallMemberFunction0@@YGXPAX0@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046332c",
-    "name": "FUN_0046332c",
-    "signature": "int FUN_0046332c(int arg1, void *arg2)",
-    "comment": "[binja] int32_t sub_46332c(int32_t arg1, void* const arg2)"
+    "name": "crt_call_member_function_2",
+    "signature": "int crt_call_member_function_2(int arg1, void *arg2)",
+    "comment": "[binja] int32_t crt_call_member_function_2(int32_t arg1, void* const arg2)",
+    "aliases": [
+      "?_CallMemberFunction2@@YGXPAX00H@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00463333",
-    "name": "FUN_00463333",
-    "signature": "void * FUN_00463333(int arg1, void *arg2)",
-    "comment": "[binja] struct _EXCEPTION_REGISTRATION_RECORD* __stdcall sub_463333(int32_t arg1, EXCEPTION_RECORD* arg2)"
+    "name": "crt_unwind_nested_frames",
+    "signature": "void * crt_unwind_nested_frames(int arg1, void *arg2)",
+    "comment": "[binja] struct _EXCEPTION_REGISTRATION_RECORD* __stdcall crt_unwind_nested_frames(int32_t arg1, EXCEPTION_RECORD* arg2)",
+    "aliases": [
+      "?_UnwindNestedFrames@@YGXPAUEHRegistrationNode@@PAUEHExceptionRecord@@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004633b8",
+    "name": "crt_call_catch_block_2",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\trnsctrl.obj symbol crt_call_catch_block_2.",
+    "create": false,
+    "aliases": [
+      "?_CallCatchBlock2@@YAPAXPAUEHRegistrationNode@@PBU_s_FuncInfo@@PAXHK@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046340c",
-    "name": "FUN_0046340c",
-    "signature": "int FUN_0046340c(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)",
-    "comment": "[binja] int32_t sub_46340c(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)"
+    "name": "crt_catch_guard_handler",
+    "signature": "int crt_catch_guard_handler(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)",
+    "comment": "[binja] int32_t crt_catch_guard_handler(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)",
+    "aliases": [
+      "?CatchGuardHandler@@YA?AW4_EXCEPTION_DISPOSITION@@PAUEHExceptionRecord@@PAUCatchGuardRN@@PAX2@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463431",
+    "name": "crt_call_se_translator",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\trnsctrl.obj symbol crt_call_se_translator.",
+    "create": false,
+    "aliases": [
+      "?_CallSETranslator@@YAHPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAX2PBU_s_FuncInfo@@H1@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004634e7",
-    "name": "FUN_004634e7",
-    "signature": "int FUN_004634e7(EXCEPTION_RECORD *arg1, void *arg2, DWORD arg3)",
-    "comment": "[binja] int32_t sub_4634e7(EXCEPTION_RECORD* arg1, void* arg2, DWORD arg3)"
+    "name": "crt_translator_guard_handler",
+    "signature": "int crt_translator_guard_handler(EXCEPTION_RECORD *arg1, void *arg2, DWORD arg3)",
+    "comment": "[binja] int32_t crt_translator_guard_handler(EXCEPTION_RECORD* arg1, void* arg2, DWORD arg3)",
+    "aliases": [
+      "?TranslatorGuardHandler@@YA?AW4_EXCEPTION_DISPOSITION@@PAUEHExceptionRecord@@PAUTranslatorGuardRN@@PAX2@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8459,24 +8499,66 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00469696",
+    "name": "crt_find_handler",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol crt_find_handler.",
+    "create": false,
+    "aliases": [
+      "?FindHandler@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@EH1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004698f3",
-    "name": "FUN_004698f3",
-    "signature": "int FUN_004698f3(char *arg1, char *arg2, int *arg3)",
-    "comment": "[binja] int32_t sub_4698f3(char* arg1, char* arg2, int32_t* arg3)"
+    "name": "crt_type_match",
+    "signature": "int crt_type_match(char *arg1, char *arg2, int *arg3)",
+    "comment": "[binja] int32_t crt_type_match(char* arg1, char* arg2, int32_t* arg3)",
+    "aliases": [
+      "?TypeMatch@@YAHPBU_s_HandlerType@@PBU_s_CatchableType@@PBU_s_ThrowInfo@@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004699ee",
+    "name": "crt_catch_it",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol crt_catch_it.",
+    "create": false,
+    "aliases": [
+      "?CatchIt@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@PBU_s_HandlerType@@PBU_s_CatchableType@@PBU_s_TryBlockMapEntry@@H1E@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469a69",
+    "name": "crt_call_catch_block",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol crt_call_catch_block.",
+    "create": false,
+    "aliases": [
+      "?CallCatchBlock@@YAPAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PBU_s_FuncInfo@@PAXHK@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00469bae",
-    "name": "FUN_00469bae",
-    "signature": "void * FUN_00469bae(void *arg1, int arg2, char *arg3, char *arg4)",
-    "comment": "[binja] void* sub_469bae(void* arg1, int32_t arg2, char* arg3, char* arg4)"
+    "name": "crt_build_catch_object",
+    "signature": "void * crt_build_catch_object(void *arg1, int arg2, char *arg3, char *arg4)",
+    "comment": "[binja] void* crt_build_catch_object(void* arg1, int32_t arg2, char* arg3, char* arg4)",
+    "aliases": [
+      "?BuildCatchObject@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PBU_s_HandlerType@@PBU_s_CatchableType@@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00469d72",
-    "name": "FUN_00469d72",
-    "signature": "void * FUN_00469d72(void *arg1)",
-    "comment": "[binja] void* sub_469d72(void* arg1)"
+    "name": "crt_destruct_exception_object",
+    "signature": "void * crt_destruct_exception_object(void *arg1)",
+    "comment": "[binja] void* crt_destruct_exception_object(void* arg1)",
+    "aliases": [
+      "?_DestructExceptionObject@@YAXPAUEHExceptionRecord@@E@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8872,9 +8954,33 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046d66f",
-    "name": "FUN_0046d66f",
-    "signature": "int FUN_0046d66f(int *arg1)",
-    "comment": "[binja] int32_t __stdcall sub_46d66f(int32_t* arg1)"
+    "name": "crt_cxx_unhandled_exception_filter",
+    "signature": "int crt_cxx_unhandled_exception_filter(int *arg1)",
+    "comment": "[binja] int32_t __stdcall crt_cxx_unhandled_exception_filter(int32_t* arg1)",
+    "aliases": [
+      "?__CxxUnhandledExceptionFilter@@YGJPAU_EXCEPTION_POINTERS@@@Z"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d6b5",
+    "name": "crt_cxx_set_unhandled_exception_filter",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\unhandld.obj symbol ?__CxxSetUnhandledExceptionFilter@@YAXXZ.",
+    "create": false,
+    "aliases": [
+      "?__CxxSetUnhandledExceptionFilter@@YAXXZ"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d6c6",
+    "name": "crt_cxx_restore_unhandled_exception_filter",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\unhandld.obj symbol ?__CxxRestoreUnhandledExceptionFilter@@YAXXZ.",
+    "create": false,
+    "aliases": [
+      "?__CxxRestoreUnhandledExceptionFilter@@YAXXZ"
+    ]
   },
   {
     "program": "crimsonland.exe",

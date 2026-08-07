@@ -4988,6 +4988,38 @@ def _crt_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
 
     member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
     symbol = status.config.symbol or ""
+    decorated_match = re.match(r"^\?([^@]+)@@", symbol)
+    decorated_operation = decorated_match.group(1) if decorated_match is not None else None
+    decorated_names = {
+        "trnsctrl.obj": {
+            "_CallCatchBlock2": "crt_call_catch_block_2",
+            "_CallMemberFunction0": "crt_call_member_function_0",
+            "_CallMemberFunction2": "crt_call_member_function_2",
+            "_CallSETranslator": "crt_call_se_translator",
+            "_UnwindNestedFrames": "crt_unwind_nested_frames",
+            "CatchGuardHandler": "crt_catch_guard_handler",
+            "TranslatorGuardHandler": "crt_translator_guard_handler",
+        },
+        "frame.obj": {
+            "_DestructExceptionObject": "crt_destruct_exception_object",
+            "BuildCatchObject": "crt_build_catch_object",
+            "CallCatchBlock": "crt_call_catch_block",
+            "CatchIt": "crt_catch_it",
+            "FindHandler": "crt_find_handler",
+            "TypeMatch": "crt_type_match",
+        },
+        "unhandld.obj": {
+            "__CxxRestoreUnhandledExceptionFilter": (
+                "crt_cxx_restore_unhandled_exception_filter"
+            ),
+            "__CxxSetUnhandledExceptionFilter": "crt_cxx_set_unhandled_exception_filter",
+            "__CxxUnhandledExceptionFilter": "crt_cxx_unhandled_exception_filter",
+        },
+    }
+    if decorated_operation is not None:
+        suggestion = decorated_names.get(member.casefold(), {}).get(decorated_operation)
+        if suggestion is not None:
+            return suggestion
     if member.casefold() == "sbheap.obj" and symbol in {
         "___old_sbh_alloc_block",
         "___old_sbh_alloc_block_from_page",

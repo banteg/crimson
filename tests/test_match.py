@@ -2664,6 +2664,56 @@ def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path
     assert all(row.suggestion_sources == (f"provider-symbol:{row.provider_symbol}",) for row in rows)
 
 
+def test_collect_naming_debt_suggests_exact_vc6_eh_decorated_symbol(tmp_path: Path) -> None:
+    symbol = (
+        "?_CallSETranslator@@YAHPAUEHExceptionRecord@@PAUEHRegistrationNode@@"
+        "PAX2PBU_s_FuncInfo@@H1@Z"
+    )
+    config = ScratchConfig(
+        directory=tmp_path / "CallSETranslator_YAHPAUEHExceptionRecord",
+        function=symbol,
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol=symbol,
+        note="vc6-crt-eh-translator",
+        archive="libcmt.lib",
+        archive_member=r"build\intel\mt_obj\trnsctrl.obj",
+        archive_sha256="a" * 64,
+    )
+    status = ScratchStatus(
+        config=config,
+        address=0x00401000,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": symbol,
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    row = collect_naming_debt([status], name_map_path=name_map)[0]
+
+    assert row.suggestion == "crt_call_se_translator"
+    assert row.issues == ("provider-directory-conflict", "provider-name-conflict")
+    assert row.suggestion_sources == (f"provider-symbol:{symbol}",)
+
+
 def test_apply_naming_suggestions_namespaces_exact_source_provider_symbol(
     tmp_path: Path,
 ) -> None:

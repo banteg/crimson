@@ -621,7 +621,9 @@ derive the corresponding `d3dx_image_*` and `d3dx_jpeg_*` identities. Exact
 IJG 6a source recoveries use `grim_jaz_jpeg_*` so their plain C symbols do not
 collide with the separate D3DX-namespaced copy. Pinned VC6 `intrncvt.obj`
 and `sbheap.obj` symbols derive their `crt_*` helper identities, while
-`cprintf.obj` locals receive a `crt_printf_*` context prefix. This also reports
+`cprintf.obj` locals receive a `crt_printf_*` context prefix. Selected decorated
+symbols from the VC6 exception-runtime objects derive readable `crt_*`
+canonicals while retaining their full decorated linkage aliases. This also reports
 `provider-name-conflict` when an older semantic name is meaningful but weaker
 than that exact identity, and `provider-directory-conflict` when only the
 scratch directory still carries the superseded identity. Real
