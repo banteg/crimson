@@ -8241,9 +8241,10 @@
   {
     "program": "grim.dll",
     "address": "0x1000ad9f",
-    "name": "FUN_1000ad9f",
-    "signature": "int FUN_1000ad9f(int arg1, int arg2, int* arg3, int arg4, int* arg5, int* arg6)",
-    "comment": "[binja] int32_t sub_1000ad9f(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t* arg6)",
+    "name": "d3dx_save_surface_to_file",
+    "aliases": ["FUN_1000ad9f", "?SaveSurfaceToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@H@Z"],
+    "signature": "int d3dx_save_surface_to_file(void *path, int format, void *surface, void *palette, void *rect, int ansi_path)",
+    "comment": "Exact DirectX 8.1 internal SaveSurfaceToFile implementation.",
     "create": false
   },
   {
@@ -8931,17 +8932,19 @@
   {
     "program": "grim.dll",
     "address": "0x10010285",
-    "name": "FUN_10010285",
-    "signature": "int* FUN_10010285(int* arg1)",
-    "comment": "[binja] int32_t* __fastcall sub_10010285(int32_t* arg1)",
+    "name": "d3dx_image_ctor",
+    "aliases": ["FUN_10010285", "??0CD3DXImage@@QAE@XZ"],
+    "signature": "void * d3dx_image_ctor(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXImage constructor.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001029e",
-    "name": "FUN_1001029e",
-    "signature": "int FUN_1001029e(void* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001029e(void* arg1)",
+    "name": "d3dx_image_destroy",
+    "aliases": ["FUN_1001029e", "??1CD3DXImage@@QAE@XZ"],
+    "signature": "void d3dx_image_destroy(void *this)",
+    "comment": "Exact DirectX 8.1 CD3DXImage destructor.",
     "create": false
   },
   {
@@ -8955,9 +8958,10 @@
   {
     "program": "grim.dll",
     "address": "0x10010313",
-    "name": "FUN_10010313",
-    "signature": "int FUN_10010313(int* arg1, int* arg2)",
-    "comment": "[binja] int32_t __thiscall sub_10010313(int32_t* arg1, int32_t* arg2)",
+    "name": "d3dx_image_initialize",
+    "aliases": ["FUN_10010313", "?Initialize@CD3DXImage@@QAEJPAUD3DX_BLT@@@Z"],
+    "signature": "int d3dx_image_initialize(void *this, void *blt)",
+    "comment": "Exact DirectX 8.1 CD3DXImage initializer.",
     "create": false
   },
   {
@@ -8971,9 +8975,10 @@
   {
     "program": "grim.dll",
     "address": "0x10010aec",
-    "name": "FUN_10010aec",
-    "signature": "int FUN_10010aec(int* arg1, HANDLE arg2)",
-    "comment": "[binja] int32_t __thiscall sub_10010aec(int32_t* arg1, HANDLE arg2)",
+    "name": "d3dx_image_save_dib",
+    "aliases": ["FUN_10010aec", "?SaveDIB@CD3DXImage@@AAEJPAXH@Z"],
+    "signature": "int d3dx_image_save_dib(void *this, void *file, int include_alpha)",
+    "comment": "Exact DirectX 8.1 CD3DXImage DIB writer.",
     "create": false
   },
   {
@@ -9026,17 +9031,19 @@
   {
     "program": "grim.dll",
     "address": "0x100120d6",
-    "name": "FUN_100120d6",
-    "signature": "int FUN_100120d6(int* arg1, HANDLE arg2)",
-    "comment": "[binja] int32_t __thiscall sub_100120d6(int32_t* arg1, HANDLE arg2)",
+    "name": "d3dx_image_save_dds",
+    "aliases": ["FUN_100120d6", "?SaveDDS@CD3DXImage@@AAEJPAX@Z"],
+    "signature": "int d3dx_image_save_dds(void *this, void *file)",
+    "comment": "Exact DirectX 8.1 CD3DXImage DDS writer.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001237e",
-    "name": "FUN_1001237e",
-    "signature": "int FUN_1001237e(int* arg1, int arg2, int arg3, int* arg4)",
-    "comment": "[binja] int32_t __thiscall sub_1001237e(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4)",
+    "name": "d3dx_image_save",
+    "aliases": ["FUN_1001237e", "?Save@CD3DXImage@@QAEJPBXW4_D3DXIMAGE_FILEFORMAT@@H@Z"],
+    "signature": "int d3dx_image_save(void *this, void *path, int format, int ansi_path)",
+    "comment": "Exact DirectX 8.1 CD3DXImage save method.",
     "create": false
   },
   {
@@ -9050,9 +9057,10 @@
   {
     "program": "grim.dll",
     "address": "0x10012677",
-    "name": "FUN_10012677",
-    "signature": "int FUN_10012677(int* arg1, void* arg2, int* arg3, int* arg4, int arg5)",
-    "comment": "[binja] int32_t __thiscall sub_10012677(int32_t* arg1, void* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5)",
+    "name": "d3dx_image_load",
+    "aliases": ["FUN_10012677", "?Load@CD3DXImage@@QAEJPBXKPAU_D3DXIMAGE_INFO@@H@Z"],
+    "signature": "int d3dx_image_load(void *this, const void *data, unsigned int size, void *info, int flags)",
+    "comment": "Exact DirectX 8.1 CD3DXImage memory loader.",
     "create": false
   },
   {
@@ -10365,9 +10373,10 @@
   {
     "program": "grim.dll",
     "address": "0x1001bdc7",
-    "name": "FUN_1001bdc7",
-    "signature": "int FUN_1001bdc7(void** arg1, int arg2, int* arg3)",
-    "comment": "[binja] int32_t __thiscall sub_1001bdc7(void** arg1, int32_t arg2, int32_t* arg3)",
+    "name": "d3dx_file_create",
+    "aliases": ["FUN_1001bdc7", "?Create@CD3DXFile@@QAEJPBXH@Z"],
+    "signature": "int d3dx_file_create(void *this, const void *path, int ansi_path)",
+    "comment": "Exact DirectX 8.1 CD3DXFile create method.",
     "create": false
   },
   {
@@ -15304,9 +15313,10 @@
   {
     "program": "grim.dll",
     "address": "0x1004b6c3",
-    "name": "FUN_1004b6c3",
-    "signature": "int FUN_1004b6c3(int arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t __stdcall sub_1004b6c3(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "name": "grim_vector_constructor_iterator_eh",
+    "aliases": ["FUN_1004b6c3", "??_L@YGXPAXIHP6EX0@Z1@Z"],
+    "signature": "void grim_vector_constructor_iterator_eh(void *base, unsigned int size, int count, void *constructor, void *destructor)",
+    "comment": "VC6 exception-safe vector-construction iterator proven by exact DirectX 8.1 archive relocations.",
     "create": false
   },
   {
@@ -16817,5 +16827,74 @@
       "?jinit_marker_reader@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000b2fd",
+    "name": "d3dx_lock_surface_scalar_deleting_dtor",
+    "aliases": ["sub_1000B2FD", "??_ECD3DXLockSurface@@QAEPAXI@Z"],
+    "signature": "void * d3dx_lock_surface_scalar_deleting_dtor(void *this, unsigned int flags)",
+    "comment": "Exact DirectX 8.1 CD3DXLockSurface scalar deleting destructor.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10053e28",
+    "name": "d3dx_bmp_formats",
+    "aliases": ["_g_pBMPFormats"],
+    "signature": "const int d3dx_bmp_formats[6]",
+    "comment": "Six-entry CD3DXImage BMP format preference table from the pinned DirectX 8.1 archive.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10053e40",
+    "name": "d3dx_dds_formats",
+    "aliases": ["_g_pDDSFormats"],
+    "signature": "const int d3dx_dds_formats[6]",
+    "comment": "Six-entry CD3DXImage DDS format preference table from the pinned DirectX 8.1 archive.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b845",
+    "name": "d3dx_save_surface_to_file_eh_handler",
+    "signature": "void d3dx_save_surface_to_file_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for the internal D3DX SaveSurfaceToFile implementation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b882",
+    "name": "d3dx_save_texture_to_file_eh_handler",
+    "signature": "void d3dx_save_texture_to_file_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for the internal D3DX SaveTextureToFile implementation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b897",
+    "name": "d3dx_create_texture_from_file_in_memory_ex_eh_handler",
+    "signature": "void d3dx_create_texture_from_file_in_memory_ex_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for D3DX texture creation from memory."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b8b1",
+    "name": "d3dx_image_save_eh_handler",
+    "signature": "void d3dx_image_save_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXImage::Save."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004bbdf",
+    "name": "d3dx_is_intel_sse_processor_eh_handler",
+    "signature": "void d3dx_is_intel_sse_processor_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for the D3DX Intel SSE probe."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c07b",
+    "name": "d3dx_is_intel_sse_processor_cpuid_probe",
+    "comment": "Object-local CPUID probe label referenced by the exact DirectX 8.1 CPU detector.",
+    "create": false
   }
 ]
