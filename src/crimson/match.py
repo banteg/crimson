@@ -4988,6 +4988,23 @@ def _crt_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
 
     member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
     symbol = status.config.symbol or ""
+    if member.casefold() == "sbheap.obj" and symbol in {
+        "___old_sbh_alloc_block",
+        "___old_sbh_alloc_block_from_page",
+        "___old_sbh_decommit_pages",
+        "___old_sbh_free_block",
+        "___old_sbh_release_region",
+        "___old_sbh_resize_block",
+        "___sbh_alloc_block",
+        "___sbh_alloc_new_region",
+    }:
+        return f"crt_{symbol.lstrip('_')}"
+    if member.casefold() == "cprintf.obj" and symbol in {
+        "_get_int64_arg",
+        "_get_int_arg",
+        "_get_short_arg",
+    }:
+        return f"crt_printf_{symbol.lstrip('_')}"
     if member.casefold() != "intrncvt.obj" or symbol not in {
         "__CopyMan",
         "__FillZeroMan",

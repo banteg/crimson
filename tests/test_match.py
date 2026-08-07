@@ -2606,6 +2606,20 @@ def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path
         function="FUN_00401020",
         symbol="__ld12cvt",
     )
+    sbh_config = replace(
+        base_config,
+        directory=tmp_path / "FUN_00401040",
+        function="FUN_00401040",
+        symbol="___old_sbh_alloc_block_from_page",
+        archive_member=r"build\intel\mt_obj\sbheap.obj",
+    )
+    printf_config = replace(
+        base_config,
+        directory=tmp_path / "FUN_00401060",
+        function="FUN_00401060",
+        symbol="_get_int64_arg",
+        archive_member=r"build\intel\mt_obj\cprintf.obj",
+    )
     statuses = [
         ScratchStatus(
             config=config,
@@ -2617,7 +2631,12 @@ def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path
             candidate_instructions=2,
             error=None,
         )
-        for config, address in ((base_config, 0x00401000), (ld12_config, 0x00401020))
+        for config, address in (
+            (base_config, 0x00401000),
+            (ld12_config, 0x00401020),
+            (sbh_config, 0x00401040),
+            (printf_config, 0x00401060),
+        )
     ]
     name_map = tmp_path / "name_map.json"
     name_map.write_text(
@@ -2636,7 +2655,12 @@ def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path
 
     rows = collect_naming_debt(statuses, name_map_path=name_map)
 
-    assert [row.suggestion for row in rows] == ["crt_fill_zero_man", "crt_ld12cvt"]
+    assert [row.suggestion for row in rows] == [
+        "crt_fill_zero_man",
+        "crt_ld12cvt",
+        "crt_old_sbh_alloc_block_from_page",
+        "crt_printf_get_int64_arg",
+    ]
     assert all(row.suggestion_sources == (f"provider-symbol:{row.provider_symbol}",) for row in rows)
 
 

@@ -7985,23 +7985,35 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00464bbc",
-    "name": "FUN_00464bbc",
-    "signature": "int FUN_00464bbc(int *arg1)",
-    "comment": "[binja] int32_t sub_464bbc(int32_t* arg1)"
+    "name": "crt_printf_get_int_arg",
+    "signature": "int crt_printf_get_int_arg(int *arg1)",
+    "comment": "[binja] int32_t crt_printf_get_int_arg(int32_t* arg1)",
+    "aliases": [
+      "_get_int_arg"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00464bc9",
-    "name": "FUN_00464bc9",
-    "signature": "int FUN_00464bc9(int *arg1)",
-    "comment": "[binja] int32_t sub_464bc9(int32_t* arg1)"
+    "name": "crt_printf_get_int64_arg",
+    "signature": "int crt_printf_get_int64_arg(int *arg1)",
+    "comment": "[binja] int32_t crt_printf_get_int64_arg(int32_t* arg1)",
+    "aliases": [
+      "_get_int64_arg"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00464bd9",
-    "name": "FUN_00464bd9",
-    "signature": "void * FUN_00464bd9(int *arg1)",
-    "comment": "[binja] void* sub_464bd9(int32_t* arg1)"
+    "name": "crt_printf_get_short_arg",
+    "signature": "void * crt_printf_get_short_arg(int *arg1)",
+    "comment": "[binja] void* crt_printf_get_short_arg(int32_t* arg1)",
+    "aliases": [
+      "_get_short_arg"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8259,16 +8271,24 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00466fcf",
-    "name": "crt_sbh_alloc",
-    "signature": "void * crt_sbh_alloc(uint size)",
-    "comment": "allocates a small-block heap chunk (size rounded to 16 bytes)"
+    "name": "crt_sbh_alloc_block",
+    "signature": "void * crt_sbh_alloc_block(uint size)",
+    "comment": "allocates a small-block heap chunk (size rounded to 16 bytes)",
+    "aliases": [
+      "___sbh_alloc_block"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004672d8",
-    "name": "FUN_004672d8",
-    "signature": "int * FUN_004672d8(void)",
-    "comment": "[binja] int32_t* sub_4672d8()"
+    "name": "crt_sbh_alloc_new_region",
+    "signature": "int * crt_sbh_alloc_new_region(void)",
+    "comment": "[binja] int32_t* crt_sbh_alloc_new_region()",
+    "aliases": [
+      "___sbh_alloc_new_region"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8290,9 +8310,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004678be",
-    "name": "FUN_004678be",
-    "signature": "BOOL FUN_004678be(int *arg1)",
-    "comment": "[binja] BOOL sub_4678be(int32_t* arg1)"
+    "name": "crt_old_sbh_release_region",
+    "signature": "BOOL crt_old_sbh_release_region(int *arg1)",
+    "comment": "[binja] BOOL crt_old_sbh_release_region(int32_t* arg1)",
+    "aliases": [
+      "___old_sbh_release_region"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00467914",
+    "name": "crt_old_sbh_decommit_pages",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\sbheap.obj symbol ___old_sbh_decommit_pages.",
+    "create": false,
+    "aliases": [
+      "___old_sbh_decommit_pages"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8304,23 +8338,45 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00467a2d",
-    "name": "FUN_00467a2d",
-    "signature": "void * FUN_00467a2d(void *arg1, int arg2, char *arg3)",
-    "comment": "[binja] void* sub_467a2d(void* arg1, int32_t arg2, char* arg3)"
+    "name": "crt_old_sbh_free_block",
+    "signature": "void * crt_old_sbh_free_block(void *arg1, int arg2, char *arg3)",
+    "comment": "[binja] void* crt_old_sbh_free_block(void* arg1, int32_t arg2, char* arg3)",
+    "aliases": [
+      "___old_sbh_free_block"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00467a72",
-    "name": "crt_sbh_alloc_units",
-    "signature": "void * crt_sbh_alloc_units(uint blocks)",
-    "comment": "allocates small-block heap blocks in 16-byte units"
+    "name": "crt_old_sbh_alloc_block",
+    "signature": "void * crt_old_sbh_alloc_block(uint blocks)",
+    "comment": "allocates small-block heap blocks in 16-byte units",
+    "aliases": [
+      "___old_sbh_alloc_block"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00467c7a",
+    "name": "crt_old_sbh_alloc_block_from_page",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\sbheap.obj symbol ___old_sbh_alloc_block_from_page.",
+    "create": false,
+    "aliases": [
+      "___old_sbh_alloc_block_from_page"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00467d9e",
-    "name": "FUN_00467d9e",
-    "signature": "int FUN_00467d9e(void *arg1, void * *arg2, char *arg3, int arg4)",
-    "comment": "[binja] int32_t sub_467d9e(void* arg1, void** arg2, char* arg3, int32_t arg4)"
+    "name": "crt_old_sbh_resize_block",
+    "signature": "int crt_old_sbh_resize_block(void *arg1, void * *arg2, char *arg3, int arg4)",
+    "comment": "[binja] int32_t crt_old_sbh_resize_block(void* arg1, void** arg2, char* arg3, int32_t arg4)",
+    "aliases": [
+      "___old_sbh_resize_block"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
