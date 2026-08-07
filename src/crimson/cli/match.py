@@ -378,6 +378,17 @@ def cmd_match_archive(
     image: Path = typer.Option(matchlib.DEFAULT_IMAGE_PATH, "--image", help="target PE image"),
     functions: Path | None = typer.Option(None, "--functions", help="IDA functions manifest"),
     metadata: Path | None = typer.Option(None, "--metadata", help="IDA metadata manifest"),
+    missing_scratches: bool = typer.Option(
+        False,
+        "--missing-scratches",
+        help="scan only target addresses with no evaluated scratch",
+    ),
+    match_root: Path = typer.Option(
+        matchlib.DEFAULT_MATCH_ROOT,
+        "--match-root",
+        help="tools/match root used by --missing-scratches",
+    ),
+    jobs: int = typer.Option(8, "--jobs", "-j", min=1, help="parallel scratch jobs"),
     start: str = typer.Option(..., "--start", help="inclusive target range start VA"),
     end: str = typer.Option(..., "--end", help="exclusive target range end VA"),
     expected_sha256: str | None = typer.Option(
@@ -393,6 +404,14 @@ def cmd_match_archive(
     """Match historical COFF library members directly against a linked PE range."""
     image_name = image.name
     try:
+        excluded_addresses: frozenset[int] = frozenset()
+        if missing_scratches:
+            statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope="all")
+            excluded_addresses = frozenset(
+                status.address
+                for status in statuses
+                if status.config.image == image_name and status.address is not None
+            )
         report = library_match.match_coff_archive(
             archive,
             image_path=image,
@@ -400,6 +419,7 @@ def cmd_match_archive(
             metadata_path=metadata or matchlib.default_metadata_path(image_name),
             range_start=matchlib.parse_int(start),
             range_end=matchlib.parse_int(end),
+            excluded_addresses=excluded_addresses,
         )
     except Exception as exc:
         typer.echo(f"archive match failed: {str(exc).splitlines()[0]}", err=True)
@@ -410,6 +430,7 @@ def cmd_match_archive(
         payload = library_match.archive_match_payload(report, limit=limit)
         payload["expected_sha256"] = expected_sha256
         payload["hash_ok"] = hash_ok
+        payload["filters"] = {"missing_scratches": missing_scratches}
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
         typer.echo(

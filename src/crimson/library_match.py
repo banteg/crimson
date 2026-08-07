@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import struct
 from collections import Counter, defaultdict
+from collections.abc import Collection
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -67,6 +68,8 @@ class ArchiveMatchReport:
     unique_functions: int
     unique_bytes: int
     matches: tuple[ArchiveFunctionMatch, ...]
+    excluded_target_functions: int = 0
+    excluded_target_bytes: int = 0
 
     @property
     def member_counts(self) -> tuple[tuple[str, int], ...]:
@@ -233,6 +236,7 @@ def match_coff_archive(
     metadata_path: Path,
     range_start: int,
     range_end: int,
+    excluded_addresses: Collection[int] = (),
 ) -> ArchiveMatchReport:
     if range_end <= range_start:
         raise ValueError("archive match range end must be greater than start")
@@ -247,7 +251,16 @@ def match_coff_archive(
         image_name=image_path.name,
         scope="all",
     )
-    targets = tuple(function for function in manifest.functions if range_start <= function.address < range_end)
+    range_targets = tuple(
+        function for function in manifest.functions if range_start <= function.address < range_end
+    )
+    excluded_address_set = frozenset(excluded_addresses)
+    excluded_targets = tuple(
+        function for function in range_targets if function.address in excluded_address_set
+    )
+    targets = tuple(
+        function for function in range_targets if function.address not in excluded_address_set
+    )
 
     matches: list[ArchiveFunctionMatch] = []
     target_bytes = 0
@@ -291,6 +304,11 @@ def match_coff_archive(
         unique_functions=len(unique),
         unique_bytes=sum(match.size for match in unique),
         matches=tuple(matches),
+        excluded_target_functions=len(excluded_targets),
+        excluded_target_bytes=sum(
+            len(image.function_bytes(function.address, function.end))
+            for function in excluded_targets
+        ),
     )
 
 
@@ -328,6 +346,10 @@ def archive_match_payload(
             "matched_bytes": report.matched_bytes,
             "unique_functions": report.unique_functions,
             "unique_bytes": report.unique_bytes,
+        },
+        "exclusions": {
+            "target_functions": report.excluded_target_functions,
+            "target_bytes": report.excluded_target_bytes,
         },
         "listing": {
             "returned_matches": len(listed_matches),
@@ -382,6 +404,8 @@ def render_archive_match_report(
         (
             f"image={report.image.name} "
             f"range=0x{report.range_start:08x}..0x{report.range_end:08x} "
+            f"excluded={report.excluded_target_functions} "
+            f"excluded_bytes={report.excluded_target_bytes} "
             f"matched={report.matched_functions}/{report.target_functions} "
             f"bytes={report.matched_bytes}/{report.target_bytes} "
             f"unique={report.unique_functions} unique_bytes={report.unique_bytes}"

@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import json
 import struct
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 from typing import cast
 
+from typer.testing import CliRunner
+
+from crimson.cli.match import match_app
 from crimson.library_match import (
     AR_MAGIC,
     archive_match_payload,
@@ -125,6 +130,8 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert report.unique_functions == 1
     assert report.matches[0].candidates[0].symbol == "_probe"
     assert report.matches[0].candidates[0].relocation_count == 1
+    assert report.excluded_target_functions == 0
+    assert report.excluded_target_bytes == 0
     candidate = report.matches[0].candidates[0]
     assert candidate.compiler_product == 29
     assert candidate.compiler_build == 9178
@@ -137,6 +144,10 @@ def test_archive_match_requires_exact_unrelocated_bytes(
         payload_matches[0]["candidates"],
     )
     payload_candidate = payload_candidates[0]
+    assert archive_match_payload(report)["exclusions"] == {
+        "target_functions": 0,
+        "target_bytes": 0,
+    }
     assert payload_candidate["compiler"] == {
         "id": "0x001d23da",
         "product": 29,
@@ -169,6 +180,58 @@ def test_archive_match_requires_exact_unrelocated_bytes(
         "truncated": True,
     }
     assert len(cast("list[object]", limited_payload["matches"])) == 1
+
+    excluded_report = match_coff_archive(
+        archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401006,
+        excluded_addresses={0x00401000},
+    )
+    assert excluded_report.target_functions == 0
+    assert excluded_report.target_bytes == 0
+    assert excluded_report.matched_functions == 0
+    assert excluded_report.excluded_target_functions == 1
+    assert excluded_report.excluded_target_bytes == 6
+    assert "excluded=1 excluded_bytes=6" in render_archive_match_report(excluded_report)
+
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.collect_scratch_statuses",
+        lambda *args, **kwargs: [
+            SimpleNamespace(
+                address=0x00401000,
+                config=SimpleNamespace(image="game.exe"),
+            ),
+        ],
+    )
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "archive",
+            str(archive_path),
+            "--image",
+            str(image_path),
+            "--functions",
+            str(functions_path),
+            "--metadata",
+            str(metadata_path),
+            "--start",
+            "0x00401000",
+            "--end",
+            "0x00401006",
+            "--missing-scratches",
+            "--match-root",
+            str(tmp_path),
+            "--json",
+        ],
+    )
+    assert completed.exit_code == 0
+    cli_payload = json.loads(completed.output)
+    assert cli_payload["filters"] == {"missing_scratches": True}
+    assert cli_payload["summary"]["matched_functions"] == 0
+    assert cli_payload["exclusions"] == {"target_functions": 1, "target_bytes": 6}
 
 
 def test_archive_match_trims_untargeted_terminal_padding(

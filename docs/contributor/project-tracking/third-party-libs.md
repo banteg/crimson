@@ -81,6 +81,12 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   --check
 ```
 
+When harvesting new archive scratches, add `--missing-scratches` to evaluate
+the all-scope scratch set and exclude every target address that already has a
+scratch. The text and JSON reports include the excluded function and byte
+counts; combine it with `--show-matches --json` and select `matches[].unique`
+for the remaining uniquely attributable provider functions.
+
 ### Visual C++ 6.0 SP6 runtime
 
 - Evidence: `VS6sp61.cab` from preserved Visual Studio 6 SP6 media contains
