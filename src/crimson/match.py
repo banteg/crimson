@@ -4983,6 +4983,32 @@ def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
     return f"d3dx_{family}_{snake}{implementation_suffix}"
 
 
+def _crt_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
+    """Derive canonical CRT helper names from selected exact VC6 symbols."""
+
+    member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
+    symbol = status.config.symbol or ""
+    if member.casefold() != "intrncvt.obj" or symbol not in {
+        "__CopyMan",
+        "__FillZeroMan",
+        "__IncMan",
+        "__IsZeroMan",
+        "__RoundMan",
+        "__ShrMan",
+        "__ZeroTail",
+        "__atodbl",
+        "__atoflt",
+        "__ld12cvt",
+        "__ld12tod",
+        "__ld12tof",
+    }:
+        return None
+    operation = symbol.lstrip("_")
+    snake = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", operation)
+    snake = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", snake).lower()
+    return f"crt_{snake}"
+
+
 def _source_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
     """Derive contextual identities from exact, versioned third-party source."""
 
@@ -5059,7 +5085,10 @@ def collect_naming_debt(
     for status in exact_statuses:
         canonical = canonical_names[id(status)]
         map_row = name_rows.get((status.config.image, status.address), {})
-        archive_symbol_suggestion = _d3dx_provider_symbol_suggestion(status)
+        archive_symbol_suggestion = (
+            _d3dx_provider_symbol_suggestion(status)
+            or _crt_provider_symbol_suggestion(status)
+        )
         source_symbol_suggestion = _source_provider_symbol_suggestion(status)
         symbol_suggestion = archive_symbol_suggestion or source_symbol_suggestion
         placeholder_aliases = tuple(

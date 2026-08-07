@@ -2585,6 +2585,61 @@ def test_collect_naming_debt_suggests_exact_d3dx_image_and_jpeg_symbols(
     assert jpeg_row.issues == ("placeholder-function",)
 
 
+def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path) -> None:
+    base_config = ScratchConfig(
+        directory=tmp_path / "FUN_00401000",
+        function="FUN_00401000",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol="__FillZeroMan",
+        note="vc6-crt-internal-converter",
+        archive="libcmt.lib",
+        archive_member=r"build\intel\mt_obj\intrncvt.obj",
+        archive_sha256="a" * 64,
+    )
+    ld12_config = replace(
+        base_config,
+        directory=tmp_path / "FUN_00401020",
+        function="FUN_00401020",
+        symbol="__ld12cvt",
+    )
+    statuses = [
+        ScratchStatus(
+            config=config,
+            address=address,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        )
+        for config, address in ((base_config, 0x00401000), (ld12_config, 0x00401020))
+    ]
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": f"0x{status.address:08x}",
+                    "name": status.config.function,
+                }
+                for status in statuses
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(statuses, name_map_path=name_map)
+
+    assert [row.suggestion for row in rows] == ["crt_fill_zero_man", "crt_ld12cvt"]
+    assert all(row.suggestion_sources == (f"provider-symbol:{row.provider_symbol}",) for row in rows)
+
+
 def test_apply_naming_suggestions_namespaces_exact_source_provider_symbol(
     tmp_path: Path,
 ) -> None:

@@ -8425,72 +8425,132 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00469fb2",
-    "name": "FUN_00469fb2",
-    "signature": "int FUN_00469fb2(int arg1, int arg2)",
-    "comment": "[binja] int32_t sub_469fb2(int32_t arg1, int32_t arg2)"
+    "name": "crt_zero_tail",
+    "signature": "int crt_zero_tail(int arg1, int arg2)",
+    "comment": "[binja] int32_t crt_zero_tail(int32_t arg1, int32_t arg2)",
+    "aliases": [
+      "__ZeroTail"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00469ffb",
-    "name": "FUN_00469ffb",
-    "signature": "int FUN_00469ffb(int arg1, int arg2)",
-    "comment": "[binja] int32_t sub_469ffb(int32_t arg1, int32_t arg2)"
+    "name": "crt_inc_man",
+    "signature": "int crt_inc_man(int arg1, int arg2)",
+    "comment": "[binja] int32_t crt_inc_man(int32_t arg1, int32_t arg2)",
+    "aliases": [
+      "__IncMan"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a051",
-    "name": "FUN_0046a051",
-    "signature": "int FUN_0046a051(int arg1, int *arg2)",
-    "comment": "[binja] int32_t sub_46a051(int32_t arg1, int32_t* arg2)"
+    "name": "crt_round_man",
+    "signature": "int crt_round_man(int arg1, int *arg2)",
+    "comment": "[binja] int32_t crt_round_man(int32_t arg1, int32_t* arg2)",
+    "aliases": [
+      "__RoundMan"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a0dd",
-    "name": "FUN_0046a0dd",
-    "signature": "int * FUN_0046a0dd(int arg1, int *arg2)",
-    "comment": "[binja] int32_t* sub_46a0dd(int32_t arg1, int32_t* arg2)"
+    "name": "crt_copy_man",
+    "signature": "int * crt_copy_man(int arg1, int *arg2)",
+    "comment": "[binja] int32_t* crt_copy_man(int32_t arg1, int32_t* arg2)",
+    "aliases": [
+      "__CopyMan"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a0f8",
-    "name": "FUN_0046a0f8",
-    "signature": "void FUN_0046a0f8(int *arg1)",
-    "comment": "[binja] void sub_46a0f8(int32_t* arg1)"
+    "name": "crt_fill_zero_man",
+    "signature": "void crt_fill_zero_man(int *arg1)",
+    "comment": "[binja] void crt_fill_zero_man(int32_t* arg1)",
+    "aliases": [
+      "__FillZeroMan"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a104",
-    "name": "FUN_0046a104",
-    "signature": "int FUN_0046a104(int *arg1)",
-    "comment": "[binja] int32_t sub_46a104(int32_t* arg1)"
+    "name": "crt_is_zero_man",
+    "signature": "int crt_is_zero_man(int *arg1)",
+    "comment": "[binja] int32_t crt_is_zero_man(int32_t* arg1)",
+    "aliases": [
+      "__IsZeroMan"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a11f",
-    "name": "FUN_0046a11f",
-    "signature": "int * FUN_0046a11f(int *arg1, int arg2)",
-    "comment": "[binja] int32_t* sub_46a11f(int32_t* arg1, int32_t arg2)"
+    "name": "crt_shr_man",
+    "signature": "int * crt_shr_man(int *arg1, int arg2)",
+    "comment": "[binja] int32_t* crt_shr_man(int32_t* arg1, int32_t arg2)",
+    "aliases": [
+      "__ShrMan"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a1ac",
-    "name": "FUN_0046a1ac",
-    "signature": "int FUN_0046a1ac(short *arg1, int *arg2, int *arg3)",
-    "comment": "[binja] int32_t sub_46a1ac(int16_t* arg1, int32_t* arg2, int32_t* arg3)"
+    "name": "crt_ld12cvt",
+    "signature": "int crt_ld12cvt(short *arg1, int *arg2, int *arg3)",
+    "comment": "[binja] int32_t crt_ld12cvt(int16_t* arg1, int32_t* arg2, int32_t* arg3)",
+    "aliases": [
+      "__ld12cvt"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a318",
-    "name": "FUN_0046a318",
-    "signature": "int FUN_0046a318(short *arg1, int *arg2)",
-    "comment": "[binja] int32_t sub_46a318(int16_t* arg1, int32_t* arg2)"
+    "name": "crt_ld12tod",
+    "signature": "int crt_ld12tod(short *arg1, int *arg2)",
+    "comment": "[binja] int32_t crt_ld12tod(int16_t* arg1, int32_t* arg2)",
+    "aliases": [
+      "__ld12tod"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046a32e",
-    "name": "FUN_0046a32e",
-    "signature": "int FUN_0046a32e(short *arg1, int *arg2)",
-    "comment": "[binja] int32_t sub_46a32e(int16_t* arg1, int32_t* arg2)"
+    "name": "crt_ld12tof",
+    "signature": "int crt_ld12tof(short *arg1, int *arg2)",
+    "comment": "[binja] int32_t crt_ld12tof(int16_t* arg1, int32_t* arg2)",
+    "aliases": [
+      "__ld12tof"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a344",
+    "name": "crt_atodbl",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\intrncvt.obj symbol __atodbl.",
+    "create": false,
+    "aliases": [
+      "__atodbl"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a371",
+    "name": "crt_atoflt",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\intrncvt.obj symbol __atoflt.",
+    "create": false,
+    "aliases": [
+      "__atoflt"
+    ]
   },
   {
     "program": "crimsonland.exe",
