@@ -11208,6 +11208,14 @@
       "type": "float[32]"
     },
     {
+      "address": "0x100544a0",
+      "aliases": ["_png_gamma_shift"],
+      "comment": "Eight-entry libpng 1.0.5 shift-mask table used while building 16-bit gamma lookup tables.",
+      "name": "png_gamma_shift",
+      "program": "grim.dll",
+      "type": "int[8]"
+    },
+    {
       "address": "0x10059768",
       "comment": "Frame delta time (seconds) used for input decay.",
       "name": "grim_frame_dt",

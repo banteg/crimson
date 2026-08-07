@@ -2238,14 +2238,14 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 326
+    assert payload["summary"]["source_entry_count"] == 327
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 323
-    assert payload["summary"]["typed_entries"] == 273
-    assert payload["summary"]["explicit_size_entries"] == 289
-    assert payload["summary"]["explicit_alignment_entries"] == 289
-    assert payload["summary"]["explicit_initializer_entries"] == 289
-    assert payload["summary"]["fully_specified_entries"] == 289
+    assert payload["summary"]["entry_count"] == 324
+    assert payload["summary"]["typed_entries"] == 274
+    assert payload["summary"]["explicit_size_entries"] == 290
+    assert payload["summary"]["explicit_alignment_entries"] == 290
+    assert payload["summary"]["explicit_initializer_entries"] == 290
+    assert payload["summary"]["fully_specified_entries"] == 290
     assert payload["summary"]["definition_group_entries"] == 215
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
@@ -2270,6 +2270,7 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     assert observed["d3dx_box_filter_2d_a8r8g8b8_impl"]["type"] == "void *"
     assert observed["d3dx_box_filter_2d_x8r8g8b8_impl"]["type"] == "void *"
     assert observed["fpu_control_word_saved_blt"]["type"] == "unsigned long"
+    assert observed["png_gamma_shift"]["type"] == "int[8]"
     assert observed["d3dx_jpeg_std_message_table"]["type"] == "const char *[120]"
     assert observed["grim_jpeg_first_pool_slop"]["type"] == "const size_t[2]"
     assert observed["grim_jpeg_extra_pool_slop"]["type"] == "const size_t[2]"
@@ -2373,6 +2374,9 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
         },
     ]
     assert defined["fpu_control_word_saved_blt"]["initializer_hex"] == "00000000"
+    assert defined["png_gamma_shift"]["initializer_hex"] == (
+        "10000000210000004200000084000000100100004802000050050000f00f0000"
+    )
     assert defined["grim_format_info_default"]["size"] == 0x24
     assert defined["grim_format_info_entries"]["size"] == 43 * 0x24
     assert defined["grim_format_info_end"]["initializer_hex"] == "bcc90410"

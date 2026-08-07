@@ -1,5 +1,5 @@
 {
-  "audit_digest": "fb0bfdd936d89f3b5aefc5fdfa45012728e3dfa89b97029770a32b366fa2116a",
+  "audit_digest": "09d59cd3ddf2d9ecb69bd7ef7a27da2ad782631926f46d456c4d3209e81fa44a",
   "entries": [
     {
       "address": 268747320,
@@ -3798,6 +3798,27 @@
       "size": 128,
       "size_source": "analysis/ghidra/maps/data_map.json: 32-entry neutral dither pattern; tools/native/abi/grim.dll/abi_assertions.cpp: dither_pattern_is_0x80",
       "type": "float[32]"
+    },
+    {
+      "address": 268780704,
+      "aliases": [
+        "_png_gamma_shift"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "Eight-entry libpng 1.0.5 shift-mask table used while building 16-bit gamma lookup tables.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "10000000210000004200000084000000100100004802000050050000f00f0000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x100544a0; pinned DirectX 8.1 pngrtran.obj .data",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "png_gamma_shift",
+      "section": ".data",
+      "section_offset": 5280,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 32,
+      "size_source": "Pinned DirectX 8.1 pngrtran.obj: complete 0x20-byte _png_gamma_shift section; analysis/ghidra/maps/data_map.json: int[8]",
+      "type": "int[8]"
     },
     {
       "address": 268780736,
@@ -7892,9 +7913,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "f5c1918e09c1cfb7b4948261b28480631ec192360042e7f7c55d5dafaced3307",
+    "data_map_sha256": "c0a7d2bc28d8df932c49145a5ef62c9dab0080e9e12a53ad5c22f64db5886140",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "6dce23a3cdc4097d0633d5b4d99714cf700232e35b58a3b4879b1837631b1265",
+    "definitions_sha256": "923d06b2905066804c293701e2478f48c96371eee7dc1be805589ef100a8acae",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -7903,17 +7924,17 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 35,
-    "alias_rows": 35,
+    "alias_names": 36,
+    "alias_rows": 36,
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 323,
-    "explicit_alignment_entries": 289,
-    "explicit_initializer_entries": 289,
-    "explicit_size_entries": 289,
-    "fixed_array_types": 102,
-    "fully_specified_entries": 289,
+    "entry_count": 324,
+    "explicit_alignment_entries": 290,
+    "explicit_initializer_entries": 290,
+    "explicit_size_entries": 290,
+    "fixed_array_types": 103,
+    "fully_specified_entries": 290,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -7921,12 +7942,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 220,
+      ".data": 221,
       ".rdata": 103
     },
-    "source_entry_count": 326,
-    "typed_entries": 273,
-    "unique_addresses": 323,
+    "source_entry_count": 327,
+    "typed_entries": 274,
+    "unique_addresses": 324,
     "untyped_entries": 50
   }
 }

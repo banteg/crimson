@@ -884,6 +884,16 @@
       "initializer_source": "Pinned DirectX 8.1 cd3dxblt.obj box-filter initializer; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data pointer at VA 0x10054394"
     },
     {
+      "address": "0x100544a0",
+      "name": "png_gamma_shift",
+      "size": 32,
+      "size_source": "Pinned DirectX 8.1 pngrtran.obj: complete 0x20-byte _png_gamma_shift section; analysis/ghidra/maps/data_map.json: int[8]",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_hex": "10000000210000004200000084000000100100004802000050050000f00f0000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x100544a0; pinned DirectX 8.1 pngrtran.obj .data"
+    },
+    {
       "address": "0x1005976c",
       "name": "grim_vertex_capacity",
       "size": 4,

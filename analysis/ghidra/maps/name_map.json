@@ -10478,6 +10478,7 @@
     "program": "grim.dll",
     "address": "0x1001ebc4",
     "name": "png_set_bgr",
+    "aliases": ["?png_set_bgr@D3DX@@YAXPAUpng_struct_def@1@@Z"],
     "signature": "void png_set_bgr(png_structp png_ptr)",
     "comment": "Enables libpng's red/blue channel swap transform"
   },
@@ -10485,6 +10486,7 @@
     "program": "grim.dll",
     "address": "0x1001ebcd",
     "name": "png_set_swap",
+    "aliases": ["?png_set_swap@D3DX@@YAXPAUpng_struct_def@1@@Z"],
     "signature": "void png_set_swap(png_structp png_ptr)",
     "comment": "Enables 16-bit sample byte swapping when the input depth is 16"
   },
@@ -10492,6 +10494,7 @@
     "program": "grim.dll",
     "address": "0x1001ebdf",
     "name": "png_set_packing",
+    "aliases": ["?png_set_packing@D3DX@@YAXPAUpng_struct_def@1@@Z"],
     "signature": "void png_set_packing(png_structp png_ptr)",
     "comment": "Expands packed sub-byte samples and promotes the user bit depth to eight"
   },
@@ -10499,6 +10502,7 @@
     "program": "grim.dll",
     "address": "0x1001ebf8",
     "name": "png_set_interlace_handling",
+    "aliases": ["?png_set_interlace_handling@D3DX@@YAHPAUpng_struct_def@1@@Z"],
     "signature": "int png_set_interlace_handling(png_structp png_ptr)",
     "comment": "Enables Adam7 handling and returns seven passes, or one pass for noninterlaced input"
   },
@@ -10506,6 +10510,7 @@
     "program": "grim.dll",
     "address": "0x1001ec11",
     "name": "png_set_filler",
+    "aliases": ["?png_set_filler@D3DX@@YAXPAUpng_struct_def@1@KH@Z"],
     "signature": "void png_set_filler(png_structp png_ptr, png_uint_32 filler, int filler_loc)",
     "comment": "Configures filler value, placement, and transformed channel count"
   },
@@ -10513,48 +10518,121 @@
     "program": "grim.dll",
     "address": "0x1001ec5e",
     "name": "png_do_swap",
+    "aliases": ["?png_do_swap@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
     "signature": "void png_do_swap(png_row_infop row_info, png_bytep row)",
     "comment": "Swaps the byte order of each 16-bit sample in a decoded row"
   },
   {
     "program": "grim.dll",
+    "address": "0x1001ec8b",
+    "name": "png_do_bgr",
+    "aliases": ["sub_1001EC8B", "?png_do_bgr@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
+    "signature": "void png_do_bgr(png_row_infop row_info, png_bytep row)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 red/blue channel swap transform."
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001ed4a",
     "name": "png_set_gamma",
+    "aliases": ["?png_set_gamma@D3DX@@YAXPAUpng_struct_def@1@NN@Z"],
     "signature": "void png_set_gamma(png_structp png_ptr, double screen_gamma, double file_gamma)",
-    "comment": "Stores file and display gamma and enables correction when their product differs from one"
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma configuration entry."
   },
   {
     "program": "grim.dll",
     "address": "0x1001ed89",
     "name": "png_read_transform_info",
+    "aliases": ["?png_read_transform_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"],
     "signature": "void png_read_transform_info(png_structp png_ptr, png_infop info_ptr)",
-    "comment": "Archive-confirmed libpng 1.0.5 post-transform info updater"
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 post-transform info updater."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ee74",
+    "name": "png_do_unpack",
+    "aliases": ["sub_1001EE74", "?png_do_unpack@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
+    "signature": "void png_do_unpack(png_row_infop row_info, png_bytep row)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 packed-sample expansion transform."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ef84",
+    "name": "png_do_unshift",
+    "aliases": ["sub_1001EF84", "?png_do_unshift@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_8_struct@1@@Z"],
+    "signature": "void png_do_unshift(png_row_infop row_info, png_bytep row, png_color_8p sig_bits)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 significant-bit unshift transform."
   },
   {
     "program": "grim.dll",
     "address": "0x1001f0fb",
     "name": "png_do_chop",
+    "aliases": ["?png_do_chop@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"],
     "signature": "void png_do_chop(png_row_infop row_info, png_bytep row)",
-    "comment": "Reduces 16-bit samples to eight bits and updates the row layout"
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 16-bit-to-8-bit sample transform."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001f13f",
+    "name": "png_do_read_filler",
+    "aliases": ["sub_1001F13F", "?png_do_read_filler@D3DX@@YAXPAUpng_row_info_struct@1@PAEKK@Z"],
+    "signature": "void png_do_read_filler(png_row_infop row_info, png_bytep row, png_uint_32 filler, png_uint_32 flags)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 read-side filler-channel transform."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001f377",
+    "name": "png_do_gamma",
+    "aliases": ["sub_1001F377", "?png_do_gamma@D3DX@@YAXPAUpng_row_info_struct@1@PAE1PAPAGH@Z"],
+    "signature": "void png_do_gamma(png_row_infop row_info, png_bytep row, png_bytep gamma_table, png_uint_16pp gamma_16_table, int gamma_shift)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 row gamma transform."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001f6c5",
+    "name": "png_do_expand_palette",
+    "aliases": ["sub_1001F6C5", "?png_do_expand_palette@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_struct@1@1H@Z"],
+    "signature": "void png_do_expand_palette(png_row_infop row_info, png_bytep row, png_colorp palette, png_bytep trans, int num_trans)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 palette expansion transform."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001f8cd",
+    "name": "png_do_expand",
+    "aliases": ["sub_1001F8CD", "?png_do_expand@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_16_struct@1@@Z"],
+    "signature": "void png_do_expand(png_row_infop row_info, png_bytep row, png_color_16p trans_value)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 grayscale, RGB, and transparency expansion transform."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001fc1f",
+    "name": "png_do_dither",
+    "aliases": ["sub_1001FC1F", "?png_do_dither@D3DX@@YAXPAUpng_row_info_struct@1@PAE11@Z"],
+    "signature": "void png_do_dither(png_row_infop row_info, png_bytep row, png_bytep palette_lookup, png_bytep dither_lookup)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 palette dither transform."
   },
   {
     "program": "grim.dll",
     "address": "0x1001fd2d",
-    "name": "FUN_1001fd2d",
-    "signature": "void FUN_1001fd2d(png_structp png_ptr)"
+    "name": "png_build_gamma_table",
+    "aliases": ["FUN_1001fd2d", "?png_build_gamma_table@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "signature": "void png_build_gamma_table(png_structp png_ptr)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma lookup-table builder."
   },
   {
     "program": "grim.dll",
     "address": "0x10020036",
     "name": "png_init_read_transformations",
+    "aliases": ["?png_init_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"],
     "signature": "void png_init_read_transformations(png_structp png_ptr)",
-    "comment": "Archive-confirmed libpng 1.0.5 read-transform initialization"
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 read-transform initialization."
   },
   {
     "program": "grim.dll",
     "address": "0x10020149",
-    "name": "FUN_10020149",
-    "signature": "void FUN_10020149(png_structp png_ptr)"
+    "name": "png_do_read_transformations",
+    "aliases": ["FUN_10020149", "?png_do_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"],
+    "signature": "void png_do_read_transformations(png_structp png_ptr)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 decoded-row transform dispatcher."
   },
   {
     "program": "grim.dll",
