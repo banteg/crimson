@@ -13682,6 +13682,34 @@
       "name": "d3dx_sse2_quaternion_vectors",
       "program": "grim.dll",
       "type": "unsigned char[160]"
+    },
+    {
+      "address": "0x100558a0",
+      "comment": "Exact 736-byte .data section from the pinned DirectX 8.1 d3dxtrigsse.obj archive member.",
+      "name": "d3dx_sse_trig_constants",
+      "program": "grim.dll",
+      "type": "unsigned char[736]"
+    },
+    {
+      "address": "0x10055b80",
+      "comment": "Exact 544-byte .data section from the pinned DirectX 8.1 d3dxtrigsse2.obj archive member.",
+      "name": "d3dx_sse2_trig_constants",
+      "program": "grim.dll",
+      "type": "unsigned char[544]"
+    },
+    {
+      "address": "0x1005e2e0",
+      "comment": "Exact 768-byte .data1 section from the pinned DirectX 8.1 d3dxtrigsse.obj archive member.",
+      "name": "d3dx_sse_trig_table",
+      "program": "grim.dll",
+      "type": "unsigned char[768]"
+    },
+    {
+      "address": "0x1005e5e0",
+      "comment": "Exact 768-byte .data1 section from the pinned DirectX 8.1 d3dxtrigsse2.obj archive member.",
+      "name": "d3dx_sse2_trig_table",
+      "program": "grim.dll",
+      "type": "unsigned char[768]"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."

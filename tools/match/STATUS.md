@@ -22,7 +22,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=70, game_data=0, import=25, toolchain=2 | 0 | 1548 | 1548 | 1548 | 1548 | 1548 |
-| grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 379 | 329 | 345 | 345 | 345 |
+| grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 383 | 333 | 349 | 349 | 349 |
 
 ## Function dispositions
 

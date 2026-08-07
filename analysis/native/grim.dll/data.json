@@ -1,5 +1,5 @@
 {
-  "audit_digest": "86303687012fd54f4ff4345ee4949e359318096f3cd98af85aac58fdf168475e",
+  "audit_digest": "5883c652dc8101145c579472930089c5d727629792282b369c04ca518e63859b",
   "entries": [
     {
       "address": 268747320,
@@ -4865,6 +4865,44 @@
       "type": "unsigned char[32]"
     },
     {
+      "address": 268785824,
+      "aliases": [],
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxtrigsse.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "comment": "Exact 736-byte .data section from the pinned DirectX 8.1 d3dxtrigsse.obj archive member.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "9f4befb09f4befb09f4befb09f4befb0007015b7007015b7007015b7007015b70010494000104940001049400010494000401c4600401c4600401c4600401c4683f9a23e83f9a23e83f9a23e83f9a23e19052f3619052f3619052f3619052f36f1ba4fb9f1ba4fb9f1ba4fb9f1ba4fb9db0fc93fdb0fc93fdb0fc93fdb0fc93f7387083c7387083c7387083c7387083cffffff7fffffff7fffffff7fffffff7fa5aa2abea5aa2abea5aa2abea5aa2abe0000803f0000803f0000803f0000803f000000000000803f000000000000803f0000803f000000bf0000803f000000bfa3aa2abea5aa2a3da3aa2abea5aa2a3d9d83083c1a06b6ba9d83083c1a06b6baf0a14cb9cef5cc37f0a14cb9cef5cc370200000002000000020000000200000001000000010000000100000001000000ffff7f00ffff7f00ffff7f00ffff7f000000004b0000004b0000004b0000004b0000c93f00a0fd390020a2331a61342c83f9223f83f9223f83f9223f83f9223f00000080000000800000008000000080ffffff7fffffff7fffffff7fffffff7f0000803f0000803f0000803f0000803f000000bf000000bf000000bf000000bf0000803f0000803f0000803f0000803fa5aa2a3da5aa2a3da5aa2a3da5aa2a3da3aa2abea3aa2abea3aa2abea3aa2abe1a06b6ba1a06b6ba1a06b6ba1a06b6ba9d83083c9d83083c9d83083c9d83083c0200000002000000020000000200000001000000010000000100000001000000ffff7f00ffff7f00ffff7f00ffff7f00cef5cc37cef5cc37cef5cc37cef5cc37f0a14cb9f0a14cb9f0a14cb9f0a14cb90000004b0000004b0000004b0000004b1a61342c1a61342c1a61342c1a61342c0020a2330020a2330020a2330020a23300a0fd3900a0fd3900a0fd3900a0fd390000c93f0000c93f0000c93f0000c93f83f9223f83f9223f83f9223f83f9223f00000080000000800000008000000080ffffff7fffffff7fffffff7fffffff7f00000000000000000000000000000000",
+      "initializer_source": "Pinned DirectX 8.1 d3dxtrigsse.obj .data; exact byte-for-byte occurrence in game_bins/crimsonland/1.9.93-gog/grim.dll at VA 0x100558a0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse_trig_constants",
+      "section": ".data",
+      "section_offset": 10400,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 736,
+      "size_source": "Pinned DirectX 8.1 d3dxtrigsse.obj: complete 736-byte .data section extent",
+      "type": "unsigned char[736]"
+    },
+    {
+      "address": 268786560,
+      "aliases": [],
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxtrigsse2.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "comment": "Exact 544-byte .data section from the pinned DirectX 8.1 d3dxtrigsse2.obj archive member.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "000000000000803f000000000000803f0000803f000000bf0000803f000000bfa3aa2abea5aa2a3da3aa2abea5aa2a3d9d83083c1a06b6ba9d83083c1a06b6baf0a14cb9cef5cc37f0a14cb9cef5cc370200000002000000020000000200000001000000010000000100000001000000ffff7f00ffff7f00ffff7f00ffff7f000000004b0000004b0000004b0000004b0000c93f00a0fd390020a2331a61342c83f9223f83f9223f83f9223f83f9223f00000080000000800000008000000080ffffff7fffffff7fffffff7fffffff7f0000803f0000803f0000803f0000803f000000bf000000bf000000bf000000bf0000803f0000803f0000803f0000803fa5aa2a3da5aa2a3da5aa2a3da5aa2a3da3aa2abea3aa2abea3aa2abea3aa2abe1a06b6ba1a06b6ba1a06b6ba1a06b6ba9d83083c9d83083c9d83083c9d83083c0200000002000000020000000200000001000000010000000100000001000000ffff7f00ffff7f00ffff7f00ffff7f00cef5cc37cef5cc37cef5cc37cef5cc37f0a14cb9f0a14cb9f0a14cb9f0a14cb90000004b0000004b0000004b0000004b1a61342c1a61342c1a61342c1a61342c0020a2330020a2330020a2330020a23300a0fd3900a0fd3900a0fd3900a0fd390000c93f0000c93f0000c93f0000c93f83f9223f83f9223f83f9223f83f9223f00000080000000800000008000000080ffffff7fffffff7fffffff7fffffff7f00000000000000000000000000000000",
+      "initializer_source": "Pinned DirectX 8.1 d3dxtrigsse2.obj .data; exact byte-for-byte occurrence in game_bins/crimsonland/1.9.93-gog/grim.dll at VA 0x10055b80",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse2_trig_constants",
+      "section": ".data",
+      "section_offset": 11136,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 544,
+      "size_source": "Pinned DirectX 8.1 d3dxtrigsse2.obj: complete 544-byte .data section extent",
+      "type": "unsigned char[544]"
+    },
+    {
       "address": 268787480,
       "aliases": [],
       "alignment": null,
@@ -9021,6 +9059,44 @@
       "size": 160,
       "size_source": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 160-byte .data1 section extent",
       "type": "unsigned char[160]"
+    },
+    {
+      "address": 268821216,
+      "aliases": [],
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxtrigsse.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "comment": "Exact 768-byte .data1 section from the pinned DirectX 8.1 d3dxtrigsse.obj archive member.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffff7fffffff7fffffff7fffffff7f00000000000000000000000000000000db0f4940db0f4940db0f4940db0f4940db0fc93fdb0fc93fdb0fc93fdb0fc93f0000003f0000003f0000003f0000003f0000803f0000803f0000803f0000803fcfbd2d3dcfbd2d3dcfbd2d3dcfbd2d3d198fc43c198fc43c198fc43c198fc43cd8733a3dd8733a3dd8733a3dd8733a3dcc7d993dcc7d993dcc7d993dcc7d993df8aa2a3ef8aa2a3ef8aa2a3ef8aa2a3e0000803f0000803f0000803f0000803f0000803ff8aa2a3e0000803ff8aa2a3ecc7d993dd8733a3dcc7d993dd8733a3d198fc43ccfbd2d3d198fc43ccfbd2d3d182d4454fb21094000000000000000000000004000000040000000400000004000004040000040400000404000004040fee6db2efee6db2efee6db2efee6db2e00000000000000000000803f00000000000000800000008000000080000000800000a0000000a0000000a0000000a0000000007d0000007d0000007d0000007d000000e0ffffffff000000e0ffffffff00f0ffff00f0ffff00f0ffff00f0ffff0000c03e0000c03e0000c03e0000c03e0000643f0000643f0000643f0000643f0000e03f0000e03f0000e03f0000e03f00002c4000002c4000002c4000002c400000003f0000003f0000003f0000003f0000803f0000803f0000803f0000803f00000040000000400000004000000040000000000000e03f000000000000e03f000000000000f03f000000000000f03f3863ed3e3863ed3e3863ed3e3863ed3e6837ac316837ac316837ac316837ac31d80f493fd80f493fd80f493fd80f493f5888283458882834588828345888283410b78d3f10b78d3f10b78d3f10b78d3f8028dab48028dab48028dab48028dab4d80fc93fd80fc93fd80fc93fd80fc93f5888a8345888a8345888a8345888a834682122346821223468212234682122348e4fae3d8e4fae3d8e4fae3d8e4fae3d74550fbe74550fbe74550fbe74550fbebbaa4c3ebbaa4c3ebbaa4c3ebbaa4c3e6daaaabe6daaaabe6daaaabe6daaaabe00000000000000400000000000000040",
+      "initializer_source": "Pinned DirectX 8.1 d3dxtrigsse.obj .data1; exact byte-for-byte occurrence in game_bins/crimsonland/1.9.93-gog/grim.dll at VA 0x1005e2e0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse_trig_table",
+      "section": ".data1",
+      "section_offset": 736,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 768,
+      "size_source": "Pinned DirectX 8.1 d3dxtrigsse.obj: complete 768-byte .data1 section extent",
+      "type": "unsigned char[768]"
+    },
+    {
+      "address": 268821984,
+      "aliases": [],
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxtrigsse2.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "comment": "Exact 768-byte .data1 section from the pinned DirectX 8.1 d3dxtrigsse2.obj archive member.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00f0ffff00f0ffff00f0ffff00f0ffff6daaaabe6daaaabe6daaaabe6daaaabebbaa4c3ebbaa4c3ebbaa4c3ebbaa4c3e74550fbe74550fbe74550fbe74550fbe8e4fae3d8e4fae3d8e4fae3d8e4fae3d68212234682122346821223468212234db0f4940db0f4940db0f4940db0f49400000007d0000007d0000007d0000007d0000a0000000a0000000a0000000a000ffffff7fffffff7fffffff7fffffff7f000000e0ffffffff000000e0ffffffff00000000000000400000000000000040d80fc93fd80fc93fd80fc93fd80fc93f10b78d3f10b78d3f10b78d3f10b78d3fd80f493fd80f493fd80f493fd80f493f3863ed3e3863ed3e3863ed3e3863ed3e5888a8345888a8345888a8345888a8348028dab48028dab48028dab48028dab4588828345888283458882834588828346837ac316837ac316837ac316837ac31000000400000004000000040000000400000803f0000803f0000803f0000803f0000003f0000003f0000003f0000003f00002c4000002c4000002c4000002c400000e03f0000e03f0000e03f0000e03f0000643f0000643f0000643f0000643f0000c03e0000c03e0000c03e0000c03e000000800000008000000080000000800000803ff8aa2a3e0000803ff8aa2a3ecc7d993dd8733a3dcc7d993dd8733a3d198fc43ccfbd2d3d198fc43ccfbd2d3ddb0fc93fdb0fc93fdb0fc93fdb0fc93f0000803f0000803f0000803f0000803f00000040000000400000004000000040000040400000404000004040000040400000003f0000003f0000003f0000003f00000000000000000000000000000000fee6db2efee6db2efee6db2efee6db2e00000000000000000000803f000000000000803f0000803f0000803f0000803ff8aa2a3ef8aa2a3ef8aa2a3ef8aa2a3ecc7d993dcc7d993dcc7d993dcc7d993dd8733a3dd8733a3dd8733a3dd8733a3d198fc43c198fc43c198fc43c198fc43ccfbd2d3dcfbd2d3dcfbd2d3dcfbd2d3d000000000000e03f000000000000e03f000000000000f03f000000000000f03f00000000000000000000000000000000",
+      "initializer_source": "Pinned DirectX 8.1 d3dxtrigsse2.obj .data1; exact byte-for-byte occurrence in game_bins/crimsonland/1.9.93-gog/grim.dll at VA 0x1005e5e0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse2_trig_table",
+      "section": ".data1",
+      "section_offset": 1504,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 768,
+      "size_source": "Pinned DirectX 8.1 d3dxtrigsse2.obj: complete 768-byte .data1 section extent",
+      "type": "unsigned char[768]"
     }
   ],
   "image": "grim.dll",
@@ -9035,9 +9111,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "60c0bd441cd42ad43f49d3adac38b136335bf8d9bf5767f40b4d8c37a67e7b61",
+    "data_map_sha256": "3792870603e70fab57fb026fe69ae3358eaebccfcfcdf7b6de11cff6f7e06dd9",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "0a37693e73c0a6f98d5e614d679048461497b940872ebb43ecfd29ed5ac5ccda",
+    "definitions_sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -9051,12 +9127,12 @@
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 379,
-    "explicit_alignment_entries": 345,
-    "explicit_initializer_entries": 345,
-    "explicit_size_entries": 345,
-    "fixed_array_types": 152,
-    "fully_specified_entries": 345,
+    "entry_count": 383,
+    "explicit_alignment_entries": 349,
+    "explicit_initializer_entries": 349,
+    "explicit_size_entries": 349,
+    "fixed_array_types": 156,
+    "fully_specified_entries": 349,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -9064,13 +9140,13 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 233,
-      ".data1": 4,
+      ".data": 235,
+      ".data1": 6,
       ".rdata": 142
     },
-    "source_entry_count": 382,
-    "typed_entries": 329,
-    "unique_addresses": 379,
+    "source_entry_count": 386,
+    "typed_entries": 333,
+    "unique_addresses": 383,
     "untyped_entries": 50
   }
 }
