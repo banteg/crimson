@@ -2659,6 +2659,9 @@ RECOVERY_VALUES = frozenset({"incomplete", "semantic-complete"})
 RESIDUAL_VALUES = frozenset({"analysis", "compiler", "references"})
 SCRATCH_CONFIG_KEYS = frozenset(
     {
+        "ARCHIVE",
+        "ARCHIVE_MEMBER",
+        "ARCHIVE_SHA256",
         "CFLAGS",
         "COMPILER",
         "END",
@@ -2688,6 +2691,9 @@ class ScratchConfig:
     reference_aliases: tuple[tuple[str, str], ...] = ()
     recovery: str | None = None
     residuals: tuple[str, ...] = ()
+    archive: str | None = None
+    archive_member: str | None = None
+    archive_sha256: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -2863,19 +2869,48 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         unknown = ", ".join(sorted(unknown_residuals))
         raise ValueError(f"{directory}/scratch.conf has invalid RESIDUAL values {unknown}; use {allowed}")
 
+    archive = values.get("ARCHIVE")
+    archive_member = values.get("ARCHIVE_MEMBER")
+    archive_sha256 = values.get("ARCHIVE_SHA256")
+    if archive is None:
+        unexpected = sorted(
+            key
+            for key in ("ARCHIVE_MEMBER", "ARCHIVE_SHA256")
+            if key in values
+        )
+        if unexpected:
+            joined = ", ".join(unexpected)
+            raise ValueError(f"{directory}/scratch.conf sets {joined} without ARCHIVE")
+    else:
+        missing = [
+            key
+            for key in ("ARCHIVE_MEMBER", "ARCHIVE_SHA256", "SYMBOL")
+            if key not in values
+        ]
+        if missing:
+            joined = ", ".join(missing)
+            raise ValueError(f"{directory}/scratch.conf archive scratch must set {joined}")
+        if "SOURCE" in values:
+            raise ValueError(f"{directory}/scratch.conf cannot combine ARCHIVE and SOURCE")
+        if archive_sha256 is None or re.fullmatch(r"[0-9a-fA-F]{64}", archive_sha256) is None:
+            raise ValueError(f"{directory}/scratch.conf ARCHIVE_SHA256 must be 64 hexadecimal characters")
+
     return ScratchConfig(
         directory=directory,
         function=values["FUNCTION"],
         image=values.get("IMAGE", DEFAULT_SCRATCH_IMAGE),
         compiler=values.get("COMPILER", DEFAULT_SCRATCH_COMPILER),
         cflags=values.get("CFLAGS", DEFAULT_SCRATCH_CFLAGS),
-        source=values.get("SOURCE", "scratch.cpp"),
+        source=values.get("SOURCE", "scratch.cpp") if archive is None else "",
         end_va=int(values["END"], 0) if "END" in values else None,
         symbol=values.get("SYMBOL"),
         note=values.get("NOTE", ""),
         reference_aliases=tuple(reference_aliases),
         recovery=recovery,
         residuals=residuals,
+        archive=archive,
+        archive_member=archive_member,
+        archive_sha256=archive_sha256.lower() if archive_sha256 is not None else None,
     )
 
 
@@ -2893,6 +2928,15 @@ def validate_scratch_source(source: Path) -> None:
             raise ValueError(
                 f"{source}: inline assembly/naked functions are not allowed in scratches (no fakematching)",
             )
+
+
+def _scratch_archive_path(config: ScratchConfig) -> Path:
+    if config.archive is None:
+        raise ValueError(f"{config.directory}/scratch.conf does not configure ARCHIVE")
+    path = Path(config.archive)
+    if not path.is_absolute():
+        path = config.directory / path
+    return path.resolve()
 
 
 def _mtime_ns(path: Path) -> int | None:
@@ -2941,6 +2985,8 @@ def _scratch_include_headers(
     *,
     resolver: _ScratchIncludeResolver | None = None,
 ) -> tuple[Path, ...]:
+    if config.archive is not None:
+        return ()
     resolver = resolver or _ScratchIncludeResolver(match_root)
     source = config.directory / config.source
     pending = [source]
@@ -2987,6 +3033,11 @@ def _scratch_build_dependencies(
     *,
     include_resolver: _ScratchIncludeResolver | None = None,
 ) -> tuple[Path, ...]:
+    if config.archive is not None:
+        return (
+            _scratch_archive_path(config),
+            config.directory / "scratch.conf",
+        )
     return (
         config.directory / config.source,
         config.directory / "scratch.conf",
@@ -3003,6 +3054,20 @@ def _scratch_build_key(
     include_resolver: _ScratchIncludeResolver | None = None,
 ) -> dict[str, Any]:
     dependencies = _scratch_build_dependencies(config, match_root, include_resolver=include_resolver)
+    if config.archive is not None:
+        return {
+            "archive": config.archive,
+            "archive_member": config.archive_member,
+            "archive_sha256": config.archive_sha256,
+            "symbol": config.symbol,
+            "dependencies": [
+                [
+                    str(path.relative_to(match_root) if path.is_relative_to(match_root) else path),
+                    _mtime_ns(path),
+                ]
+                for path in dependencies
+            ],
+        }
     return {
         "compiler": config.compiler,
         "argv": list(_scratch_compile_argv(config, match_root)),
@@ -3014,21 +3079,33 @@ def _scratch_build_key(
 
 
 def _scratch_profile_digest(config: ScratchConfig) -> str:
-    payload = {
-        "compiler": config.compiler,
-        "cflags": shlex.split(config.cflags),
-        "source": config.source,
-        "image": config.image,
-        "function": config.function,
-        "end_va": config.end_va,
-        "symbol": config.symbol,
-    }
+    if config.archive is not None:
+        payload = {
+            "archive": config.archive,
+            "archive_member": config.archive_member,
+            "archive_sha256": config.archive_sha256,
+            "image": config.image,
+            "function": config.function,
+            "end_va": config.end_va,
+            "symbol": config.symbol,
+        }
+    else:
+        payload = {
+            "compiler": config.compiler,
+            "cflags": shlex.split(config.cflags),
+            "source": config.source,
+            "image": config.image,
+            "function": config.function,
+            "end_va": config.end_va,
+            "symbol": config.symbol,
+        }
     encoded = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
     return hashlib.sha256(encoded).hexdigest()[:16]
 
 
 def _scratch_build_directory(config: ScratchConfig) -> Path:
-    return config.directory / "build" / config.compiler / _scratch_profile_digest(config)
+    profile = "archive" if config.archive is not None else config.compiler
+    return config.directory / "build" / profile / _scratch_profile_digest(config)
 
 
 def _write_text_atomic(path: Path, text: str) -> None:
@@ -3049,6 +3126,72 @@ def _write_text_atomic(path: Path, text: str) -> None:
         os.replace(temp_path, path)
     finally:
         temp_path.unlink(missing_ok=True)
+
+
+def _write_bytes_atomic(path: Path, data: bytes) -> None:
+    import tempfile
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        mode="wb",
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as handle:
+        handle.write(data)
+        temp_path = Path(handle.name)
+    try:
+        os.replace(temp_path, path)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
+    from .library_match import parse_coff_archive
+
+    archive_path = _scratch_archive_path(config)
+    archive_data = archive_path.read_bytes()
+    observed_sha256 = hashlib.sha256(archive_data).hexdigest()
+    if observed_sha256 != config.archive_sha256:
+        raise ValueError(
+            f"{archive_path}: archive SHA-256 mismatch: "
+            f"expected {config.archive_sha256}, got {observed_sha256}",
+        )
+
+    members = tuple(
+        member
+        for member in parse_coff_archive(archive_data)
+        if member.name == config.archive_member
+    )
+    if len(members) != 1:
+        raise ValueError(
+            f"{archive_path}: expected exactly one archive member "
+            f"{config.archive_member!r}, found {len(members)}",
+        )
+    obj_data = members[0].data
+    try:
+        obj = parse_coff_object(obj_data)
+    except (IndexError, struct.error, ValueError) as exc:
+        raise ValueError(
+            f"{archive_path}:{config.archive_member}: archive member is not a valid COFF object",
+        ) from exc
+    if config.symbol is None:
+        raise ValueError(f"{config.directory}/scratch.conf archive scratch must set SYMBOL")
+    try:
+        extract_object_function(obj, config.symbol)
+    except ValueError as exc:
+        raise ValueError(
+            f"{archive_path}:{config.archive_member}: missing function symbol {config.symbol!r}",
+        ) from exc
+    return obj_data
+
+
+def validate_scratch_config(config: ScratchConfig) -> None:
+    if config.archive is not None:
+        _archive_scratch_object_bytes(config)
+        return
+    validate_scratch_source(config.directory / config.source)
 
 
 def _scratch_object_is_current(
@@ -3084,6 +3227,26 @@ def compile_scratch(
     import tempfile
 
     match_root = match_root.resolve()
+    if config.archive is not None:
+        build_dir = _scratch_build_directory(config)
+        member_name = Path((config.archive_member or "candidate.obj").replace("\\", "/")).name
+        obj_name = member_name if member_name.casefold().endswith(".obj") else "candidate.obj"
+        obj_path = build_dir / obj_name
+        if not force and _scratch_object_is_current(
+            obj_path,
+            config,
+            match_root,
+            include_resolver=include_resolver,
+        ):
+            return obj_path
+        obj_data = _archive_scratch_object_bytes(config)
+        _write_bytes_atomic(obj_path, obj_data)
+        _write_text_atomic(
+            build_dir / "scratch-build.json",
+            json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
+        )
+        return obj_path
+
     source = config.directory / config.source
     validate_scratch_source(source)
     build_dir = _scratch_build_directory(config)
@@ -3219,6 +3382,8 @@ def evaluate_source_probe(
 ) -> ProbeResult:
     """Compare a temporary source overlay without modifying the scratch."""
 
+    if config.archive is not None:
+        raise ValueError("source probes are unavailable for archive-backed scratches")
     match_root = match_root.resolve()
     baseline_config = replace(
         config,
@@ -3249,6 +3414,8 @@ def evaluate_source_overlay(
 
     import tempfile
 
+    if config.archive is not None:
+        raise ValueError("source overlays are unavailable for archive-backed scratches")
     match_root = match_root.resolve()
     source_name = Path(config.source).name
     with tempfile.TemporaryDirectory(prefix=f"crimson-match-probe-{config.directory.name}-") as temp_name:
@@ -3288,6 +3455,8 @@ def evaluate_profile_matrix(
     cflags: tuple[str, ...],
     match_root: Path = DEFAULT_MATCH_ROOT,
 ) -> list[ScratchStatus]:
+    if config.archive is not None:
+        raise ValueError("compiler profiles are unavailable for archive-backed scratches")
     profiles = [
         replace(config, compiler=compiler, cflags=profile_cflags)
         for compiler in dict.fromkeys(compilers)
@@ -4536,6 +4705,9 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
         },
         "compiler": status.config.compiler,
         "cflags": status.config.cflags,
+        "archive": status.config.archive,
+        "archive_member": status.config.archive_member,
+        "archive_sha256": status.config.archive_sha256,
         "scratch": str(status.config.directory),
         "recovery": scratch_recovery(status),
         "residuals": list(status.config.residuals),
@@ -4843,7 +5015,11 @@ def render_status_rows(
             if status.ratio is not None
             else "-"
         )
-        build = f"{status.config.compiler} {status.config.cflags}"
+        build = (
+            f"archive:{status.config.archive_member}"
+            if status.config.archive is not None
+            else f"{status.config.compiler} {status.config.cflags}"
+        )
         rows.append(
             (
                 status.state,
@@ -5620,7 +5796,7 @@ def _image_summary(total: ImageTotals) -> str:
         f"({total.byte_percentage:.1%}) matched; "
         f"{total.fuzzy_weighted_bytes:.0f}/{total.byte_total} fuzzy-weighted bytes "
         f"({total.fuzzy_byte_percentage:.1%}); "
-        f"{total.candidate_functions}/{total.function_count} source candidates covering "
+        f"{total.candidate_functions}/{total.function_count} reproducible candidates covering "
         f"{total.candidate_bytes}/{total.byte_total} bytes "
         f"({total.candidate_byte_percentage:.1%}); "
         f"{total.matched_scratches}/{total.scratch_count} scratches verified"
@@ -5635,7 +5811,7 @@ def render_status_summary(totals: list[ImageTotals]) -> str:
         f"({overall.byte_percentage:.1%}) matched; "
         f"{overall.fuzzy_weighted_bytes:.0f}/{overall.byte_total} fuzzy-weighted bytes "
         f"({overall.fuzzy_byte_percentage:.1%}); "
-        f"{overall.candidate_functions}/{overall.function_count} source candidates covering "
+        f"{overall.candidate_functions}/{overall.function_count} reproducible candidates covering "
         f"{overall.candidate_bytes}/{overall.byte_total} bytes "
         f"({overall.candidate_byte_percentage:.1%}); "
         f"{overall.matched_scratches}/{overall.scratch_count} scratches verified"),
@@ -5786,7 +5962,7 @@ def render_status_markdown(
         f"{overall.byte_total}** code bytes "
         f"(**{overall.fuzzy_byte_percentage:.1%}**)."),
         "",
-        (f"Compilable source candidates cover **{overall.candidate_functions}/{overall.function_count}** "
+        (f"Reproducible candidates cover **{overall.candidate_functions}/{overall.function_count}** "
         f"functions and **{overall.candidate_bytes}/{overall.byte_total}** code bytes "
         f"(**{overall.candidate_byte_percentage:.1%}**). Candidate coverage includes exact "
         "matches and WIPs; it does not claim byte identity."),
@@ -5841,7 +6017,7 @@ def render_status_markdown(
                 f"(**{total.byte_percentage:.1%}**), "
                 f"**{total.fuzzy_weighted_bytes:.0f}/{total.byte_total}** fuzzy-weighted bytes "
                 f"(**{total.fuzzy_byte_percentage:.1%}**), "
-                f"**{total.candidate_functions}/{total.function_count}** source candidates covering "
+                f"**{total.candidate_functions}/{total.function_count}** reproducible candidates covering "
                 f"**{total.candidate_bytes}/{total.byte_total}** bytes "
                 f"(**{total.candidate_byte_percentage:.1%}**), "
                 f"**{total.matched_scratches}/{total.scratch_count}** scratches verified."),

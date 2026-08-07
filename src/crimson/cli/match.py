@@ -339,8 +339,9 @@ def cmd_match_validate(
     try:
         if source.is_dir():
             config = matchlib.load_scratch_config(source)
-            source = config.directory / config.source
-        matchlib.validate_scratch_source(source)
+            matchlib.validate_scratch_config(config)
+        else:
+            matchlib.validate_scratch_source(source)
     except (OSError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc

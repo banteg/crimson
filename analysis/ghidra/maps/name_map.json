@@ -11151,6 +11151,17 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10025c00",
+    "name": "d3dx_sse_vec2_transform",
+    "aliases": [
+      "?sse_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z",
+      "sub_10025C00"
+    ],
+    "signature": "void * __stdcall d3dx_sse_vec2_transform(void *out, const void *input, const void *matrix)",
+    "comment": "Unique exact DirectX 8.1 d3dx8.lib SSE implementation of D3DXVec2Transform"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002e65a",
     "name": "d3dx_jpeg_get_small",
     "aliases": [

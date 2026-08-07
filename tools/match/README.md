@@ -198,6 +198,22 @@ RESIDUAL=compiler
 Only the fields shown above plus `NOTE` are accepted; misspelled or malformed
 assignments fail immediately instead of silently falling back to defaults.
 
+An exact historical provider object can be used without recompiling source:
+
+```sh
+FUNCTION=provider_function
+ARCHIVE=../../../native/providers/build/provider/provider.lib
+ARCHIVE_MEMBER='objf\i386\provider.obj'
+ARCHIVE_SHA256=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+SYMBOL='?decorated_provider_symbol@@YGXXZ'
+```
+
+Archive scratches are provenance-bound alternatives to source scratches:
+`ARCHIVE_SHA256`, `ARCHIVE_MEMBER`, and `SYMBOL` are mandatory, `SOURCE` is
+forbidden, and the extracted member still passes the ordinary instruction and
+reference audit. This promotes an exact pinned-library match into checkpoints
+without treating a whole archive or an ambiguous member hit as recovered code.
+
 `REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
 names are reused across translation units. Each comma-separated
 `object-symbol:image-symbol` pair scopes that candidate symbol to one uniquely

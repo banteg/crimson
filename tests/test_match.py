@@ -128,6 +128,23 @@ def build_object(code: bytes, symbols: list[tuple[str, int]], relocations: list[
     return header + section + code + reloc_records + symbol_records + string_table
 
 
+def build_archive(member_name: str, payload: bytes) -> bytes:
+    def member(name: bytes, data: bytes) -> bytes:
+        header = (
+            name.ljust(16)
+            + b"0".ljust(12)
+            + b"0".ljust(6)
+            + b"0".ljust(6)
+            + b"100644".ljust(8)
+            + str(len(data)).encode().ljust(10)
+            + b"`\n"
+        )
+        return header + data + (b"\n" if len(data) & 1 else b"")
+
+    long_names = f"{member_name}/\n".encode()
+    return b"!<arch>\n" + member(b"//", long_names) + member(b"/0", payload)
+
+
 def test_load_manifest_resolves_known_function() -> None:
     manifest = load_function_manifest(DEFAULT_FUNCTIONS_PATH)
     function, start, end = resolve_function(manifest, "player_update")
@@ -556,6 +573,45 @@ def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
 
     assert config.recovery == "semantic-complete"
     assert config.residuals == ("compiler", "references")
+
+
+def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=foo ARCHIVE=provider.lib "
+        "ARCHIVE_MEMBER='obj\\i386\\foo.obj' "
+        f"ARCHIVE_SHA256={'a' * 64} SYMBOL=_foo\n",
+        encoding="utf-8",
+    )
+
+    config = load_scratch_config(tmp_path)
+
+    assert config.source == ""
+    assert config.archive == "provider.lib"
+    assert config.archive_member == r"obj\i386\foo.obj"
+    assert config.archive_sha256 == "a" * 64
+
+
+@pytest.mark.parametrize(
+    "config, message",
+    (
+        ("FUNCTION=foo ARCHIVE_MEMBER=foo.obj", "without ARCHIVE"),
+        ("FUNCTION=foo ARCHIVE=provider.lib", "must set ARCHIVE_MEMBER, ARCHIVE_SHA256, SYMBOL"),
+        (
+            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo SOURCE=foo.c",
+            "cannot combine ARCHIVE and SOURCE",
+        ),
+    ),
+)
+def test_scratch_config_rejects_invalid_archive_mode(
+    tmp_path: Path,
+    config: str,
+    message: str,
+) -> None:
+    (tmp_path / "scratch.conf").write_text(config, encoding="utf-8")
+
+    with pytest.raises(ValueError, match=message):
+        load_scratch_config(tmp_path)
 
 
 def test_scratch_config_rejects_unknown_fields(tmp_path: Path) -> None:
@@ -1681,7 +1737,7 @@ def test_render_status_rows_includes_prefix() -> None:
     assert (
         "all images: 0/30 functions, 0/3000 bytes (0.0%) matched; "
         "5/3000 fuzzy-weighted bytes (0.2%); "
-        "1/30 source candidates covering 10/3000 bytes (0.3%); "
+        "1/30 reproducible candidates covering 10/3000 bytes (0.3%); "
         "0/1 scratches verified"
     ) in render_status_table([status], totals)
     assert render_status_summary(totals).startswith(
@@ -2571,6 +2627,56 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert len(commands) == 3
     assert Path(commands[0][0]).is_absolute()
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
+
+
+def test_compile_scratch_extracts_hash_pinned_archive_member(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "foo"
+    scratch.mkdir(parents=True)
+    obj_data = build_object(b"\xc3", [("_foo", 0)], [])
+    archive_data = build_archive(r"obj\i386\foo.obj", obj_data)
+    archive = scratch / "provider.lib"
+    archive.write_bytes(archive_data)
+    digest = hashlib.sha256(archive_data).hexdigest()
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=foo ARCHIVE=provider.lib "
+        "ARCHIVE_MEMBER='obj\\i386\\foo.obj' "
+        f"ARCHIVE_SHA256={digest} SYMBOL=_foo\n",
+        encoding="utf-8",
+    )
+    config = load_scratch_config(scratch)
+
+    extracted = compile_scratch(config, match_root)
+    cached = compile_scratch(config, match_root)
+
+    assert extracted == cached
+    assert extracted.name == "foo.obj"
+    assert extracted.read_bytes() == obj_data
+    assert _scratch_build_key(config, match_root)["archive_member"] == r"obj\i386\foo.obj"
+
+    with pytest.raises(ValueError, match="archive SHA-256 mismatch"):
+        compile_scratch(replace(config, archive_sha256="0" * 64), match_root)
+    with pytest.raises(ValueError, match="expected exactly one archive member"):
+        compile_scratch(replace(config, archive_member="missing.obj"), match_root)
+
+
+def test_validate_command_accepts_pinned_archive_scratch(tmp_path: Path) -> None:
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    obj_data = build_object(b"\xc3", [("_foo", 0)], [])
+    archive_data = build_archive("foo.obj", obj_data)
+    (scratch / "provider.lib").write_bytes(archive_data)
+    digest = hashlib.sha256(archive_data).hexdigest()
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+        f"ARCHIVE_SHA256={digest} SYMBOL=_foo\n",
+        encoding="utf-8",
+    )
+
+    completed = CliRunner().invoke(match_app, ["validate", str(scratch)])
+
+    assert completed.exit_code == 0
+    assert completed.output == "ok\n"
 
 
 def test_exception_summary_keeps_first_actionable_compiler_diagnostic() -> None:

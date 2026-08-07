@@ -8,7 +8,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 Fuzzy-weighted alignment is **303288/341963** code bytes (**88.7%**).
 
-Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Reproducible candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Native linking
 
@@ -97,7 +97,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## crimsonland.exe
 
-**563/671** functions, **115968/320805** bytes (**36.1%**), **282487/320805** fuzzy-weighted bytes (**88.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **563/671** scratches verified.
+**563/671** functions, **115968/320805** bytes (**36.1%**), **282487/320805** fuzzy-weighted bytes (**88.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **563/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -775,7 +775,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## grim.dll
 
-**131/137** functions, **14938/21158** bytes (**70.6%**), **20801/21158** fuzzy-weighted bytes (**98.3%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
+**131/137** functions, **14938/21158** bytes (**70.6%**), **20801/21158** fuzzy-weighted bytes (**98.3%**), **137/137** reproducible candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
