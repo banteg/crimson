@@ -11140,6 +11140,17 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10025aec",
+    "name": "d3dx_zlib_crc32",
+    "aliases": [
+      "crc32",
+      "sub_10025AEC"
+    ],
+    "signature": "unsigned long d3dx_zlib_crc32(unsigned long crc, const unsigned char *buffer, unsigned int length)",
+    "comment": "Archive-confirmed zlib 1.1.3 CRC-32 routine embedded in the D3DX image codec provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002e65a",
     "name": "d3dx_jpeg_get_small",
     "aliases": [

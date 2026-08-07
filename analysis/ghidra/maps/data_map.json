@@ -12992,6 +12992,16 @@
       "type": "const png_byte[5]"
     },
     {
+      "address": "0x1004ef90",
+      "aliases": [
+        "crc_table"
+      ],
+      "comment": "Archive-confirmed zlib 1.1.3 CRC-32 lookup table embedded in the D3DX image codec provider.",
+      "name": "d3dx_zlib_crc_table",
+      "program": "grim.dll",
+      "type": "const unsigned long[256]"
+    },
+    {
       "address": "0x1004f5d0",
       "comment": "Archive-confirmed IJG 6a 16-by-16 Bayer ordered-dither matrix.",
       "name": "d3dx_jpeg_base_dither_matrix",
