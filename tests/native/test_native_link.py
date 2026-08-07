@@ -2238,10 +2238,10 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 319
+    assert payload["summary"]["source_entry_count"] == 320
     assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 316
-    assert payload["summary"]["typed_entries"] == 266
+    assert payload["summary"]["entry_count"] == 317
+    assert payload["summary"]["typed_entries"] == 267
     assert payload["summary"]["explicit_size_entries"] == 283
     assert payload["summary"]["explicit_alignment_entries"] == 283
     assert payload["summary"]["explicit_initializer_entries"] == 283
@@ -2262,6 +2262,7 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
         )
     )
     observed = {entry["name"]: entry for entry in payload["entries"]}
+    assert observed["d3dx_format_conversion_matrix"]["type"] == "const int[5][5]"
     assert observed["d3dx_jpeg_std_message_table"]["type"] == "const char *[120]"
     assert observed["grim_jpeg_first_pool_slop"]["type"] == "const size_t[2]"
     assert observed["grim_jpeg_extra_pool_slop"]["type"] == "const size_t[2]"

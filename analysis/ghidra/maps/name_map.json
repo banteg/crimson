@@ -8196,17 +8196,46 @@
   {
     "program": "grim.dll",
     "address": "0x1000aaca",
-    "name": "FUN_1000aaca",
-    "signature": "int FUN_1000aaca(void* arg1, int arg2)",
-    "comment": "[binja] int32_t __fastcall sub_1000aaca(void* arg1, int32_t arg2)",
+    "name": "d3dx_score_format",
+    "aliases": ["FUN_1000aaca", "?D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z"],
+    "signature": "unsigned int d3dx_score_format(const void *candidate, const void *requested)",
+    "comment": "Exact DirectX 8.1 format-compatibility scoring helper.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ab3f",
+    "name": "d3dx_find_closest_format",
+    "aliases": ["sub_1000AB3F", "?D3DXFindClosestFormat@@YA?AW4_D3DFORMAT@@PBW41@PBUtagPALETTEENTRY@@PBU_D3DXFORMAT_INFO@@@Z"],
+    "signature": "int d3dx_find_closest_format(const int *formats, const void *palette, const void *requested)",
+    "comment": "Exact DirectX 8.1 helper that ranks a format list against the requested descriptor.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000abad",
+    "name": "d3dx_find_closest_device_format",
+    "aliases": ["sub_1000ABAD", "?D3DXFindClosestDeviceFormat@@YA?AW4_D3DFORMAT@@PAUIDirect3DDevice8@@KW4_D3DRESOURCETYPE@@PBU_D3DXFORMAT_INFO@@@Z"],
+    "signature": "int d3dx_find_closest_device_format(void *device, unsigned long usage, int resource_type, const void *requested)",
+    "comment": "Exact DirectX 8.1 helper that selects the closest device-supported resource format.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ac8f",
+    "name": "d3dx_find_closest_external_format",
+    "aliases": ["sub_1000AC8F", "?D3DXFindClosestExternalFormat@@YA?AW4_D3DFORMAT@@W41@@Z"],
+    "signature": "int d3dx_find_closest_external_format(int format)",
+    "comment": "Exact DirectX 8.1 helper that maps a D3D format to the closest external image format.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000acc0",
-    "name": "FUN_1000acc0",
-    "signature": "int FUN_1000acc0(int* arg1, int arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, int* arg8, int arg9, int arg10)",
-    "comment": "[binja] int32_t __stdcall sub_1000acc0(int32_t* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t* arg8, int32_t arg9, int32_t arg10)",
+    "name": "D3DXLoadSurfaceFromMemory",
+    "aliases": ["FUN_1000acc0", "_D3DXLoadSurfaceFromMemory@40"],
+    "signature": "int __stdcall D3DXLoadSurfaceFromMemory(void *destination, const void *destination_palette, const void *destination_rect, const void *source, int source_format, unsigned int source_pitch, const void *source_palette, const void *source_rect, unsigned long filter, unsigned long color_key)",
+    "comment": "Exact DirectX 8.1 D3DXLoadSurfaceFromMemory implementation.",
     "create": false
   },
   {
@@ -8229,9 +8258,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000ae72",
-    "name": "FUN_1000ae72",
-    "signature": "int FUN_1000ae72(int* arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11)",
-    "comment": "[binja] int32_t __stdcall sub_1000ae72(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, int32_t arg9, int32_t arg10, int32_t arg11)",
+    "name": "D3DXLoadVolumeFromMemory",
+    "aliases": ["FUN_1000ae72", "_D3DXLoadVolumeFromMemory@44"],
+    "signature": "int __stdcall D3DXLoadVolumeFromMemory(void *destination, const void *destination_palette, const void *destination_box, const void *source, int source_format, unsigned int source_row_pitch, unsigned int source_slice_pitch, const void *source_palette, const void *source_box, unsigned long filter, unsigned long color_key)",
+    "comment": "Exact DirectX 8.1 D3DXLoadVolumeFromMemory implementation.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000af45",
+    "name": "d3dx_check_texture_requirements_internal",
+    "aliases": ["sub_1000AF45", "?CheckTextureRequirements@@YAJPAUIDirect3DDevice8@@PAI111KPAW4_D3DFORMAT@@W4_D3DPOOL@@W4_D3DRESOURCETYPE@@@Z"],
+    "signature": "int d3dx_check_texture_requirements_internal(void *device, unsigned int *width, unsigned int *height, unsigned int *depth, unsigned int *mip_levels, unsigned long usage, int *format, int pool, int resource_type)",
+    "comment": "Exact DirectX 8.1 resource-type-aware texture requirement validator.",
     "create": false
   },
   {
@@ -8250,6 +8289,15 @@
     "aliases": ["_D3DXCreateTexture@32"],
     "signature": "int D3DXCreateTexture(void *device, uint width, uint height, uint mip_levels, uint usage, int format, int pool, void **texture)",
     "comment": "D3DX8 static helper; validates texture requirements then calls IDirect3DDevice8::CreateTexture",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000b348",
+    "name": "d3dx_lock_volume_scalar_deleting_dtor",
+    "aliases": ["sub_1000B348", "??_ECD3DXLockVolume@@QAEPAXI@Z"],
+    "signature": "void * d3dx_lock_volume_scalar_deleting_dtor(void *this, unsigned int flags)",
+    "comment": "Exact DirectX 8.1 CD3DXLockVolume scalar deleting destructor.",
     "create": false
   },
   {
@@ -8273,17 +8321,19 @@
   {
     "program": "grim.dll",
     "address": "0x1000bbfc",
-    "name": "FUN_1000bbfc",
-    "signature": "int FUN_1000bbfc(int* arg1, int* arg2, int* arg3, int* arg4, int* arg5, int arg6, int arg7)",
-    "comment": "[binja] int32_t __stdcall sub_1000bbfc(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t arg6, int32_t arg7)",
+    "name": "D3DXLoadSurfaceFromSurface",
+    "aliases": ["FUN_1000bbfc", "_D3DXLoadSurfaceFromSurface@32"],
+    "signature": "int __stdcall D3DXLoadSurfaceFromSurface(void *destination, const void *destination_palette, const void *destination_rect, void *source, const void *source_palette, const void *source_rect, unsigned long filter, unsigned long color_key)",
+    "comment": "Exact DirectX 8.1 D3DXLoadSurfaceFromSurface implementation.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000bda2",
-    "name": "FUN_1000bda2",
-    "signature": "int FUN_1000bda2(int* arg1, int arg2, int arg3, int* arg4, int arg5, int arg6, int arg7, int arg8)",
-    "comment": "[binja] int32_t __stdcall sub_1000bda2(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8)",
+    "name": "D3DXLoadVolumeFromVolume",
+    "aliases": ["FUN_1000bda2", "_D3DXLoadVolumeFromVolume@32"],
+    "signature": "int __stdcall D3DXLoadVolumeFromVolume(void *destination, const void *destination_palette, const void *destination_box, void *source, const void *source_palette, const void *source_box, unsigned long filter, unsigned long color_key)",
+    "comment": "Exact DirectX 8.1 D3DXLoadVolumeFromVolume implementation.",
     "create": false
   },
   {
@@ -8306,9 +8356,10 @@
   {
     "program": "grim.dll",
     "address": "0x1000c205",
-    "name": "FUN_1000c205",
-    "signature": "int FUN_1000c205(int* arg1, int* arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t __stdcall sub_1000c205(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4)",
+    "name": "D3DXFilterTexture",
+    "aliases": ["FUN_1000c205", "_D3DXFilterTexture@16"],
+    "signature": "int __stdcall D3DXFilterTexture(void *texture, const void *palette, unsigned int source_level, unsigned long filter)",
+    "comment": "Exact DirectX 8.1 D3DXFilterTexture implementation.",
     "create": false
   },
   {
@@ -8750,8 +8801,9 @@
     "program": "grim.dll",
     "address": "0x100101f5",
     "name": "grim_d3d_debug_set_mute",
+    "aliases": ["?D3DXDebugMute@@YAXH@Z"],
     "signature": "void grim_d3d_debug_set_mute(int mute)",
-    "comment": "loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output"
+    "comment": "DirectX 8.1 D3DXDebugMute helper; loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output."
   },
   {
     "program": "grim.dll",
@@ -8883,17 +8935,19 @@
   {
     "program": "grim.dll",
     "address": "0x1001284c",
-    "name": "FUN_1001284c",
-    "signature": "int* FUN_1001284c(int* arg1)",
-    "comment": "[binja] int32_t* __fastcall sub_1001284c(int32_t* arg1)",
+    "name": "d3dx_blt_ctor",
+    "aliases": ["FUN_1001284c", "??0CD3DXBlt@@QAE@XZ"],
+    "signature": "void * d3dx_blt_ctor(void *this)",
+    "comment": "CD3DXBlt constructor selected by exact DirectX 8.1 texture-loader relocations.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10012856",
-    "name": "FUN_10012856",
-    "signature": "void FUN_10012856(int* arg1)",
-    "comment": "[binja] void __fastcall sub_10012856(int32_t* arg1)",
+    "name": "d3dx_blt_dtor",
+    "aliases": ["FUN_10012856", "??1CD3DXBlt@@QAE@XZ"],
+    "signature": "void d3dx_blt_dtor(void *this)",
+    "comment": "CD3DXBlt destructor selected by exact DirectX 8.1 texture-loader relocations.",
     "create": false
   },
   {
@@ -9091,9 +9145,10 @@
   {
     "program": "grim.dll",
     "address": "0x10016007",
-    "name": "FUN_10016007",
-    "signature": "int FUN_10016007(int* arg1, void*** arg2, void*** arg3, int arg4)",
-    "comment": "[binja] int32_t __thiscall sub_10016007(int32_t* arg1, void*** arg2, void*** arg3, int32_t arg4)",
+    "name": "d3dx_blt_execute",
+    "aliases": ["FUN_10016007", "?Blt@CD3DXBlt@@QAEJPAUD3DX_BLT@@0K@Z"],
+    "signature": "int d3dx_blt_execute(void *this, void *destination, void *source, unsigned long filter)",
+    "comment": "CD3DXBlt::Blt implementation selected by exact DirectX 8.1 texture-loader relocations.",
     "create": false
   },
   {
@@ -9116,9 +9171,10 @@
   {
     "program": "grim.dll",
     "address": "0x1001619a",
-    "name": "FUN_1001619a",
-    "signature": "int* FUN_1001619a(int* arg1)",
-    "comment": "[binja] int32_t* __fastcall sub_1001619a(int32_t* arg1)",
+    "name": "d3dx_lock_volume_ctor",
+    "aliases": ["FUN_1001619a", "??0CD3DXLockVolume@@QAE@XZ"],
+    "signature": "void * d3dx_lock_volume_ctor(void *this)",
+    "comment": "CD3DXLockVolume constructor selected by exact DirectX 8.1 volume-loader relocations.",
     "create": false
   },
   {
@@ -9149,10 +9205,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100165ce",
+    "name": "d3dx_lock_volume_dtor",
+    "aliases": ["j_FUN_100161a0", "??1CD3DXLockVolume@@QAE@XZ"],
+    "signature": "void d3dx_lock_volume_dtor(void *this)",
+    "comment": "CD3DXLockVolume destructor thunk selected by exact DirectX 8.1 volume-loader relocations.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100165d3",
-    "name": "FUN_100165d3",
-    "signature": "int FUN_100165d3(int* arg1, int* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7)",
-    "comment": "[binja] int32_t __thiscall sub_100165d3(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7)",
+    "name": "d3dx_lock_volume_lock",
+    "aliases": ["FUN_100165d3", "?Lock@CD3DXLockVolume@@QAEJPAUD3DX_BLT@@PAUIDirect3DVolume8@@PBUtagPALETTEENTRY@@PBU_D3DBOX@@KK@Z"],
+    "signature": "int d3dx_lock_volume_lock(void *this, void *blit, void *volume, const void *palette, const void *box, unsigned long filter, unsigned long color_key)",
+    "comment": "Exact DirectX 8.1 CD3DXLockVolume::Lock body.",
     "create": false
   },
   {
@@ -14457,9 +14523,10 @@
   {
     "program": "grim.dll",
     "address": "0x1004b5cf",
-    "name": "FUN_1004b5cf",
-    "signature": "int FUN_1004b5cf(int arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t __stdcall sub_1004b5cf(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "name": "grim_vector_destructor_iterator",
+    "aliases": ["FUN_1004b5cf", "??_M@YGXPAXIHP6EX0@Z@Z"],
+    "signature": "void grim_vector_destructor_iterator(void *base, unsigned int size, int count, void *destructor)",
+    "comment": "VC6 vector-destruction iterator selected by the exact DirectX 8.1 scalar deleting destructor.",
     "create": false
   },
   {

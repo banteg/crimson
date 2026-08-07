@@ -12470,6 +12470,14 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x1004c9c0",
+      "aliases": ["?bConversion@?1??D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z@4QAY04$$CBHA"],
+      "comment": "DirectX 8.1 D3DXScoreFormat conversion-compatibility matrix.",
+      "name": "d3dx_format_conversion_matrix",
+      "program": "grim.dll",
+      "type": "const int[5][5]"
+    },
+    {
       "address": "0x1004ca2c",
       "comment": "Single-precision 2^32 correction used by MSVC unsigned integer to x87 conversion paths.",
       "name": "grim_uint32_float_bias",

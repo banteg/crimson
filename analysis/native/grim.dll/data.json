@@ -1,5 +1,5 @@
 {
-  "audit_digest": "02a159d7d9808cbbcac21031526c46dc1cfc3d92204ba7562e1e4ee90de32cb6",
+  "audit_digest": "dcef27736f283932d4b72d62b123f5b07fd7053d0974e6979ce107197dba8f68",
   "entries": [
     {
       "address": 268747320,
@@ -483,6 +483,27 @@
       "size": 1548,
       "size_source": "analysis/ghidra/maps/data_map.json: grim_format_info_t[43]; tools/native/abi/grim.dll/abi_assertions.cpp: format_info_table_43_is_0x60c",
       "type": "grim_format_info_t[43]"
+    },
+    {
+      "address": 268749248,
+      "aliases": [
+        "?bConversion@?1??D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z@4QAY04$$CBHA"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "DirectX 8.1 D3DXScoreFormat conversion-compatibility matrix.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_format_conversion_matrix",
+      "section": ".rdata",
+      "section_offset": 2052,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
+      "type": "const int[5][5]"
     },
     {
       "address": 268749356,
@@ -7707,7 +7728,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "b9afc944d2dc2d4a1db61ff284a0481998012ce0737ddbb72ed30b1814f7d750",
+    "data_map_sha256": "ed435c6b039eeeac2c076e4ab8e009f3de65c0ca7ad92c9ed3c913d77bd83bbe",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "2056836048d9bc58ef6b76673c8cffad0d7c0e1738c7127feedd46a6633fc5fa",
     "reference_image": {
@@ -7718,30 +7739,30 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 16,
-    "alias_rows": 16,
+    "alias_names": 17,
+    "alias_rows": 17,
     "code_label_entries": 3,
     "definition_group_entries": 214,
     "definition_groups": 57,
-    "entry_count": 316,
+    "entry_count": 317,
     "explicit_alignment_entries": 283,
     "explicit_initializer_entries": 283,
     "explicit_size_entries": 283,
-    "fixed_array_types": 99,
+    "fixed_array_types": 100,
     "fully_specified_entries": 283,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
-    "multidimensional_array_types": 2,
+    "multidimensional_array_types": 3,
     "overlay_addresses": 0,
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
       ".data": 215,
-      ".rdata": 101
+      ".rdata": 102
     },
-    "source_entry_count": 319,
-    "typed_entries": 266,
-    "unique_addresses": 316,
+    "source_entry_count": 320,
+    "typed_entries": 267,
+    "unique_addresses": 317,
     "untyped_entries": 50
   }
 }
