@@ -12590,6 +12590,27 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x100519cc",
+      "comment": "MSVC C++ FuncInfo record referenced by the DirectX 8.1 DXT codec destructor exception-handler thunk.",
+      "kind": "code_label",
+      "name": "d3dx_dxt_destructor_eh_info",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10051a40",
+      "comment": "MSVC C++ FuncInfo record referenced by the DirectX 8.1 YUV codec constructor exception-handler thunk.",
+      "kind": "code_label",
+      "name": "d3dx_yuv_constructor_eh_info",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x10051a88",
+      "comment": "MSVC C++ FuncInfo record referenced by the DirectX 8.1 YUV codec destructor exception-handler thunk.",
+      "kind": "code_label",
+      "name": "d3dx_yuv_destructor_eh_info",
+      "program": "grim.dll"
+    },
+    {
       "address": "0x1004cb48",
       "comment": "Single-precision reciprocal of 3 used for UNORM2 alpha expansion.",
       "name": "grim_unorm2_scale",

@@ -2238,8 +2238,8 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 444
-    assert payload["summary"]["code_label_entries"] == 3
+    assert payload["summary"]["source_entry_count"] == 447
+    assert payload["summary"]["code_label_entries"] == 6
     assert payload["summary"]["entry_count"] == 441
     assert payload["summary"]["typed_entries"] == 391
     assert payload["summary"]["explicit_size_entries"] == 349
