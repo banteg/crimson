@@ -75,11 +75,13 @@ IMAGE_REL_I386_WIDTHS = {
 SYM_TYPE_FUNCTION = 0x20
 PADDING_BYTES = b"\xcc\x90"
 PADDING_LINE_TEXT = {
+    "add eax, 0x0",
     "add byte [eax], al",
     "int3",
     "lea ecx, dword [ecx]",
     "lea edi, dword [edi]",
     "lea esi, dword [esi]",
+    "lea esp, dword [esp]",
     "mov edi, edi",
     "nop",
 }

@@ -316,11 +316,12 @@ def test_archive_match_trims_untargeted_terminal_padding(
     monkeypatch,
 ) -> None:
     linked_code = bytes.fromhex("31c0c3")
+    padding = bytes.fromhex("8da424000000008d64240005000000008bff")
     archive_path = tmp_path / "probe.lib"
     archive_path.write_bytes(
         _build_archive(
             r"obj\i386\probe.obj",
-            _build_object(linked_code + bytes.fromhex("8bff")),
+            _build_object(linked_code + padding),
         ),
     )
     image_path = tmp_path / "game.exe"
@@ -333,7 +334,7 @@ def test_archive_match_trims_untargeted_terminal_padding(
     metadata_path = tmp_path / "metadata.json"
     metadata_path.write_text('{"image_base":"0x00400000"}', encoding="utf-8")
     mapped = bytearray(0x2000)
-    mapped[0x1000:0x1005] = linked_code + bytes.fromhex("8bff")
+    mapped[0x1000 : 0x1003 + len(padding)] = linked_code + padding
     monkeypatch.setattr(
         "crimson.library_match.matchlib.load_image",
         lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
