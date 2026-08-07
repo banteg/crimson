@@ -13836,6 +13836,272 @@
       "type": "unsigned char[544]"
     },
     {
+      "address": "0x10055dd8",
+      "comment": "Exact packed one constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_ones",
+      "program": "grim.dll",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x10055e20",
+      "comment": "Exact packed pi-over-four head/tail constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_pi_over_4_head_tail",
+      "program": "grim.dll",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x10055e28",
+      "comment": "Exact packed sine coefficients 56 and 42 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_coeff_56_42",
+      "program": "grim.dll",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x10055e30",
+      "comment": "Exact packed pi-over-four constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_pi_over_4_pair",
+      "program": "grim.dll",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x10055e38",
+      "comment": "Exact packed sine coefficients 30 and 20 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_coeff_30_20",
+      "program": "grim.dll",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x10055e40",
+      "comment": "Exact packed sine coefficients 12 and 6 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_coeff_12_6",
+      "program": "grim.dll",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x10055e48",
+      "comment": "Exact packed negative-half constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_negative_halves",
+      "program": "grim.dll",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x10055e58",
+      "comment": "Exact floating-point sign mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sign",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e5c",
+      "comment": "Exact floating-point absolute-value mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_abs_mask",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e60",
+      "comment": "Exact floating-point mantissa mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_mantissa_mask",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e64",
+      "comment": "Exact floating-point exponent mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_exponent_mask",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e68",
+      "comment": "Exact single-precision one constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_one",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e6c",
+      "comment": "Exact single-precision half constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_half",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e74",
+      "comment": "Exact out-of-bounds sentinel from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_out_of_bounds",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e88",
+      "comment": "Exact atan denominator coefficient q0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_q0",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e8c",
+      "comment": "Exact atan denominator coefficient q1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_q1",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e90",
+      "comment": "Exact atan denominator coefficient q2 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_q2",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e94",
+      "comment": "Exact atan numerator coefficient p0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_p0",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e98",
+      "comment": "Exact atan numerator coefficient p1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_p1",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055e9c",
+      "comment": "Exact atan numerator coefficient p2 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_p2",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ea0",
+      "comment": "Exact acos range bound from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_bound",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ea4",
+      "comment": "Exact acos numerator coefficient p0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_p0",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ea8",
+      "comment": "Exact acos numerator coefficient p1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_p1",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055eac",
+      "comment": "Exact acos denominator coefficient q0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_q0",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055eb0",
+      "comment": "Exact acos denominator coefficient q1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_q1",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055eb4",
+      "comment": "Exact positive pi-over-two constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_pi_over_2",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055eb8",
+      "comment": "Exact negative pi-over-two constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_negative_pi_over_2",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ec8",
+      "comment": "Exact high part of ln(2) from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_ln2_high",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ecc",
+      "comment": "Exact low part of ln(2) from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_ln2_low",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ed0",
+      "comment": "Exact square-root-of-two constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_root_two",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ed4",
+      "comment": "Exact exponent-decrement mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_exponent_decrement",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ed8",
+      "comment": "Exact exponent bias from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_exponent_bias",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055edc",
+      "comment": "Exact logarithm polynomial coefficient c2 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_log_c2",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ee0",
+      "comment": "Exact logarithm polynomial coefficient c1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_log_c1",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055ee4",
+      "comment": "Exact logarithm polynomial coefficient c0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_log_c0",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055eec",
+      "comment": "Exact maximum normal float mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_max_normal",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055f10",
+      "comment": "Exact four-over-pi constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_four_over_pi",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x10055f14",
+      "comment": "Exact sine range limit from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_max",
+      "program": "grim.dll",
+      "type": "uint32_t"
+    },
+    {
       "address": "0x1005e2e0",
       "comment": "Exact 768-byte .data1 section from the pinned DirectX 8.1 d3dxtrigsse.obj archive member.",
       "name": "d3dx_sse_trig_table",

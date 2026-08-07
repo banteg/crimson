@@ -15303,28 +15303,35 @@
     "address": "0x10034e00",
     "name": "x3d_atan2",
     "aliases": ["sub_10034E00", "_a_atan2"],
-    "comment": "3DNow arctangent helper selected by the exact debug x3d quaternion archive relocation."
+    "comment": "Exact DirectX 8.1 D3DX math archive arctangent helper."
   },
   {
     "program": "grim.dll",
     "address": "0x10034f00",
     "name": "x3d_acos",
     "aliases": ["sub_10034F00", "_a_acos"],
-    "comment": "3DNow arccosine helper selected by exact debug x3d quaternion archive relocations."
+    "comment": "Exact DirectX 8.1 D3DX math archive arccosine helper."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10035100",
+    "name": "x3d_log",
+    "aliases": ["sub_10035100", "_a_log"],
+    "comment": "Exact DirectX 8.1 D3DX math archive logarithm helper."
   },
   {
     "program": "grim.dll",
     "address": "0x100354e0",
     "name": "x3d_sincos",
-    "aliases": ["sub_100354E0", "a_cos", "a_sincos"],
-    "comment": "3DNow trigonometric helper selected by the debug x3d rotation archive relocations."
+    "aliases": ["sub_100354E0", "_a_cos", "_a_sincos"],
+    "comment": "Exact DirectX 8.1 D3DX math archive sine/cosine helper; the archive exposes same-address _a_cos and _a_sincos aliases."
   },
   {
     "program": "grim.dll",
     "address": "0x10035600",
     "name": "x3d_sin",
     "aliases": ["sub_10035600", "_a_sin"],
-    "comment": "3DNow sine helper selected by exact debug x3d quaternion archive relocations."
+    "comment": "Exact DirectX 8.1 D3DX math archive sine helper."
   },
   {
     "program": "grim.dll",
