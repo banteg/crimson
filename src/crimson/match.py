@@ -628,6 +628,31 @@ def resolve_function(
     return symbol, symbol.address, end_override if end_override is not None else symbol.end
 
 
+def resolve_function_with_scope_hint(
+    manifest: FunctionManifest,
+    function: str,
+    *,
+    scope: str | None,
+    unscoped_manifest: FunctionManifest | None = None,
+    end_override: int | None = None,
+) -> tuple[FunctionSymbol, int, int]:
+    """Resolve a function and explain when the active scope excluded it."""
+
+    try:
+        return resolve_function(manifest, function, end_override=end_override)
+    except ValueError as exc:
+        if scope in (None, "all") or unscoped_manifest is None:
+            raise
+        try:
+            resolve_function(unscoped_manifest, function, end_override=end_override)
+        except ValueError:
+            raise exc from None
+        raise ValueError(
+            f"function {function!r} is outside matching scope {scope!r} for "
+            f"{manifest.image_name}; retry with --scope all",
+        ) from exc
+
+
 @dataclass(frozen=True, slots=True)
 class CoffRelocation:
     virtual_address: int
@@ -2549,9 +2574,29 @@ def run_match(
         image_name=image_path.name,
         scope=scope,
     )
+    try:
+        resolved = resolve_function(manifest, function, end_override=end_va)
+    except ValueError:
+        unscoped_manifest = (
+            load_function_manifest(
+                functions_path,
+                metadata_path=metadata_path,
+                image_name=image_path.name,
+                scope="all",
+            )
+            if scope not in (None, "all")
+            else None
+        )
+        resolved = resolve_function_with_scope_hint(
+            manifest,
+            function,
+            scope=scope,
+            unscoped_manifest=unscoped_manifest,
+            end_override=end_va,
+        )
     obj = parse_coff_object(Path(obj_path).read_bytes())
     candidate = extract_object_function(obj, symbol_name)
-    _, start, end = resolve_function(manifest, function, end_override=end_va)
+    _, start, end = resolved
     image = load_image(image_path, manifest.image_base)
     catalog = load_reference_catalog(manifest, functions_path=functions_path).with_object_aliases(
         reference_aliases,

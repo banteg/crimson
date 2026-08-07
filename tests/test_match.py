@@ -85,6 +85,7 @@ from crimson.match import (
     render_status_table,
     render_triage_rows,
     resolve_function,
+    resolve_function_with_scope_hint,
     sort_profile_statuses,
     sort_triage_rows,
     triage_row_payload,
@@ -149,6 +150,27 @@ def test_resolve_function_accepts_address() -> None:
     )
     function, _, _ = resolve_function(manifest, "0x004136b0")
     assert function.name == "player_update"
+
+
+def test_resolve_function_reports_scope_exclusion() -> None:
+    function = FunctionSymbol(name="codec_helper", address=0x10025AEC, end=0x10025BF5, size=265)
+    scoped = FunctionManifest(image_name="grim.dll", image_base=0x10000000, functions=())
+    unscoped = FunctionManifest(
+        image_name="grim.dll",
+        image_base=0x10000000,
+        functions=(function,),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=r"outside matching scope 'port'.*retry with --scope all",
+    ):
+        resolve_function_with_scope_hint(
+            scoped,
+            "0x10025aec",
+            scope="port",
+            unscoped_manifest=unscoped,
+        )
 
 
 def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
