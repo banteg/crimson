@@ -1,5 +1,5 @@
 {
-  "audit_digest": "33a0acc0d4df60be9c5752f8b39ae3f459b1ad6654f0f94fe3c7a7b035459f11",
+  "audit_digest": "68857c232fc996f497a011d424f5b38969ea723ea4a3c82d773ef58cdef0dc95",
   "entries": [
     {
       "address": 268747320,
@@ -4541,6 +4541,28 @@
       "type": "void *[57]"
     },
     {
+      "address": 268778816,
+      "aliases": [
+        "?g_D3DXFastTableC@@3UD3DXFASTTABLE@@A",
+        "g_D3DXFastTableC"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "Default 57-entry C D3DX dispatch table copied into the active table before CPU-specific overrides.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "23f30010e8d00010f0d5001079d700103cda00100ef4001093d100104af40010dcf800108ef30010eaf400109cd6001003f1001048f10010a9f5001036f7001028d2001069cc001085dc0010efe9001092ea0010a3ef001054f0001075e600101fe7001003e90010cae0001082fc00105cfd001073e8001042e10010d8e100106fe2001040e00010f7f1001061ed001005ef0010c2d9001020e40010cef9001095f9001068e500100be300106eee00105eeb00101bfe001096f2001021cd0010ffcd0010a6ce00107ecf00107ed000104fd300104ad400106cd5001018ec00109cec0010",
+      "initializer_source": "Pinned DirectX 8.1 d3dxmath.obj default dispatch table; Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact 0xe4 mapped bytes at VA 0x10053d40",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_fast_table_c",
+      "section": ".data",
+      "section_offset": 3392,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 228,
+      "size_source": "analysis/ghidra/maps/data_map.json: complete void *[57] dispatch table; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *[57]"
+    },
+    {
       "address": 268780432,
       "aliases": [
         "?g_pBoxFilter2D_A8R8G8B8@@3P6AJPAI0IIII@ZA"
@@ -4617,6 +4639,50 @@
       "type": "float[32]"
     },
     {
+      "address": 268780696,
+      "aliases": [
+        "_isMMX",
+        "isMMX"
+      ],
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 cpudetect.obj .data symbol alignment",
+      "comment": "Cached MMX capability result used by the DirectX 8.1 CPU-detection helpers.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff",
+      "initializer_source": "Pinned DirectX 8.1 cpudetect.obj; Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact bytes at VA 0x10054498",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_is_mmx",
+      "section": ".data",
+      "section_offset": 5272,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "Pinned DirectX 8.1 cpudetect.obj .data symbol layout",
+      "type": "int"
+    },
+    {
+      "address": 268780700,
+      "aliases": [
+        "?g_CpuOptimization@@3W4_D3DX_CPU_OPTIMIZATION@@A",
+        "g_CpuOptimization"
+      ],
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 cpudetect.obj .data symbol alignment",
+      "comment": "Selected DirectX 8.1 D3DX CPU optimization mode.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffff0000",
+      "initializer_source": "Pinned DirectX 8.1 cpudetect.obj; Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact bytes at VA 0x1005449c",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_cpu_optimization",
+      "section": ".data",
+      "section_offset": 5276,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "Pinned DirectX 8.1 cpudetect.obj .data symbol layout",
+      "type": "int"
+    },
+    {
       "address": 268780704,
       "aliases": [
         "_png_gamma_shift"
@@ -4680,6 +4746,28 @@
       "size": 12,
       "size_source": "analysis/ghidra/maps/data_map.json: three-entry DXT weight vectors; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_float_table_3_is_0x0c",
       "type": "const float[3]"
+    },
+    {
+      "address": 268780768,
+      "aliases": [
+        "_invSqrtTab",
+        "invSqrtTab"
+      ],
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathx86.obj .data symbol alignment",
+      "comment": "1024-entry inverse-square-root lookup table used by the optimized D3DX vector normalizers.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "007eb4bffaa107400070b3bf365e07400066b2bf311b07400060b1bfecd806400058b0bfe49506400058afbfa45406400056aebfa21206400058adbf65d10540005eacbff19005400064abbf3e500540006eaabf581005400078a9bf33d004400088a8bf639104400096a7bfd051044000aaa6bf9613044000bea5bf22d5034000d4a4bffa96034000eea3bfa85903400008a3bf1d1c03400024a2bfe2de02400044a1bf82a202400066a0bf7466024000889fbf302a024000ae9ebfcaee014000d49dbf2eb3014000fc9cbfe877014000289cbf863d014000549bbfef02014000849abf3fc9004000b499bf5b8f004000e698bfd2550040001898bf161c0040005097bfabc7ff3f008696bfa655ff3f00c095bf80e5fe3f00fc94bf1a76fe3f003894bf5206fe3f007493bf2896fd3f00b692bf0e29fd3f00f891bf95bbfc3f003a91bfbd4dfc3f007e90bfafe0fb3f00c68fbf9775fb3f000c8fbff808fb3f00588ebf809ffa3f00a08dbf5433fa3f00ee8cbf56caf93f003c8cbfff60f93f008a8bbf4ff7f83f00dc8abfa88ff83f002e8abfaa27f83f008089bf55bff73f00d688bf1159f73f002e88bfadf3f63f008487bfbf8cf63f00de86bfea27f63f003686bf8ac1f53f009485bf815ef53f00f084bfedf9f43f005084bf7d97f43f00ae83bf8133f43f001083bfaed1f33f007282bf8c6ff33f00d481bf1b0df33f003a81bfdbacf23f009e80bf0d4bf23f000680bf75ebf13f00dc7ebf918bf13f00b07dbfa52cf13f00847cbf6ecdf03f005c7bbf326ff03f00347abfac10f03f001079bf24b3ef3f00f077bf9c56ef3f00d076bfccf9ee3f00b075bfb49cee3f009474bfa040ee3f007c73bf92e5ed3f006872bf8c8bed3f004c71bfa32eed3f004070bfb3d6ec3f00286fbf8d7aec3f001c6ebf1722ec3f00106dbf5ec9eb3f00046cbf6270eb3f00fc6abf7818eb3f00f469bf4cc0ea3f00ec68bfde67ea3f00ec67bfde11ea3f00e866bf45bae93f00e865bfc563e93f00ec64bf600ee93f00f063bfbcb8e83f00f462bfd962e83f000062bf730fe83f000461bf12b9e73f001060bf3265e73f00205fbf7612e73f002c5ebf1cbee63f003c5dbfe86ae63f00505cbfdc18e63f00605bbf30c5e53f00785abf1474e53f008c59bf5721e53f00a858bf2fd1e43f00c057bf657fe43f00dc56bfcb2ee43f00f855bff8dde33f001855bf588ee33f003854bf803ee33f005c53bfdeefe23f007c52bf969fe23f00a051bf8650e23f00c850bfb002e23f00f04fbfa4b4e13f001c4fbfd567e13f00444ebf5d19e13f00704dbf24cce03f009c4cbfb67ee03f00cc4bbf8a32e03f00fc4abf2ae6df3f00304abf0f9bdf3f006049bf474edf3f009848bf4104df3f00c847bf11b7de3f000447bf246ede3f003c46bf8823de3f007445bfbad8dd3f00b044bf3a8fdd3f00ec43bf8945dd3f002843bfa7fbdc3f006842bf17b3dc3f00a841bf576adc3f00e840bf6721dc3f002c40bfcdd9db3f006c3fbf7d90db3f00b43ebf0d4adb3f00fc3dbf6f03db3f00403dbf19bbda3f00883cbf1f74da3f00d43bbf832eda3f00203bbfbae8d93f00683abf36a1d93f00b439bf135bd93f000839bfe317d93f005038bfd5cfd83f00a437bf4f8cd83f00f836bf9e48d83f004436bf9a01d83f009c35bf28bfd73f00f034bff67ad73f004434bf9936d73f009c33bfa9f3d63f00f432bf8fb0d63f004c32bf4b6dd63f00a831bf782bd63f000031bfe0e7d53f005c30bfbba5d53f00b82fbf6d63d53f00182fbf9522d53f00742ebff5dfd43f00d82dbf6ea0d43f00342dbf7c5dd43f00982cbfa71dd43f00f82bbf07dcd33f00602bbf899dd33f00c02abf995bd33f00282abfcf1cd33f008c29bf37dcd23f00f428bf219dd23f005c28bfe55dd23f00c427bf831ed23f003027bfa7e0d13f009826bff9a0d13f000426bfd362d13f007025bf8824d13f00e024bfc8e7d03f004c24bf33a9d03f00bc23bf2b6cd03f002823bf4c2dd03f009c22bfb0f1cf3f000c22bf3cb4cf3f008021bf5a78cf3f00f420bf553ccf3f006420bf75fece3f00dc1fbfe3c3ce3f004c1fbfbb85ce3f00c81ebfa04cce3f003c1ebfec0fce3f00b41dbfd2d4cd3f002c1dbf9699cd3f00a81cbff75fcd3f00201cbf7724cd3f00981bbfd5e8cc3f00181bbf95b0cc3f00941abf7276cc3f000c1abf6a3acc3f009019bf8f03cc3f000819bf43c7cb3f008c18bf2a90cb3f000818bf6255cb3f008c17bf0b1ecb3f000c17bfcbe4ca3f008c16bf6babca3f001016bfb773ca3f009415bfe43bca3f001815bff203ca3f009814bf12cac93f002414bf8295c93f00a413bf625bc93f003013bf9826c93f00b412bf0beec83f003c12bf33b7c83f00c411bf3d80c83f004c11bf2949c83f00d810bfce13c83f006410bf56dec73f00ec0fbfe8a6c73f00780fbf3671c73f00040fbf673bc73f00900ebf7b05c73f00200ebf4fd1c63f00ac0dbf299bc63f003c0dbfc566c63f00cc0cbf4532c63f00580cbfc8fbc53f00ec0bbff2c8c53f007c0bbf1e94c53f000c0bbf2e5fc53f00a00abf072cc53f00300abfdff6c43f00c409bf82c3c43f005c09bff291c43f00ec08bf765cc43f008008bfc828c43f001808bfeaf6c33f00b007bff2c4c33f004007bf068fc33f00dc06bfc85ec33f007406bf822cc33f000806bf32f8c23f00a405bfa9c7c23f003c05bf1595c23f00d804bf5a64c23f007004bf9231c23f000804bfb0fec13f00a803bfa0cfc13f004003bf8a9cc13f00dc02bf526bc13f007c02bffa3bc13f001802bf900ac13f00b401bf0dd9c03f005001bf71a7c03f00f400bfb679c03f009000bfe847c03f003000bf0018c03f0040ffbe00d0bf3f00c4fdbea170bf3f004cfcbee511bf3f00d8fabeceb3be3f0064f9be5a55be3f00f8f7be93f8bd3f008ef6bef49bbd3f0026f5be7e3fbd3f00c2f3beb6e3bc3f0062f2be9e88bc3f0006f1be382ebc3f00acefbe00d4bb3f0054eebef879bb3f0002edbe2e21bb3f00b2ebbe96c8ba3f0066eabeb970ba3f001ae9be8918ba3f00d4e7bea0c1b93f0090e6beee6ab93f004ee5be7414b93f0012e4be48bfb83f00d4e2be4269b83f009ee1be1a15b83f0066e0be18c0b73f0034dfbe6c6cb73f0004debe0019b73f00d6dcbed4c5b63f00acdbbe7973b63f0084dabe6121b63f005ed9be8ecfb53f003ad8be007eb53f001ad7be482db53f00fcd5bed8dcb43f00e0d4beb08cb43f00c8d3be643db43f00b0d2bed2edb33f009cd1be1e9fb33f008ad0beb850b33f007ccfbe3303b33f006ccebed7b4b23f0062cdbef367b23f005accbe611bb23f0052cbbe8dceb13f004ecabea282b13f004cc9be0c37b13f004ac8be36ebb03f004ec7bee4a0b03f0052c6be5256b03f0058c5be1a0cb03f005ec4bea4c1af3f006ac3beba78af3f0076c2be932faf3f0084c1bec9e6ae3f0096c0bef89eae3f00a6bfbe5056ae3f00babebea20eae3f00d0bdbe56c7ad3f00e8bcbe6c80ad3f0000bcbe4839ad3f001ebbbec3f3ac3f003ababe67adac3f0058b9be7067ac3f007ab8be8022ac3f009cb7be57ddab3f00c0b6be9798ab3f00e6b5be4054ab3f000eb5be5410ab3f0036b4be32ccaa3f0062b3be1e89aa3f008eb2bed645aa3f00bcb1befa02aa3f00ecb0be8ec0a93f001eb0be927ea93f0050afbe633ca93f0086aebe4afba83f00baadbe59b9a83f00f4acbe2779a83f002aacbe7637a83f0066abbe88f7a73f00a2aabe6ab7a73f00e0a9bec277a73f001ea9bee937a73f005ea8be89f8a63f00a0a7bea2b9a63f00e4a6be367ba63f0028a6be9c3ca63f006ea5be7cfea53f00b4a4be2fc0a53f00fea3be0b83a53f0046a3be0d45a53f0094a2bee808a53f00dea1be3ccba43f002ca1bebe8ea43f007ca0bec252a43f00cc9fbe9a16a43f001e9fbef5daa33f00709ebe259fa33f00c49dbeda63a33f001a9dbe1529a33f00709cbe26eea23f00c89bbebeb3a23f00209bbe2c79a23f007a9abe223fa23f00d699bea405a23f003299befccba13f009098bedf92a13f00ec97bee558a13f004e97bee220a13f00ae96be02e8a03f001096beb1afa03f007295be3877a03f00d894be0640a03f003a94be3e07a03f00a293be78d09f3f000a93be8c999f3f007092bec1619f3f00da91be432b9f3f004491bea0f49e3f00b090be92be9e3f001a90bea3879e3f008a8fbec3529e3f00f68ebe461c9e3f00668ebe1ee79d3f00d68dbed2b19d3f00468dbe627c9d3f00b88cbe8c479d3f002c8cbe52139d3f009e8bbe36de9c3f00148bbe76aa9c3f008a8abe94769c3f00008abe8e429c3f007689be670e9c3f00f088bea1db9b3f006888bef7a79b3f00e287beee749b3f005e87be87429b3f00d886be3b0f9b3f005686be56dd9a3f00d285be8caa9a3f005285be2c799a3f00d084bee6469a3f004e84be80149a3f00d083be87e3993f005283be6eb2993f00d482be3681993f005682bedf4f993f00da81be311f993f006081be2eef983f00e480be42be983f006a80be018e983f00e07fbea25d983f00f47ebebc2e983f00007ebe20fe973f00147dbefece973f00247cbef29e973f003c7bbe6370973f00547abeb741973f006879be2012973f008478be08e4963f009c77be06b5963f00b876beb686963f00d875be1a59963f00f474be902a963f001474bebcfc953f003473beccce953f005872be93a1953f007c71be3e74953f00a470bea147953f00c86fbe151a953f00f06ebe42ed943f00186ebe54c0943f00406dbe4b93943f00706cbed367943f009c6bbe6a3b943f00c86abee80e943f00f869be22e3933f002869be42b7933f005c68be208c933f008c67be0c60933f00c066beb834933f00f865be240a933f002c65be9cde923f006464bed6b3923f009c63bef788923f00d462beff5d923f001062beca33923f005061be5a0a923f008860be18df913f00c85fbe78b5913f00085fbec08b913f00485ebef061913f00885dbe0838913f00cc5cbee80e913f000c5cbed0e4903f00545bbe62bc903f00985abefb92903f00e059be5f6a903f002859beac41903f007058bee218903f00b857be01f08f3f000457beedc78f3f005056bec29f8f3f009c55be82778f3f00e854be2a4f8f3f003854bea2278f3f008853be04008f3f00d852be50d88e3f002c52be6eb18e3f007c51be8e898e3f00d050be80628e3f002450be5d3b8e3f00784fbe24148e3f00cc4ebed6ec8d3f00284ebe48c78d3f007c4dbecf9f8d3f00d84cbe187a8d3f00304cbe60538d3f00884bbe922c8d3f00e84abe8a078d3f00404abe94e08c3f00a049be64bb8c3f00fc48be31958c3f005c48bed96f8c3f00bc47be6d4a8c3f001c47beed248c3f007c46be59ff8b3f00e045bea2da8b3f004045bee6b48b3f00a844befa908b3f000844be166b8b3f007043be04478b3f00d842bedf228b3f003c42beb3fd8a3f00a441be68d98a3f000c41be0ab58a3f007840be8e918a3f00e03fbe0a6d8a3f004c3fbe6a498a3f00b43ebec0248a3f00243ebef2018a3f00903dbe1ade893f00003dbe28bb893f006c3cbe2b97893f00d83bbe1c73893f004c3bbeee50893f00bc3abeb42d893f00303abe620b893f009c39be09e7883f001439be91c5883f008438be0fa2883f00fc37be7580883f007037becc5d883f00e436be123b883f005836be4718883f00d435be68f7873f004835be7ad4873f",
+      "initializer_source": "Pinned DirectX 8.1 d3dxmathx86.obj; Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact 0x1000 mapped bytes at VA 0x100544e0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_inverse_sqrt_table",
+      "section": ".data",
+      "section_offset": 5344,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4096,
+      "size_source": "Pinned DirectX 8.1 d3dxmathx86.obj .data symbol layout: _invSqrtTab occupies 4096 bytes before _a1",
+      "type": "uint32_t[1024]"
     },
     {
       "address": 268784872,
@@ -8730,9 +8818,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "ea477559f7c6d982500b8630ec0da244bb4c17b250322cd90ec09d17a40fd638",
+    "data_map_sha256": "dffd616a9f29f72d277d0b8a28230897e280b6ab0961be52663b832abdc22e4b",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "b039b4f193d05d8bba8f8a0f24c1235b485c1d8883e07b96c52a2c5cdde810e8",
+    "definitions_sha256": "c1121211e9032bcdbd29522b4d590079d02bf31af71a4c2f6f48a1932cc03e87",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -8741,17 +8829,17 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 65,
-    "alias_rows": 64,
+    "alias_names": 73,
+    "alias_rows": 68,
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 364,
-    "explicit_alignment_entries": 330,
-    "explicit_initializer_entries": 330,
-    "explicit_size_entries": 330,
-    "fixed_array_types": 140,
-    "fully_specified_entries": 330,
+    "entry_count": 368,
+    "explicit_alignment_entries": 334,
+    "explicit_initializer_entries": 334,
+    "explicit_size_entries": 334,
+    "fixed_array_types": 142,
+    "fully_specified_entries": 334,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -8759,12 +8847,12 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 222,
+      ".data": 226,
       ".rdata": 142
     },
-    "source_entry_count": 367,
-    "typed_entries": 314,
-    "unique_addresses": 364,
+    "source_entry_count": 371,
+    "typed_entries": 318,
+    "unique_addresses": 368,
     "untyped_entries": 50
   }
 }

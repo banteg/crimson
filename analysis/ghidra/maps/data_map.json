@@ -12949,6 +12949,38 @@
       "type": "void *[57]"
     },
     {
+      "address": "0x10053d40",
+      "aliases": ["?g_D3DXFastTableC@@3UD3DXFASTTABLE@@A", "g_D3DXFastTableC"],
+      "comment": "Default 57-entry C D3DX dispatch table copied into the active table before CPU-specific overrides.",
+      "name": "d3dx_fast_table_c",
+      "program": "grim.dll",
+      "type": "void *[57]"
+    },
+    {
+      "address": "0x10054498",
+      "aliases": ["_isMMX", "isMMX"],
+      "comment": "Cached MMX capability result used by the DirectX 8.1 CPU-detection helpers.",
+      "name": "d3dx_is_mmx",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x1005449c",
+      "aliases": ["?g_CpuOptimization@@3W4_D3DX_CPU_OPTIMIZATION@@A", "g_CpuOptimization"],
+      "comment": "Selected DirectX 8.1 D3DX CPU optimization mode.",
+      "name": "d3dx_cpu_optimization",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
+      "address": "0x100544e0",
+      "aliases": ["_invSqrtTab", "invSqrtTab"],
+      "comment": "1024-entry inverse-square-root lookup table used by the optimized D3DX vector normalizers.",
+      "name": "d3dx_inverse_sqrt_table",
+      "program": "grim.dll",
+      "type": "uint32_t[1024]"
+    },
+    {
       "address": "0x1004cae4",
       "comment": "Virtual method table restored by the vertex-space converter destructor and base pixel-format initializer.",
       "name": "grim_vertex_space_converter_vtable",

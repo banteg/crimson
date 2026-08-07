@@ -10390,9 +10390,10 @@
   {
     "program": "grim.dll",
     "address": "0x1001bf39",
-    "name": "FUN_1001bf39",
-    "signature": "int FUN_1001bf39(int arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001bf39(int32_t arg1)",
+    "name": "d3dx_asm_is_mmx",
+    "aliases": ["FUN_1001bf39", "?_asm_isMMX@@YAHXZ"],
+    "signature": "int d3dx_asm_is_mmx(void)",
+    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member.",
     "create": false
   },
   {
@@ -10401,23 +10402,25 @@
     "name": "d3dx_is_mmx_processor",
     "aliases": ["sub_1001BF5E", "?isMMXprocessor@@YAHXZ"],
     "signature": "int d3dx_is_mmx_processor(void)",
-    "comment": "DirectX 8.1 MMX capability helper identified by both box-filter initializer relocations.",
+    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001bff7",
-    "name": "FUN_1001bff7",
-    "signature": "int FUN_1001bff7(int arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001bff7(int32_t arg1)",
+    "name": "d3dx_is_x3d_processor",
+    "aliases": ["FUN_1001bff7", "?isX3Dprocessor@@YAHXZ"],
+    "signature": "int d3dx_is_x3d_processor(void)",
+    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001c02f",
-    "name": "FUN_1001c02f",
-    "signature": "int FUN_1001c02f(int arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001c02f(int32_t arg1)",
+    "name": "d3dx_is_intel_sse_processor",
+    "aliases": ["sub_1001C02F", "?IsIntelSSEProcessor@@YAKXZ"],
+    "signature": "unsigned int d3dx_is_intel_sse_processor(void)",
+    "comment": "Intel SSE feature probe from the pinned DirectX 8.1 cpudetect.obj archive member.",
     "create": false
   },
   {
@@ -10426,7 +10429,7 @@
     "name": "D3DXCpuOptimizations",
     "aliases": ["grim_select_renderer_backend", "_D3DXCpuOptimizations@4"],
     "signature": "int D3DXCpuOptimizations(int force)",
-    "comment": "DirectX 8.1 D3DX CPU-dispatch selector: resets the fast table and installs MMX, 3DNow, or SSE implementations according to processor support."
+    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
   },
   {
     "program": "grim.dll",
@@ -11064,32 +11067,36 @@
   {
     "program": "grim.dll",
     "address": "0x100224c5",
-    "name": "grim_init_mmx_sse_functions",
-    "signature": "void grim_init_mmx_sse_functions(undefined4 *table)",
-    "comment": "fills a function pointer table with MMX/SSE implementations based on CPUID"
+    "name": "d3dx_x3d_init_fast_table",
+    "aliases": ["grim_init_mmx_sse_functions", "?x3d_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"],
+    "signature": "void d3dx_x3d_init_fast_table(void *table)",
+    "comment": "Exact DirectX 8.1 D3DX 3DNow dispatch implementation selected from the pinned d3dxmathx3d.obj archive member."
   },
   {
     "program": "grim.dll",
     "address": "0x1002290c",
-    "name": "FUN_1002290c",
-    "signature": "float* FUN_1002290c(float* arg1, float* arg2)",
-    "comment": "[binja] float* __stdcall sub_1002290c(float* arg1, float* arg2)",
+    "name": "d3dx_x86_vec3_normalize",
+    "aliases": ["FUN_1002290c", "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"],
+    "signature": "float* d3dx_x86_vec3_normalize(float* arg1, float* arg2)",
+    "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x100229d6",
-    "name": "FUN_100229d6",
-    "signature": "int FUN_100229d6(int arg1, int arg2, void* arg3)",
-    "comment": "[binja] int32_t __stdcall sub_100229d6(int32_t arg1, int32_t arg2, void* arg3)",
+    "name": "d3dx_x86_matrix_multiply",
+    "aliases": ["FUN_100229d6", "?x86_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "signature": "int d3dx_x86_matrix_multiply(int arg1, int arg2, void* arg3)",
+    "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member.",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10022ab9",
-    "name": "FUN_10022ab9",
-    "signature": "void* FUN_10022ab9(void* arg1, int arg2, int arg3)",
-    "comment": "[binja] void* __stdcall sub_10022ab9(void* arg1, int32_t arg2, int32_t arg3)",
+    "name": "d3dx_x86_matrix_multiply_transpose",
+    "aliases": ["FUN_10022ab9", "?x86_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "signature": "void* d3dx_x86_matrix_multiply_transpose(void* arg1, int arg2, int arg3)",
+    "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member.",
     "create": false
   },
   {
@@ -15648,5 +15655,267 @@
     "name": "D3DXPlaneNormalize",
     "aliases": ["sub_1000EF9D", "_D3DXPlaneNormalize@8"],
     "comment": "DirectX 8.1 public dispatch thunk selected by exact d3dxmath.obj relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bedd",
+    "name": "d3dx_get_registry_value",
+    "aliases": ["sub_1001BEDD", "?GetD3DRegValue@@YAHKPADPAXK@Z"],
+    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c0d4",
+    "name": "D3DXIsProcessorFeaturePresent",
+    "aliases": ["sub_1001C0D4", "?D3DXIsProcessorFeaturePresent@@YAHI@Z"],
+    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100223f0",
+    "name": "d3dx_x3d_get_feature_flags",
+    "aliases": ["sub_100223F0", "?get_feature_flags@@YAIXZ"],
+    "comment": "Exact DirectX 8.1 D3DX 3DNow dispatch implementation selected from the pinned d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100226eb",
+    "name": "d3dx_x86_vec2_transform",
+    "aliases": ["sub_100226EB", "?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"],
+    "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022754",
+    "name": "d3dx_x86_vec2_transform_normal",
+    "aliases": ["sub_10022754", "?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"],
+    "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022b47",
+    "name": "d3dx_x86_init_fast_table",
+    "aliases": ["sub_10022B47", "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"],
+    "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100221d0",
+    "name": "d3dx_sse_init_fast_table",
+    "aliases": [
+      "sub_100221D0",
+      "?sse_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ],
+    "comment": "SSE dispatch-table initializer from the pinned DirectX 8.1 d3dxmathsse.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100222e0",
+    "name": "d3dx_sse2_init_fast_table",
+    "aliases": [
+      "sub_100222E0",
+      "?sse2_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ],
+    "comment": "SSE2 dispatch-table initializer from the pinned DirectX 8.1 d3dxmathsse2.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022789",
+    "name": "d3dx_x86_vec3_transform",
+    "aliases": [
+      "sub_10022789",
+      "?x86_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "x86 vector-transform helper from the pinned DirectX 8.1 d3dxmathx86.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022814",
+    "name": "d3dx_x86_vec3_transform_normal",
+    "aliases": [
+      "sub_10022814",
+      "?x86_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "x86 normal-transform helper from the pinned DirectX 8.1 d3dxmathx86.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022873",
+    "name": "d3dx_x86_vec4_transform",
+    "aliases": [
+      "sub_10022873",
+      "?x86_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "x86 vector-transform helper from the pinned DirectX 8.1 d3dxmathx86.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027ed0",
+    "name": "x3d_quaternion_multiply",
+    "aliases": [
+      "sub_10027ED0",
+      "?x3d_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ],
+    "comment": "3DNow quaternion helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10027f69",
+    "name": "x3d_quaternion_normalize",
+    "aliases": [
+      "sub_10027F69",
+      "?x3d_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ],
+    "comment": "3DNow quaternion helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d1ea",
+    "name": "x3d_vec3_transform",
+    "aliases": [
+      "sub_1002D1EA",
+      "?x3d_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "3DNow vector-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d25b",
+    "name": "x3d_vec3_transform_normal",
+    "aliases": [
+      "sub_1002D25B",
+      "?x3d_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "3DNow normal-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d7a2",
+    "name": "x3d_vec3_transform_coord",
+    "aliases": [
+      "sub_1002D7A2",
+      "?x3d_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "3DNow coordinate-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002dca8",
+    "name": "x3d_vec2_transform",
+    "aliases": [
+      "sub_1002DCA8",
+      "?x3d_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "3DNow vector-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002dcfd",
+    "name": "x3d_vec2_transform_normal",
+    "aliases": [
+      "sub_1002DCFD",
+      "?x3d_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "3DNow normal-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002dd36",
+    "name": "x3d_vec2_transform_coord",
+    "aliases": [
+      "sub_1002DD36",
+      "?x3d_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "3DNow coordinate-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002dd9a",
+    "name": "x3d_vec2_hermite",
+    "aliases": [
+      "sub_1002DD9A",
+      "?x3d_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "3DNow interpolation helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002de32",
+    "name": "x3d_vec2_barycentric",
+    "aliases": [
+      "sub_1002DE32",
+      "?x3d_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ],
+    "comment": "3DNow interpolation helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002de7b",
+    "name": "x3d_vec2_normalize",
+    "aliases": [
+      "sub_1002DE7B",
+      "?x3d_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    ],
+    "comment": "3DNow normalization helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002debe",
+    "name": "x3d_vec2_catmull_rom",
+    "aliases": [
+      "sub_1002DEBE",
+      "?x3d_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ],
+    "comment": "3DNow interpolation helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002df69",
+    "name": "x3d_vec4_transform",
+    "aliases": [
+      "sub_1002DF69",
+      "?x3d_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "comment": "3DNow vector-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002dfeb",
+    "name": "x3d_vec4_normalize",
+    "aliases": [
+      "sub_1002DFEB",
+      "?x3d_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ],
+    "comment": "3DNow normalization helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e393",
+    "name": "x3d_plane_from_point_normal",
+    "aliases": [
+      "sub_1002E393",
+      "?x3d_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+    ],
+    "comment": "3DNow plane-construction helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e3d6",
+    "name": "x3d_plane_from_points",
+    "aliases": [
+      "sub_1002E3D6",
+      "?x3d_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ],
+    "comment": "3DNow plane-construction helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e4ba",
+    "name": "x3d_plane_intersect_line",
+    "aliases": [
+      "sub_1002E4BA",
+      "?x3d_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ],
+    "comment": "3DNow plane-intersection helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
   }
 ]
