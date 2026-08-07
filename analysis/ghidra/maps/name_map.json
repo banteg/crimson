@@ -11620,7 +11620,8 @@
     ],
     "signature": "void grim_jpeg_error_exit(j_common_ptr cinfo)",
     "comment": "JAZ IJG 6a fatal-error callback",
-    "create": false
+    "end": "0x1003ab76",
+    "create": true
   },
   {
     "program": "grim.dll",

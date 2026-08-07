@@ -283,6 +283,13 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
   byte-for-byte (1,630 bytes, 567 instructions, 12 references). Together with
   the existing destroy wrapper, all nine exact provider functions now run
   through the normal all-scope scratch verifier.
+- Matcher corpus: the adjoining JAZ error-manager cluster contributes five
+  more exact callbacks (316 bytes, 132 instructions, six references). Stock
+  IJG 6a source reproduces warning dispatch, formatting, and reset under VC6
+  `/O2 /G6`; recovered source captures the DLL's two deliberate host-facing
+  changes, returning after fatal cleanup and displaying diagnostics through a
+  `JPEG Error` Win32 message box. Binary Ninja and Ghidra independently bound
+  the 22-byte fatal callback that IDA omitted.
 - Native provider: `grim_jpeg_memory_src` at `0x1003a990` and its four local
   callbacks at `0x1003aa10..0x1003ab00` are exact matches totaling 354 bytes.
   The recipe additionally gates exact `jpeg_resync_to_restart`, `jpeg_abort`,

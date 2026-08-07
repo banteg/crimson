@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred fifty-nine exact callback, state, and cleanup
+The image-decoder cluster contributes one hundred sixty-four exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -257,6 +257,13 @@ The separately linked JAZ API cluster is now backed directly by the pinned
 destroy wrapper, all nine provider functions are represented by normal
 scratch checks.
 
-Altogether the one hundred seventy-seven exact functions cover 32,517 bytes
-and 11,436 instructions in the explicit `all` scope, with every external
+Five adjoining JAZ error-manager callbacks add 316 exact bytes and 132
+instructions. The stock IJG 6a warning dispatch, formatter, and reset bodies
+use the module's `/O2 /G6` profile. The DLL copy deliberately returns after
+fatal cleanup instead of exiting the host process, and routes diagnostics to
+a Win32 message box titled `JPEG Error` instead of stderr. Live Binary Ninja
+and Ghidra bounds restore the 22-byte fatal callback omitted by IDA.
+
+Altogether the one hundred eighty-two exact functions cover 32,833 bytes
+and 11,568 instructions in the explicit `all` scope, with every external
 relocation resolved.
