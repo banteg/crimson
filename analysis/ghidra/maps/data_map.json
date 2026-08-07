@@ -590,6 +590,26 @@
       "type": "unsigned char[12]"
     },
     {
+      "address": "0x0046fa20",
+      "aliases": [
+        "$T17377"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying free.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_free_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0046fa38",
+      "aliases": [
+        "$T17786"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying realloc.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_realloc_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
       "address": "0x0046fa68",
       "aliases": [
         "$T17734"
@@ -598,6 +618,16 @@
       "name": "crt_start_scope_table",
       "program": "crimsonland.exe",
       "type": "unsigned char[12]"
+    },
+    {
+      "address": "0x0046fac0",
+      "aliases": [
+        "$T17138"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying msize.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_msize_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
     },
     {
       "address": "0x0046fad8",
@@ -646,6 +676,16 @@
       ],
       "comment": "VC6 compiler-local two-entry SEH scope table occupying a_map.obj's complete 0x18-byte .rdata section.",
       "name": "crt_lcmap_string_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
+      "address": "0x0046fbe8",
+      "aliases": [
+        "$T17388"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying calloc.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_calloc_scope_table",
       "program": "crimsonland.exe",
       "type": "unsigned char[24]"
     },

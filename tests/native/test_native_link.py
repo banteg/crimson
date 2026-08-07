@@ -2477,16 +2477,16 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1819
+    assert payload["summary"]["source_entry_count"] == 1823
     assert payload["summary"]["code_label_entries"] == 54
-    assert payload["summary"]["entry_count"] == 1765
-    assert payload["summary"]["typed_entries"] == 1765
+    assert payload["summary"]["entry_count"] == 1769
+    assert payload["summary"]["typed_entries"] == 1769
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1765
-    assert payload["summary"]["explicit_alignment_entries"] == 1765
-    assert payload["summary"]["explicit_initializer_entries"] == 1765
-    assert payload["summary"]["fully_specified_entries"] == 1765
-    assert payload["summary"]["definition_group_entries"] == 1656
+    assert payload["summary"]["explicit_size_entries"] == 1769
+    assert payload["summary"]["explicit_alignment_entries"] == 1769
+    assert payload["summary"]["explicit_initializer_entries"] == 1769
+    assert payload["summary"]["fully_specified_entries"] == 1769
+    assert payload["summary"]["definition_group_entries"] == 1660
     assert payload["summary"]["definition_groups"] == 174
     assert {
         entry["name"]
@@ -2506,6 +2506,14 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
         for entry in payload["entries"]
         if entry["definition_state"] == "fully-specified"
     }
+    for scope_table in (
+        "crt_calloc_scope_table",
+        "crt_free_scope_table",
+        "crt_msize_scope_table",
+        "crt_realloc_scope_table",
+    ):
+        assert defined[scope_table]["size"] == 24
+        assert defined[scope_table]["definition_group"] == "literal-compiler-rdata-00018"
     assert defined["d3dx_sse_rsqrt_half_vector"]["size"] == 16
     assert defined["d3dx_sse_rsqrt_half_vector"]["alignment"] == 16
     assert defined["d3dx_sse_rsqrt_three_vector"]["size"] == 16

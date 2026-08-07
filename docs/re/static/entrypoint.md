@@ -45,7 +45,7 @@ uv run scripts/entrypoint_trace.py --depth 2 --skip-external
     - crt_doexit -> crt_exit_unlock, crt_exit_lock, crt_call_fn_range
     - _strlen
     - crt_strcpy (FUN_00465c30)
-    - crt_free_base -> FUN_0046262b, crt_sbh_find_block (FUN_004679d6), crt_sbh_find_region (FUN_00466c7b), crt_lock, FUN_00467a2d, FUN_00462683, FUN_00466ca6
+    - crt_free_base -> FUN_0046262b, crt_sbh_find_block (FUN_004679d6), crt_sbh_find_region (FUN_00466c7b), crt_lock, FUN_00467a2d, FUN_00462683, crt_sbh_free_block
     - FUN_0046d1ad -> FUN_0046d1be
     - crt_sbh_init
     - crt_sbh_create_region -> _memset

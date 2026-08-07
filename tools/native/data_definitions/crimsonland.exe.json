@@ -429,6 +429,21 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
       "members": [
         [
+          "0x0046fa20",
+          "crt_free_scope_table",
+          "ffffffff000000002b264600ffffffff0000000083264600"
+        ],
+        [
+          "0x0046fa38",
+          "crt_realloc_scope_table",
+          "ffffffff000000002d284600ffffffff000000007d294600"
+        ],
+        [
+          "0x0046fac0",
+          "crt_msize_scope_table",
+          "ffffffff00000000ed3b4600ffffffff00000000683c4600"
+        ],
+        [
           "0x0046fb98",
           "crt_terminate_scope_table",
           "ffffffff00000000a45f460000000000905f4600945f4600"
@@ -442,6 +457,11 @@
           "0x0046fbd0",
           "crt_lcmap_string_scope_table",
           "ffffffffe1654600e5654600ffffffff9566460099664600"
+        ],
+        [
+          "0x0046fbe8",
+          "crt_calloc_scope_table",
+          "ffffffff0000000040684600ffffffff00000000c9684600"
         ],
         [
           "0x0046ffe0",

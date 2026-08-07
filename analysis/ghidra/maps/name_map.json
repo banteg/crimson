@@ -6438,9 +6438,11 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00466ca6",
-    "name": "FUN_00466ca6",
-    "signature": "int * FUN_00466ca6(void *arg1, int *arg2)",
-    "comment": "[binja] int32_t* sub_466ca6(void* arg1, int32_t* arg2)"
+    "name": "crt_sbh_free_block",
+    "aliases": ["___sbh_free_block"],
+    "signature": "int * crt_sbh_free_block(void *region, int *block)",
+    "comment": "Exact VC6 small-block heap free/coalescing helper from libcmt.lib sbheap.obj.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -6459,9 +6461,11 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00467484",
-    "name": "FUN_00467484",
-    "signature": "int FUN_00467484(int *arg1, void * *arg2, void *arg3)",
-    "comment": "[binja] int32_t sub_467484(int32_t* arg1, void** arg2, void* arg3)"
+    "name": "crt_sbh_resize_block",
+    "aliases": ["___sbh_resize_block"],
+    "signature": "int crt_sbh_resize_block(int *region, void **block, void *size)",
+    "comment": "Exact VC6 in-place small-block heap resize helper from libcmt.lib sbheap.obj.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
