@@ -234,11 +234,13 @@ only zero-addend relocations that align with an already unique function, data,
 or import name in the target catalog; unknown addresses and conflicting
 inferences remain unresolved.
 
-Use `--show-reference-bindings` to list the still-unresolved zero-addend object
-symbols that consistently align with one image address. The report rejects
-conflicting addresses and includes occurrence, function, and archive-member
-evidence; it is read-only so a newly discovered CRT global still has to be
-named in the data map before generated aliases can consume it.
+Use `--show-reference-bindings` to list still-unresolved object symbols that
+consistently align with one image base address. The report normalizes COFF
+addends before rejecting conflicting bases and includes occurrence, addend,
+function, and archive-member evidence. It is read-only so a newly discovered
+CRT global still has to be named in the data map before generated aliases can
+consume it; automatic alias generation remains restricted to zero-addend
+evidence.
 
 `REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
 names are reused across translation units. Each comma-separated

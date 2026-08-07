@@ -240,6 +240,7 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert bindings[0].object_symbols == ("_probe",)
     assert bindings[0].target_address == 0x00401000
     assert bindings[0].occurrences == 1
+    assert bindings[0].addends == (0,)
     assert bindings[0].functions == ((0x00401000, "native_probe"),)
     assert bindings[0].target_names == ("native_probe",)
     assert archive_reference_bindings_payload(bindings)["bindings"] == [
@@ -249,10 +250,45 @@ def test_archive_match_requires_exact_unrelocated_bytes(
             "target_address": "0x00401000",
             "target_names": ["native_probe"],
             "occurrences": 1,
+            "addends": [0],
             "functions": [{"address": "0x00401000", "name": "native_probe"}],
             "members": [r"obj\i386\probe.obj"],
         },
     ]
+
+    addend_archive_path = tmp_path / "probe-addend.lib"
+    addend_archive_path.write_bytes(
+        _build_archive(
+            r"obj\i386\probe-addend.obj",
+            _build_object(bytes.fromhex("a104000000c3"), relocations=(1,)),
+        ),
+    )
+    addend_mapped = bytearray(0x2000)
+    addend_mapped[0x1000:0x1006] = bytes.fromhex("a104104000c3")
+    monkeypatch.setattr(
+        "crimson.library_match.matchlib.load_image",
+        lambda path, image_base=None: LoadedImage(
+            bytes(addend_mapped),
+            0x00400000,
+            len(addend_mapped),
+        ),
+    )
+    addend_report = match_coff_archive(
+        addend_archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401006,
+    )
+    addend_bindings = infer_archive_reference_bindings(
+        addend_report,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+    )
+    assert len(addend_bindings) == 1
+    assert addend_bindings[0].target_address == 0x00401000
+    assert addend_bindings[0].addends == (4,)
 
     symbol_unique_writes = write_archive_scratch_configs(
         symbol_unique_report,

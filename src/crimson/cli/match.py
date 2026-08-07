@@ -400,7 +400,7 @@ def cmd_match_archive(
     show_reference_bindings: bool = typer.Option(
         False,
         "--show-reference-bindings",
-        help="list stable zero-addend object symbols bound to one image address",
+        help="list stable addend-normalized object symbols bound to one image address",
     ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum listed matches"),
     write_scratches: bool = typer.Option(

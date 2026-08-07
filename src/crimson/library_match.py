@@ -107,6 +107,7 @@ class ArchiveReferenceBinding:
     object_symbols: tuple[str, ...]
     target_address: int
     occurrences: int
+    addends: tuple[int, ...]
     functions: tuple[tuple[int, str], ...]
     members: tuple[str, ...]
     target_names: tuple[str, ...] = ()
@@ -120,6 +121,7 @@ class _ArchiveReferenceEvidence:
     object_symbol: str
     lookup_name: str
     target_address: int
+    addend: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -514,16 +516,6 @@ def _archive_reference_evidence(
         if result.ratio != 1.0:
             continue
 
-        zero_addend_symbols = {
-            reference.symbol_name
-            for reference in function.relocation_references
-            if reference.addend == 0
-        }
-        nonzero_addend_symbols = {
-            reference.symbol_name
-            for reference in function.relocation_references
-            if reference.addend != 0
-        }
         for entry in result.masked_operand_audit.entries:
             if entry.status != "unresolved":
                 continue
@@ -532,15 +524,29 @@ def _archive_reference_evidence(
             object_reference = entry.candidate_references[0]
             target_reference = entry.target_references[0]
             object_symbol = object_reference.text
+            candidate_line = result.candidate_disassembly[entry.candidate_index]
+            matching_relocations = tuple(
+                reference
+                for reference in function.relocation_references
+                if reference.symbol_name == object_symbol
+                and entry.candidate_offset
+                <= reference.offset
+                < entry.candidate_offset + candidate_line.size
+            )
             if (
                 object_reference.source != "reloc"
                 or target_reference.source != "image"
                 or target_reference.value is None
                 or object_symbol.startswith("__imp_")
-                or object_symbol not in zero_addend_symbols
-                or object_symbol in nonzero_addend_symbols
+                or len(matching_relocations) != 1
+                or matching_relocations[0].addend is None
                 or any(character in object_symbol for character in ",:")
             ):
+                continue
+            addend = matching_relocations[0].addend
+            assert addend is not None
+            target_address = target_reference.value - addend
+            if target_address < 0:
                 continue
             evidence.append(
                 _ArchiveReferenceEvidence(
@@ -549,7 +555,8 @@ def _archive_reference_evidence(
                     member=candidate.member,
                     object_symbol=object_symbol,
                     lookup_name=matchlib._symbol_lookup_name(object_symbol),
-                    target_address=target_reference.value,
+                    target_address=target_address,
+                    addend=addend,
                 ),
             )
     return tuple(evidence), catalog
@@ -578,6 +585,8 @@ def infer_archive_reference_aliases(
         inferred: dict[str, tuple[str, int, str]] = {}
         conflicted: set[str] = set()
         for item in by_match.get(archive_match.address, ()):
+            if item.addend != 0:
+                continue
             target_names = tuple(
                 name
                 for name in catalog.names_by_address.get(item.target_address, ())
@@ -635,6 +644,7 @@ def infer_archive_reference_bindings(
                 object_symbols=tuple(sorted({item.object_symbol for item in items})),
                 target_address=target_address,
                 occurrences=len(items),
+                addends=tuple(sorted({item.addend for item in items})),
                 functions=tuple(sorted({(item.match_address, item.match_name) for item in items})),
                 members=tuple(sorted({item.member for item in items})),
                 target_names=tuple(catalog.names_by_address.get(target_address, ())),
@@ -663,6 +673,7 @@ def archive_reference_bindings_payload(
                 "target_address": f"0x{binding.target_address:08x}",
                 "target_names": list(binding.target_names),
                 "occurrences": binding.occurrences,
+                "addends": list(binding.addends),
                 "functions": [
                     {"address": f"0x{address:08x}", "name": name}
                     for address, name in binding.functions
@@ -690,6 +701,7 @@ def render_archive_reference_bindings(
         lines.append(
             f"reference_binding={symbols} target=0x{binding.target_address:08x} "
             f"occurrences={binding.occurrences} functions={len(binding.functions)} "
+            f"addends={','.join(f'{addend:+#x}' for addend in binding.addends)} "
             f"target_names={target}",
         )
     return "\n".join(lines)
