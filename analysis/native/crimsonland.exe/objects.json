@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "d7289ec280433e35b82c02cefd16847bf1d583a7c18e6558ab5bddc9e6d67a1b"
+        "sha256": "b70140913ef7db8200e9b67c9b2b99090897ed2862da8608982367b8b30446a1"
       },
       {
         "path": "tools/native/abi/crimsonland.exe/scratch.conf",
@@ -33,7 +33,7 @@
       {
         "path": "third_party/headers/crimsonland_types.h",
         "repository_relative": true,
-        "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+        "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
       },
       {
         "path": "tools/match/include/crimsonland_console.h",
@@ -51,10 +51,10 @@
     "object": "tools/native/abi/crimsonland.exe/build/msvc6.5/422fc44399cda4f9/abi_assertions.obj",
     "object_sha256": "4eedb05a519c0a075a99eae7802487085ceca279bc2474d45eab544bdd5b89e8",
     "source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp",
-    "source_sha256": "d7289ec280433e35b82c02cefd16847bf1d583a7c18e6558ab5bddc9e6d67a1b",
+    "source_sha256": "b70140913ef7db8200e9b67c9b2b99090897ed2862da8608982367b8b30446a1",
     "status": "passed"
   },
-  "audit_digest": "91689b50b2a31145897a6735d8d3836da09a1fb9840b7192624caff173702b8b",
+  "audit_digest": "97ce46dde24a1fc9cf3ebdf4bcfd30700b0bf4d99c304ca3a7780ff086385363",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "28842a228845bc90db1e007a204cf1329435867f9cf64165dda7a6be48ff5681"
+        "sha256": "0fddbf5bd040831a3dc362718d2f27589c7dabb1bc63886c029ea0b5c4a031bd"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -25453,7 +25453,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
@@ -25560,7 +25560,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -25856,7 +25856,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -25958,7 +25958,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -26060,7 +26060,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -26162,7 +26162,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -26356,7 +26356,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -26458,7 +26458,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_ui.h",
@@ -26560,7 +26560,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_ui.h",
@@ -26662,7 +26662,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -26764,7 +26764,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -26973,7 +26973,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -27075,7 +27075,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -27458,7 +27458,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -27565,7 +27565,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -27667,7 +27667,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -27774,7 +27774,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -28346,7 +28346,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -28545,7 +28545,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29020,7 +29020,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29127,7 +29127,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29229,7 +29229,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29336,7 +29336,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29438,7 +29438,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29540,7 +29540,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29591,7 +29591,7 @@
       },
       "object": "tools/match/scratches/survival_update/build/msvc6.5/387112b019242e32/scratch.obj",
       "object_function_symbol": "_survival_update",
-      "object_sha256": "7463dc00ff324b7af1ba999cc58947b6850c3abad16334be80079b71907d5740",
+      "object_sha256": "ad3db32bb2f02824cd57d4f67de87259da36c62abe196f76650c42096b1a4d24",
       "scratch": "tools/match/scratches/survival_update",
       "source": "tools/match/scratches/survival_update/scratch.cpp",
       "source_sha256": "1eeb4c4df0edf9203c8266bbffa107bd5616fcff078ed8525bdcff7c31f3090f",
@@ -29642,7 +29642,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29933,7 +29933,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -29989,7 +29989,7 @@
       },
       "object": "tools/match/scratches/tutorial_timeline_update/build/msvc6.5/e5a73fadb79e7d13/scratch.obj",
       "object_function_symbol": "_tutorial_timeline_update",
-      "object_sha256": "278ff0f948bc327c55748266a9114f2617817dc90bf6224124bc511d234396fd",
+      "object_sha256": "524379f7ed183ee8ef6dc520f74535f052b17656dc59af3d4f272e6f1ec0d1df",
       "scratch": "tools/match/scratches/tutorial_timeline_update",
       "source": "tools/match/scratches/tutorial_timeline_update/scratch.cpp",
       "source_sha256": "8d19221e642c945fd0707eadd8d8fef6a45b519c9ddec882b8ce0a5fd874cb98",
@@ -30040,7 +30040,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -30142,7 +30142,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -30244,7 +30244,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -30438,7 +30438,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -30729,7 +30729,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -30836,7 +30836,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -30938,7 +30938,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -31050,7 +31050,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -31341,7 +31341,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -31550,7 +31550,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -31652,7 +31652,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -31754,7 +31754,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -31856,7 +31856,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -31958,7 +31958,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -32525,7 +32525,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -32627,7 +32627,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -32831,7 +32831,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -32938,7 +32938,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -33045,7 +33045,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -33152,7 +33152,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -33259,7 +33259,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -33366,7 +33366,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -33473,7 +33473,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -33580,7 +33580,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -33687,7 +33687,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -33799,7 +33799,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -33911,7 +33911,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34018,7 +34018,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34125,7 +34125,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34232,7 +34232,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34339,7 +34339,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34446,7 +34446,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34553,7 +34553,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34660,7 +34660,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34767,7 +34767,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34874,7 +34874,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -34981,7 +34981,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -35088,7 +35088,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -35200,7 +35200,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -35312,7 +35312,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -35424,7 +35424,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -35536,7 +35536,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -35648,7 +35648,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -35760,7 +35760,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -35872,7 +35872,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -35979,7 +35979,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -36086,7 +36086,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -36193,7 +36193,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -36295,7 +36295,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_mod_api.h",
@@ -36397,7 +36397,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -36591,7 +36591,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -36790,7 +36790,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -37270,7 +37270,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -37566,7 +37566,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -37668,7 +37668,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -38235,7 +38235,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -38291,7 +38291,7 @@
       },
       "object": "tools/match/scratches/quest_failed_screen_update/build/msvc6.5/71992757d19fe748/scratch.obj",
       "object_function_symbol": "_quest_failed_screen_update",
-      "object_sha256": "dc20185ff62db25bb4192bfd3f787bb82c7e44ab88bf44ad5b468d7e85448c38",
+      "object_sha256": "ab9e6467c5616751e0768752a135f1a99a337cccb2f557f33d71bd72929d608f",
       "scratch": "tools/match/scratches/quest_failed_screen_update",
       "source": "tools/match/scratches/quest_failed_screen_update/scratch.cpp",
       "source_sha256": "78a8bc5e989487bcdc8fbede7b31323210f4886f7601a58bf9227ede24171932",
@@ -38618,7 +38618,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -39553,7 +39553,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -40295,7 +40295,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -40489,7 +40489,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -40683,7 +40683,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -40877,7 +40877,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -41343,7 +41343,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -41445,7 +41445,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -41547,7 +41547,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -41649,7 +41649,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -41751,7 +41751,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -41853,7 +41853,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -41955,7 +41955,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -42057,7 +42057,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -42164,7 +42164,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -42266,7 +42266,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -42368,7 +42368,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -42567,7 +42567,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         }
       ],
       "compiler": "msvc6.5",
@@ -42940,7 +42940,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -43134,7 +43134,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -43236,7 +43236,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -43435,7 +43435,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -43542,7 +43542,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -43751,7 +43751,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -43858,7 +43858,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -43965,7 +43965,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -44072,7 +44072,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -44184,7 +44184,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_ui.h",
@@ -44378,7 +44378,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         }
       ],
       "compiler": "msvc6.5",
@@ -44475,7 +44475,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -44582,7 +44582,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -44689,7 +44689,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -44985,7 +44985,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -45087,7 +45087,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -45189,7 +45189,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -45296,7 +45296,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -45495,7 +45495,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -45699,7 +45699,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -45806,7 +45806,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -45913,7 +45913,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -46020,7 +46020,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -46127,7 +46127,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -46234,7 +46234,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -46341,7 +46341,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -46448,7 +46448,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -48763,7 +48763,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -49049,7 +49049,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         }
       ],
       "compiler": "msvc6.5",
@@ -49146,7 +49146,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -49248,7 +49248,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         }
       ],
       "compiler": "msvc6.5",
@@ -49621,7 +49621,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -49815,7 +49815,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -50009,7 +50009,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -50203,7 +50203,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         }
       ],
       "compiler": "msvc6.5",
@@ -50392,7 +50392,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -50954,7 +50954,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -51976,7 +51976,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52078,7 +52078,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52185,7 +52185,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52292,7 +52292,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52394,7 +52394,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52501,7 +52501,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52603,7 +52603,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52710,7 +52710,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -52904,7 +52904,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53006,7 +53006,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53108,7 +53108,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53210,7 +53210,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53312,7 +53312,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53414,7 +53414,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53516,7 +53516,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53620,7 +53620,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53722,7 +53722,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53824,7 +53824,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -53926,7 +53926,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54028,7 +54028,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54130,7 +54130,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54232,7 +54232,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54334,7 +54334,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54436,7 +54436,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54538,7 +54538,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54640,7 +54640,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54742,7 +54742,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54844,7 +54844,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -54946,7 +54946,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55053,7 +55053,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55155,7 +55155,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55257,7 +55257,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55359,7 +55359,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55553,7 +55553,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55655,7 +55655,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/grim2d_cpp.h",
@@ -55757,7 +55757,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55859,7 +55859,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -55961,7 +55961,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -56063,7 +56063,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -56165,7 +56165,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/grim2d_cpp.h",
@@ -56267,7 +56267,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -56369,7 +56369,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -56476,7 +56476,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -56583,7 +56583,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -56690,7 +56690,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -56802,7 +56802,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -57113,7 +57113,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -57312,7 +57312,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -57511,7 +57511,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -57623,7 +57623,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -57735,7 +57735,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -57847,7 +57847,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -57954,7 +57954,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -58066,7 +58066,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -58275,7 +58275,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -58382,7 +58382,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -58678,7 +58678,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59148,7 +59148,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59250,7 +59250,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59352,7 +59352,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59454,7 +59454,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59561,7 +59561,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59663,7 +59663,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59765,7 +59765,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59872,7 +59872,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -59974,7 +59974,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60076,7 +60076,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60178,7 +60178,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60280,7 +60280,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60382,7 +60382,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60484,7 +60484,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60586,7 +60586,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60688,7 +60688,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -60790,7 +60790,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61159,7 +61159,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61261,7 +61261,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61363,7 +61363,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61465,7 +61465,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61664,7 +61664,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61766,7 +61766,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61868,7 +61868,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -61970,7 +61970,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62021,7 +62021,7 @@
       },
       "object": "tools/match/scratches/creature_spawn_template/build/msvc6.5/5e4a09ff02f61a15/scratch.obj",
       "object_function_symbol": "_creature_spawn_template",
-      "object_sha256": "fde16f911488ced750898467b39aafb95cbfe74b21172f0a0d906511d9a81e4f",
+      "object_sha256": "04e381bba4f0da098e5e568faca326b9641e3ce549f9957d6976371377da0877",
       "scratch": "tools/match/scratches/creature_spawn_template",
       "source": "tools/match/scratches/creature_spawn_template/scratch.cpp",
       "source_sha256": "3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16",
@@ -62072,7 +62072,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62174,7 +62174,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62368,7 +62368,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62470,7 +62470,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62572,7 +62572,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62674,7 +62674,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62776,7 +62776,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62878,7 +62878,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -62980,7 +62980,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63082,7 +63082,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63184,7 +63184,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63286,7 +63286,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63388,7 +63388,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63490,7 +63490,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63592,7 +63592,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63694,7 +63694,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63796,7 +63796,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -63898,7 +63898,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64000,7 +64000,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64102,7 +64102,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64204,7 +64204,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64306,7 +64306,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64408,7 +64408,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64510,7 +64510,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64612,7 +64612,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64714,7 +64714,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64816,7 +64816,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -64918,7 +64918,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65020,7 +65020,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65122,7 +65122,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65224,7 +65224,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65326,7 +65326,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65428,7 +65428,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65530,7 +65530,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65632,7 +65632,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65734,7 +65734,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65836,7 +65836,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -65938,7 +65938,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66040,7 +66040,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66142,7 +66142,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66244,7 +66244,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66346,7 +66346,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66448,7 +66448,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66550,7 +66550,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66652,7 +66652,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66754,7 +66754,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66856,7 +66856,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -66958,7 +66958,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67060,7 +67060,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67162,7 +67162,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67264,7 +67264,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67366,7 +67366,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67468,7 +67468,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67570,7 +67570,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67672,7 +67672,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -67774,7 +67774,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -67881,7 +67881,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -67988,7 +67988,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -68095,7 +68095,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -68202,7 +68202,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -68309,7 +68309,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -68416,7 +68416,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -68523,7 +68523,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -68625,7 +68625,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -68727,7 +68727,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -68829,7 +68829,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -68931,7 +68931,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -69038,7 +69038,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -69145,7 +69145,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -69252,7 +69252,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -69361,7 +69361,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -69468,7 +69468,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -69662,7 +69662,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -70739,7 +70739,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -70846,7 +70846,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -70953,7 +70953,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71157,7 +71157,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71269,7 +71269,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71376,7 +71376,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71483,7 +71483,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71590,7 +71590,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71697,7 +71697,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71804,7 +71804,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -71916,7 +71916,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72023,7 +72023,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72135,7 +72135,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72242,7 +72242,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72349,7 +72349,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72461,7 +72461,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72568,7 +72568,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72675,7 +72675,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72782,7 +72782,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72889,7 +72889,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -72996,7 +72996,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73103,7 +73103,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73210,7 +73210,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73317,7 +73317,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73424,7 +73424,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73531,7 +73531,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73638,7 +73638,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73745,7 +73745,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73852,7 +73852,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -73964,7 +73964,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74076,7 +74076,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74183,7 +74183,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74290,7 +74290,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74397,7 +74397,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -74499,7 +74499,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74606,7 +74606,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74713,7 +74713,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74820,7 +74820,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -74927,7 +74927,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -75034,7 +75034,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -75141,7 +75141,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -75248,7 +75248,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -75355,7 +75355,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -75462,7 +75462,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_ui.h",
@@ -75855,7 +75855,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -75967,7 +75967,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_ui.h",
@@ -76355,7 +76355,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -76559,7 +76559,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_ui.h",
@@ -76666,7 +76666,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -77509,7 +77509,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -77800,7 +77800,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -78469,7 +78469,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -78525,7 +78525,7 @@
       },
       "object": "tools/match/scratches/highscore_format_date_label/build/msvc6.5/957e4513e8f165f4/scratch.obj",
       "object_function_symbol": "_highscore_format_date_label",
-      "object_sha256": "df187e10785eb5da91aaa716655f10efad942b2993b985c989b995b1289eb042",
+      "object_sha256": "a24073e25320071918c7ad1f751f084b65a8393441c5c130c3e4073e574b62c2",
       "scratch": "tools/match/scratches/highscore_format_date_label",
       "source": "tools/match/scratches/highscore_format_date_label/scratch.c",
       "source_sha256": "701d02c91a5a87426adc33baaa0b542073f59346eb4f1df42c8fcc39847d0629",
@@ -78576,7 +78576,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -78683,7 +78683,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -78882,7 +78882,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -79822,7 +79822,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -80297,7 +80297,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -80399,7 +80399,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -80450,7 +80450,7 @@
       },
       "object": "tools/match/scratches/player_fire_weapon/build/msvc6.5/862cd09623515db8/scratch.obj",
       "object_function_symbol": "_player_fire_weapon",
-      "object_sha256": "5a7b32fd1908894465d2006ff52b4e948883907a7a5d26ab6d2a7b58de39761b",
+      "object_sha256": "e0f5bc623b4f2c492f277e3a2e30f591e6e9971602cef32d728a44959c0f4ed1",
       "scratch": "tools/match/scratches/player_fire_weapon",
       "source": "tools/match/scratches/player_fire_weapon/scratch.cpp",
       "source_sha256": "31a36767c9ab16352c40094eae0a497ad4057d2a5a603291dd9c13d27bab2c35",
@@ -80593,7 +80593,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -80695,7 +80695,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -80797,7 +80797,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -80899,7 +80899,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -81001,7 +81001,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -81108,7 +81108,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -81404,7 +81404,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -81511,7 +81511,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -81710,7 +81710,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_ui.h",
@@ -81812,7 +81812,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -81914,7 +81914,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82016,7 +82016,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82123,7 +82123,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82230,7 +82230,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82342,7 +82342,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82444,7 +82444,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82546,7 +82546,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -82653,7 +82653,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82755,7 +82755,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -82857,7 +82857,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -82964,7 +82964,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -83071,7 +83071,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -83178,7 +83178,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -83382,7 +83382,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -84225,7 +84225,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -85354,7 +85354,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -85415,7 +85415,7 @@
       },
       "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
       "object_function_symbol": "_controls_menu_update",
-      "object_sha256": "605f67c69f419a371ddc2e3bce1ea4209cd43da4891a0ab5ce55624e57df5790",
+      "object_sha256": "11ba26553a1227b8974e2a26a5b58d3fa523a750d283224bebcc42eb117761d0",
       "scratch": "tools/match/scratches/controls_menu_update",
       "source": "tools/match/scratches/controls_menu_update/scratch.cpp",
       "source_sha256": "377d5fc3a10b21f64307532ef9f4c60d53bbff2ee6546d317807895f9bde7964",
@@ -86202,7 +86202,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -86953,7 +86953,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -87055,7 +87055,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_audio.h",
@@ -87351,7 +87351,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -87550,7 +87550,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -87652,7 +87652,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -87754,7 +87754,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -87856,7 +87856,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -87958,7 +87958,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
@@ -88055,7 +88055,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "28842a228845bc90db1e007a204cf1329435867f9cf64165dda7a6be48ff5681"
+        "sha256": "0fddbf5bd040831a3dc362718d2f27589c7dabb1bc63886c029ea0b5c4a031bd"
       }
     ],
     "toolchain": {

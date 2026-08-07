@@ -72,6 +72,56 @@
       "type": "GUID"
     },
     {
+      "address": "0x0046fad8",
+      "aliases": [
+        "___lookuptable"
+      ],
+      "comment": "VC6 formatted-output classification table; exact 0x5c-byte extent ends at the adjacent wide null-string literal.",
+      "name": "crt_output_lookup_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[92]"
+    },
+    {
+      "address": "0x00471000",
+      "aliases": [
+        "___xc_a"
+      ],
+      "comment": "VC6 C++ initializer-range begin sentinel passed to crt_call_fn_range.",
+      "name": "crt_xc_begin",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x004710e0",
+      "aliases": [
+        "___xc_z"
+      ],
+      "comment": "VC6 C++ initializer-range end sentinel passed to crt_call_fn_range.",
+      "name": "crt_xc_end",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x004710e4",
+      "aliases": [
+        "___xi_a"
+      ],
+      "comment": "VC6 C initializer-range begin sentinel passed to crt_call_fn_range.",
+      "name": "crt_xi_begin",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x004710f8",
+      "aliases": [
+        "___xi_z"
+      ],
+      "comment": "VC6 C initializer-range end sentinel passed to crt_call_fn_range.",
+      "name": "crt_xi_end",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
       "address": "0x00471140",
       "comment": "Float screen width used for UI/layout (set from config_screen_width).",
       "name": "screen_width_f",
@@ -1619,6 +1669,16 @@
       "type": "char[6]"
     },
     {
+      "address": "0x0047b160",
+      "aliases": [
+        "__FPinit"
+      ],
+      "comment": "VC6 floating-point initializer hook invoked by crt_run_initializers when non-null.",
+      "name": "crt_fp_init_hook",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
       "address": "0x0047b184",
       "aliases": [
         "___app_type"
@@ -1644,6 +1704,16 @@
       "name": "crt_ctype_table",
       "program": "crimsonland.exe",
       "type": "unsigned short *"
+    },
+    {
+      "address": "0x0047b1c8",
+      "aliases": [
+        "__ctype"
+      ],
+      "comment": "VC6 ctype backing storage: two leading sentinel words plus 256 character-class entries; __pctype points at offset two.",
+      "name": "crt_ctype_data",
+      "program": "crimsonland.exe",
+      "type": "unsigned short[258]"
     },
     {
       "address": "0x0047b3cc",
@@ -1676,6 +1746,26 @@
       "type": "unsigned char[640]"
     },
     {
+      "address": "0x0047b658",
+      "aliases": [
+        "___nullstring"
+      ],
+      "comment": "VC6 formatted-output fallback pointer to the narrow `(null)` literal.",
+      "name": "crt_null_string",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x0047b65c",
+      "aliases": [
+        "___wnullstring"
+      ],
+      "comment": "VC6 formatted-output fallback pointer to the wide `(null)` literal.",
+      "name": "crt_wide_null_string",
+      "program": "crimsonland.exe",
+      "type": "wchar_t *"
+    },
+    {
       "address": "0x0047b6f0",
       "aliases": [
         "___tlsindex"
@@ -1691,6 +1781,26 @@
       "name": "crt_dosmaperr_table",
       "program": "crimsonland.exe",
       "type": "crt_dosmaperr_entry_t[45]"
+    },
+    {
+      "address": "0x0047b928",
+      "aliases": [
+        "?__pInconsistency@@3P6AXXZA"
+      ],
+      "comment": "VC6 C++ runtime inconsistency callback invoked before terminate when installed.",
+      "name": "crt_inconsistency_handler",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x0047b930",
+      "aliases": [
+        "___badioinfo"
+      ],
+      "comment": "VC6 fallback file-descriptor record used when a FILE carries descriptor -1; layout matches the 0x24-byte ioinfo stride.",
+      "name": "crt_bad_ioinfo",
+      "program": "crimsonland.exe",
+      "type": "crt_ioinfo_t"
     },
     {
       "address": "0x0047ba60",
@@ -1743,6 +1853,36 @@
       "type": "void *"
     },
     {
+      "address": "0x0047db18",
+      "aliases": [
+        "_sbrackset"
+      ],
+      "comment": "VC6 scanf narrow-character default bracket set, including its terminating NUL.",
+      "name": "crt_scan_bracket_set",
+      "program": "crimsonland.exe",
+      "type": "char[6]"
+    },
+    {
+      "address": "0x0047db20",
+      "aliases": [
+        "_cbrackset"
+      ],
+      "comment": "VC6 scanf single-character closing-bracket set, including its terminating NUL.",
+      "name": "crt_scan_closing_bracket_set",
+      "program": "crimsonland.exe",
+      "type": "char[2]"
+    },
+    {
+      "address": "0x0047db28",
+      "aliases": [
+        "_rterrs"
+      ],
+      "comment": "VC6 runtime-error table: eighteen code/message-pointer pairs, bounded by crt_double_infinity.",
+      "name": "crt_runtime_errors",
+      "program": "crimsonland.exe",
+      "type": "crt_runtime_error_entry_t[18]"
+    },
+    {
       "address": "0x0047dbb8",
       "aliases": [
         "__d_inf"
@@ -1781,6 +1921,26 @@
       "name": "crt_double_negative_zero",
       "program": "crimsonland.exe",
       "type": "double"
+    },
+    {
+      "address": "0x0047dcb8",
+      "aliases": [
+        "_over"
+      ],
+      "comment": "VC6 x87 80-bit overflow constant loaded with `fld tword` by the floating-status helper.",
+      "name": "crt_x87_overflow_value",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[10]"
+    },
+    {
+      "address": "0x0047dcc4",
+      "aliases": [
+        "_under"
+      ],
+      "comment": "VC6 x87 80-bit underflow constant loaded with `fld tword` by the floating-status helper.",
+      "name": "crt_x87_underflow_value",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[10]"
     },
     {
       "address": "0x0047de70",
@@ -1861,6 +2021,26 @@
       "name": "crt_month_days",
       "program": "crimsonland.exe",
       "type": "int[13]"
+    },
+    {
+      "address": "0x0047df90",
+      "aliases": [
+        "___rgctypeflag"
+      ],
+      "comment": "VC6 four byte-class flags applied to the code-page lead-byte range groups.",
+      "name": "crt_codepage_ctype_flags",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[4]"
+    },
+    {
+      "address": "0x0047df98",
+      "aliases": [
+        "___rgcode_page_info"
+      ],
+      "comment": "VC6 built-in code-page table: five 0x30-byte codepage descriptors ending at crt_matherr_flag.",
+      "name": "crt_codepage_info",
+      "program": "crimsonland.exe",
+      "type": "crt_codepage_info_t[5]"
     },
     {
       "address": "0x0047e088",
@@ -11062,6 +11242,66 @@
       "name": "crt_dst_flag_cache",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d9970",
+      "aliases": [
+        "_gmt_cache"
+      ],
+      "comment": "VC6 cached UTC SYSTEMTIME used to avoid repeated timezone queries within the same second.",
+      "name": "crt_gmt_cache",
+      "program": "crimsonland.exe",
+      "type": "SYSTEMTIME"
+    },
+    {
+      "address": "0x004d9980",
+      "aliases": [
+        "__umaskval"
+      ],
+      "comment": "VC6 process file-creation permission mask, zero-initialized before CRT startup.",
+      "name": "crt_umask",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d9984",
+      "aliases": [
+        "__osver"
+      ],
+      "comment": "VC6 cached high word of GetVersion().",
+      "name": "crt_os_version",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x004d9988",
+      "aliases": [
+        "__winver"
+      ],
+      "comment": "VC6 packed Windows major/minor version value initialized by the startup routine.",
+      "name": "crt_windows_version",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x004d998c",
+      "aliases": [
+        "__winmajor"
+      ],
+      "comment": "VC6 Windows major version initialized by the startup routine.",
+      "name": "crt_windows_major",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
+    },
+    {
+      "address": "0x004d9990",
+      "aliases": [
+        "__winminor"
+      ],
+      "comment": "VC6 Windows minor version initialized by the startup routine.",
+      "name": "crt_windows_minor",
+      "program": "crimsonland.exe",
+      "type": "unsigned int"
     },
     {
       "address": "0x004d9994",

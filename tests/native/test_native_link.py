@@ -2477,17 +2477,17 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1632
+    assert payload["summary"]["source_entry_count"] == 1656
     assert payload["summary"]["code_label_entries"] == 6
-    assert payload["summary"]["entry_count"] == 1626
-    assert payload["summary"]["typed_entries"] == 1626
+    assert payload["summary"]["entry_count"] == 1650
+    assert payload["summary"]["typed_entries"] == 1650
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1626
-    assert payload["summary"]["explicit_alignment_entries"] == 1626
-    assert payload["summary"]["explicit_initializer_entries"] == 1626
-    assert payload["summary"]["fully_specified_entries"] == 1626
-    assert payload["summary"]["definition_group_entries"] == 1536
-    assert payload["summary"]["definition_groups"] == 146
+    assert payload["summary"]["explicit_size_entries"] == 1650
+    assert payload["summary"]["explicit_alignment_entries"] == 1650
+    assert payload["summary"]["explicit_initializer_entries"] == 1650
+    assert payload["summary"]["fully_specified_entries"] == 1650
+    assert payload["summary"]["definition_group_entries"] == 1560
+    assert payload["summary"]["definition_groups"] == 155
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2586,10 +2586,27 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["renderer_dispatch_table"]["size"] == 57 * 4
     assert defined["vec2_normalize_impl"]["initializer_hex"] == "1d2f4500"
     assert defined["renderer_dispatch_defaults"]["size"] == 57 * 4
+    assert defined["crt_output_lookup_table"]["size"] == 0x5C
+    assert defined["crt_xc_begin"]["initializer_hex"] == "00000000"
+    assert defined["crt_xi_end"]["initializer_hex"] == "00000000"
+    assert defined["crt_fp_init_hook"]["initializer_hex"] == "b80c4600"
     assert defined["crt_cfltcvt_table"]["size"] == 6 * 4
     assert defined["crt_iob"]["size"] == 20 * 32
     assert defined["crt_ctype_table"]["initializer_hex"] == "cab14700"
+    assert defined["crt_ctype_data"]["size"] == 258 * 2
+    assert defined["crt_null_string"]["initializer_hex"] == "44fb4600"
+    assert defined["crt_wide_null_string"]["initializer_hex"] == "34fb4600"
     assert defined["crt_dosmaperr_table"]["size"] == 45 * 8
+    assert defined["crt_bad_ioinfo"]["size"] == 0x24
+    assert defined["crt_runtime_errors"]["size"] == 18 * 8
+    assert defined["crt_x87_overflow_value"]["size"] == 10
+    assert defined["crt_x87_underflow_value"]["size"] == 10
+    assert defined["crt_codepage_ctype_flags"]["initializer_hex"] == "01020408"
+    assert defined["crt_codepage_info"]["size"] == 5 * 0x30
+    assert defined["crt_gmt_cache"]["initializer_fill"] == "00"
+    assert defined["crt_windows_minor"]["definition_group"] == (
+        "mapped-bss-zero-uint32"
+    )
     assert defined["crt_tz_names"]["initializer_hex"] == "7cde4700bcde4700"
     assert defined["crt_dst_start_rule"]["size"] == 3 * 4
     assert defined["crt_dst_end_rule"]["size"] == 3 * 4

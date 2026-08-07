@@ -33,7 +33,7 @@
       {
         "path": "third_party/headers/crimsonland_types.h",
         "repository_relative": true,
-        "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+        "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
       },
       {
         "path": "tools/match/include/grim2d_abi.h",
@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "0e22d7926edeac782677cbae3a60115fdac8ed0af3e4da6996fc4bcf32a01422",
+  "audit_digest": "ade76d73586eb2bc7c2c9ddd56fbd70da193ab169aa3a328ecc2c3227370aaff",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -6330,7 +6330,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "b1b71a492b578c7fb0a0aa02c2b7f73da6b767e1f36c19bdf8bdf304d4f997fa"
+          "sha256": "1045abdb53c6977046293ef3de868b0463fbf71153169b7ad8548a185199b824"
         },
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",

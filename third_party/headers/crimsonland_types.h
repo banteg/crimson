@@ -10,6 +10,26 @@ typedef struct crt_dosmaperr_entry_t {
     int crt_errno;
 } crt_dosmaperr_entry_t;
 
+typedef struct crt_ioinfo_t {
+    long os_handle;
+    unsigned char os_file_flags;
+    char pipe_character;
+    unsigned short reserved_0x06;
+    int lock_initialized;
+    unsigned char critical_section[24];
+} crt_ioinfo_t;
+
+typedef struct crt_runtime_error_entry_t {
+    int code;
+    char *message;
+} crt_runtime_error_entry_t;
+
+typedef struct crt_codepage_info_t {
+    unsigned int code_page;
+    unsigned char lead_bytes[12];
+    unsigned char byte_class_ranges[32];
+} crt_codepage_info_t;
+
 typedef void (*crt_onexit_fn_t)(void);
 
 typedef struct vec2f_t {

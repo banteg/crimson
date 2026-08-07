@@ -82,6 +82,11 @@ struct crimson_u16_alignment_probe_t {
     u16_t value;
 };
 
+struct crimson_systemtime_alignment_probe_t {
+    char prefix;
+    SYSTEMTIME value;
+};
+
 CRIMSON_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 CRIMSON_ABI_ASSERT(
     pointer_array_2_is_0x08,
@@ -141,12 +146,45 @@ CRIMSON_ABI_ASSERT(
     crt_dosmaperr_table_is_0x168,
     sizeof(crt_dosmaperr_entry_t[45]) == 0x168);
 CRIMSON_ABI_ASSERT(
+    crt_ioinfo_is_0x24,
+    sizeof(crt_ioinfo_t) == 0x24);
+CRIMSON_ABI_ASSERT(
+    crt_ioinfo_flags_are_at_0x04,
+    offsetof(crt_ioinfo_t, os_file_flags) == 0x04);
+CRIMSON_ABI_ASSERT(
+    crt_ioinfo_lock_flag_is_at_0x08,
+    offsetof(crt_ioinfo_t, lock_initialized) == 0x08);
+CRIMSON_ABI_ASSERT(
+    crt_runtime_error_entry_is_0x08,
+    sizeof(crt_runtime_error_entry_t) == 0x08);
+CRIMSON_ABI_ASSERT(
+    crt_runtime_error_message_is_at_0x04,
+    offsetof(crt_runtime_error_entry_t, message) == 0x04);
+CRIMSON_ABI_ASSERT(
+    crt_runtime_error_table_is_0x90,
+    sizeof(crt_runtime_error_entry_t[18]) == 0x90);
+CRIMSON_ABI_ASSERT(
+    crt_codepage_info_is_0x30,
+    sizeof(crt_codepage_info_t) == 0x30);
+CRIMSON_ABI_ASSERT(
+    crt_codepage_lead_bytes_are_at_0x04,
+    offsetof(crt_codepage_info_t, lead_bytes) == 0x04);
+CRIMSON_ABI_ASSERT(
+    crt_codepage_ranges_are_at_0x10,
+    offsetof(crt_codepage_info_t, byte_class_ranges) == 0x10);
+CRIMSON_ABI_ASSERT(
+    crt_codepage_table_is_0xf0,
+    sizeof(crt_codepage_info_t[5]) == 0xf0);
+CRIMSON_ABI_ASSERT(
     crt_onexit_fn_is_32_bit,
     sizeof(crt_onexit_fn_t) == 4);
 CRIMSON_ABI_ASSERT(
     crt_onexit_cursor_is_32_bit,
     sizeof(crt_onexit_fn_t *) == 4);
 CRIMSON_ABI_ASSERT_ALIGN4(crt_dosmaperr_entry, crt_dosmaperr_entry_t);
+CRIMSON_ABI_ASSERT_ALIGN4(crt_ioinfo, crt_ioinfo_t);
+CRIMSON_ABI_ASSERT_ALIGN4(crt_runtime_error_entry, crt_runtime_error_entry_t);
+CRIMSON_ABI_ASSERT_ALIGN4(crt_codepage_info, crt_codepage_info_t);
 CRIMSON_ABI_ASSERT_ALIGN4(guid, GUID);
 
 CRIMSON_ABI_ASSERT(
@@ -176,6 +214,9 @@ CRIMSON_ABI_ASSERT(
 CRIMSON_ABI_ASSERT(
     default_u16_alignment_is_two,
     offsetof(crimson_u16_alignment_probe_t, value) == 2);
+CRIMSON_ABI_ASSERT(
+    default_systemtime_alignment_is_two,
+    offsetof(crimson_systemtime_alignment_probe_t, value) == 2);
 
 CRIMSON_ABI_ASSERT(vec2_is_8_bytes, sizeof(vec2f_t) == 0x08);
 CRIMSON_ABI_ASSERT(vec2_array_3_is_0x18, sizeof(vec2f_t[3]) == 0x18);
@@ -186,6 +227,12 @@ CRIMSON_ABI_ASSERT(int_array_4_is_0x10, sizeof(int[4]) == 0x10);
 CRIMSON_ABI_ASSERT(int_array_13_is_0x34, sizeof(int[13]) == 0x34);
 CRIMSON_ABI_ASSERT(int_array_36_is_0x90, sizeof(int[36]) == 0x90);
 CRIMSON_ABI_ASSERT(int_array_64_is_0x100, sizeof(int[64]) == 0x100);
+CRIMSON_ABI_ASSERT(
+    ushort_array_258_is_0x204,
+    sizeof(unsigned short[258]) == 0x204);
+CRIMSON_ABI_ASSERT(uchar_array_4_is_0x04, sizeof(unsigned char[4]) == 0x04);
+CRIMSON_ABI_ASSERT(uchar_array_10_is_0x0a, sizeof(unsigned char[10]) == 0x0a);
+CRIMSON_ABI_ASSERT(uchar_array_92_is_0x5c, sizeof(unsigned char[92]) == 0x5c);
 CRIMSON_ABI_ASSERT(cvar_float_is_16_bytes, sizeof(cvar_float_t) == 0x10);
 CRIMSON_ABI_ASSERT(
     cvar_value_is_at_0x0c,
