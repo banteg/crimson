@@ -11925,10 +11925,13 @@
   {
     "program": "grim.dll",
     "address": "0x10017345",
-    "name": "FUN_10017345",
-    "signature": "void*** FUN_10017345(void*** arg1, char arg2)",
-    "comment": "[binja] void*** __thiscall sub_10017345(void*** arg1, char arg2)",
-    "create": false
+    "name": "d3dx_codec_scalar_deleting_dtor",
+    "signature": "void*** d3dx_codec_scalar_deleting_dtor(void*** arg1, char arg2)",
+    "comment": "[binja] void*** __thiscall d3dx_codec_scalar_deleting_dtor(void*** arg1, char arg2)",
+    "create": false,
+    "aliases": [
+      "??_GCD3DXCodec@@UAEPAXI@Z"
+    ]
   },
   {
     "program": "grim.dll",
@@ -11958,242 +11961,332 @@
   {
     "program": "grim.dll",
     "address": "0x10017518",
-    "name": "FUN_10017518",
-    "signature": "short FUN_10017518(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017518(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_r8g8b8",
+    "signature": "short d3dx_pixel_encode_r8g8b8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_r8g8b8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_R8G8B8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017604",
-    "name": "FUN_10017604",
-    "signature": "short FUN_10017604(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017604(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a8r8g8b8",
+    "signature": "short d3dx_pixel_encode_a8r8g8b8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a8r8g8b8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8R8G8B8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017727",
-    "name": "FUN_10017727",
-    "signature": "short FUN_10017727(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017727(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_x8r8g8b8",
+    "signature": "short d3dx_pixel_encode_x8r8g8b8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_x8r8g8b8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_X8R8G8B8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017828",
-    "name": "FUN_10017828",
-    "signature": "short FUN_10017828(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017828(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_r5g6b5",
+    "signature": "short d3dx_pixel_encode_r5g6b5(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_r5g6b5(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_R5G6B5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017929",
-    "name": "FUN_10017929",
-    "signature": "short FUN_10017929(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017929(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_x1r5g5b5",
+    "signature": "short d3dx_pixel_encode_x1r5g5b5(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_x1r5g5b5(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_X1R5G5B5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017a2a",
-    "name": "FUN_10017a2a",
-    "signature": "short FUN_10017a2a(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017a2a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a1r5g5b5",
+    "signature": "short d3dx_pixel_encode_a1r5g5b5(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a1r5g5b5(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A1R5G5B5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017b47",
-    "name": "FUN_10017b47",
-    "signature": "short FUN_10017b47(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017b47(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a4r4g4b4",
+    "signature": "short d3dx_pixel_encode_a4r4g4b4(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a4r4g4b4(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A4R4G4B4@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017c6a",
-    "name": "FUN_10017c6a",
-    "signature": "short FUN_10017c6a(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017c6a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_r3g3b2",
+    "signature": "short d3dx_pixel_encode_r3g3b2(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_r3g3b2(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_R3G3B2@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017d68",
-    "name": "FUN_10017d68",
-    "signature": "short FUN_10017d68(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017d68(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a8",
+    "signature": "short d3dx_pixel_encode_a8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017e11",
-    "name": "FUN_10017e11",
-    "signature": "short FUN_10017e11(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017e11(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a8r3g3b2",
+    "signature": "short d3dx_pixel_encode_a8r3g3b2(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a8r3g3b2(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8R3G3B2@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10017f34",
-    "name": "FUN_10017f34",
-    "signature": "short FUN_10017f34(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10017f34(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_x4r4g4b4",
+    "signature": "short d3dx_pixel_encode_x4r4g4b4(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_x4r4g4b4(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_X4R4G4B4@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018035",
-    "name": "FUN_10018035",
-    "signature": "short FUN_10018035(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018035(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a2b10g10r10",
+    "signature": "short d3dx_pixel_encode_a2b10g10r10(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a2b10g10r10(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A2B10G10R10@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018158",
-    "name": "FUN_10018158",
-    "signature": "short FUN_10018158(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018158(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_g16r16",
+    "signature": "short d3dx_pixel_encode_g16r16(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_g16r16(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_G16R16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018228",
-    "name": "FUN_10018228",
-    "signature": "short FUN_10018228(void* arg1, int arg2, int arg3, float* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018228(void* arg1, int32_t arg2, int32_t arg3, float* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a8p8",
+    "signature": "short d3dx_pixel_encode_a8p8(void* arg1, int arg2, int arg3, float* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a8p8(void* arg1, int32_t arg2, int32_t arg3, float* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8P8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018340",
-    "name": "FUN_10018340",
-    "signature": "void* FUN_10018340(void* arg1, void* arg2, float arg3, void* arg4)",
-    "comment": "[binja] void* __thiscall sub_10018340(void* arg1, void* arg2, float arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_p8",
+    "signature": "void* d3dx_pixel_encode_p8(void* arg1, void* arg2, float arg3, void* arg4)",
+    "comment": "[binja] void* __thiscall d3dx_pixel_encode_p8(void* arg1, void* arg2, float arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_P8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018405",
-    "name": "FUN_10018405",
-    "signature": "short FUN_10018405(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018405(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_l8",
+    "signature": "short d3dx_pixel_encode_l8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_l8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_L8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x100184ca",
-    "name": "FUN_100184ca",
-    "signature": "short FUN_100184ca(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_100184ca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a8l8",
+    "signature": "short d3dx_pixel_encode_a8l8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a8l8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8L8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x100185c0",
-    "name": "FUN_100185c0",
-    "signature": "short FUN_100185c0(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_100185c0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a4l4",
+    "signature": "short d3dx_pixel_encode_a4l4(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a4l4(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A4L4@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x100186ab",
-    "name": "FUN_100186ab",
-    "signature": "short FUN_100186ab(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_100186ab(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_v8u8",
+    "signature": "short d3dx_pixel_encode_v8u8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_v8u8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_V8U8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018780",
-    "name": "FUN_10018780",
-    "signature": "short FUN_10018780(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018780(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_l6v5u5",
+    "signature": "short d3dx_pixel_encode_l6v5u5(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_l6v5u5(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_L6V5U5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018885",
-    "name": "FUN_10018885",
-    "signature": "short FUN_10018885(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018885(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_x8l8v8u8",
+    "signature": "short d3dx_pixel_encode_x8l8v8u8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_x8l8v8u8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_X8L8V8U8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018990",
-    "name": "FUN_10018990",
-    "signature": "short FUN_10018990(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018990(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_q8w8v8u8",
+    "signature": "short d3dx_pixel_encode_q8w8v8u8(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_q8w8v8u8(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_Q8W8V8U8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018aca",
-    "name": "FUN_10018aca",
-    "signature": "short FUN_10018aca(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018aca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_v16u16",
+    "signature": "short d3dx_pixel_encode_v16u16(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_v16u16(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_V16U16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018ba0",
-    "name": "FUN_10018ba0",
-    "signature": "short FUN_10018ba0(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018ba0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_w11v11u10",
+    "signature": "short d3dx_pixel_encode_w11v11u10(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_w11v11u10(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_W11V11U10@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018caa",
-    "name": "FUN_10018caa",
-    "signature": "short FUN_10018caa(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018caa(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a2w10v10u10",
+    "signature": "short d3dx_pixel_encode_a2w10v10u10(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a2w10v10u10(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_A2W10V10U10@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018de0",
-    "name": "FUN_10018de0",
-    "signature": "short FUN_10018de0(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018de0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_d16_lockable",
+    "signature": "short d3dx_pixel_encode_d16_lockable(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_d16_lockable(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_D16_LOCKABLE@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018ea7",
-    "name": "FUN_10018ea7",
-    "signature": "short FUN_10018ea7(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018ea7(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_l16",
+    "signature": "short d3dx_pixel_encode_l16(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_l16(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_D3DX_L16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x10018f6e",
-    "name": "FUN_10018f6e",
-    "signature": "short FUN_10018f6e(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_10018f6e(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a16l16",
+    "signature": "short d3dx_pixel_encode_a16l16(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a16l16(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_D3DX_A16L16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1001905c",
-    "name": "FUN_1001905c",
-    "signature": "short FUN_1001905c(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_1001905c(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_r16g16b16",
+    "signature": "short d3dx_pixel_encode_r16g16b16(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_r16g16b16(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_D3DX_R16G16B16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1001914b",
-    "name": "FUN_1001914b",
-    "signature": "short FUN_1001914b(void* arg1, int arg2, int arg3, void* arg4)",
-    "comment": "[binja] int16_t __thiscall sub_1001914b(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
-    "create": false
+    "name": "d3dx_pixel_encode_a16r16g16b16",
+    "signature": "short d3dx_pixel_encode_a16r16g16b16(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall d3dx_pixel_encode_a16r16g16b16(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false,
+    "aliases": [
+      "?Encode@CD3DXCodec_D3DX_A16R16G16B16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "program": "grim.dll",

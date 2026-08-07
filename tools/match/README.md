@@ -614,7 +614,9 @@ when another exact scratch for the same hash-pinned archive and COFF symbol
 already has one unique non-placeholder identity. Recognized DirectX 8.1 D3DX
 base and optimized helpers may also derive canonical `d3dx_init_*`,
 `d3dx_c_*`, `d3dx_sse*_*`, or `d3dx_x86_*` names directly from their exact
-decorated COFF symbols, including the `$$1` implementation suffix. This also reports
+decorated COFF symbols, including the `$$1` implementation suffix. Exact
+`CD3DXCodec_<FORMAT>::Encode` symbols similarly derive `d3dx_pixel_encode_*`
+identities. This also reports
 `provider-name-conflict` when an older semantic name is meaningful but weaker
 than that exact identity, and `provider-directory-conflict` when only the
 scratch directory still carries the superseded identity. Real

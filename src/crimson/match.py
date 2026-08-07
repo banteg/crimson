@@ -4933,6 +4933,17 @@ def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
 
     member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
     symbol = status.config.symbol or ""
+    if member.casefold() == "cd3dxcodec.obj":
+        if symbol == "??_GCD3DXCodec@@UAEPAXI@Z":
+            return "d3dx_codec_scalar_deleting_dtor"
+        codec_match = re.fullmatch(
+            r"\?Encode@CD3DXCodec_([A-Z0-9_]+)@@UAEXIIPAUD3DXCOLOR@@@Z",
+            symbol,
+        )
+        if codec_match is None:
+            return None
+        pixel_format = codec_match.group(1).removeprefix("D3DX_").lower()
+        return f"d3dx_pixel_encode_{pixel_format}"
     if member.casefold() not in {
         "d3dxmath.obj",
         "d3dxmathsse.obj",

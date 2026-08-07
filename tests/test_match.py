@@ -2451,6 +2451,21 @@ def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path
         archive_member=r"objf\i386\d3dxmathsse2.obj",
     )
     optimized_status = replace(status, config=optimized_config, address=0x00401020)
+    codec_config = replace(
+        config,
+        directory=tmp_path / "FUN_00401040",
+        function="FUN_00401040",
+        symbol="?Encode@CD3DXCodec_D3DX_A16L16@@UAEXIIPAUD3DXCOLOR@@@Z",
+        archive_member=r"obj\i386\cd3dxcodec.obj",
+    )
+    codec_status = replace(status, config=codec_config, address=0x00401040)
+    codec_dtor_config = replace(
+        codec_config,
+        directory=tmp_path / "FUN_00401060",
+        function="FUN_00401060",
+        symbol="??_GCD3DXCodec@@UAEPAXI@Z",
+    )
+    codec_dtor_status = replace(status, config=codec_dtor_config, address=0x00401060)
     name_map = tmp_path / "name_map.json"
     name_map.write_text(
         json.dumps(
@@ -2465,12 +2480,25 @@ def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path
                     "address": "0x00401020",
                     "name": "FUN_00401020",
                 },
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401040",
+                    "name": "FUN_00401040",
+                },
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401060",
+                    "name": "FUN_00401060",
+                },
             ],
         ),
         encoding="utf-8",
     )
 
-    rows = collect_naming_debt([status, optimized_status], name_map_path=name_map)
+    rows = collect_naming_debt(
+        [status, optimized_status, codec_status, codec_dtor_status],
+        name_map_path=name_map,
+    )
     row = next(candidate for candidate in rows if candidate.address == status.address)
     optimized_row = next(
         candidate for candidate in rows if candidate.address == optimized_status.address
@@ -2482,6 +2510,13 @@ def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path
     assert optimized_row.suggestion_sources == (
         f"provider-symbol:{optimized_config.symbol}",
     )
+    codec_row = next(candidate for candidate in rows if candidate.address == codec_status.address)
+    codec_dtor_row = next(
+        candidate for candidate in rows if candidate.address == codec_dtor_status.address
+    )
+    assert codec_row.suggestion == "d3dx_pixel_encode_a16l16"
+    assert codec_row.suggestion_sources == (f"provider-symbol:{codec_config.symbol}",)
+    assert codec_dtor_row.suggestion == "d3dx_codec_scalar_deleting_dtor"
 
 
 def test_apply_naming_suggestions_replaces_weaker_d3dx_semantic_identity(tmp_path: Path) -> None:
