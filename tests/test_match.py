@@ -851,6 +851,19 @@ def test_extract_object_function_keeps_vc_code_packets_in_extent() -> None:
     assert extract_object_function(obj, "probe").data == code
 
 
+def test_extract_object_function_accepts_explicit_code_label() -> None:
+    code = bytes.fromhex("31c0c3b800000000c3")
+    obj = CoffObject(
+        sections=(CoffSection(".text", code, 0x20, ()),),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "$Lhandler", 3, 1, 0, 6),
+        ),
+    )
+
+    assert extract_object_function(obj, "$Lhandler").data == code[3:]
+
+
 def test_extract_object_function_collects_relocations() -> None:
     code = bytes.fromhex("a100000000c3")
     obj = parse_coff_object(build_object(code, [("_foo", 0)], [1]))

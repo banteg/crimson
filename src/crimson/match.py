@@ -56,6 +56,7 @@ WORKER_HYPOTHESIS_KINDS = frozenset(
 IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
 IMAGE_SYM_CLASS_STATIC = 3
+IMAGE_SYM_CLASS_LABEL = 6
 IMAGE_SCN_CNT_CODE = 0x00000020
 IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080
 IMAGE_SCN_LNK_COMDAT = 0x00001000
@@ -1198,6 +1199,10 @@ def _is_function_symbol(symbol: CoffSymbol) -> bool:
     )
 
 
+def _is_code_label_symbol(symbol: CoffSymbol) -> bool:
+    return symbol.section_number > 0 and symbol.storage_class == IMAGE_SYM_CLASS_LABEL
+
+
 def _symbol_matches(symbol_name: str, wanted: str) -> bool:
     return (
         symbol_name == wanted
@@ -1697,10 +1702,18 @@ def _format_addend(addend: int) -> str:
 
 
 def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectFunction:
+    explicit_code_label = False
     candidates = [symbol for symbol in obj.symbols if _is_function_symbol(symbol)]
     if name is not None:
         exact = [symbol for symbol in candidates if symbol.name == name]
         candidates = exact or [symbol for symbol in candidates if _symbol_matches(symbol.name, name)]
+        if not candidates:
+            candidates = [
+                symbol
+                for symbol in obj.symbols
+                if symbol.name == name and _is_code_label_symbol(symbol)
+            ]
+            explicit_code_label = bool(candidates)
     if not candidates:
         raise ValueError(f"no matching function symbol (name={name!r})")
     if len(candidates) > 1 and name is not None:
@@ -1723,7 +1736,7 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
     siblings = sorted(
         symbol.value
         for symbol in obj.symbols
-        if _is_function_symbol(symbol)
+        if (_is_function_symbol(symbol) or (explicit_code_label and _is_code_label_symbol(symbol)))
         and symbol.section_number == target.section_number
         and symbol.value > target.value
     )
