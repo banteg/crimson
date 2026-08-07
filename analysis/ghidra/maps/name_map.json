@@ -14894,6 +14894,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1004ba17",
+    "name": "d3dx_codec_convert_from_eh_handler",
+    "signature": "void d3dx_codec_convert_from_eh_handler(void)",
+    "comment": "compiler-generated exception-handler thunk for CD3DXCodec::ConvertFrom"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004b9ef",
     "name": "grim_pixel_format_destroy_dxt_eh_handler",
     "signature": "void grim_pixel_format_destroy_dxt_eh_handler(void)",
