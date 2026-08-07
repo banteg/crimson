@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes two hundred six exact callback, state, and cleanup
+The image-decoder cluster contributes two hundred eleven exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -323,6 +323,16 @@ residuals: every instruction and reference agrees except for one byte-clear
 opcode in each body, and the full historical compiler matrix reproduces no
 exact alternative.
 
-Altogether the two hundred twenty-four exact functions cover 41,323 bytes
-and 14,813 instructions in the explicit `all` scope, with every external
+The D3DX decompression master now comes from pinned `jdmaster.c` as well.
+Five newly exact merged-upsampling, output-dimension, range-table, module-
+selection, and output-pass bodies add 1,449 bytes and 521 instructions; the
+older finish callback now shares their official source provenance. `/Oi` is
+required translation-unit-wide both for the range-table intrinsics and the
+master selector's register allocation. The small controller initializer is a
+semantic-complete compiler residual: its three references agree, while build
+9178 schedules one byte clear ahead of the stack cleanup in a form none of the
+available historical compilers reproduces.
+
+Altogether the two hundred twenty-nine exact functions cover 42,772 bytes
+and 15,334 instructions in the explicit `all` scope, with every external
 relocation resolved.

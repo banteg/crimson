@@ -10862,10 +10862,40 @@
   {
     "program": "grim.dll",
     "address": "0x10023c18",
-    "name": "FUN_10023c18",
-    "signature": "int FUN_10023c18(int arg1, void* arg2)",
-    "comment": "[binja] int32_t __fastcall sub_10023c18(int32_t arg1, void* arg2)",
-    "create": false
+    "name": "d3dx_jpeg_use_merged_upsample",
+    "aliases": [
+      "FUN_10023c18"
+    ],
+    "signature": "boolean d3dx_jpeg_use_merged_upsample(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a merged-upsample eligibility predicate in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023c89",
+    "name": "d3dx_jpeg_calc_output_dimensions",
+    "signature": "void d3dx_jpeg_calc_output_dimensions(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a output-dimension and IDCT-scaling calculation in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023e78",
+    "name": "d3dx_jpeg_prepare_range_limit_table",
+    "signature": "void d3dx_jpeg_prepare_range_limit_table(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a sample range-limit table builder in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023ee7",
+    "name": "d3dx_jpeg_master_selection",
+    "signature": "void d3dx_jpeg_master_selection(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a decompression module selector in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024094",
+    "name": "d3dx_jpeg_prepare_for_output_pass",
+    "signature": "void d3dx_jpeg_prepare_for_output_pass(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a output-pass module initializer in the D3DX provider"
   },
   {
     "program": "grim.dll",
@@ -10873,6 +10903,13 @@
     "name": "d3dx_jpeg_finish_output_pass",
     "signature": "void d3dx_jpeg_finish_output_pass(j_decompress_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a output-pass finalizer in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100241e2",
+    "name": "d3dx_jpeg_init_master_decompress",
+    "signature": "void d3dx_jpeg_init_master_decompress(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a master decompression controller initializer in the D3DX provider"
   },
   {
     "program": "grim.dll",
