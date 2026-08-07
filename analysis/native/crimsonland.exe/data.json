@@ -1,5 +1,5 @@
 {
-  "audit_digest": "fdec7dbd6abd530d52a238673be700fe19554fbadc29e00c447f0e7a30b11380",
+  "audit_digest": "2896f600d05030b3f04b04a2714fc52ae92fa10da866d10cd492abaad220a825",
   "entries": [
     {
       "address": 4211888,
@@ -5265,6 +5265,28 @@
       "size": 4,
       "size_source": "tools/match/scratches: recovered int, long, or DWORD declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit and long_is_32_bit",
       "type": "int"
+    },
+    {
+      "address": 4698520,
+      "aliases": [
+        "__NLG_Destination"
+      ],
+      "alignment": 4,
+      "alignment_source": "exsup.obj and the linked image place the destination record on a four-byte boundary",
+      "comment": "VC6 non-local-goto destination record occupying exsup.obj's complete 0x10-byte .data section.",
+      "definition_group": "literal-uchar-array-00010-nlg",
+      "definition_state": "fully-specified",
+      "initializer_hex": "20059319000000000000000000000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at 0x0047b198",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_nlg_destination",
+      "section": ".data",
+      "section_offset": 41368,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 16,
+      "size_source": "libcmt.lib exsup.obj: __NLG_Destination occupies the complete 0x10-byte .data section",
+      "type": "unsigned char[16]"
     },
     {
       "address": 4698536,
@@ -35453,9 +35475,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "e7a6926337a2e983c20373e3b308f3c3c15bb33599f02f4ae554615ee2785310",
+    "data_map_sha256": "985e0cc4c7f5a750a090d34024afc3d99a4c0289571928d8601de01544a28fca",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "5e4bdaf2e14c661f695106b8ca85d28f61f33e54b497225e3be880793ec85d2a",
+    "definitions_sha256": "696ed601188dba02ec562d0df4502025ddeef186f0d99e1d7b12ea8da1c037cd",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -35464,17 +35486,17 @@
     "segments_sha256": "65e2a4e6a7d63516ac68264a83f3d001d2476b750d982afe1fbc72d25eae9b44"
   },
   "summary": {
-    "alias_names": 168,
-    "alias_rows": 168,
-    "code_label_entries": 6,
-    "definition_group_entries": 1591,
-    "definition_groups": 170,
-    "entry_count": 1681,
-    "explicit_alignment_entries": 1681,
-    "explicit_initializer_entries": 1681,
-    "explicit_size_entries": 1681,
-    "fixed_array_types": 318,
-    "fully_specified_entries": 1681,
+    "alias_names": 169,
+    "alias_rows": 169,
+    "code_label_entries": 8,
+    "definition_group_entries": 1592,
+    "definition_groups": 171,
+    "entry_count": 1682,
+    "explicit_alignment_entries": 1682,
+    "explicit_initializer_entries": 1682,
+    "explicit_size_entries": 1682,
+    "fixed_array_types": 319,
+    "fully_specified_entries": 1682,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 5,
@@ -35482,13 +35504,13 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 1661,
+      ".data": 1662,
       ".rdata": 19,
       ".text": 1
     },
-    "source_entry_count": 1687,
-    "typed_entries": 1681,
-    "unique_addresses": 1677,
+    "source_entry_count": 1690,
+    "typed_entries": 1682,
+    "unique_addresses": 1678,
     "untyped_entries": 0
   }
 }

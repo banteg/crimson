@@ -578,6 +578,7 @@ def test_data_map_preserves_recovered_crt_and_weapon_alias_types():
         "0x004710e4": ("crt_xi_begin", "void *"),
         "0x004710f8": ("crt_xi_end", "void *"),
         "0x0047b160": ("crt_fp_init_hook", "void *"),
+        "0x0047b198": ("crt_nlg_destination", "unsigned char[16]"),
         "0x0047b1a8": ("crt_cfltcvt_table", "void *[6]"),
         "0x0047b1c0": ("crt_ctype_table", "unsigned short *"),
         "0x0047b1c8": ("crt_ctype_data", "unsigned short[258]"),
@@ -677,6 +678,8 @@ def test_data_map_classifies_instruction_annotations_as_code_labels():
         "crt_strstr_to_strchr",
         "crt_se_translator_return_point",
         "crt_se_translator_exception_continuation",
+        "crt_cropzeros",
+        "crt_positive",
     }
 
 

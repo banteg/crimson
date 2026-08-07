@@ -2477,17 +2477,17 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1687
-    assert payload["summary"]["code_label_entries"] == 6
-    assert payload["summary"]["entry_count"] == 1681
-    assert payload["summary"]["typed_entries"] == 1681
+    assert payload["summary"]["source_entry_count"] == 1690
+    assert payload["summary"]["code_label_entries"] == 8
+    assert payload["summary"]["entry_count"] == 1682
+    assert payload["summary"]["typed_entries"] == 1682
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1681
-    assert payload["summary"]["explicit_alignment_entries"] == 1681
-    assert payload["summary"]["explicit_initializer_entries"] == 1681
-    assert payload["summary"]["fully_specified_entries"] == 1681
-    assert payload["summary"]["definition_group_entries"] == 1591
-    assert payload["summary"]["definition_groups"] == 170
+    assert payload["summary"]["explicit_size_entries"] == 1682
+    assert payload["summary"]["explicit_alignment_entries"] == 1682
+    assert payload["summary"]["explicit_initializer_entries"] == 1682
+    assert payload["summary"]["fully_specified_entries"] == 1682
+    assert payload["summary"]["definition_group_entries"] == 1592
+    assert payload["summary"]["definition_groups"] == 171
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2591,6 +2591,9 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["crt_xi_end"]["initializer_hex"] == "00000000"
     assert defined["crt_fp_init_hook"]["initializer_hex"] == "b80c4600"
     assert defined["crt_cfltcvt_table"]["size"] == 6 * 4
+    assert defined["crt_nlg_destination"]["initializer_hex"] == (
+        "20059319000000000000000000000000"
+    )
     assert defined["crt_iob"]["size"] == 20 * 32
     assert defined["crt_ctype_table"]["initializer_hex"] == "cab14700"
     assert defined["crt_ctype_data"]["size"] == 258 * 2

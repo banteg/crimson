@@ -89,6 +89,24 @@
       ]
     },
     {
+      "name": "literal-uchar-array-00010-nlg",
+      "types": [
+        "unsigned char[16]"
+      ],
+      "size": 16,
+      "size_source": "libcmt.lib exsup.obj: __NLG_Destination occupies the complete 0x10-byte .data section",
+      "alignment": 4,
+      "alignment_source": "exsup.obj and the linked image place the destination record on a four-byte boundary",
+      "initializer_hex": "20059319000000000000000000000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at 0x0047b198",
+      "members": [
+        [
+          "0x0047b198",
+          "crt_nlg_destination"
+        ]
+      ]
+    },
+    {
       "name": "literal-compiler-rdata-0000c",
       "types": [
         "unsigned char[12]"

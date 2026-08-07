@@ -41,6 +41,26 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004637ba",
+      "aliases": [
+        "__cropzeros"
+      ],
+      "comment": "VC6 cfltcvt trailing-zero crop helper entry, omitted as a function by the static-analysis exports but referenced directly by fpinit.obj.",
+      "kind": "code_label",
+      "name": "crt_cropzeros",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00463808",
+      "aliases": [
+        "__positive"
+      ],
+      "comment": "VC6 cfltcvt sign-test helper entry, omitted as a function by the static-analysis exports but referenced directly by fpinit.obj.",
+      "kind": "code_label",
+      "name": "crt_positive",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0046f3e4",
       "aliases": [
         "??_7mod_api_cpp_t@@6B@"
@@ -1827,6 +1847,16 @@
       "name": "crt_app_type",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x0047b198",
+      "aliases": [
+        "__NLG_Destination"
+      ],
+      "comment": "VC6 non-local-goto destination record occupying exsup.obj's complete 0x10-byte .data section.",
+      "name": "crt_nlg_destination",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[16]"
     },
     {
       "address": "0x0047b1a8",
