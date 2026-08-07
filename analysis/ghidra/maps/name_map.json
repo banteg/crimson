@@ -9193,7 +9193,6 @@
     "address": "0x1000a810",
     "name": "grim_jaz_decode_scope_init",
     "aliases": [
-      "FUN_1000a810",
       "??0GrimJazDecodeScope@@QAE@XZ"
     ],
     "signature": "void * grim_jaz_decode_scope_init(void *this)",
@@ -9204,9 +9203,6 @@
     "program": "grim.dll",
     "address": "0x1000a820",
     "name": "grim_zlib_status_is_error",
-    "aliases": [
-      "FUN_1000a820"
-    ],
     "signature": "bool grim_zlib_status_is_error(int status)",
     "comment": "classifies zlib statuses 0, 1, and 2 as non-errors",
     "create": false
@@ -9216,7 +9212,6 @@
     "address": "0x1000a840",
     "name": "grim_zlib_decompress_alloc",
     "aliases": [
-      "FUN_1000a840",
       "?decompress_alloc@GrimJazDecodeScope@@QAE_NPAPAEIPBEI@Z"
     ],
     "signature": "bool grim_zlib_decompress_alloc(unsigned char **output, unsigned int output_size, const unsigned char *source, unsigned int source_size)",
@@ -9228,7 +9223,6 @@
     "address": "0x1000a880",
     "name": "grim_jaz_decompress_payload",
     "aliases": [
-      "FUN_1000a880",
       "?unpack@GrimJazDecodeScope@@QAEPAEPAEPAI@Z"
     ],
     "signature": "unsigned char * grim_jaz_decompress_payload(unsigned char *source, unsigned int *output_size)",
@@ -9286,7 +9280,6 @@
     "address": "0x1000aaca",
     "name": "d3dx_score_format",
     "aliases": [
-      "FUN_1000aaca",
       "?D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z"
     ],
     "signature": "unsigned int d3dx_score_format(const void *candidate, const void *requested)",
@@ -9298,7 +9291,6 @@
     "address": "0x1000ab3f",
     "name": "d3dx_find_closest_format",
     "aliases": [
-      "sub_1000AB3F",
       "?D3DXFindClosestFormat@@YA?AW4_D3DFORMAT@@PBW41@PBUtagPALETTEENTRY@@PBU_D3DXFORMAT_INFO@@@Z"
     ],
     "signature": "int d3dx_find_closest_format(const int *formats, const void *palette, const void *requested)",
@@ -9310,7 +9302,6 @@
     "address": "0x1000abad",
     "name": "d3dx_find_closest_device_format",
     "aliases": [
-      "sub_1000ABAD",
       "?D3DXFindClosestDeviceFormat@@YA?AW4_D3DFORMAT@@PAUIDirect3DDevice8@@KW4_D3DRESOURCETYPE@@PBU_D3DXFORMAT_INFO@@@Z"
     ],
     "signature": "int d3dx_find_closest_device_format(void *device, unsigned long usage, int resource_type, const void *requested)",
@@ -9322,7 +9313,6 @@
     "address": "0x1000ac8f",
     "name": "d3dx_find_closest_external_format",
     "aliases": [
-      "sub_1000AC8F",
       "?D3DXFindClosestExternalFormat@@YA?AW4_D3DFORMAT@@W41@@Z"
     ],
     "signature": "int d3dx_find_closest_external_format(int format)",
@@ -9334,7 +9324,6 @@
     "address": "0x1000acc0",
     "name": "D3DXLoadSurfaceFromMemory",
     "aliases": [
-      "FUN_1000acc0",
       "_D3DXLoadSurfaceFromMemory@40"
     ],
     "signature": "int __stdcall D3DXLoadSurfaceFromMemory(void *destination, const void *destination_palette, const void *destination_rect, const void *source, int source_format, unsigned int source_pitch, const void *source_palette, const void *source_rect, unsigned long filter, unsigned long color_key)",
@@ -9346,7 +9335,6 @@
     "address": "0x1000ad9f",
     "name": "d3dx_save_surface_to_file",
     "aliases": [
-      "FUN_1000ad9f",
       "?SaveSurfaceToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@H@Z"
     ],
     "signature": "int d3dx_save_surface_to_file(void *path, int format, void *surface, void *palette, void *rect, int ansi_path)",
@@ -9357,9 +9345,6 @@
     "program": "grim.dll",
     "address": "0x1000ae52",
     "name": "D3DXSaveSurfaceToFileA",
-    "aliases": [
-      "FUN_1000ae52"
-    ],
     "signature": "int D3DXSaveSurfaceToFileA(char *path, int format, void *surface, void *palette, void *rect)",
     "comment": "D3DX8 static helper; saves a surface to an image path using an optional palette and source rectangle",
     "create": false
@@ -9369,7 +9354,6 @@
     "address": "0x1000ae72",
     "name": "D3DXLoadVolumeFromMemory",
     "aliases": [
-      "FUN_1000ae72",
       "_D3DXLoadVolumeFromMemory@44"
     ],
     "signature": "int __stdcall D3DXLoadVolumeFromMemory(void *destination, const void *destination_palette, const void *destination_box, const void *source, int source_format, unsigned int source_row_pitch, unsigned int source_slice_pitch, const void *source_palette, const void *source_box, unsigned long filter, unsigned long color_key)",
@@ -9381,7 +9365,6 @@
     "address": "0x1000af45",
     "name": "d3dx_check_texture_requirements_internal",
     "aliases": [
-      "sub_1000AF45",
       "?CheckTextureRequirements@@YAJPAUIDirect3DDevice8@@PAI111KPAW4_D3DFORMAT@@W4_D3DPOOL@@W4_D3DRESOURCETYPE@@@Z"
     ],
     "signature": "int d3dx_check_texture_requirements_internal(void *device, unsigned int *width, unsigned int *height, unsigned int *depth, unsigned int *mip_levels, unsigned long usage, int *format, int pool, int resource_type)",
@@ -9393,7 +9376,6 @@
     "address": "0x1000b26f",
     "name": "D3DXCheckTextureRequirements",
     "aliases": [
-      "FUN_1000b26f",
       "_D3DXCheckTextureRequirements@28"
     ],
     "signature": "int __stdcall D3DXCheckTextureRequirements(void *device, unsigned int *width, unsigned int *height, unsigned int *mip_levels, unsigned long usage, int *format, int pool)",
@@ -9416,7 +9398,6 @@
     "address": "0x1000b348",
     "name": "d3dx_lock_volume_scalar_deleting_dtor",
     "aliases": [
-      "sub_1000B348",
       "??_ECD3DXLockVolume@@QAEPAXI@Z"
     ],
     "signature": "void * d3dx_lock_volume_scalar_deleting_dtor(void *this, unsigned int flags)",
@@ -9428,7 +9409,6 @@
     "address": "0x1000b3b5",
     "name": "d3dx_eval_color",
     "aliases": [
-      "sub_1000B3B5",
       "?EvalColor@@YAMPAUD3DXCOLOR@@K@Z"
     ],
     "signature": "float d3dx_eval_color(void *color, unsigned long channel)",
@@ -9451,7 +9431,6 @@
     "address": "0x1000bbfc",
     "name": "D3DXLoadSurfaceFromSurface",
     "aliases": [
-      "FUN_1000bbfc",
       "_D3DXLoadSurfaceFromSurface@32"
     ],
     "signature": "int __stdcall D3DXLoadSurfaceFromSurface(void *destination, const void *destination_palette, const void *destination_rect, void *source, const void *source_palette, const void *source_rect, unsigned long filter, unsigned long color_key)",
@@ -9463,7 +9442,6 @@
     "address": "0x1000bda2",
     "name": "D3DXLoadVolumeFromVolume",
     "aliases": [
-      "FUN_1000bda2",
       "_D3DXLoadVolumeFromVolume@32"
     ],
     "signature": "int __stdcall D3DXLoadVolumeFromVolume(void *destination, const void *destination_palette, const void *destination_box, void *source, const void *source_palette, const void *source_box, unsigned long filter, unsigned long color_key)",
@@ -9475,7 +9453,6 @@
     "address": "0x1000be28",
     "name": "d3dx_save_texture_to_file",
     "aliases": [
-      "sub_1000BE28",
       "?SaveTextureToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DBaseTexture8@@PBUtagPALETTEENTRY@@H@Z"
     ],
     "signature": "int d3dx_save_texture_to_file(const void *path, int format, void *texture, const void *palette, int level)",
@@ -9497,7 +9474,6 @@
     "address": "0x1000c205",
     "name": "D3DXFilterTexture",
     "aliases": [
-      "FUN_1000c205",
       "_D3DXFilterTexture@16"
     ],
     "signature": "int __stdcall D3DXFilterTexture(void *texture, const void *palette, unsigned int source_level, unsigned long filter)",
@@ -9509,7 +9485,6 @@
     "address": "0x1000c4e9",
     "name": "d3dx_create_texture_from_file_in_memory_ex",
     "aliases": [
-      "FUN_1000c4e9",
       "?CreateTextureFromFileInMemoryEx@@YAJPAUIDirect3DDevice8@@PBXIIIIIKW4_D3DFORMAT@@W4_D3DPOOL@@KKKPAU_D3DXIMAGE_INFO@@PAUtagPALETTEENTRY@@W4_D3DRESOURCETYPE@@PAPAUIDirect3DBaseTexture8@@@Z"
     ],
     "signature": "int d3dx_create_texture_from_file_in_memory_ex(int** arg1, void* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, int arg8, void* arg9, int arg10, int arg11, int** arg12)",
@@ -10300,7 +10275,6 @@
     "address": "0x10010285",
     "name": "d3dx_image_ctor",
     "aliases": [
-      "FUN_10010285",
       "??0CD3DXImage@@QAE@XZ"
     ],
     "signature": "void * d3dx_image_ctor(void *this)",
@@ -10312,7 +10286,6 @@
     "address": "0x1001029e",
     "name": "d3dx_image_destroy",
     "aliases": [
-      "FUN_1001029e",
       "??1CD3DXImage@@QAE@XZ"
     ],
     "signature": "void d3dx_image_destroy(void *this)",
@@ -10332,7 +10305,6 @@
     "address": "0x10010313",
     "name": "d3dx_image_initialize",
     "aliases": [
-      "FUN_10010313",
       "?Initialize@CD3DXImage@@QAEJPAUD3DX_BLT@@@Z"
     ],
     "signature": "int d3dx_image_initialize(void *this, void *blt)",
@@ -10352,7 +10324,6 @@
     "address": "0x10010aec",
     "name": "d3dx_image_save_dib",
     "aliases": [
-      "FUN_10010aec",
       "?SaveDIB@CD3DXImage@@AAEJPAXH@Z"
     ],
     "signature": "int d3dx_image_save_dib(void *this, void *file, int include_alpha)",
@@ -10363,9 +10334,6 @@
     "program": "grim.dll",
     "address": "0x10010dd0",
     "name": "d3dx_image_jpeg_error_exit",
-    "aliases": [
-      "sub_10010DD0"
-    ],
     "signature": "void d3dx_image_jpeg_error_exit(j_common_ptr cinfo)",
     "comment": "Exact DirectX 8.1 CD3DXImage JPEG fatal-error callback; emits the message then longjmps through the loader error state."
   },
@@ -10421,7 +10389,6 @@
     "address": "0x100120d6",
     "name": "d3dx_image_save_dds",
     "aliases": [
-      "FUN_100120d6",
       "?SaveDDS@CD3DXImage@@AAEJPAX@Z"
     ],
     "signature": "int d3dx_image_save_dds(void *this, void *file)",
@@ -10433,7 +10400,6 @@
     "address": "0x1001237e",
     "name": "d3dx_image_save",
     "aliases": [
-      "FUN_1001237e",
       "?Save@CD3DXImage@@QAEJPBXW4_D3DXIMAGE_FILEFORMAT@@H@Z"
     ],
     "signature": "int d3dx_image_save(void *this, void *path, int format, int ansi_path)",
@@ -10453,7 +10419,6 @@
     "address": "0x10012677",
     "name": "d3dx_image_load",
     "aliases": [
-      "FUN_10012677",
       "?Load@CD3DXImage@@QAEJPBXKPAU_D3DXIMAGE_INFO@@H@Z"
     ],
     "signature": "int d3dx_image_load(void *this, const void *data, unsigned int size, void *info, int flags)",
@@ -10465,7 +10430,6 @@
     "address": "0x1001284c",
     "name": "d3dx_blt_ctor",
     "aliases": [
-      "FUN_1001284c",
       "??0CD3DXBlt@@QAE@XZ"
     ],
     "signature": "void * d3dx_blt_ctor(void *this)",
@@ -10477,7 +10441,6 @@
     "address": "0x10012856",
     "name": "d3dx_blt_dtor",
     "aliases": [
-      "FUN_10012856",
       "??1CD3DXBlt@@QAE@XZ"
     ],
     "signature": "void d3dx_blt_dtor(void *this)",
@@ -10501,7 +10464,6 @@
     "address": "0x1001288a",
     "name": "d3dx_tf_setup_triangle",
     "aliases": [
-      "sub_1001288A",
       "?TF_SetupTriangle@@YAPAEIIH@Z"
     ],
     "signature": "unsigned char * d3dx_tf_setup_triangle(unsigned int width, unsigned int height, int filter)",
@@ -10513,7 +10475,6 @@
     "address": "0x10012b47",
     "name": "d3dx_tf_row_scalar_deleting_dtor",
     "aliases": [
-      "FUN_10012b47",
       "??_ETF_Row@@QAEPAXI@Z"
     ],
     "signature": "void * d3dx_tf_row_scalar_deleting_dtor(void *this, unsigned int flags)",
@@ -10525,7 +10486,6 @@
     "address": "0x10012b93",
     "name": "d3dx_blt_triangle_3d",
     "aliases": [
-      "FUN_10012b93",
       "?BltTriangle3D@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_triangle_3d(void *this)",
@@ -10537,7 +10497,6 @@
     "address": "0x10013007",
     "name": "d3dx_blt_same_dxtn",
     "aliases": [
-      "FUN_10013007",
       "?BltSame_DXTn@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_same_dxtn(void *this)",
@@ -10549,7 +10508,6 @@
     "address": "0x10013195",
     "name": "d3dx_box_filter_2d_a8r8g8b8",
     "aliases": [
-      "sub_10013195",
       "?c_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
     ],
     "signature": "int d3dx_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
@@ -10561,7 +10519,6 @@
     "address": "0x100132bb",
     "name": "d3dx_blt_box_2d_a8r8g8b8",
     "aliases": [
-      "FUN_100132bb",
       "?BltBox2D_A8R8G8B8@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_a8r8g8b8(void *this)",
@@ -10573,7 +10530,6 @@
     "address": "0x100132ec",
     "name": "d3dx_box_filter_2d_x8r8g8b8",
     "aliases": [
-      "sub_100132EC",
       "?c_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"
     ],
     "signature": "int d3dx_box_filter_2d_x8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
@@ -10585,7 +10541,6 @@
     "address": "0x100133d4",
     "name": "d3dx_mmx_box_filter_2d_a8r8g8b8",
     "aliases": [
-      "sub_100133D4",
       "?mmx_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
     ],
     "signature": "int d3dx_mmx_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
@@ -10597,7 +10552,6 @@
     "address": "0x100134ea",
     "name": "d3dx_init_box_filter_2d_a8r8g8b8",
     "aliases": [
-      "sub_100134EA",
       "?init_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
     ],
     "signature": "int d3dx_init_box_filter_2d_a8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
@@ -10609,7 +10563,6 @@
     "address": "0x10013522",
     "name": "d3dx_init_box_filter_2d_x8r8g8b8",
     "aliases": [
-      "sub_10013522",
       "?init_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"
     ],
     "signature": "int d3dx_init_box_filter_2d_x8r8g8b8(unsigned int *dst, unsigned int *src, unsigned int width, unsigned int height, unsigned int dst_pitch, unsigned int src_pitch)",
@@ -10621,7 +10574,6 @@
     "address": "0x10013551",
     "name": "d3dx_blt_box_2d_x8r8g8b8",
     "aliases": [
-      "FUN_10013551",
       "?BltBox2D_X8R8G8B8@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_x8r8g8b8(void *this)",
@@ -10633,7 +10585,6 @@
     "address": "0x10013582",
     "name": "d3dx_blt_box_2d_r5g6b5",
     "aliases": [
-      "FUN_10013582",
       "?BltBox2D_R5G6B5@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_r5g6b5(void *this)",
@@ -10645,7 +10596,6 @@
     "address": "0x100136d2",
     "name": "d3dx_blt_box_2d_x1r5g5b5",
     "aliases": [
-      "FUN_100136d2",
       "?BltBox2D_X1R5G5B5@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_x1r5g5b5(void *this)",
@@ -10657,7 +10607,6 @@
     "address": "0x100137f6",
     "name": "d3dx_blt_box_2d_a1r5g5b5",
     "aliases": [
-      "FUN_100137f6",
       "?BltBox2D_A1R5G5B5@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_a1r5g5b5(void *this)",
@@ -10669,7 +10618,6 @@
     "address": "0x10013945",
     "name": "d3dx_blt_box_2d_a4r4g4b4",
     "aliases": [
-      "FUN_10013945",
       "?BltBox2D_A4R4G4B4@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_a4r4g4b4(void *this)",
@@ -10681,7 +10629,6 @@
     "address": "0x10013a98",
     "name": "d3dx_blt_box_2d_r3g3b2",
     "aliases": [
-      "FUN_10013a98",
       "?BltBox2D_R3G3B2@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_r3g3b2(void *this)",
@@ -10693,7 +10640,6 @@
     "address": "0x10013bd7",
     "name": "d3dx_blt_box_2d_a8",
     "aliases": [
-      "FUN_10013bd7",
       "?BltBox2D_A8@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_a8(void *this)",
@@ -10705,7 +10651,6 @@
     "address": "0x10013c72",
     "name": "d3dx_blt_box_2d_a8r3g3b2",
     "aliases": [
-      "FUN_10013c72",
       "?BltBox2D_A8R3G3B2@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_a8r3g3b2(void *this)",
@@ -10717,7 +10662,6 @@
     "address": "0x10013dbe",
     "name": "d3dx_blt_box_2d_x4r4g4b4",
     "aliases": [
-      "FUN_10013dbe",
       "?BltBox2D_X4R4G4B4@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_x4r4g4b4(void *this)",
@@ -10729,7 +10673,6 @@
     "address": "0x10013edf",
     "name": "d3dx_blt_box_2d_a8l8",
     "aliases": [
-      "FUN_10013edf",
       "?BltBox2D_A8L8@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_a8l8(void *this)",
@@ -10741,7 +10684,6 @@
     "address": "0x1001402b",
     "name": "d3dx_blt_box_2d_a4l4",
     "aliases": [
-      "FUN_1001402b",
       "?BltBox2D_A4L4@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d_a4l4(void *this)",
@@ -10753,7 +10695,6 @@
     "address": "0x1001416a",
     "name": "d3dx_blt_same",
     "aliases": [
-      "FUN_1001416a",
       "?BltSame@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_same(void *this)",
@@ -10765,7 +10706,6 @@
     "address": "0x100142a2",
     "name": "d3dx_blt_copy",
     "aliases": [
-      "FUN_100142a2",
       "?BltCopy@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_copy(void *this)",
@@ -10777,7 +10717,6 @@
     "address": "0x10014393",
     "name": "d3dx_blt_none",
     "aliases": [
-      "FUN_10014393",
       "?BltNone@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_none(void *this)",
@@ -10789,7 +10728,6 @@
     "address": "0x10014595",
     "name": "d3dx_blt_point",
     "aliases": [
-      "FUN_10014595",
       "?BltPoint@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_point(void *this)",
@@ -10801,7 +10739,6 @@
     "address": "0x10014799",
     "name": "d3dx_blt_box_2d",
     "aliases": [
-      "FUN_10014799",
       "?BltBox2D@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_2d(void *this)",
@@ -10813,7 +10750,6 @@
     "address": "0x10014bbc",
     "name": "d3dx_blt_box_3d",
     "aliases": [
-      "FUN_10014bbc",
       "?BltBox3D@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_box_3d(void *this)",
@@ -10825,7 +10761,6 @@
     "address": "0x1001504e",
     "name": "d3dx_lf_setup_linear",
     "aliases": [
-      "sub_1001504E",
       "?LF_SetupLinear@@YAPAEIIH@Z"
     ],
     "signature": "unsigned char * d3dx_lf_setup_linear(unsigned int width, unsigned int height, int filter)",
@@ -10837,7 +10772,6 @@
     "address": "0x1001514e",
     "name": "d3dx_blt_linear_2d",
     "aliases": [
-      "FUN_1001514e",
       "?BltLinear2D@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_linear_2d(void *this)",
@@ -10849,7 +10783,6 @@
     "address": "0x10015534",
     "name": "d3dx_blt_linear_3d",
     "aliases": [
-      "FUN_10015534",
       "?BltLinear3D@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_linear_3d(void *this)",
@@ -10861,7 +10794,6 @@
     "address": "0x10015c65",
     "name": "d3dx_blt_triangle_2d",
     "aliases": [
-      "FUN_10015c65",
       "?BltTriangle2D@CD3DXBlt@@IAEJXZ"
     ],
     "signature": "int d3dx_blt_triangle_2d(void *this)",
@@ -10873,7 +10805,6 @@
     "address": "0x10016007",
     "name": "d3dx_blt_execute",
     "aliases": [
-      "FUN_10016007",
       "?Blt@CD3DXBlt@@QAEJPAUD3DX_BLT@@0K@Z"
     ],
     "signature": "int d3dx_blt_execute(void *this, void *destination, void *source, unsigned long filter)",
@@ -10885,7 +10816,6 @@
     "address": "0x10016121",
     "name": "d3dx_lock_surface_ctor",
     "aliases": [
-      "FUN_10016121",
       "??0CD3DXLockSurface@@QAE@XZ"
     ],
     "signature": "void * d3dx_lock_surface_ctor(void *this)",
@@ -10897,7 +10827,6 @@
     "address": "0x10016131",
     "name": "d3dx_lock_surface_unlock",
     "aliases": [
-      "FUN_10016131",
       "?Unlock@CD3DXLockSurface@@QAEJXZ"
     ],
     "signature": "int d3dx_lock_surface_unlock(void *this)",
@@ -10909,7 +10838,6 @@
     "address": "0x1001619a",
     "name": "d3dx_lock_volume_ctor",
     "aliases": [
-      "FUN_1001619a",
       "??0CD3DXLockVolume@@QAE@XZ"
     ],
     "signature": "void * d3dx_lock_volume_ctor(void *this)",
@@ -10921,7 +10849,6 @@
     "address": "0x100161a0",
     "name": "d3dx_lock_volume_unlock",
     "aliases": [
-      "FUN_100161a0",
       "?Unlock@CD3DXLockVolume@@QAEJXZ"
     ],
     "signature": "int d3dx_lock_volume_unlock(void *this)",
@@ -10933,7 +10860,6 @@
     "address": "0x100161b6",
     "name": "d3dx_lock_surface_dtor",
     "aliases": [
-      "FUN_100161b6",
       "??1CD3DXLockSurface@@QAE@XZ"
     ],
     "signature": "void d3dx_lock_surface_dtor(void *this)",
@@ -10945,7 +10871,6 @@
     "address": "0x100161bb",
     "name": "d3dx_lock_surface_lock",
     "aliases": [
-      "FUN_100161bb",
       "?Lock@CD3DXLockSurface@@QAEJPAUD3DX_BLT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@KK@Z"
     ],
     "signature": "int d3dx_lock_surface_lock(void *this, void *blit, void *surface, const void *palette, const void *rect, unsigned long filter, unsigned long color_key)",
@@ -10957,7 +10882,6 @@
     "address": "0x100165ce",
     "name": "d3dx_lock_volume_dtor",
     "aliases": [
-      "j_FUN_100161a0",
       "??1CD3DXLockVolume@@QAE@XZ"
     ],
     "signature": "void d3dx_lock_volume_dtor(void *this)",
@@ -10969,7 +10893,6 @@
     "address": "0x100165d3",
     "name": "d3dx_lock_volume_lock",
     "aliases": [
-      "FUN_100165d3",
       "?Lock@CD3DXLockVolume@@QAEJPAUD3DX_BLT@@PAUIDirect3DVolume8@@PBUtagPALETTEENTRY@@PBU_D3DBOX@@KK@Z"
     ],
     "signature": "int d3dx_lock_volume_lock(void *this, void *blit, void *volume, const void *palette, const void *box, unsigned long filter, unsigned long color_key)",
@@ -11038,7 +10961,6 @@
     "address": "0x10017361",
     "name": "d3dx_codec_convert_from",
     "aliases": [
-      "FUN_10017361",
       "?ConvertFrom@CD3DXCodec@@QAEJPAV1@@Z"
     ],
     "signature": "int d3dx_codec_convert_from(void *this, void *source)",
@@ -11890,7 +11812,6 @@
     "address": "0x1001bca5",
     "name": "d3dx_file_ctor",
     "aliases": [
-      "FUN_1001bca5",
       "??0CD3DXFile@@QAE@XZ"
     ],
     "signature": "void * d3dx_file_ctor(void *this)",
@@ -11902,7 +11823,6 @@
     "address": "0x1001bcb7",
     "name": "d3dx_file_open",
     "aliases": [
-      "FUN_1001bcb7",
       "?Open@CD3DXFile@@QAEJPBXH@Z"
     ],
     "signature": "int d3dx_file_open(void *this, const void *source, int mode)",
@@ -11914,7 +11834,6 @@
     "address": "0x1001bdc7",
     "name": "d3dx_file_create",
     "aliases": [
-      "FUN_1001bdc7",
       "?Create@CD3DXFile@@QAEJPBXH@Z"
     ],
     "signature": "int d3dx_file_create(void *this, const void *path, int ansi_path)",
@@ -11934,7 +11853,6 @@
     "address": "0x1001bed2",
     "name": "d3dx_file_dtor",
     "aliases": [
-      "FUN_1001bed2",
       "??1CD3DXFile@@QAE@XZ"
     ],
     "signature": "void d3dx_file_dtor(void *this)",
@@ -11946,7 +11864,6 @@
     "address": "0x1001bf39",
     "name": "d3dx_asm_is_mmx",
     "aliases": [
-      "FUN_1001bf39",
       "?_asm_isMMX@@YAHXZ"
     ],
     "signature": "int d3dx_asm_is_mmx(void)",
@@ -11958,7 +11875,6 @@
     "address": "0x1001bf5e",
     "name": "d3dx_is_mmx_processor",
     "aliases": [
-      "sub_1001BF5E",
       "?isMMXprocessor@@YAHXZ"
     ],
     "signature": "int d3dx_is_mmx_processor(void)",
@@ -11970,7 +11886,6 @@
     "address": "0x1001bff7",
     "name": "d3dx_is_x3d_processor",
     "aliases": [
-      "FUN_1001bff7",
       "?isX3Dprocessor@@YAHXZ"
     ],
     "signature": "int d3dx_is_x3d_processor(void)",
@@ -11982,7 +11897,6 @@
     "address": "0x1001c02f",
     "name": "d3dx_is_intel_sse_processor",
     "aliases": [
-      "sub_1001C02F",
       "?IsIntelSSEProcessor@@YAKXZ"
     ],
     "signature": "unsigned int d3dx_is_intel_sse_processor(void)",
@@ -12099,7 +12013,6 @@
     "address": "0x1001e294",
     "name": "png_read_info",
     "aliases": [
-      "FUN_1001e294",
       "?png_read_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
     ],
     "signature": "void png_read_info(png_structp png_ptr, png_infop info_ptr)",
@@ -12134,7 +12047,6 @@
     "address": "0x1001e81b",
     "name": "png_read_destroy",
     "aliases": [
-      "FUN_1001e81b",
       "?png_read_destroy@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@1@Z"
     ],
     "signature": "void png_read_destroy(png_structp png_ptr, png_infop info_ptr, png_infop end_info_ptr)",
@@ -12145,7 +12057,6 @@
     "address": "0x1001e93e",
     "name": "png_destroy_read_struct",
     "aliases": [
-      "sub_1001E93E",
       "?png_destroy_read_struct@D3DX@@YAXPAPAUpng_struct_def@1@PAPAUpng_info_struct@1@1@Z"
     ],
     "signature": "void png_destroy_read_struct(png_structpp png_ptr_ptr, png_infopp info_ptr_ptr, png_infopp end_info_ptr_ptr)",
@@ -12191,7 +12102,6 @@
     "address": "0x1001ea59",
     "name": "png_get_IHDR",
     "aliases": [
-      "FUN_1001ea59",
       "?png_get_IHDR@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAK2PAH3333@Z"
     ],
     "signature": "png_uint_32 png_get_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_type, int *compression_type, int *filter_type)",
@@ -12209,7 +12119,6 @@
     "address": "0x1001eb5d",
     "name": "png_get_tRNS",
     "aliases": [
-      "sub_1001EB5D",
       "?png_get_tRNS@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAPAEPAHPAPAUpng_color_16_struct@1@@Z"
     ],
     "signature": "png_uint_32 png_get_tRNS(png_structp png_ptr, png_infop info_ptr, png_bytep *trans, int *num_trans, png_color_16p *trans_values)",
@@ -12280,7 +12189,6 @@
     "address": "0x1001ec8b",
     "name": "png_do_bgr",
     "aliases": [
-      "sub_1001EC8B",
       "?png_do_bgr@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
     ],
     "signature": "void png_do_bgr(png_row_infop row_info, png_bytep row)",
@@ -12311,7 +12219,6 @@
     "address": "0x1001ee74",
     "name": "png_do_unpack",
     "aliases": [
-      "sub_1001EE74",
       "?png_do_unpack@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
     ],
     "signature": "void png_do_unpack(png_row_infop row_info, png_bytep row)",
@@ -12322,7 +12229,6 @@
     "address": "0x1001ef84",
     "name": "png_do_unshift",
     "aliases": [
-      "sub_1001EF84",
       "?png_do_unshift@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_8_struct@1@@Z"
     ],
     "signature": "void png_do_unshift(png_row_infop row_info, png_bytep row, png_color_8p sig_bits)",
@@ -12343,7 +12249,6 @@
     "address": "0x1001f13f",
     "name": "png_do_read_filler",
     "aliases": [
-      "sub_1001F13F",
       "?png_do_read_filler@D3DX@@YAXPAUpng_row_info_struct@1@PAEKK@Z"
     ],
     "signature": "void png_do_read_filler(png_row_infop row_info, png_bytep row, png_uint_32 filler, png_uint_32 flags)",
@@ -12354,7 +12259,6 @@
     "address": "0x1001f377",
     "name": "png_do_gamma",
     "aliases": [
-      "sub_1001F377",
       "?png_do_gamma@D3DX@@YAXPAUpng_row_info_struct@1@PAE1PAPAGH@Z"
     ],
     "signature": "void png_do_gamma(png_row_infop row_info, png_bytep row, png_bytep gamma_table, png_uint_16pp gamma_16_table, int gamma_shift)",
@@ -12365,7 +12269,6 @@
     "address": "0x1001f6c5",
     "name": "png_do_expand_palette",
     "aliases": [
-      "sub_1001F6C5",
       "?png_do_expand_palette@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_struct@1@1H@Z"
     ],
     "signature": "void png_do_expand_palette(png_row_infop row_info, png_bytep row, png_colorp palette, png_bytep trans, int num_trans)",
@@ -12376,7 +12279,6 @@
     "address": "0x1001f8cd",
     "name": "png_do_expand",
     "aliases": [
-      "sub_1001F8CD",
       "?png_do_expand@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_16_struct@1@@Z"
     ],
     "signature": "void png_do_expand(png_row_infop row_info, png_bytep row, png_color_16p trans_value)",
@@ -12387,7 +12289,6 @@
     "address": "0x1001fc1f",
     "name": "png_do_dither",
     "aliases": [
-      "sub_1001FC1F",
       "?png_do_dither@D3DX@@YAXPAUpng_row_info_struct@1@PAE11@Z"
     ],
     "signature": "void png_do_dither(png_row_infop row_info, png_bytep row, png_bytep palette_lookup, png_bytep dither_lookup)",
@@ -12398,7 +12299,6 @@
     "address": "0x1001fd2d",
     "name": "png_build_gamma_table",
     "aliases": [
-      "FUN_1001fd2d",
       "?png_build_gamma_table@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
     "signature": "void png_build_gamma_table(png_structp png_ptr)",
@@ -12419,7 +12319,6 @@
     "address": "0x10020149",
     "name": "png_do_read_transformations",
     "aliases": [
-      "FUN_10020149",
       "?png_do_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
     "signature": "void png_do_read_transformations(png_structp png_ptr)",
@@ -12437,7 +12336,6 @@
     "address": "0x1002031c",
     "name": "png_set_IHDR",
     "aliases": [
-      "FUN_1002031c",
       "?png_set_IHDR@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@KKHHHHH@Z"
     ],
     "signature": "void png_set_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type)",
@@ -12530,7 +12428,6 @@
     "address": "0x100205da",
     "name": "png_info_destroy",
     "aliases": [
-      "FUN_100205da",
       "?png_info_destroy@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
     ],
     "signature": "void png_info_destroy(png_structp png_ptr, png_infop info_ptr)",
@@ -12727,7 +12624,6 @@
     "address": "0x1002290c",
     "name": "d3dx_x86_vec3_normalize",
     "aliases": [
-      "FUN_1002290c",
       "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
     ],
     "signature": "float* d3dx_x86_vec3_normalize(float* arg1, float* arg2)",
@@ -12739,7 +12635,6 @@
     "address": "0x100229d6",
     "name": "d3dx_x86_matrix_multiply",
     "aliases": [
-      "FUN_100229d6",
       "?x86_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
     "signature": "int d3dx_x86_matrix_multiply(int arg1, int arg2, void* arg3)",
@@ -12751,7 +12646,6 @@
     "address": "0x10022ab9",
     "name": "d3dx_x86_matrix_multiply_transpose",
     "aliases": [
-      "FUN_10022ab9",
       "?x86_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
     "signature": "void* d3dx_x86_matrix_multiply_transpose(void* arg1, int arg2, int arg3)",
@@ -12874,9 +12768,6 @@
     "program": "grim.dll",
     "address": "0x1002318f",
     "name": "d3dx_jpeg_alloc_small",
-    "aliases": [
-      "FUN_1002318f"
-    ],
     "signature": "void *d3dx_jpeg_alloc_small(j_common_ptr cinfo, int pool_id, size_t size)",
     "comment": "Archive-confirmed IJG 6a small-object pool allocator in the D3DX provider",
     "create": false
@@ -12885,9 +12776,6 @@
     "program": "grim.dll",
     "address": "0x1002328b",
     "name": "d3dx_jpeg_alloc_large",
-    "aliases": [
-      "FUN_1002328b"
-    ],
     "signature": "void FAR *d3dx_jpeg_alloc_large(j_common_ptr cinfo, int pool_id, size_t size)",
     "comment": "Archive-confirmed IJG 6a large-object pool allocator in the D3DX provider",
     "create": false
@@ -12910,9 +12798,6 @@
     "program": "grim.dll",
     "address": "0x10023449",
     "name": "d3dx_jpeg_request_virt_sarray",
-    "aliases": [
-      "FUN_10023449"
-    ],
     "signature": "jvirt_sarray_ptr d3dx_jpeg_request_virt_sarray(j_common_ptr cinfo, int pool_id, boolean pre_zero, JDIMENSION samples_per_row, JDIMENSION rows, JDIMENSION max_access)",
     "comment": "Archive-confirmed IJG 6a virtual sample-array request in the D3DX provider",
     "create": false
@@ -12921,9 +12806,6 @@
     "program": "grim.dll",
     "address": "0x100234aa",
     "name": "d3dx_jpeg_request_virt_barray",
-    "aliases": [
-      "FUN_100234aa"
-    ],
     "signature": "jvirt_barray_ptr d3dx_jpeg_request_virt_barray(j_common_ptr cinfo, int pool_id, boolean pre_zero, JDIMENSION blocks_per_row, JDIMENSION rows, JDIMENSION max_access)",
     "comment": "Archive-confirmed IJG 6a virtual coefficient-array request in the D3DX provider",
     "create": false
@@ -13016,9 +12898,6 @@
     "program": "grim.dll",
     "address": "0x10023c18",
     "name": "d3dx_jpeg_use_merged_upsample",
-    "aliases": [
-      "FUN_10023c18"
-    ],
     "signature": "boolean d3dx_jpeg_use_merged_upsample(j_decompress_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a merged-upsample eligibility predicate in the D3DX provider"
   },
@@ -13177,9 +13056,6 @@
     "program": "grim.dll",
     "address": "0x100248e1",
     "name": "png_combine_row",
-    "aliases": [
-      "sub_100248e1"
-    ],
     "signature": "void png_combine_row(png_structp png_ptr, png_bytep row, int mask)",
     "comment": "Archive-confirmed libpng 1.0.5 progressive interlace row combiner"
   },
@@ -13187,9 +13063,6 @@
     "program": "grim.dll",
     "address": "0x10024af7",
     "name": "png_do_read_interlace",
-    "aliases": [
-      "sub_10024af7"
-    ],
     "signature": "void png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass, png_uint_32 transformations)",
     "comment": "Archive-confirmed libpng 1.0.5 Adam7 row expansion"
   },
@@ -13198,7 +13071,6 @@
     "address": "0x10024dc0",
     "name": "png_read_filter_row",
     "aliases": [
-      "FUN_10024dc0",
       "?png_read_filter_row@D3DX@@YAXPAUpng_struct_def@1@PAUpng_row_info_struct@1@PAE2H@Z"
     ],
     "signature": "void png_read_filter_row(png_structp png_ptr, png_row_infop row_info, png_bytep row, png_bytep prev_row, int filter)",
@@ -13250,9 +13122,6 @@
     "program": "grim.dll",
     "address": "0x100254cd",
     "name": "png_handle_gAMA",
-    "aliases": [
-      "FUN_100254cd"
-    ],
     "signature": "void png_handle_gAMA(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
     "comment": "Archive-confirmed libpng 1.0.5 gAMA parser under the provider feature profile"
   },
@@ -13260,9 +13129,6 @@
     "program": "grim.dll",
     "address": "0x100255d8",
     "name": "png_handle_sRGB",
-    "aliases": [
-      "FUN_100255d8"
-    ],
     "signature": "void png_handle_sRGB(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
     "comment": "Archive-confirmed libpng 1.0.5 sRGB parser under the provider feature profile"
   },
@@ -13270,9 +13136,6 @@
     "program": "grim.dll",
     "address": "0x100256c7",
     "name": "png_handle_tRNS",
-    "aliases": [
-      "FUN_100256c7"
-    ],
     "signature": "void png_handle_tRNS(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
     "comment": "Archive-confirmed libpng 1.0.5 transparency parser under the provider feature profile"
   },
@@ -13287,9 +13150,6 @@
     "program": "grim.dll",
     "address": "0x100258c8",
     "name": "png_read_finish_row",
-    "aliases": [
-      "sub_100258c8"
-    ],
     "signature": "void png_read_finish_row(png_structp png_ptr)",
     "comment": "Archive-confirmed libpng 1.0.5 row completion, Adam7 pass advance, and IDAT drain"
   },
@@ -13298,8 +13158,7 @@
     "address": "0x10025aec",
     "name": "d3dx_zlib_crc32",
     "aliases": [
-      "crc32",
-      "sub_10025AEC"
+      "crc32"
     ],
     "signature": "unsigned long d3dx_zlib_crc32(unsigned long crc, const unsigned char *buffer, unsigned int length)",
     "comment": "Archive-confirmed zlib 1.1.3 CRC-32 routine embedded in the D3DX image codec provider"
@@ -13309,8 +13168,7 @@
     "address": "0x10025c00",
     "name": "d3dx_sse_vec2_transform",
     "aliases": [
-      "?sse_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z",
-      "sub_10025C00"
+      "?sse_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
     ],
     "signature": "void * __stdcall d3dx_sse_vec2_transform(void *out, const void *input, const void *matrix)",
     "comment": "Unique exact DirectX 8.1 d3dx8.lib SSE implementation of D3DXVec2Transform"
@@ -13321,8 +13179,7 @@
     "name": "d3dx_jpeg_get_small",
     "aliases": [
       "jpeg_get_small",
-      "jpeg_get_large",
-      "FUN_1002e65a"
+      "jpeg_get_large"
     ],
     "signature": "void *d3dx_jpeg_get_small(j_common_ptr cinfo, size_t sizeofobject)",
     "comment": "Archive-confirmed IJG 6a allocator shared by the folded small and large entrypoints",
@@ -13359,8 +13216,7 @@
     "address": "0x1002e689",
     "name": "d3dx_jpeg_mem_init",
     "aliases": [
-      "jpeg_mem_init",
-      "sub_1002e689"
+      "jpeg_mem_init"
     ],
     "signature": "long d3dx_jpeg_mem_init(j_common_ptr cinfo)",
     "comment": "Archive-confirmed IJG 6a system-memory initializer"
@@ -14322,9 +14178,6 @@
     "program": "grim.dll",
     "address": "0x1003ab60",
     "name": "grim_jpeg_error_exit",
-    "aliases": [
-      "sub_1003AB60"
-    ],
     "signature": "void grim_jpeg_error_exit(j_common_ptr cinfo)",
     "comment": "JAZ IJG 6a fatal-error callback",
     "end": "0x1003ab76",
@@ -14334,9 +14187,6 @@
     "program": "grim.dll",
     "address": "0x1003ab80",
     "name": "grim_jpeg_output_message",
-    "aliases": [
-      "sub_1003AB80"
-    ],
     "signature": "void grim_jpeg_output_message(j_common_ptr cinfo)",
     "comment": "JAZ IJG 6a diagnostic-output callback",
     "create": false
@@ -14345,9 +14195,6 @@
     "program": "grim.dll",
     "address": "0x1003abc0",
     "name": "grim_jpeg_emit_message",
-    "aliases": [
-      "sub_1003ABC0"
-    ],
     "signature": "void grim_jpeg_emit_message(j_common_ptr cinfo, int msg_level)",
     "comment": "JAZ IJG 6a warning and trace-message callback",
     "create": false
@@ -14356,9 +14203,6 @@
     "program": "grim.dll",
     "address": "0x1003ac00",
     "name": "grim_jpeg_format_message",
-    "aliases": [
-      "sub_1003AC00"
-    ],
     "signature": "void grim_jpeg_format_message(j_common_ptr cinfo, char *buffer)",
     "comment": "JAZ IJG 6a diagnostic-message formatter",
     "create": false
@@ -14367,9 +14211,6 @@
     "program": "grim.dll",
     "address": "0x1003acb0",
     "name": "grim_jpeg_reset_error_mgr",
-    "aliases": [
-      "sub_1003ACB0"
-    ],
     "signature": "void grim_jpeg_reset_error_mgr(j_common_ptr cinfo)",
     "comment": "JAZ IJG 6a error-manager reset callback",
     "create": false
@@ -14388,9 +14229,6 @@
     "program": "grim.dll",
     "address": "0x1003ad20",
     "name": "grim_jpeg_start_input_pass",
-    "aliases": [
-      "sub_1003AD20"
-    ],
     "signature": "void grim_jpeg_start_input_pass(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a input-pass initializer",
     "create": false
@@ -14399,9 +14237,6 @@
     "program": "grim.dll",
     "address": "0x1003afa0",
     "name": "grim_jpeg_finish_input_pass",
-    "aliases": [
-      "sub_1003AFA0"
-    ],
     "signature": "void grim_jpeg_finish_input_pass(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a input-pass finalizer; exact VC6 provider body",
     "create": false
@@ -14410,9 +14245,6 @@
     "program": "grim.dll",
     "address": "0x1003afc0",
     "name": "grim_jpeg_consume_markers",
-    "aliases": [
-      "sub_1003AFC0"
-    ],
     "signature": "int grim_jpeg_consume_markers(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a marker-consumption state machine",
     "create": false
@@ -14421,9 +14253,6 @@
     "program": "grim.dll",
     "address": "0x1003b370",
     "name": "grim_jpeg_per_scan_setup",
-    "aliases": [
-      "sub_1003B370"
-    ],
     "signature": "void grim_jpeg_per_scan_setup(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a per-scan geometry setup",
     "create": false
@@ -14432,9 +14261,6 @@
     "program": "grim.dll",
     "address": "0x1003b520",
     "name": "grim_jpeg_reset_input_controller",
-    "aliases": [
-      "sub_1003B520"
-    ],
     "signature": "void grim_jpeg_reset_input_controller(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a input-controller reset",
     "create": false
@@ -14453,9 +14279,6 @@
     "program": "grim.dll",
     "address": "0x1003b660",
     "name": "grim_jpeg_next_marker",
-    "aliases": [
-      "sub_1003B660"
-    ],
     "signature": "boolean grim_jpeg_next_marker(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a marker scanner",
     "create": false
@@ -14474,9 +14297,6 @@
     "program": "grim.dll",
     "address": "0x1003b820",
     "name": "grim_jpeg_get_app0",
-    "aliases": [
-      "sub_1003B820"
-    ],
     "signature": "boolean grim_jpeg_get_app0(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a APP0 marker parser",
     "create": false
@@ -14485,9 +14305,6 @@
     "program": "grim.dll",
     "address": "0x1003bac0",
     "name": "grim_jpeg_get_app14",
-    "aliases": [
-      "sub_1003BAC0"
-    ],
     "signature": "boolean grim_jpeg_get_app14(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a Adobe APP14 marker parser",
     "create": false
@@ -14496,9 +14313,6 @@
     "program": "grim.dll",
     "address": "0x1003bc90",
     "name": "grim_jpeg_skip_variable",
-    "aliases": [
-      "sub_1003BC90"
-    ],
     "signature": "boolean grim_jpeg_skip_variable(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a variable-length marker skipper",
     "create": false
@@ -14507,9 +14321,6 @@
     "program": "grim.dll",
     "address": "0x1003bd30",
     "name": "grim_jpeg_read_markers",
-    "aliases": [
-      "sub_1003BD30"
-    ],
     "signature": "int grim_jpeg_read_markers(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a marker dispatch loop",
     "create": false
@@ -14518,9 +14329,6 @@
     "program": "grim.dll",
     "address": "0x1003c320",
     "name": "grim_jpeg_get_sof",
-    "aliases": [
-      "sub_1003C320"
-    ],
     "signature": "boolean grim_jpeg_get_sof(j_decompress_ptr cinfo, boolean is_prog, boolean is_arith)",
     "comment": "JAZ IJG 6a start-of-frame marker parser",
     "create": false
@@ -14529,9 +14337,6 @@
     "program": "grim.dll",
     "address": "0x1003c640",
     "name": "grim_jpeg_get_sos",
-    "aliases": [
-      "sub_1003C640"
-    ],
     "signature": "boolean grim_jpeg_get_sos(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a start-of-scan marker parser",
     "create": false
@@ -14540,9 +14345,6 @@
     "program": "grim.dll",
     "address": "0x1003c950",
     "name": "grim_jpeg_get_dht",
-    "aliases": [
-      "sub_1003C950"
-    ],
     "signature": "boolean grim_jpeg_get_dht(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a Huffman-table marker parser",
     "create": false
@@ -14551,9 +14353,6 @@
     "program": "grim.dll",
     "address": "0x1003cca0",
     "name": "grim_jpeg_get_dqt",
-    "aliases": [
-      "sub_1003CCA0"
-    ],
     "signature": "boolean grim_jpeg_get_dqt(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a quantization-table marker parser",
     "create": false
@@ -14562,9 +14361,6 @@
     "program": "grim.dll",
     "address": "0x1003cf10",
     "name": "grim_jpeg_get_dri",
-    "aliases": [
-      "sub_1003CF10"
-    ],
     "signature": "boolean grim_jpeg_get_dri(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a restart-interval marker parser",
     "create": false
@@ -14573,10 +14369,6 @@
     "program": "grim.dll",
     "address": "0x1003d000",
     "name": "grim_jpeg_read_restart_marker",
-    "aliases": [
-      "FUN_1003d000",
-      "sub_1003D000"
-    ],
     "signature": "boolean grim_jpeg_read_restart_marker(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a restart-marker reader",
     "create": true,
@@ -14586,9 +14378,6 @@
     "program": "grim.dll",
     "address": "0x1003d090",
     "name": "grim_jpeg_reset_marker_reader",
-    "aliases": [
-      "sub_1003D090"
-    ],
     "signature": "void grim_jpeg_reset_marker_reader(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a marker-reader reset",
     "create": false
@@ -14688,8 +14477,7 @@
     "address": "0x1003d930",
     "name": "grim_jpeg_do_sarray_io",
     "aliases": [
-      "do_sarray_io",
-      "FUN_1003d930"
+      "do_sarray_io"
     ],
     "signature": "void grim_jpeg_do_sarray_io(j_common_ptr cinfo, jvirt_sarray_ptr ptr, boolean writing)",
     "comment": "JAZ IJG 6a virtual sample-array backing-store transfer",
@@ -14710,8 +14498,7 @@
     "address": "0x1003db20",
     "name": "grim_jpeg_do_barray_io",
     "aliases": [
-      "do_barray_io",
-      "FUN_1003db20"
+      "do_barray_io"
     ],
     "signature": "void grim_jpeg_do_barray_io(j_common_ptr cinfo, jvirt_barray_ptr ptr, boolean writing)",
     "comment": "JAZ IJG 6a virtual coefficient-array backing-store transfer",
@@ -14772,8 +14559,7 @@
     "address": "0x1003dd70",
     "name": "grim_jpeg_alloc_huff_table",
     "aliases": [
-      "jpeg_alloc_huff_table",
-      "sub_1003DD70"
+      "jpeg_alloc_huff_table"
     ],
     "signature": "JHUFF_TBL *grim_jpeg_alloc_huff_table(j_common_ptr cinfo)",
     "comment": "JAZ IJG 6a Huffman-table allocator; exact VC6 provider body",
@@ -14873,8 +14659,7 @@
     "end": "0x1003dfb0",
     "name": "grim_jpeg_calc_output_dimensions",
     "aliases": [
-      "jpeg_calc_output_dimensions",
-      "sub_1003DD90"
+      "jpeg_calc_output_dimensions"
     ],
     "signature": "void grim_jpeg_calc_output_dimensions(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a output-dimension and IDCT-scaling calculator",
@@ -14885,9 +14670,6 @@
     "address": "0x1003dfb0",
     "end": "0x1003e040",
     "name": "grim_jpeg_use_merged_upsample",
-    "aliases": [
-      "sub_1003DFB0"
-    ],
     "signature": "boolean grim_jpeg_use_merged_upsample(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a merged-upsample capability predicate",
     "create": true
@@ -14898,8 +14680,7 @@
     "end": "0x1003e2d0",
     "name": "grim_jpeg_init_master_decompress",
     "aliases": [
-      "jinit_master_decompress",
-      "sub_1003E040"
+      "jinit_master_decompress"
     ],
     "signature": "void grim_jpeg_init_master_decompress(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a master decompression initializer with inlined module selection",
@@ -14910,9 +14691,6 @@
     "address": "0x1003e2d0",
     "end": "0x1003e430",
     "name": "grim_jpeg_prepare_for_output_pass",
-    "aliases": [
-      "sub_1003E2D0"
-    ],
     "signature": "void grim_jpeg_prepare_for_output_pass(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a output-pass preparation controller",
     "create": true
@@ -14922,9 +14700,6 @@
     "address": "0x1003e430",
     "end": "0x1003e460",
     "name": "grim_jpeg_finish_output_pass",
-    "aliases": [
-      "sub_1003E430"
-    ],
     "signature": "void grim_jpeg_finish_output_pass(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a output-pass completion controller",
     "create": true
@@ -14947,9 +14722,6 @@
     "program": "grim.dll",
     "address": "0x1003e490",
     "name": "grim_jpeg_copy_sample_rows",
-    "aliases": [
-      "sub_1003E490"
-    ],
     "signature": "void grim_jpeg_copy_sample_rows(JSAMPARRAY input_array, int source_row, JSAMPARRAY output_array, int destination_row, int row_count, JDIMENSION column_count)",
     "comment": "JAZ IJG 6a sample-row copy helper",
     "create": false
@@ -14977,8 +14749,7 @@
     "end": "0x1003e540",
     "name": "grim_jpeg_mem_available",
     "aliases": [
-      "jpeg_mem_available",
-      "FUN_1003E530"
+      "jpeg_mem_available"
     ],
     "signature": "long grim_jpeg_mem_available(j_common_ptr cinfo, long min_bytes_needed, long max_bytes_needed, long already_allocated)",
     "comment": "Archive-confirmed IJG 6a no-backing-store policy in the JAZ decoder copy",
@@ -14990,8 +14761,7 @@
     "end": "0x1003e560",
     "name": "grim_jpeg_open_backing_store",
     "aliases": [
-      "jpeg_open_backing_store",
-      "sub_1003E540"
+      "jpeg_open_backing_store"
     ],
     "signature": "void grim_jpeg_open_backing_store(j_common_ptr cinfo, backing_store_ptr info, long total_bytes_needed)",
     "comment": "JAZ IJG 6a no-backing-store error hook",
@@ -15003,8 +14773,7 @@
     "end": "0x1003e570",
     "name": "grim_jpeg_mem_init",
     "aliases": [
-      "jpeg_mem_init",
-      "sub_1003E560"
+      "jpeg_mem_init"
     ],
     "signature": "long grim_jpeg_mem_init(j_common_ptr cinfo)",
     "comment": "JAZ IJG 6a system-memory initializer",
@@ -15016,8 +14785,7 @@
     "end": "0x1003e6f0",
     "name": "grim_jpeg_init_d_main_controller",
     "aliases": [
-      "jinit_d_main_controller",
-      "sub_1003E570"
+      "jinit_d_main_controller"
     ],
     "signature": "void grim_jpeg_init_d_main_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
     "comment": "JAZ IJG 6a decompression main-buffer controller initializer",
@@ -15028,9 +14796,6 @@
     "address": "0x1003e6f0",
     "end": "0x1003e8c0",
     "name": "grim_jpeg_start_pass_main",
-    "aliases": [
-      "sub_1003E6F0"
-    ],
     "signature": "void grim_jpeg_start_pass_main(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)",
     "comment": "JAZ IJG 6a main-buffer pass initializer",
     "create": true
@@ -15040,9 +14805,6 @@
     "address": "0x1003e8c0",
     "end": "0x1003e930",
     "name": "grim_jpeg_process_data_simple_main",
-    "aliases": [
-      "sub_1003E8C0"
-    ],
     "signature": "void grim_jpeg_process_data_simple_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a simple main-buffer processing callback",
     "create": true
@@ -15052,9 +14814,6 @@
     "address": "0x1003e930",
     "end": "0x1003ec20",
     "name": "grim_jpeg_process_data_context_main",
-    "aliases": [
-      "sub_1003E930"
-    ],
     "signature": "void grim_jpeg_process_data_context_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a context-row main-buffer processing callback",
     "create": true
@@ -15064,9 +14823,6 @@
     "address": "0x1003ec20",
     "end": "0x1003ec50",
     "name": "grim_jpeg_process_data_crank_post",
-    "aliases": [
-      "sub_1003EC20"
-    ],
     "signature": "void grim_jpeg_process_data_crank_post(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a final two-pass quantization postprocessor crank",
     "create": true
@@ -15077,8 +14833,7 @@
     "end": "0x1003ed60",
     "name": "grim_jpeg_init_d_coef_controller",
     "aliases": [
-      "jinit_d_coef_controller",
-      "sub_1003EC50"
+      "jinit_d_coef_controller"
     ],
     "signature": "void grim_jpeg_init_d_coef_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
     "comment": "JAZ IJG 6a coefficient-buffer controller initializer",
@@ -15089,9 +14844,6 @@
     "address": "0x1003ed60",
     "end": "0x1003edc0",
     "name": "grim_jpeg_start_input_pass_coef",
-    "aliases": [
-      "sub_1003ED60"
-    ],
     "signature": "void grim_jpeg_start_input_pass_coef(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a coefficient-controller input-pass initializer",
     "create": true
@@ -15101,9 +14853,6 @@
     "address": "0x1003edc0",
     "end": "0x1003ef50",
     "name": "grim_jpeg_start_output_pass_coef",
-    "aliases": [
-      "sub_1003EDC0"
-    ],
     "signature": "void grim_jpeg_start_output_pass_coef(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a coefficient-controller output-pass initializer",
     "create": true
@@ -15113,9 +14862,6 @@
     "address": "0x1003ef50",
     "end": "0x1003f1f0",
     "name": "grim_jpeg_decompress_onepass",
-    "aliases": [
-      "sub_1003EF50"
-    ],
     "signature": "int grim_jpeg_decompress_onepass(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
     "comment": "JAZ IJG 6a single-pass coefficient decompressor",
     "create": true
@@ -15125,9 +14871,6 @@
     "address": "0x1003f1f0",
     "end": "0x1003f200",
     "name": "grim_jpeg_dummy_consume_data",
-    "aliases": [
-      "sub_1003F1F0"
-    ],
     "signature": "int grim_jpeg_dummy_consume_data(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a single-pass consume-input stub",
     "create": true
@@ -15137,9 +14880,6 @@
     "address": "0x1003f200",
     "end": "0x1003f470",
     "name": "grim_jpeg_consume_coefficients",
-    "aliases": [
-      "sub_1003F200"
-    ],
     "signature": "int grim_jpeg_consume_coefficients(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a full-image coefficient input consumer",
     "create": true
@@ -15149,9 +14889,6 @@
     "address": "0x1003f470",
     "end": "0x1003f620",
     "name": "grim_jpeg_decompress_coefficients",
-    "aliases": [
-      "sub_1003F470"
-    ],
     "signature": "int grim_jpeg_decompress_coefficients(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
     "comment": "JAZ IJG 6a multi-pass coefficient decompressor",
     "create": true
@@ -15161,9 +14898,6 @@
     "address": "0x1003f620",
     "end": "0x1003fc90",
     "name": "grim_jpeg_decompress_smooth_data",
-    "aliases": [
-      "sub_1003F620"
-    ],
     "signature": "int grim_jpeg_decompress_smooth_data(j_decompress_ptr cinfo, JSAMPIMAGE output_buf)",
     "comment": "JAZ IJG 6a progressive block-smoothing coefficient decompressor",
     "create": true
@@ -15174,8 +14908,7 @@
     "end": "0x1003fe80",
     "name": "grim_jpeg_make_d_derived_tbl",
     "aliases": [
-      "jpeg_make_d_derived_tbl",
-      "sub_1003FC90"
+      "jpeg_make_d_derived_tbl"
     ],
     "signature": "void grim_jpeg_make_d_derived_tbl(j_decompress_ptr cinfo, JHUFF_TBL *htbl, d_derived_tbl **pdtbl)",
     "comment": "JAZ IJG 6a derived Huffman decoding-table builder",
@@ -15187,8 +14920,7 @@
     "end": "0x1003ff80",
     "name": "grim_jpeg_fill_bit_buffer",
     "aliases": [
-      "jpeg_fill_bit_buffer",
-      "sub_1003FE80"
+      "jpeg_fill_bit_buffer"
     ],
     "signature": "boolean grim_jpeg_fill_bit_buffer(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, int nbits)",
     "comment": "JAZ IJG 6a entropy bit-buffer refill helper",
@@ -15200,8 +14932,7 @@
     "end": "0x10040070",
     "name": "grim_jpeg_huff_decode",
     "aliases": [
-      "jpeg_huff_decode",
-      "sub_1003FF80"
+      "jpeg_huff_decode"
     ],
     "signature": "int grim_jpeg_huff_decode(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, d_derived_tbl *htbl, int min_bits)",
     "comment": "JAZ IJG 6a out-of-line Huffman-code decoder",
@@ -15213,8 +14944,7 @@
     "end": "0x100400b0",
     "name": "grim_jpeg_init_huff_decoder",
     "aliases": [
-      "jinit_huff_decoder",
-      "sub_10040070"
+      "jinit_huff_decoder"
     ],
     "signature": "void grim_jpeg_init_huff_decoder(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a baseline Huffman entropy-decoder initializer",
@@ -15225,9 +14955,6 @@
     "address": "0x100400b0",
     "end": "0x10040200",
     "name": "grim_jpeg_start_pass_huff_decoder",
-    "aliases": [
-      "sub_100400B0"
-    ],
     "signature": "void grim_jpeg_start_pass_huff_decoder(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a baseline Huffman scan initializer",
     "create": true
@@ -15237,9 +14964,6 @@
     "address": "0x10040200",
     "end": "0x100406a0",
     "name": "grim_jpeg_decode_mcu_huff",
-    "aliases": [
-      "sub_10040200"
-    ],
     "signature": "boolean grim_jpeg_decode_mcu_huff(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
     "comment": "JAZ IJG 6a baseline Huffman MCU decoder",
     "create": true
@@ -15250,8 +14974,7 @@
     "end": "0x10040710",
     "name": "grim_jpeg_init_phuff_decoder",
     "aliases": [
-      "jinit_phuff_decoder",
-      "sub_100406A0"
+      "jinit_phuff_decoder"
     ],
     "signature": "void grim_jpeg_init_phuff_decoder(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a progressive Huffman entropy-decoder initializer",
@@ -15262,9 +14985,6 @@
     "address": "0x10040710",
     "end": "0x10040a10",
     "name": "grim_jpeg_start_pass_phuff_decoder",
-    "aliases": [
-      "sub_10040710"
-    ],
     "signature": "void grim_jpeg_start_pass_phuff_decoder(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a progressive Huffman scan initializer",
     "create": true
@@ -15274,9 +14994,6 @@
     "address": "0x10040a10",
     "end": "0x10040cb0",
     "name": "grim_jpeg_decode_mcu_dc_first",
-    "aliases": [
-      "sub_10040A10"
-    ],
     "signature": "boolean grim_jpeg_decode_mcu_dc_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
     "comment": "JAZ IJG 6a progressive initial-DC MCU decoder",
     "create": true
@@ -15286,9 +15003,6 @@
     "address": "0x10040cb0",
     "end": "0x10040f80",
     "name": "grim_jpeg_decode_mcu_ac_first",
-    "aliases": [
-      "sub_10040CB0"
-    ],
     "signature": "boolean grim_jpeg_decode_mcu_ac_first(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
     "comment": "JAZ IJG 6a progressive initial-AC MCU decoder",
     "create": true
@@ -15298,9 +15012,6 @@
     "address": "0x10040f80",
     "end": "0x100410e0",
     "name": "grim_jpeg_decode_mcu_dc_refine",
-    "aliases": [
-      "sub_10040F80"
-    ],
     "signature": "boolean grim_jpeg_decode_mcu_dc_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
     "comment": "JAZ IJG 6a progressive refining-DC MCU decoder",
     "create": true
@@ -15310,9 +15021,6 @@
     "address": "0x100410e0",
     "end": "0x10041590",
     "name": "grim_jpeg_decode_mcu_ac_refine",
-    "aliases": [
-      "sub_100410E0"
-    ],
     "signature": "boolean grim_jpeg_decode_mcu_ac_refine(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)",
     "comment": "JAZ IJG 6a progressive refining-AC MCU decoder",
     "create": true
@@ -15323,8 +15031,7 @@
     "end": "0x10041610",
     "name": "grim_jpeg_init_inverse_dct",
     "aliases": [
-      "jinit_inverse_dct",
-      "sub_10041590"
+      "jinit_inverse_dct"
     ],
     "signature": "void grim_jpeg_init_inverse_dct(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a inverse-DCT manager initializer",
@@ -15335,9 +15042,6 @@
     "address": "0x10041610",
     "end": "0x10041848",
     "name": "grim_jpeg_start_pass_inverse_dct",
-    "aliases": [
-      "sub_10041610"
-    ],
     "signature": "void grim_jpeg_start_pass_inverse_dct(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a inverse-DCT method and multiplier-table selector",
     "create": true
@@ -15346,9 +15050,6 @@
     "program": "grim.dll",
     "address": "0x10044e50",
     "name": "grim_jpeg_idct_islow",
-    "aliases": [
-      "sub_10044E50"
-    ],
     "signature": "void grim_jpeg_idct_islow(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
     "comment": "JAZ IJG 6a slow-integer inverse DCT selected by the exact stock manager",
     "create": false
@@ -15357,9 +15058,6 @@
     "program": "grim.dll",
     "address": "0x100454a0",
     "name": "grim_jpeg_idct_ifast",
-    "aliases": [
-      "sub_100454A0"
-    ],
     "signature": "void grim_jpeg_idct_ifast(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
     "comment": "JAZ IJG 6a fast-integer inverse DCT selected by the exact stock manager",
     "create": false
@@ -15368,9 +15066,6 @@
     "program": "grim.dll",
     "address": "0x10045930",
     "name": "grim_jpeg_idct_float",
-    "aliases": [
-      "sub_10045930"
-    ],
     "signature": "void grim_jpeg_idct_float(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
     "comment": "JAZ IJG 6a floating-point inverse DCT selected by the exact stock manager",
     "create": false
@@ -15379,9 +15074,6 @@
     "program": "grim.dll",
     "address": "0x10045d90",
     "name": "grim_jpeg_idct_4x4",
-    "aliases": [
-      "sub_10045D90"
-    ],
     "signature": "void grim_jpeg_idct_4x4(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
     "comment": "JAZ IJG 6a four-by-four scaled inverse DCT selected by the exact stock manager",
     "create": false
@@ -15390,9 +15082,6 @@
     "program": "grim.dll",
     "address": "0x10046190",
     "name": "grim_jpeg_idct_2x2",
-    "aliases": [
-      "sub_10046190"
-    ],
     "signature": "void grim_jpeg_idct_2x2(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
     "comment": "JAZ IJG 6a two-by-two scaled inverse DCT selected by the exact stock manager",
     "create": false
@@ -15402,9 +15091,6 @@
     "address": "0x100463c0",
     "end": "0x10046400",
     "name": "grim_jpeg_idct_1x1",
-    "aliases": [
-      "sub_100463C0"
-    ],
     "signature": "void grim_jpeg_idct_1x1(j_decompress_ptr cinfo, jpeg_component_info *compptr, JCOEFPTR coef_block, JSAMPARRAY output_buf, JDIMENSION output_col)",
     "comment": "JAZ IJG 6a one-by-one scaled inverse DCT selected by the exact stock manager",
     "create": true
@@ -15415,8 +15101,7 @@
     "end": "0x100418e0",
     "name": "grim_jpeg_init_d_post_controller",
     "aliases": [
-      "jinit_d_post_controller",
-      "sub_10041850"
+      "jinit_d_post_controller"
     ],
     "signature": "void grim_jpeg_init_d_post_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
     "comment": "JAZ IJG 6a decompression postprocessor initializer",
@@ -15427,9 +15112,6 @@
     "address": "0x100418e0",
     "end": "0x100419e0",
     "name": "grim_jpeg_start_pass_dpost",
-    "aliases": [
-      "sub_100418E0"
-    ],
     "signature": "void grim_jpeg_start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)",
     "comment": "JAZ IJG 6a decompression postprocessor pass selector",
     "create": true
@@ -15439,9 +15121,6 @@
     "address": "0x100419e0",
     "end": "0x10041a60",
     "name": "grim_jpeg_post_process_1pass",
-    "aliases": [
-      "sub_100419E0"
-    ],
     "signature": "void grim_jpeg_post_process_1pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a one-pass decompression postprocessor",
     "create": true
@@ -15451,10 +15130,6 @@
     "address": "0x10041a60",
     "end": "0x10041b00",
     "name": "grim_jpeg_post_process_prepass",
-    "aliases": [
-      "FUN_10041a60",
-      "sub_10041A60"
-    ],
     "signature": "void grim_jpeg_post_process_prepass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a first-pass decompression quantization preprocessor",
     "create": true
@@ -15464,10 +15139,6 @@
     "address": "0x10041b00",
     "end": "0x10041ba0",
     "name": "grim_jpeg_post_process_2pass",
-    "aliases": [
-      "FUN_10041b00",
-      "sub_10041B00"
-    ],
     "signature": "void grim_jpeg_post_process_2pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a second-pass decompression quantization postprocessor",
     "create": true
@@ -15476,9 +15147,6 @@
     "program": "grim.dll",
     "address": "0x10041ba0",
     "name": "grim_jpeg_init_upsampler",
-    "aliases": [
-      "sub_10041BA0"
-    ],
     "signature": "void grim_jpeg_init_upsampler(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a separate-upsampler initializer",
     "create": false
@@ -15494,9 +15162,6 @@
     "program": "grim.dll",
     "address": "0x10041dc0",
     "name": "grim_jpeg_sep_upsample",
-    "aliases": [
-      "sub_10041DC0"
-    ],
     "signature": "void grim_jpeg_sep_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a separate-upsampling controller",
     "create": false
@@ -15512,9 +15177,6 @@
     "program": "grim.dll",
     "address": "0x10041ec0",
     "name": "grim_jpeg_noop_upsample",
-    "aliases": [
-      "sub_10041EC0"
-    ],
     "signature": "void grim_jpeg_noop_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "JAZ IJG 6a ignored-component upsampling adapter; exact VC6 provider body",
     "create": false
@@ -15523,9 +15185,6 @@
     "program": "grim.dll",
     "address": "0x10041ed0",
     "name": "grim_jpeg_int_upsample",
-    "aliases": [
-      "sub_10041ED0"
-    ],
     "signature": "void grim_jpeg_int_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "JAZ IJG 6a integral-factor upsampler",
     "create": false
@@ -15534,9 +15193,6 @@
     "program": "grim.dll",
     "address": "0x10041ff0",
     "name": "grim_jpeg_h2v1_upsample",
-    "aliases": [
-      "sub_10041FF0"
-    ],
     "signature": "void grim_jpeg_h2v1_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "JAZ IJG 6a horizontal two-to-one upsampler",
     "create": false
@@ -15545,9 +15201,6 @@
     "program": "grim.dll",
     "address": "0x10042050",
     "name": "grim_jpeg_h2v2_upsample",
-    "aliases": [
-      "sub_10042050"
-    ],
     "signature": "void grim_jpeg_h2v2_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "JAZ IJG 6a horizontal and vertical two-to-one upsampler",
     "create": false
@@ -15556,9 +15209,6 @@
     "program": "grim.dll",
     "address": "0x100420e0",
     "name": "grim_jpeg_h2v1_fancy_upsample",
-    "aliases": [
-      "sub_100420E0"
-    ],
     "signature": "void grim_jpeg_h2v1_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "JAZ IJG 6a fancy horizontal two-to-one upsampler",
     "create": false
@@ -15567,9 +15217,6 @@
     "program": "grim.dll",
     "address": "0x100421b0",
     "name": "grim_jpeg_h2v2_fancy_upsample",
-    "aliases": [
-      "sub_100421B0"
-    ],
     "signature": "void grim_jpeg_h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr, JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)",
     "comment": "JAZ IJG 6a fancy horizontal and vertical two-to-one upsampler",
     "create": false
@@ -15579,9 +15226,6 @@
     "address": "0x10042310",
     "end": "0x100424d0",
     "name": "grim_jpeg_init_color_deconverter",
-    "aliases": [
-      "sub_10042310"
-    ],
     "signature": "void grim_jpeg_init_color_deconverter(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a output color-deconverter initializer",
     "create": true
@@ -15591,9 +15235,6 @@
     "address": "0x100424d0",
     "end": "0x10042590",
     "name": "grim_jpeg_build_ycc_rgb_table",
-    "aliases": [
-      "sub_100424D0"
-    ],
     "signature": "void grim_jpeg_build_ycc_rgb_table(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a YCbCr-to-RGB conversion-table builder",
     "create": true
@@ -15603,9 +15244,6 @@
     "address": "0x10042590",
     "end": "0x100426c0",
     "name": "grim_jpeg_ycc_rgb_convert",
-    "aliases": [
-      "sub_10042590"
-    ],
     "signature": "void grim_jpeg_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a YCbCr-to-RGB row converter",
     "create": true
@@ -15615,9 +15253,6 @@
     "address": "0x100426c0",
     "end": "0x10042750",
     "name": "grim_jpeg_null_convert",
-    "aliases": [
-      "sub_100426C0"
-    ],
     "signature": "void grim_jpeg_null_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a planar-to-interleaved no-colorspace-change converter",
     "create": true
@@ -15627,9 +15262,6 @@
     "address": "0x10042750",
     "end": "0x10042780",
     "name": "grim_jpeg_grayscale_convert",
-    "aliases": [
-      "sub_10042750"
-    ],
     "signature": "void grim_jpeg_grayscale_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a grayscale row-copy converter",
     "create": true
@@ -15639,9 +15271,6 @@
     "address": "0x10042780",
     "end": "0x100428e0",
     "name": "grim_jpeg_ycck_cmyk_convert",
-    "aliases": [
-      "sub_10042780"
-    ],
     "signature": "void grim_jpeg_ycck_cmyk_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a Adobe YCCK-to-CMYK row converter",
     "create": true
@@ -15651,9 +15280,6 @@
     "address": "0x100428e0",
     "end": "0x10042a10",
     "name": "grim_jpeg_init_merged_upsampler",
-    "aliases": [
-      "sub_100428E0"
-    ],
     "signature": "void grim_jpeg_init_merged_upsampler(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a merged-upsampler initializer with inlined YCbCr-to-RGB table builder",
     "create": true
@@ -15663,9 +15289,6 @@
     "address": "0x10042a10",
     "end": "0x10042a30",
     "name": "grim_jpeg_start_pass_merged_upsample",
-    "aliases": [
-      "sub_10042A10"
-    ],
     "signature": "void grim_jpeg_start_pass_merged_upsample(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a merged-upsampler pass initializer; exact VC6 provider body",
     "create": true
@@ -15675,9 +15298,6 @@
     "address": "0x10042a30",
     "end": "0x10042b00",
     "name": "grim_jpeg_merged_2v_upsample",
-    "aliases": [
-      "sub_10042A30"
-    ],
     "signature": "void grim_jpeg_merged_2v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a two-row merged upsampling controller",
     "create": true
@@ -15687,9 +15307,6 @@
     "address": "0x10042b00",
     "end": "0x10042b40",
     "name": "grim_jpeg_merged_1v_upsample",
-    "aliases": [
-      "sub_10042B00"
-    ],
     "signature": "void grim_jpeg_merged_1v_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
     "comment": "JAZ IJG 6a one-row merged upsampling controller",
     "create": true
@@ -15699,9 +15316,6 @@
     "address": "0x10042b40",
     "end": "0x10042c90",
     "name": "grim_jpeg_h2v1_merged_upsample",
-    "aliases": [
-      "sub_10042B40"
-    ],
     "signature": "void grim_jpeg_h2v1_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)",
     "comment": "JAZ IJG 6a horizontal two-to-one merged upsampling and color conversion",
     "create": true
@@ -15711,9 +15325,6 @@
     "address": "0x10042c90",
     "end": "0x10042ea0",
     "name": "grim_jpeg_h2v2_merged_upsample",
-    "aliases": [
-      "sub_10042C90"
-    ],
     "signature": "void grim_jpeg_h2v2_merged_upsample(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf)",
     "comment": "JAZ IJG 6a horizontal and vertical two-to-one merged upsampling and color conversion",
     "create": true
@@ -15722,9 +15333,6 @@
     "program": "grim.dll",
     "address": "0x10042ea0",
     "name": "grim_jpeg_init_two_pass_quantizer",
-    "aliases": [
-      "sub_10042EA0"
-    ],
     "signature": "void grim_jpeg_init_two_pass_quantizer(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a two-pass color-quantizer initializer",
     "create": false
@@ -15733,9 +15341,6 @@
     "program": "grim.dll",
     "address": "0x10042fd0",
     "name": "grim_jpeg_init_error_limit",
-    "aliases": [
-      "sub_10042FD0"
-    ],
     "signature": "void grim_jpeg_init_error_limit(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a Floyd-Steinberg error-limiter initializer",
     "create": false
@@ -15744,9 +15349,6 @@
     "program": "grim.dll",
     "address": "0x10043070",
     "name": "grim_jpeg_start_pass_two_quantizer",
-    "aliases": [
-      "sub_10043070"
-    ],
     "signature": "void grim_jpeg_start_pass_two_quantizer(j_decompress_ptr cinfo, boolean is_pre_scan)",
     "comment": "JAZ IJG 6a two-pass quantizer pass initializer",
     "create": false
@@ -15755,9 +15357,6 @@
     "program": "grim.dll",
     "address": "0x10043190",
     "name": "grim_jpeg_prescan_quantize",
-    "aliases": [
-      "sub_10043190"
-    ],
     "signature": "void grim_jpeg_prescan_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a two-pass quantizer histogram prescan",
     "create": false
@@ -15766,9 +15365,6 @@
     "program": "grim.dll",
     "address": "0x10043210",
     "name": "grim_jpeg_pass2_no_dither",
-    "aliases": [
-      "sub_10043210"
-    ],
     "signature": "void grim_jpeg_pass2_no_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a undithered two-pass color mapping",
     "create": false
@@ -15777,9 +15373,6 @@
     "program": "grim.dll",
     "address": "0x100432e0",
     "name": "grim_jpeg_fill_inverse_cmap",
-    "aliases": [
-      "sub_100432E0"
-    ],
     "signature": "void grim_jpeg_fill_inverse_cmap(j_decompress_ptr cinfo, int c0, int c1, int c2)",
     "comment": "JAZ IJG 6a inverse-colormap cache fill",
     "create": false
@@ -15788,9 +15381,6 @@
     "program": "grim.dll",
     "address": "0x100435e0",
     "name": "grim_jpeg_find_best_colors",
-    "aliases": [
-      "sub_100435E0"
-    ],
     "signature": "void grim_jpeg_find_best_colors(j_decompress_ptr cinfo, int minc0, int minc1, int minc2, int numcolors, JSAMPLE *colorlist, JSAMPLE *bestcolor)",
     "comment": "JAZ IJG 6a nearest-color search",
     "create": false
@@ -15799,9 +15389,6 @@
     "program": "grim.dll",
     "address": "0x10043740",
     "name": "grim_jpeg_pass2_fs_dither",
-    "aliases": [
-      "sub_10043740"
-    ],
     "signature": "void grim_jpeg_pass2_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a Floyd-Steinberg two-pass color mapping",
     "create": false
@@ -15810,9 +15397,6 @@
     "program": "grim.dll",
     "address": "0x10043a20",
     "name": "grim_jpeg_finish_pass_one_quantizer",
-    "aliases": [
-      "sub_10043A20"
-    ],
     "signature": "void grim_jpeg_finish_pass_one_quantizer(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a quantizer prescan finalizer and palette selector",
     "create": false
@@ -15821,9 +15405,6 @@
     "program": "grim.dll",
     "address": "0x10043c40",
     "name": "grim_jpeg_update_color_box",
-    "aliases": [
-      "sub_10043C40"
-    ],
     "signature": "void grim_jpeg_update_color_box(j_decompress_ptr cinfo, void *box)",
     "comment": "JAZ IJG 6a median-cut color-box bounds updater",
     "create": false
@@ -15832,9 +15413,6 @@
     "program": "grim.dll",
     "address": "0x10044070",
     "name": "grim_jpeg_compute_box_color",
-    "aliases": [
-      "sub_10044070"
-    ],
     "signature": "void grim_jpeg_compute_box_color(j_decompress_ptr cinfo, void *box, int color_index)",
     "comment": "JAZ IJG 6a representative color computation",
     "create": false
@@ -15843,9 +15421,6 @@
     "program": "grim.dll",
     "address": "0x10044200",
     "name": "grim_jpeg_new_color_map_2_quant",
-    "aliases": [
-      "sub_10044200"
-    ],
     "signature": "void grim_jpeg_new_color_map_2_quant(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a two-pass quantizer colormap reset; exact VC6 provider body",
     "create": false
@@ -15856,8 +15431,7 @@
     "end": "0x10044450",
     "name": "grim_jpeg_init_one_pass_quantizer",
     "aliases": [
-      "jinit_1pass_quantizer",
-      "sub_10044210"
+      "jinit_1pass_quantizer"
     ],
     "signature": "void grim_jpeg_init_one_pass_quantizer(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a one-pass color-quantizer initializer",
@@ -15868,9 +15442,6 @@
     "address": "0x10044450",
     "end": "0x10044540",
     "name": "grim_jpeg_select_component_color_counts",
-    "aliases": [
-      "sub_10044450"
-    ],
     "signature": "int grim_jpeg_select_component_color_counts(j_decompress_ptr cinfo, int component_color_counts[4])",
     "comment": "JAZ IJG 6a one-pass component color-count allocator",
     "create": true
@@ -15880,9 +15451,6 @@
     "address": "0x10044540",
     "end": "0x10044690",
     "name": "grim_jpeg_create_color_index",
-    "aliases": [
-      "sub_10044540"
-    ],
     "signature": "void grim_jpeg_create_color_index(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a one-pass color-index builder",
     "create": true
@@ -15892,9 +15460,6 @@
     "address": "0x10044690",
     "end": "0x10044890",
     "name": "grim_jpeg_start_pass_one_quantizer",
-    "aliases": [
-      "sub_10044690"
-    ],
     "signature": "void grim_jpeg_start_pass_one_quantizer(j_decompress_ptr cinfo, boolean is_pre_scan)",
     "comment": "JAZ IJG 6a one-pass quantizer pass initializer",
     "create": true
@@ -15904,9 +15469,6 @@
     "address": "0x10044890",
     "end": "0x10044950",
     "name": "grim_jpeg_color_quantize",
-    "aliases": [
-      "sub_10044890"
-    ],
     "signature": "void grim_jpeg_color_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a general one-pass color quantizer",
     "create": true
@@ -15916,9 +15478,6 @@
     "address": "0x10044950",
     "end": "0x10044a10",
     "name": "grim_jpeg_color_quantize3",
-    "aliases": [
-      "sub_10044950"
-    ],
     "signature": "void grim_jpeg_color_quantize3(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a three-component one-pass color quantizer",
     "create": true
@@ -15928,9 +15487,6 @@
     "address": "0x10044a10",
     "end": "0x10044b40",
     "name": "grim_jpeg_quantize_ordered_dither",
-    "aliases": [
-      "sub_10044A10"
-    ],
     "signature": "void grim_jpeg_quantize_ordered_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a general ordered-dither quantizer",
     "create": true
@@ -15940,9 +15496,6 @@
     "address": "0x10044b40",
     "end": "0x10044c70",
     "name": "grim_jpeg_quantize3_ordered_dither",
-    "aliases": [
-      "sub_10044B40"
-    ],
     "signature": "void grim_jpeg_quantize3_ordered_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a three-component ordered-dither quantizer",
     "create": true
@@ -15952,9 +15505,6 @@
     "address": "0x10044c70",
     "end": "0x10044e30",
     "name": "grim_jpeg_quantize_fs_dither",
-    "aliases": [
-      "sub_10044C70"
-    ],
     "signature": "void grim_jpeg_quantize_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)",
     "comment": "JAZ IJG 6a Floyd-Steinberg dither quantizer",
     "create": true
@@ -15964,9 +15514,6 @@
     "address": "0x10044e30",
     "end": "0x10044e50",
     "name": "grim_jpeg_new_color_map_1_quant",
-    "aliases": [
-      "sub_10044E30"
-    ],
     "signature": "void grim_jpeg_new_color_map_1_quant(j_decompress_ptr cinfo)",
     "comment": "JAZ IJG 6a one-pass quantizer mode-change error path",
     "create": true
@@ -15975,9 +15522,6 @@
     "program": "grim.dll",
     "address": "0x10046400",
     "name": "zlib_uncompress",
-    "aliases": [
-      "sub_10046400"
-    ],
     "signature": "int zlib_uncompress(unsigned char *output, unsigned long *output_size, const unsigned char *source, unsigned long source_size)",
     "comment": "Plain-C zlib 1.1.3 one-shot decompression routine; exact from the VC6 source-derived provider",
     "create": false
@@ -15988,7 +15532,6 @@
     "end": "0x10046740",
     "name": "zlib_deflate_stored",
     "aliases": [
-      "sub_100464A0",
       "deflate_stored"
     ],
     "signature": "block_state zlib_deflate_stored(deflate_state *state, int flush)",
@@ -16001,7 +15544,6 @@
     "end": "0x100468e0",
     "name": "zlib_fill_window",
     "aliases": [
-      "sub_10046740",
       "fill_window"
     ],
     "signature": "void zlib_fill_window(deflate_state *state)",
@@ -16014,7 +15556,6 @@
     "end": "0x10046d00",
     "name": "zlib_deflate_fast",
     "aliases": [
-      "sub_100468E0",
       "deflate_fast"
     ],
     "signature": "block_state zlib_deflate_fast(deflate_state *state, int flush)",
@@ -16026,7 +15567,6 @@
     "address": "0x10046d00",
     "name": "zlib_longest_match",
     "aliases": [
-      "sub_10046D00",
       "longest_match"
     ],
     "signature": "uInt zlib_longest_match(deflate_state *state, IPos current_match)",
@@ -16039,7 +15579,6 @@
     "end": "0x100473f0",
     "name": "zlib_deflate_slow",
     "aliases": [
-      "sub_10046E70",
       "deflate_slow"
     ],
     "signature": "block_state zlib_deflate_slow(deflate_state *state, int flush)",
@@ -16050,9 +15589,6 @@
     "program": "grim.dll",
     "address": "0x100473f0",
     "name": "zlib_inflate_end",
-    "aliases": [
-      "sub_100473F0"
-    ],
     "signature": "int zlib_inflate_end(z_streamp stream)",
     "comment": "Plain-C zlib 1.1.3 inflate teardown called by zlib_uncompress",
     "create": false
@@ -16061,9 +15597,6 @@
     "program": "grim.dll",
     "address": "0x10047440",
     "name": "zlib_inflate_init2",
-    "aliases": [
-      "sub_10047440"
-    ],
     "signature": "int zlib_inflate_init2(z_streamp stream, int window_bits, const char *version, int stream_size)",
     "comment": "Plain-C zlib 1.1.3 configurable inflate initializer",
     "create": false
@@ -16072,9 +15605,6 @@
     "program": "grim.dll",
     "address": "0x100475b0",
     "name": "zlib_inflate_init",
-    "aliases": [
-      "sub_100475B0"
-    ],
     "signature": "int zlib_inflate_init(z_streamp stream, const char *version, int stream_size)",
     "comment": "Plain-C zlib 1.1.3 inflate initializer called by zlib_uncompress",
     "create": false
@@ -16083,9 +15613,6 @@
     "program": "grim.dll",
     "address": "0x100475d0",
     "name": "zlib_inflate",
-    "aliases": [
-      "sub_100475D0"
-    ],
     "signature": "int zlib_inflate(z_streamp stream, int flush)",
     "comment": "Plain-C zlib 1.1.3 inflate state machine called by zlib_uncompress",
     "create": false
@@ -16094,10 +15621,6 @@
     "program": "grim.dll",
     "address": "0x10047a00",
     "name": "zlib_zcalloc",
-    "aliases": [
-      "FUN_10047a00",
-      "sub_10047A00"
-    ],
     "signature": "void *zlib_zcalloc(void *opaque, unsigned int items, unsigned int size)",
     "comment": "Plain-C zlib 1.1.3 default allocation callback",
     "create": false
@@ -16106,10 +15629,6 @@
     "program": "grim.dll",
     "address": "0x10047a20",
     "name": "zlib_zcfree",
-    "aliases": [
-      "FUN_10047a20",
-      "sub_10047A20"
-    ],
     "signature": "void zlib_zcfree(void *opaque, void *allocation)",
     "comment": "Plain-C zlib 1.1.3 default free callback",
     "create": false
@@ -16119,7 +15638,6 @@
     "address": "0x10047a30",
     "name": "zlib_tr_stored_block",
     "aliases": [
-      "sub_10047A30",
       "tr_stored_block"
     ],
     "signature": "void zlib_tr_stored_block(deflate_state *state, char *buffer, unsigned long stored_length, int end_of_file)",
@@ -16131,7 +15649,6 @@
     "address": "0x100480f0",
     "name": "zlib_build_tree",
     "aliases": [
-      "sub_100480F0",
       "build_tree"
     ],
     "signature": "void zlib_build_tree(deflate_state *state, tree_desc *description)",
@@ -16143,7 +15660,6 @@
     "address": "0x10048580",
     "name": "zlib_pqdownheap",
     "aliases": [
-      "sub_10048580",
       "pqdownheap"
     ],
     "signature": "void zlib_pqdownheap(deflate_state *state, ct_data *tree, int node)",
@@ -16155,7 +15671,6 @@
     "address": "0x10048660",
     "name": "zlib_scan_tree",
     "aliases": [
-      "sub_10048660",
       "scan_tree"
     ],
     "signature": "void zlib_scan_tree(deflate_state *state, ct_data *tree, int max_code)",
@@ -16167,7 +15682,6 @@
     "address": "0x10048750",
     "name": "zlib_send_tree",
     "aliases": [
-      "sub_10048750",
       "send_tree"
     ],
     "signature": "void zlib_send_tree(deflate_state *state, ct_data *tree, int max_code)",
@@ -16179,7 +15693,6 @@
     "address": "0x10048cd0",
     "name": "zlib_compress_block",
     "aliases": [
-      "sub_10048CD0",
       "compress_block"
     ],
     "signature": "void zlib_compress_block(deflate_state *state, ct_data *literal_tree, ct_data *distance_tree)",
@@ -16191,7 +15704,6 @@
     "address": "0x10049110",
     "name": "zlib_bi_windup",
     "aliases": [
-      "sub_10049110",
       "bi_windup"
     ],
     "signature": "void zlib_bi_windup(deflate_state *state)",
@@ -16202,9 +15714,6 @@
     "program": "grim.dll",
     "address": "0x10049190",
     "name": "zlib_adler32",
-    "aliases": [
-      "sub_10049190"
-    ],
     "signature": "unsigned long zlib_adler32(unsigned long adler, const unsigned char *buffer, unsigned int length)",
     "comment": "Plain-C zlib 1.1.3 Adler-32 checksum routine",
     "create": false
@@ -16213,10 +15722,6 @@
     "program": "grim.dll",
     "address": "0x100492c0",
     "name": "zlib_inflate_blocks_reset",
-    "aliases": [
-      "FUN_100492c0",
-      "sub_100492C0"
-    ],
     "signature": "void zlib_inflate_blocks_reset(inflate_blocks_statef *state, z_streamp stream, uLongf *checksum)",
     "comment": "Plain-C zlib 1.1.3 inflate block-state reset",
     "create": false
@@ -16225,10 +15730,6 @@
     "program": "grim.dll",
     "address": "0x10049340",
     "name": "zlib_inflate_blocks_new",
-    "aliases": [
-      "FUN_10049340",
-      "sub_10049340"
-    ],
     "signature": "inflate_blocks_statef *zlib_inflate_blocks_new(z_streamp stream, check_func checksum, uInt window_size)",
     "comment": "Plain-C zlib 1.1.3 inflate block-state allocator",
     "create": false
@@ -16237,10 +15738,6 @@
     "program": "grim.dll",
     "address": "0x10049400",
     "name": "zlib_inflate_blocks",
-    "aliases": [
-      "FUN_10049400",
-      "sub_10049400"
-    ],
     "signature": "int zlib_inflate_blocks(inflate_blocks_statef *state, z_streamp stream, int status)",
     "comment": "Plain-C zlib 1.1.3 inflate block-state machine",
     "create": false
@@ -16249,10 +15746,6 @@
     "program": "grim.dll",
     "address": "0x1004a100",
     "name": "zlib_inflate_blocks_free",
-    "aliases": [
-      "FUN_1004a100",
-      "sub_1004A100"
-    ],
     "signature": "void zlib_inflate_blocks_free(inflate_blocks_statef *state, z_streamp stream)",
     "comment": "Plain-C zlib 1.1.3 inflate block-state teardown",
     "create": false
@@ -16261,10 +15754,6 @@
     "program": "grim.dll",
     "address": "0x1004a190",
     "name": "zlib_inflate_codes_new",
-    "aliases": [
-      "FUN_1004a190",
-      "sub_1004A190"
-    ],
     "signature": "inflate_codes_statef *zlib_inflate_codes_new(uInt literal_bits, uInt distance_bits, inflate_huft *literal_tree, inflate_huft *distance_tree, z_streamp stream)",
     "comment": "Plain-C zlib 1.1.3 inflate codes-state allocator",
     "create": false
@@ -16273,10 +15762,6 @@
     "program": "grim.dll",
     "address": "0x1004a1d0",
     "name": "zlib_inflate_codes",
-    "aliases": [
-      "FUN_1004a1d0",
-      "sub_1004A1D0"
-    ],
     "signature": "int zlib_inflate_codes(inflate_blocks_statef *state, z_streamp stream, int status)",
     "comment": "Plain-C zlib 1.1.3 literal and distance codes-state machine",
     "create": false
@@ -16285,10 +15770,6 @@
     "program": "grim.dll",
     "address": "0x1004a980",
     "name": "zlib_inflate_codes_free",
-    "aliases": [
-      "FUN_1004a980",
-      "sub_1004A980"
-    ],
     "signature": "void zlib_inflate_codes_free(inflate_codes_statef *codes, z_streamp stream)",
     "comment": "Plain-C zlib 1.1.3 inflate codes-state teardown",
     "create": false
@@ -16297,10 +15778,6 @@
     "program": "grim.dll",
     "address": "0x1004a9a0",
     "name": "zlib_inflate_trees_bits",
-    "aliases": [
-      "FUN_1004a9a0",
-      "sub_1004A9A0"
-    ],
     "signature": "int zlib_inflate_trees_bits(uInt *lengths, uInt *bits, inflate_huft **tree, inflate_huft *workspace, z_streamp stream)",
     "comment": "Plain-C zlib 1.1.3 bit-length Huffman tree builder",
     "create": false
@@ -16309,10 +15786,6 @@
     "program": "grim.dll",
     "address": "0x1004aa50",
     "name": "zlib_huft_build",
-    "aliases": [
-      "FUN_1004aa50",
-      "sub_1004AA50"
-    ],
     "signature": "int zlib_huft_build(uInt *lengths, uInt count, uInt simple_count, const uInt *bases, const uInt *extra, inflate_huft **tree, uInt *bits, inflate_huft *workspace, uInt *used, uInt *scratch)",
     "comment": "Plain-C zlib 1.1.3 Huffman decoding-table builder",
     "create": false
@@ -16321,10 +15794,6 @@
     "program": "grim.dll",
     "address": "0x1004af20",
     "name": "zlib_inflate_trees_dynamic",
-    "aliases": [
-      "FUN_1004af20",
-      "sub_1004AF20"
-    ],
     "signature": "int zlib_inflate_trees_dynamic(uInt literal_count, uInt distance_count, uInt *lengths, uInt *literal_bits, uInt *distance_bits, inflate_huft **literal_tree, inflate_huft **distance_tree, inflate_huft *workspace, z_streamp stream)",
     "comment": "Plain-C zlib 1.1.3 dynamic Huffman tree builder",
     "create": false
@@ -16343,9 +15812,6 @@
     "program": "grim.dll",
     "address": "0x1004b0e0",
     "name": "zlib_inflate_flush",
-    "aliases": [
-      "sub_1004B0E0"
-    ],
     "signature": "int zlib_inflate_flush(inflate_blocks_statef *state, z_streamp stream, int status)",
     "comment": "Plain-C zlib 1.1.3 sliding-window output flush",
     "create": false
@@ -16354,9 +15820,6 @@
     "program": "grim.dll",
     "address": "0x1004b220",
     "name": "zlib_inflate_fast",
-    "aliases": [
-      "sub_1004B220"
-    ],
     "signature": "int zlib_inflate_fast(uInt literal_bits, uInt distance_bits, inflate_huft *literal_tree, inflate_huft *distance_tree, inflate_blocks_statef *state, z_streamp stream)",
     "comment": "Plain-C zlib 1.1.3 fast literal and distance decoder",
     "create": false
@@ -16410,7 +15873,6 @@
     "address": "0x10047b90",
     "name": "zlib_tr_flush_block",
     "aliases": [
-      "sub_10047B90",
       "tr_flush_block"
     ],
     "signature": "void zlib_tr_flush_block(deflate_state *state, char *buffer, unsigned long stored_length, int end_of_file)",
@@ -16622,7 +16084,6 @@
     "address": "0x1004b5cf",
     "name": "grim_vector_destructor_iterator",
     "aliases": [
-      "FUN_1004b5cf",
       "??_M@YGXPAXIHP6EX0@Z@Z"
     ],
     "signature": "void grim_vector_destructor_iterator(void *base, unsigned int size, int count, void *destructor)",
@@ -16634,7 +16095,6 @@
     "address": "0x1002943a",
     "name": "x3d_matrix_multiply",
     "aliases": [
-      "sub_1002943A",
       "?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d matrix multiply implementation."
@@ -16644,7 +16104,6 @@
     "address": "0x10027fc6",
     "name": "x3d_quaternion_to_axis_angle",
     "aliases": [
-      "sub_10027FC6",
       "?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion-to-axis-angle conversion."
@@ -16654,7 +16113,6 @@
     "address": "0x10028079",
     "name": "x3d_quaternion_rotation_matrix",
     "aliases": [
-      "sub_10028079",
       "?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d matrix-to-quaternion conversion."
@@ -16664,7 +16122,6 @@
     "address": "0x10028295",
     "name": "x3d_quaternion_rotation_matrix_k7",
     "aliases": [
-      "sub_10028295",
       "?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d K7 matrix-to-quaternion conversion."
@@ -16674,7 +16131,6 @@
     "address": "0x100284aa",
     "name": "x3d_quaternion_rotation_yaw_pitch_roll",
     "aliases": [
-      "sub_100284AA",
       "?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d yaw-pitch-roll quaternion builder."
@@ -16684,7 +16140,6 @@
     "address": "0x1002856f",
     "name": "x3d_quaternion_rotation_axis",
     "aliases": [
-      "sub_1002856F",
       "?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d axis-angle quaternion builder."
@@ -16694,7 +16149,6 @@
     "address": "0x100285db",
     "name": "x3d_quaternion_slerp",
     "aliases": [
-      "sub_100285DB",
       "?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion spherical interpolation."
@@ -16704,7 +16158,6 @@
     "address": "0x10028712",
     "name": "x3d_quaternion_barycentric",
     "aliases": [
-      "sub_10028712",
       "?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion barycentric interpolation."
@@ -16714,7 +16167,6 @@
     "address": "0x1002879f",
     "name": "x3d_quaternion_squad",
     "aliases": [
-      "sub_1002879F",
       "?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion squad interpolation."
@@ -16724,7 +16176,6 @@
     "address": "0x10028831",
     "name": "x3d_quaternion_inverse",
     "aliases": [
-      "sub_10028831",
       "?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion inverse."
@@ -16734,7 +16185,6 @@
     "address": "0x10028895",
     "name": "x3d_quaternion_ln",
     "aliases": [
-      "sub_10028895",
       "?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion logarithm."
@@ -16744,7 +16194,6 @@
     "address": "0x1002893c",
     "name": "x3d_quaternion_exp",
     "aliases": [
-      "sub_1002893C",
       "?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion exponential."
@@ -16754,7 +16203,6 @@
     "address": "0x100289e1",
     "name": "x3d_quaternion_squad_setup",
     "aliases": [
-      "sub_100289E1",
       "?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion squad-control setup."
@@ -16764,7 +16212,6 @@
     "address": "0x1002d321",
     "name": "x3d_vec3_barycentric",
     "aliases": [
-      "sub_1002D321",
       "?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d vector barycentric interpolation."
@@ -16774,7 +16221,6 @@
     "address": "0x1002d392",
     "name": "x3d_vec3_hermite",
     "aliases": [
-      "sub_1002D392",
       "?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d vector Hermite interpolation."
@@ -16784,7 +16230,6 @@
     "address": "0x1002d466",
     "name": "x3d_vec3_catmull_rom",
     "aliases": [
-      "sub_1002D466",
       "?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d vector Catmull-Rom interpolation."
@@ -16794,7 +16239,6 @@
     "address": "0x1002d550",
     "name": "x3d_vec3_transform_coord_inline",
     "aliases": [
-      "sub_1002D550",
       "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d inline coordinate transform."
@@ -16804,7 +16248,6 @@
     "address": "0x1002d5db",
     "name": "x3d_matrix_multiply_inline",
     "aliases": [
-      "sub_1002D5DB",
       "?x3d_D3DXMatrixMultiply_inline@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d inline matrix multiply."
@@ -16814,7 +16257,6 @@
     "address": "0x1002d7a7",
     "name": "x3d_vec3_project",
     "aliases": [
-      "sub_1002D7A7",
       "?x3d_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d vector projection."
@@ -16824,7 +16266,6 @@
     "address": "0x1002d92f",
     "name": "x3d_vec3_unproject",
     "aliases": [
-      "sub_1002D92F",
       "?x3d_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d vector unprojection."
@@ -16834,7 +16275,6 @@
     "address": "0x1002db55",
     "name": "x3d_vec3_unproject_k7",
     "aliases": [
-      "sub_1002DB55",
       "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d K7 vector unprojection."
@@ -16844,7 +16284,6 @@
     "address": "0x1002e04a",
     "name": "x3d_vec4_cross",
     "aliases": [
-      "sub_1002E04A",
       "?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector cross product."
@@ -16854,7 +16293,6 @@
     "address": "0x1002e17c",
     "name": "x3d_vec4_barycentric",
     "aliases": [
-      "sub_1002E17C",
       "?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector barycentric interpolation."
@@ -16864,7 +16302,6 @@
     "address": "0x1002e1ed",
     "name": "x3d_vec4_hermite",
     "aliases": [
-      "sub_1002E1ED",
       "?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector Hermite interpolation."
@@ -16874,7 +16311,6 @@
     "address": "0x1002e2b5",
     "name": "x3d_vec4_catmull_rom",
     "aliases": [
-      "sub_1002E2B5",
       "?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector Catmull-Rom interpolation."
@@ -16884,7 +16320,6 @@
     "address": "0x1002966c",
     "name": "x3d_matrix_determinant",
     "aliases": [
-      "sub_1002966C",
       "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d matrix determinant implementation."
@@ -16894,7 +16329,6 @@
     "address": "0x1002973b",
     "name": "x3d_matrix_translation",
     "aliases": [
-      "sub_1002973B",
       "?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d translation-matrix builder."
@@ -16904,7 +16338,6 @@
     "address": "0x1002978b",
     "name": "x3d_matrix_shadow",
     "aliases": [
-      "sub_1002978B",
       "?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d shadow-matrix builder."
@@ -16914,7 +16347,6 @@
     "address": "0x10029876",
     "name": "x3d_matrix_reflect",
     "aliases": [
-      "sub_10029876",
       "?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d reflection-matrix builder."
@@ -16924,7 +16356,6 @@
     "address": "0x10029952",
     "name": "x3d_matrix_rotation_x",
     "aliases": [
-      "sub_10029952",
       "?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d X-axis rotation builder."
@@ -16934,7 +16365,6 @@
     "address": "0x100299b5",
     "name": "x3d_matrix_rotation_y",
     "aliases": [
-      "sub_100299B5",
       "?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d Y-axis rotation builder."
@@ -16944,7 +16374,6 @@
     "address": "0x10029a13",
     "name": "x3d_matrix_rotation_z",
     "aliases": [
-      "sub_10029A13",
       "?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d Z-axis rotation builder."
@@ -16954,7 +16383,6 @@
     "address": "0x10029a6c",
     "name": "x3d_matrix_scaling",
     "aliases": [
-      "sub_10029A6C",
       "?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d scaling-matrix builder."
@@ -16964,7 +16392,6 @@
     "address": "0x10029ab3",
     "name": "x3d_matrix_transpose",
     "aliases": [
-      "sub_10029AB3",
       "?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d matrix transpose implementation."
@@ -16974,7 +16401,6 @@
     "address": "0x10029b22",
     "name": "x3d_matrix_identity",
     "aliases": [
-      "sub_10029B22",
       "?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d identity-matrix builder."
@@ -16984,7 +16410,6 @@
     "address": "0x10029b5b",
     "name": "x3d_matrix_rotation_quaternion",
     "aliases": [
-      "sub_10029B5B",
       "?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d quaternion rotation builder."
@@ -16994,7 +16419,6 @@
     "address": "0x10029c2d",
     "name": "x3d_matrix_rotation_quaternion_k7",
     "aliases": [
-      "sub_10029C2D",
       "?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d K7 quaternion rotation builder."
@@ -17004,7 +16428,6 @@
     "address": "0x10029ce2",
     "name": "x3d_matrix_transformation",
     "aliases": [
-      "sub_10029CE2",
       "?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d general transformation builder."
@@ -17014,7 +16437,6 @@
     "address": "0x1002ae7a",
     "name": "x3d_matrix_rotation_yaw_pitch_roll",
     "aliases": [
-      "sub_1002AE7A",
       "?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d yaw-pitch-roll rotation builder."
@@ -17024,7 +16446,6 @@
     "address": "0x1002b01f",
     "name": "x3d_matrix_affine_transformation",
     "aliases": [
-      "sub_1002B01F",
       "?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d affine transformation builder."
@@ -17034,7 +16455,6 @@
     "address": "0x1002b553",
     "name": "x3d_matrix_rotation_axis",
     "aliases": [
-      "sub_1002B553",
       "?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d arbitrary-axis rotation builder."
@@ -17044,7 +16464,6 @@
     "address": "0x1002b66c",
     "name": "x3d_matrix_transformation_k7",
     "aliases": [
-      "sub_1002B66C",
       "?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d K7 general transformation builder."
@@ -17054,7 +16473,6 @@
     "address": "0x1002c7c0",
     "name": "x3d_matrix_inverse_k7",
     "aliases": [
-      "sub_1002C7C0",
       "?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d K7 matrix inverse implementation."
@@ -17064,7 +16482,6 @@
     "address": "0x1002caa2",
     "name": "x3d_matrix_multiply_transpose",
     "aliases": [
-      "sub_1002CAA2",
       "?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d multiply-transpose implementation."
@@ -17074,7 +16491,6 @@
     "address": "0x1002d1ce",
     "name": "x3d_matrix_inverse",
     "aliases": [
-      "sub_1002D1CE",
       "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d matrix inverse dispatch."
@@ -17084,7 +16500,6 @@
     "address": "0x1002ce9a",
     "name": "x3d_matrix_inverse_inline",
     "aliases": [
-      "sub_1002CE9A",
       "?x3d_D3DXMatrixInverse_inline@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
     ],
     "comment": "DirectX 8.1 debug x3d inline matrix inverse helper selected by an exact archive relocation."
@@ -17094,7 +16509,6 @@
     "address": "0x1002d2c2",
     "name": "x3d_vec3_normalize",
     "aliases": [
-      "sub_1002D2C2",
       "?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 debug x3d vector normalization helper selected by an exact archive relocation."
@@ -17104,7 +16518,6 @@
     "address": "0x1002e578",
     "name": "x3d_plane_normalize",
     "aliases": [
-      "sub_1002E578",
       "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 debug x3d plane normalization helper selected by exact archive relocations."
@@ -17114,7 +16527,6 @@
     "address": "0x1002e5dc",
     "name": "x3d_plane_transform",
     "aliases": [
-      "sub_1002E5DC",
       "?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 debug x3d plane transform."
@@ -17124,7 +16536,6 @@
     "address": "0x10034e00",
     "name": "x3d_atan2",
     "aliases": [
-      "sub_10034E00",
       "_a_atan2"
     ],
     "comment": "Exact DirectX 8.1 D3DX math archive arctangent helper."
@@ -17134,7 +16545,6 @@
     "address": "0x10034f00",
     "name": "x3d_acos",
     "aliases": [
-      "sub_10034F00",
       "_a_acos"
     ],
     "comment": "Exact DirectX 8.1 D3DX math archive arccosine helper."
@@ -17144,7 +16554,6 @@
     "address": "0x10035100",
     "name": "x3d_log",
     "aliases": [
-      "sub_10035100",
       "_a_log"
     ],
     "comment": "Exact DirectX 8.1 D3DX math archive logarithm helper."
@@ -17154,7 +16563,6 @@
     "address": "0x100354e0",
     "name": "x3d_sincos",
     "aliases": [
-      "sub_100354E0",
       "_a_cos",
       "_a_sincos"
     ],
@@ -17165,7 +16573,6 @@
     "address": "0x10035600",
     "name": "x3d_sin",
     "aliases": [
-      "sub_10035600",
       "_a_sin"
     ],
     "comment": "Exact DirectX 8.1 D3DX math archive sine helper."
@@ -17175,7 +16582,6 @@
     "address": "0x1004b64f",
     "name": "msvc_array_unwind",
     "aliases": [
-      "FUN_1004b64f",
       "?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z"
     ],
     "signature": "void msvc_array_unwind(void *base, unsigned int size, int count, void *destructor)",
@@ -17187,7 +16593,6 @@
     "address": "0x1004b6c3",
     "name": "grim_vector_constructor_iterator_eh",
     "aliases": [
-      "FUN_1004b6c3",
       "??_L@YGXPAXIHP6EX0@Z1@Z"
     ],
     "signature": "void grim_vector_constructor_iterator_eh(void *base, unsigned int size, int count, void *constructor, void *destructor)",
@@ -17551,7 +16956,6 @@
     "address": "0x1001bedd",
     "name": "d3dx_get_registry_value",
     "aliases": [
-      "sub_1001BEDD",
       "?GetD3DRegValue@@YAHKPADPAXK@Z"
     ],
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
@@ -17561,7 +16965,6 @@
     "address": "0x1001c0d4",
     "name": "D3DXIsProcessorFeaturePresent",
     "aliases": [
-      "sub_1001C0D4",
       "?D3DXIsProcessorFeaturePresent@@YAHI@Z"
     ],
     "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
@@ -17571,7 +16974,6 @@
     "address": "0x100223f0",
     "name": "d3dx_x3d_get_feature_flags",
     "aliases": [
-      "sub_100223F0",
       "?get_feature_flags@@YAIXZ"
     ],
     "comment": "Exact DirectX 8.1 D3DX 3DNow dispatch implementation selected from the pinned d3dxmathx3d.obj archive member."
@@ -17581,7 +16983,6 @@
     "address": "0x100226eb",
     "name": "d3dx_x86_vec2_transform",
     "aliases": [
-      "sub_100226EB",
       "?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
@@ -17591,7 +16992,6 @@
     "address": "0x10022754",
     "name": "d3dx_x86_vec2_transform_normal",
     "aliases": [
-      "sub_10022754",
       "?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
@@ -17601,7 +17001,6 @@
     "address": "0x10022b47",
     "name": "d3dx_x86_init_fast_table",
     "aliases": [
-      "sub_10022B47",
       "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ],
     "comment": "Exact DirectX 8.1 D3DX x86 dispatch implementation selected from the pinned d3dxmathx86.obj archive member."
@@ -17611,7 +17010,6 @@
     "address": "0x100221d0",
     "name": "d3dx_sse_init_fast_table",
     "aliases": [
-      "sub_100221D0",
       "?sse_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ],
     "comment": "SSE dispatch-table initializer from the pinned DirectX 8.1 d3dxmathsse.obj archive member."
@@ -17621,7 +17019,6 @@
     "address": "0x100222e0",
     "name": "d3dx_sse2_init_fast_table",
     "aliases": [
-      "sub_100222E0",
       "?sse2_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ],
     "comment": "SSE2 dispatch-table initializer from the pinned DirectX 8.1 d3dxmathsse2.obj archive member."
@@ -17701,7 +17098,6 @@
     "address": "0x1002d7a2",
     "name": "x3d_vec3_transform_coord",
     "aliases": [
-      "sub_1002D7A2",
       "?x3d_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "3DNow coordinate-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -17831,7 +17227,6 @@
     "address": "0x10025c40",
     "name": "d3dx_sse_vec2_transform_coord",
     "aliases": [
-      "sub_10025C40",
       "?sse_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17841,7 +17236,6 @@
     "address": "0x10025ca0",
     "name": "d3dx_sse_vec2_transform_normal",
     "aliases": [
-      "sub_10025CA0",
       "?sse_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17862,7 +17256,6 @@
     "address": "0x10025cee",
     "name": "d3dx_sse_matrix_multiply_impl",
     "aliases": [
-      "sub_10025CEE",
       "?sse_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
       "?sse2_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
@@ -17883,7 +17276,6 @@
     "address": "0x10025e3e",
     "name": "d3dx_sse_vec3_normalize_impl",
     "aliases": [
-      "sub_10025E3E",
       "?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z",
       "?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
     ],
@@ -17904,7 +17296,6 @@
     "address": "0x10025f0e",
     "name": "d3dx_sse_plane_normalize_impl",
     "aliases": [
-      "sub_10025F0E",
       "?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z",
       "?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
     ],
@@ -17925,7 +17316,6 @@
     "address": "0x10025fee",
     "name": "d3dx_sse_vec4_cross_impl",
     "aliases": [
-      "sub_10025FEE",
       "?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z",
       "?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
     ],
@@ -17936,7 +17326,6 @@
     "address": "0x10026090",
     "name": "d3dx_sse_vec4_normalize",
     "aliases": [
-      "sub_10026090",
       "?sse_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17946,7 +17335,6 @@
     "address": "0x10026130",
     "name": "d3dx_sse_vec3_catmull_rom",
     "aliases": [
-      "sub_10026130",
       "?sse_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17956,7 +17344,6 @@
     "address": "0x100261f0",
     "name": "d3dx_sse_vec2_catmull_rom",
     "aliases": [
-      "sub_100261F0",
       "?sse_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17966,7 +17353,6 @@
     "address": "0x10026280",
     "name": "d3dx_sse_vec4_catmull_rom",
     "aliases": [
-      "sub_10026280",
       "?sse_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17976,7 +17362,6 @@
     "address": "0x10026330",
     "name": "d3dx_sse_vec3_hermite",
     "aliases": [
-      "sub_10026330",
       "?sse_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17986,7 +17371,6 @@
     "address": "0x100263f0",
     "name": "d3dx_sse_vec4_hermite",
     "aliases": [
-      "sub_100263F0",
       "?sse_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -17996,7 +17380,6 @@
     "address": "0x10026490",
     "name": "d3dx_sse_vec2_hermite",
     "aliases": [
-      "sub_10026490",
       "?sse_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18006,7 +17389,6 @@
     "address": "0x10026520",
     "name": "d3dx_sse_vec3_barycentric",
     "aliases": [
-      "sub_10026520",
       "?sse_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18016,7 +17398,6 @@
     "address": "0x10026580",
     "name": "d3dx_sse_vec4_barycentric",
     "aliases": [
-      "sub_10026580",
       "?sse_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18026,7 +17407,6 @@
     "address": "0x100265d0",
     "name": "d3dx_sse_vec2_barycentric",
     "aliases": [
-      "sub_100265D0",
       "?sse_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18036,7 +17416,6 @@
     "address": "0x10026630",
     "name": "d3dx_sse_plane_intersect_line",
     "aliases": [
-      "sub_10026630",
       "?sse_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18056,7 +17435,6 @@
     "address": "0x100266fe",
     "name": "d3dx_sse_plane_from_points_impl",
     "aliases": [
-      "sub_100266FE",
       "?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z",
       "?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
     ],
@@ -18077,7 +17455,6 @@
     "address": "0x100267ee",
     "name": "d3dx_sse_matrix_shadow_impl",
     "aliases": [
-      "sub_100267EE",
       "?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z",
       "?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
     ],
@@ -18098,7 +17475,6 @@
     "address": "0x1002697e",
     "name": "d3dx_sse_matrix_reflect_impl",
     "aliases": [
-      "sub_1002697E",
       "?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z",
       "?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
     ],
@@ -18109,7 +17485,6 @@
     "address": "0x10026a50",
     "name": "d3dx_sse_quaternion_multiply",
     "aliases": [
-      "sub_10026A50",
       "?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18119,7 +17494,6 @@
     "address": "0x10026ae0",
     "name": "d3dx_sse_quaternion_normalize",
     "aliases": [
-      "sub_10026AE0",
       "?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18139,7 +17513,6 @@
     "address": "0x10026b8e",
     "name": "d3dx_sse_quaternion_inverse_impl",
     "aliases": [
-      "sub_10026B8E",
       "?sse_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z",
       "?sse2_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
@@ -18150,7 +17523,6 @@
     "address": "0x10026bf0",
     "name": "d3dx_sse_quaternion_rotation_matrix",
     "aliases": [
-      "sub_10026BF0",
       "?sse_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18170,7 +17542,6 @@
     "address": "0x10026d1e",
     "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll_impl",
     "aliases": [
-      "sub_10026D1E",
       "?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z",
       "?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
     ],
@@ -18192,7 +17563,6 @@
     "address": "0x10026dee",
     "name": "d3dx_sse_vec3_transform_normal_impl",
     "aliases": [
-      "sub_10026DEE",
       "?sse_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
       "?sse2_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
@@ -18214,7 +17584,6 @@
     "address": "0x10026eae",
     "name": "d3dx_sse_vec3_transform_impl",
     "aliases": [
-      "sub_10026EAE",
       "?sse_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z",
       "?sse2_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
     ],
@@ -18236,7 +17605,6 @@
     "address": "0x10026f6e",
     "name": "d3dx_sse_vec3_transform_coord_impl",
     "aliases": [
-      "sub_10026F6E",
       "?sse_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
       "?sse2_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
@@ -18258,7 +17626,6 @@
     "address": "0x1002706e",
     "name": "d3dx_sse_vec4_transform_impl",
     "aliases": [
-      "sub_1002706E",
       "?sse_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
       "?sse2_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
@@ -18279,7 +17646,6 @@
     "address": "0x1002712e",
     "name": "d3dx_sse2_vec3_normalize_impl",
     "aliases": [
-      "sub_1002712E",
       "?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z",
       "?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
     ],
@@ -18300,7 +17666,6 @@
     "address": "0x100271fe",
     "name": "d3dx_sse2_plane_normalize_impl",
     "aliases": [
-      "sub_100271FE",
       "?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z",
       "?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
     ],
@@ -18322,7 +17687,6 @@
     "address": "0x100272de",
     "name": "d3dx_sse2_matrix_inverse_impl",
     "aliases": [
-      "sub_100272DE",
       "?sse_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z",
       "?sse2_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
     ],
@@ -18344,7 +17708,6 @@
     "address": "0x1002759e",
     "name": "d3dx_sse2_matrix_multiply_transpose_impl",
     "aliases": [
-      "sub_1002759E",
       "?sse_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
       "?sse2_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
@@ -18365,7 +17728,6 @@
     "address": "0x100276fe",
     "name": "d3dx_sse2_vec4_cross_impl",
     "aliases": [
-      "sub_100276FE",
       "?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z",
       "?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
     ],
@@ -18386,7 +17748,6 @@
     "address": "0x100277ae",
     "name": "d3dx_sse2_matrix_rotation_x_impl",
     "aliases": [
-      "sub_100277AE",
       "?sse_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z",
       "?sse2_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
@@ -18407,7 +17768,6 @@
     "address": "0x1002782e",
     "name": "d3dx_sse2_matrix_rotation_y_impl",
     "aliases": [
-      "sub_1002782E",
       "?sse_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z",
       "?sse2_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
@@ -18429,7 +17789,6 @@
     "address": "0x100278be",
     "name": "d3dx_sse2_matrix_determinant_impl",
     "aliases": [
-      "sub_100278BE",
       "?sse_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z",
       "?sse2_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z"
     ],
@@ -18450,7 +17809,6 @@
     "address": "0x1002798e",
     "name": "d3dx_sse2_plane_from_points_impl",
     "aliases": [
-      "sub_1002798E",
       "?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z",
       "?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
     ],
@@ -18471,7 +17829,6 @@
     "address": "0x10027a7e",
     "name": "d3dx_sse2_matrix_shadow_impl",
     "aliases": [
-      "sub_10027A7E",
       "?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z",
       "?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
     ],
@@ -18492,7 +17849,6 @@
     "address": "0x10027c0e",
     "name": "d3dx_sse2_matrix_reflect_impl",
     "aliases": [
-      "sub_10027C0E",
       "?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z",
       "?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
     ],
@@ -18503,7 +17859,6 @@
     "address": "0x10027ce0",
     "name": "d3dx_sse2_quaternion_rotation_matrix",
     "aliases": [
-      "sub_10027CE0",
       "?sse2_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -18523,7 +17878,6 @@
     "address": "0x10027e0e",
     "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll_impl",
     "aliases": [
-      "sub_10027E0E",
       "?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z",
       "?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
     ],
@@ -18534,7 +17888,6 @@
     "address": "0x10034900",
     "name": "d3dx_sse_sin_cos4",
     "aliases": [
-      "sub_10034900",
       "?sse_SinCos4@@YAXQBMQAM1@Z"
     ],
     "comment": "DirectX 8.1 SSE trigonometric helper identified by decorated relocations in the pinned optimized math archive members."
@@ -18544,7 +17897,6 @@
     "address": "0x10034af0",
     "name": "d3dx_sse2_sincos",
     "aliases": [
-      "sub_10034AF0",
       "?sse2_sincos@@YG_K_K@Z"
     ],
     "comment": "DirectX 8.1 SSE2 trigonometric helper identified by decorated relocations in the pinned optimized math archive members."
@@ -18554,7 +17906,6 @@
     "address": "0x10034be0",
     "name": "d3dx_sse2_sin_cos4",
     "aliases": [
-      "sub_10034BE0",
       "?sse2_SinCos4@@YAXQBMQAM1@Z"
     ],
     "comment": "DirectX 8.1 SSE2 four-lane trigonometric helper identified by decorated relocations in the pinned optimized math archive members."
@@ -18564,7 +17915,6 @@
     "address": "0x1001c82f",
     "name": "d3dx_jpeg_get_soi",
     "aliases": [
-      "sub_1001C82F",
       "?get_soi@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18574,7 +17924,6 @@
     "address": "0x1001c8bd",
     "name": "d3dx_jpeg_get_sof",
     "aliases": [
-      "sub_1001C8BD",
       "?get_sof@D3DX@@YAEPAUjpeg_decompress_struct@1@EE@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18584,7 +17933,6 @@
     "address": "0x1001cbb8",
     "name": "d3dx_jpeg_get_sos",
     "aliases": [
-      "sub_1001CBB8",
       "?get_sos@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18594,7 +17942,6 @@
     "address": "0x1001ce6a",
     "name": "d3dx_jpeg_get_app0",
     "aliases": [
-      "sub_1001CE6A",
       "?get_app0@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18604,7 +17951,6 @@
     "address": "0x1001d0a6",
     "name": "d3dx_jpeg_get_app14",
     "aliases": [
-      "sub_1001D0A6",
       "?get_app14@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18614,7 +17960,6 @@
     "address": "0x1001d220",
     "name": "d3dx_jpeg_get_dac",
     "aliases": [
-      "sub_1001D220",
       "?get_dac@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18624,7 +17969,6 @@
     "address": "0x1001d377",
     "name": "d3dx_jpeg_get_dht",
     "aliases": [
-      "sub_1001D377",
       "?get_dht@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18634,7 +17978,6 @@
     "address": "0x1001d60b",
     "name": "d3dx_jpeg_get_dqt",
     "aliases": [
-      "sub_1001D60B",
       "?get_dqt@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18644,7 +17987,6 @@
     "address": "0x1001d834",
     "name": "d3dx_jpeg_get_dri",
     "aliases": [
-      "sub_1001D834",
       "?get_dri@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18654,7 +17996,6 @@
     "address": "0x1001d90b",
     "name": "d3dx_jpeg_skip_variable",
     "aliases": [
-      "sub_1001D90B",
       "?skip_variable@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18664,7 +18005,6 @@
     "address": "0x1001d9a7",
     "name": "d3dx_jpeg_next_marker",
     "aliases": [
-      "sub_1001D9A7",
       "?next_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18674,7 +18014,6 @@
     "address": "0x1001da7e",
     "name": "d3dx_jpeg_first_marker",
     "aliases": [
-      "sub_1001DA7E",
       "?first_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18684,7 +18023,6 @@
     "address": "0x1001db15",
     "name": "d3dx_jpeg_read_markers",
     "aliases": [
-      "sub_1001DB15",
       "?read_markers@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18694,7 +18032,6 @@
     "address": "0x1001dd02",
     "name": "d3dx_jpeg_read_restart_marker",
     "aliases": [
-      "sub_1001DD02",
       "?read_restart_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18704,7 +18041,6 @@
     "address": "0x1001dd80",
     "name": "d3dx_jpeg_resync_to_restart",
     "aliases": [
-      "sub_1001DD80",
       "?jpeg_resync_to_restart@D3DX@@YAEPAUjpeg_decompress_struct@1@H@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18714,7 +18050,6 @@
     "address": "0x1001de99",
     "name": "d3dx_jpeg_init_marker_reader",
     "aliases": [
-      "sub_1001DE99",
       "?jinit_marker_reader@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
     ],
     "comment": "Exact DirectX 8.1 IJG 6a marker-reader implementation selected from the pinned jdmarker.obj archive member."
@@ -18724,7 +18059,6 @@
     "address": "0x1000b2fd",
     "name": "d3dx_lock_surface_scalar_deleting_dtor",
     "aliases": [
-      "sub_1000B2FD",
       "??_ECD3DXLockSurface@@QAEPAXI@Z"
     ],
     "signature": "void * d3dx_lock_surface_scalar_deleting_dtor(void *this, unsigned int flags)",
