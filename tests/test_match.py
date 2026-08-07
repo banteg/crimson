@@ -47,6 +47,7 @@ from crimson.match import (
     _coff_vc6_unwind_only_key,
     _exception_summary,
     _image_vc6_unwind_only_key,
+    _import_thunk_object_bytes,
     _local_switch_partition_key,
     _region_hints,
     _scratch_build_key,
@@ -656,6 +657,30 @@ def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
     assert config.archive == "provider.lib"
     assert config.archive_member == r"obj\i386\foo.obj"
     assert config.archive_sha256 == "a" * 64
+
+
+def test_scratch_config_parses_structural_import_thunk(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=sprintf IMPORT_THUNK=sprintf\n",
+        encoding="utf-8",
+    )
+
+    config = load_scratch_config(tmp_path)
+
+    assert config.import_thunk == "sprintf"
+    assert config.compiler == "linker-import"
+    assert config.cflags == ""
+    assert config.source == ""
+
+
+def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=sprintf IMPORT_THUNK=sprintf SOURCE=scratch.cpp\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="cannot combine IMPORT_THUNK and SOURCE"):
+        load_scratch_config(tmp_path)
 
 
 @pytest.mark.parametrize(
@@ -3077,6 +3102,61 @@ def test_compile_scratch_extracts_hash_pinned_archive_member(tmp_path: Path) -> 
         compile_scratch(replace(config, archive_sha256="0" * 64), match_root)
     with pytest.raises(ValueError, match="expected exactly one archive member"):
         compile_scratch(replace(config, archive_member="missing.obj"), match_root)
+
+
+def test_compile_scratch_materializes_structural_import_thunk(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "sprintf"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=sprintf IMPORT_THUNK=sprintf\n",
+        encoding="utf-8",
+    )
+    config = load_scratch_config(scratch)
+
+    obj_path = compile_scratch(config, match_root)
+    function = extract_object_function(parse_coff_object(obj_path.read_bytes()))
+
+    assert function.data == bytes.fromhex("ff2500000000")
+    assert function.relocation_offsets == frozenset({2})
+    assert function.relocation_references[0].symbol_name == "__imp_sprintf"
+    assert _scratch_build_key(config, match_root)["import_thunk"] == "sprintf"
+
+
+def test_structural_import_thunk_audits_exact_iat_target() -> None:
+    iat_address = 0x00402000
+    target = bytes.fromhex("ff25") + struct.pack("<I", iat_address)
+    mapped = bytearray(0x3000)
+    mapped[: len(target)] = target
+    image = LoadedImage(bytes(mapped), 0x00400000, len(mapped))
+    catalog = ReferenceCatalog(
+        {iat_address: ("sprintf",)},
+        {"sprintf": (iat_address,)},
+        frozenset({iat_address}),
+    )
+    candidate = extract_object_function(
+        parse_coff_object(_import_thunk_object_bytes("sprintf")),
+    )
+
+    result = match_function(
+        target,
+        candidate,
+        image=image,
+        target_va=0x00400000,
+        reference_catalog=catalog,
+    )
+    wrong = match_function(
+        bytes.fromhex("ff25") + struct.pack("<I", iat_address + 4),
+        candidate,
+        image=image,
+        target_va=0x00400000,
+        reference_catalog=catalog,
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+    assert not wrong.exact
+    assert wrong.masked_operand_audit.mismatch_count == 1
 
 
 def test_compile_scratch_suggests_member_defining_missing_symbol(tmp_path: Path) -> None:

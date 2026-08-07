@@ -2880,6 +2880,7 @@ SCRATCH_CONFIG_KEYS = frozenset(
         "END",
         "FUNCTION",
         "IMAGE",
+        "IMPORT_THUNK",
         "NOTE",
         "RECOVERY",
         "REFERENCE_ALIASES",
@@ -2907,6 +2908,7 @@ class ScratchConfig:
     archive: str | None = None
     archive_member: str | None = None
     archive_sha256: str | None = None
+    import_thunk: str | None = None
     auto_inline_off: tuple[str, ...] = ()
 
 
@@ -3104,6 +3106,28 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
     archive = values.get("ARCHIVE")
     archive_member = values.get("ARCHIVE_MEMBER")
     archive_sha256 = values.get("ARCHIVE_SHA256")
+    import_thunk = values.get("IMPORT_THUNK")
+    if import_thunk is not None:
+        unexpected = sorted(
+            key
+            for key in (
+                "ARCHIVE",
+                "ARCHIVE_MEMBER",
+                "ARCHIVE_SHA256",
+                "AUTO_INLINE_OFF",
+                "CFLAGS",
+                "COMPILER",
+                "REFERENCE_ALIASES",
+                "SOURCE",
+                "SYMBOL",
+            )
+            if key in values
+        )
+        if unexpected:
+            joined = ", ".join(unexpected)
+            raise ValueError(f"{directory}/scratch.conf cannot combine IMPORT_THUNK and {joined}")
+        if "\x00" in import_thunk or re.search(r"\s", import_thunk):
+            raise ValueError(f"{directory}/scratch.conf IMPORT_THUNK must be one import symbol")
     if archive is None:
         unexpected = sorted(
             key
@@ -3135,9 +3159,9 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         directory=directory,
         function=values["FUNCTION"],
         image=values.get("IMAGE", DEFAULT_SCRATCH_IMAGE),
-        compiler=values.get("COMPILER", DEFAULT_SCRATCH_COMPILER),
-        cflags=values.get("CFLAGS", DEFAULT_SCRATCH_CFLAGS),
-        source=values.get("SOURCE", "scratch.cpp") if archive is None else "",
+        compiler=("linker-import" if import_thunk is not None else values.get("COMPILER", DEFAULT_SCRATCH_COMPILER)),
+        cflags=("" if import_thunk is not None else values.get("CFLAGS", DEFAULT_SCRATCH_CFLAGS)),
+        source=(values.get("SOURCE", "scratch.cpp") if archive is None and import_thunk is None else ""),
         end_va=int(values["END"], 0) if "END" in values else None,
         symbol=values.get("SYMBOL"),
         note=values.get("NOTE", ""),
@@ -3147,6 +3171,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         archive=archive,
         archive_member=archive_member,
         archive_sha256=archive_sha256.lower() if archive_sha256 is not None else None,
+        import_thunk=import_thunk,
         auto_inline_off=auto_inline_off,
     )
 
@@ -3328,7 +3353,7 @@ def _scratch_include_headers(
     *,
     resolver: _ScratchIncludeResolver | None = None,
 ) -> tuple[Path, ...]:
-    if config.archive is not None:
+    if config.archive is not None or config.import_thunk is not None:
         return ()
     resolver = resolver or _ScratchIncludeResolver(match_root)
     source = config.directory / config.source
@@ -3376,6 +3401,11 @@ def _scratch_build_dependencies(
     *,
     include_resolver: _ScratchIncludeResolver | None = None,
 ) -> tuple[Path, ...]:
+    if config.import_thunk is not None:
+        return (
+            config.directory / "scratch.conf",
+            default_functions_path(config.image).with_name("imports.json"),
+        )
     if config.archive is not None:
         return (
             _scratch_archive_path(config),
@@ -3397,6 +3427,17 @@ def _scratch_build_key(
     include_resolver: _ScratchIncludeResolver | None = None,
 ) -> dict[str, Any]:
     dependencies = _scratch_build_dependencies(config, match_root, include_resolver=include_resolver)
+    if config.import_thunk is not None:
+        return {
+            "import_thunk": config.import_thunk,
+            "dependencies": [
+                [
+                    str(path.relative_to(match_root) if path.is_relative_to(match_root) else path),
+                    _mtime_ns(path),
+                ]
+                for path in dependencies
+            ],
+        }
     if config.archive is not None:
         return {
             "archive": config.archive,
@@ -3423,7 +3464,14 @@ def _scratch_build_key(
 
 
 def _scratch_profile_digest(config: ScratchConfig) -> str:
-    if config.archive is not None:
+    if config.import_thunk is not None:
+        payload = {
+            "import_thunk": config.import_thunk,
+            "image": config.image,
+            "function": config.function,
+            "end_va": config.end_va,
+        }
+    elif config.archive is not None:
         payload = {
             "archive": config.archive,
             "archive_member": config.archive_member,
@@ -3449,7 +3497,13 @@ def _scratch_profile_digest(config: ScratchConfig) -> str:
 
 
 def _scratch_build_directory(config: ScratchConfig) -> Path:
-    profile = "archive" if config.archive is not None else config.compiler
+    profile = (
+        "import"
+        if config.import_thunk is not None
+        else "archive"
+        if config.archive is not None
+        else config.compiler
+    )
     return config.directory / "build" / profile / _scratch_profile_digest(config)
 
 
@@ -3550,7 +3604,56 @@ def _archive_scratch_object_bytes(config: ScratchConfig) -> bytes:
     return obj_data
 
 
+def _import_thunk_object_bytes(import_name: str) -> bytes:
+    """Materialize the canonical x86 linker thunk for one imported symbol."""
+
+    symbol_name = f"__imp_{import_name}"
+    encoded_name = symbol_name.encode("latin1")
+    if not encoded_name or b"\x00" in encoded_name:
+        raise ValueError("import thunk symbol must be non-empty and NUL-free")
+
+    header_size = 20
+    section_header_size = 40
+    code = bytes.fromhex("ff2500000000")
+    code_offset = header_size + section_header_size
+    relocation_offset = code_offset + len(code)
+    symtab_offset = relocation_offset + 10
+    symbol_count = 2
+    header = struct.pack(
+        "<HHIIIHH",
+        IMAGE_FILE_MACHINE_I386,
+        1,
+        0,
+        symtab_offset,
+        symbol_count,
+        0,
+        0,
+    )
+    section = struct.pack(
+        "<8sIIIIIIHHI",
+        b".text",
+        0,
+        0,
+        len(code),
+        code_offset,
+        relocation_offset,
+        0,
+        1,
+        0,
+        0x60000020,
+    )
+    relocation = struct.pack("<IIH", 2, 1, 0x0006)
+    function_symbol = struct.pack("<8sIhHBB", b"_thunk", 0, 1, SYM_TYPE_FUNCTION, 2, 0)
+    import_symbol = struct.pack("<IIIhHBB", 0, 4, 0, 0, 0, 2, 0)
+    string_table = struct.pack("<I", 5 + len(encoded_name)) + encoded_name + b"\x00"
+    return header + section + code + relocation + function_symbol + import_symbol + string_table
+
+
 def validate_scratch_config(config: ScratchConfig) -> None:
+    if config.import_thunk is not None:
+        obj = parse_coff_object(_import_thunk_object_bytes(config.import_thunk))
+        extract_object_function(obj)
+        return
     if config.archive is not None:
         _archive_scratch_object_bytes(config)
         return
@@ -3597,6 +3700,22 @@ def compile_scratch(
     import tempfile
 
     match_root = match_root.resolve()
+    if config.import_thunk is not None:
+        build_dir = _scratch_build_directory(config)
+        obj_path = build_dir / "import-thunk.obj"
+        if not force and _scratch_object_is_current(
+            obj_path,
+            config,
+            match_root,
+            include_resolver=include_resolver,
+        ):
+            return obj_path
+        _write_bytes_atomic(obj_path, _import_thunk_object_bytes(config.import_thunk))
+        _write_text_atomic(
+            build_dir / "scratch-build.json",
+            json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
+        )
+        return obj_path
     if config.archive is not None:
         build_dir = _scratch_build_directory(config)
         member_name = Path((config.archive_member or "candidate.obj").replace("\\", "/")).name
@@ -3758,8 +3877,8 @@ def evaluate_source_probe(
 ) -> ProbeResult:
     """Compare a temporary source overlay without modifying the scratch."""
 
-    if config.archive is not None:
-        raise ValueError("source probes are unavailable for archive-backed scratches")
+    if config.archive is not None or config.import_thunk is not None:
+        raise ValueError("source probes are unavailable for non-source scratches")
     match_root = match_root.resolve()
     baseline_config = replace(
         config,
@@ -3790,8 +3909,8 @@ def evaluate_source_overlay(
 
     import tempfile
 
-    if config.archive is not None:
-        raise ValueError("source overlays are unavailable for archive-backed scratches")
+    if config.archive is not None or config.import_thunk is not None:
+        raise ValueError("source overlays are unavailable for non-source scratches")
     match_root = match_root.resolve()
     source_name = Path(config.source).name
     with tempfile.TemporaryDirectory(prefix=f"crimson-match-probe-{config.directory.name}-") as temp_name:
@@ -3831,8 +3950,8 @@ def evaluate_profile_matrix(
     cflags: tuple[str, ...],
     match_root: Path = DEFAULT_MATCH_ROOT,
 ) -> list[ScratchStatus]:
-    if config.archive is not None:
-        raise ValueError("compiler profiles are unavailable for archive-backed scratches")
+    if config.archive is not None or config.import_thunk is not None:
+        raise ValueError("compiler profiles are unavailable for non-source scratches")
     profiles = [
         replace(config, compiler=compiler, cflags=profile_cflags)
         for compiler in dict.fromkeys(compilers)
@@ -4141,6 +4260,7 @@ def _scratch_cache_key(
             "function": config.function,
             "end_va": config.end_va,
             "symbol": config.symbol,
+            "import_thunk": config.import_thunk,
             "reference_aliases": [list(alias) for alias in config.reference_aliases],
         },
         "image_mtime": _mtime_ns(image_path),
@@ -5084,6 +5204,7 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
         "archive": status.config.archive,
         "archive_member": status.config.archive_member,
         "archive_sha256": status.config.archive_sha256,
+        "import_thunk": status.config.import_thunk,
         "scratch": str(status.config.directory),
         "recovery": scratch_recovery(status),
         "residuals": list(status.config.residuals),
@@ -5391,11 +5512,12 @@ def render_status_rows(
             if status.ratio is not None
             else "-"
         )
-        build = (
-            f"archive:{status.config.archive_member}"
-            if status.config.archive is not None
-            else f"{status.config.compiler} {status.config.cflags}"
-        )
+        if status.config.import_thunk is not None:
+            build = f"import:{status.config.import_thunk}"
+        elif status.config.archive is not None:
+            build = f"archive:{status.config.archive_member}"
+        else:
+            build = f"{status.config.compiler} {status.config.cflags}"
         rows.append(
             (
                 status.state,
