@@ -1,5 +1,5 @@
 {
-  "audit_digest": "c368b282ad5c41c815244ed602b39a4db669d1108769aad76a9ae502bec2bb0f",
+  "audit_digest": "d1d389059559a5bc04715407ff9d5ad04bc13bcd04e8744af2b5efd4b24d58b0",
   "entries": [
     {
       "address": 4211888,
@@ -36414,6 +36414,72 @@
       "type": "char[64]"
     },
     {
+      "address": 5087552,
+      "aliases": [
+        "?fvecf0pt5@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"
+      ],
+      "alignment": 16,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj: 16-byte-aligned SSE vector storage used by aligned SIMD loads",
+      "comment": "VC6 object-local SSE reciprocal-square-root half vector from the pinned DirectX 8.1 d3dxmathsse.obj member.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image bytes at VA 0x004da140",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse_rsqrt_half_vector",
+      "section": ".data",
+      "section_offset": 430400,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 16,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: float[4] object-local rsqrt_nr constant symbol",
+      "type": "float[4]"
+    },
+    {
+      "address": 5087568,
+      "aliases": [
+        "?fvecf3pt0@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"
+      ],
+      "alignment": 16,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj: 16-byte-aligned SSE vector storage used by aligned SIMD loads",
+      "comment": "VC6 object-local SSE reciprocal-square-root three vector from the pinned DirectX 8.1 d3dxmathsse.obj member.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image bytes at VA 0x004da150",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse_rsqrt_three_vector",
+      "section": ".data",
+      "section_offset": 430416,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 16,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: float[4] object-local rsqrt_nr constant symbol",
+      "type": "float[4]"
+    },
+    {
+      "address": 5087584,
+      "aliases": [
+        "??_B?1??rsqrt_nr@@YA?AVF32vec1@@ABV1@@Z@51"
+      ],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "VC6 guard byte for the object-local SSE reciprocal-square-root constants.",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image byte at VA 0x004da160",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "d3dx_sse_rsqrt_init_guard",
+      "section": ".data",
+      "section_offset": 430432,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 1,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: VC6 static-initialization guard symbol; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "type": "char"
+    },
+    {
       "address": 5087588,
       "aliases": [
         "___mbcodepage"
@@ -37151,9 +37217,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "154e028e3c783b98e69c4165ab99c2959e0294443756b8a41c36d56429a1ed46",
+    "data_map_sha256": "c6e12c661ec5357c22e1bbe91bfc24383306a44b0a5720cb2bfb5b8c8811f111",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "949bc4abadbe12c9f3262798b2ba4b6fd294f8c790b7efda4781f5591ea8663b",
+    "definitions_sha256": "814249e50bd2ad747795f23ecae327e13583cd967a610eb1f2841ff92a953d49",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -37162,17 +37228,17 @@
     "segments_sha256": "65e2a4e6a7d63516ac68264a83f3d001d2476b750d982afe1fbc72d25eae9b44"
   },
   "summary": {
-    "alias_names": 234,
-    "alias_rows": 233,
+    "alias_names": 237,
+    "alias_rows": 236,
     "code_label_entries": 54,
     "definition_group_entries": 1656,
     "definition_groups": 174,
-    "entry_count": 1760,
-    "explicit_alignment_entries": 1760,
-    "explicit_initializer_entries": 1760,
-    "explicit_size_entries": 1760,
-    "fixed_array_types": 359,
-    "fully_specified_entries": 1760,
+    "entry_count": 1763,
+    "explicit_alignment_entries": 1763,
+    "explicit_initializer_entries": 1763,
+    "explicit_size_entries": 1763,
+    "fixed_array_types": 361,
+    "fully_specified_entries": 1763,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 5,
@@ -37180,14 +37246,14 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 1708,
+      ".data": 1711,
       ".data1": 6,
       ".rdata": 45,
       ".text": 1
     },
-    "source_entry_count": 1814,
-    "typed_entries": 1760,
-    "unique_addresses": 1756,
+    "source_entry_count": 1817,
+    "typed_entries": 1763,
+    "unique_addresses": 1759,
     "untyped_entries": 0
   }
 }

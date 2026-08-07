@@ -5171,6 +5171,36 @@
       "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image bytes at VA 0x004d9940"
     },
     {
+      "address": "0x004da140",
+      "name": "d3dx_sse_rsqrt_half_vector",
+      "size": 16,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: float[4] object-local rsqrt_nr constant symbol",
+      "alignment": 16,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj: 16-byte-aligned SSE vector storage used by aligned SIMD loads",
+      "initializer_fill": "00",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image bytes at VA 0x004da140"
+    },
+    {
+      "address": "0x004da150",
+      "name": "d3dx_sse_rsqrt_three_vector",
+      "size": 16,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: float[4] object-local rsqrt_nr constant symbol",
+      "alignment": 16,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj: 16-byte-aligned SSE vector storage used by aligned SIMD loads",
+      "initializer_fill": "00",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image bytes at VA 0x004da150"
+    },
+    {
+      "address": "0x004da160",
+      "name": "d3dx_sse_rsqrt_init_guard",
+      "size": 1,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: VC6 static-initialization guard symbol; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image byte at VA 0x004da160"
+    },
+    {
       "address": "0x004dc000",
       "name": "d3dx_sse_math_vectors",
       "size": 224,

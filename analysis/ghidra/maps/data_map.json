@@ -12910,6 +12910,36 @@
       "type": "char[64]"
     },
     {
+      "address": "0x004da140",
+      "aliases": [
+        "?fvecf0pt5@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"
+      ],
+      "comment": "VC6 object-local SSE reciprocal-square-root half vector from the pinned DirectX 8.1 d3dxmathsse.obj member.",
+      "name": "d3dx_sse_rsqrt_half_vector",
+      "program": "crimsonland.exe",
+      "type": "float[4]"
+    },
+    {
+      "address": "0x004da150",
+      "aliases": [
+        "?fvecf3pt0@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"
+      ],
+      "comment": "VC6 object-local SSE reciprocal-square-root three vector from the pinned DirectX 8.1 d3dxmathsse.obj member.",
+      "name": "d3dx_sse_rsqrt_three_vector",
+      "program": "crimsonland.exe",
+      "type": "float[4]"
+    },
+    {
+      "address": "0x004da160",
+      "aliases": [
+        "??_B?1??rsqrt_nr@@YA?AVF32vec1@@ABV1@@Z@51"
+      ],
+      "comment": "VC6 guard byte for the object-local SSE reciprocal-square-root constants.",
+      "name": "d3dx_sse_rsqrt_init_guard",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004da164",
       "aliases": [
         "___mbcodepage"
