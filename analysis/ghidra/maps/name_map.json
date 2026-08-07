@@ -14933,6 +14933,34 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002e04a",
+    "name": "x3d_vec4_cross",
+    "aliases": ["sub_1002E04A", "?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector cross product."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e17c",
+    "name": "x3d_vec4_barycentric",
+    "aliases": ["sub_1002E17C", "?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector barycentric interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e1ed",
+    "name": "x3d_vec4_hermite",
+    "aliases": ["sub_1002E1ED", "?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector Hermite interpolation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e2b5",
+    "name": "x3d_vec4_catmull_rom",
+    "aliases": ["sub_1002E2B5", "?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d four-dimensional vector Catmull-Rom interpolation."
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002966c",
     "name": "x3d_matrix_determinant",
     "aliases": ["sub_1002966C", "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"],
@@ -15091,6 +15119,13 @@
     "name": "x3d_plane_normalize",
     "aliases": ["sub_1002E578", "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"],
     "comment": "DirectX 8.1 debug x3d plane normalization helper selected by exact archive relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e5dc",
+    "name": "x3d_plane_transform",
+    "aliases": ["sub_1002E5DC", "?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d plane transform."
   },
   {
     "program": "grim.dll",
