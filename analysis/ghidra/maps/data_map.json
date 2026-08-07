@@ -2297,6 +2297,383 @@
       "type": "char[6]"
     },
     {
+      "address": "0x0047b018",
+      "aliases": [
+        "ones"
+      ],
+      "comment": "Exact packed one constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_ones",
+      "program": "crimsonland.exe",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x0047b060",
+      "aliases": [
+        "pio4ht"
+      ],
+      "comment": "Exact packed pi-over-four head/tail constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_pi_over_4_head_tail",
+      "program": "crimsonland.exe",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x0047b068",
+      "aliases": [
+        "mo56_42"
+      ],
+      "comment": "Exact packed sine coefficients 56 and 42 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_coeff_56_42",
+      "program": "crimsonland.exe",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x0047b070",
+      "aliases": [
+        "pio4s"
+      ],
+      "comment": "Exact packed pi-over-four constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_pi_over_4_pair",
+      "program": "crimsonland.exe",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x0047b078",
+      "aliases": [
+        "mo30_20"
+      ],
+      "comment": "Exact packed sine coefficients 30 and 20 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_coeff_30_20",
+      "program": "crimsonland.exe",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x0047b080",
+      "aliases": [
+        "mo12_6"
+      ],
+      "comment": "Exact packed sine coefficients 12 and 6 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_coeff_12_6",
+      "program": "crimsonland.exe",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x0047b088",
+      "aliases": [
+        "mo2s"
+      ],
+      "comment": "Exact packed negative-half constants from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_negative_halves",
+      "program": "crimsonland.exe",
+      "type": "uint64_t"
+    },
+    {
+      "address": "0x0047b098",
+      "aliases": [
+        "sgn"
+      ],
+      "comment": "Exact floating-point sign mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sign",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b09c",
+      "aliases": [
+        "mabs"
+      ],
+      "comment": "Exact floating-point absolute-value mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_abs_mask",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0a0",
+      "aliases": [
+        "mant"
+      ],
+      "comment": "Exact floating-point mantissa mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_mantissa_mask",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0a4",
+      "aliases": [
+        "expo"
+      ],
+      "comment": "Exact floating-point exponent mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_exponent_mask",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0a8",
+      "aliases": [
+        "one"
+      ],
+      "comment": "Exact single-precision one constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_one",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0ac",
+      "comment": "Exact single-precision half constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_half",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0b4",
+      "aliases": [
+        "oob"
+      ],
+      "comment": "Exact out-of-bounds sentinel from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_out_of_bounds",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0c8",
+      "aliases": [
+        "qq0"
+      ],
+      "comment": "Exact atan denominator coefficient q0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_q0",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0cc",
+      "aliases": [
+        "qq1"
+      ],
+      "comment": "Exact atan denominator coefficient q1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_q1",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0d0",
+      "aliases": [
+        "qq2"
+      ],
+      "comment": "Exact atan denominator coefficient q2 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_q2",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0d4",
+      "aliases": [
+        "pp0"
+      ],
+      "comment": "Exact atan numerator coefficient p0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_p0",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0d8",
+      "aliases": [
+        "pp1"
+      ],
+      "comment": "Exact atan numerator coefficient p1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_p1",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0dc",
+      "aliases": [
+        "pp2"
+      ],
+      "comment": "Exact atan numerator coefficient p2 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_atan_p2",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0e0",
+      "aliases": [
+        "bnd"
+      ],
+      "comment": "Exact acos range bound from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_bound",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0e4",
+      "aliases": [
+        "asp0"
+      ],
+      "comment": "Exact acos numerator coefficient p0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_p0",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0e8",
+      "aliases": [
+        "asp1"
+      ],
+      "comment": "Exact acos numerator coefficient p1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_p1",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0ec",
+      "aliases": [
+        "asq0"
+      ],
+      "comment": "Exact acos denominator coefficient q0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_q0",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0f0",
+      "aliases": [
+        "asq1"
+      ],
+      "comment": "Exact acos denominator coefficient q1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_acos_q1",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0f4",
+      "aliases": [
+        "pio2"
+      ],
+      "comment": "Exact positive pi-over-two constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_pi_over_2",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b0f8",
+      "aliases": [
+        "npio2"
+      ],
+      "comment": "Exact negative pi-over-two constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_negative_pi_over_2",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b108",
+      "aliases": [
+        "ln2hi"
+      ],
+      "comment": "Exact high part of ln(2) from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_ln2_high",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b10c",
+      "aliases": [
+        "ln2lo"
+      ],
+      "comment": "Exact low part of ln(2) from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_ln2_low",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b110",
+      "aliases": [
+        "rt2"
+      ],
+      "comment": "Exact square-root-of-two constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_root_two",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b114",
+      "aliases": [
+        "edec"
+      ],
+      "comment": "Exact exponent-decrement mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_exponent_decrement",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b118",
+      "aliases": [
+        "bias"
+      ],
+      "comment": "Exact exponent bias from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_exponent_bias",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b11c",
+      "aliases": [
+        "c2"
+      ],
+      "comment": "Exact logarithm polynomial coefficient c2 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_log_c2",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b120",
+      "aliases": [
+        "c1"
+      ],
+      "comment": "Exact logarithm polynomial coefficient c1 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_log_c1",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b124",
+      "aliases": [
+        "c0"
+      ],
+      "comment": "Exact logarithm polynomial coefficient c0 from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_log_c0",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b12c",
+      "aliases": [
+        "maxn"
+      ],
+      "comment": "Exact maximum normal float mask from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_max_normal",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b150",
+      "aliases": [
+        "fouropi"
+      ],
+      "comment": "Exact four-over-pi constant from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_four_over_pi",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
+      "address": "0x0047b154",
+      "aliases": [
+        "xmax"
+      ],
+      "comment": "Exact sine range limit from the pinned DirectX 8.1 math.obj archive member.",
+      "name": "d3dx_x87_math_sin_max",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
       "address": "0x0047b160",
       "aliases": [
         "__FPinit"

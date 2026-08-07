@@ -47,6 +47,224 @@
       ]
     },
     {
+      "name": "literal-d3dx-x87-packed64",
+      "types": [
+        "uint64_t"
+      ],
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete packed 64-bit constants",
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 math.obj COFF section layout and linked image addresses are eight-byte aligned",
+      "member_initializer_hex": true,
+      "initializer_source": "Pinned DirectX 8.1 archive constants and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped reference bytes at each member VA",
+      "members": [
+        [
+          "0x0047b018",
+          "d3dx_x87_math_ones",
+          "0000803f0000803f"
+        ],
+        [
+          "0x0047b060",
+          "d3dx_x87_math_pi_over_4_head_tail",
+          "000049bf22aa7db9"
+        ],
+        [
+          "0x0047b068",
+          "d3dx_x87_math_sin_coeff_56_42",
+          "254992bc310cc3bc"
+        ],
+        [
+          "0x0047b070",
+          "d3dx_x87_math_pi_over_4_pair",
+          "db0f493fdb0f493f"
+        ],
+        [
+          "0x0047b078",
+          "d3dx_x87_math_sin_coeff_30_20",
+          "898808bdcdcc4cbd"
+        ],
+        [
+          "0x0047b080",
+          "d3dx_x87_math_sin_coeff_12_6",
+          "abaaaabdabaa2abe"
+        ],
+        [
+          "0x0047b088",
+          "d3dx_x87_math_negative_halves",
+          "000000bf000000bf"
+        ]
+      ]
+    },
+    {
+      "name": "literal-d3dx-x87-word32",
+      "types": [
+        "uint32_t"
+      ],
+      "size": 4,
+      "size_source": "Pinned DirectX 8.1 d3dx8.lib math.obj symbols: complete 32-bit scalar constants referenced by the packed math kernels",
+      "alignment": 4,
+      "alignment_source": "Pinned DirectX 8.1 math.obj COFF section layout and linked image addresses are four-byte aligned",
+      "member_initializer_hex": true,
+      "initializer_source": "Pinned DirectX 8.1 archive constants and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped reference bytes at each member VA",
+      "members": [
+        [
+          "0x0047b098",
+          "d3dx_x87_math_sign",
+          "00000080"
+        ],
+        [
+          "0x0047b09c",
+          "d3dx_x87_math_abs_mask",
+          "ffffff7f"
+        ],
+        [
+          "0x0047b0a0",
+          "d3dx_x87_math_mantissa_mask",
+          "ffff7f00"
+        ],
+        [
+          "0x0047b0a4",
+          "d3dx_x87_math_exponent_mask",
+          "0000807f"
+        ],
+        [
+          "0x0047b0a8",
+          "d3dx_x87_math_one",
+          "0000803f"
+        ],
+        [
+          "0x0047b0ac",
+          "d3dx_x87_math_half",
+          "0000003f"
+        ],
+        [
+          "0x0047b0b4",
+          "d3dx_x87_math_out_of_bounds",
+          "00000000"
+        ],
+        [
+          "0x0047b0c8",
+          "d3dx_x87_math_atan_q0",
+          "c8929d41"
+        ],
+        [
+          "0x0047b0cc",
+          "d3dx_x87_math_atan_q1",
+          "60bde641"
+        ],
+        [
+          "0x0047b0d0",
+          "d3dx_x87_math_atan_q2",
+          "c05d3541"
+        ],
+        [
+          "0x0047b0d4",
+          "d3dx_x87_math_atan_p0",
+          "0719d2c0"
+        ],
+        [
+          "0x0047b0d8",
+          "d3dx_x87_math_atan_p1",
+          "8398b5c0"
+        ],
+        [
+          "0x0047b0dc",
+          "d3dx_x87_math_atan_p2",
+          "eac752bf"
+        ],
+        [
+          "0x0047b0e0",
+          "d3dx_x87_math_acos_bound",
+          "3333133f"
+        ],
+        [
+          "0x0047b0e4",
+          "d3dx_x87_math_acos_p0",
+          "a54a6a3f"
+        ],
+        [
+          "0x0047b0e8",
+          "d3dx_x87_math_acos_p1",
+          "2c4c00bf"
+        ],
+        [
+          "0x0047b0ec",
+          "d3dx_x87_math_acos_q0",
+          "29b8af40"
+        ],
+        [
+          "0x0047b0f0",
+          "d3dx_x87_math_acos_q1",
+          "2351afc0"
+        ],
+        [
+          "0x0047b0f4",
+          "d3dx_x87_math_pi_over_2",
+          "db0fc93f"
+        ],
+        [
+          "0x0047b0f8",
+          "d3dx_x87_math_negative_pi_over_2",
+          "db0fc9bf"
+        ],
+        [
+          "0x0047b108",
+          "d3dx_x87_math_ln2_high",
+          "0072313f"
+        ],
+        [
+          "0x0047b10c",
+          "d3dx_x87_math_ln2_low",
+          "8ebebf35"
+        ],
+        [
+          "0x0047b110",
+          "d3dx_x87_math_root_two",
+          "f304b53f"
+        ],
+        [
+          "0x0047b114",
+          "d3dx_x87_math_exponent_decrement",
+          "00008000"
+        ],
+        [
+          "0x0047b118",
+          "d3dx_x87_math_exponent_bias",
+          "7f000000"
+        ],
+        [
+          "0x0047b11c",
+          "d3dx_x87_math_log_c2",
+          "e2ef183e"
+        ],
+        [
+          "0x0047b120",
+          "d3dx_x87_math_log_c1",
+          "6faf4c3e"
+        ],
+        [
+          "0x0047b124",
+          "d3dx_x87_math_log_c0",
+          "bdaaaa3e"
+        ],
+        [
+          "0x0047b12c",
+          "d3dx_x87_math_max_normal",
+          "ffff7fff"
+        ],
+        [
+          "0x0047b150",
+          "d3dx_x87_math_four_over_pi",
+          "83f9a23f"
+        ],
+        [
+          "0x0047b154",
+          "d3dx_x87_math_sin_max",
+          "db0fc946"
+        ]
+      ]
+    },
+    {
       "name": "literal-float32",
       "types": ["float", null],
       "size": 4,
