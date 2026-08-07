@@ -6172,9 +6172,13 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004569d0",
-    "name": "FUN_004569d0",
-    "signature": "int FUN_004569d0(void)",
-    "comment": "[binja] int32_t sub_4569d0()"
+    "name": "d3dx_x3d_get_feature_flags",
+    "signature": "int d3dx_x3d_get_feature_flags(void)",
+    "comment": "[binja] int32_t d3dx_x3d_get_feature_flags()",
+    "aliases": [
+      "?get_feature_flags@@YAIXZ"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -6679,10 +6683,380 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00459536",
+    "name": "x3d_quaternion_to_axis_angle",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004595e9",
+    "name": "x3d_quaternion_rotation_matrix",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459805",
+    "name": "x3d_quaternion_rotation_matrix_k7",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459a1a",
+    "name": "x3d_quaternion_rotation_yaw_pitch_roll",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459adf",
+    "name": "x3d_quaternion_rotation_axis",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459b4b",
+    "name": "x3d_quaternion_slerp",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459c82",
+    "name": "x3d_quaternion_barycentric",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459d0f",
+    "name": "x3d_quaternion_squad",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459da1",
+    "name": "x3d_quaternion_inverse",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459e05",
+    "name": "x3d_quaternion_ln",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459eac",
+    "name": "x3d_quaternion_exp",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00459f51",
+    "name": "x3d_quaternion_squad_setup",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_quat.obj symbol ?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045a9aa",
+    "name": "x3d_matrix_multiply",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045abdc",
+    "name": "x3d_matrix_determinant",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045acab",
+    "name": "x3d_matrix_translation",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045acfb",
+    "name": "x3d_matrix_shadow",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045ade6",
+    "name": "x3d_matrix_reflect",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045aec2",
+    "name": "x3d_matrix_rotation_x",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045af25",
+    "name": "x3d_matrix_rotation_y",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045af83",
+    "name": "x3d_matrix_rotation_z",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045afdc",
+    "name": "x3d_matrix_scaling",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045b023",
+    "name": "x3d_matrix_transpose",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045b092",
+    "name": "x3d_matrix_identity",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045b0cb",
+    "name": "x3d_matrix_rotation_quaternion",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045b19d",
+    "name": "x3d_matrix_rotation_quaternion_k7",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045b252",
+    "name": "x3d_matrix_transformation",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045c3ea",
+    "name": "x3d_matrix_rotation_yaw_pitch_roll",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045c58f",
+    "name": "x3d_matrix_affine_transformation",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045cac3",
+    "name": "x3d_matrix_rotation_axis",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045cbdc",
+    "name": "x3d_matrix_transformation_k7",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045dd30",
+    "name": "x3d_matrix_inverse_k7",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045e012",
+    "name": "x3d_matrix_multiply_transpose",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0045e40a",
     "name": "mat4_invert",
     "signature": "float * mat4_invert(float *out, float *det_out, float *mat)",
     "comment": "inverts a 4x4 matrix; optionally writes determinant"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045e73e",
+    "name": "x3d_matrix_inverse",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_matx.obj symbol ?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045e832",
+    "name": "x3d_vec3_normalize",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec3.obj symbol ?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045e891",
+    "name": "x3d_vec3_barycentric",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec3.obj symbol ?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045e902",
+    "name": "x3d_vec3_hermite",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec3.obj symbol ?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045e9d6",
+    "name": "x3d_vec3_catmull_rom",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec3.obj symbol ?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6711,6 +7085,76 @@
     "name": "vec3_unproject",
     "signature": "float * vec3_unproject(float *out, float *vec, float *viewport, float *world, float *view, float *proj)",
     "comment": "unprojects a screen-space vec3 using inverse matrices and viewport"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045f0c5",
+    "name": "x3d_vec3_unproject_k7",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec3.obj symbol ?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045f5ba",
+    "name": "x3d_vec4_cross",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec4.obj symbol ?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045f6ec",
+    "name": "x3d_vec4_barycentric",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec4.obj symbol ?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045f75d",
+    "name": "x3d_vec4_hermite",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec4.obj symbol ?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045f825",
+    "name": "x3d_vec4_catmull_rom",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_vec4.obj symbol ?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045fae8",
+    "name": "x3d_plane_normalize",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_plane.obj symbol ?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045fb4c",
+    "name": "x3d_plane_transform",
+    "comment": "Exact archive recovery from objd\\i386\\x3d_plane.obj symbol ?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6755,6 +7199,16 @@
     "name": "math_acos_packed",
     "signature": "unsigned __int64 math_acos_packed(void)",
     "comment": "packed acos approximation; input in MM0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004603c0",
+    "name": "x3d_log",
+    "comment": "Exact archive recovery from .\\Release\\math.obj symbol _a_log.",
+    "create": false,
+    "aliases": [
+      "_a_log"
+    ]
   },
   {
     "program": "crimsonland.exe",
