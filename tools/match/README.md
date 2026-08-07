@@ -557,6 +557,11 @@ against function symbols, the per-image IDA import manifest,
 `analysis/ghidra/maps/data_map.json`, exact resolved base-plus-addend addresses,
 and compiler-generated constant contents.
 
+Assembler-local constants are compared by exact operand-width bytes only when
+the COFF symbol is static and lives in a non-writable `.rdata` section. This
+proves archive objects that name private SIMD/MMX constant pools without
+treating mutable data with coincidentally equal initial contents as equivalent.
+
 A scratch is `match` only when its normalized instruction score is 100% and
 all aligned masked references are proven equal. A 100% instruction score with
 unresolved or different references is `audit`, so it is excluded from matched

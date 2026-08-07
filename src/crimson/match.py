@@ -60,6 +60,7 @@ IMAGE_SCN_CNT_CODE = 0x00000020
 IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080
 IMAGE_SCN_LNK_COMDAT = 0x00001000
 IMAGE_SCN_LNK_NRELOC_OVFL = 0x01000000
+IMAGE_SCN_MEM_WRITE = 0x80000000
 IMAGE_REL_I386_REL32 = 0x14
 IMAGE_REL_I386_WIDTHS = {
     0x0000: 0,
@@ -715,6 +716,7 @@ class ObjectRelocationReference:
     explained: bool
     addend: int | None = None
     symbol_data: bytes | None = None
+    read_only_data: bool = False
     local_target_offset: int | None = None
     alternate_keys: tuple[str, ...] = ()
 
@@ -1789,6 +1791,12 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
                     if symbol_section is not None and symbol_end is not None
                     else None
                 ),
+                read_only_data=(
+                    symbol_section is not None
+                    and symbol_section.name.startswith(".rdata")
+                    and symbol.storage_class == IMAGE_SYM_CLASS_STATIC
+                    and symbol_section.characteristics & IMAGE_SCN_MEM_WRITE == 0
+                ),
                 local_target_offset=(
                     symbol.value + addend - target.value
                     if relocation.relocation_type == IMAGE_REL_I386_REL32
@@ -2015,15 +2023,25 @@ def disassemble_normalized_function(
             explained = True
         elif reference.key is not None and reference.key.startswith("compiler:vc6-"):
             pass
-        elif reference_catalog is not None:
-            if reference_catalog.knows_name(reference.symbol_name):
-                keys = reference_catalog.keys_for_object_reference(
-                    reference.symbol_name,
-                    reference.addend or 0,
+        elif reference_catalog is not None and reference_catalog.knows_name(
+            reference.symbol_name,
+        ):
+            keys = reference_catalog.keys_for_object_reference(
+                reference.symbol_name,
+                reference.addend or 0,
+            )
+            explained = True
+        elif reference.read_only_data:
+            data_offset = reference.addend or 0
+            if 0 <= data_offset and data_offset + byte_count <= len(symbol_data):
+                keys = (
+                    f"bytes{byte_count}:{symbol_data[data_offset : data_offset + byte_count].hex()}",
                 )
                 explained = True
             else:
                 explained = False
+        elif reference_catalog is not None:
+            explained = False
         return MaskedReference(
             operand_index=operand_index,
             kind=kind,

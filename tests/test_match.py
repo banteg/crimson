@@ -1301,6 +1301,94 @@ def test_match_function_audits_compiler_float_by_content() -> None:
     assert result.masked_operand_audit.ok_count == 1
 
 
+def test_match_function_audits_read_only_local_data_by_content() -> None:
+    literal = bytes.fromhex("5a825a82")
+    mapped = bytearray(0x10000)
+    mapped[0x2000:0x2004] = literal
+    reference = ObjectRelocationReference(
+        offset=2,
+        symbol_name="_const_mask",
+        key="name:const_mask",
+        explained=True,
+        symbol_data=literal,
+        read_only_data=True,
+    )
+    candidate = ObjectFunction(
+        name="_foo",
+        data=bytes.fromhex("d90500000000c3"),
+        relocation_offsets=frozenset({2}),
+        relocation_references=(reference,),
+    )
+    target = bytes.fromhex("d90500204000c3")
+    image = LoadedImage(mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped))
+
+    result = match_function(
+        target,
+        candidate,
+        image=image,
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({}),
+    )
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+
+    named_candidate = replace(
+        candidate,
+        relocation_references=(replace(reference, symbol_data=b"\x00" * 4),),
+    )
+    named = match_function(
+        target,
+        named_candidate,
+        image=image,
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({0x402000: ("const_mask",)}),
+    )
+    assert named.exact
+    assert named.masked_operand_audit.ok_count == 1
+
+    writable_candidate = replace(
+        candidate,
+        relocation_references=(replace(reference, read_only_data=False),),
+    )
+    unresolved = match_function(
+        target,
+        writable_candidate,
+        image=image,
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({}),
+    )
+    assert not unresolved.exact
+    assert unresolved.masked_operand_audit.unresolved_count == 1
+
+
+def test_extract_object_function_marks_static_rdata_references_read_only() -> None:
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=bytes.fromhex("d90500000000c3"),
+                characteristics=0x20,
+                relocations=(CoffRelocation(2, 1, 6),),
+            ),
+            CoffSection(
+                name=".rdata",
+                data=bytes.fromhex("5a825a82"),
+                characteristics=0x40,
+                relocations=(),
+            ),
+        ),
+        symbols=(
+            CoffSymbol(0, "_foo", 0, 1, 0x20, 2),
+            CoffSymbol(1, "_const_mask", 0, 2, 0, 3),
+        ),
+    )
+
+    function = extract_object_function(obj, "_foo")
+
+    assert function.relocation_references[0].read_only_data
+    assert function.relocation_references[0].symbol_data == bytes.fromhex("5a825a82")
+
+
 def test_match_function_audits_complete_vc6_delete_unwind_graph() -> None:
     image_base = 0x400000
     handler_address = 0x400100
