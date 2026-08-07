@@ -608,6 +608,9 @@ def test_data_map_classifies_instruction_annotations_as_code_labels():
         "game_startup_intro_mute_callsite",
         "game_startup_theme_play_callsite",
         "game_startup_intro_play_callsite",
+        "crt_strstr_to_strchr",
+        "crt_se_translator_return_point",
+        "crt_se_translator_exception_continuation",
     }
 
 

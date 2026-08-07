@@ -1,5 +1,5 @@
 {
-  "audit_digest": "37c6527089227a901a34062d2e6459cd413d183b97d4aae635cc4fa7d55b6db4",
+  "audit_digest": "1c8946f7956019d38d8f9d3cd016dc246cda18304dbb682e6d4dd802f8d64a70",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -164858,7 +164858,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "3c2f7b4a527527af0d708f0f7fedd59f2bd437f3af8fff96dc7140873121a0e9"
+        "sha256": "0ed05b0a806739b81406a8b4d2cd72e24d2c408bc46194114856100fe807e7bf"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",

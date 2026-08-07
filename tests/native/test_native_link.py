@@ -2477,17 +2477,17 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1584
-    assert payload["summary"]["code_label_entries"] == 3
-    assert payload["summary"]["entry_count"] == 1581
-    assert payload["summary"]["typed_entries"] == 1581
+    assert payload["summary"]["source_entry_count"] == 1624
+    assert payload["summary"]["code_label_entries"] == 6
+    assert payload["summary"]["entry_count"] == 1618
+    assert payload["summary"]["typed_entries"] == 1618
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1581
-    assert payload["summary"]["explicit_alignment_entries"] == 1581
-    assert payload["summary"]["explicit_initializer_entries"] == 1581
-    assert payload["summary"]["fully_specified_entries"] == 1581
-    assert payload["summary"]["definition_group_entries"] == 1491
-    assert payload["summary"]["definition_groups"] == 136
+    assert payload["summary"]["explicit_size_entries"] == 1618
+    assert payload["summary"]["explicit_alignment_entries"] == 1618
+    assert payload["summary"]["explicit_initializer_entries"] == 1618
+    assert payload["summary"]["fully_specified_entries"] == 1618
+    assert payload["summary"]["definition_group_entries"] == 1528
+    assert payload["summary"]["definition_groups"] == 140
     assert {
         entry["name"]
         for entry in payload["entries"]
