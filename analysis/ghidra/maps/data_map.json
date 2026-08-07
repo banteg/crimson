@@ -11202,8 +11202,17 @@
     },
     {
       "address": "0x10054398",
+      "aliases": ["_g_fDitherOff"],
       "comment": "Neutral 32-entry dither pattern whose entries are all 0.5.",
       "name": "grim_dither_half_pattern",
+      "program": "grim.dll",
+      "type": "float[32]"
+    },
+    {
+      "address": "0x10054418",
+      "aliases": ["_g_fDitherOn"],
+      "comment": "DirectX 8.1 32-entry ordered dither pattern selected when pixel-format dithering is enabled.",
+      "name": "grim_dither_bayer_pattern",
       "program": "grim.dll",
       "type": "float[32]"
     },

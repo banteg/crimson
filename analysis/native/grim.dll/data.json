@@ -1,5 +1,5 @@
 {
-  "audit_digest": "98b5d36745087b0f96ac07fdbf4d0b1a83c56ab1fb3856183c0a342d1f305c00",
+  "audit_digest": "1d29e372cbb4e0288306d2b14aa6faa224f34dec238ee1264b52bb741a1bc295",
   "entries": [
     {
       "address": 268747320,
@@ -4641,7 +4641,9 @@
     },
     {
       "address": 268780440,
-      "aliases": [],
+      "aliases": [
+        "_g_fDitherOff"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_float_alignment_is_four",
       "comment": "Neutral 32-entry dither pattern whose entries are all 0.5.",
@@ -4657,6 +4659,27 @@
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 128,
       "size_source": "analysis/ghidra/maps/data_map.json: 32-entry neutral dither pattern; tools/native/abi/grim.dll/abi_assertions.cpp: dither_pattern_is_0x80",
+      "type": "float[32]"
+    },
+    {
+      "address": 268780568,
+      "aliases": [
+        "_g_fDitherOn"
+      ],
+      "alignment": null,
+      "alignment_source": null,
+      "comment": "DirectX 8.1 32-entry ordered dither pattern selected when pixel-format dithering is enabled.",
+      "definition_state": "unknown",
+      "initializer_hex": null,
+      "initializer_source": null,
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_dither_bayer_pattern",
+      "section": ".data",
+      "section_offset": 5144,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": null,
+      "size_source": null,
       "type": "float[32]"
     },
     {
@@ -9174,7 +9197,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "346644863a20c52ded720e2ac4b8541ed07e6118ca37e5d9f8a0576cbd93c25c",
+    "data_map_sha256": "adc21a7959cebebb3d1e661082688d2901cc0f669ca3a75c2ccfc151d3e96e37",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55",
     "reference_image": {
@@ -9185,16 +9208,16 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 79,
-    "alias_rows": 74,
+    "alias_names": 81,
+    "alias_rows": 76,
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 386,
+    "entry_count": 387,
     "explicit_alignment_entries": 349,
     "explicit_initializer_entries": 349,
     "explicit_size_entries": 349,
-    "fixed_array_types": 157,
+    "fixed_array_types": 158,
     "fully_specified_entries": 349,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
@@ -9203,13 +9226,13 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 238,
+      ".data": 239,
       ".data1": 6,
       ".rdata": 142
     },
-    "source_entry_count": 389,
-    "typed_entries": 336,
-    "unique_addresses": 386,
+    "source_entry_count": 390,
+    "typed_entries": 337,
+    "unique_addresses": 387,
     "untyped_entries": 50
   }
 }
