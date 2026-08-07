@@ -959,6 +959,11 @@ def cmd_match_naming_audit(
         "--rewrite-placeholder-references",
         help="replace unambiguous analyzer reference targets with canonical map names",
     ),
+    repair_comments: bool = typer.Option(
+        False,
+        "--repair-provider-comments",
+        help="restore exact provider symbols in auto-generated map comments",
+    ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
     summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate naming debt only"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
@@ -974,6 +979,20 @@ def cmd_match_naming_audit(
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
     rows = matchlib.collect_naming_debt(statuses, name_map_path=name_map)
     provider_members = _parse_csv(provider_member)
+    selected_statuses = [
+        status
+        for status in statuses
+        if (image is None or status.config.image == image)
+        and (
+            provider_members is None
+            or status.config.archive_member in provider_members
+            or (
+                status.config.archive_member is not None
+                and status.config.archive_member.replace("\\", "/").rsplit("/", 1)[-1]
+                in provider_members
+            )
+        )
+    ]
     rows = [
         row
         for row in rows
@@ -990,11 +1009,23 @@ def cmd_match_naming_audit(
         and (not suggested_only or row.suggestion is not None)
     ]
     selected_rows = rows
-    if sum((apply_suggestions, prune_aliases, rewrite_references)) > 1:
+    if sum((apply_suggestions, prune_aliases, rewrite_references, repair_comments)) > 1:
         raise typer.BadParameter(
             "choose only one naming-audit mutation option",
             param_hint="--apply-suggestions",
         )
+    if repair_comments:
+        if suggested_only or limit is not None or summary_only or check:
+            raise typer.BadParameter(
+                "comment repair cannot be combined with suggestion, limit, summary, or check filters",
+                param_hint="--repair-provider-comments",
+            )
+        result = matchlib.repair_provider_comments(selected_statuses, name_map_path=name_map)
+        if as_json:
+            typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        else:
+            typer.echo(f"comments_repaired={result['comments_repaired']}")
+        return
     if rewrite_references:
         if suggested_only or limit is not None or summary_only or check:
             raise typer.BadParameter(

@@ -40,7 +40,7 @@ extern char *developer_hint_magic_paint;
 extern char *developer_hint_muzzy;
 extern char *developer_hint_haxxor;
 
-unsigned int FUN_004623b2(void *timer);
+unsigned int crt_time(void *timer);
 void crt_srand(unsigned int seed);
 char *crt_getcwd(char *buffer, int size);
 
@@ -93,7 +93,7 @@ extern "C" int WINAPI crimsonland_main(
     (void)command_line;
     (void)show_command;
 
-    crt_srand(FUN_004623b2(0));
+    crt_srand(crt_time(0));
 
     directx_version = 0;
     HRESULT directx_status = dx_get_version(

@@ -79,10 +79,6 @@
           "target": "_ftell"
         },
         {
-          "alias": "_FUN_004623b2",
-          "target": "_time"
-        },
-        {
           "alias": "_crt_atexit",
           "target": "_atexit"
         },
@@ -179,6 +175,10 @@
           "target": "_strtok"
         },
         {
+          "alias": "_crt_time",
+          "target": "_time"
+        },
+        {
           "alias": "_crt_vsprintf",
           "target": "_vsprintf"
         },
@@ -225,7 +225,7 @@
           "binding": "function"
         },
         {
-          "name": "_FUN_004623b2",
+          "name": "_crt_time",
           "binding": "function"
         },
         {
@@ -401,6 +401,10 @@
           "binding": "function"
         },
         {
+          "name": "_sscanf",
+          "binding": "function"
+        },
+        {
           "name": "_strchr",
           "binding": "function"
         },
@@ -426,21 +430,17 @@
       "evidence": [
         {
           "path": "analysis/native/crimsonland.exe/closure.json",
-          "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals."
+          "note": "The native closure classifier identifies __fltused as an MSVC toolchain external."
         },
         {
           "path": "docs/contributor/project-tracking/third-party-libs.md",
-          "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions."
+          "note": "The pinned VC6 SP6 LIBCMT archive contains the definition."
         }
       ],
       "symbols": [
         {
           "name": "__fltused",
           "binding": "data"
-        },
-        {
-          "name": "_sscanf",
-          "binding": "function"
         }
       ]
     },

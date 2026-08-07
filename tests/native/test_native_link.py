@@ -736,7 +736,7 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
         if provider.name == "msvc6-runtime-static"
     )
     aliases = {alias.alias: alias.target for alias in runtime.aliases}
-    assert aliases["_FUN_004623b2"] == "_time"
+    assert aliases["_crt_time"] == "_time"
     assert aliases["_crt_atof_l"] == "_atof"
     assert aliases["_strdup_malloc"] == "__strdup"
     d3dx_math = next(
@@ -847,7 +847,7 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["output"]["pe"] == {
         "characteristics": 271,
         "dll": False,
-        "entry_point_rva": 323902,
+        "entry_point_rva": 323918,
         "image_base": 0x00400000,
         "image_size": 868352,
         "machine": matchlib.IMAGE_FILE_MACHINE_I386,

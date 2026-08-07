@@ -21,7 +21,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | excluded_function=70, game_data=0, import=25, toolchain=2 | 0 | 1769 | 1769 | 1769 | 1769 | 1769 |
+| crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1769 | 1769 | 1769 | 1769 | 1769 |
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 441 | 391 | 349 | 349 | 349 |
 
 ## Function dispositions
@@ -70,9 +70,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | grim_jaz_jpeg_consume_input | 0x10009ba0 | third-party | Plain-C IJG libjpeg 6a input-state dispatcher in Grim's separately linked JAZ decoder cluster. |
 | grim.dll | grim_jaz_jpeg_default_decompress_parms | 0x10009c60 | third-party | Plain-C IJG libjpeg 6a default output-parameter initializer in Grim's separately linked JAZ decoder cluster. |
 | grim.dll | grim_jaz_jpeg_finish_decompress | 0x10009e00 | third-party | Plain-C IJG libjpeg 6a decompressor completion entrypoint in Grim's separately linked JAZ decoder cluster. |
-| grim.dll | jpeg_start_decompress | 0x10009ec0 | third-party | Plain-C IJG libjpeg 6a output-pass startup entrypoint in Grim's separately linked JAZ decoder cluster. |
-| grim.dll | output_pass_setup | 0x10009fa0 | third-party | Plain-C IJG libjpeg 6a output-pass helper in Grim's separately linked JAZ decoder cluster. |
-| grim.dll | jpeg_read_scanlines | 0x1000a070 | third-party | Plain-C IJG libjpeg 6a scanline decode entrypoint in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | grim_jaz_jpeg_start_decompress | 0x10009ec0 | third-party | Plain-C IJG libjpeg 6a output-pass startup entrypoint in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | grim_jaz_jpeg_output_pass_setup | 0x10009fa0 | third-party | Plain-C IJG libjpeg 6a output-pass helper in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | grim_jaz_jpeg_read_scanlines | 0x1000a070 | third-party | Plain-C IJG libjpeg 6a scanline decode entrypoint in Grim's separately linked JAZ decoder cluster. |
 | grim.dll | grim_joystick_enum_device | 0x1000a110 | platform-replaced | Raw DirectInput joystick enumeration; the host input backend owns device discovery. |
 | grim.dll | grim_joystick_configure_axis | 0x1000a150 | platform-replaced | Raw DirectInput axis setup; the host input backend owns device configuration. |
 | grim.dll | grim_joystick_init | 0x1000a1c0 | platform-replaced | Raw DirectInput joystick initialization; the host input backend owns devices. |

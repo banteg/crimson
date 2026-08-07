@@ -4,21 +4,21 @@
     "address": "0x00401030",
     "name": "console_input_clear",
     "signature": "void console_input_clear(void)",
-    "comment": "clears console input buffer"
+    "comment": "clears console crt_scan_input buffer"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00401050",
     "name": "console_input_buffer",
     "signature": "char * console_input_buffer(void)",
-    "comment": "returns console input buffer pointer"
+    "comment": "returns console crt_scan_input buffer pointer"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00401060",
     "name": "console_input_poll",
     "signature": "int console_input_poll(void)",
-    "comment": "polls text input and updates console buffer"
+    "comment": "polls text crt_scan_input and updates console buffer"
   },
   {
     "program": "crimsonland.exe",
@@ -94,7 +94,7 @@
     "address": "0x00401240",
     "name": "console_cmd_quit",
     "signature": "void console_cmd_quit(void)",
-    "comment": "sets the quit/exit flag (quit command handler)"
+    "comment": "sets the quit/crt_immediate_exit flag (quit command handler)"
   },
   {
     "program": "crimsonland.exe",
@@ -187,14 +187,14 @@
     "address": "0x004018b0",
     "name": "console_set_open",
     "signature": "void console_set_open(char open)",
-    "comment": "sets console_open_flag (console_state+0x28) and console_input_enabled (0x0047f4d4); flushes input via Grim2D vtable +0x4c"
+    "comment": "sets console_open_flag (console_state+0x28) and console_input_enabled (0x0047f4d4); flushes crt_scan_input via Grim2D vtable +0x4c"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004018d0",
     "name": "console_history_apply",
     "signature": "void console_history_apply(int console_state)",
-    "comment": "loads a history entry into the input buffer (used by Up/Down navigation)"
+    "comment": "loads a history entry into the crt_scan_input buffer (used by Up/Down navigation)"
   },
   {
     "program": "crimsonland.exe",
@@ -214,7 +214,7 @@
       "?update@console_queue_t@@QAEXXZ"
     ],
     "signature": "void __thiscall console_update(console_queue_t *queue)",
-    "comment": "console update loop: input polling, history, autocomplete, and key handling"
+    "comment": "console update loop: crt_scan_input polling, history, autocomplete, and key handling"
   },
   {
     "program": "crimsonland.exe",
@@ -224,7 +224,7 @@
       "?render@console_queue_t@@QAEXXZ"
     ],
     "signature": "void __thiscall console_render(console_queue_t *queue)",
-    "comment": "renders the sliding console background, log, input prompt, and blinking caret"
+    "comment": "renders the sliding console background, log, crt_scan_input prompt, and blinking caret"
   },
   {
     "program": "crimsonland.exe",
@@ -621,7 +621,7 @@
     "address": "0x004072b0",
     "name": "rush_mode_update",
     "signature": "void rush_mode_update(void)",
-    "comment": "rush mode update: spawns edge waves and handles demo exit"
+    "comment": "rush mode update: spawns edge waves and handles demo crt_immediate_exit"
   },
   {
     "program": "crimsonland.exe",
@@ -741,7 +741,7 @@
     "address": "0x0040b740",
     "name": "demo_purchase_screen_update",
     "signature": "void demo_purchase_screen_update(void)",
-    "comment": "demo upsell screen: feature list, purchase link, and exit handling"
+    "comment": "demo upsell screen: feature list, purchase link, and crt_immediate_exit handling"
   },
   {
     "program": "crimsonland.exe",
@@ -762,7 +762,7 @@
     "address": "0x0040c1c0",
     "name": "game_frame_update",
     "signature": "unsigned char game_frame_update(void)",
-    "comment": "top-level per-frame update/render dispatcher: frame_dt + reflex-boosted time scale, console toggle (DIK_GRAVE at 0x0040c360) and F12 screenshot input, ESC pause, demo trial timing, screen fade, mouse/analog cursor, game_state dispatch to gameplay/menu/perk/game-over screens, FPS overlay, audio_update, and a discarded per-frame crt_rand() at 0x0040cac7 (advances the shared LCG once per frame); entry identified via WinDbg"
+    "comment": "top-level per-frame update/render dispatcher: frame_dt + reflex-boosted time scale, console toggle (DIK_GRAVE at 0x0040c360) and F12 screenshot crt_scan_input, ESC pause, demo trial timing, screen fade, mouse/analog cursor, game_state dispatch to gameplay/menu/perk/game-over screens, FPS overlay, audio_update, and a discarded per-frame crt_rand() at 0x0040cac7 (advances the shared LCG once per frame); entry identified via WinDbg"
   },
   {
     "program": "crimsonland.exe",
@@ -1226,7 +1226,7 @@
     "address": "0x004107c0",
     "name": "game_over_name_input_state_destroy",
     "signature": "void game_over_name_input_state_destroy(void)",
-    "comment": "empty destructor thunk registered for the game-over name-input state"
+    "comment": "empty destructor thunk registered for the game-over name-crt_scan_input state"
   },
   {
     "program": "crimsonland.exe",
@@ -1311,7 +1311,7 @@
     "address": "0x00412060",
     "name": "quest_results_name_input_state_destroy",
     "signature": "void quest_results_name_input_state_destroy(void)",
-    "comment": "empty destructor thunk registered for the quest-results name-input state"
+    "comment": "empty destructor thunk registered for the quest-results name-crt_scan_input state"
   },
   {
     "program": "crimsonland.exe",
@@ -2589,7 +2589,7 @@
       "$E2"
     ],
     "signature": "void fx_queue_random_color_destroy(void)",
-    "comment": "empty exit-time destructor registered for the random FX color static"
+    "comment": "empty crt_immediate_exit-time destructor registered for the random FX color static"
   },
   {
     "program": "crimsonland.exe",
@@ -2638,7 +2638,7 @@
     "address": "0x00428390",
     "name": "player_render_overlays",
     "signature": "void player_render_overlays(void)",
-    "comment": "Renders per-player overlays/indicators using player_state_table + effect_uv8. Runtime (analysis/frida/player_sprite_trace_summary.json): when alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0\u201314) and effect_uv8[frame+0x10] (16\u201330) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[ftol(death_timer)] (32\u201351) with 0x34 fallback, also with shadow+main passes."
+    "comment": "Renders per-player overlays/indicators using player_state_table + effect_uv8. Runtime (analysis/frida/player_sprite_trace_summary.json): when alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0\u201314) and effect_uv8[frame+0x10] (16\u201330) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[crt_ftol(death_timer)] (32\u201351) with 0x34 fallback, also with shadow+main passes."
   },
   {
     "program": "crimsonland.exe",
@@ -4181,7 +4181,7 @@
     "address": "0x0043def0",
     "name": "ui_scrollbar_update",
     "signature": "void ui_scrollbar_update(vec2f_t *xy, ui_scrollbar_t *state)",
-    "comment": "updates and renders a scroll bar (wheel, drag, key input)"
+    "comment": "updates and renders a scroll bar (wheel, drag, key crt_scan_input)"
   },
   {
     "program": "crimsonland.exe",
@@ -4216,7 +4216,7 @@
     "address": "0x0043ecf0",
     "name": "ui_text_input_update",
     "signature": "bool ui_text_input_update(float *xy, ui_text_input_state_t *input_state)",
-    "comment": "updates a text input field: focus, input polling, sfx, and rendering"
+    "comment": "updates a text crt_scan_input field: focus, crt_scan_input polling, sfx, and rendering"
   },
   {
     "program": "crimsonland.exe",
@@ -4476,7 +4476,7 @@
     "address": "0x00445590",
     "name": "typo_target_find_by_name",
     "signature": "int typo_target_find_by_name(char *name)",
-    "comment": "returns the first active creature whose Typ-o target name matches input, or -1"
+    "comment": "returns the first active creature whose Typ-o target name matches crt_scan_input, or -1"
   },
   {
     "program": "crimsonland.exe",
@@ -4490,7 +4490,7 @@
     "address": "0x004457c0",
     "name": "typo_gameplay_update_and_render",
     "signature": "void typo_gameplay_update_and_render(void)",
-    "comment": "Typ-o-Shooter gameplay loop: typed-name input, target matching, spawns, world render, and HUD"
+    "comment": "Typ-o-Shooter gameplay loop: typed-name crt_scan_input, target matching, spawns, world render, and HUD"
   },
   {
     "program": "crimsonland.exe",
@@ -7198,7 +7198,7 @@
     "address": "0x004601c0",
     "name": "math_acos_packed",
     "signature": "unsigned __int64 math_acos_packed(void)",
-    "comment": "packed acos approximation; input in MM0"
+    "comment": "packed acos approximation; crt_scan_input in MM0"
   },
   {
     "program": "crimsonland.exe",
@@ -7222,14 +7222,28 @@
     "address": "0x004608c0",
     "name": "math_sin_packed",
     "signature": "unsigned __int64 math_sin_packed(void)",
-    "comment": "packed sin approximation; input in MM0"
+    "comment": "packed sin approximation; crt_scan_input in MM0"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00460cb8",
-    "name": "FUN_00460cb8",
-    "signature": "int FUN_00460cb8(void)",
-    "comment": "[binja] int32_t sub_460cb8()"
+    "name": "crt_fpmath",
+    "signature": "int crt_fpmath(void)",
+    "comment": "[binja] int32_t crt_fpmath()",
+    "aliases": [
+      "__fpmath"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00460cd0",
+    "name": "crt_cfltcvt_init",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\fpinit.obj symbol __cfltcvt_init.",
+    "create": false,
+    "aliases": [
+      "__cfltcvt_init"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7250,6 +7264,16 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00460d98",
+    "name": "crt_onexit_init",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\onexit.obj symbol ___onexitinit.",
+    "create": false,
+    "aliases": [
+      "___onexitinit"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00460dc7",
     "name": "crt_free",
     "aliases": [
@@ -7260,6 +7284,16 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00460dd2",
+    "name": "crt_atol",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\atox.obj symbol _atol.",
+    "create": false,
+    "aliases": [
+      "_atol"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00460e5d",
     "name": "crt_fclose",
     "aliases": [
@@ -7267,6 +7301,26 @@
     ],
     "signature": "int crt_fclose(FILE *fp)",
     "comment": "fclose wrapper with CRT lock/unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00460e8e",
+    "name": "crt_fclose_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\fclose.obj symbol __fclose_lk.",
+    "create": false,
+    "aliases": [
+      "__fclose_lk"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00460ef0",
+    "name": "crt_strchr",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strchr.obj symbol _strchr.",
+    "create": false,
+    "aliases": [
+      "_strchr"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7291,6 +7345,16 @@
     ],
     "signature": "FILE * crt_fopen(char *path, char *mode)",
     "comment": "fopen wrapper (calls crt_fsopen with share=0x40)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461054",
+    "name": "crt_ftol",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\ftol.obj symbol __ftol.",
+    "create": false,
+    "aliases": [
+      "__ftol"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7325,6 +7389,16 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00461410",
+    "name": "crt_strncmp",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strncmp.obj symbol _strncmp.",
+    "create": false,
+    "aliases": [
+      "_strncmp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00461448",
     "name": "crt_fflush",
     "aliases": [
@@ -7349,10 +7423,24 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x0046150a",
+    "address": "0x00461501",
     "name": "crt_flushall",
-    "signature": "int crt_flushall(int mode)",
-    "comment": "CRT: flush all streams (mode 0/1)"
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\fflush.obj symbol __flushall.",
+    "create": false,
+    "aliases": [
+      "__flushall"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046150a",
+    "name": "crt_flsall",
+    "signature": "int crt_flsall(int mode)",
+    "comment": "CRT: flush all streams (mode 0/1)",
+    "aliases": [
+      "_flsall"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7421,6 +7509,16 @@
     "name": "crt_findclose",
     "signature": "int crt_findclose(HANDLE handle)",
     "comment": "CRT _findclose wrapper over FindClose"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046191d",
+    "name": "crt_timet_from_ft",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\findfile.obj symbol ___timet_from_ft.",
+    "create": false,
+    "aliases": [
+      "___timet_from_ft"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7542,6 +7640,26 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00462020",
+    "name": "crt_alldiv",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\lldiv.obj symbol __alldiv.",
+    "create": false,
+    "aliases": [
+      "__alldiv"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004620d0",
+    "name": "crt_allmul",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\llmul.obj symbol __allmul.",
+    "create": false,
+    "aliases": [
+      "__allmul"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00462104",
     "name": "crt_toupper",
     "signature": "int crt_toupper(int c)",
@@ -7573,14 +7691,18 @@
     "address": "0x00462373",
     "name": "crt_endthread",
     "signature": "void crt_endthread(void)",
-    "comment": "CRT: thread cleanup and exit"
+    "comment": "CRT: thread cleanup and crt_immediate_exit"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004623b2",
-    "name": "FUN_004623b2",
-    "signature": "int FUN_004623b2(int *arg1)",
-    "comment": "[binja] int32_t sub_4623b2(int32_t* arg1)"
+    "name": "crt_time",
+    "signature": "int crt_time(int *arg1)",
+    "comment": "[binja] int32_t crt_time(int32_t* arg1)",
+    "aliases": [
+      "_time"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7602,9 +7724,13 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046258a",
-    "name": "FUN_0046258a",
-    "signature": "int FUN_0046258a(int arg1)",
-    "comment": "[binja] int32_t sub_46258a(int32_t arg1)"
+    "name": "crt_validdrive",
+    "signature": "int crt_validdrive(int arg1)",
+    "comment": "[binja] int32_t crt_validdrive(int32_t arg1)",
+    "aliases": [
+      "__validdrive"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7650,10 +7776,33 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004629d9",
+    "name": "crt_malloc",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\malloc.obj symbol _malloc.",
+    "create": false,
+    "aliases": [
+      "_malloc"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004629eb",
+    "name": "crt_nh_malloc",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\malloc.obj symbol __nh_malloc.",
+    "create": false,
+    "aliases": [
+      "__nh_malloc"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00462a17",
-    "name": "FUN_00462a17",
-    "signature": "void * FUN_00462a17(uint arg1)",
-    "comment": "[binja] void* sub_462a17(uint32_t arg1)"
+    "name": "crt_heap_alloc",
+    "aliases": [
+      "__heap_alloc"
+    ],
+    "signature": "void * crt_heap_alloc(uint size)",
+    "comment": "VC6 internal heap allocator identified by the exact __nh_malloc object's __heap_alloc relocation and its small-block/HeapAlloc control flow"
   },
   {
     "program": "crimsonland.exe",
@@ -7671,10 +7820,24 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00462b20",
+    "name": "crt_strstr",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strstr.obj symbol _strstr.",
+    "create": false,
+    "aliases": [
+      "_strstr"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00462ba0",
-    "name": "FUN_00462ba0",
-    "signature": "int FUN_00462ba0(char *arg1, char *arg2)",
-    "comment": "[binja] int32_t sub_462ba0(char* arg1, char* arg2)"
+    "name": "crt_sscanf",
+    "signature": "int crt_sscanf(char *arg1, char *arg2)",
+    "comment": "[binja] int32_t crt_sscanf(char* arg1, char* arg2)",
+    "aliases": [
+      "_sscanf"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7734,26 +7897,36 @@
     "address": "0x00462edd",
     "name": "crt_exit",
     "signature": "void crt_exit(unsigned int code)",
-    "comment": "CRT exit path (atexit/onexit + ExitProcess)"
+    "comment": "CRT crt_immediate_exit path (atexit/onexit + ExitProcess)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462eee",
+    "name": "crt_immediate_exit",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\crt0dat.obj symbol __exit.",
+    "create": false,
+    "aliases": [
+      "__exit"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00462eff",
     "name": "crt_doexit",
     "signature": "void crt_doexit(unsigned int code, int full, int quick)",
-    "comment": "CRT exit worker (atexit/onexit + ExitProcess)"
+    "comment": "CRT crt_immediate_exit worker (atexit/onexit + ExitProcess)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00462fa4",
     "name": "crt_exit_lock",
-    "comment": "exit lock"
+    "comment": "crt_immediate_exit lock"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00462fad",
     "name": "crt_exit_unlock",
-    "comment": "exit unlock"
+    "comment": "crt_immediate_exit unlock"
   },
   {
     "program": "crimsonland.exe",
@@ -7774,6 +7947,56 @@
     "name": "crt_isspace",
     "signature": "uint crt_isspace(void *this, int c)",
     "comment": "ctype space check (MBCS-aware)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046312e",
+    "name": "crt_amsg_exit",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\wincrt0.obj symbol __amsg_exit.",
+    "create": false,
+    "aliases": [
+      "__amsg_exit"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463153",
+    "name": "crt_fast_error_exit",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\wincrt0.obj symbol _fast_error_exit.",
+    "create": false,
+    "aliases": [
+      "_fast_error_exit"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463180",
+    "name": "crt_ci_acos",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\acos.obj symbol __CIacos.",
+    "create": false,
+    "aliases": [
+      "__CIacos"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046324b",
+    "name": "crt_finite",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\ieeemisc.obj symbol __finite.",
+    "create": false,
+    "aliases": [
+      "__finite"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046325f",
+    "name": "crt_fpclass",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\ieeemisc.obj symbol __fpclass.",
+    "create": false,
+    "aliases": [
+      "__fpclass"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7810,9 +8033,19 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00463382",
+    "name": "crt_cxx_frame_handler_entry",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\trnsctrl.obj symbol ___CxxFrameHandler.",
+    "create": false,
+    "aliases": [
+      "___CxxFrameHandler"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004633b8",
     "name": "crt_call_catch_block_2",
-    "comment": "Exact archive recovery from build\\intel\\mt_obj\\trnsctrl.obj symbol crt_call_catch_block_2.",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\trnsctrl.obj symbol ?_CallCatchBlock2@@YAPAXPAUEHRegistrationNode@@PBU_s_FuncInfo@@PAXHK@Z.",
     "create": false,
     "aliases": [
       "?_CallCatchBlock2@@YAPAXPAUEHRegistrationNode@@PBU_s_FuncInfo@@PAXHK@Z"
@@ -7833,7 +8066,7 @@
     "program": "crimsonland.exe",
     "address": "0x00463431",
     "name": "crt_call_se_translator",
-    "comment": "Exact archive recovery from build\\intel\\mt_obj\\trnsctrl.obj symbol crt_call_se_translator.",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\trnsctrl.obj symbol ?_CallSETranslator@@YAHPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAX2PBU_s_FuncInfo@@H1@Z.",
     "create": false,
     "aliases": [
       "?_CallSETranslator@@YAHPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAX2PBU_s_FuncInfo@@H1@Z"
@@ -7852,6 +8085,66 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004635d8",
+    "name": "crt_global_unwind2",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup.obj symbol __global_unwind2.",
+    "create": false,
+    "aliases": [
+      "__global_unwind2"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004635f8",
+    "name": "crt_unwind_handler",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup.obj symbol __unwind_handler.",
+    "create": false,
+    "aliases": [
+      "__unwind_handler"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046361a",
+    "name": "crt_local_unwind2",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup.obj symbol __local_unwind2.",
+    "create": false,
+    "aliases": [
+      "__local_unwind2"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463682",
+    "name": "crt_abnormal_termination",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup.obj symbol __abnormal_termination.",
+    "create": false,
+    "aliases": [
+      "__abnormal_termination"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004636a5",
+    "name": "crt_nlg_notify1",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup.obj symbol __NLG_Notify1.",
+    "create": false,
+    "aliases": [
+      "__NLG_Notify1"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004636ae",
+    "name": "crt_nlg_notify",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup.obj symbol __NLG_Notify.",
+    "create": false,
+    "aliases": [
+      "__NLG_Notify"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004636c8",
     "name": "seh_prolog",
     "signature": "void * seh_prolog(void)",
@@ -7863,17 +8156,65 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004636e7",
+    "name": "crt_set_default_precision",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\fp8.obj symbol __setdefaultprecision.",
+    "create": false,
+    "aliases": [
+      "__setdefaultprecision"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004636f9",
+    "name": "crt_ms_p5_test_fdiv",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\testfdiv.obj symbol __ms_p5_test_fdiv.",
+    "create": false,
+    "aliases": [
+      "__ms_p5_test_fdiv"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00463737",
-    "name": "FUN_00463737",
-    "signature": "int FUN_00463737(void)",
-    "comment": "[binja] int32_t sub_463737()"
+    "name": "crt_ms_p5_mp_test_fdiv",
+    "signature": "int crt_ms_p5_mp_test_fdiv(void)",
+    "comment": "[binja] int32_t crt_ms_p5_mp_test_fdiv()",
+    "aliases": [
+      "__ms_p5_mp_test_fdiv"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00463760",
-    "name": "FUN_00463760",
-    "signature": "int FUN_00463760(char *arg1)",
-    "comment": "[binja] int32_t sub_463760(char* arg1)"
+    "name": "crt_forcdecpt",
+    "signature": "int crt_forcdecpt(char *arg1)",
+    "comment": "[binja] int32_t crt_forcdecpt(char* arg1)",
+    "aliases": [
+      "__forcdecpt"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463820",
+    "name": "crt_fassign",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\cvt.obj symbol __fassign.",
+    "create": false,
+    "aliases": [
+      "__fassign"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046385e",
+    "name": "crt_cftoe",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\cvt.obj symbol __cftoe.",
+    "create": false,
+    "aliases": [
+      "__cftoe"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7884,10 +8225,40 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00463981",
+    "name": "crt_cftof",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\cvt.obj symbol __cftof.",
+    "create": false,
+    "aliases": [
+      "__cftof"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004639d6",
     "name": "crt_fp_format_fixed",
     "signature": "char * crt_fp_format_fixed(char *dst, size_t precision, int *fp_info, int force_decimal)",
     "comment": "CRT: formats floating output in fixed notation (adds decimal/zeros)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463a7d",
+    "name": "crt_cftog",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\cvt.obj symbol __cftog.",
+    "create": false,
+    "aliases": [
+      "__cftog"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463b10",
+    "name": "crt_cfltcvt",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\cvt.obj symbol __cfltcvt.",
+    "create": false,
+    "aliases": [
+      "__cfltcvt"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7923,6 +8294,26 @@
     "name": "crt_isctype",
     "signature": "uint crt_isctype(void *this, int c, uint mask)",
     "comment": "ctype classification (MBCS via GetStringTypeA/W)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463ce9",
+    "name": "crt_init_stdio",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\_file.obj symbol ___initstdio.",
+    "create": false,
+    "aliases": [
+      "___initstdio"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463d91",
+    "name": "crt_end_stdio",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\_file.obj symbol ___endstdio.",
+    "create": false,
+    "aliases": [
+      "___endstdio"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7965,6 +8356,16 @@
     "name": "crt_close_nolock",
     "signature": "int crt_close_nolock(int fd)",
     "comment": "CRT: close file handle without lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463f29",
+    "name": "crt_freebuf",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\_freebuf.obj symbol __freebuf.",
+    "create": false,
+    "aliases": [
+      "__freebuf"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8057,10 +8458,134 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00464be7",
+    "name": "crt_fltin2",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\cfin.obj symbol __fltin2.",
+    "create": false,
+    "aliases": [
+      "__fltin2"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464c70",
+    "name": "crt_strlen",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strlen.obj symbol _strlen.",
+    "create": false,
+    "aliases": [
+      "_strlen"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004650d0",
+    "name": "crt_start_two_arg_error_handling",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\genexcep.obj symbol __startTwoArgErrorHandling.",
+    "create": false,
+    "aliases": [
+      "__startTwoArgErrorHandling"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004650e7",
+    "name": "crt_start_one_arg_error_handling",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\genexcep.obj symbol __startOneArgErrorHandling.",
+    "create": false,
+    "aliases": [
+      "__startOneArgErrorHandling"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465130",
+    "name": "crt_two_to_tos",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __twoToTOS.",
+    "create": false,
+    "aliases": [
+      "__twoToTOS"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465145",
+    "name": "crt_load_cw",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __load_CW.",
+    "create": false,
+    "aliases": [
+      "__load_CW"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046515c",
+    "name": "crt_convert_tos_to_qnan",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __convertTOStoQNaN.",
+    "create": false,
+    "aliases": [
+      "__convertTOStoQNaN"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465175",
+    "name": "crt_fload_with_fb",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __fload_withFB.",
+    "create": false,
+    "aliases": [
+      "__fload_withFB"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004651b8",
+    "name": "crt_check_tos_with_fb",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __checkTOS_withFB.",
+    "create": false,
+    "aliases": [
+      "__checkTOS_withFB"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465205",
+    "name": "crt_check_overflow_exit",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __check_overflow_exit.",
+    "create": false,
+    "aliases": [
+      "__check_overflow_exit"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465219",
+    "name": "crt_check_range_exit",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __check_range_exit.",
+    "create": false,
+    "aliases": [
+      "__check_range_exit"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004652bc",
-    "name": "FUN_004652bc",
-    "signature": "int FUN_004652bc(double arg1, int arg2, int arg3, double *arg4)",
-    "comment": "[binja] int32_t sub_4652bc(double arg1, int32_t arg2, int32_t arg3, double* arg4)"
+    "name": "crt_powhlp",
+    "signature": "int crt_powhlp(double arg1, int arg2, int arg3, double *arg4)",
+    "comment": "[binja] int32_t crt_powhlp(double arg1, int32_t arg2, int32_t arg3, double* arg4)",
+    "aliases": [
+      "__powhlp"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004653ec",
+    "name": "crt_d_inttype",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\powhlp.obj symbol __d_inttype.",
+    "create": false,
+    "aliases": [
+      "__d_inttype"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8177,6 +8702,26 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00465e70",
+    "name": "crt_except_handler3",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup3.obj symbol __except_handler3.",
+    "create": false,
+    "aliases": [
+      "__except_handler3"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465f2d",
+    "name": "crt_seh_longjmp_unwind",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup3.obj symbol __seh_longjmp_unwind@4.",
+    "create": false,
+    "aliases": [
+      "__seh_longjmp_unwind@4"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00465f48",
     "name": "crt_terminate",
     "signature": "void crt_terminate(void)",
@@ -8233,9 +8778,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004666f5",
-    "name": "FUN_004666f5",
-    "signature": "int FUN_004666f5(int *arg1)",
-    "comment": "[binja] int32_t sub_4666f5(int32_t* arg1)"
+    "name": "crt_stbuf",
+    "signature": "int crt_stbuf(int *arg1)",
+    "comment": "[binja] int32_t crt_stbuf(int32_t* arg1)",
+    "aliases": [
+      "__stbuf"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00466782",
+    "name": "crt_ftbuf",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\_sftbuf.obj symbol __ftbuf.",
+    "create": false,
+    "aliases": [
+      "__ftbuf"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8267,10 +8826,24 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00466a27",
+    "name": "crt_xcptlookup",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\winxfltr.obj symbol _xcptlookup.",
+    "create": false,
+    "aliases": [
+      "_xcptlookup"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00466a61",
-    "name": "FUN_00466a61",
-    "signature": "void * FUN_00466a61(int *arg1)",
-    "comment": "[binja] HMODULE sub_466a61(int32_t* arg1)"
+    "name": "crt_get_linker_version",
+    "signature": "void * crt_get_linker_version(int *arg1)",
+    "comment": "[binja] HMODULE crt_get_linker_version(int32_t* arg1)",
+    "aliases": [
+      "__GetLinkerVersion"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8329,6 +8902,16 @@
       "___sbh_alloc_new_region"
     ],
     "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00467389",
+    "name": "crt_sbh_alloc_new_group",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\sbheap.obj symbol ___sbh_alloc_new_group.",
+    "create": false,
+    "aliases": [
+      "___sbh_alloc_new_group"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8427,17 +9010,55 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00467e62",
+    "name": "crt_scan_input",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\input.obj symbol __input.",
+    "create": false,
+    "aliases": [
+      "__input"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468887",
+    "name": "crt_hextodec",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\cscanf.obj symbol __hextodec.",
+    "create": false,
+    "aliases": [
+      "__hextodec"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004688be",
-    "name": "FUN_004688be",
-    "signature": "uint FUN_004688be(int *arg1)",
-    "comment": "[binja] uint32_t sub_4688be(int32_t* arg1)"
+    "name": "crt_scan_inc",
+    "signature": "uint crt_scan_inc(int *arg1)",
+    "comment": "[binja] uint32_t crt_scan_inc(int32_t* arg1)",
+    "aliases": [
+      "__inc"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004688d8",
+    "name": "crt_scan_un_inc",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\input.obj symbol __un_inc.",
+    "create": false,
+    "aliases": [
+      "__un_inc"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004688ef",
-    "name": "FUN_004688ef",
-    "signature": "uint FUN_004688ef(int *arg1, int *arg2)",
-    "comment": "[binja] uint32_t sub_4688ef(int32_t* arg1, int32_t* arg2)"
+    "name": "crt_scan_whiteout",
+    "signature": "uint crt_scan_whiteout(int *arg1, int *arg2)",
+    "comment": "[binja] uint32_t crt_scan_whiteout(int32_t* arg1, int32_t* arg2)",
+    "aliases": [
+      "__whiteout"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8469,7 +9090,7 @@
     "address": "0x00468c71",
     "name": "crt_get_environment_strings",
     "signature": "char * crt_get_environment_strings(void)",
-    "comment": "returns a malloc'd copy of the environment block"
+    "comment": "returns a crt_malloc'd copy of the environment block"
   },
   {
     "program": "crimsonland.exe",
@@ -8485,10 +9106,104 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00468f2f",
+    "name": "crt_set_exp",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\util.obj symbol __set_exp.",
+    "create": false,
+    "aliases": [
+      "__set_exp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468f58",
+    "name": "crt_sptype",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\util.obj symbol __sptype.",
+    "create": false,
+    "aliases": [
+      "__sptype"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468fb2",
+    "name": "crt_decomp",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\util.obj symbol __decomp.",
+    "create": false,
+    "aliases": [
+      "__decomp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469073",
+    "name": "crt_raise_exc",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\fpexcept.obj symbol __raise_exc.",
+    "create": false,
+    "aliases": [
+      "__raise_exc"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469326",
+    "name": "crt_handle_exc",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\fpexcept.obj symbol __handle_exc.",
+    "create": false,
+    "aliases": [
+      "__handle_exc"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046953d",
-    "name": "FUN_0046953d",
-    "signature": "int * FUN_0046953d(int *arg1)",
-    "comment": "[binja] int32_t* sub_46953d(int32_t* arg1)"
+    "name": "crt_set_errno",
+    "signature": "int * crt_set_errno(int *arg1)",
+    "comment": "[binja] int32_t* crt_set_errno(int32_t* arg1)",
+    "aliases": [
+      "__set_errno"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469565",
+    "name": "crt_statfp",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\fpctrl.obj symbol __statfp.",
+    "create": false,
+    "aliases": [
+      "__statfp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469573",
+    "name": "crt_clrfp",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\fpctrl.obj symbol __clrfp.",
+    "create": false,
+    "aliases": [
+      "__clrfp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469582",
+    "name": "crt_ctrlfp",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\fpctrl.obj symbol __ctrlfp.",
+    "create": false,
+    "aliases": [
+      "__ctrlfp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004695a5",
+    "name": "crt_set_statfp",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\fpctrl.obj symbol __set_statfp.",
+    "create": false,
+    "aliases": [
+      "__set_statfp"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8501,7 +9216,7 @@
     "program": "crimsonland.exe",
     "address": "0x00469696",
     "name": "crt_find_handler",
-    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol crt_find_handler.",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol ?FindHandler@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@EH1@Z.",
     "create": false,
     "aliases": [
       "?FindHandler@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@EH1@Z"
@@ -8520,9 +9235,19 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00469950",
+    "name": "crt_frame_unwind_to_state",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol ___FrameUnwindToState.",
+    "create": false,
+    "aliases": [
+      "___FrameUnwindToState"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004699ee",
     "name": "crt_catch_it",
-    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol crt_catch_it.",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol ?CatchIt@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@PBU_s_HandlerType@@PBU_s_CatchableType@@PBU_s_TryBlockMapEntry@@H1E@Z.",
     "create": false,
     "aliases": [
       "?CatchIt@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@PBU_s_HandlerType@@PBU_s_CatchableType@@PBU_s_TryBlockMapEntry@@H1E@Z"
@@ -8532,7 +9257,7 @@
     "program": "crimsonland.exe",
     "address": "0x00469a69",
     "name": "crt_call_catch_block",
-    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol crt_call_catch_block.",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\frame.obj symbol ?CallCatchBlock@@YAPAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PBU_s_FuncInfo@@PAXHK@Z.",
     "create": false,
     "aliases": [
       "?CallCatchBlock@@YAPAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PBU_s_FuncInfo@@PAXHK@Z"
@@ -8559,6 +9284,56 @@
       "?_DestructExceptionObject@@YAXPAUEHExceptionRecord@@E@Z"
     ],
     "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469e00",
+    "name": "crt_call_setting_frame",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\lowhelpr.obj symbol __CallSettingFrame@12.",
+    "create": false,
+    "aliases": [
+      "__CallSettingFrame@12"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469e4c",
+    "name": "crt_control87",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\ieee87.obj symbol __control87.",
+    "create": false,
+    "aliases": [
+      "__control87"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469e81",
+    "name": "crt_controlfp",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\ieee87.obj symbol __controlfp.",
+    "create": false,
+    "aliases": [
+      "__controlfp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469e97",
+    "name": "crt_abstract_cw",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\ieee87.obj symbol __abstract_cw.",
+    "create": false,
+    "aliases": [
+      "__abstract_cw"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469f29",
+    "name": "crt_hw_cw",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\ieee87.obj symbol __hw_cw.",
+    "create": false,
+    "aliases": [
+      "__hw_cw"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8707,9 +9482,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046a471",
-    "name": "FUN_0046a471",
-    "signature": "int * FUN_0046a471(int *arg1, int *arg2)",
-    "comment": "[binja] int32_t* sub_46a471(int32_t* arg1, int32_t* arg2)"
+    "name": "crt_dtold",
+    "signature": "int * crt_dtold(int *arg1, int *arg2)",
+    "comment": "[binja] int32_t* crt_dtold(int32_t* arg1, int32_t* arg2)",
+    "aliases": [
+      "___dtold"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a530",
+    "name": "crt_memset",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\memset.obj symbol _memset.",
+    "create": false,
+    "aliases": [
+      "_memset"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8727,17 +9516,55 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046a8ce",
+    "name": "crt_get_string_type_a",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\a_str.obj symbol ___crtGetStringTypeA.",
+    "create": false,
+    "aliases": [
+      "___crtGetStringTypeA"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046aa17",
+    "name": "crt_fcloseall",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\closeall.obj symbol __fcloseall.",
+    "create": false,
+    "aliases": [
+      "__fcloseall"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046aa98",
+    "name": "crt_alloc_osfhnd",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\osfinfo.obj symbol __alloc_osfhnd.",
+    "create": false,
+    "aliases": [
+      "__alloc_osfhnd"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046abbb",
-    "name": "FUN_0046abbb",
-    "signature": "int FUN_0046abbb(int arg1, HANDLE arg2)",
-    "comment": "[binja] int32_t sub_46abbb(int32_t arg1, HANDLE arg2)"
+    "name": "crt_set_osfhnd",
+    "signature": "int crt_set_osfhnd(int arg1, HANDLE arg2)",
+    "comment": "[binja] int32_t crt_set_osfhnd(int32_t arg1, HANDLE arg2)",
+    "aliases": [
+      "__set_osfhnd"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046ac37",
-    "name": "FUN_0046ac37",
-    "signature": "int FUN_0046ac37(int arg1)",
-    "comment": "[binja] int32_t sub_46ac37(int32_t arg1)"
+    "name": "crt_free_osfhnd",
+    "signature": "int crt_free_osfhnd(int arg1)",
+    "comment": "[binja] int32_t crt_free_osfhnd(int32_t arg1)",
+    "aliases": [
+      "__free_osfhnd"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8773,6 +9600,56 @@
     "name": "crt_sopen",
     "signature": "int crt_sopen(char *filename, int oflag, int shflag, int pmode)",
     "comment": "CRT: open file with share mode, wraps CreateFile"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046b08c",
+    "name": "crt_isatty",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\isatty.obj symbol __isatty.",
+    "create": false,
+    "aliases": [
+      "__isatty"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046b0b5",
+    "name": "crt_wctomb",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\wctomb.obj symbol _wctomb.",
+    "create": false,
+    "aliases": [
+      "_wctomb"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046b10e",
+    "name": "crt_wctomb_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\wctomb.obj symbol __wctomb_lk.",
+    "create": false,
+    "aliases": [
+      "__wctomb_lk"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046b180",
+    "name": "crt_aulldiv",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\ulldiv.obj symbol __aulldiv.",
+    "create": false,
+    "aliases": [
+      "__aulldiv"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046b1f0",
+    "name": "crt_aullrem",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\ullrem.obj symbol __aullrem.",
+    "create": false,
+    "aliases": [
+      "__aullrem"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8884,9 +9761,123 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046c4cb",
-    "name": "FUN_0046c4cb",
-    "signature": "int * FUN_0046c4cb(int arg1, int *arg2, uint arg3)",
-    "comment": "[binja] int32_t* sub_46c4cb(int32_t arg1, int32_t* arg2, uint32_t arg3)"
+    "name": "crt_x87_exception",
+    "signature": "int * crt_x87_exception(int arg1, int *arg2, uint arg3)",
+    "comment": "[binja] int32_t* crt_x87_exception(int32_t arg1, int32_t* arg2, uint32_t arg3)",
+    "aliases": [
+      "__87except"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c59b",
+    "name": "crt_frnd",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\frnd.obj symbol __frnd.",
+    "create": false,
+    "aliases": [
+      "__frnd"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c5ad",
+    "name": "crt_tzset",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\tzset.obj symbol ___tzset.",
+    "create": false,
+    "aliases": [
+      "___tzset"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c5db",
+    "name": "crt_tzset_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\tzset.obj symbol __tzset_lk.",
+    "create": false,
+    "aliases": [
+      "__tzset_lk"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c862",
+    "name": "crt_is_in_dst",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\tzset.obj symbol __isindst.",
+    "create": false,
+    "aliases": [
+      "__isindst"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046c883",
+    "name": "crt_is_in_dst_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\tzset.obj symbol __isindst_lk.",
+    "create": false,
+    "aliases": [
+      "__isindst_lk"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046ca2f",
+    "name": "crt_cvtdate",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\tzset.obj symbol _cvtdate.",
+    "create": false,
+    "aliases": [
+      "_cvtdate"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cb6f",
+    "name": "crt_abort",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\abort.obj symbol _abort.",
+    "create": false,
+    "aliases": [
+      "_abort"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cb90",
+    "name": "crt_strcmp",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strcmp.obj symbol _strcmp.",
+    "create": false,
+    "aliases": [
+      "_strcmp"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cc20",
+    "name": "crt_strncpy",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strncpy.obj symbol _strncpy.",
+    "create": false,
+    "aliases": [
+      "_strncpy"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cd20",
+    "name": "crt_strcspn",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strcspn.obj symbol _strcspn.",
+    "create": false,
+    "aliases": [
+      "_strcspn"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cd60",
+    "name": "crt_strpbrk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\strpbrk.obj symbol _strpbrk.",
+    "create": false,
+    "aliases": [
+      "_strpbrk"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8911,17 +9902,65 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046cfeb",
+    "name": "crt_mbtowc",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\mbtowc.obj symbol _mbtowc.",
+    "create": false,
+    "aliases": [
+      "_mbtowc"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d048",
+    "name": "crt_mbtowc_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\mbtowc.obj symbol __mbtowc_lk.",
+    "create": false,
+    "aliases": [
+      "__mbtowc_lk"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d120",
+    "name": "crt_allshl",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\llshl.obj symbol __allshl.",
+    "create": false,
+    "aliases": [
+      "__allshl"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d13f",
+    "name": "crt_ungetc_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\ungetc.obj symbol __ungetc_lk.",
+    "create": false,
+    "aliases": [
+      "__ungetc_lk"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046d1ad",
-    "name": "FUN_0046d1ad",
-    "signature": "int FUN_0046d1ad(char arg1)",
-    "comment": "[binja] int32_t sub_46d1ad(char arg1)"
+    "name": "crt_ismbblead",
+    "signature": "int crt_ismbblead(char arg1)",
+    "comment": "[binja] int32_t crt_ismbblead(char arg1)",
+    "aliases": [
+      "__ismbblead"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046d1be",
-    "name": "FUN_0046d1be",
-    "signature": "int FUN_0046d1be(char arg1, int arg2, char arg3)",
-    "comment": "[binja] int32_t sub_46d1be(char arg1, int32_t arg2, char arg3)"
+    "name": "crt_ismbbtype",
+    "signature": "int crt_ismbbtype(char arg1, int arg2, char arg3)",
+    "comment": "[binja] int32_t crt_ismbbtype(char arg1, int32_t arg2, char arg3)",
+    "aliases": [
+      "_x_ismbbtype"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8932,10 +9971,44 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046d39c",
+    "name": "crt_get_system_cp",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\mbctype.obj symbol _getSystemCP.",
+    "create": false,
+    "aliases": [
+      "_getSystemCP"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d3e6",
+    "name": "crt_cp_to_lcid",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\mbctype.obj symbol _CPtoLCID.",
+    "create": false,
+    "aliases": [
+      "_CPtoLCID"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d419",
+    "name": "crt_set_sbcs",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\mbctype.obj symbol _setSBCS.",
+    "create": false,
+    "aliases": [
+      "_setSBCS"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046d442",
-    "name": "FUN_0046d442",
-    "signature": "void * FUN_0046d442(void)",
-    "comment": "[binja] void* sub_46d442()"
+    "name": "crt_set_sb_up_low",
+    "signature": "void * crt_set_sb_up_low(void)",
+    "comment": "[binja] void* crt_set_sb_up_low()",
+    "aliases": [
+      "_setSBUpLow"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8947,9 +10020,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046d5e3",
-    "name": "FUN_0046d5e3",
-    "signature": "int FUN_0046d5e3(int arg1, int arg2, int arg3)",
-    "comment": "[binja] int32_t sub_46d5e3(int32_t arg1, int32_t arg2, int32_t arg3)"
+    "name": "crt_message_box_a",
+    "signature": "int crt_message_box_a(int arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t crt_message_box_a(int32_t arg1, int32_t arg2, int32_t arg3)",
+    "aliases": [
+      "___crtMessageBoxA"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d66c",
+    "name": "crt_matherr",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\matherr.obj symbol __matherr.",
+    "create": false,
+    "aliases": [
+      "__matherr"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8985,9 +10072,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046d723",
-    "name": "FUN_0046d723",
-    "signature": "int FUN_0046d723(void *arg1)",
-    "comment": "[binja] int32_t sub_46d723(void* arg1)"
+    "name": "crt_raise",
+    "signature": "int crt_raise(void *arg1)",
+    "comment": "[binja] int32_t crt_raise(void* arg1)",
+    "aliases": [
+      "_raise"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d8a5",
+    "name": "crt_siglookup",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\winsig.obj symbol _siglookup.",
+    "create": false,
+    "aliases": [
+      "_siglookup"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -8995,6 +10096,16 @@
     "name": "crt_add_u32_carry",
     "signature": "int crt_add_u32_carry(uint a, uint b, uint *out)",
     "comment": "CRT: add two u32 values and return carry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d903",
+    "name": "crt_add_12",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\mantold.obj symbol ___add_12.",
+    "create": false,
+    "aliases": [
+      "___add_12"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -9013,9 +10124,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046d9bc",
-    "name": "FUN_0046d9bc",
-    "signature": "int FUN_0046d9bc(char *arg1, int arg2, int arg3)",
-    "comment": "[binja] int32_t sub_46d9bc(char* arg1, int32_t arg2, int32_t arg3)"
+    "name": "crt_mtold12",
+    "signature": "int crt_mtold12(char *arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t crt_mtold12(char* arg1, int32_t arg2, int32_t arg3)",
+    "aliases": [
+      "___mtold12"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046da83",
+    "name": "crt_i10_output",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\x10fout.obj symbol _$I10_OUTPUT.",
+    "create": false,
+    "aliases": [
+      "_$I10_OUTPUT"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -9027,44 +10152,144 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046de3b",
-    "name": "FUN_0046de3b",
-    "signature": "short * FUN_0046de3b(short *arg1, int *arg2)",
-    "comment": "[binja] int16_t* sub_46de3b(int16_t* arg1, int32_t* arg2)"
+    "name": "crt_ld12mul",
+    "signature": "short * crt_ld12mul(short *arg1, int *arg2)",
+    "comment": "[binja] int16_t* crt_ld12mul(int16_t* arg1, int32_t* arg2)",
+    "aliases": [
+      "___ld12mul"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e05b",
+    "name": "crt_multtenpow12",
+    "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\tenpow.obj symbol ___multtenpow12.",
+    "create": false,
+    "aliases": [
+      "___multtenpow12"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e0d7",
+    "name": "crt_getenv_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\getenv.obj symbol __getenv_lk.",
+    "create": false,
+    "aliases": [
+      "__getenv_lk"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046e160",
-    "name": "FUN_0046e160",
-    "signature": "int FUN_0046e160(char *arg1, char *arg2, int arg3)",
-    "comment": "[binja] int32_t sub_46e160(char* arg1, char* arg2, int32_t arg3)"
+    "name": "crt_strnicmp",
+    "signature": "int crt_strnicmp(char *arg1, char *arg2, int arg3)",
+    "comment": "[binja] int32_t crt_strnicmp(char* arg1, char* arg2, int32_t arg3)",
+    "aliases": [
+      "__strnicmp"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e261",
+    "name": "crt_setmode_lk",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\setmode.obj symbol __setmode_lk.",
+    "create": false,
+    "aliases": [
+      "__setmode_lk"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e2c2",
+    "name": "crt_mbsnbicoll",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\mbsnbico.obj symbol __mbsnbicoll.",
+    "create": false,
+    "aliases": [
+      "__mbsnbicoll"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046e301",
-    "name": "FUN_0046e301",
-    "signature": "int FUN_0046e301(void)",
-    "comment": "[binja] int32_t sub_46e301()"
+    "name": "crt_wtomb_environ",
+    "signature": "int crt_wtomb_environ(void)",
+    "comment": "[binja] int32_t crt_wtomb_environ()",
+    "aliases": [
+      "___wtomb_environ"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e36f",
+    "name": "crt_compare_string_a",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\a_cmp.obj symbol ___crtCompareStringA.",
+    "create": false,
+    "aliases": [
+      "___crtCompareStringA"
+    ]
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e5ec",
+    "name": "crt_strncnt",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\a_cmp.obj symbol _strncnt.",
+    "create": false,
+    "aliases": [
+      "_strncnt"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046e617",
-    "name": "FUN_0046e617",
-    "signature": "int FUN_0046e617(char *arg1, int arg2)",
-    "comment": "[binja] int32_t sub_46e617(char* arg1, int32_t arg2)"
+    "name": "crt_setenv",
+    "signature": "int crt_setenv(char *arg1, int arg2)",
+    "comment": "[binja] int32_t crt_setenv(char* arg1, int32_t arg2)",
+    "aliases": [
+      "___crtsetenv"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e79e",
+    "name": "crt_findenv",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\setenv.obj symbol _findenv.",
+    "create": false,
+    "aliases": [
+      "_findenv"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046e7f6",
-    "name": "FUN_0046e7f6",
-    "signature": "void * FUN_0046e7f6(int *arg1)",
-    "comment": "[binja] void* sub_46e7f6(int32_t* arg1)"
+    "name": "crt_copy_environ",
+    "signature": "void * crt_copy_environ(int *arg1)",
+    "comment": "[binja] void* crt_copy_environ(int32_t* arg1)",
+    "aliases": [
+      "_copy_environ"
+    ],
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e85d",
+    "name": "crt_mbschr",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\mbschr.obj symbol __mbschr.",
+    "create": false,
+    "aliases": [
+      "__mbschr"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0046e8f4",
     "name": "strdup_malloc",
     "signature": "char * strdup_malloc(char * src)",
-    "comment": "malloc+copy helper"
+    "comment": "crt_malloc+copy helper"
   },
   {
     "program": "crimsonland.exe",
@@ -9189,7 +10414,7 @@
       "__aexit_rtn"
     ],
     "signature": "void (*crt_exit_routine)(int)",
-    "comment": "VC6 WinCRT process-exit routine pointer proven by the exact __amsg_exit relocation in wincrt0.obj.",
+    "comment": "VC6 WinCRT process-crt_immediate_exit routine pointer proven by the exact crt_amsg_exit relocation in wincrt0.obj.",
     "create": false
   },
   {
@@ -9211,7 +10436,7 @@
       "__C_Exit_Done"
     ],
     "signature": "int crt_exit_done",
-    "comment": "VC6 CRT exit-state flag proven by the exact _doexit relocation in crt0dat.obj.",
+    "comment": "VC6 CRT crt_immediate_exit-state flag proven by the exact _doexit relocation in crt0dat.obj.",
     "create": false
   },
   {
@@ -10274,23 +11499,26 @@
   {
     "program": "grim.dll",
     "address": "0x10009ec0",
-    "name": "jpeg_start_decompress",
-    "signature": "int jpeg_start_decompress(void *context)",
-    "comment": "IJG libjpeg 6a output-pass startup entrypoint in the separately linked plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_start_decompress",
+    "signature": "int grim_jaz_jpeg_start_decompress(void *context)",
+    "comment": "IJG libjpeg 6a output-pass startup entrypoint in the separately linked plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10009fa0",
-    "name": "output_pass_setup",
-    "signature": "int output_pass_setup(void *context)",
-    "comment": "IJG libjpeg 6a jdapistd output-pass helper in the separately linked plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_output_pass_setup",
+    "signature": "int grim_jaz_jpeg_output_pass_setup(void *context)",
+    "comment": "IJG libjpeg 6a jdapistd output-pass helper in the separately linked plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000a070",
-    "name": "jpeg_read_scanlines",
-    "signature": "unsigned int jpeg_read_scanlines(void *context, unsigned char **scanlines, unsigned int max_lines)",
-    "comment": "IJG libjpeg 6a scanline decode entrypoint in the separately linked plain-C JAZ decoder copy"
+    "name": "grim_jaz_jpeg_read_scanlines",
+    "signature": "unsigned int grim_jaz_jpeg_read_scanlines(void *context, unsigned char **scanlines, unsigned int max_lines)",
+    "comment": "IJG libjpeg 6a scanline decode entrypoint in the separately linked plain-C JAZ decoder copy",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -10433,11 +11661,34 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000a900",
+    "name": "crt_onexit",
+    "comment": "Exact archive recovery from build\\intel\\dll_obj\\atonexit.obj symbol __onexit.",
+    "create": false,
+    "aliases": [
+      "__onexit"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a92c",
+    "name": "crt_atexit",
+    "comment": "Exact archive recovery from build\\intel\\dll_obj\\atonexit.obj symbol _atexit.",
+    "create": false,
+    "aliases": [
+      "_atexit"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000a93e",
-    "name": "FUN_1000a93e",
-    "signature": "int FUN_1000a93e(int arg1)",
-    "comment": "[binja] int32_t __stdcall sub_1000a93e(int32_t arg1)",
-    "create": false
+    "name": "crt_init",
+    "signature": "int crt_init(int arg1)",
+    "comment": "[binja] int32_t __stdcall crt_init(int32_t arg1)",
+    "create": false,
+    "aliases": [
+      "__CRT_INIT@12"
+    ]
   },
   {
     "program": "grim.dll",
@@ -11548,9 +12799,24 @@
   {
     "program": "grim.dll",
     "address": "0x10010dec",
-    "name": "nullsub_2",
-    "signature": "void nullsub_2(void)",
-    "comment": "Shared return leaf; the pinned jquant2.obj binds its IJG 6a finish_pass2 callback here"
+    "name": "grim_jpeg_source_noop",
+    "signature": "void grim_jpeg_source_noop(void)",
+    "comment": "Shared return leaf; the pinned jquant2.obj binds its IJG 6a finish_pass2 callback here",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10010ded",
+    "name": "grim_jpeg_fill_input_buffer",
+    "comment": "Exact archive recovery from provider object symbol grim_jpeg_fill_input_buffer.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10010e02",
+    "name": "grim_jpeg_skip_input_data",
+    "comment": "Exact archive recovery from provider object symbol grim_jpeg_skip_input_data.",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -11594,6 +12860,13 @@
     "aliases": [
       "?d3dx_png_read_fn@@YAXPAUpng_struct_def@D3DX@@PAEI@Z"
     ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100117f3",
+    "name": "grim_png_error_longjmp",
+    "comment": "Exact archive recovery from provider object symbol grim_png_error_longjmp.",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -12141,6 +13414,13 @@
     "name": "grim_vertex_space_converter_destroy",
     "signature": "void grim_vertex_space_converter_destroy(void *this)",
     "comment": "frees the converted vertex buffer at this+0x104c"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10016941",
+    "name": "grim_vertex_space_converter_noop",
+    "comment": "Exact archive recovery from provider object symbol ?noop@grim_vertex_space_converter_t@@QAEXIII@Z.",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -13172,10 +14452,13 @@
   {
     "program": "grim.dll",
     "address": "0x1001be91",
-    "name": "FUN_1001be91",
-    "signature": "int FUN_1001be91(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001be91(int32_t* arg1)",
-    "create": false
+    "name": "d3dx_file_close",
+    "signature": "int d3dx_file_close(int* arg1)",
+    "comment": "[binja] int32_t __fastcall d3dx_file_close(int32_t* arg1)",
+    "create": false,
+    "aliases": [
+      "?Close@CD3DXFile@@QAEJXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -13247,7 +14530,7 @@
     "program": "grim.dll",
     "address": "0x1001c265",
     "name": "d3dx_jpeg_create_decompress",
-    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_create_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z.",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?jpeg_CreateDecompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z.",
     "create": false,
     "aliases": [
       "?jpeg_CreateDecompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z"
@@ -13257,7 +14540,7 @@
     "program": "grim.dll",
     "address": "0x1001c325",
     "name": "d3dx_jpeg_destroy_decompress",
-    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jpeg_destroy_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z.",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?jpeg_destroy_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z.",
     "create": false,
     "aliases": [
       "?jpeg_destroy_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
@@ -13266,8 +14549,8 @@
   {
     "program": "grim.dll",
     "address": "0x1001c32a",
-    "name": "d3dx_default_decompress_parms",
-    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z.",
+    "name": "d3dx_jpeg_default_decompress_parms",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z.",
     "create": false,
     "aliases": [
       "?default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
@@ -13277,7 +14560,7 @@
     "program": "grim.dll",
     "address": "0x1001c49d",
     "name": "d3dx_jpeg_consume_input",
-    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_consume_input@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z.",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?jpeg_consume_input@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z.",
     "create": false,
     "aliases": [
       "?jpeg_consume_input@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z"
@@ -13287,7 +14570,7 @@
     "program": "grim.dll",
     "address": "0x1001c537",
     "name": "d3dx_jpeg_finish_decompress",
-    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_finish_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z.",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?jpeg_finish_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z.",
     "create": false,
     "aliases": [
       "?jpeg_finish_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
@@ -13297,10 +14580,40 @@
     "program": "grim.dll",
     "address": "0x1001c5de",
     "name": "d3dx_jpeg_read_header",
-    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?grim_jaz_jpeg_read_header@D3DX@@YAHPAUjpeg_decompress_struct@1@E@Z.",
+    "comment": "Exact archive recovery from obj\\i386\\jdapimin.obj symbol ?jpeg_read_header@D3DX@@YAHPAUjpeg_decompress_struct@1@E@Z.",
     "create": false,
     "aliases": [
       "?jpeg_read_header@D3DX@@YAHPAUjpeg_decompress_struct@1@E@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c641",
+    "name": "d3dx_jpeg_output_pass_setup",
+    "comment": "Exact archive recovery from obj\\i386\\jdapistd.obj symbol ?output_pass_setup@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z.",
+    "create": false,
+    "aliases": [
+      "?output_pass_setup@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c6ea",
+    "name": "d3dx_jpeg_read_scanlines",
+    "comment": "Exact archive recovery from obj\\i386\\jdapistd.obj symbol ?jpeg_read_scanlines@D3DX@@YAIPAUjpeg_decompress_struct@1@PAPAEI@Z.",
+    "create": false,
+    "aliases": [
+      "?jpeg_read_scanlines@D3DX@@YAIPAUjpeg_decompress_struct@1@PAPAEI@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c76e",
+    "name": "d3dx_jpeg_start_decompress",
+    "comment": "Exact archive recovery from obj\\i386\\jdapistd.obj symbol ?jpeg_start_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z.",
+    "create": false,
+    "aliases": [
+      "?jpeg_start_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
     ]
   },
   {
@@ -13354,6 +14667,16 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001e073",
+    "name": "d3dx_png_format_buffer",
+    "comment": "Exact archive recovery from obj\\i386\\pngerror.obj symbol ?png_format_buffer@D3DX@@YAXPAUpng_struct_def@1@PADPBD@Z.",
+    "create": false,
+    "aliases": [
+      "?png_format_buffer@D3DX@@YAXPAUpng_struct_def@1@PADPBD@Z"
+    ]
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001e0fa",
     "name": "png_set_error_fn",
     "signature": "void png_set_error_fn(png_structp png_ptr, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warning_fn)",
@@ -13362,9 +14685,13 @@
   {
     "program": "grim.dll",
     "address": "0x1001e114",
-    "name": "png_error",
-    "signature": "void png_error(png_structp png_ptr, char * msg)",
-    "comment": "png error handler: call error_fn then longjmp"
+    "name": "d3dx_png_error",
+    "signature": "void d3dx_png_error(png_structp png_ptr, char * msg)",
+    "comment": "png error handler: call error_fn then longjmp",
+    "aliases": [
+      "?png_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
+    ],
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -13376,36 +14703,46 @@
   {
     "program": "grim.dll",
     "address": "0x1001e147",
-    "name": "png_chunk_error",
-    "signature": "void png_chunk_error(png_structp png_ptr, png_const_charp error_message)",
-    "comment": "Formats the current chunk name with an error message and enters png_error"
+    "name": "d3dx_png_chunk_error",
+    "signature": "void d3dx_png_chunk_error(png_structp png_ptr, png_const_charp error_message)",
+    "comment": "Formats the current chunk name with an error message and enters d3dx_png_error",
+    "aliases": [
+      "?png_chunk_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
+    ],
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001e16c",
-    "name": "png_chunk_warning",
-    "signature": "void png_chunk_warning(png_structp png_ptr, png_const_charp warning_message)",
-    "comment": "Formats the current chunk name with a warning message and enters png_warning"
+    "name": "d3dx_png_chunk_warning",
+    "signature": "void d3dx_png_chunk_warning(png_structp png_ptr, png_const_charp warning_message)",
+    "comment": "Formats the current chunk name with a warning message and enters png_warning",
+    "aliases": [
+      "?png_chunk_warning@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
+    ],
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001e191",
-    "name": "png_create_read_struct",
+    "name": "d3dx_png_create_read_struct",
     "aliases": [
       "?png_create_read_struct@D3DX@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@Z3@Z"
     ],
-    "signature": "png_structp png_create_read_struct(char * user_png_ver, png_voidp error_ptr, void * error_fn, void * warn_fn)",
-    "comment": "allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr callbacks"
+    "signature": "png_structp d3dx_png_create_read_struct(char * user_png_ver, png_voidp error_ptr, void * error_fn, void * warn_fn)",
+    "comment": "allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr callbacks",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001e294",
-    "name": "png_read_info",
+    "name": "d3dx_png_read_info",
     "aliases": [
       "?png_read_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
     ],
-    "signature": "void png_read_info(png_structp png_ptr, png_infop info_ptr)",
-    "comment": "Reads PNG chunks through the first IDAT and populates the caller-visible info structure"
+    "signature": "void d3dx_png_read_info(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Reads PNG chunks through the first IDAT and populates the caller-visible info structure",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -13417,12 +14754,13 @@
   {
     "program": "grim.dll",
     "address": "0x1001e427",
-    "name": "png_read_row",
+    "name": "d3dx_png_read_row",
     "aliases": [
       "?png_read_row@D3DX@@YAXPAUpng_struct_def@1@PAE1@Z"
     ],
-    "signature": "void png_read_row(png_structp png_ptr, png_bytep row, png_bytep display_row)",
-    "comment": "Archive-confirmed libpng 1.0.5 row decoder"
+    "signature": "void d3dx_png_read_row(png_structp png_ptr, png_bytep row, png_bytep display_row)",
+    "comment": "Archive-confirmed libpng 1.0.5 row decoder",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -13434,22 +14772,24 @@
   {
     "program": "grim.dll",
     "address": "0x1001e81b",
-    "name": "png_read_destroy",
+    "name": "d3dx_png_read_destroy",
     "aliases": [
       "?png_read_destroy@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@1@Z"
     ],
-    "signature": "void png_read_destroy(png_structp png_ptr, png_infop info_ptr, png_infop end_info_ptr)",
-    "comment": "Releases allocations owned by the libpng read and info structures"
+    "signature": "void d3dx_png_read_destroy(png_structp png_ptr, png_infop info_ptr, png_infop end_info_ptr)",
+    "comment": "Releases allocations owned by the libpng read and info structures",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001e93e",
-    "name": "png_destroy_read_struct",
+    "name": "d3dx_png_destroy_read_struct",
     "aliases": [
       "?png_destroy_read_struct@D3DX@@YAXPAPAUpng_struct_def@1@PAPAUpng_info_struct@1@1@Z"
     ],
-    "signature": "void png_destroy_read_struct(png_structpp png_ptr_ptr, png_infopp info_ptr_ptr, png_infopp end_info_ptr_ptr)",
-    "comment": "Destroys the libpng read structures and clears their caller-owned pointers"
+    "signature": "void d3dx_png_destroy_read_struct(png_structpp png_ptr_ptr, png_infopp info_ptr_ptr, png_infopp end_info_ptr_ptr)",
+    "comment": "Destroys the libpng read structures and clears their caller-owned pointers",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -13489,12 +14829,13 @@
   {
     "program": "grim.dll",
     "address": "0x1001ea59",
-    "name": "png_get_IHDR",
+    "name": "d3dx_png_get_ihdr",
     "aliases": [
       "?png_get_IHDR@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAK2PAH3333@Z"
     ],
-    "signature": "png_uint_32 png_get_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_type, int *compression_type, int *filter_type)",
-    "comment": "Returns the decoded IHDR dimensions and format fields"
+    "signature": "png_uint_32 d3dx_png_get_ihdr(png_structp png_ptr, png_infop info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_type, int *compression_type, int *filter_type)",
+    "comment": "Returns the decoded IHDR dimensions and format fields",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -13506,212 +14847,243 @@
   {
     "program": "grim.dll",
     "address": "0x1001eb5d",
-    "name": "png_get_tRNS",
+    "name": "d3dx_png_get_trns",
     "aliases": [
       "?png_get_tRNS@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAPAEPAHPAPAUpng_color_16_struct@1@@Z"
     ],
-    "signature": "png_uint_32 png_get_tRNS(png_structp png_ptr, png_infop info_ptr, png_bytep *trans, int *num_trans, png_color_16p *trans_values)",
-    "comment": "Returns the stored transparency table and transparent-color value"
+    "signature": "png_uint_32 d3dx_png_get_trns(png_structp png_ptr, png_infop info_ptr, png_bytep *trans, int *num_trans, png_color_16p *trans_values)",
+    "comment": "Returns the stored transparency table and transparent-color value",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ebc4",
-    "name": "png_set_bgr",
+    "name": "d3dx_png_set_bgr",
     "aliases": [
       "?png_set_bgr@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
-    "signature": "void png_set_bgr(png_structp png_ptr)",
-    "comment": "Enables libpng's red/blue channel swap transform"
+    "signature": "void d3dx_png_set_bgr(png_structp png_ptr)",
+    "comment": "Enables libpng's red/blue channel swap transform",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ebcd",
-    "name": "png_set_swap",
+    "name": "d3dx_png_set_swap",
     "aliases": [
       "?png_set_swap@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
-    "signature": "void png_set_swap(png_structp png_ptr)",
-    "comment": "Enables 16-bit sample byte swapping when the input depth is 16"
+    "signature": "void d3dx_png_set_swap(png_structp png_ptr)",
+    "comment": "Enables 16-bit sample byte swapping when the input depth is 16",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ebdf",
-    "name": "png_set_packing",
+    "name": "d3dx_png_set_packing",
     "aliases": [
       "?png_set_packing@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
-    "signature": "void png_set_packing(png_structp png_ptr)",
-    "comment": "Expands packed sub-byte samples and promotes the user bit depth to eight"
+    "signature": "void d3dx_png_set_packing(png_structp png_ptr)",
+    "comment": "Expands packed sub-byte samples and promotes the user bit depth to eight",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ebf8",
-    "name": "png_set_interlace_handling",
+    "name": "d3dx_png_set_interlace_handling",
     "aliases": [
       "?png_set_interlace_handling@D3DX@@YAHPAUpng_struct_def@1@@Z"
     ],
-    "signature": "int png_set_interlace_handling(png_structp png_ptr)",
-    "comment": "Enables Adam7 handling and returns seven passes, or one pass for noninterlaced input"
+    "signature": "int d3dx_png_set_interlace_handling(png_structp png_ptr)",
+    "comment": "Enables Adam7 handling and returns seven passes, or one pass for noninterlaced input",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ec11",
-    "name": "png_set_filler",
+    "name": "d3dx_png_set_filler",
     "aliases": [
       "?png_set_filler@D3DX@@YAXPAUpng_struct_def@1@KH@Z"
     ],
-    "signature": "void png_set_filler(png_structp png_ptr, png_uint_32 filler, int filler_loc)",
-    "comment": "Configures filler value, placement, and transformed channel count"
+    "signature": "void d3dx_png_set_filler(png_structp png_ptr, png_uint_32 filler, int filler_loc)",
+    "comment": "Configures filler value, placement, and transformed channel count",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ec5e",
-    "name": "png_do_swap",
+    "name": "d3dx_png_do_swap",
     "aliases": [
       "?png_do_swap@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
     ],
-    "signature": "void png_do_swap(png_row_infop row_info, png_bytep row)",
-    "comment": "Swaps the byte order of each 16-bit sample in a decoded row"
+    "signature": "void d3dx_png_do_swap(png_row_infop row_info, png_bytep row)",
+    "comment": "Swaps the byte order of each 16-bit sample in a decoded row",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ec8b",
-    "name": "png_do_bgr",
+    "name": "d3dx_png_do_bgr",
     "aliases": [
       "?png_do_bgr@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
     ],
-    "signature": "void png_do_bgr(png_row_infop row_info, png_bytep row)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 red/blue channel swap transform."
+    "signature": "void d3dx_png_do_bgr(png_row_infop row_info, png_bytep row)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 red/blue channel swap transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ed4a",
-    "name": "png_set_gamma",
+    "name": "d3dx_png_set_gamma",
     "aliases": [
       "?png_set_gamma@D3DX@@YAXPAUpng_struct_def@1@NN@Z"
     ],
-    "signature": "void png_set_gamma(png_structp png_ptr, double screen_gamma, double file_gamma)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma configuration entry."
+    "signature": "void d3dx_png_set_gamma(png_structp png_ptr, double screen_gamma, double file_gamma)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma configuration entry.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ed80",
+    "name": "d3dx_png_set_expand",
+    "comment": "Exact archive recovery from obj\\i386\\pngrtran.obj symbol ?png_set_expand@D3DX@@YAXPAUpng_struct_def@1@@Z.",
+    "create": false,
+    "aliases": [
+      "?png_set_expand@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "program": "grim.dll",
     "address": "0x1001ed89",
-    "name": "png_read_transform_info",
+    "name": "d3dx_png_read_transform_info",
     "aliases": [
       "?png_read_transform_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
     ],
-    "signature": "void png_read_transform_info(png_structp png_ptr, png_infop info_ptr)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 post-transform info updater."
+    "signature": "void d3dx_png_read_transform_info(png_structp png_ptr, png_infop info_ptr)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 post-transform info updater.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ee74",
-    "name": "png_do_unpack",
+    "name": "d3dx_png_do_unpack",
     "aliases": [
       "?png_do_unpack@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
     ],
-    "signature": "void png_do_unpack(png_row_infop row_info, png_bytep row)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 packed-sample expansion transform."
+    "signature": "void d3dx_png_do_unpack(png_row_infop row_info, png_bytep row)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 packed-sample expansion transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001ef84",
-    "name": "png_do_unshift",
+    "name": "d3dx_png_do_unshift",
     "aliases": [
       "?png_do_unshift@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_8_struct@1@@Z"
     ],
-    "signature": "void png_do_unshift(png_row_infop row_info, png_bytep row, png_color_8p sig_bits)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 significant-bit unshift transform."
+    "signature": "void d3dx_png_do_unshift(png_row_infop row_info, png_bytep row, png_color_8p sig_bits)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 significant-bit unshift transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001f0fb",
-    "name": "png_do_chop",
+    "name": "d3dx_png_do_chop",
     "aliases": [
       "?png_do_chop@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
     ],
-    "signature": "void png_do_chop(png_row_infop row_info, png_bytep row)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 16-bit-to-8-bit sample transform."
+    "signature": "void d3dx_png_do_chop(png_row_infop row_info, png_bytep row)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 16-bit-to-8-bit sample transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001f13f",
-    "name": "png_do_read_filler",
+    "name": "d3dx_png_do_read_filler",
     "aliases": [
       "?png_do_read_filler@D3DX@@YAXPAUpng_row_info_struct@1@PAEKK@Z"
     ],
-    "signature": "void png_do_read_filler(png_row_infop row_info, png_bytep row, png_uint_32 filler, png_uint_32 flags)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 read-side filler-channel transform."
+    "signature": "void d3dx_png_do_read_filler(png_row_infop row_info, png_bytep row, png_uint_32 filler, png_uint_32 flags)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 read-side filler-channel transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001f377",
-    "name": "png_do_gamma",
+    "name": "d3dx_png_do_gamma",
     "aliases": [
       "?png_do_gamma@D3DX@@YAXPAUpng_row_info_struct@1@PAE1PAPAGH@Z"
     ],
-    "signature": "void png_do_gamma(png_row_infop row_info, png_bytep row, png_bytep gamma_table, png_uint_16pp gamma_16_table, int gamma_shift)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 row gamma transform."
+    "signature": "void d3dx_png_do_gamma(png_row_infop row_info, png_bytep row, png_bytep gamma_table, png_uint_16pp gamma_16_table, int gamma_shift)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 row gamma transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001f6c5",
-    "name": "png_do_expand_palette",
+    "name": "d3dx_png_do_expand_palette",
     "aliases": [
       "?png_do_expand_palette@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_struct@1@1H@Z"
     ],
-    "signature": "void png_do_expand_palette(png_row_infop row_info, png_bytep row, png_colorp palette, png_bytep trans, int num_trans)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 palette expansion transform."
+    "signature": "void d3dx_png_do_expand_palette(png_row_infop row_info, png_bytep row, png_colorp palette, png_bytep trans, int num_trans)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 palette expansion transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001f8cd",
-    "name": "png_do_expand",
+    "name": "d3dx_png_do_expand",
     "aliases": [
       "?png_do_expand@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_16_struct@1@@Z"
     ],
-    "signature": "void png_do_expand(png_row_infop row_info, png_bytep row, png_color_16p trans_value)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 grayscale, RGB, and transparency expansion transform."
+    "signature": "void d3dx_png_do_expand(png_row_infop row_info, png_bytep row, png_color_16p trans_value)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 grayscale, RGB, and transparency expansion transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001fc1f",
-    "name": "png_do_dither",
+    "name": "d3dx_png_do_dither",
     "aliases": [
       "?png_do_dither@D3DX@@YAXPAUpng_row_info_struct@1@PAE11@Z"
     ],
-    "signature": "void png_do_dither(png_row_infop row_info, png_bytep row, png_bytep palette_lookup, png_bytep dither_lookup)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 palette dither transform."
+    "signature": "void d3dx_png_do_dither(png_row_infop row_info, png_bytep row, png_bytep palette_lookup, png_bytep dither_lookup)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 palette dither transform.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1001fd2d",
-    "name": "png_build_gamma_table",
+    "name": "d3dx_png_build_gamma_table",
     "aliases": [
       "?png_build_gamma_table@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
-    "signature": "void png_build_gamma_table(png_structp png_ptr)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma lookup-table builder."
+    "signature": "void d3dx_png_build_gamma_table(png_structp png_ptr)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 gamma lookup-table builder.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10020036",
-    "name": "png_init_read_transformations",
+    "name": "d3dx_png_init_read_transformations",
     "aliases": [
       "?png_init_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
-    "signature": "void png_init_read_transformations(png_structp png_ptr)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 read-transform initialization."
+    "signature": "void d3dx_png_init_read_transformations(png_structp png_ptr)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 read-transform initialization.",
+    "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x10020149",
-    "name": "png_do_read_transformations",
+    "name": "d3dx_png_do_read_transformations",
     "aliases": [
       "?png_do_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"
     ],
-    "signature": "void png_do_read_transformations(png_structp png_ptr)",
-    "comment": "Exact DirectX 8.1 libpng 1.0.5 decoded-row transform dispatcher."
+    "signature": "void d3dx_png_do_read_transformations(png_structp png_ptr)",
+    "comment": "Exact DirectX 8.1 libpng 1.0.5 decoded-row transform dispatcher.",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -13723,12 +15095,13 @@
   {
     "program": "grim.dll",
     "address": "0x1002031c",
-    "name": "png_set_IHDR",
+    "name": "d3dx_png_set_ihdr",
     "aliases": [
       "?png_set_IHDR@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@KKHHHHH@Z"
     ],
-    "signature": "void png_set_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type)",
-    "comment": "Stores validated IHDR dimensions and format fields and marks the header valid"
+    "signature": "void d3dx_png_set_ihdr(png_structp png_ptr, png_infop info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type)",
+    "comment": "Stores validated IHDR dimensions and format fields and marks the header valid",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -14079,10 +15452,13 @@
   {
     "program": "grim.dll",
     "address": "0x10022c2f",
-    "name": "FUN_10022c2f",
-    "signature": "int FUN_10022c2f(int arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10022c2f(int32_t arg1)",
-    "create": false
+    "name": "d3dx_jpeg_is_mmx",
+    "signature": "int d3dx_jpeg_is_mmx(int arg1)",
+    "comment": "[binja] int32_t __fastcall d3dx_jpeg_is_mmx(int32_t arg1)",
+    "create": false,
+    "aliases": [
+      "?IsMMX@D3DX@@YAHXZ"
+    ]
   },
   {
     "program": "grim.dll",
@@ -14388,9 +15764,13 @@
   {
     "program": "grim.dll",
     "address": "0x10024741",
-    "name": "png_malloc",
-    "signature": "void * png_malloc(png_structp png_ptr, png_uint_32 size)",
-    "comment": "png malloc wrapper (errors on OOM)"
+    "name": "d3dx_png_malloc",
+    "signature": "void * d3dx_png_malloc(png_structp png_ptr, png_uint_32 size)",
+    "comment": "png malloc wrapper (errors on OOM)",
+    "aliases": [
+      "?png_malloc@D3DX@@YAPAXPAUpng_struct_def@1@K@Z"
+    ],
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -14458,12 +15838,13 @@
   {
     "program": "grim.dll",
     "address": "0x10024dc0",
-    "name": "png_read_filter_row",
+    "name": "d3dx_png_read_filter_row",
     "aliases": [
       "?png_read_filter_row@D3DX@@YAXPAUpng_struct_def@1@PAUpng_row_info_struct@1@PAE2H@Z"
     ],
-    "signature": "void png_read_filter_row(png_structp png_ptr, png_row_infop row_info, png_bytep row, png_bytep prev_row, int filter)",
-    "comment": "Archive-confirmed libpng 1.0.5 PNG row-filter reversal"
+    "signature": "void d3dx_png_read_filter_row(png_structp png_ptr, png_row_infop row_info, png_bytep row, png_bytep prev_row, int filter)",
+    "comment": "Archive-confirmed libpng 1.0.5 PNG row-filter reversal",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -14492,13 +15873,14 @@
   {
     "program": "grim.dll",
     "address": "0x10025359",
-    "name": "png_handle_PLTE",
+    "name": "d3dx_png_handle_plte",
     "aliases": [
       "grim_png_read_PLTE",
       "?png_handle_PLTE@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@K@Z"
     ],
-    "signature": "void png_handle_PLTE(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
-    "comment": "Archive-confirmed libpng 1.0.5 PLTE parser"
+    "signature": "void d3dx_png_handle_plte(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
+    "comment": "Archive-confirmed libpng 1.0.5 PLTE parser",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -14665,6 +16047,36 @@
     "name": "d3dx_jpeg_init_d_main_controller",
     "signature": "void d3dx_jpeg_init_d_main_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
     "comment": "Archive-confirmed IJG 6a decompression main-controller initializer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003a504",
+    "name": "zlib_tr_static_init",
+    "comment": "Exact archive recovery from trees.obj symbol _tr_static_init.",
+    "create": false,
+    "aliases": [
+      "_tr_static_init"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b770",
+    "name": "crt_aullshr",
+    "comment": "Exact archive recovery from build\\intel\\mt_obj\\ullshr.obj symbol __aullshr.",
+    "create": false,
+    "aliases": [
+      "__aullshr"
+    ]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b790",
+    "name": "crt_alloca_probe",
+    "comment": "Exact archive recovery from build\\intel\\dll_obj\\chkstk.obj symbol __alloca_probe.",
+    "create": false,
+    "aliases": [
+      "__alloca_probe"
+    ]
   },
   {
     "program": "grim.dll",

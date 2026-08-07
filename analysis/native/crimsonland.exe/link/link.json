@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -29,7 +29,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         }
       }
     },
@@ -44,14 +44,14 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
       }
     }
   ],
-  "audit_digest": "9d54e9bc461c304c831e07cd031fdd6c7ec81b103199cfe3ecb6f8bb9846f17f",
+  "audit_digest": "b7f13032b47b74d47dfc0957d434dd5fbc40c3c009f506bfd353e7ed56ccc67c",
   "entry": {
     "aliases": {
       "object": {
@@ -76,7 +76,7 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 323902,
+      "entry_point_rva": 323918,
       "image_base": 4194304,
       "image_size": 868352,
       "machine": 332,
@@ -86,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "712ebca4c8c42e334f52478659805da933a70b55ff4142c03a5ede3cbb675cc0"
+    "sha256": "b46447a9a7a6758d497dcfe51101a43fda2de7cda86d3e6fa1976cf8ffee7fb9"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -108,10 +108,10 @@
     "symbol_count": 10
   },
   "provider_config": {
-    "declared_sha256": "25b3deaea4577ef26f4d6e74c829a73ad643d1a00629dd90b05562faa9df0897",
+    "declared_sha256": "13ef6d5855aab2fe1b0c4dd846b2df347b479f947d9ca8da8b49b2fade5fef28",
     "path": "tools/native/providers/crimsonland.exe.json",
     "repository_relative": true,
-    "sha256": "25b3deaea4577ef26f4d6e74c829a73ad643d1a00629dd90b05562faa9df0897"
+    "sha256": "13ef6d5855aab2fe1b0c4dd846b2df347b479f947d9ca8da8b49b2fade5fef28"
   },
   "providers": [
     {
@@ -119,7 +119,7 @@
         "object": {
           "path": "analysis/native/crimsonland.exe/link/providers/msvc6-runtime-static-aliases.obj",
           "repository_relative": true,
-          "sha256": "01512a66a50b706167adb8a3825365ccdb82a89e6f25b917aa992f96c0efe05a"
+          "sha256": "32a41318502c4ab74bad44386199335ec3bf31b9617bb395388ab80c7fea5129"
         },
         "symbols": [
           {
@@ -141,10 +141,6 @@
           {
             "alias": "?crt_ftell@@YAJPAU_iobuf@@@Z",
             "target": "_ftell"
-          },
-          {
-            "alias": "_FUN_004623b2",
-            "target": "_time"
           },
           {
             "alias": "_crt_atexit",
@@ -243,6 +239,10 @@
             "target": "_strtok"
           },
           {
+            "alias": "_crt_time",
+            "target": "_time"
+          },
+          {
             "alias": "_crt_vsprintf",
             "target": "_vsprintf"
           },
@@ -258,13 +258,13 @@
           "note": "The pinned VC6 SP6 LIBCMT archive matches 299 executable CRT functions byte-for-byte and uniquely identifies 254 of them.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
+          "sha256": "770aaa7245d84dc05181b1f65cd1e5f71ca1bac9e6292f6d9d5f87d6f14dd663"
         },
         {
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         }
       ],
       "kind": "static-library",
@@ -281,7 +281,7 @@
         "?crt_fread@@YAIPAXIIPAU_iobuf@@@Z",
         "?crt_fseek@@YAHPAU_iobuf@@JH@Z",
         "?crt_ftell@@YAJPAU_iobuf@@@Z",
-        "_FUN_004623b2",
+        "_crt_time",
         "__CIpow",
         "__alldiv",
         "__allmul",
@@ -325,6 +325,7 @@
         "_qsort",
         "_rand",
         "_sprintf",
+        "_sscanf",
         "_strchr",
         "_strdup_malloc",
         "_strncmp",
@@ -335,16 +336,16 @@
       "archive": "vc6-sp6-libcmt",
       "evidence": [
         {
-          "note": "The native closure classifier identifies both symbols as MSVC toolchain or CRT-default-library externals.",
+          "note": "The native closure classifier identifies __fltused as an MSVC toolchain external.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "a0df302ca2ed22016260f3d02b418c7c4049a9b410facf83ce804691fd37bc48"
+          "sha256": "a19fc9d364a37d362381578bfd6bc889738a43ccfc437a7fcc2668d906e74b3f"
         },
         {
-          "note": "The pinned VC6 SP6 LIBCMT archive contains both definitions.",
+          "note": "The pinned VC6 SP6 LIBCMT archive contains the definition.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
+          "sha256": "770aaa7245d84dc05181b1f65cd1e5f71ca1bac9e6292f6d9d5f87d6f14dd663"
         }
       ],
       "kind": "toolchain",
@@ -352,8 +353,7 @@
       "resolution": "archive-library",
       "scope": "closure",
       "symbols": [
-        "__fltused",
-        "_sscanf"
+        "__fltused"
       ]
     },
     {
@@ -965,7 +965,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive records these decorated KERNEL32 references.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
+          "sha256": "770aaa7245d84dc05181b1f65cd1e5f71ca1bac9e6292f6d9d5f87d6f14dd663"
         }
       ],
       "import_library": {
@@ -1086,7 +1086,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         }
       ],
       "import_library": {
@@ -1394,7 +1394,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive defines __snprintf and _tolower.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         }
       ],
       "kind": "static-library",
@@ -1448,7 +1448,7 @@
           "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         }
       ],
       "import_library": {
@@ -1690,7 +1690,7 @@
           "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF.",
           "path": "docs/re/static/native-linking.md",
           "repository_relative": true,
-          "sha256": "b306705cb2e8e869ca3eef5d214f67a0aadb1dd81e1140a016ebe63bf69d9d69"
+          "sha256": "adf8db5100febd1c9030387d59d6059821e07d7302df4a68bdbda72bd1062881"
         },
         {
           "note": "None of the ten API names is present in the reference executable import table.",
@@ -1724,7 +1724,7 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         },
         {
           "note": "The final missing DirectX member is an exact 1,014-instruction match with all 61 references aligned.",
@@ -1775,13 +1775,13 @@
           "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "daed5fd5a9e3f3f3ac85819acf135ae3c959792cf0f95eb0d1cae65ff8afbcf4"
+          "sha256": "a03455f71dd7eae9c8e62b3fef0abda94a9032352c62dde20b5ff2e6dabae687"
         },
         {
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "5b0b5ad1c8f415d4774b13e119488a27baf0caad1d26f3add8193b4c4e82e9ce"
+          "sha256": "770aaa7245d84dc05181b1f65cd1e5f71ca1bac9e6292f6d9d5f87d6f14dd663"
         }
       ],
       "kind": "static-library",
@@ -2311,7 +2311,7 @@
         "name": "msvc6-runtime-static",
         "resolution": "archive-library",
         "scope": "closure",
-        "symbol_count": 57
+        "symbol_count": 58
       },
       {
         "archive": "vc6-sp6-libcmt",
@@ -2319,7 +2319,7 @@
         "name": "msvc6-toolchain",
         "resolution": "archive-library",
         "scope": "closure",
-        "symbol_count": 2
+        "symbol_count": 1
       },
       {
         "alias_count": 1,

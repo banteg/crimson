@@ -98,6 +98,7 @@ from crimson.match import (
     render_status_summary,
     render_status_table,
     render_triage_rows,
+    repair_provider_comments,
     resolve_function,
     resolve_function_with_scope_hint,
     rewrite_placeholder_references,
@@ -853,6 +854,44 @@ def test_load_reference_catalog_includes_curated_decorated_aliases(tmp_path: Pat
         "name:??1GrimTexture@@QAE@XZ",
         "name:?1GrimTexture",
         "address:0x10004ab0",
+    )
+
+
+def test_load_reference_catalog_drops_superseded_raw_function_names(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x0046150a","name":"crt_flushall"},'
+        '{"address":"0x00461501","name":"sub_00461501"}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"crimsonland.exe","address":"0x00461501",'
+        '"name":"crt_flushall","aliases":["__flushall"]},'
+        '{"program":"crimsonland.exe","address":"0x0046150a",'
+        '"name":"crt_flsall","aliases":["_flsall"]}]\n',
+        encoding="utf-8",
+    )
+    manifest = FunctionManifest(
+        image_name="crimsonland.exe",
+        image_base=0x00400000,
+        functions=(
+            FunctionSymbol("crt_flushall", 0x00461501, 0x0046150A, 9),
+            FunctionSymbol("crt_flsall", 0x0046150A, 0x00461520, 0x16),
+        ),
+    )
+
+    catalog = load_reference_catalog(
+        manifest,
+        functions_path=functions_path,
+        data_map_path=tmp_path / "missing-data-map.json",
+        name_map_path=name_map_path,
+    )
+
+    assert "name:crt_flushall" not in catalog.keys_for_address(0x0046150A)
+    assert catalog.keys_for_object_reference("crt_flushall", 0) == (
+        "name:crt_flushall",
+        "address:0x00461501",
     )
 
 
@@ -2585,6 +2624,223 @@ def test_collect_naming_debt_suggests_exact_d3dx_image_and_jpeg_symbols(
     assert jpeg_row.issues == ("placeholder-function",)
 
 
+def test_collect_naming_debt_namespaces_exact_d3dx_codec_helpers(tmp_path: Path) -> None:
+    base_config = ScratchConfig(
+        directory=tmp_path / "d3dx_jpeg_output_pass_setup",
+        function="sub_1001C641",
+        image="grim.dll",
+        compiler="msvc7.0",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol="?output_pass_setup@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z",
+        note="directx-8.1-archive-jpeg-output-pass-setup",
+        archive="d3dx8.lib",
+        archive_member=r"obj\i386\jdapistd.obj",
+        archive_sha256="a" * 64,
+    )
+    configs = [
+        base_config,
+        replace(
+            base_config,
+            directory=tmp_path / "d3dx_default_decompress_parms",
+            function="d3dx_default_decompress_parms",
+            symbol="?default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z",
+            archive_member=r"obj\i386\jdapimin.obj",
+        ),
+        replace(
+            base_config,
+            directory=tmp_path / "png_error",
+            function="png_error",
+            symbol="?png_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z",
+            archive_member=r"obj\i386\pngerror.obj",
+        ),
+        replace(
+            base_config,
+            directory=tmp_path / "png_get_trns",
+            function="png_get_tRNS",
+            symbol=(
+                "?png_get_tRNS@D3DX@@YAKPAUpng_struct_def@1@"
+                "PAUpng_info_struct@1@PAPAEPAHPAPAUpng_color_16_struct@1@@Z"
+            ),
+            archive_member=r"obj\i386\pngget.obj",
+        ),
+        replace(
+            base_config,
+            directory=tmp_path / "d3dx_file_close",
+            function="FUN_1001BE91",
+            symbol="?Close@CD3DXFile@@QAEJXZ",
+            archive_member=r"obj\i386\cd3dxfile.obj",
+        ),
+        replace(
+            base_config,
+            directory=tmp_path / "d3dx_jpeg_is_mmx",
+            function="FUN_10022C2F",
+            symbol="?IsMMX@D3DX@@YAHXZ",
+            archive_member=r"obj\i386\jutils.obj",
+        ),
+    ]
+    statuses = [
+        ScratchStatus(
+            config=config,
+            address=0x1001C641 + index * 0x20,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        )
+        for index, config in enumerate(configs)
+    ]
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "grim.dll",
+                    "address": f"0x{status.address:08x}",
+                    "name": status.config.function,
+                }
+                for status in statuses
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(statuses, name_map_path=name_map)
+
+    assert [row.suggestion for row in rows] == [
+        "d3dx_jpeg_output_pass_setup",
+        "d3dx_jpeg_default_decompress_parms",
+        "d3dx_png_error",
+        "d3dx_png_get_trns",
+        "d3dx_file_close",
+        "d3dx_jpeg_is_mmx",
+    ]
+
+
+def test_collect_naming_debt_namespaces_exact_stock_codec_helpers(tmp_path: Path) -> None:
+    jaz_config = ScratchConfig(
+        directory=tmp_path / "grim_jaz_jpeg_output_pass_setup",
+        function="output_pass_setup",
+        image="grim.dll",
+        compiler="msvc7.0",
+        cflags="",
+        source="../../third_party/sources/ijg-libjpeg-6a/jdapistd.c",
+        end_va=None,
+        symbol="output_pass_setup",
+        note="ijg-6a-stock-output-pass-setup",
+    )
+    zlib_config = replace(
+        jaz_config,
+        directory=tmp_path / "d3dx_zlib_static_tree_init",
+        function="nullsub_8",
+        source="",
+        symbol="_tr_static_init",
+        note="zlib-1.1.3-empty-static-tree-init",
+        archive="zlib.lib",
+        archive_member="trees.obj",
+        archive_sha256="a" * 64,
+    )
+    callback_config = replace(
+        jaz_config,
+        directory=tmp_path / "grim_png_error_longjmp",
+        function="sub_100117F3",
+        source="../../shared/grim_png_callbacks.cpp",
+        symbol="grim_png_error_longjmp",
+        note="png-error-longjmp-callback",
+    )
+    vertex_config = replace(
+        jaz_config,
+        directory=tmp_path / "nullsub_6",
+        function="nullsub_6",
+        source="../../shared/grim_vertex_space_converter.cpp",
+        symbol="?noop@grim_vertex_space_converter_t@@QAEXIII@Z",
+        note="d3dx-vertex-space-converter-noop-leaf",
+    )
+    statuses = [
+        ScratchStatus(
+            config=config,
+            address=address,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        )
+        for config, address in (
+            (jaz_config, 0x10009FA0),
+            (callback_config, 0x100117F3),
+            (vertex_config, 0x10018000),
+            (zlib_config, 0x1003A604),
+        )
+    ]
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "grim.dll",
+                    "address": f"0x{status.address:08x}",
+                    "name": status.config.function,
+                }
+                for status in statuses
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(statuses, name_map_path=name_map)
+
+    assert [row.suggestion for row in rows] == [
+        "grim_jaz_jpeg_output_pass_setup",
+        "grim_png_error_longjmp",
+        "grim_vertex_space_converter_noop",
+        "zlib_tr_static_init",
+    ]
+
+
+def test_collect_naming_debt_accepts_official_unknown_chunk_note(tmp_path: Path) -> None:
+    config = ScratchConfig(
+        directory=tmp_path / "png_handle_unknown",
+        function="png_handle_unknown",
+        image="grim.dll",
+        compiler="msvc7.0",
+        cflags="",
+        source="../../third_party/sources/libpng-1.0.5/pngrutil.c",
+        end_va=None,
+        symbol="png_handle_unknown",
+        note="libpng-1.0.5-unknown-chunk-handler",
+    )
+    status = ScratchStatus(
+        config=config,
+        address=0x10025000,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "grim.dll",
+                    "address": "0x10025000",
+                    "name": "png_handle_unknown",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    assert collect_naming_debt([status], name_map_path=name_map) == []
+
+
 def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path) -> None:
     base_config = ScratchConfig(
         directory=tmp_path / "FUN_00401000",
@@ -2662,6 +2918,87 @@ def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path
         "crt_printf_get_int64_arg",
     ]
     assert all(row.suggestion_sources == (f"provider-symbol:{row.provider_symbol}",) for row in rows)
+
+
+def test_collect_naming_debt_canonicalizes_weak_exact_vc6_symbols(tmp_path: Path) -> None:
+    base_config = ScratchConfig(
+        directory=tmp_path / "FUN_00401000",
+        function="FUN_00401000",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol="__GetLinkerVersion",
+        note="vc6-crt-linker-version",
+        archive="libcmt.lib",
+        archive_member=r"build\intel\mt_obj\heapinit.obj",
+        archive_sha256="a" * 64,
+    )
+    configs = [
+        base_config,
+        replace(
+            base_config,
+            directory=tmp_path / "CPtoLCID",
+            function="_CPtoLCID",
+            symbol="_CPtoLCID",
+            archive_member=r"build\intel\mt_obj\mbctype.obj",
+        ),
+        replace(
+            base_config,
+            directory=tmp_path / "input",
+            function="__input",
+            symbol="__input",
+            archive_member=r"build\intel\mt_obj\input.obj",
+        ),
+        replace(
+            base_config,
+            directory=tmp_path / "crt_flushall",
+            function="crt_flushall",
+            symbol="_flsall",
+            archive_member=r"build\intel\mt_obj\fflush.obj",
+        ),
+    ]
+    statuses = [
+        ScratchStatus(
+            config=config,
+            address=0x00401000 + index * 0x20,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        )
+        for index, config in enumerate(configs)
+    ]
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": f"0x{status.address:08x}",
+                    "name": status.config.function,
+                }
+                for status in statuses
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(statuses, name_map_path=name_map)
+
+    assert [row.suggestion for row in rows] == [
+        "crt_get_linker_version",
+        "crt_cp_to_lcid",
+        "crt_scan_input",
+        "crt_flsall",
+    ]
+    assert rows[-1].issues == (
+        "provider-directory-conflict",
+        "provider-name-conflict",
+    )
 
 
 def test_collect_naming_debt_suggests_exact_vc6_eh_decorated_symbol(tmp_path: Path) -> None:
@@ -2932,6 +3269,10 @@ def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tm
         ),
         encoding="utf-8",
     )
+    consumer.joinpath("source.cpp").write_text(
+        "void consumer() { FUN_00401000(); }\n",
+        encoding="utf-8",
+    )
     name_map = tmp_path / "name_map.json"
     name_map.write_text(
         json.dumps(
@@ -3007,6 +3348,9 @@ def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tm
     assert load_scratch_config(scratches / "public_provider").function == "public_provider"
     assert load_scratch_config(renamed).note == "exact-archive-known-provider"
     assert load_scratch_config(consumer).reference_aliases == (("_provider", "known_provider"),)
+    assert consumer.joinpath("source.cpp").read_text(encoding="utf-8") == (
+        "void consumer() { known_provider(); }\n"
+    )
     rows = load_name_map_rows(name_map)
     mapped = next(row for row in rows if row["program"] == "crimsonland.exe")
     assert mapped["name"] == "known_provider"
@@ -3021,7 +3365,7 @@ def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tm
         "map_rows_added": 1,
         "map_rows_updated": 1,
         "scope_dispositions_updated": 0,
-        "text_references_updated": 2,
+        "text_references_updated": 3,
         "renames": [
             {
                 "from": placeholder.as_posix(),
@@ -3033,6 +3377,134 @@ def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tm
             },
         ],
     }
+
+
+def test_apply_naming_suggestions_reuses_vacated_canonical_directory(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratches = match_root / "scratches"
+    internal = scratches / "crt_flushall"
+    public = scratches / "sub_00401020"
+    internal.mkdir(parents=True)
+    public.mkdir()
+    archive_hash = "a" * 64
+    for scratch, function, symbol in (
+        (internal, "crt_flushall", "_flsall"),
+        (public, "sub_00401020", "__flushall"),
+    ):
+        scratch.joinpath("scratch.conf").write_text(
+            "\n".join(
+                (
+                    "IMAGE=crimsonland.exe",
+                    f"FUNCTION={function}",
+                    "ARCHIVE=libcmt.lib",
+                    r"ARCHIVE_MEMBER='build\intel\mt_obj\fflush.obj'",
+                    f"ARCHIVE_SHA256={archive_hash}",
+                    f"SYMBOL={symbol}",
+                    "NOTE=vc6-sp6-libcmt-flush",
+                    "",
+                ),
+            ),
+            encoding="utf-8",
+        )
+    statuses = [
+        ScratchStatus(
+            config=load_scratch_config(scratch),
+            address=address,
+            target_size=8,
+            ratio=1.0,
+            prefix_instructions=2,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        )
+        for scratch, address in ((internal, 0x00401000), (public, 0x00401020))
+    ]
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": f"0x{status.address:08x}",
+                    "name": status.config.function,
+                    "comment": (
+                        "Exact archive recovery from "
+                        rf"build\intel\mt_obj\fflush.obj symbol {status.config.symbol}."
+                    ),
+                }
+                for status in statuses
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(statuses, name_map_path=name_map)
+    result = apply_naming_suggestions(
+        rows,
+        match_root=match_root,
+        name_map_path=name_map,
+    )
+
+    assert not public.exists()
+    assert load_scratch_config(scratches / "crt_flsall").function == "crt_flsall"
+    assert load_scratch_config(scratches / "crt_flushall").function == "crt_flushall"
+    assert result["directories_renamed"] == 2
+    assert [row["comment"] for row in load_name_map_rows(name_map)] == [
+        r"Exact archive recovery from build\intel\mt_obj\fflush.obj symbol _flsall.",
+        r"Exact archive recovery from build\intel\mt_obj\fflush.obj symbol __flushall.",
+    ]
+
+
+def test_repair_provider_comments_restores_exact_linkage_symbol(tmp_path: Path) -> None:
+    config = ScratchConfig(
+        directory=tmp_path / "crt_scan_input",
+        function="crt_scan_input",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol="__input",
+        note="vc6-sp6-libcmt-input",
+        archive="libcmt.lib",
+        archive_member=r"build\intel\mt_obj\input.obj",
+        archive_sha256="a" * 64,
+    )
+    status = ScratchStatus(
+        config=config,
+        address=0x00401000,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": "crt_scan_input",
+                    "aliases": ["__input"],
+                    "comment": (
+                        "Exact archive recovery from "
+                        r"build\intel\mt_obj\crt_scan_input.obj symbol crt_scan_input."
+                    ),
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    result = repair_provider_comments([status], name_map_path=name_map)
+
+    assert result["comments_repaired"] == 1
+    assert load_name_map_rows(name_map)[0]["comment"] == (
+        r"Exact archive recovery from build\intel\mt_obj\input.obj symbol __input."
+    )
 
 
 def test_rewrite_placeholder_references_uses_unique_canonical_map_name(tmp_path: Path) -> None:

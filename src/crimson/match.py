@@ -418,6 +418,16 @@ def load_reference_catalog(
     """
     names: dict[int, list[str]] = {}
     import_addresses: set[int] = set()
+    name_rows = (
+        load_name_map_rows(name_map_path)
+        if name_map_path is not None and name_map_path.exists()
+        else []
+    )
+    curated_names_by_address = {
+        parse_int(entry["address"]): str(entry["name"])
+        for entry in name_rows
+        if entry.get("program") == manifest.image_name and not bool(entry.get("exclude"))
+    }
     for function in manifest.functions:
         names.setdefault(function.address, []).append(function.name)
     raw_functions_path = functions_path or default_functions_path(manifest.image_name)
@@ -425,6 +435,9 @@ def load_reference_catalog(
         for entry in json.loads(raw_functions_path.read_text(encoding="utf-8")):
             address = parse_int(entry["address"])
             name = str(entry["name"])
+            curated_name = curated_names_by_address.get(address)
+            if curated_name is not None and curated_name != name:
+                continue
             if address > 0 and name not in names.setdefault(address, []):
                 names[address].append(name)
     imports_path = raw_functions_path.with_name("imports.json")
@@ -449,17 +462,16 @@ def load_reference_catalog(
             for name in entry_names:
                 if name not in names.setdefault(address, []):
                     names[address].append(name)
-    if name_map_path is not None and name_map_path.exists():
-        for entry in load_name_map_rows(name_map_path):
-            if entry.get("program") != manifest.image_name:
-                continue
-            if bool(entry.get("exclude")):
-                continue
-            address = parse_int(entry["address"])
-            entry_names = (str(entry["name"]), *(str(alias) for alias in entry.get("aliases", [])))
-            for name in entry_names:
-                if name not in names.setdefault(address, []):
-                    names[address].append(name)
+    for entry in name_rows:
+        if entry.get("program") != manifest.image_name:
+            continue
+        if bool(entry.get("exclude")):
+            continue
+        address = parse_int(entry["address"])
+        entry_names = (str(entry["name"]), *(str(alias) for alias in entry.get("aliases", [])))
+        for name in entry_names:
+            if name not in names.setdefault(address, []):
+                names[address].append(name)
     names_by_address = {address: tuple(values) for address, values in names.items()}
     addresses_by_name: dict[str, list[int]] = {}
     for address, values in names_by_address.items():
@@ -4914,6 +4926,20 @@ def is_analyzer_placeholder(name: str) -> bool:
     return ANALYZER_PLACEHOLDER_RE.fullmatch(name) is not None
 
 
+def _is_placeholder_note(note: str) -> bool:
+    """Return whether a note admits missing identity rather than naming real behavior."""
+
+    return (
+        re.search(
+            r"(?:^|[-_ ])unknown[-_ ]+"
+            r"(?:provider|library|libname|function|identity|name)(?:$|[-_ ])",
+            note,
+            re.IGNORECASE,
+        )
+        is not None
+    )
+
+
 def _status_canonical_name(
     status: ScratchStatus,
     name_rows: dict[tuple[str, int], dict[str, Any]],
@@ -4926,6 +4952,22 @@ def _archive_provider_key(status: ScratchStatus) -> tuple[str, str] | None:
     if status.config.archive_sha256 is None or status.config.symbol is None:
         return None
     return status.config.archive_sha256, status.config.symbol
+
+
+def _snake_case_provider_name(name: str) -> str:
+    """Normalize one exact provider operation without preserving COFF decoration."""
+
+    name = re.sub(r"@\d+$", "", name).lstrip("_")
+    special_names = {
+        "CIacos": "ci_acos",
+        "CPtoLCID": "cp_to_lcid",
+        "png_get_tRNS": "png_get_trns",
+    }
+    if name in special_names:
+        return special_names[name]
+    snake = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", name)
+    snake = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", snake)
+    return re.sub(r"_+", "_", snake).strip("_").lower()
 
 
 def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
@@ -4943,15 +4985,36 @@ def _d3dx_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
             return None
         suffix = image_match.group(1).lower()
         return f"d3dx_image_load_{suffix}" if suffix else "d3dx_image_load"
-    if member.casefold() == "jdapimin.obj":
+    if member.casefold() in {"jdapimin.obj", "jdapistd.obj"}:
         jpeg_match = re.fullmatch(r"\?([A-Za-z0-9_]+)@D3DX@@.+", symbol)
         if jpeg_match is None:
             return None
         operation = jpeg_match.group(1).replace(
             "jpeg_CreateDecompress",
             "jpeg_create_decompress",
-        )
-        return f"d3dx_{operation.lower()}"
+        ).lower()
+        if not operation.startswith("jpeg_"):
+            operation = f"jpeg_{operation}"
+        return f"d3dx_{operation}"
+    if member.casefold() == "cd3dxfile.obj":
+        file_symbols = {
+            "??0CD3DXFile@@QAE@XZ": "d3dx_file_ctor",
+            "??1CD3DXFile@@QAE@XZ": "d3dx_file_dtor",
+            "?Close@CD3DXFile@@QAEJXZ": "d3dx_file_close",
+            "?Create@CD3DXFile@@QAEJPBXH@Z": "d3dx_file_create",
+            "?Open@CD3DXFile@@QAEJPBXH@Z": "d3dx_file_open",
+        }
+        return file_symbols.get(symbol)
+    if member.casefold().startswith("png"):
+        png_match = re.fullmatch(r"\?([A-Za-z0-9_]+)@D3DX@@.+", symbol)
+        if png_match is None:
+            return None
+        operation = png_match.group(1)
+        if not operation.startswith("png_"):
+            return None
+        return f"d3dx_{_snake_case_provider_name(operation)}"
+    if member.casefold() == "jutils.obj" and symbol == "?IsMMX@D3DX@@YAHXZ":
+        return "d3dx_jpeg_is_mmx"
     if member.casefold() == "cd3dxcodec.obj":
         if symbol == "??_GCD3DXCodec@@UAEPAXI@Z":
             return "d3dx_codec_scalar_deleting_dtor"
@@ -5037,7 +5100,7 @@ def _crt_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
         "_get_short_arg",
     }:
         return f"crt_printf_{symbol.lstrip('_')}"
-    if member.casefold() != "intrncvt.obj" or symbol not in {
+    if member.casefold() == "intrncvt.obj" and symbol in {
         "__CopyMan",
         "__FillZeroMan",
         "__IncMan",
@@ -5051,11 +5114,59 @@ def _crt_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
         "__ld12tod",
         "__ld12tof",
     }:
+        return f"crt_{_snake_case_provider_name(symbol)}"
+
+    contextual_names = {
+        ("87except.obj", "__87except"): "crt_x87_exception",
+        ("_file.obj", "___endstdio"): "crt_end_stdio",
+        ("_file.obj", "___initstdio"): "crt_init_stdio",
+        ("common.obj", "__convertTOStoQNaN"): "crt_convert_tos_to_qnan",
+        ("crt0dat.obj", "__exit"): "crt_immediate_exit",
+        ("fflush.obj", "_flsall"): "crt_flsall",
+        ("fp8.obj", "__setdefaultprecision"): "crt_set_default_precision",
+        ("input.obj", "__inc"): "crt_scan_inc",
+        ("input.obj", "__input"): "crt_scan_input",
+        ("input.obj", "__un_inc"): "crt_scan_un_inc",
+        ("input.obj", "__whiteout"): "crt_scan_whiteout",
+        ("ismbbyte.obj", "_x_ismbbtype"): "crt_ismbbtype",
+        ("onexit.obj", "___onexitinit"): "crt_onexit_init",
+        ("trnsctrl.obj", "___CxxFrameHandler"): "crt_cxx_frame_handler_entry",
+        ("tzset.obj", "__isindst"): "crt_is_in_dst",
+        ("tzset.obj", "__isindst_lk"): "crt_is_in_dst_lk",
+        ("x10fout.obj", "_$I10_OUTPUT"): "crt_i10_output",
+    }
+    suggestion = contextual_names.get((member.casefold(), symbol))
+    if suggestion is not None:
+        return suggestion
+
+    member_path = (status.config.archive_member or "").replace("\\", "/").casefold()
+    weak_function = is_analyzer_placeholder(
+        status.config.function,
+    ) or status.config.function.startswith("_")
+    if (
+        not weak_function
+        or not symbol.startswith("_")
+        or (
+            "build/intel/mt_obj/" not in member_path
+            and "build/intel/dll_obj/" not in member_path
+        )
+    ):
         return None
-    operation = symbol.lstrip("_")
-    snake = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", operation)
-    snake = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", snake).lower()
-    return f"crt_{snake}"
+
+    operation = re.sub(r"@\d+$", "", symbol).lstrip("_")
+    if operation.casefold().startswith("crt") and len(operation) > 3:
+        operation = operation[3:].lstrip("_")
+    return f"crt_{_snake_case_provider_name(operation)}"
+
+
+def _zlib_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
+    """Derive canonical names from the pinned plain-C zlib provider."""
+
+    member = (status.config.archive_member or "").replace("\\", "/").rsplit("/", 1)[-1]
+    symbol = status.config.symbol or ""
+    if member.casefold() == "trees.obj" and symbol == "_tr_static_init":
+        return "zlib_tr_static_init"
+    return None
 
 
 def _source_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
@@ -5063,6 +5174,32 @@ def _source_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
 
     source = status.config.source.replace("\\", "/").casefold()
     symbol = status.config.symbol or ""
+    scratch_name = status.config.directory.name.casefold()
+    repo_source_symbols = {
+        "shared/grim_jpeg_source_callbacks.cpp": {
+            "grim_jpeg_destroy_decompress",
+            "grim_jpeg_fill_input_buffer",
+            "grim_jpeg_skip_input_data",
+            "grim_jpeg_source_noop",
+        },
+        "shared/grim_png_callbacks.cpp": {"grim_png_error_longjmp"},
+    }
+    for source_suffix, symbols in repo_source_symbols.items():
+        if source.endswith(source_suffix) and symbol in symbols:
+            return symbol
+    if (
+        source.endswith("shared/grim_vertex_space_converter.cpp")
+        and symbol.startswith("?noop@grim_vertex_space_converter_t@@")
+    ):
+        return "grim_vertex_space_converter_noop"
+    if (
+        status.config.image == "grim.dll"
+        and source.endswith("third_party/sources/ijg-libjpeg-6a/jdapistd.c")
+        and scratch_name.startswith("grim_jaz_")
+        and symbol in {"jpeg_read_scanlines", "jpeg_start_decompress", "output_pass_setup"}
+    ):
+        operation = symbol if symbol.startswith("jpeg_") else f"jpeg_{symbol}"
+        return f"grim_jaz_{operation}"
     if (
         status.config.image == "grim.dll"
         and source.endswith("third_party/sources/ijg-libjpeg-6a/jdapimin.c")
@@ -5079,12 +5216,6 @@ def _source_provider_symbol_suggestion(status: ScratchStatus) -> str | None:
         if not operation.startswith("jpeg_"):
             operation = f"jpeg_{operation}"
         return f"grim_jaz_{operation}"
-    if (
-        status.config.image == "grim.dll"
-        and source.endswith("shared/grim_jpeg_source_callbacks.cpp")
-        and symbol == "grim_jpeg_destroy_decompress"
-    ):
-        return symbol
     return None
 
 
@@ -5137,6 +5268,7 @@ def collect_naming_debt(
         archive_symbol_suggestion = (
             _d3dx_provider_symbol_suggestion(status)
             or _crt_provider_symbol_suggestion(status)
+            or _zlib_provider_symbol_suggestion(status)
         )
         source_symbol_suggestion = _source_provider_symbol_suggestion(status)
         symbol_suggestion = archive_symbol_suggestion or source_symbol_suggestion
@@ -5185,7 +5317,7 @@ def collect_naming_debt(
             issues.append("placeholder-alias")
         if placeholder_references:
             issues.append("placeholder-reference")
-        if "unknown" in status.config.note.lower():
+        if _is_placeholder_note(status.config.note):
             issues.append("placeholder-note")
         if (
             symbol_suggestion is not None
@@ -5331,9 +5463,6 @@ def apply_naming_suggestions(
                 )
             image_replacements[old_name] = row.suggestion
 
-    planned_destinations: set[Path] = set()
-    directory_renames: list[tuple[Path, Path]] = []
-    occupied = {path.resolve() for path in scratch_root.iterdir() if path.is_dir()}
     ordered_sources = sorted(
         selected_by_source.items(),
         key=lambda item: (
@@ -5342,6 +5471,7 @@ def apply_naming_suggestions(
             item[1].address,
         ),
     )
+    rename_sources: list[tuple[Path, NamingDebtRow]] = []
     for source, row in ordered_sources:
         old_identities = (row.function.casefold(), row.configured_function.casefold())
         source_identity = source.name.casefold()
@@ -5356,6 +5486,20 @@ def apply_naming_suggestions(
         ):
             continue
         assert row.suggestion is not None
+        if source.name.casefold() == row.suggestion.casefold():
+            continue
+        rename_sources.append((source, row))
+
+    planned_destinations: set[Path] = set()
+    directory_renames: list[tuple[Path, Path]] = []
+    vacated_sources = {source.resolve() for source, _ in rename_sources}
+    occupied = {
+        path.resolve()
+        for path in scratch_root.iterdir()
+        if path.is_dir() and path.resolve() not in vacated_sources
+    }
+    for source, row in rename_sources:
+        assert row.suggestion is not None
         destination = scratch_root / row.suggestion
         if destination.resolve() in occupied or destination.resolve() in planned_destinations:
             destination = scratch_root / f"{_scratch_image_prefix(row.image)}_{row.suggestion}"
@@ -5364,6 +5508,13 @@ def apply_naming_suggestions(
             raise ValueError(f"scratch rename destination already exists: {destination}")
         planned_destinations.add(resolved_destination)
         directory_renames.append((source, destination))
+    staging_paths = [
+        scratch_root / f".naming-rename-{index:04d}"
+        for index in range(len(directory_renames))
+    ]
+    for staging in staging_paths:
+        if staging.exists():
+            raise ValueError(f"scratch rename staging path already exists: {staging}")
 
     suggestion_by_source = {
         source: row.suggestion
@@ -5371,7 +5522,9 @@ def apply_naming_suggestions(
         if row.suggestion is not None
     }
     config_updates: dict[Path, str] = {}
+    source_updates: dict[Path, str] = {}
     reference_updates = 0
+    text_references_updated = 0
     for config_path in sorted(scratch_root.glob("*/scratch.conf")):
         config = load_scratch_config(config_path.parent)
         original = config_path.read_text(encoding="utf-8")
@@ -5379,7 +5532,13 @@ def apply_naming_suggestions(
         suggestion = suggestion_by_source.get(config_path.parent.resolve())
         if suggestion is not None:
             updated = _replace_config_assignment(updated, "FUNCTION", suggestion)
-            if "unknown" in config.note.lower():
+            if (
+                config.archive is None
+                and config.symbol is not None
+                and is_analyzer_placeholder(config.symbol)
+            ):
+                updated = _replace_config_assignment(updated, "SYMBOL", suggestion)
+            if _is_placeholder_note(config.note):
                 note_slug = re.sub(r"[^a-z0-9]+", "-", suggestion.lower()).strip("-")
                 updated = _replace_config_assignment(updated, "NOTE", f"exact-archive-{note_slug}")
 
@@ -5393,6 +5552,26 @@ def apply_naming_suggestions(
         if tuple(rewritten_aliases) != config.reference_aliases:
             encoded = ",".join(f"{source}:{target}" for source, target in rewritten_aliases)
             updated = _replace_config_assignment(updated, "REFERENCE_ALIASES", encoded)
+        source_replacements = {
+            old_name: new_name
+            for old_name, new_name in image_replacements.items()
+            if is_analyzer_placeholder(old_name)
+        }
+        for source_path in sorted(config_path.parent.iterdir()):
+            if (
+                not source_replacements
+                or not source_path.is_file()
+                or source_path.suffix.casefold() not in {".c", ".cc", ".cpp", ".h", ".hpp", ".inc"}
+            ):
+                continue
+            original_source = source_path.read_text(encoding="utf-8")
+            updated_source, count = _replace_identity_tokens(
+                original_source,
+                source_replacements,
+            )
+            if updated_source != original_source:
+                source_updates[source_path] = updated_source
+                text_references_updated += count
         if updated != original:
             config_updates[config_path] = updated
 
@@ -5402,7 +5581,6 @@ def apply_naming_suggestions(
         for row in map_rows
     }
     aliases_removed = 0
-    text_references_updated = 0
     for map_row in map_rows:
         program = str(map_row.get("program", ""))
         replacements = replacements_by_image.get(program, {})
@@ -5424,6 +5602,8 @@ def apply_naming_suggestions(
         for field_name in ("signature", "comment"):
             value = map_row.get(field_name)
             if isinstance(value, str):
+                if field_name == "comment" and value.startswith("Exact archive recovery from "):
+                    continue
                 replacement, count = _replace_identity_tokens(value, replacements)
                 map_row[field_name] = replacement
                 text_references_updated += count
@@ -5434,6 +5614,7 @@ def apply_naming_suggestions(
         assert row.suggestion is not None
         key = (row.image, row.address)
         map_row = map_by_key.get(key)
+        added_map_row = map_row is None
         if map_row is None:
             new_map_row: dict[str, Any] = {
                 "program": row.image,
@@ -5489,8 +5670,12 @@ def apply_naming_suggestions(
 
         row_replacements = replacements_by_image[row.image]
         for field_name in ("signature", "comment"):
+            if added_map_row and field_name == "comment":
+                continue
             value = map_row.get(field_name)
             if isinstance(value, str):
+                if field_name == "comment" and value.startswith("Exact archive recovery from "):
+                    continue
                 replacement, count = _replace_identity_tokens(value, row_replacements)
                 map_row[field_name] = replacement
                 text_references_updated += count
@@ -5530,14 +5715,20 @@ def apply_naming_suggestions(
 
     for path, contents in config_updates.items():
         path.write_text(contents, encoding="utf-8")
+    for path, contents in source_updates.items():
+        path.write_text(contents, encoding="utf-8")
     name_map_path.write_text(json.dumps(map_rows, indent=2) + "\n", encoding="utf-8")
     if scope_payload is not None and scope_dispositions_updated:
         matching_scope_path.write_text(
             json.dumps(scope_payload, indent=2) + "\n",
             encoding="utf-8",
         )
-    for source, destination in directory_renames:
-        source.rename(destination)
+    staged_renames: list[tuple[Path, Path]] = []
+    for staging, (source, destination) in zip(staging_paths, directory_renames, strict=True):
+        source.rename(staging)
+        staged_renames.append((staging, destination))
+    for staging, destination in staged_renames:
+        staging.rename(destination)
 
     return {
         "applied": len(selected),
@@ -5559,6 +5750,59 @@ def apply_naming_suggestions(
             }
             for source, destination in directory_renames
         ],
+    }
+
+
+def repair_provider_comments(
+    statuses: Collection[ScratchStatus],
+    *,
+    name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+) -> dict[str, Any]:
+    """Restore exact provider symbols in auto-generated naming-map comments."""
+
+    providers_by_key: dict[tuple[str, int], set[tuple[str, str]]] = defaultdict(set)
+    for status in statuses:
+        if status.state != "match" or status.config.symbol is None:
+            continue
+        provider = status.config.archive_member or "provider object"
+        providers_by_key[(status.config.image, status.address)].add(
+            (provider, status.config.symbol),
+        )
+
+    map_rows = [dict(row) for row in load_name_map_rows(name_map_path)]
+    repaired_rows: list[dict[str, str]] = []
+    for map_row in map_rows:
+        key = (str(map_row.get("program", "")), parse_int(map_row["address"]))
+        providers = providers_by_key.get(key, set())
+        if not providers:
+            continue
+        comment = str(map_row.get("comment", ""))
+        replacements = {
+            f"Exact archive recovery from {provider} symbol {symbol}."
+            for provider, symbol in providers
+        }
+        if (
+            len(replacements) != 1
+            or re.fullmatch(r"Exact archive recovery from .+ symbol .+\.", comment) is None
+        ):
+            continue
+        replacement = replacements.pop()
+        if replacement == comment:
+            continue
+        map_row["comment"] = replacement
+        repaired_rows.append(
+            {
+                "program": key[0],
+                "address": f"0x{key[1]:08x}",
+                "comment": replacement,
+            },
+        )
+
+    if repaired_rows:
+        name_map_path.write_text(json.dumps(map_rows, indent=2) + "\n", encoding="utf-8")
+    return {
+        "comments_repaired": len(repaired_rows),
+        "rows": repaired_rows,
     }
 
 

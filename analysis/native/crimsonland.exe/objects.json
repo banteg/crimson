@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "0cd0d253536d720d49f8f71eba0d95137db7f3a6b44cd138aee70db563391341",
+  "audit_digest": "b7f13032b47b74d47dfc0957d434dd5fbc40c3c009f506bfd353e7ed56ccc67c",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -58255,7 +58255,7 @@
         {
           "path": "tools/match/scratches/crimsonland_main/scratch.cpp",
           "repository_relative": true,
-          "sha256": "b17b4ec69a4f7bb115af725afa48739553b7333453afb1747159ebc661a48a5b"
+          "sha256": "dc8d0b163ee07cdca57dd09e265b2c6edeb012db9044387e0f7666da241a91b5"
         },
         {
           "path": "tools/match/scratches/crimsonland_main/scratch.conf",
@@ -58301,7 +58301,7 @@
           "canonical_config_sha256": "66539a2e869043c7a5fa94ab7b9b16162a48c23f907883519b5f36861b4c3763",
           "canonical_scratch": "tools/match/scratches/crimsonland_main",
           "canonical_source": "tools/match/scratches/crimsonland_main/scratch.cpp",
-          "canonical_source_sha256": "b17b4ec69a4f7bb115af725afa48739553b7333453afb1747159ebc661a48a5b",
+          "canonical_source_sha256": "dc8d0b163ee07cdca57dd09e265b2c6edeb012db9044387e0f7666da241a91b5",
           "effective_end": 4378846,
           "end": 4378846,
           "function": "crimsonland_main",
@@ -58331,10 +58331,10 @@
       },
       "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
       "object_function_symbol": "_crimsonland_main@16",
-      "object_sha256": "264d46a891d3299512fd6da8b1a281ed4557d47fbda95fdfbc26292126ed557b",
+      "object_sha256": "c6ec5945b1539901eb8b5a0a6367a23b7885c0e2cf74991fb48d75090fb63f2b",
       "scratch": "tools/match/scratches/crimsonland_main",
       "source": "tools/match/scratches/crimsonland_main/scratch.cpp",
-      "source_sha256": "b17b4ec69a4f7bb115af725afa48739553b7333453afb1747159ebc661a48a5b",
+      "source_sha256": "dc8d0b163ee07cdca57dd09e265b2c6edeb012db9044387e0f7666da241a91b5",
       "target_size": 3214,
       "translation_unit": {
         "kind": "isolated",
@@ -58474,7 +58474,7 @@
         {
           "path": "tools/match/scratches/statistics_update_check_worker/scratch.conf",
           "repository_relative": true,
-          "sha256": "1e4a96ce85166ba93d2a14ef53b39789ef23d00aeb24db35a685d0fcba4ddcdc"
+          "sha256": "6586d8e09a1da885ae0c81de5042358bd4f108696cd09ca3b37053f949de294f"
         },
         {
           "path": "tools/match/cl.sh",
@@ -58494,7 +58494,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/statistics_update_check_worker/scratch.conf",
-      "config_sha256": "1e4a96ce85166ba93d2a14ef53b39789ef23d00aeb24db35a685d0fcba4ddcdc",
+      "config_sha256": "6586d8e09a1da885ae0c81de5042358bd4f108696cd09ca3b37053f949de294f",
       "effective_end": 4382196,
       "end": 4382196,
       "function": "statistics_update_check_worker",
@@ -58502,7 +58502,7 @@
         {
           "address": 4380832,
           "canonical_config": "tools/match/scratches/statistics_update_check_worker/scratch.conf",
-          "canonical_config_sha256": "1e4a96ce85166ba93d2a14ef53b39789ef23d00aeb24db35a685d0fcba4ddcdc",
+          "canonical_config_sha256": "6586d8e09a1da885ae0c81de5042358bd4f108696cd09ca3b37053f949de294f",
           "canonical_scratch": "tools/match/scratches/statistics_update_check_worker",
           "canonical_source": "tools/match/scratches/statistics_update_check_worker/scratch.cpp",
           "canonical_source_sha256": "fbcccb4047061ffcc135469c9d4db4f5df475fd424a4456258d36e2a466d642c",
@@ -88040,12 +88040,12 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "fd11605f3fc1195869b920181b8f52746cd6f69bf0e40bdbe447bb4472de3091"
+        "sha256": "66b0b7e952593b894dff587c6b3c84a281f6e604977a4b49d5d9b8e5794d5e86"
       },
       {
         "path": "analysis/matching_scope.json",
         "repository_relative": true,
-        "sha256": "f4a2642b434e9c4f7cadfff993fe5c084b949be9dfb816bda3836f3bc720ff0a"
+        "sha256": "3492406d95e46324f79e1454e7800e4a0f7b4ef4dc445143810bcff8b2872086"
       },
       {
         "path": "tools/native/translation_units/crimsonland.exe.json",

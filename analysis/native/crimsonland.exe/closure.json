@@ -1,5 +1,5 @@
 {
-  "audit_digest": "0cd0d253536d720d49f8f71eba0d95137db7f3a6b44cd138aee70db563391341",
+  "audit_digest": "b7f13032b47b74d47dfc0957d434dd5fbc40c3c009f506bfd353e7ed56ccc67c",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -164867,12 +164867,12 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "fd11605f3fc1195869b920181b8f52746cd6f69bf0e40bdbe447bb4472de3091"
+        "sha256": "66b0b7e952593b894dff587c6b3c84a281f6e604977a4b49d5d9b8e5794d5e86"
       },
       {
         "path": "analysis/matching_scope.json",
         "repository_relative": true,
-        "sha256": "f4a2642b434e9c4f7cadfff993fe5c084b949be9dfb816bda3836f3bc720ff0a"
+        "sha256": "3492406d95e46324f79e1454e7800e4a0f7b4ef4dc445143810bcff8b2872086"
       }
     ]
   },
@@ -164890,9 +164890,9 @@
     "reference_exports_closed": true,
     "resolved_symbols": 1354,
     "unresolved_by_category": {
-      "excluded_function": 70,
+      "excluded_function": 71,
       "import": 25,
-      "toolchain": 2
+      "toolchain": 1
     },
     "unresolved_symbols": 97
   },
@@ -165283,26 +165283,6 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4596658,
-          "disposition": "outside-port-scope",
-          "function": "FUN_004623b2"
-        }
-      ],
-      "category": "excluded_function",
-      "lookup_name": "FUN_004623b2",
-      "name": "_FUN_004623b2",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
           "address": 4647236,
           "disposition": "outside-port-scope",
           "function": "HlinkNavigateString"
@@ -165370,7 +165350,7 @@
         {
           "address": 4595744,
           "disposition": "outside-port-scope",
-          "function": "__alldiv"
+          "function": "crt_alldiv"
         }
       ],
       "category": "excluded_function",
@@ -165390,7 +165370,7 @@
         {
           "address": 4595920,
           "disposition": "outside-port-scope",
-          "function": "__allmul"
+          "function": "crt_allmul"
         }
       ],
       "category": "excluded_function",
@@ -166727,7 +166707,7 @@
         {
           "address": 4591700,
           "disposition": "outside-port-scope",
-          "function": "__ftol"
+          "function": "crt_ftol"
         }
       ],
       "category": "excluded_function",
@@ -168961,6 +168941,26 @@
       "candidate_definitions": [],
       "catalog": [
         {
+          "address": 4596658,
+          "disposition": "outside-port-scope",
+          "function": "crt_time"
+        }
+      ],
+      "category": "excluded_function",
+      "lookup_name": "crt_time",
+      "name": "_crt_time",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "candidate_definitions": [],
+      "catalog": [
+        {
           "address": 4591753,
           "disposition": "outside-port-scope",
           "function": "crt_vsprintf"
@@ -169474,14 +169474,14 @@
     },
     {
       "candidate_definitions": [],
-      "catalog": [],
-      "category": "toolchain",
-      "classification_evidence": {
-        "default_libraries": [
-          "LIBC"
-        ],
-        "kind": "msvc-crt-default-library"
-      },
+      "catalog": [
+        {
+          "address": 4598688,
+          "disposition": "outside-port-scope",
+          "function": "crt_sscanf"
+        }
+      ],
+      "category": "excluded_function",
       "lookup_name": "sscanf",
       "name": "_sscanf",
       "referenced_by": [
@@ -169498,7 +169498,7 @@
         {
           "address": 4591344,
           "disposition": "outside-port-scope",
-          "function": "_strchr"
+          "function": "crt_strchr"
         }
       ],
       "category": "excluded_function",
@@ -169618,7 +169618,7 @@
         {
           "address": 4592656,
           "disposition": "outside-port-scope",
-          "function": "_strncmp"
+          "function": "crt_strncmp"
         }
       ],
       "category": "excluded_function",
@@ -169643,7 +169643,7 @@
         {
           "address": 4598560,
           "disposition": "outside-port-scope",
-          "function": "_strstr"
+          "function": "crt_strstr"
         }
       ],
       "category": "excluded_function",

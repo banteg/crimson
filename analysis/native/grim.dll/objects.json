@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "c11f180d7680833613e00aac243f871795f343566a79a5d91d5bcea0c70fb925",
+  "audit_digest": "204fc8e4e808abf0ff3835ab89bf7037e576141fd464da86f8c7ee54d2287c46",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7222,7 +7222,7 @@
         {
           "path": "tools/match/scratches/grim_decode_jaz_texture/scratch.conf",
           "repository_relative": true,
-          "sha256": "f7454bfe76338f1760733dce869901a13db5070f4dd0475a22d4aece4be509e3"
+          "sha256": "b8bb471ab27a2222a2d4c77e7f05bcae8adda13d5235d2d448bfff90a1b69c85"
         },
         {
           "path": "tools/match/cl.sh",
@@ -7237,7 +7237,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_decode_jaz_texture/scratch.conf",
-      "config_sha256": "f7454bfe76338f1760733dce869901a13db5070f4dd0475a22d4aece4be509e3",
+      "config_sha256": "b8bb471ab27a2222a2d4c77e7f05bcae8adda13d5235d2d448bfff90a1b69c85",
       "effective_end": 268455553,
       "end": 268455553,
       "function": "grim_decode_jaz_texture",
@@ -7245,7 +7245,7 @@
         {
           "address": 268454768,
           "canonical_config": "tools/match/scratches/grim_decode_jaz_texture/scratch.conf",
-          "canonical_config_sha256": "f7454bfe76338f1760733dce869901a13db5070f4dd0475a22d4aece4be509e3",
+          "canonical_config_sha256": "b8bb471ab27a2222a2d4c77e7f05bcae8adda13d5235d2d448bfff90a1b69c85",
           "canonical_scratch": "tools/match/scratches/grim_decode_jaz_texture",
           "canonical_source": "tools/match/scratches/grim_decode_jaz_texture/scratch.cpp",
           "canonical_source_sha256": "21bec78205a884baba9032d460b34b904188436fd182dbc0b21f66fe46fe5609",
@@ -17074,12 +17074,12 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "2cf4b87f9d620ab07f9ccd89a7c4e702a5f7e034953a8f6ec29c7377fe4b73e1"
+        "sha256": "c4e710c5be79d0a5d9b29e118b26743953fc473c4419d97b14c7d9fa2de0df5d"
       },
       {
         "path": "analysis/matching_scope.json",
         "repository_relative": true,
-        "sha256": "f4a2642b434e9c4f7cadfff993fe5c084b949be9dfb816bda3836f3bc720ff0a"
+        "sha256": "3492406d95e46324f79e1454e7800e4a0f7b4ef4dc445143810bcff8b2872086"
       },
       {
         "path": "tools/native/translation_units/grim.dll.json",

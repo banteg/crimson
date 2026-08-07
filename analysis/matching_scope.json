@@ -266,19 +266,19 @@
           },
           {
             "address": "0x10009EC0",
-            "name": "jpeg_start_decompress",
+            "name": "grim_jaz_jpeg_start_decompress",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a output-pass startup entrypoint in Grim's separately linked JAZ decoder cluster."
           },
           {
             "address": "0x10009FA0",
-            "name": "output_pass_setup",
+            "name": "grim_jaz_jpeg_output_pass_setup",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a output-pass helper in Grim's separately linked JAZ decoder cluster."
           },
           {
             "address": "0x1000A070",
-            "name": "jpeg_read_scanlines",
+            "name": "grim_jaz_jpeg_read_scanlines",
             "disposition": "third-party",
             "reason": "Plain-C IJG libjpeg 6a scanline decode entrypoint in Grim's separately linked JAZ decoder cluster."
           },

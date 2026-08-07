@@ -606,6 +606,7 @@ uv run crimson match naming-audit --provider-member d3dxmath.obj --apply-suggest
 uv run crimson match naming-audit --provider-member d3dxmathsse.obj,d3dxmathsse2.obj --apply-suggestions
 uv run crimson match naming-audit --provider-member d3dxmath.obj --prune-placeholder-aliases
 uv run crimson match naming-audit --rewrite-placeholder-references
+uv run crimson match naming-audit --repair-provider-comments
 uv run crimson match naming-audit --json --check
 ```
 
@@ -616,14 +617,17 @@ base and optimized helpers may also derive canonical `d3dx_init_*`,
 `d3dx_c_*`, `d3dx_sse*_*`, or `d3dx_x86_*` names directly from their exact
 decorated COFF symbols, including the `$$1` implementation suffix. Exact
 `CD3DXCodec_<FORMAT>::Encode` symbols similarly derive `d3dx_pixel_encode_*`
-identities. Pinned `CD3DXImage::Load*` and D3DX-namespaced IJG entry points
-derive the corresponding `d3dx_image_*` and `d3dx_jpeg_*` identities. Exact
-IJG 6a source recoveries use `grim_jaz_jpeg_*` so their plain C symbols do not
-collide with the separate D3DX-namespaced copy. Pinned VC6 `intrncvt.obj`
-and `sbheap.obj` symbols derive their `crt_*` helper identities, while
-`cprintf.obj` locals receive a `crt_printf_*` context prefix. Selected decorated
-symbols from the VC6 exception-runtime objects derive readable `crt_*`
-canonicals while retaining their full decorated linkage aliases. This also reports
+identities. Pinned `CD3DXImage::Load*`, `CD3DXFile` methods, and
+D3DX-namespaced IJG/libpng entry points derive the corresponding
+`d3dx_image_*`, `d3dx_file_*`, `d3dx_jpeg_*`, and `d3dx_png_*` identities.
+Exact IJG 6a source recoveries use `grim_jaz_jpeg_*` so their plain C symbols
+do not collide with the separate D3DX-namespaced copy. Pinned VC6
+`intrncvt.obj` and `sbheap.obj` symbols derive their `crt_*` helper identities,
+while `cprintf.obj` locals receive a `crt_printf_*` context prefix. Weak raw
+linkage names from hash-pinned VC6 runtime objects are normalized to readable
+`crt_*` identities. Selected decorated symbols from the VC6 exception-runtime
+objects receive explicit canonicals while retaining their full decorated
+linkage aliases. This also reports
 `provider-name-conflict` when an older semantic name is meaningful but weaker
 than that exact identity, and `provider-directory-conflict` when only the
 scratch directory still carries the superseded identity. Real
@@ -632,7 +636,9 @@ generated names such as `FUN_*`, `sub_*`, and `unknown_libname_*` are naming
 debt once a stronger identity is proven.
 `--apply-suggestions` updates canonical map rows, exact scratch `FUNCTION`
 assignments, scratch reference aliases, and matching-scope disposition names
-together. It removes superseded
+together. It also updates analyzer-placeholder identifiers in local scratch
+source files, while leaving linkage symbols and shared provider sources intact.
+It removes superseded
 analyzer aliases and gives a renamed scratch an image prefix when the canonical
 directory is already occupied by the cross-image provider peer.
 `--prune-placeholder-aliases` removes only the generated aliases reported on
@@ -641,6 +647,9 @@ the selected exact rows; decorated provider and linkage aliases are retained.
 encoded address or unique raw identity resolves to one non-placeholder name in
 the curated map. It updates every scratch for that image which uses the audited
 target while leaving decorated object/linkage symbols untouched.
+`--repair-provider-comments` restores the exact source or linkage symbol when
+an older bulk rename rewrote an auto-generated provider comment to the new
+canonical identity.
 
 ## No Fakematching
 
