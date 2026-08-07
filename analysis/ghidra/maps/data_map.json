@@ -13140,6 +13140,102 @@
       "type": "const GUID"
     },
     {
+      "address": "0x1004e680",
+      "aliases": ["?const3dn_0_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.0, 1.0] used by the debug x3d matrix kernels.",
+      "name": "x3d_const3dn_0_1",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e690",
+      "aliases": ["?const3dn_1_N1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, -1.0] used by the debug x3d matrix kernels.",
+      "name": "x3d_const3dn_1_n1",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e6a0",
+      "aliases": ["?const3dn_1_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, 1.0] used by the debug x3d matrix kernels.",
+      "name": "x3d_const3dn_1_1",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e6c0",
+      "aliases": ["?const3dn_SignBitHi@@3T__m64@@B"],
+      "comment": "Packed high-lane sign-bit mask used by the debug x3d matrix kernels.",
+      "name": "x3d_const3dn_sign_bit_hi",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e6f0",
+      "aliases": ["?const3dn_dwordLo@@3T__m64@@B"],
+      "comment": "Packed low-dword mask used by the debug x3d matrix kernels.",
+      "name": "x3d_const3dn_dword_lo",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e718",
+      "aliases": ["?g_negate_low@@3T__m64@@B"],
+      "comment": "Packed low-lane sign-bit mask used by the debug x3d matrix kernels.",
+      "name": "x3d_negate_low",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e730",
+      "aliases": ["?g_const_half@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.5, 0.5] used by the debug x3d rotation kernels.",
+      "name": "x3d_const_half",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e760",
+      "aliases": ["?g_const_0_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [0.0, 1.0] used by the debug x3d matrix kernels.",
+      "name": "x3d_const_0_1",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e768",
+      "aliases": ["?g_const_1_0@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [1.0, 0.0] used by the debug x3d matrix kernels.",
+      "name": "x3d_const_1_0",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e770",
+      "aliases": ["?g_const_nh_nl@@3T__m64@@B"],
+      "comment": "Packed two-lane sign-bit mask used by the debug x3d rotation kernels.",
+      "name": "x3d_const_negate_high_low",
+      "program": "grim.dll",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": "0x1004e778",
+      "aliases": ["?g_const_n2@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [-2.0, -2.0] used by the debug x3d reflection kernel.",
+      "name": "x3d_const_n2",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
+      "address": "0x1004e780",
+      "aliases": ["?g_const_n2_1@@3T__m64@@B"],
+      "comment": "Packed 3DNow float pair [-2.0, 1.0] used by the debug x3d reflection kernel.",
+      "name": "x3d_const_n2_1",
+      "program": "grim.dll",
+      "type": "const float[2]"
+    },
+    {
       "address": "0x1004ea90",
       "comment": "Archive-confirmed libpng 1.0.5 Adam7 horizontal pass starting columns.",
       "name": "png_pass_start",

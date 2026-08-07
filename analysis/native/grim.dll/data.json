@@ -1,5 +1,5 @@
 {
-  "audit_digest": "b811a1eadaa685d9a82155e9e2222ebec4e22a649aeb7de85212ccbd6cc9ebfa",
+  "audit_digest": "fe0e84bd7b55782fb06f5dd39e6e1a0a5518df7d219af1bcbb03779f0f5d9d3a",
   "entries": [
     {
       "address": 268747320,
@@ -2977,6 +2977,258 @@
       "size": 24,
       "size_source": "analysis/ghidra/maps/data_map.json: six-entry DXT5 alpha index map; tools/native/abi/grim.dll/abi_assertions.cpp: dxt_uint_table_6_is_0x18",
       "type": "unsigned int[6]"
+    },
+    {
+      "address": 268756608,
+      "aliases": [
+        "?const3dn_0_1@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [0.0, 1.0] used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "000000000000803f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e680",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const3dn_0_1",
+      "section": ".rdata",
+      "section_offset": 9412,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
+    },
+    {
+      "address": 268756624,
+      "aliases": [
+        "?const3dn_1_N1@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [1.0, -1.0] used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000803f000080bf",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e690",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const3dn_1_n1",
+      "section": ".rdata",
+      "section_offset": 9428,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
+    },
+    {
+      "address": 268756640,
+      "aliases": [
+        "?const3dn_1_1@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [1.0, 1.0] used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000803f0000803f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6a0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const3dn_1_1",
+      "section": ".rdata",
+      "section_offset": 9444,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
+    },
+    {
+      "address": 268756672,
+      "aliases": [
+        "?const3dn_SignBitHi@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed high-lane sign-bit mask used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000000000000080",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6c0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const3dn_sign_bit_hi",
+      "section": ".rdata",
+      "section_offset": 9476,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": 268756720,
+      "aliases": [
+        "?const3dn_dwordLo@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed low-dword mask used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff00000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e6f0",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const3dn_dword_lo",
+      "section": ".rdata",
+      "section_offset": 9524,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": 268756760,
+      "aliases": [
+        "?g_negate_low@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed low-lane sign-bit mask used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000008000000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e718",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_negate_low",
+      "section": ".rdata",
+      "section_offset": 9564,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": 268756784,
+      "aliases": [
+        "?g_const_half@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [0.5, 0.5] used by the debug x3d rotation kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000003f0000003f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e730",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const_half",
+      "section": ".rdata",
+      "section_offset": 9588,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
+    },
+    {
+      "address": 268756832,
+      "aliases": [
+        "?g_const_0_1@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [0.0, 1.0] used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "000000000000803f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e760",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const_0_1",
+      "section": ".rdata",
+      "section_offset": 9636,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
+    },
+    {
+      "address": 268756840,
+      "aliases": [
+        "?g_const_1_0@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [1.0, 0.0] used by the debug x3d matrix kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000803f00000000",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e768",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const_1_0",
+      "section": ".rdata",
+      "section_offset": 9644,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
+    },
+    {
+      "address": 268756848,
+      "aliases": [
+        "?g_const_nh_nl@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed two-lane sign-bit mask used by the debug x3d rotation kernels.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "0000008000000080",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e770",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const_negate_high_low",
+      "section": ".rdata",
+      "section_offset": 9652,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 mask; analysis/ghidra/maps/data_map.json: const uint32_t[2]",
+      "type": "const uint32_t[2]"
+    },
+    {
+      "address": 268756856,
+      "aliases": [
+        "?g_const_n2@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [-2.0, -2.0] used by the debug x3d reflection kernel.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "000000c0000000c0",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e778",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const_n2",
+      "section": ".rdata",
+      "section_offset": 9660,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
+    },
+    {
+      "address": 268756864,
+      "aliases": [
+        "?g_const_n2_1@@3T__m64@@B"
+      ],
+      "alignment": 8,
+      "alignment_source": "Pinned DirectX 8.1 x3d_matx.obj COFF section and linked VA alignment",
+      "comment": "Packed 3DNow float pair [-2.0, 1.0] used by the debug x3d reflection kernel.",
+      "definition_state": "fully-specified",
+      "initializer_hex": "000000c00000803f",
+      "initializer_source": "Binary Ninja grim.dll session and game_bins/crimsonland/1.9.93-gog/grim.dll: exact mapped bytes at VA 0x1004e780",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "x3d_const_n2_1",
+      "section": ".rdata",
+      "section_offset": 9668,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 8,
+      "size_source": "Pinned DirectX 8.1 objd\\i386\\x3d_matx.obj: complete __m64 constant; analysis/ghidra/maps/data_map.json: const float[2]",
+      "type": "const float[2]"
     },
     {
       "address": 268757648,
@@ -8141,9 +8393,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "b51feb64e88eee14b01dc7d53a044802d72aa4da0b6acaeac47cc850ebda12bf",
+    "data_map_sha256": "a7bcc3b36e662734b066e982e780d294fec2a95420ba851da12969318b05329e",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "cb4a1bb4edd0c5ba252e268e746458e9cc41e6f9b1a40ff11b3ddc7b8cec95e5",
+    "definitions_sha256": "b042b6cab56c8f3e8db2ccb245d9ec987253a5a9c03f60ba0ab111a575983416",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -8152,17 +8404,17 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 36,
-    "alias_rows": 36,
+    "alias_names": 48,
+    "alias_rows": 48,
     "code_label_entries": 3,
     "definition_group_entries": 215,
     "definition_groups": 57,
-    "entry_count": 336,
-    "explicit_alignment_entries": 302,
-    "explicit_initializer_entries": 302,
-    "explicit_size_entries": 302,
-    "fixed_array_types": 112,
-    "fully_specified_entries": 302,
+    "entry_count": 348,
+    "explicit_alignment_entries": 314,
+    "explicit_initializer_entries": 314,
+    "explicit_size_entries": 314,
+    "fixed_array_types": 124,
+    "fully_specified_entries": 314,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
@@ -8171,11 +8423,11 @@
     "referenced_entries": 0,
     "section_counts": {
       ".data": 221,
-      ".rdata": 115
+      ".rdata": 127
     },
-    "source_entry_count": 339,
-    "typed_entries": 286,
-    "unique_addresses": 336,
+    "source_entry_count": 351,
+    "typed_entries": 298,
+    "unique_addresses": 348,
     "untyped_entries": 50
   }
 }

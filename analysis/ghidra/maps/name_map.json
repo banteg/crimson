@@ -14786,6 +14786,181 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002943a",
+    "name": "x3d_matrix_multiply",
+    "aliases": ["sub_1002943A", "?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d matrix multiply implementation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002966c",
+    "name": "x3d_matrix_determinant",
+    "aliases": ["sub_1002966C", "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d matrix determinant implementation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002973b",
+    "name": "x3d_matrix_translation",
+    "aliases": ["sub_1002973B", "?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d translation-matrix builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002978b",
+    "name": "x3d_matrix_shadow",
+    "aliases": ["sub_1002978B", "?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d shadow-matrix builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029876",
+    "name": "x3d_matrix_reflect",
+    "aliases": ["sub_10029876", "?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d reflection-matrix builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029952",
+    "name": "x3d_matrix_rotation_x",
+    "aliases": ["sub_10029952", "?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d X-axis rotation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100299b5",
+    "name": "x3d_matrix_rotation_y",
+    "aliases": ["sub_100299B5", "?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d Y-axis rotation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029a13",
+    "name": "x3d_matrix_rotation_z",
+    "aliases": ["sub_10029A13", "?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d Z-axis rotation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029a6c",
+    "name": "x3d_matrix_scaling",
+    "aliases": ["sub_10029A6C", "?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d scaling-matrix builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029ab3",
+    "name": "x3d_matrix_transpose",
+    "aliases": ["sub_10029AB3", "?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d matrix transpose implementation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029b22",
+    "name": "x3d_matrix_identity",
+    "aliases": ["sub_10029B22", "?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d identity-matrix builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029b5b",
+    "name": "x3d_matrix_rotation_quaternion",
+    "aliases": ["sub_10029B5B", "?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d quaternion rotation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029c2d",
+    "name": "x3d_matrix_rotation_quaternion_k7",
+    "aliases": ["sub_10029C2D", "?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d K7 quaternion rotation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10029ce2",
+    "name": "x3d_matrix_transformation",
+    "aliases": ["sub_10029CE2", "?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d general transformation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002ae7a",
+    "name": "x3d_matrix_rotation_yaw_pitch_roll",
+    "aliases": ["sub_1002AE7A", "?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d yaw-pitch-roll rotation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002b01f",
+    "name": "x3d_matrix_affine_transformation",
+    "aliases": ["sub_1002B01F", "?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d affine transformation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002b553",
+    "name": "x3d_matrix_rotation_axis",
+    "aliases": ["sub_1002B553", "?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d arbitrary-axis rotation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002b66c",
+    "name": "x3d_matrix_transformation_k7",
+    "aliases": ["sub_1002B66C", "?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d K7 general transformation builder."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002c7c0",
+    "name": "x3d_matrix_inverse_k7",
+    "aliases": ["sub_1002C7C0", "?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d K7 matrix inverse implementation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002caa2",
+    "name": "x3d_matrix_multiply_transpose",
+    "aliases": ["sub_1002CAA2", "?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d multiply-transpose implementation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d1ce",
+    "name": "x3d_matrix_inverse",
+    "aliases": ["sub_1002D1CE", "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"],
+    "comment": "Exact DirectX 8.1 debug x3d matrix inverse dispatch."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002ce9a",
+    "name": "x3d_matrix_inverse_inline",
+    "aliases": ["sub_1002CE9A", "?x3d_D3DXMatrixInverse_inline@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"],
+    "comment": "DirectX 8.1 debug x3d inline matrix inverse helper selected by an exact archive relocation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002d2c2",
+    "name": "x3d_vec3_normalize",
+    "aliases": ["sub_1002D2C2", "?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"],
+    "comment": "DirectX 8.1 debug x3d vector normalization helper selected by an exact archive relocation."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e578",
+    "name": "x3d_plane_normalize",
+    "aliases": ["sub_1002E578", "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"],
+    "comment": "DirectX 8.1 debug x3d plane normalization helper selected by exact archive relocations."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100354e0",
+    "name": "x3d_sincos",
+    "aliases": ["sub_100354E0", "a_cos", "a_sincos"],
+    "comment": "3DNow trigonometric helper selected by the debug x3d rotation archive relocations."
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004b64f",
     "name": "FUN_1004b64f",
     "signature": "void * FUN_1004b64f(int arg1, int arg2, int arg3, int arg4)",
