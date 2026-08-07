@@ -1,6 +1,6 @@
 # Grim decoder callbacks
 
-The image-decoder cluster contributes one hundred ninety-four exact callback, state, and cleanup
+The image-decoder cluster contributes two hundred exact callback, state, and cleanup
 leaves across its JPEG, PNG, and zlib paths.
 
 The D3DX JPEG memory source shares a no-op for `init_source` and `term_source`.
@@ -296,6 +296,24 @@ the older local helper transcription. The larger inverse-DCT pass selector is
 mapped but remains excluded: its single sign-extension difference points to
 an unverified provider header variant rather than a source fact we can claim.
 
-Altogether the two hundred twelve exact functions cover 39,104 bytes
-and 13,996 instructions in the explicit `all` scope, with every external
+The D3DX color-conversion table builder and three scalar converters now also
+compile directly from pinned `jdcolor.c`. Live analysis identifies the
+provider's MMX eight-pixel kernel and its fast-path wrapper without claiming
+stock-source identity for either optimized body. The module initializer is a
+semantic-complete compiler residual: all 111 instructions and six references
+agree, with only `and byte, 0` versus `mov byte, 0` left to build 9178.
+
+Four new D3DX input-controller bodies recover per-scan setup, quantization-
+table latching, input-pass setup, and marker consumption from `jdinput.c`.
+The three older reset, finish, and initializer matches now use that same
+official source instead of local transcriptions. `/Oi` is required for the
+native inline table copy and its translation-unit register allocation. The
+initial image setup remains semantic-complete with one byte-clear opcode of
+compiler debt. Two JAZ sample and coefficient array allocators add the
+provider's 65,520-byte allocation ceiling exactly; neighboring pool functions
+use a binary-confirmed C++ allocation shim and remain unclaimed until that
+provider source variant is reconstructed.
+
+Altogether the two hundred eighteen exact functions cover 40,173 bytes
+and 14,397 instructions in the explicit `all` scope, with every external
 relocation resolved.

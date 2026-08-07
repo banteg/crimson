@@ -10650,6 +10650,27 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10022c61",
+    "name": "d3dx_jpeg_initial_setup",
+    "signature": "void d3dx_jpeg_initial_setup(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a initial input setup in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022e1c",
+    "name": "d3dx_jpeg_per_scan_setup",
+    "signature": "void d3dx_jpeg_per_scan_setup(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a per-scan input setup in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022f92",
+    "name": "d3dx_jpeg_latch_quant_tables",
+    "signature": "void d3dx_jpeg_latch_quant_tables(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a quantization-table latch in the D3DX provider"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10023024",
     "name": "d3dx_jpeg_start_input_pass",
     "signature": "void d3dx_jpeg_start_input_pass(j_decompress_ptr cinfo)",
@@ -10658,7 +10679,10 @@
   {
     "program": "grim.dll",
     "address": "0x1002305e",
-    "name": "consume_markers",
+    "name": "d3dx_jpeg_consume_markers",
+    "aliases": [
+      "consume_markers"
+    ],
     "signature": "int consume_markers(j_decompress_ptr cinfo)",
     "comment": "IJG input-controller marker consumer restored after each input pass"
   },
@@ -10672,7 +10696,10 @@
   {
     "program": "grim.dll",
     "address": "0x10023128",
-    "name": "finish_input_pass",
+    "name": "d3dx_jpeg_finish_input_pass",
+    "aliases": [
+      "finish_input_pass"
+    ],
     "signature": "void finish_input_pass(j_decompress_ptr cinfo)",
     "comment": "Restores consume_markers as the IJG input controller's consume callback"
   },
@@ -11422,6 +11449,27 @@
     "name": "d3dx_jpeg_ycck_cmyk_convert",
     "signature": "void d3dx_jpeg_ycck_cmyk_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
     "comment": "Archive-confirmed IJG 6a Adobe YCCK-to-CMYK converter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10031b2a",
+    "name": "d3dx_jpeg_ycc_rgb_convert_mmx8",
+    "signature": "void d3dx_jpeg_ycc_rgb_convert_mmx8(JDIMENSION cols, JSAMPROW y, JSAMPROW cb, JSAMPROW cr, JSAMPROW output)",
+    "comment": "D3DX MMX eight-pixel YCbCr-to-RGB conversion kernel identified from its caller and SIMD data flow"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10031c66",
+    "name": "d3dx_jpeg_ycc_rgb_convert",
+    "signature": "void d3dx_jpeg_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION input_row, JSAMPARRAY output_buf, int num_rows)",
+    "comment": "IJG 6a YCbCr-to-RGB converter with a D3DX MMX fast path"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10031e84",
+    "name": "d3dx_jpeg_init_color_deconverter",
+    "signature": "void d3dx_jpeg_init_color_deconverter(j_decompress_ptr cinfo)",
+    "comment": "Archive-confirmed IJG 6a color-deconverter initializer in the D3DX provider"
   },
   {
     "program": "grim.dll",
