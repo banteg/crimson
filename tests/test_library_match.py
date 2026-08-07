@@ -17,7 +17,7 @@ from crimson.library_match import (
     parse_coff_archive,
     render_archive_match_report,
 )
-from crimson.match import LoadedImage
+from crimson.match import CoffObject, CoffSection, CoffSymbol, LoadedImage
 
 
 def _build_object(
@@ -267,6 +267,53 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert cli_payload["filters"] == {"missing_scratches": True}
     assert cli_payload["summary"]["matched_functions"] == 0
     assert cli_payload["exclusions"] == {"target_functions": 1, "target_bytes": 6}
+
+
+def test_archive_match_does_not_index_vc_code_packets(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    code = bytes.fromhex("31c0c3b801000000c3")
+    obj = CoffObject(
+        sections=(CoffSection(".text", code, 0x20, ()),),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "TAG_PACKET_0", 3, 1, 0x20, 3),
+            CoffSymbol(2, "TAG_PACKET_1", 8, 1, 0x20, 3),
+        ),
+    )
+    archive_path = tmp_path / "probe.lib"
+    archive_path.write_bytes(_build_archive(r"obj\i386\probe.obj", b"object"))
+    image_path = tmp_path / "game.exe"
+    image_path.write_bytes(b"unused")
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x00401000","end":"0x00401009","name":"native_probe",'
+        '"size":9,"library":false}]',
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "metadata.json"
+    metadata_path.write_text('{"image_base":"0x00400000"}', encoding="utf-8")
+    mapped = bytearray(0x2000)
+    mapped[0x1000:0x1009] = code
+    monkeypatch.setattr("crimson.library_match.matchlib.parse_coff_object", lambda data: obj)
+    monkeypatch.setattr(
+        "crimson.library_match.matchlib.load_image",
+        lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
+    )
+
+    report = match_coff_archive(
+        archive_path,
+        image_path=image_path,
+        functions_path=functions_path,
+        metadata_path=metadata_path,
+        range_start=0x00401000,
+        range_end=0x00401009,
+    )
+
+    assert report.object_functions == 1
+    assert report.matched_functions == 1
+    assert report.matches[0].candidates[0].symbol == "_probe"
 
 
 def test_archive_match_accepts_zero_valued_linked_relocation(

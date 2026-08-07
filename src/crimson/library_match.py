@@ -183,12 +183,7 @@ def _archive_function_index(
             dict.fromkeys(
                 symbol.name
                 for symbol in obj.symbols
-                if (
-                    symbol.section_number > 0
-                    and symbol.symbol_type & matchlib.SYM_TYPE_FUNCTION
-                    and symbol.storage_class
-                    in (matchlib.IMAGE_SYM_CLASS_EXTERNAL, matchlib.IMAGE_SYM_CLASS_STATIC)
-                )
+                if matchlib._is_function_symbol(symbol)
             ),
         )
         for function_name in function_names:
