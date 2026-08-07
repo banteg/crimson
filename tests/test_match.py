@@ -941,6 +941,43 @@ def test_extract_object_function_collects_relocations() -> None:
     assert function.relocation_references[0].key == "name:foo"
 
 
+def test_extract_object_function_recovers_implicit_same_section_branch() -> None:
+    code = bytes.fromhex("e801000000c3") + bytes.fromhex("31c0c3")
+    obj = parse_coff_object(
+        build_object(code, [("_caller", 0), ("_callee", 6)], []),
+    )
+
+    function = extract_object_function(obj, "caller")
+
+    assert function.data == bytes.fromhex("e801000000c3")
+    assert function.relocation_offsets == frozenset({1})
+    assert len(function.relocation_references) == 1
+    assert function.relocation_references[0].symbol_name == "_callee"
+    assert function.relocation_references[0].key == "name:callee"
+    disassembly = disassemble_normalized_function(
+        function.data,
+        relocation_offsets=function.relocation_offsets,
+        relocation_references=function.relocation_references,
+    )
+    assert disassembly[0].text == "call ADDR"
+    assert disassembly[0].masked_references[0].keys == ("name:callee",)
+
+
+def test_extract_object_function_recovers_implicit_branch_to_function_tail() -> None:
+    code = bytes.fromhex("e804000000c3") + bytes.fromhex("909090c3")
+    obj = parse_coff_object(
+        build_object(code, [("_caller", 0), ("_callee", 6)], []),
+    )
+
+    function = extract_object_function(obj, "caller")
+
+    assert len(function.relocation_references) == 1
+    reference = function.relocation_references[0]
+    assert reference.symbol_name == "_callee"
+    assert reference.addend == 3
+    assert reference.key == "name:callee+0x3"
+
+
 def test_extract_object_function_excludes_appended_local_jump_table() -> None:
     code = bytes.fromhex("ff248500000000b801000000c3c38bff") + b"\x00" * 8
     obj = CoffObject(

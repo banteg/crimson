@@ -7,7 +7,7 @@ import os
 import re
 import shlex
 import struct
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
@@ -1716,6 +1716,113 @@ def _format_addend(addend: int) -> str:
     return f"{operator}0x{abs(addend):x}"
 
 
+def _coff_implicit_direct_branch_references(
+    obj: CoffObject,
+    target: CoffSymbol,
+    end: int,
+    *,
+    explicit_offsets: frozenset[int],
+) -> tuple[ObjectRelocationReference, ...]:
+    """Recover same-section branch symbols resolved by the VC6 assembler.
+
+    MASM can encode a direct relative call or jump between symbols in one
+    ``.text`` section without leaving a COFF relocation. Only accept branches
+    that land exactly on one unambiguous function or code-label symbol; all
+    other immediates remain literal and therefore continue to mismatch.
+    """
+
+    try:
+        import capstone
+    except ModuleNotFoundError as exc:
+        raise RuntimeError("capstone is required for matching; run `uv sync --dev`") from exc
+
+    section = obj.sections[target.section_number - 1]
+    symbols_by_value: dict[int, list[CoffSymbol]] = defaultdict(list)
+    function_symbols_by_value: dict[int, list[CoffSymbol]] = defaultdict(list)
+    for symbol in obj.symbols:
+        if (
+            symbol.section_number == target.section_number
+            and (_is_function_symbol(symbol) or _is_code_label_symbol(symbol))
+        ):
+            symbols_by_value[symbol.value].append(symbol)
+            if _is_function_symbol(symbol):
+                function_symbols_by_value[symbol.value].append(symbol)
+    function_starts = sorted(function_symbols_by_value)
+
+    def destination_symbol(address: int) -> tuple[CoffSymbol, int] | None:
+        exact = {
+            symbol.name: symbol
+            for symbol in symbols_by_value.get(address, ())
+            if symbol.name
+        }
+        if len(exact) == 1:
+            return next(iter(exact.values())), 0
+        if exact:
+            return None
+
+        owner_start = max(
+            (value for value in function_starts if value < address),
+            default=None,
+        )
+        if owner_start is None:
+            return None
+        owner_end = min(
+            (value for value in function_starts if value > owner_start),
+            default=len(section.data),
+        )
+        if address >= owner_end:
+            return None
+        owners = {
+            symbol.name: symbol
+            for symbol in function_symbols_by_value[owner_start]
+            if symbol.name
+        }
+        if len(owners) != 1:
+            return None
+        return next(iter(owners.values())), address - owner_start
+
+    md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    md.detail = True
+    references: list[ObjectRelocationReference] = []
+    for instruction in md.disasm(section.data[target.value : end], target.value):
+        if not (
+            capstone.CS_GRP_JUMP in instruction.groups
+            or capstone.CS_GRP_CALL in instruction.groups
+        ):
+            continue
+        immediate_operands = [
+            operand
+            for operand in instruction.operands
+            if operand.type == capstone.x86.X86_OP_IMM
+        ]
+        if len(immediate_operands) != 1 or not instruction.imm_offset:
+            continue
+        offset = instruction.address - target.value + instruction.imm_offset
+        if any(
+            offset + delta in explicit_offsets
+            for delta in range(max(instruction.imm_size, 1))
+        ):
+            continue
+        destination = int(immediate_operands[0].imm)
+        if target.value <= destination < end:
+            continue
+        resolved = destination_symbol(destination)
+        if resolved is None:
+            continue
+        symbol, addend = resolved
+        key, explained = _object_reference_key(symbol, addend)
+        references.append(
+            ObjectRelocationReference(
+                offset=offset,
+                symbol_name=symbol.name,
+                key=key,
+                explained=explained,
+                addend=addend,
+            ),
+        )
+    return tuple(references)
+
+
 def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectFunction:
     explicit_code_label = False
     candidates = [symbol for symbol in obj.symbols if _is_function_symbol(symbol)]
@@ -1839,6 +1946,16 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
                 alternate_keys=alternate_keys,
             ),
         )
+    explicit_offsets = frozenset(reference.offset for reference in relocation_references)
+    relocation_references.extend(
+        _coff_implicit_direct_branch_references(
+            obj,
+            target,
+            end,
+            explicit_offsets=explicit_offsets,
+        ),
+    )
+    relocation_references.sort(key=lambda reference: reference.offset)
     return ObjectFunction(
         name=target.name,
         data=section.data[target.value : end].rstrip(PADDING_BYTES),
