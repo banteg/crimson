@@ -9138,9 +9138,10 @@
   {
     "program": "grim.dll",
     "address": "0x100132bb",
-    "name": "FUN_100132bb",
-    "signature": "int FUN_100132bb(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_100132bb(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_a8r8g8b8",
+    "aliases": ["FUN_100132bb", "?BltBox2D_A8R8G8B8@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_a8r8g8b8(void *this)",
+    "comment": "A8R8G8B8 fast-path identity proven by the exact CD3DXBlt caller relocation.",
     "create": false
   },
   {
@@ -9182,9 +9183,10 @@
   {
     "program": "grim.dll",
     "address": "0x10013551",
-    "name": "FUN_10013551",
-    "signature": "int FUN_10013551(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10013551(int32_t* arg1)",
+    "name": "d3dx_blt_box_2d_x8r8g8b8",
+    "aliases": ["FUN_10013551", "?BltBox2D_X8R8G8B8@CD3DXBlt@@IAEJXZ"],
+    "signature": "int d3dx_blt_box_2d_x8r8g8b8(void *this)",
+    "comment": "X8R8G8B8 fast-path identity proven by the exact CD3DXBlt caller relocation.",
     "create": false
   },
   {
@@ -16896,5 +16898,77 @@
     "name": "d3dx_is_intel_sse_processor_cpuid_probe",
     "comment": "Object-local CPUID probe label referenced by the exact DirectX 8.1 CPU detector.",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10012874",
+    "name": "d3dx_tf_row_ctor",
+    "aliases": ["unknown_libname_2", "??0TF_Row@@QAE@XZ"],
+    "signature": "void * d3dx_tf_row_ctor(void *this)",
+    "comment": "TF_Row constructor identity proven by exact CD3DXBlt caller relocation.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b8d9",
+    "name": "d3dx_blt_triangle_3d_eh_handler",
+    "signature": "void d3dx_blt_triangle_3d_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltTriangle3D."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b8ed",
+    "name": "d3dx_blt_copy_eh_handler",
+    "signature": "void d3dx_blt_copy_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltCopy."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b90b",
+    "name": "d3dx_blt_none_eh_handler",
+    "signature": "void d3dx_blt_none_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltNone."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b929",
+    "name": "d3dx_blt_point_eh_handler",
+    "signature": "void d3dx_blt_point_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltPoint."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b951",
+    "name": "d3dx_blt_box_2d_eh_handler",
+    "signature": "void d3dx_blt_box_2d_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltBox2D."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b979",
+    "name": "d3dx_blt_box_3d_eh_handler",
+    "signature": "void d3dx_blt_box_3d_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltBox3D."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b997",
+    "name": "d3dx_blt_linear_2d_eh_handler",
+    "signature": "void d3dx_blt_linear_2d_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltLinear2D."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b9b5",
+    "name": "d3dx_blt_linear_3d_eh_handler",
+    "signature": "void d3dx_blt_linear_3d_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltLinear3D."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b9dd",
+    "name": "d3dx_blt_triangle_2d_eh_handler",
+    "signature": "void d3dx_blt_triangle_2d_eh_handler(void)",
+    "comment": "Compiler-generated exception-handler thunk for CD3DXBlt::BltTriangle2D."
   }
 ]
