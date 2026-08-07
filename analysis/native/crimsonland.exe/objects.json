@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "fb370e3f186e6e9d5fa45a7479a3078e93e42c25d49e1f14146cfb21ac1dd99a",
+  "audit_digest": "4a797bf3e38bbffb568ccb1659047ac102743fe017e71c2abe93da714e7b2e1d",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -12262,7 +12262,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "9a50acd018a6912c495c4d9a6dc76cbbb50dd8d22cd58d8c783ab778345b2b24"
+        "sha256": "b1d6511bb7cbe2ee3ca82df5c6019012e0ee9b17db84e95aac3a69b3eda5d393"
       },
       "emitted_symbol_count": 838,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
@@ -88055,7 +88055,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "9a50acd018a6912c495c4d9a6dc76cbbb50dd8d22cd58d8c783ab778345b2b24"
+        "sha256": "b1d6511bb7cbe2ee3ca82df5c6019012e0ee9b17db84e95aac3a69b3eda5d393"
       }
     ],
     "toolchain": {

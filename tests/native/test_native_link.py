@@ -2477,15 +2477,15 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1800
+    assert payload["summary"]["source_entry_count"] == 1809
     assert payload["summary"]["code_label_entries"] == 54
-    assert payload["summary"]["entry_count"] == 1746
-    assert payload["summary"]["typed_entries"] == 1746
+    assert payload["summary"]["entry_count"] == 1755
+    assert payload["summary"]["typed_entries"] == 1755
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1746
-    assert payload["summary"]["explicit_alignment_entries"] == 1746
-    assert payload["summary"]["explicit_initializer_entries"] == 1746
-    assert payload["summary"]["fully_specified_entries"] == 1746
+    assert payload["summary"]["explicit_size_entries"] == 1755
+    assert payload["summary"]["explicit_alignment_entries"] == 1755
+    assert payload["summary"]["explicit_initializer_entries"] == 1755
+    assert payload["summary"]["fully_specified_entries"] == 1755
     assert payload["summary"]["definition_group_entries"] == 1656
     assert payload["summary"]["definition_groups"] == 174
     assert {
@@ -2530,6 +2530,11 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["d3dx_x87_math_half"]["definition_group"] == (
         "literal-d3dx-x87-word32"
     )
+    assert defined["d3dx_sse_math_constants"]["size"] == 448
+    assert defined["d3dx_sse_quaternion_constants"]["size"] == 64
+    assert defined["d3dx_sse_math_bss"]["initializer_fill"] == "00"
+    assert defined["d3dx_sse_quaternion_vectors"]["size"] == 160
+    assert defined["d3dx_sse2_math_vectors"]["size"] == 192
     assert defined["player_state_table"]["size"] == 0x6C0
     assert defined["player_perk_counts"]["size"] == 0x200
     assert defined["player_perk_counts"]["definition_group"] == (

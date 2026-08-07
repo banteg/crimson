@@ -4431,6 +4431,46 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: opaque legacy renderer-provider pointer bytes at VA 0x00479688..0x0047976c"
     },
     {
+      "address": "0x0047a7a0",
+      "name": "d3dx_sse_math_constants",
+      "size": 448,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 448-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000000000000008000000000000000800000003f0000003f0000003f0000003f00004040000040400000404000004040000000bf0000c03f0000c0bf0000003f000000000000803f00000000000000000000803f000020c000000040000000bf000000bf000000000000003f00000000000000400000803f000000c00000803f0000803f000000000000000000000000000040c0000000c000004040000080bf000000000000803f000000000000000000000080000000800000008000000080000040400000000000000000000000000000003f0000000000000000000000000000008000000080000000800000008000000000ffffffff00000000000000000000000000000000ffffffff00000000000000000000000000000000ffffffffffffffffffffffffffffffff000000000000000000000000000000000000803f00000000000000000000803f00000000000000000000803f00000000000000000000803f000000000000000000000000000000c0000000c0000000c000000000000040400000000000000000000000000000003f000000000000000000000000ffffffffffffffffffffffff0000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x0047a7a0; pinned DirectX 8.1 d3dxmathsse.obj .data"
+    },
+    {
+      "address": "0x0047a960",
+      "name": "d3dx_sse_quaternion_constants",
+      "size": 64,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 64-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "0000003f0000003f0000003f0000003f00004040000040400000404000004040000080bf000080bf000080bf0000803f00000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x0047a960; pinned DirectX 8.1 d3dxquatsse.obj .data"
+    },
+    {
+      "address": "0x0047a9a0",
+      "name": "d3dx_sse2_math_constants",
+      "size": 288,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 288-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse2.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "0000000000000080000000000000008000000080000000800000008000000080000040400000000000000000000000000000003f0000000000000000000000000000008000000080000000800000008000000000ffffffff00000000000000000000000000000000ffffffff00000000000000000000000000000000ffffffffffffffffffffffffffffffff000000000000000000000000000000000000803f00000000000000000000803f00000000000000000000803f00000000000000000000803f000000000000000000000000000000c0000000c0000000c000000000000040400000000000000000000000000000003f000000000000000000000000ffffffffffffffffffffffff0000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x0047a9a0; pinned DirectX 8.1 d3dxmathsse2.obj .data"
+    },
+    {
+      "address": "0x0047aac0",
+      "name": "d3dx_sse2_quaternion_constants",
+      "size": 32,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 32-byte .data section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse2.obj .data characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000080bf000080bf000080bf0000803f00000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x0047aac0; pinned DirectX 8.1 d3dxquatsse2.obj .data"
+    },
+    {
       "address": "0x0047b1c0",
       "name": "crt_ctype_table",
       "size": 4,
@@ -5089,6 +5129,56 @@
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: weapon_alignment_is_four",
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004d7a2c..0x004d992c"
+    },
+    {
+      "address": "0x004d9940",
+      "name": "d3dx_sse_math_bss",
+      "size": 32,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 32-byte .bss section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj .bss characteristics 0xc0600080 encode 32-byte alignment",
+      "initializer_fill": "00",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact zero-filled linked-image bytes at VA 0x004d9940"
+    },
+    {
+      "address": "0x004dc000",
+      "name": "d3dx_sse_math_vectors",
+      "size": 224,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse.obj: complete 224-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000080280000003f00004040000080280000003f00004040000080280000003f00004040000000000000000000000000000000800000000000000000000000000000000000000000000000000000803f0000803f0000000000000000000000000000000000000000000000000000803f000000000000803f000000000000000000000000000000000000008000000000ffffffff00000000ffffffff000000002aa9933d000000009a99593e7424373f2aa9933d000000009a99593e7424373f0000003f00004040000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x004dc000; pinned DirectX 8.1 d3dxmathsse.obj .data1"
+    },
+    {
+      "address": "0x004dc0e0",
+      "name": "d3dx_sse_quaternion_vectors",
+      "size": 160,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse.obj: complete 160-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000000800000000000000000000000800000000000000000000000800000008000000000000000800000000000000080010000000200000000000000000000000000803f0000003f0000803e0000803f0000803f0000003f0000803e0000803f000000000000008000000080000000000000003f0000003f0000003f0000003f0000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x004dc0e0; pinned DirectX 8.1 d3dxquatsse.obj .data1"
+    },
+    {
+      "address": "0x004dc180",
+      "name": "d3dx_sse2_math_vectors",
+      "size": 192,
+      "size_source": "Pinned DirectX 8.1 d3dxmathsse2.obj: complete 192-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxmathsse2.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "000080280000003f00004040000080280000003f00004040000080280000003f00004040000000000000000000000000000000800000000000000000000000000000000000000000000000000000803f0000803f0000000000000000000000000000000000000000000000000000803f000000000000803f000000000000000000000000000000000000008000000000ffffffff00000000ffffffff000000000000003f00004040000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x004dc180; pinned DirectX 8.1 d3dxmathsse2.obj .data1"
+    },
+    {
+      "address": "0x004dc240",
+      "name": "d3dx_sse2_quaternion_vectors",
+      "size": 160,
+      "size_source": "Pinned DirectX 8.1 d3dxquatsse2.obj: complete 160-byte .data1 section extent",
+      "alignment": 32,
+      "alignment_source": "Pinned DirectX 8.1 d3dxquatsse2.obj .data1 characteristics 0xc0600040 encode 32-byte alignment",
+      "initializer_hex": "feff7f3ffeff7f3ffeff7f3ffeff7f3f0000803f0000803f0000803f0000803f00000080000000800000008000000080010000000200000000000000000000000000803f0000003f0000803e0000803f0000803f0000003f0000803e0000803f000000000000008000000080000000000000003f0000003f0000003f0000003f0000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_source": "Binary Ninja crimsonland.exe session and game_bins/crimsonland/1.9.93-gog/crimsonland.exe: exact mapped bytes at VA 0x004dc240; pinned DirectX 8.1 d3dxquatsse2.obj .data1"
     }
   ]
 }
