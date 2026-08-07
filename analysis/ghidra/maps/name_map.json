@@ -12602,6 +12602,27 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003a4f4",
+    "name": "nullsub_7",
+    "exclude": true,
+    "comment": "IDA false-positive function: bytes c2 00 00 are the 0xc2 field of a repeating 16-byte data record; Binary Ninja reports no function or references."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003a574",
+    "name": "nullsub_9",
+    "exclude": true,
+    "comment": "IDA false-positive function: bytes ca 00 00 are the 0xca field of a repeating 16-byte data record; Binary Ninja reports no function or references."
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003a584",
+    "name": "nullsub_10",
+    "exclude": true,
+    "comment": "IDA false-positive function: byte cb is the 0xcb field of a repeating 16-byte data record; Binary Ninja reports no function or references."
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003a990",
     "name": "grim_jpeg_memory_src",
     "signature": "void grim_jpeg_memory_src(void *context, unsigned char *data, unsigned int size)",
