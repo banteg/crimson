@@ -11,28 +11,23 @@ template `0x10` entries are `(448,448)` at 20500 ms, `(576,448)` at 26000 ms,
 `(576,576)` at 31500 ms, and `(448,576)` at 22000 ms, all count one. The
 Python and Zig ports agree with the native ordering and constants.
 
-Direct two-float position fields plus the metadata setter reproduce the
-native shared registers for 128, 896, 512, 448, 576, template `0x10`, trigger
-1500, and count one. The candidate has the same 73 instructions, no external
-references, the exact 24-byte record offsets, all eleven entries, and the
-constant output count. It scores 87.67%.
+Direct two-float position fields plus the metadata setter reproduce the native
+shared registers for 128, 896, 512, 448, 576, template `0x10`, trigger 1500,
+and count one. One continuous append count publishes all eleven entries and is
+also returned to the caller. Staging the shared 448 and 576 coordinates at
+their first metadata-to-next-position boundaries reproduces the native
+register replacement schedule without barriers or forced registers.
 
-The residual consists only of independent VC6 scheduling. Native interleaves
-the callee-saved pushes and later constant-register replacements with adjacent
-record stores; the candidate groups the pushes and initializes each shared
-constant slightly earlier. A two-float constructor introduces a disproven
-eight-byte temporary and expands the function to 116 instructions, while a
-five-argument scalar setter emits the same best code. `msvc6.5pp` is identical;
-`msvc7.0` and `/G6` regress. The exact-length default-profile WIP is kept
-without artificial dependencies or forced-register constructs.
+The resulting candidate is exact: 73/73 instructions, 365/365 bytes, and no
+external references. A two-float constructor still introduces a disproven
+eight-byte temporary and expands the function to 116 instructions.
 
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+the same instruction count as native and all bytes match. Classification:
+`RECOVERY=semantic-complete`.
 
 ## Direct metadata-store audit
 
@@ -58,3 +53,16 @@ stores before reusing that register for 512. The only other differences are
 the early loads of the shared 448 and 576 coordinates. Cursor and scalar
 position-helper variants regress, so the stronger staged-constant form is
 retained without barriers or forced registers.
+
+## 2026-08-08 append-count and inner-constant recovery
+
+Replacing the fixed indices and output literal with one continuous append
+count raises the retained candidate from 89.04% to 97.26% and extends the exact
+prefix from six to 37 instructions. After that ownership change, the only
+remaining differences are early loads of the shared 448 and 576 coordinates.
+
+The native loads each coordinate after the current entry's trigger store and
+before its count store, then carries it into the following positions. Named
+`inner_low` and `inner_high` values declared at those semantic boundaries
+recover both schedules. The final source matches all 365 bytes and 73
+instructions exactly.
