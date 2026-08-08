@@ -1,5 +1,5 @@
 {
-  "audit_digest": "b7f13032b47b74d47dfc0957d434dd5fbc40c3c009f506bfd353e7ed56ccc67c",
+  "audit_digest": "419351e6d264ecbb59892d722c46c2b1a65fe21cc8d6e18d42eb9fe1d830f8b2",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -26960,7 +26960,14 @@
         "tools/match/scratches/console_tokenize_line/build/msvc6.5/217a93faf7c8a2dd/scratch.obj",
         "tools/match/scratches/console_update/build/msvc6.5/29bb0af57617c8f0/scratch.obj",
         "tools/match/scratches/console_vars/build/msvc6.5/c3562c38ae8b92ef/scratch.obj",
+        "tools/match/scratches/controls_aim_method_list_destroy/build/msvc6.5/3012aedac6c5159c/scratch.obj",
+        "tools/match/scratches/controls_back_button_destroy/build/msvc6.5/8a698cc21aed7cef/scratch.obj",
+        "tools/match/scratches/controls_direction_arrow_checkbox_destroy/build/msvc6.5/796eb2c194d543d7/scratch.obj",
         "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+        "tools/match/scratches/controls_move_method_list_destroy/build/msvc6.5/835517e65012b8c0/scratch.obj",
+        "tools/match/scratches/controls_player_profile_list_destroy/build/msvc6.5/9aa555097e8985c6/scratch.obj",
+        "tools/match/scratches/controls_rebind_items_destroy/build/msvc6.5/6c135f0ce0627fe4/scratch.obj",
+        "tools/match/scratches/controls_redefine_button_destroy/build/msvc6.5/c3d582fd3af856a7/scratch.obj",
         "tools/match/scratches/creature_alloc_slot/build/msvc6.5/3078063599ffe344/scratch.obj",
         "tools/match/scratches/creature_apply_damage/build/msvc6.5/b72eed7c539152e2/scratch.obj",
         "tools/match/scratches/creature_find_in_radius/build/msvc6.5/557f45a0e23c56b1/scratch.obj",
@@ -26988,8 +26995,38 @@
         "tools/match/scratches/credits_line_table_global_init_thunk/build/msvc6.5/d2320ddb839d4776/scratch.obj",
         "tools/match/scratches/credits_screen_update/build/msvc6.5/7de52918eb6d8582/scratch.obj",
         "tools/match/scratches/credits_secret_alien_zookeeper_update/build/msvc6.5/139b4784b295dbfe/scratch.obj",
+        "tools/match/scratches/credits_secret_back_button_destroy/build/msvc6.5/0242b2c77c281107/scratch.obj",
         "tools/match/scratches/credits_secret_button_destroy/build/msvc6.5/592fbba27373ea82/scratch.obj",
         "tools/match/scratches/credits_secret_match3_find/build/msvc6.5/dba66da2914ffcde/scratch.obj",
+        "tools/match/scratches/credits_secret_reset_button_destroy/build/msvc6.5/acbac70815597ed0/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_05/build/msvc6.5/9d1ae74c2c464181/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_05_thunk/build/msvc6.5/67ddc216dd1beaeb/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_07/build/msvc6.5/0ddbbde759849977/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_07_thunk/build/msvc6.5/7ee62fffe372339f/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_09/build/msvc6.5/49fa9b7efedb37a1/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_09_thunk/build/msvc6.5/7eec5e4c575d67c3/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_31/build/msvc6.5/44008cc7cf4486ef/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_31_thunk/build/msvc6.5/0709d6abd1d421c6/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_38/build/msvc6.5/3c3e913d504b0182/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_38_thunk/build/msvc6.5/5d68568fda3fecb4/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_39/build/msvc6.5/00346ccfd206c8d1/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_39_thunk/build/msvc6.5/08ffec488716312f/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_41/build/msvc6.5/9d783dece78b5853/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_41_thunk/build/msvc6.5/e9924ec69172d446/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_42/build/msvc6.5/45b116f6c2a667a3/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_42_thunk/build/msvc6.5/156a4c267ab6faa1/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_43/build/msvc6.5/ea51e303b8bcf530/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_43_thunk/build/msvc6.5/474962fbc2e4ef5d/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_44/build/msvc6.5/e37f001dbd660959/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_44_thunk/build/msvc6.5/ffe7e8bcd7e7a84e/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_45/build/msvc6.5/f66c5bf553ddd90a/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_45_thunk/build/msvc6.5/a99786ae317e2d44/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_48/build/msvc6.5/49db9f995d325525/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_48_thunk/build/msvc6.5/767ce2ab835d0c6e/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_49/build/msvc6.5/a8ade0684a7fa792/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk/build/msvc6.5/b0eb6528f7fea005/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/fcaa20226072805a/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/435ddc667e0f909f/scratch.obj",
         "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
         "tools/match/scratches/demo_mode_start/build/msvc6.5/a71c89b9df145595/scratch.obj",
         "tools/match/scratches/demo_purchase_interstitial_begin/build/msvc6.5/f4c0e7410fe5345f/scratch.obj",
@@ -27121,20 +27158,6 @@
         "tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/754e49e4514574e5/scratch.obj",
         "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj",
         "tools/match/scratches/j_mod_api_init/build/msvc6.5/7b5d8b7001ee35cb/scratch.obj",
-        "tools/match/scratches/j_nullsub_105/build/msvc6.5/c1e3ddcf31a1d142/scratch.obj",
-        "tools/match/scratches/j_nullsub_106/build/msvc6.5/bf7938f9212229e1/scratch.obj",
-        "tools/match/scratches/j_nullsub_107/build/msvc6.5/36de6569db2c24c0/scratch.obj",
-        "tools/match/scratches/j_nullsub_109/build/msvc6.5/45f0caac1e9625c7/scratch.obj",
-        "tools/match/scratches/j_nullsub_110/build/msvc6.5/809a29094a7e5485/scratch.obj",
-        "tools/match/scratches/j_nullsub_111/build/msvc6.5/97daae2048de7b95/scratch.obj",
-        "tools/match/scratches/j_nullsub_112/build/msvc6.5/6be764492a8d9ba4/scratch.obj",
-        "tools/match/scratches/j_nullsub_113/build/msvc6.5/5527ceb1bc140d9e/scratch.obj",
-        "tools/match/scratches/j_nullsub_114/build/msvc6.5/2582fecce716fd6b/scratch.obj",
-        "tools/match/scratches/j_nullsub_115/build/msvc6.5/a7adcb5f52d7474b/scratch.obj",
-        "tools/match/scratches/j_nullsub_116/build/msvc6.5/5fe0b79f6b9099b8/scratch.obj",
-        "tools/match/scratches/j_nullsub_117/build/msvc6.5/0fe11732085ed975/scratch.obj",
-        "tools/match/scratches/j_nullsub_118/build/msvc6.5/9055711644022385/scratch.obj",
-        "tools/match/scratches/j_nullsub_119/build/msvc6.5/bb105a78a9dbafef/scratch.obj",
         "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/2ae817964da1cfa2/scratch.obj",
         "tools/match/scratches/mod_api_cl_enter_menu/build/msvc6.5/96a883fe99d3b369/scratch.obj",
@@ -27173,6 +27196,7 @@
         "tools/match/scratches/mod_api_sfx_play_sample/build/msvc6.5/2f0913b9de0fd6ee/scratch.obj",
         "tools/match/scratches/mod_api_sfx_play_tune/build/msvc6.5/599dc77299d1b4fa/scratch.obj",
         "tools/match/scratches/mod_api_sfx_stop_tune/build/msvc6.5/a4f52be9ac10d229/scratch.obj",
+        "tools/match/scratches/mod_info_destroy/build/msvc6.5/8abca604babcad5a/scratch.obj",
         "tools/match/scratches/mod_load_info/build/msvc6.5/e9f149bbe5f03787/scratch.obj",
         "tools/match/scratches/mod_load_mod/build/msvc6.5/52be37ccdd9c4984/scratch.obj",
         "tools/match/scratches/mods_any_available/build/msvc6.5/eea133b33d4e76d2/scratch.obj",
@@ -27189,53 +27213,13 @@
         "tools/match/scratches/music_release_track/build/msvc6.5/9c9dae93732c4d4d/scratch.obj",
         "tools/match/scratches/music_stream_fill/build/msvc6.5/8d35f597ce099360/scratch.obj",
         "tools/match/scratches/music_stream_update/build/msvc6.5/7952d7ed17953bff/scratch.obj",
-        "tools/match/scratches/nullsub_105/build/msvc6.5/12e9147a821fb03d/scratch.obj",
-        "tools/match/scratches/nullsub_106/build/msvc6.5/aeb4ad158afba239/scratch.obj",
-        "tools/match/scratches/nullsub_107/build/msvc6.5/302644c1c084d819/scratch.obj",
-        "tools/match/scratches/nullsub_109/build/msvc6.5/f8215113532c4f89/scratch.obj",
-        "tools/match/scratches/nullsub_110/build/msvc6.5/3b2f0d22c6c506ce/scratch.obj",
-        "tools/match/scratches/nullsub_111/build/msvc6.5/6feb5a69cc677409/scratch.obj",
-        "tools/match/scratches/nullsub_112/build/msvc6.5/9d395cfa4a4358dd/scratch.obj",
-        "tools/match/scratches/nullsub_113/build/msvc6.5/c49ee665386ede9b/scratch.obj",
-        "tools/match/scratches/nullsub_114/build/msvc6.5/a95ab2e0bb427d70/scratch.obj",
-        "tools/match/scratches/nullsub_115/build/msvc6.5/6df9963a659271ce/scratch.obj",
-        "tools/match/scratches/nullsub_116/build/msvc6.5/8b6742c56e1b6d47/scratch.obj",
-        "tools/match/scratches/nullsub_117/build/msvc6.5/e40e9a4fcae65365/scratch.obj",
-        "tools/match/scratches/nullsub_118/build/msvc6.5/2a864fca6472e09b/scratch.obj",
-        "tools/match/scratches/nullsub_119/build/msvc6.5/8fcfb146637b32d3/scratch.obj",
-        "tools/match/scratches/nullsub_13/build/msvc6.5/c252f742a0908794/scratch.obj",
-        "tools/match/scratches/nullsub_14/build/msvc6.5/ab20824414bb15a7/scratch.obj",
-        "tools/match/scratches/nullsub_21/build/msvc6.5/3c94ae1b7369867e/scratch.obj",
-        "tools/match/scratches/nullsub_25/build/msvc6.5/b32327842033e448/scratch.obj",
-        "tools/match/scratches/nullsub_26/build/msvc6.5/17e0cc533793d7eb/scratch.obj",
-        "tools/match/scratches/nullsub_45/build/msvc6.5/85c400f3f97e333a/scratch.obj",
-        "tools/match/scratches/nullsub_46/build/msvc6.5/4beea582be57569a/scratch.obj",
-        "tools/match/scratches/nullsub_47/build/msvc6.5/09c1f9ba38180416/scratch.obj",
-        "tools/match/scratches/nullsub_48/build/msvc6.5/4a489ad0f51470e3/scratch.obj",
-        "tools/match/scratches/nullsub_49/build/msvc6.5/6061ab5686d77a02/scratch.obj",
-        "tools/match/scratches/nullsub_50/build/msvc6.5/07ce36016380d57e/scratch.obj",
-        "tools/match/scratches/nullsub_51/build/msvc6.5/d5072d38b232d2fa/scratch.obj",
-        "tools/match/scratches/nullsub_52/build/msvc6.5/9f20443e2f1e6cd8/scratch.obj",
-        "tools/match/scratches/nullsub_57/build/msvc6.5/6f1238eb997d0229/scratch.obj",
-        "tools/match/scratches/nullsub_67/build/msvc6.5/861d55ec0b1c8d43/scratch.obj",
-        "tools/match/scratches/nullsub_68/build/msvc6.5/a5ec391b5a2ba222/scratch.obj",
-        "tools/match/scratches/nullsub_69/build/msvc6.5/90ac8ad4c4db3e9e/scratch.obj",
-        "tools/match/scratches/nullsub_70/build/msvc6.5/09eb2fe802eb033a/scratch.obj",
-        "tools/match/scratches/nullsub_71/build/msvc6.5/8aac4e633e8c7999/scratch.obj",
-        "tools/match/scratches/nullsub_73/build/msvc6.5/2cf905754d9ac370/scratch.obj",
-        "tools/match/scratches/nullsub_74/build/msvc6.5/57f0f8df85432548/scratch.obj",
-        "tools/match/scratches/nullsub_75/build/msvc6.5/2e86b20501a40c7c/scratch.obj",
-        "tools/match/scratches/nullsub_76/build/msvc6.5/43cf8f066b5eee0b/scratch.obj",
-        "tools/match/scratches/nullsub_77/build/msvc6.5/8c2dbf63dbbbf11e/scratch.obj",
-        "tools/match/scratches/nullsub_78/build/msvc6.5/202b78d3048b1799/scratch.obj",
-        "tools/match/scratches/nullsub_89/build/msvc6.5/0aed8c025b99142e/scratch.obj",
-        "tools/match/scratches/nullsub_90/build/msvc6.5/00aa27b55d55f3b9/scratch.obj",
-        "tools/match/scratches/nullsub_91/build/msvc6.5/c6ac298d3048c1dc/scratch.obj",
-        "tools/match/scratches/nullsub_92/build/msvc6.5/f1b77540896d288b/scratch.obj",
-        "tools/match/scratches/nullsub_93/build/msvc6.5/c38af2d41fcfbb74/scratch.obj",
-        "tools/match/scratches/nullsub_94/build/msvc6.5/c31af53e3d954b58/scratch.obj",
-        "tools/match/scratches/nullsub_95/build/msvc6.5/bb796f876aa06892/scratch.obj",
+        "tools/match/scratches/options_controls_button_destroy/build/msvc6.5/b6c6693fd020f45f/scratch.obj",
+        "tools/match/scratches/options_graphics_detail_slider_destroy/build/msvc6.5/b02b1089c5a67fac/scratch.obj",
+        "tools/match/scratches/options_info_checkbox_destroy/build/msvc6.5/8ebdcb354a68a794/scratch.obj",
         "tools/match/scratches/options_menu_update/build/msvc6.5/e98fd757521b28dd/scratch.obj",
+        "tools/match/scratches/options_mouse_sensitivity_slider_destroy/build/msvc6.5/55408d0e39ab93af/scratch.obj",
+        "tools/match/scratches/options_music_volume_slider_destroy/build/msvc6.5/92d7e90fd2d81085/scratch.obj",
+        "tools/match/scratches/options_sfx_volume_slider_destroy/build/msvc6.5/e58e787c9df0458f/scratch.obj",
         "tools/match/scratches/particle_pool_global_init/build/msvc6.5/4a1cd07bac1ff8fb/scratch.obj",
         "tools/match/scratches/particle_pool_global_init_thunk/build/msvc6.5/6c40031f653d7017/scratch.obj",
         "tools/match/scratches/perk_apply/build/msvc6.5/354a676c4163d7b9/scratch.obj",
@@ -27277,6 +27261,10 @@
         "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
         "tools/match/scratches/plugin_runtime_clear_pools/build/msvc6.5/34f72a7e3b0d4e5d/scratch.obj",
         "tools/match/scratches/plugin_runtime_update_and_render/build/msvc6.5/8882123e81a7b05d/scratch.obj",
+        "tools/match/scratches/profile_add_button_destroy/build/msvc6.5/e3f4c5f328460c1d/scratch.obj",
+        "tools/match/scratches/profile_delete_button_destroy/build/msvc6.5/bea9af607add7aa5/scratch.obj",
+        "tools/match/scratches/profile_name_input_destroy/build/msvc6.5/a49b28f980e7ce41/scratch.obj",
+        "tools/match/scratches/profile_name_list_destroy/build/msvc6.5/2822d526fe72c91d/scratch.obj",
         "tools/match/scratches/projectile_pool_global_init/build/msvc6.5/bb785e8038ff42c0/scratch.obj",
         "tools/match/scratches/projectile_pool_global_init_thunk/build/msvc6.5/e67e67c2e9862b5f/scratch.obj",
         "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
@@ -27403,8 +27391,16 @@
         "tools/match/scratches/sprite_effect_pool_global_init/build/msvc6.5/8a30e75613d5ef41/scratch.obj",
         "tools/match/scratches/sprite_effect_pool_global_init_thunk/build/msvc6.5/a89739c100c7d3a2/scratch.obj",
         "tools/match/scratches/startup_audio_load_thread/build/msvc6.5/30d54881974dfe6e/scratch.obj",
+        "tools/match/scratches/statistics_back_button_destroy/build/msvc6.5/1598a4c2a74ca943/scratch.obj",
+        "tools/match/scratches/statistics_credits_button_destroy/build/msvc6.5/82ce957940124122/scratch.obj",
+        "tools/match/scratches/statistics_high_scores_button_destroy/build/msvc6.5/0a25592150e9382f/scratch.obj",
         "tools/match/scratches/statistics_menu_update/build/msvc6.5/05882b85edc36983/scratch.obj",
+        "tools/match/scratches/statistics_mods_button_destroy/build/msvc6.5/7340a93d38bbbd6e/scratch.obj",
+        "tools/match/scratches/statistics_perks_button_destroy/build/msvc6.5/3baff6ace9c3acf5/scratch.obj",
+        "tools/match/scratches/statistics_typo_button_destroy/build/msvc6.5/5a3972143bd5fc5e/scratch.obj",
+        "tools/match/scratches/statistics_update_button_destroy/build/msvc6.5/0d0f1cb0e4a058d9/scratch.obj",
         "tools/match/scratches/statistics_update_check_worker/build/msvc6.5/7b103e09a3170e6e/scratch.obj",
+        "tools/match/scratches/statistics_weapons_button_destroy/build/msvc6.5/da3d9939966a2f68/scratch.obj",
         "tools/match/scratches/survival_spawn_creature/build/msvc6.5/17c8b4745bf1efdc/scratch.obj",
         "tools/match/scratches/survival_update/build/msvc6.5/387112b019242e32/scratch.obj",
         "tools/match/scratches/terrain_generate/build/msvc6.5/255665c2d93e94d3/scratch.obj",
@@ -27413,13 +27409,16 @@
         "tools/match/scratches/texture_get_or_load/build/msvc6.5/9e03943727ec3ae5/scratch.obj",
         "tools/match/scratches/texture_get_or_load_alt/build/msvc6.5/7e30a545d215c67d/scratch.obj",
         "tools/match/scratches/time_format_mm_ss/build/msvc6.5/38b3af9f13fe527e/scratch.obj",
+        "tools/match/scratches/tutorial_primary_button_destroy/build/msvc6.5/b2c7ba05c5a66874/scratch.obj",
         "tools/match/scratches/tutorial_prompt_dialog/build/msvc6.5/e00ab673887106b2/scratch.obj",
+        "tools/match/scratches/tutorial_repeat_button_destroy/build/msvc6.5/8b1143ed7cf3de86/scratch.obj",
         "tools/match/scratches/tutorial_timeline_update/build/msvc6.5/e5a73fadb79e7d13/scratch.obj",
         "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/15ea82da596107a5/scratch.obj",
         "tools/match/scratches/typo_target_find_by_name/build/msvc6.5/b65bd54ce5d085ca/scratch.obj",
         "tools/match/scratches/typo_target_name_assign_random/build/msvc6.5/2ece8ce8c919cca7/scratch.obj",
         "tools/match/scratches/typo_target_name_draw_labels/build/msvc6.5/33c5856485cc1f4a/scratch.obj",
         "tools/match/scratches/typo_target_name_is_unique/build/msvc6.5/99bced036fc22b48/scratch.obj",
+        "tools/match/scratches/typo_target_world_destroy/build/msvc6.5/910b0efe06d9fb6c/scratch.obj",
         "tools/match/scratches/typo_word_pick_fragment/build/msvc6.5/bc46cb11a3ef2487/scratch.obj",
         "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
         "tools/match/scratches/ui_button_update/build/msvc6.5/d5279466516021fc/scratch.obj",
@@ -27481,6 +27480,7 @@
         "tools/match/scratches/ui_template_triplet_reset_and_seed_modes/build/msvc6.5/975dde17e1d3a9f8/scratch.obj",
         "tools/match/scratches/ui_text_input_render/build/msvc6.5/d0ec14789956908c/scratch.obj",
         "tools/match/scratches/ui_text_input_update/build/msvc6.5/09bd6d4aacadd7af/scratch.obj",
+        "tools/match/scratches/ui_update_notice_button_destroy/build/msvc6.5/7bc0a3b9723e9261/scratch.obj",
         "tools/match/scratches/ui_update_notice_update/build/msvc6.5/d2b8c9edead5f5ad/scratch.obj",
         "tools/match/scratches/unlocked_perks_back_button_destroy/build/msvc6.5/7579a57f7876bb50/scratch.obj",
         "tools/match/scratches/unlocked_perks_database_update/build/msvc6.5/a9c89d7c9b32dfd4/scratch.obj",
@@ -27628,7 +27628,14 @@
         "tools/match/scratches/console_tokenize_line/build/msvc6.5/217a93faf7c8a2dd/scratch.obj",
         "tools/match/scratches/console_update/build/msvc6.5/29bb0af57617c8f0/scratch.obj",
         "tools/match/scratches/console_vars/build/msvc6.5/c3562c38ae8b92ef/scratch.obj",
+        "tools/match/scratches/controls_aim_method_list_destroy/build/msvc6.5/3012aedac6c5159c/scratch.obj",
+        "tools/match/scratches/controls_back_button_destroy/build/msvc6.5/8a698cc21aed7cef/scratch.obj",
+        "tools/match/scratches/controls_direction_arrow_checkbox_destroy/build/msvc6.5/796eb2c194d543d7/scratch.obj",
         "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+        "tools/match/scratches/controls_move_method_list_destroy/build/msvc6.5/835517e65012b8c0/scratch.obj",
+        "tools/match/scratches/controls_player_profile_list_destroy/build/msvc6.5/9aa555097e8985c6/scratch.obj",
+        "tools/match/scratches/controls_rebind_items_destroy/build/msvc6.5/6c135f0ce0627fe4/scratch.obj",
+        "tools/match/scratches/controls_redefine_button_destroy/build/msvc6.5/c3d582fd3af856a7/scratch.obj",
         "tools/match/scratches/creature_alloc_slot/build/msvc6.5/3078063599ffe344/scratch.obj",
         "tools/match/scratches/creature_apply_damage/build/msvc6.5/b72eed7c539152e2/scratch.obj",
         "tools/match/scratches/creature_find_in_radius/build/msvc6.5/557f45a0e23c56b1/scratch.obj",
@@ -27656,8 +27663,38 @@
         "tools/match/scratches/credits_line_table_global_init_thunk/build/msvc6.5/d2320ddb839d4776/scratch.obj",
         "tools/match/scratches/credits_screen_update/build/msvc6.5/7de52918eb6d8582/scratch.obj",
         "tools/match/scratches/credits_secret_alien_zookeeper_update/build/msvc6.5/139b4784b295dbfe/scratch.obj",
+        "tools/match/scratches/credits_secret_back_button_destroy/build/msvc6.5/0242b2c77c281107/scratch.obj",
         "tools/match/scratches/credits_secret_button_destroy/build/msvc6.5/592fbba27373ea82/scratch.obj",
         "tools/match/scratches/credits_secret_match3_find/build/msvc6.5/dba66da2914ffcde/scratch.obj",
+        "tools/match/scratches/credits_secret_reset_button_destroy/build/msvc6.5/acbac70815597ed0/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_05/build/msvc6.5/9d1ae74c2c464181/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_05_thunk/build/msvc6.5/67ddc216dd1beaeb/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_07/build/msvc6.5/0ddbbde759849977/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_07_thunk/build/msvc6.5/7ee62fffe372339f/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_09/build/msvc6.5/49fa9b7efedb37a1/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_09_thunk/build/msvc6.5/7eec5e4c575d67c3/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_31/build/msvc6.5/44008cc7cf4486ef/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_31_thunk/build/msvc6.5/0709d6abd1d421c6/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_38/build/msvc6.5/3c3e913d504b0182/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_38_thunk/build/msvc6.5/5d68568fda3fecb4/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_39/build/msvc6.5/00346ccfd206c8d1/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_39_thunk/build/msvc6.5/08ffec488716312f/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_41/build/msvc6.5/9d783dece78b5853/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_41_thunk/build/msvc6.5/e9924ec69172d446/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_42/build/msvc6.5/45b116f6c2a667a3/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_42_thunk/build/msvc6.5/156a4c267ab6faa1/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_43/build/msvc6.5/ea51e303b8bcf530/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_43_thunk/build/msvc6.5/474962fbc2e4ef5d/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_44/build/msvc6.5/e37f001dbd660959/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_44_thunk/build/msvc6.5/ffe7e8bcd7e7a84e/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_45/build/msvc6.5/f66c5bf553ddd90a/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_45_thunk/build/msvc6.5/a99786ae317e2d44/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_48/build/msvc6.5/49db9f995d325525/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_48_thunk/build/msvc6.5/767ce2ab835d0c6e/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_49/build/msvc6.5/a8ade0684a7fa792/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk/build/msvc6.5/b0eb6528f7fea005/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/fcaa20226072805a/scratch.obj",
+        "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/435ddc667e0f909f/scratch.obj",
         "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
         "tools/match/scratches/demo_mode_start/build/msvc6.5/a71c89b9df145595/scratch.obj",
         "tools/match/scratches/demo_purchase_interstitial_begin/build/msvc6.5/f4c0e7410fe5345f/scratch.obj",
@@ -27789,20 +27826,6 @@
         "tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/754e49e4514574e5/scratch.obj",
         "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj",
         "tools/match/scratches/j_mod_api_init/build/msvc6.5/7b5d8b7001ee35cb/scratch.obj",
-        "tools/match/scratches/j_nullsub_105/build/msvc6.5/c1e3ddcf31a1d142/scratch.obj",
-        "tools/match/scratches/j_nullsub_106/build/msvc6.5/bf7938f9212229e1/scratch.obj",
-        "tools/match/scratches/j_nullsub_107/build/msvc6.5/36de6569db2c24c0/scratch.obj",
-        "tools/match/scratches/j_nullsub_109/build/msvc6.5/45f0caac1e9625c7/scratch.obj",
-        "tools/match/scratches/j_nullsub_110/build/msvc6.5/809a29094a7e5485/scratch.obj",
-        "tools/match/scratches/j_nullsub_111/build/msvc6.5/97daae2048de7b95/scratch.obj",
-        "tools/match/scratches/j_nullsub_112/build/msvc6.5/6be764492a8d9ba4/scratch.obj",
-        "tools/match/scratches/j_nullsub_113/build/msvc6.5/5527ceb1bc140d9e/scratch.obj",
-        "tools/match/scratches/j_nullsub_114/build/msvc6.5/2582fecce716fd6b/scratch.obj",
-        "tools/match/scratches/j_nullsub_115/build/msvc6.5/a7adcb5f52d7474b/scratch.obj",
-        "tools/match/scratches/j_nullsub_116/build/msvc6.5/5fe0b79f6b9099b8/scratch.obj",
-        "tools/match/scratches/j_nullsub_117/build/msvc6.5/0fe11732085ed975/scratch.obj",
-        "tools/match/scratches/j_nullsub_118/build/msvc6.5/9055711644022385/scratch.obj",
-        "tools/match/scratches/j_nullsub_119/build/msvc6.5/bb105a78a9dbafef/scratch.obj",
         "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/2ae817964da1cfa2/scratch.obj",
         "tools/match/scratches/mod_api_cl_enter_menu/build/msvc6.5/96a883fe99d3b369/scratch.obj",
@@ -27841,6 +27864,7 @@
         "tools/match/scratches/mod_api_sfx_play_sample/build/msvc6.5/2f0913b9de0fd6ee/scratch.obj",
         "tools/match/scratches/mod_api_sfx_play_tune/build/msvc6.5/599dc77299d1b4fa/scratch.obj",
         "tools/match/scratches/mod_api_sfx_stop_tune/build/msvc6.5/a4f52be9ac10d229/scratch.obj",
+        "tools/match/scratches/mod_info_destroy/build/msvc6.5/8abca604babcad5a/scratch.obj",
         "tools/match/scratches/mod_load_info/build/msvc6.5/e9f149bbe5f03787/scratch.obj",
         "tools/match/scratches/mod_load_mod/build/msvc6.5/52be37ccdd9c4984/scratch.obj",
         "tools/match/scratches/mods_any_available/build/msvc6.5/eea133b33d4e76d2/scratch.obj",
@@ -27857,53 +27881,13 @@
         "tools/match/scratches/music_release_track/build/msvc6.5/9c9dae93732c4d4d/scratch.obj",
         "tools/match/scratches/music_stream_fill/build/msvc6.5/8d35f597ce099360/scratch.obj",
         "tools/match/scratches/music_stream_update/build/msvc6.5/7952d7ed17953bff/scratch.obj",
-        "tools/match/scratches/nullsub_105/build/msvc6.5/12e9147a821fb03d/scratch.obj",
-        "tools/match/scratches/nullsub_106/build/msvc6.5/aeb4ad158afba239/scratch.obj",
-        "tools/match/scratches/nullsub_107/build/msvc6.5/302644c1c084d819/scratch.obj",
-        "tools/match/scratches/nullsub_109/build/msvc6.5/f8215113532c4f89/scratch.obj",
-        "tools/match/scratches/nullsub_110/build/msvc6.5/3b2f0d22c6c506ce/scratch.obj",
-        "tools/match/scratches/nullsub_111/build/msvc6.5/6feb5a69cc677409/scratch.obj",
-        "tools/match/scratches/nullsub_112/build/msvc6.5/9d395cfa4a4358dd/scratch.obj",
-        "tools/match/scratches/nullsub_113/build/msvc6.5/c49ee665386ede9b/scratch.obj",
-        "tools/match/scratches/nullsub_114/build/msvc6.5/a95ab2e0bb427d70/scratch.obj",
-        "tools/match/scratches/nullsub_115/build/msvc6.5/6df9963a659271ce/scratch.obj",
-        "tools/match/scratches/nullsub_116/build/msvc6.5/8b6742c56e1b6d47/scratch.obj",
-        "tools/match/scratches/nullsub_117/build/msvc6.5/e40e9a4fcae65365/scratch.obj",
-        "tools/match/scratches/nullsub_118/build/msvc6.5/2a864fca6472e09b/scratch.obj",
-        "tools/match/scratches/nullsub_119/build/msvc6.5/8fcfb146637b32d3/scratch.obj",
-        "tools/match/scratches/nullsub_13/build/msvc6.5/c252f742a0908794/scratch.obj",
-        "tools/match/scratches/nullsub_14/build/msvc6.5/ab20824414bb15a7/scratch.obj",
-        "tools/match/scratches/nullsub_21/build/msvc6.5/3c94ae1b7369867e/scratch.obj",
-        "tools/match/scratches/nullsub_25/build/msvc6.5/b32327842033e448/scratch.obj",
-        "tools/match/scratches/nullsub_26/build/msvc6.5/17e0cc533793d7eb/scratch.obj",
-        "tools/match/scratches/nullsub_45/build/msvc6.5/85c400f3f97e333a/scratch.obj",
-        "tools/match/scratches/nullsub_46/build/msvc6.5/4beea582be57569a/scratch.obj",
-        "tools/match/scratches/nullsub_47/build/msvc6.5/09c1f9ba38180416/scratch.obj",
-        "tools/match/scratches/nullsub_48/build/msvc6.5/4a489ad0f51470e3/scratch.obj",
-        "tools/match/scratches/nullsub_49/build/msvc6.5/6061ab5686d77a02/scratch.obj",
-        "tools/match/scratches/nullsub_50/build/msvc6.5/07ce36016380d57e/scratch.obj",
-        "tools/match/scratches/nullsub_51/build/msvc6.5/d5072d38b232d2fa/scratch.obj",
-        "tools/match/scratches/nullsub_52/build/msvc6.5/9f20443e2f1e6cd8/scratch.obj",
-        "tools/match/scratches/nullsub_57/build/msvc6.5/6f1238eb997d0229/scratch.obj",
-        "tools/match/scratches/nullsub_67/build/msvc6.5/861d55ec0b1c8d43/scratch.obj",
-        "tools/match/scratches/nullsub_68/build/msvc6.5/a5ec391b5a2ba222/scratch.obj",
-        "tools/match/scratches/nullsub_69/build/msvc6.5/90ac8ad4c4db3e9e/scratch.obj",
-        "tools/match/scratches/nullsub_70/build/msvc6.5/09eb2fe802eb033a/scratch.obj",
-        "tools/match/scratches/nullsub_71/build/msvc6.5/8aac4e633e8c7999/scratch.obj",
-        "tools/match/scratches/nullsub_73/build/msvc6.5/2cf905754d9ac370/scratch.obj",
-        "tools/match/scratches/nullsub_74/build/msvc6.5/57f0f8df85432548/scratch.obj",
-        "tools/match/scratches/nullsub_75/build/msvc6.5/2e86b20501a40c7c/scratch.obj",
-        "tools/match/scratches/nullsub_76/build/msvc6.5/43cf8f066b5eee0b/scratch.obj",
-        "tools/match/scratches/nullsub_77/build/msvc6.5/8c2dbf63dbbbf11e/scratch.obj",
-        "tools/match/scratches/nullsub_78/build/msvc6.5/202b78d3048b1799/scratch.obj",
-        "tools/match/scratches/nullsub_89/build/msvc6.5/0aed8c025b99142e/scratch.obj",
-        "tools/match/scratches/nullsub_90/build/msvc6.5/00aa27b55d55f3b9/scratch.obj",
-        "tools/match/scratches/nullsub_91/build/msvc6.5/c6ac298d3048c1dc/scratch.obj",
-        "tools/match/scratches/nullsub_92/build/msvc6.5/f1b77540896d288b/scratch.obj",
-        "tools/match/scratches/nullsub_93/build/msvc6.5/c38af2d41fcfbb74/scratch.obj",
-        "tools/match/scratches/nullsub_94/build/msvc6.5/c31af53e3d954b58/scratch.obj",
-        "tools/match/scratches/nullsub_95/build/msvc6.5/bb796f876aa06892/scratch.obj",
+        "tools/match/scratches/options_controls_button_destroy/build/msvc6.5/b6c6693fd020f45f/scratch.obj",
+        "tools/match/scratches/options_graphics_detail_slider_destroy/build/msvc6.5/b02b1089c5a67fac/scratch.obj",
+        "tools/match/scratches/options_info_checkbox_destroy/build/msvc6.5/8ebdcb354a68a794/scratch.obj",
         "tools/match/scratches/options_menu_update/build/msvc6.5/e98fd757521b28dd/scratch.obj",
+        "tools/match/scratches/options_mouse_sensitivity_slider_destroy/build/msvc6.5/55408d0e39ab93af/scratch.obj",
+        "tools/match/scratches/options_music_volume_slider_destroy/build/msvc6.5/92d7e90fd2d81085/scratch.obj",
+        "tools/match/scratches/options_sfx_volume_slider_destroy/build/msvc6.5/e58e787c9df0458f/scratch.obj",
         "tools/match/scratches/particle_pool_global_init/build/msvc6.5/4a1cd07bac1ff8fb/scratch.obj",
         "tools/match/scratches/particle_pool_global_init_thunk/build/msvc6.5/6c40031f653d7017/scratch.obj",
         "tools/match/scratches/perk_apply/build/msvc6.5/354a676c4163d7b9/scratch.obj",
@@ -27945,6 +27929,10 @@
         "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
         "tools/match/scratches/plugin_runtime_clear_pools/build/msvc6.5/34f72a7e3b0d4e5d/scratch.obj",
         "tools/match/scratches/plugin_runtime_update_and_render/build/msvc6.5/8882123e81a7b05d/scratch.obj",
+        "tools/match/scratches/profile_add_button_destroy/build/msvc6.5/e3f4c5f328460c1d/scratch.obj",
+        "tools/match/scratches/profile_delete_button_destroy/build/msvc6.5/bea9af607add7aa5/scratch.obj",
+        "tools/match/scratches/profile_name_input_destroy/build/msvc6.5/a49b28f980e7ce41/scratch.obj",
+        "tools/match/scratches/profile_name_list_destroy/build/msvc6.5/2822d526fe72c91d/scratch.obj",
         "tools/match/scratches/projectile_pool_global_init/build/msvc6.5/bb785e8038ff42c0/scratch.obj",
         "tools/match/scratches/projectile_pool_global_init_thunk/build/msvc6.5/e67e67c2e9862b5f/scratch.obj",
         "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
@@ -28071,8 +28059,16 @@
         "tools/match/scratches/sprite_effect_pool_global_init/build/msvc6.5/8a30e75613d5ef41/scratch.obj",
         "tools/match/scratches/sprite_effect_pool_global_init_thunk/build/msvc6.5/a89739c100c7d3a2/scratch.obj",
         "tools/match/scratches/startup_audio_load_thread/build/msvc6.5/30d54881974dfe6e/scratch.obj",
+        "tools/match/scratches/statistics_back_button_destroy/build/msvc6.5/1598a4c2a74ca943/scratch.obj",
+        "tools/match/scratches/statistics_credits_button_destroy/build/msvc6.5/82ce957940124122/scratch.obj",
+        "tools/match/scratches/statistics_high_scores_button_destroy/build/msvc6.5/0a25592150e9382f/scratch.obj",
         "tools/match/scratches/statistics_menu_update/build/msvc6.5/05882b85edc36983/scratch.obj",
+        "tools/match/scratches/statistics_mods_button_destroy/build/msvc6.5/7340a93d38bbbd6e/scratch.obj",
+        "tools/match/scratches/statistics_perks_button_destroy/build/msvc6.5/3baff6ace9c3acf5/scratch.obj",
+        "tools/match/scratches/statistics_typo_button_destroy/build/msvc6.5/5a3972143bd5fc5e/scratch.obj",
+        "tools/match/scratches/statistics_update_button_destroy/build/msvc6.5/0d0f1cb0e4a058d9/scratch.obj",
         "tools/match/scratches/statistics_update_check_worker/build/msvc6.5/7b103e09a3170e6e/scratch.obj",
+        "tools/match/scratches/statistics_weapons_button_destroy/build/msvc6.5/da3d9939966a2f68/scratch.obj",
         "tools/match/scratches/survival_spawn_creature/build/msvc6.5/17c8b4745bf1efdc/scratch.obj",
         "tools/match/scratches/survival_update/build/msvc6.5/387112b019242e32/scratch.obj",
         "tools/match/scratches/terrain_generate/build/msvc6.5/255665c2d93e94d3/scratch.obj",
@@ -28081,13 +28077,16 @@
         "tools/match/scratches/texture_get_or_load/build/msvc6.5/9e03943727ec3ae5/scratch.obj",
         "tools/match/scratches/texture_get_or_load_alt/build/msvc6.5/7e30a545d215c67d/scratch.obj",
         "tools/match/scratches/time_format_mm_ss/build/msvc6.5/38b3af9f13fe527e/scratch.obj",
+        "tools/match/scratches/tutorial_primary_button_destroy/build/msvc6.5/b2c7ba05c5a66874/scratch.obj",
         "tools/match/scratches/tutorial_prompt_dialog/build/msvc6.5/e00ab673887106b2/scratch.obj",
+        "tools/match/scratches/tutorial_repeat_button_destroy/build/msvc6.5/8b1143ed7cf3de86/scratch.obj",
         "tools/match/scratches/tutorial_timeline_update/build/msvc6.5/e5a73fadb79e7d13/scratch.obj",
         "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/15ea82da596107a5/scratch.obj",
         "tools/match/scratches/typo_target_find_by_name/build/msvc6.5/b65bd54ce5d085ca/scratch.obj",
         "tools/match/scratches/typo_target_name_assign_random/build/msvc6.5/2ece8ce8c919cca7/scratch.obj",
         "tools/match/scratches/typo_target_name_draw_labels/build/msvc6.5/33c5856485cc1f4a/scratch.obj",
         "tools/match/scratches/typo_target_name_is_unique/build/msvc6.5/99bced036fc22b48/scratch.obj",
+        "tools/match/scratches/typo_target_world_destroy/build/msvc6.5/910b0efe06d9fb6c/scratch.obj",
         "tools/match/scratches/typo_word_pick_fragment/build/msvc6.5/bc46cb11a3ef2487/scratch.obj",
         "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
         "tools/match/scratches/ui_button_update/build/msvc6.5/d5279466516021fc/scratch.obj",
@@ -28149,6 +28148,7 @@
         "tools/match/scratches/ui_template_triplet_reset_and_seed_modes/build/msvc6.5/975dde17e1d3a9f8/scratch.obj",
         "tools/match/scratches/ui_text_input_render/build/msvc6.5/d0ec14789956908c/scratch.obj",
         "tools/match/scratches/ui_text_input_update/build/msvc6.5/09bd6d4aacadd7af/scratch.obj",
+        "tools/match/scratches/ui_update_notice_button_destroy/build/msvc6.5/7bc0a3b9723e9261/scratch.obj",
         "tools/match/scratches/ui_update_notice_update/build/msvc6.5/d2b8c9edead5f5ad/scratch.obj",
         "tools/match/scratches/unlocked_perks_back_button_destroy/build/msvc6.5/7579a57f7876bb50/scratch.obj",
         "tools/match/scratches/unlocked_perks_database_update/build/msvc6.5/a9c89d7c9b32dfd4/scratch.obj",
@@ -82791,6 +82791,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_aim_method_list_destroy",
+          "comdat_selection": 1,
+          "function": "controls_aim_method_list_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_aim_method_list_destroy/build/msvc6.5/3012aedac6c5159c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_aim_method_list_destroy"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -82815,6 +82833,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_back_button_destroy",
+          "comdat_selection": 1,
+          "function": "controls_back_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_back_button_destroy/build/msvc6.5/8a698cc21aed7cef/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_back_button_destroy"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -82835,6 +82871,24 @@
         }
       ],
       "name": "_controls_direction_arrow_checkbox"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_direction_arrow_checkbox_destroy",
+          "comdat_selection": 1,
+          "function": "controls_direction_arrow_checkbox_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_direction_arrow_checkbox_destroy/build/msvc6.5/796eb2c194d543d7/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_direction_arrow_checkbox_destroy"
     },
     {
       "definitions": [
@@ -82929,6 +82983,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_move_method_list_destroy",
+          "comdat_selection": 1,
+          "function": "controls_move_method_list_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_move_method_list_destroy/build/msvc6.5/835517e65012b8c0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_move_method_list_destroy"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -82949,6 +83021,24 @@
         }
       ],
       "name": "_controls_player_profile_list"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_player_profile_list_destroy",
+          "comdat_selection": 1,
+          "function": "controls_player_profile_list_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_player_profile_list_destroy/build/msvc6.5/9aa555097e8985c6/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_player_profile_list_destroy"
     },
     {
       "definitions": [
@@ -83145,6 +83235,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_rebind_items_destroy",
+          "comdat_selection": 1,
+          "function": "controls_rebind_items_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_rebind_items_destroy/build/msvc6.5/6c135f0ce0627fe4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_rebind_items_destroy"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -83213,6 +83321,24 @@
         }
       ],
       "name": "_controls_redefine_button"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_redefine_button_destroy",
+          "comdat_selection": 1,
+          "function": "controls_redefine_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_redefine_button_destroy/build/msvc6.5/c3d582fd3af856a7/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_redefine_button_destroy"
     },
     {
       "definitions": [
@@ -84159,6 +84285,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_credits_secret_back_button_destroy",
+          "comdat_selection": 1,
+          "function": "credits_secret_back_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/credits_secret_back_button_destroy/build/msvc6.5/0242b2c77c281107/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_credits_secret_back_button_destroy"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -84239,6 +84383,24 @@
         }
       ],
       "name": "_credits_secret_match3_find"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_credits_secret_reset_button_destroy",
+          "comdat_selection": 1,
+          "function": "credits_secret_reset_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/credits_secret_reset_button_destroy/build/msvc6.5/acbac70815597ed0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_credits_secret_reset_button_destroy"
     },
     {
       "definitions": [
@@ -84335,6 +84497,510 @@
         }
       ],
       "name": "_credits_secret_unlock_flag"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_05",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_05",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_05/build/msvc6.5/9d1ae74c2c464181/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_05"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_05_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_05_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_05_thunk/build/msvc6.5/67ddc216dd1beaeb/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_05_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_07",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_07",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_07/build/msvc6.5/0ddbbde759849977/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_07"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_07_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_07_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_07_thunk/build/msvc6.5/7ee62fffe372339f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_07_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_09",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_09",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_09/build/msvc6.5/49fa9b7efedb37a1/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_09"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_09_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_09_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_09_thunk/build/msvc6.5/7eec5e4c575d67c3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_09_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_31",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_31",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_31/build/msvc6.5/44008cc7cf4486ef/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_31"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_31_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_31_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_31_thunk/build/msvc6.5/0709d6abd1d421c6/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_31_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_38",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_38",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_38/build/msvc6.5/3c3e913d504b0182/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_38"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_38_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_38_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_38_thunk/build/msvc6.5/5d68568fda3fecb4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_38_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_39",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_39",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_39/build/msvc6.5/00346ccfd206c8d1/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_39"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_39_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_39_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_39_thunk/build/msvc6.5/08ffec488716312f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_39_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_41",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_41",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_41/build/msvc6.5/9d783dece78b5853/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_41"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_41_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_41_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_41_thunk/build/msvc6.5/e9924ec69172d446/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_41_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_42",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_42",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_42/build/msvc6.5/45b116f6c2a667a3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_42"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_42_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_42_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_42_thunk/build/msvc6.5/156a4c267ab6faa1/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_42_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_43",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_43",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_43/build/msvc6.5/ea51e303b8bcf530/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_43"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_43_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_43_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_43_thunk/build/msvc6.5/474962fbc2e4ef5d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_43_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_44",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_44",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_44/build/msvc6.5/e37f001dbd660959/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_44"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_44_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_44_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_44_thunk/build/msvc6.5/ffe7e8bcd7e7a84e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_44_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_45",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_45",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_45/build/msvc6.5/f66c5bf553ddd90a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_45"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_45_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_45_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_45_thunk/build/msvc6.5/a99786ae317e2d44/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_45_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_48",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_48",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_48/build/msvc6.5/49db9f995d325525/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_48"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_48_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_48_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_48_thunk/build/msvc6.5/767ce2ab835d0c6e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_48_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_49",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_49",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_49/build/msvc6.5/a8ade0684a7fa792/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_49"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_49_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_49_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk/build/msvc6.5/b0eb6528f7fea005/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_49_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_54",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_54",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/fcaa20226072805a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_54"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_54_thunk",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_54_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/435ddc667e0f909f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_54_thunk"
     },
     {
       "definitions": [
@@ -89675,258 +90341,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_105",
-          "comdat_selection": 1,
-          "function": "j_nullsub_105",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_105/build/msvc6.5/c1e3ddcf31a1d142/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_105"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_106",
-          "comdat_selection": 1,
-          "function": "j_nullsub_106",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_106/build/msvc6.5/bf7938f9212229e1/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_106"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_107",
-          "comdat_selection": 1,
-          "function": "j_nullsub_107",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_107/build/msvc6.5/36de6569db2c24c0/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_107"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_109",
-          "comdat_selection": 1,
-          "function": "j_nullsub_109",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_109/build/msvc6.5/45f0caac1e9625c7/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_109"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_110",
-          "comdat_selection": 1,
-          "function": "j_nullsub_110",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_110/build/msvc6.5/809a29094a7e5485/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_110"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_111",
-          "comdat_selection": 1,
-          "function": "j_nullsub_111",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_111/build/msvc6.5/97daae2048de7b95/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_111"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_112",
-          "comdat_selection": 1,
-          "function": "j_nullsub_112",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_112/build/msvc6.5/6be764492a8d9ba4/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_112"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_113",
-          "comdat_selection": 1,
-          "function": "j_nullsub_113",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_113/build/msvc6.5/5527ceb1bc140d9e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_113"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_114",
-          "comdat_selection": 1,
-          "function": "j_nullsub_114",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_114/build/msvc6.5/2582fecce716fd6b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_114"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_115",
-          "comdat_selection": 1,
-          "function": "j_nullsub_115",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_115/build/msvc6.5/a7adcb5f52d7474b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_115"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_116",
-          "comdat_selection": 1,
-          "function": "j_nullsub_116",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_116/build/msvc6.5/5fe0b79f6b9099b8/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_116"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_117",
-          "comdat_selection": 1,
-          "function": "j_nullsub_117",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_117/build/msvc6.5/0fe11732085ed975/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_117"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_118",
-          "comdat_selection": 1,
-          "function": "j_nullsub_118",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_118/build/msvc6.5/9055711644022385/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_118"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_119",
-          "comdat_selection": 1,
-          "function": "j_nullsub_119",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_nullsub_119/build/msvc6.5/bb105a78a9dbafef/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_119"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_j_ui_menu_template_pool_init",
           "comdat_selection": 1,
           "function": "j_ui_menu_template_pool_init",
@@ -90233,6 +90647,24 @@
         }
       ],
       "name": "_mod_api_init"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_mod_info_destroy",
+          "comdat_selection": 1,
+          "function": "mod_info_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/mod_info_destroy/build/msvc6.5/8abca604babcad5a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_mod_info_destroy"
     },
     {
       "definitions": [
@@ -91053,834 +91485,6 @@
     {
       "definitions": [
         {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_105",
-          "comdat_selection": 1,
-          "function": "nullsub_105",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_105/build/msvc6.5/12e9147a821fb03d/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_105"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_106",
-          "comdat_selection": 1,
-          "function": "nullsub_106",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_106/build/msvc6.5/aeb4ad158afba239/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_106"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_107",
-          "comdat_selection": 1,
-          "function": "nullsub_107",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_107/build/msvc6.5/302644c1c084d819/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_107"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_109",
-          "comdat_selection": 1,
-          "function": "nullsub_109",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_109/build/msvc6.5/f8215113532c4f89/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_109"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_110",
-          "comdat_selection": 1,
-          "function": "nullsub_110",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_110/build/msvc6.5/3b2f0d22c6c506ce/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_110"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_111",
-          "comdat_selection": 1,
-          "function": "nullsub_111",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_111/build/msvc6.5/6feb5a69cc677409/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_111"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_112",
-          "comdat_selection": 1,
-          "function": "nullsub_112",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_112/build/msvc6.5/9d395cfa4a4358dd/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_112"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_113",
-          "comdat_selection": 1,
-          "function": "nullsub_113",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_113/build/msvc6.5/c49ee665386ede9b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_113"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_114",
-          "comdat_selection": 1,
-          "function": "nullsub_114",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_114/build/msvc6.5/a95ab2e0bb427d70/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_114"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_115",
-          "comdat_selection": 1,
-          "function": "nullsub_115",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_115/build/msvc6.5/6df9963a659271ce/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_115"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_116",
-          "comdat_selection": 1,
-          "function": "nullsub_116",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_116/build/msvc6.5/8b6742c56e1b6d47/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_116"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_117",
-          "comdat_selection": 1,
-          "function": "nullsub_117",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_117/build/msvc6.5/e40e9a4fcae65365/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_117"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_118",
-          "comdat_selection": 1,
-          "function": "nullsub_118",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_118/build/msvc6.5/2a864fca6472e09b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_118"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_119",
-          "comdat_selection": 1,
-          "function": "nullsub_119",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_119/build/msvc6.5/8fcfb146637b32d3/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_119"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_13",
-          "comdat_selection": 1,
-          "function": "nullsub_13",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_13/build/msvc6.5/c252f742a0908794/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_13"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_14",
-          "comdat_selection": 1,
-          "function": "nullsub_14",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_14/build/msvc6.5/ab20824414bb15a7/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_14"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_21",
-          "comdat_selection": 1,
-          "function": "nullsub_21",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_21/build/msvc6.5/3c94ae1b7369867e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_21"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_25",
-          "comdat_selection": 1,
-          "function": "nullsub_25",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_25/build/msvc6.5/b32327842033e448/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_25"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_26",
-          "comdat_selection": 1,
-          "function": "nullsub_26",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_26/build/msvc6.5/17e0cc533793d7eb/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_26"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_45",
-          "comdat_selection": 1,
-          "function": "nullsub_45",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_45/build/msvc6.5/85c400f3f97e333a/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_45"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_46",
-          "comdat_selection": 1,
-          "function": "nullsub_46",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_46/build/msvc6.5/4beea582be57569a/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_46"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_47",
-          "comdat_selection": 1,
-          "function": "nullsub_47",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_47/build/msvc6.5/09c1f9ba38180416/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_47"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_48",
-          "comdat_selection": 1,
-          "function": "nullsub_48",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_48/build/msvc6.5/4a489ad0f51470e3/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_48"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_49",
-          "comdat_selection": 1,
-          "function": "nullsub_49",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_49/build/msvc6.5/6061ab5686d77a02/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_49"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_50",
-          "comdat_selection": 1,
-          "function": "nullsub_50",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_50/build/msvc6.5/07ce36016380d57e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_50"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_51",
-          "comdat_selection": 1,
-          "function": "nullsub_51",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_51/build/msvc6.5/d5072d38b232d2fa/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_51"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_52",
-          "comdat_selection": 1,
-          "function": "nullsub_52",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_52/build/msvc6.5/9f20443e2f1e6cd8/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_52"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_57",
-          "comdat_selection": 1,
-          "function": "nullsub_57",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_57/build/msvc6.5/6f1238eb997d0229/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_57"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_67",
-          "comdat_selection": 1,
-          "function": "nullsub_67",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_67/build/msvc6.5/861d55ec0b1c8d43/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_67"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_68",
-          "comdat_selection": 1,
-          "function": "nullsub_68",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_68/build/msvc6.5/a5ec391b5a2ba222/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_68"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_69",
-          "comdat_selection": 1,
-          "function": "nullsub_69",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_69/build/msvc6.5/90ac8ad4c4db3e9e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_69"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_70",
-          "comdat_selection": 1,
-          "function": "nullsub_70",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_70/build/msvc6.5/09eb2fe802eb033a/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_70"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_71",
-          "comdat_selection": 1,
-          "function": "nullsub_71",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_71/build/msvc6.5/8aac4e633e8c7999/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_71"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_73",
-          "comdat_selection": 1,
-          "function": "nullsub_73",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_73/build/msvc6.5/2cf905754d9ac370/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_73"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_74",
-          "comdat_selection": 1,
-          "function": "nullsub_74",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_74/build/msvc6.5/57f0f8df85432548/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_74"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_75",
-          "comdat_selection": 1,
-          "function": "nullsub_75",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_75/build/msvc6.5/2e86b20501a40c7c/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_75"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_76",
-          "comdat_selection": 1,
-          "function": "nullsub_76",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_76/build/msvc6.5/43cf8f066b5eee0b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_76"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_77",
-          "comdat_selection": 1,
-          "function": "nullsub_77",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_77/build/msvc6.5/8c2dbf63dbbbf11e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_77"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_78",
-          "comdat_selection": 1,
-          "function": "nullsub_78",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_78/build/msvc6.5/202b78d3048b1799/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_78"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_89",
-          "comdat_selection": 1,
-          "function": "nullsub_89",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_89/build/msvc6.5/0aed8c025b99142e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_89"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_90",
-          "comdat_selection": 1,
-          "function": "nullsub_90",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_90/build/msvc6.5/00aa27b55d55f3b9/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_90"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_91",
-          "comdat_selection": 1,
-          "function": "nullsub_91",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_91/build/msvc6.5/c6ac298d3048c1dc/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_91"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_92",
-          "comdat_selection": 1,
-          "function": "nullsub_92",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_92/build/msvc6.5/f1b77540896d288b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_92"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_93",
-          "comdat_selection": 1,
-          "function": "nullsub_93",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_93/build/msvc6.5/c38af2d41fcfbb74/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_93"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_94",
-          "comdat_selection": 1,
-          "function": "nullsub_94",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_94/build/msvc6.5/c31af53e3d954b58/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_94"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_95",
-          "comdat_selection": 1,
-          "function": "nullsub_95",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_95/build/msvc6.5/bb796f876aa06892/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_95"
-    },
-    {
-      "definitions": [
-        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -91907,6 +91511,60 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_options_controls_button_destroy",
+          "comdat_selection": 1,
+          "function": "options_controls_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/options_controls_button_destroy/build/msvc6.5/b6c6693fd020f45f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_options_controls_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_options_graphics_detail_slider_destroy",
+          "comdat_selection": 1,
+          "function": "options_graphics_detail_slider_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/options_graphics_detail_slider_destroy/build/msvc6.5/b02b1089c5a67fac/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_options_graphics_detail_slider_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_options_info_checkbox_destroy",
+          "comdat_selection": 1,
+          "function": "options_info_checkbox_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/options_info_checkbox_destroy/build/msvc6.5/8ebdcb354a68a794/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_options_info_checkbox_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_options_menu_update",
           "comdat_selection": 1,
           "function": "options_menu_update",
@@ -91919,6 +91577,60 @@
         }
       ],
       "name": "_options_menu_update"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_options_mouse_sensitivity_slider_destroy",
+          "comdat_selection": 1,
+          "function": "options_mouse_sensitivity_slider_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/options_mouse_sensitivity_slider_destroy/build/msvc6.5/55408d0e39ab93af/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_options_mouse_sensitivity_slider_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_options_music_volume_slider_destroy",
+          "comdat_selection": 1,
+          "function": "options_music_volume_slider_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/options_music_volume_slider_destroy/build/msvc6.5/92d7e90fd2d81085/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_options_music_volume_slider_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_options_sfx_volume_slider_destroy",
+          "comdat_selection": 1,
+          "function": "options_sfx_volume_slider_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/options_sfx_volume_slider_destroy/build/msvc6.5/e58e787c9df0458f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_options_sfx_volume_slider_destroy"
     },
     {
       "definitions": [
@@ -95295,6 +95007,42 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_profile_add_button_destroy",
+          "comdat_selection": 1,
+          "function": "profile_add_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/profile_add_button_destroy/build/msvc6.5/e3f4c5f328460c1d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_profile_add_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_profile_delete_button_destroy",
+          "comdat_selection": 1,
+          "function": "profile_delete_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/profile_delete_button_destroy/build/msvc6.5/bea9af607add7aa5/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_profile_delete_button_destroy"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -95367,6 +95115,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_profile_name_input_destroy",
+          "comdat_selection": 1,
+          "function": "profile_name_input_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/profile_name_input_destroy/build/msvc6.5/a49b28f980e7ce41/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_profile_name_input_destroy"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -95387,6 +95153,24 @@
         }
       ],
       "name": "_profile_name_item_ptrs"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_profile_name_list_destroy",
+          "comdat_selection": 1,
+          "function": "profile_name_list_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/profile_name_list_destroy/build/msvc6.5/2822d526fe72c91d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_profile_name_list_destroy"
     },
     {
       "definitions": [
@@ -101285,6 +101069,60 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_statistics_back_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_back_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_back_button_destroy/build/msvc6.5/1598a4c2a74ca943/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_back_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_statistics_credits_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_credits_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_credits_button_destroy/build/msvc6.5/82ce957940124122/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_credits_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_statistics_high_scores_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_high_scores_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_high_scores_button_destroy/build/msvc6.5/0a25592150e9382f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_high_scores_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_statistics_menu_update",
           "comdat_selection": 1,
           "function": "statistics_menu_update",
@@ -101303,6 +101141,78 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_statistics_mods_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_mods_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_mods_button_destroy/build/msvc6.5/7340a93d38bbbd6e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_mods_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_statistics_perks_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_perks_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_perks_button_destroy/build/msvc6.5/3baff6ace9c3acf5/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_perks_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_statistics_typo_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_typo_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_typo_button_destroy/build/msvc6.5/5a3972143bd5fc5e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_typo_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_statistics_update_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_update_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_update_button_destroy/build/msvc6.5/0d0f1cb0e4a058d9/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_update_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_statistics_update_check_worker",
           "comdat_selection": 1,
           "function": "statistics_update_check_worker",
@@ -101315,6 +101225,24 @@
         }
       ],
       "name": "_statistics_update_check_worker"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_statistics_weapons_button_destroy",
+          "comdat_selection": 1,
+          "function": "statistics_weapons_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/statistics_weapons_button_destroy/build/msvc6.5/da3d9939966a2f68/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_statistics_weapons_button_destroy"
     },
     {
       "definitions": [
@@ -102353,6 +102281,24 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_tutorial_primary_button_destroy",
+          "comdat_selection": 1,
+          "function": "tutorial_primary_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/tutorial_primary_button_destroy/build/msvc6.5/b2c7ba05c5a66874/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_tutorial_primary_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_tutorial_prompt_dialog",
           "comdat_selection": 1,
           "function": "tutorial_prompt_dialog",
@@ -102365,6 +102311,24 @@
         }
       ],
       "name": "_tutorial_prompt_dialog"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_tutorial_repeat_button_destroy",
+          "comdat_selection": 1,
+          "function": "tutorial_repeat_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/tutorial_repeat_button_destroy/build/msvc6.5/8b1143ed7cf3de86/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_tutorial_repeat_button_destroy"
     },
     {
       "definitions": [
@@ -102737,6 +102701,24 @@
         }
       ],
       "name": "_typo_target_name_table"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_typo_target_world_destroy",
+          "comdat_selection": 1,
+          "function": "typo_target_world_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/typo_target_world_destroy/build/msvc6.5/910b0efe06d9fb6c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_typo_target_world_destroy"
     },
     {
       "definitions": [
@@ -107507,6 +107489,24 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_ui_update_notice_button_destroy",
+          "comdat_selection": 1,
+          "function": "ui_update_notice_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/ui_update_notice_button_destroy/build/msvc6.5/7bc0a3b9723e9261/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_ui_update_notice_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_ui_update_notice_update",
           "comdat_selection": 1,
           "function": "ui_update_notice_update",
@@ -109428,12 +109428,61 @@
     },
     {
       "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/controls_aim_method_list_destroy/build/msvc6.5/3012aedac6c5159c/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/controls_back_button_destroy/build/msvc6.5/8a698cc21aed7cef/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/controls_direction_arrow_checkbox_destroy/build/msvc6.5/796eb2c194d543d7/scratch.obj"
+    },
+    {
+      "directives": [
         "-defaultlib:uuid.lib",
         "-defaultlib:uuid.lib",
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/controls_move_method_list_destroy/build/msvc6.5/835517e65012b8c0/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/controls_player_profile_list_destroy/build/msvc6.5/9aa555097e8985c6/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/controls_rebind_items_destroy/build/msvc6.5/6c135f0ce0627fe4/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/controls_redefine_button_destroy/build/msvc6.5/c3d582fd3af856a7/scratch.obj"
     },
     {
       "directives": [
@@ -109629,6 +109678,13 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
+      "object": "tools/match/scratches/credits_secret_back_button_destroy/build/msvc6.5/0242b2c77c281107/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
       "object": "tools/match/scratches/credits_secret_button_destroy/build/msvc6.5/592fbba27373ea82/scratch.obj"
     },
     {
@@ -109637,6 +109693,209 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/credits_secret_match3_find/build/msvc6.5/dba66da2914ffcde/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/credits_secret_reset_button_destroy/build/msvc6.5/acbac70815597ed0/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_05/build/msvc6.5/9d1ae74c2c464181/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_05_thunk/build/msvc6.5/67ddc216dd1beaeb/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_07/build/msvc6.5/0ddbbde759849977/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_07_thunk/build/msvc6.5/7ee62fffe372339f/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_09/build/msvc6.5/49fa9b7efedb37a1/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_09_thunk/build/msvc6.5/7eec5e4c575d67c3/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_31/build/msvc6.5/44008cc7cf4486ef/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_31_thunk/build/msvc6.5/0709d6abd1d421c6/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_38/build/msvc6.5/3c3e913d504b0182/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_38_thunk/build/msvc6.5/5d68568fda3fecb4/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_39/build/msvc6.5/00346ccfd206c8d1/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_39_thunk/build/msvc6.5/08ffec488716312f/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_41/build/msvc6.5/9d783dece78b5853/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_41_thunk/build/msvc6.5/e9924ec69172d446/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_42/build/msvc6.5/45b116f6c2a667a3/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_42_thunk/build/msvc6.5/156a4c267ab6faa1/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_43/build/msvc6.5/ea51e303b8bcf530/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_43_thunk/build/msvc6.5/474962fbc2e4ef5d/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_44/build/msvc6.5/e37f001dbd660959/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_44_thunk/build/msvc6.5/ffe7e8bcd7e7a84e/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_45/build/msvc6.5/f66c5bf553ddd90a/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_45_thunk/build/msvc6.5/a99786ae317e2d44/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_48/build/msvc6.5/49db9f995d325525/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_48_thunk/build/msvc6.5/767ce2ab835d0c6e/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_49/build/msvc6.5/a8ade0684a7fa792/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk/build/msvc6.5/b0eb6528f7fea005/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/fcaa20226072805a/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/435ddc667e0f909f/scratch.obj"
     },
     {
       "directives": [
@@ -110598,104 +110857,6 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/j_nullsub_105/build/msvc6.5/c1e3ddcf31a1d142/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_106/build/msvc6.5/bf7938f9212229e1/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_107/build/msvc6.5/36de6569db2c24c0/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_109/build/msvc6.5/45f0caac1e9625c7/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_110/build/msvc6.5/809a29094a7e5485/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_111/build/msvc6.5/97daae2048de7b95/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_112/build/msvc6.5/6be764492a8d9ba4/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_113/build/msvc6.5/5527ceb1bc140d9e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_114/build/msvc6.5/2582fecce716fd6b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_115/build/msvc6.5/a7adcb5f52d7474b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_116/build/msvc6.5/5fe0b79f6b9099b8/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_117/build/msvc6.5/0fe11732085ed975/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_118/build/msvc6.5/9055711644022385/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_nullsub_119/build/msvc6.5/bb105a78a9dbafef/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
       "object": "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj"
     },
     {
@@ -111033,6 +111194,13 @@
     },
     {
       "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/mod_info_destroy/build/msvc6.5/8abca604babcad5a/scratch.obj"
+    },
+    {
+      "directives": [
         "-defaultlib:uuid.lib",
         "-defaultlib:uuid.lib",
         "-defaultlib:LIBC",
@@ -111172,322 +111340,21 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/nullsub_105/build/msvc6.5/12e9147a821fb03d/scratch.obj"
+      "object": "tools/match/scratches/options_controls_button_destroy/build/msvc6.5/b6c6693fd020f45f/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/nullsub_106/build/msvc6.5/aeb4ad158afba239/scratch.obj"
+      "object": "tools/match/scratches/options_graphics_detail_slider_destroy/build/msvc6.5/b02b1089c5a67fac/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/nullsub_107/build/msvc6.5/302644c1c084d819/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_109/build/msvc6.5/f8215113532c4f89/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_110/build/msvc6.5/3b2f0d22c6c506ce/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_111/build/msvc6.5/6feb5a69cc677409/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_112/build/msvc6.5/9d395cfa4a4358dd/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_113/build/msvc6.5/c49ee665386ede9b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_114/build/msvc6.5/a95ab2e0bb427d70/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_115/build/msvc6.5/6df9963a659271ce/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_116/build/msvc6.5/8b6742c56e1b6d47/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_117/build/msvc6.5/e40e9a4fcae65365/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_118/build/msvc6.5/2a864fca6472e09b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_119/build/msvc6.5/8fcfb146637b32d3/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_13/build/msvc6.5/c252f742a0908794/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_14/build/msvc6.5/ab20824414bb15a7/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_21/build/msvc6.5/3c94ae1b7369867e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_25/build/msvc6.5/b32327842033e448/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_26/build/msvc6.5/17e0cc533793d7eb/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_45/build/msvc6.5/85c400f3f97e333a/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_46/build/msvc6.5/4beea582be57569a/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_47/build/msvc6.5/09c1f9ba38180416/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_48/build/msvc6.5/4a489ad0f51470e3/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_49/build/msvc6.5/6061ab5686d77a02/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_50/build/msvc6.5/07ce36016380d57e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_51/build/msvc6.5/d5072d38b232d2fa/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_52/build/msvc6.5/9f20443e2f1e6cd8/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_57/build/msvc6.5/6f1238eb997d0229/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_67/build/msvc6.5/861d55ec0b1c8d43/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_68/build/msvc6.5/a5ec391b5a2ba222/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_69/build/msvc6.5/90ac8ad4c4db3e9e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_70/build/msvc6.5/09eb2fe802eb033a/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_71/build/msvc6.5/8aac4e633e8c7999/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_73/build/msvc6.5/2cf905754d9ac370/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_74/build/msvc6.5/57f0f8df85432548/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_75/build/msvc6.5/2e86b20501a40c7c/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_76/build/msvc6.5/43cf8f066b5eee0b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_77/build/msvc6.5/8c2dbf63dbbbf11e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_78/build/msvc6.5/202b78d3048b1799/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_89/build/msvc6.5/0aed8c025b99142e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_90/build/msvc6.5/00aa27b55d55f3b9/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_91/build/msvc6.5/c6ac298d3048c1dc/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_92/build/msvc6.5/f1b77540896d288b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_93/build/msvc6.5/c38af2d41fcfbb74/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_94/build/msvc6.5/c31af53e3d954b58/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/nullsub_95/build/msvc6.5/bb796f876aa06892/scratch.obj"
+      "object": "tools/match/scratches/options_info_checkbox_destroy/build/msvc6.5/8ebdcb354a68a794/scratch.obj"
     },
     {
       "directives": [
@@ -111495,6 +111362,27 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/options_menu_update/build/msvc6.5/e98fd757521b28dd/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/options_mouse_sensitivity_slider_destroy/build/msvc6.5/55408d0e39ab93af/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/options_music_volume_slider_destroy/build/msvc6.5/92d7e90fd2d81085/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/options_sfx_volume_slider_destroy/build/msvc6.5/e58e787c9df0458f/scratch.obj"
     },
     {
       "directives": [
@@ -111784,6 +111672,34 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/plugin_runtime_update_and_render/build/msvc6.5/8882123e81a7b05d/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/profile_add_button_destroy/build/msvc6.5/e3f4c5f328460c1d/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/profile_delete_button_destroy/build/msvc6.5/bea9af607add7aa5/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/profile_name_input_destroy/build/msvc6.5/a49b28f980e7ce41/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/profile_name_list_destroy/build/msvc6.5/2822d526fe72c91d/scratch.obj"
     },
     {
       "directives": [
@@ -112717,6 +112633,27 @@
     },
     {
       "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_back_button_destroy/build/msvc6.5/1598a4c2a74ca943/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_credits_button_destroy/build/msvc6.5/82ce957940124122/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_high_scores_button_destroy/build/msvc6.5/0a25592150e9382f/scratch.obj"
+    },
+    {
+      "directives": [
         "-defaultlib:uuid.lib",
         "-defaultlib:uuid.lib",
         "-defaultlib:LIBC",
@@ -112726,12 +112663,47 @@
     },
     {
       "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_mods_button_destroy/build/msvc6.5/7340a93d38bbbd6e/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_perks_button_destroy/build/msvc6.5/3baff6ace9c3acf5/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_typo_button_destroy/build/msvc6.5/5a3972143bd5fc5e/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_update_button_destroy/build/msvc6.5/0d0f1cb0e4a058d9/scratch.obj"
+    },
+    {
+      "directives": [
         "-defaultlib:uuid.lib",
         "-defaultlib:uuid.lib",
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/statistics_update_check_worker/build/msvc6.5/7b103e09a3170e6e/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/statistics_weapons_button_destroy/build/msvc6.5/da3d9939966a2f68/scratch.obj"
     },
     {
       "directives": [
@@ -112798,7 +112770,21 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
+      "object": "tools/match/scratches/tutorial_primary_button_destroy/build/msvc6.5/b2c7ba05c5a66874/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
       "object": "tools/match/scratches/tutorial_prompt_dialog/build/msvc6.5/e00ab673887106b2/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/tutorial_repeat_button_destroy/build/msvc6.5/8b1143ed7cf3de86/scratch.obj"
     },
     {
       "directives": [
@@ -112841,6 +112827,13 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/typo_target_name_is_unique/build/msvc6.5/99bced036fc22b48/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/typo_target_world_destroy/build/msvc6.5/910b0efe06d9fb6c/scratch.obj"
     },
     {
       "directives": [
@@ -113286,6 +113279,13 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/ui_text_input_update/build/msvc6.5/09bd6d4aacadd7af/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/ui_update_notice_button_destroy/build/msvc6.5/7bc0a3b9723e9261/scratch.obj"
     },
     {
       "directives": [
@@ -125324,6 +125324,31 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_aim_method_list_destroy",
+          "comdat_selection": 1,
+          "function": "controls_aim_method_list_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_aim_method_list_destroy/build/msvc6.5/3012aedac6c5159c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_aim_method_list_destroy",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -125355,6 +125380,31 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_back_button_destroy",
+          "comdat_selection": 1,
+          "function": "controls_back_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_back_button_destroy/build/msvc6.5/8a698cc21aed7cef/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_back_button_destroy",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -125375,6 +125425,31 @@
         }
       ],
       "name": "_controls_direction_arrow_checkbox",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_direction_arrow_checkbox_destroy",
+          "comdat_selection": 1,
+          "function": "controls_direction_arrow_checkbox_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_direction_arrow_checkbox_destroy/build/msvc6.5/796eb2c194d543d7/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_direction_arrow_checkbox_destroy",
       "referenced_by": [
         {
           "function": "controls_menu_update",
@@ -125504,6 +125579,31 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_move_method_list_destroy",
+          "comdat_selection": 1,
+          "function": "controls_move_method_list_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_move_method_list_destroy/build/msvc6.5/835517e65012b8c0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_move_method_list_destroy",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -125524,6 +125624,31 @@
         }
       ],
       "name": "_controls_player_profile_list",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_player_profile_list_destroy",
+          "comdat_selection": 1,
+          "function": "controls_player_profile_list_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_player_profile_list_destroy/build/msvc6.5/9aa555097e8985c6/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_player_profile_list_destroy",
       "referenced_by": [
         {
           "function": "controls_menu_update",
@@ -125783,6 +125908,31 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_rebind_items_destroy",
+          "comdat_selection": 1,
+          "function": "controls_rebind_items_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_rebind_items_destroy/build/msvc6.5/6c135f0ce0627fe4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_rebind_items_destroy",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -125865,6 +126015,31 @@
         }
       ],
       "name": "_controls_redefine_button",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_controls_redefine_button_destroy",
+          "comdat_selection": 1,
+          "function": "controls_redefine_button_destroy",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/controls_redefine_button_destroy/build/msvc6.5/c3d582fd3af856a7/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_controls_redefine_button_destroy",
       "referenced_by": [
         {
           "function": "controls_menu_update",
@@ -127659,6 +127834,356 @@
         {
           "function": "credits_screen_update",
           "object": "tools/match/scratches/credits_screen_update/build/msvc6.5/7de52918eb6d8582/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_05",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_05",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_05/build/msvc6.5/9d1ae74c2c464181/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_05",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_05_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_05_thunk/build/msvc6.5/67ddc216dd1beaeb/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_07",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_07",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_07/build/msvc6.5/0ddbbde759849977/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_07",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_07_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_07_thunk/build/msvc6.5/7ee62fffe372339f/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_09",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_09",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_09/build/msvc6.5/49fa9b7efedb37a1/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_09",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_09_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_09_thunk/build/msvc6.5/7eec5e4c575d67c3/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_31",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_31",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_31/build/msvc6.5/44008cc7cf4486ef/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_31",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_31_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_31_thunk/build/msvc6.5/0709d6abd1d421c6/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_38",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_38",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_38/build/msvc6.5/3c3e913d504b0182/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_38",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_38_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_38_thunk/build/msvc6.5/5d68568fda3fecb4/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_39",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_39",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_39/build/msvc6.5/00346ccfd206c8d1/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_39",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_39_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_39_thunk/build/msvc6.5/08ffec488716312f/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_41",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_41",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_41/build/msvc6.5/9d783dece78b5853/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_41",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_41_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_41_thunk/build/msvc6.5/e9924ec69172d446/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_42",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_42",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_42/build/msvc6.5/45b116f6c2a667a3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_42",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_42_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_42_thunk/build/msvc6.5/156a4c267ab6faa1/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_43",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_43",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_43/build/msvc6.5/ea51e303b8bcf530/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_43",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_43_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_43_thunk/build/msvc6.5/474962fbc2e4ef5d/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_44",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_44",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_44/build/msvc6.5/e37f001dbd660959/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_44",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_44_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_44_thunk/build/msvc6.5/ffe7e8bcd7e7a84e/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_45",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_45",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_45/build/msvc6.5/f66c5bf553ddd90a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_45",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_45_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_45_thunk/build/msvc6.5/a99786ae317e2d44/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_48",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_48",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_48/build/msvc6.5/49db9f995d325525/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_48",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_48_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_48_thunk/build/msvc6.5/767ce2ab835d0c6e/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_49",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_49",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_49/build/msvc6.5/a8ade0684a7fa792/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_49",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_49_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk/build/msvc6.5/b0eb6528f7fea005/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_crimson_crt_empty_initializer_slot_54",
+          "comdat_selection": 1,
+          "function": "crimson_crt_empty_initializer_slot_54",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_54/build/msvc6.5/fcaa20226072805a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_crimson_crt_empty_initializer_slot_54",
+      "referenced_by": [
+        {
+          "function": "crimson_crt_empty_initializer_slot_54_thunk",
+          "object": "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk/build/msvc6.5/435ddc667e0f909f/scratch.obj",
           "weak": false
         }
       ]
@@ -137830,531 +138355,6 @@
         {
           "function": "player_render_overlays",
           "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_105",
-          "comdat_selection": 1,
-          "function": "nullsub_105",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_105/build/msvc6.5/12e9147a821fb03d/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_105",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_105",
-          "object": "tools/match/scratches/j_nullsub_105/build/msvc6.5/c1e3ddcf31a1d142/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_106",
-          "comdat_selection": 1,
-          "function": "nullsub_106",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_106/build/msvc6.5/aeb4ad158afba239/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_106",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_106",
-          "object": "tools/match/scratches/j_nullsub_106/build/msvc6.5/bf7938f9212229e1/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_107",
-          "comdat_selection": 1,
-          "function": "nullsub_107",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_107/build/msvc6.5/302644c1c084d819/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_107",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_107",
-          "object": "tools/match/scratches/j_nullsub_107/build/msvc6.5/36de6569db2c24c0/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_109",
-          "comdat_selection": 1,
-          "function": "nullsub_109",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_109/build/msvc6.5/f8215113532c4f89/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_109",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_109",
-          "object": "tools/match/scratches/j_nullsub_109/build/msvc6.5/45f0caac1e9625c7/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_110",
-          "comdat_selection": 1,
-          "function": "nullsub_110",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_110/build/msvc6.5/3b2f0d22c6c506ce/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_110",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_110",
-          "object": "tools/match/scratches/j_nullsub_110/build/msvc6.5/809a29094a7e5485/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_111",
-          "comdat_selection": 1,
-          "function": "nullsub_111",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_111/build/msvc6.5/6feb5a69cc677409/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_111",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_111",
-          "object": "tools/match/scratches/j_nullsub_111/build/msvc6.5/97daae2048de7b95/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_112",
-          "comdat_selection": 1,
-          "function": "nullsub_112",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_112/build/msvc6.5/9d395cfa4a4358dd/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_112",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_112",
-          "object": "tools/match/scratches/j_nullsub_112/build/msvc6.5/6be764492a8d9ba4/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_113",
-          "comdat_selection": 1,
-          "function": "nullsub_113",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_113/build/msvc6.5/c49ee665386ede9b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_113",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_113",
-          "object": "tools/match/scratches/j_nullsub_113/build/msvc6.5/5527ceb1bc140d9e/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_114",
-          "comdat_selection": 1,
-          "function": "nullsub_114",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_114/build/msvc6.5/a95ab2e0bb427d70/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_114",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_114",
-          "object": "tools/match/scratches/j_nullsub_114/build/msvc6.5/2582fecce716fd6b/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_115",
-          "comdat_selection": 1,
-          "function": "nullsub_115",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_115/build/msvc6.5/6df9963a659271ce/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_115",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_115",
-          "object": "tools/match/scratches/j_nullsub_115/build/msvc6.5/a7adcb5f52d7474b/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_116",
-          "comdat_selection": 1,
-          "function": "nullsub_116",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_116/build/msvc6.5/8b6742c56e1b6d47/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_116",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_116",
-          "object": "tools/match/scratches/j_nullsub_116/build/msvc6.5/5fe0b79f6b9099b8/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_117",
-          "comdat_selection": 1,
-          "function": "nullsub_117",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_117/build/msvc6.5/e40e9a4fcae65365/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_117",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_117",
-          "object": "tools/match/scratches/j_nullsub_117/build/msvc6.5/0fe11732085ed975/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_118",
-          "comdat_selection": 1,
-          "function": "nullsub_118",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_118/build/msvc6.5/2a864fca6472e09b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_118",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_118",
-          "object": "tools/match/scratches/j_nullsub_118/build/msvc6.5/9055711644022385/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_119",
-          "comdat_selection": 1,
-          "function": "nullsub_119",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_119/build/msvc6.5/8fcfb146637b32d3/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_119",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_119",
-          "object": "tools/match/scratches/j_nullsub_119/build/msvc6.5/bb105a78a9dbafef/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_89",
-          "comdat_selection": 1,
-          "function": "nullsub_89",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_89/build/msvc6.5/0aed8c025b99142e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_89",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_90",
-          "comdat_selection": 1,
-          "function": "nullsub_90",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_90/build/msvc6.5/00aa27b55d55f3b9/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_90",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_91",
-          "comdat_selection": 1,
-          "function": "nullsub_91",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_91/build/msvc6.5/c6ac298d3048c1dc/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_91",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_92",
-          "comdat_selection": 1,
-          "function": "nullsub_92",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_92/build/msvc6.5/f1b77540896d288b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_92",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_93",
-          "comdat_selection": 1,
-          "function": "nullsub_93",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_93/build/msvc6.5/c38af2d41fcfbb74/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_93",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_94",
-          "comdat_selection": 1,
-          "function": "nullsub_94",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_94/build/msvc6.5/c31af53e3d954b58/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_94",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_95",
-          "comdat_selection": 1,
-          "function": "nullsub_95",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/nullsub_95/build/msvc6.5/bb796f876aa06892/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_95",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/2711a8301b84ca38/scratch.obj",
           "weak": false
         }
       ]
@@ -164858,7 +164858,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "9bbb0b7ee711b16a1b248a3b0f9a459de60ffaedfeb741ec4032ed6b0469d1ba"
+        "sha256": "9808eda87a21cfb10bfd0563ec04b02184616a4cd7c0ec43e98fa4465bfa4b75"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -164867,7 +164867,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "66b0b7e952593b894dff587c6b3c84a281f6e604977a4b49d5d9b8e5794d5e86"
+        "sha256": "14d3beaac01ae86fddddab7d045ed5c727a4d44e200e886a7b6f0fc416efb45e"
       },
       {
         "path": "analysis/matching_scope.json",

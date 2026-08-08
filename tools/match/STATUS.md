@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**694/808** functions matched exactly, **130906/341963** code bytes (**38.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**696/810** functions matched exactly, **130912/341970** code bytes (**38.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303288/341963** code bytes (**88.7%**).
+Fuzzy-weighted alignment is **303294/341970** code bytes (**88.7%**).
 
-Reproducible candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Native linking
 
@@ -17,11 +17,11 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
 | crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
-| grim.dll | current | 137 | 131 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
+| grim.dll | current | 139 | 133 | 3 | passed | yes | yes | no | 0 | 269 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1769 | 1769 | 1769 | 1769 | 1769 |
+| crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1770 | 1770 | 1770 | 1770 | 1770 |
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 441 | 391 | 349 | 349 | 349 |
 
 ## Function dispositions
@@ -93,7 +93,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 563/671 | 115968/320805 | 36.1% | 282487/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 563/671 |
-| grim.dll | 131/137 | 14938/21158 | 70.6% | 20801/21158 | 98.3% | 137/137 | 21159/21158 | 100.0% | 131/137 |
+| grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
@@ -184,8 +184,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | survival_spawn_creature | 0x00407510 | 1973 | 1973/1973 | 0 | 517/517 | 100.00% | 517/517 | 85/0/0 |  | survival-random-creature-stats-and-rare-variants |
 | wip | survival_update | 0x00407cd0 | 2102 | 2064/2102 | 38 | 504/504 | 98.21% | 102/504 | 139/0/0 |  | survival-handouts-milestones-and-edge-wave-spawns |
 | match | tutorial_prompt_dialog | 0x00408530 | 1084 | 1084/1084 | 0 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
-| match | nullsub_13 | 0x00408970 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_14 | 0x00408980 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | tutorial_primary_button_destroy | 0x00408970 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-tutorial-primary-button-destroy |
+| match | tutorial_repeat_button_destroy | 0x00408980 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-tutorial-repeat-button-destroy |
 | wip | tutorial_timeline_update | 0x00408990 | 2907 | 2231/2907 | 676 | 686/695 | 76.76% | 6/695 | 169/0/1 |  | tutorial-script-prompts-hints-and-spawns |
 | match | camera_update | 0x00409500 | 910 | 910/910 | 0 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
 | match | bonus_apply | 0x00409890 | 2693 | 2693/2693 | 0 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
@@ -209,8 +209,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | credits_screen_update | 0x0040d800 | 1857 | 1837/1857 | 20 | 454/454 | 98.90% | 48/454 | 175/0/0 |  | credits-scroll-and-secret-puzzle |
 | match | credits_secret_button_destroy | 0x0040df50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | credits-secret-button-empty-destructor |
 | match | credits_back_button_destroy | 0x0040df60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | credits-back-button-empty-destructor |
-| match | j_nullsub_105 | 0x0040df70 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_105 | 0x0040df80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_05_thunk | 0x0040df70 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-05-thunk |
+| match | crimson_crt_empty_initializer_slot_05 | 0x0040df80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-05 |
 | match | j_mod_api_init | 0x0040df90 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-mod-api-init |
 | match | mod_api_init | 0x0040dfa0 | 21 | 21/21 | 0 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
 | match | mod_api_core_printf | 0x0040dfc0 | 52 | 52/52 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | mod-api-core-console-output |
@@ -249,7 +249,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | mod_api_inp_get_key_name | 0x0040e680 | 16 | 16/16 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-input-key-name |
 | match | mod_api_cl_enter_menu | 0x0040e690 | 99 | 99/99 | 0 | 37/37 | 100.00% | 37/37 | 4/0/0 |  | mod-api-pause-menu |
 | match | mod_load_info | 0x0040e700 | 332 | 332/332 | 0 | 91/91 | 100.00% | 91/91 | 36/0/0 |  | mod-metadata-dll-loader |
-| match | nullsub_21 | 0x0040e850 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | mod_info_destroy | 0x0040e850 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-mod-info-destroy |
 | match | mod_load_mod | 0x0040e860 | 219 | 219/219 | 0 | 61/61 | 100.00% | 61/61 | 24/0/0 |  | mod-interface-dll-loader |
 | match | mods_any_available | 0x0040e940 | 87 | 87/87 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
 | wip | mods_menu_update | 0x0040e9a0 | 2607 | 2458/2607 | 149 | 648/648 | 94.29% | 0/648 | 183/0/0 |  | mods-browser-metadata-and-plugin-launch |
@@ -258,8 +258,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | mods_menu_scrollbar_destroy | 0x0040f3f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-scrollbar-empty-destructor |
 | match | credits_secret_match3_find | 0x0040f400 | 230 | 230/230 | 0 | 96/96 | 100.00% | 96/96 | 0/0/0 |  | credits-secret-match3-scan |
 | wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 2190/2612 | 422 | 638/638 | 83.86% | 15/638 | 154/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
-| match | nullsub_25 | 0x0040ff30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_26 | 0x0040ff40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | credits_secret_back_button_destroy | 0x0040ff30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-credits-secret-back-button-destroy |
+| match | credits_secret_reset_button_destroy | 0x0040ff40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-credits-secret-reset-button-destroy |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 105/105 | 0 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | match | game_over_screen_update | 0x0040ffc0 | 1999 | 1999/1999 | 0 | 471/471 | 100.00% | 471/471 | 215/0/0 |  | game-over-highscore-entry-and-navigation |
 | match | game_over_main_menu_button_destroy | 0x00410790 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-main-menu-button-empty-destructor |
@@ -278,12 +278,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | quest_results_play_next_button_destroy | 0x00412050 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-next-button-empty-destructor |
 | match | quest_results_name_input_state_destroy | 0x00412060 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-name-input-empty-destructor |
 | match | quest_results_name_submit_button_destroy | 0x00412070 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-name-submit-button-empty-destructor |
-| match | j_nullsub_106 | 0x00412080 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_106 | 0x00412090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_07_thunk | 0x00412080 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-07-thunk |
+| match | crimson_crt_empty_initializer_slot_07 | 0x00412090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-07 |
 | match | j_gameplay_run_state_init | 0x004120a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-gameplay-run-state-init |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 172/172 | 0 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
-| match | j_nullsub_107 | 0x00412160 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_107 | 0x00412170 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_09_thunk | 0x00412160 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-09-thunk |
+| match | crimson_crt_empty_initializer_slot_09 | 0x00412170 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-09 |
 | match | quest_meta_global_construct_and_register | 0x00412180 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | quest-metadata-global-lifecycle |
 | match | quest_meta_init | 0x00412190 | 25 | 25/25 | 0 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-construction |
 | match | quest_meta_entry_init | 0x004121b0 | 45 | 45/45 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | quest-metadata-entry-defaults |
@@ -380,8 +380,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | unused_effect_uv_strip16_prefix_vec2_global_init | 0x0041e180 | 21 | 21/21 | 0 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | unused-effect-strip16-prefix-vec2 |
 | match | fx_queue_global_init_thunk | 0x0041e1a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | fx-queue-global-init-thunk |
 | match | fx_queue_global_init | 0x0041e1b0 | 147 | 147/147 | 0 | 42/42 | 100.00% | 42/42 | 1/0/0 |  | fx-queue-global-constructor |
-| match | j_nullsub_109 | 0x0041e250 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_109 | 0x0041e260 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_31_thunk | 0x0041e250 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-31-thunk |
+| match | crimson_crt_empty_initializer_slot_31 | 0x0041e260 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-31 |
 | match | vec2_add | 0x0041e270 | 26 | 26/26 | 0 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | match | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 356/356 | 0 | 131/131 | 100.00% | 131/131 | 8/0/0 |  | gameplay-movement |
 | match | vec2_add_inplace | 0x0041e400 | 26 | 26/26 | 0 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
@@ -397,22 +397,22 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | player_state_table_global_init | 0x0041e5d0 | 227 | 227/227 | 0 | 50/50 | 100.00% | 50/50 | 1/0/0 |  | player-state-table-global-constructor |
 | match | creature_pool_global_init_thunk | 0x0041e6c0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | creature-pool-global-init-thunk |
 | match | creature_pool_global_init | 0x0041e6d0 | 60 | 60/60 | 0 | 17/17 | 100.00% | 17/17 | 1/0/0 |  | creature-pool-global-constructor |
-| match | j_nullsub_110 | 0x0041e710 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_110 | 0x0041e720 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_111 | 0x0041e730 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_111 | 0x0041e740 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_38_thunk | 0x0041e710 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-38-thunk |
+| match | crimson_crt_empty_initializer_slot_38 | 0x0041e720 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-38 |
+| match | crimson_crt_empty_initializer_slot_39_thunk | 0x0041e730 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-39-thunk |
+| match | crimson_crt_empty_initializer_slot_39 | 0x0041e740 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-39 |
 | match | projectile_pool_global_init_thunk | 0x0041e750 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | projectile-pool-global-init-thunk |
 | match | projectile_pool_global_init | 0x0041e760 | 51 | 51/51 | 0 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | projectile-pool-global-constructor |
-| match | j_nullsub_112 | 0x0041e7a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_112 | 0x0041e7b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_113 | 0x0041e7c0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_113 | 0x0041e7d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_114 | 0x0041e7e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_114 | 0x0041e7f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_115 | 0x0041e800 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_115 | 0x0041e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_116 | 0x0041e820 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_116 | 0x0041e830 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_41_thunk | 0x0041e7a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-41-thunk |
+| match | crimson_crt_empty_initializer_slot_41 | 0x0041e7b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-41 |
+| match | crimson_crt_empty_initializer_slot_42_thunk | 0x0041e7c0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-42-thunk |
+| match | crimson_crt_empty_initializer_slot_42 | 0x0041e7d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-42 |
+| match | crimson_crt_empty_initializer_slot_43_thunk | 0x0041e7e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-43-thunk |
+| match | crimson_crt_empty_initializer_slot_43 | 0x0041e7f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-43 |
+| match | crimson_crt_empty_initializer_slot_44_thunk | 0x0041e800 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-44-thunk |
+| match | crimson_crt_empty_initializer_slot_44 | 0x0041e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-44 |
+| match | crimson_crt_empty_initializer_slot_45_thunk | 0x0041e820 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-45-thunk |
+| match | crimson_crt_empty_initializer_slot_45 | 0x0041e830 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-45 |
 | wip | fx_queue_add | 0x0041e840 | 140 | 136/140 | 4 | 39/39 | 97.44% | 22/39 | 9/0/0 |  | gameplay-fx-queue |
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 32/32 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 32/32 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
@@ -479,10 +479,10 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | statistics_update_check_worker | 0x0042d8a0 | 1364 | 1056/1364 | 308 | 373/361 | 77.38% | 22/361 | 106/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
-| match | j_nullsub_117 | 0x0042de40 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_117 | 0x0042de50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_118 | 0x0042de60 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_118 | 0x0042de70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_48_thunk | 0x0042de40 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-48-thunk |
+| match | crimson_crt_empty_initializer_slot_48 | 0x0042de50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-48 |
+| match | crimson_crt_empty_initializer_slot_49_thunk | 0x0042de60 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-49-thunk |
+| match | crimson_crt_empty_initializer_slot_49 | 0x0042de70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-49 |
 | match | effect_init_entry | 0x0042de80 | 143 | 143/143 | 0 | 36/36 | 100.00% | 36/36 | 0/0/0 |  | gameplay-effect-pool |
 | match | effect_defaults_reset | 0x0042df10 | 355 | 355/355 | 0 | 59/59 | 100.00% | 59/59 | 29/0/0 |  | gameplay-effect-pool-reset |
 | match | effect_free | 0x0042e080 | 29 | 29/29 | 0 | 6/6 | 100.00% | 6/6 | 2/0/0 |  | gameplay-effect-pool |
@@ -656,28 +656,28 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | ui_text_input_update | 0x0043ecf0 | 716 | 716/716 | 0 | 203/203 | 100.00% | 203/203 | 36/0/0 |  | ui-text-input-widget |
 | wip | ui_list_widget_update | 0x0043efc0 | 1420 | 1409/1420 | 11 | 403/403 | 99.26% | 321/403 | 50/0/0 |  | ui-dropdown-focus-navigation-hover-and-row-selection |
 | wip | statistics_menu_update | 0x0043f550 | 2877 | 2585/2877 | 292 | 675/676 | 89.86% | 280/676 | 264/0/5 |  | statistics-playtime-network-status-and-navigation |
-| match | nullsub_45 | 0x00440090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_46 | 0x004400a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_47 | 0x004400b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_48 | 0x004400c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_49 | 0x004400d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_50 | 0x004400e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_51 | 0x004400f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_52 | 0x00440100 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | statistics_back_button_destroy | 0x00440090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-back-button-destroy |
+| match | statistics_update_button_destroy | 0x004400a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-update-button-destroy |
+| match | statistics_mods_button_destroy | 0x004400b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-mods-button-destroy |
+| match | statistics_typo_button_destroy | 0x004400c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-typo-button-destroy |
+| match | statistics_credits_button_destroy | 0x004400d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-credits-button-destroy |
+| match | statistics_perks_button_destroy | 0x004400e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-perks-button-destroy |
+| match | statistics_weapons_button_destroy | 0x004400f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-weapons-button-destroy |
+| match | statistics_high_scores_button_destroy | 0x00440100 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-high-scores-button-destroy |
 | wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 2082/2086 | 4 | 523/523 | 99.81% | 74/523 | 157/0/0 |  | unlocked-weapon-list-and-detail-panel |
 | match | unlocked_weapons_back_button_destroy | 0x00440940 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-back-button-empty-destructor |
 | match | unlocked_weapons_scrollbar_destroy | 0x00440950 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-scrollbar-empty-destructor |
 | wip | unlocked_perks_database_update | 0x00440960 | 2065 | 2061/2065 | 4 | 511/511 | 99.80% | 74/511 | 148/0/0 |  | unlocked-perk-list-prerequisite-and-description-panel |
 | match | unlocked_perks_back_button_destroy | 0x00441180 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-back-button-empty-destructor |
 | match | unlocked_perks_scrollbar_destroy | 0x00441190 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-scrollbar-empty-destructor |
-| match | j_nullsub_119 | 0x004411a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_119 | 0x004411b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | crimson_crt_empty_initializer_slot_54_thunk | 0x004411a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-54-thunk |
+| match | crimson_crt_empty_initializer_slot_54 | 0x004411b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-54 |
 | match | highscore_card_draw_horizontal_divider | 0x004411c0 | 83 | 83/83 | 0 | 23/23 | 100.00% | 23/23 | 6/0/0 |  | highscore-card-divider |
 | match | highscore_card_draw_vertical_divider | 0x00441220 | 71 | 71/71 | 0 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | highscore-card-divider |
 | match | highscore_format_date_label | 0x00441270 | 256 | 256/256 | 0 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
 | match | ui_text_input_render | 0x004413a0 | 3504 | 3504/3504 | 0 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 614/614 | 0 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
-| match | nullsub_57 | 0x004423c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | ui_update_notice_button_destroy | 0x004423c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-ui-update-notice-button-destroy |
 | wip | highscore_screen_update | 0x004423d0 | 8026 | 6266/8026 | 1760 | 1969/2004 | 78.08% | 45/2004 | 589/0/7 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
 | match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
@@ -689,10 +689,10 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | highscore_score_scrollbar_destroy | 0x004443a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-score-scrollbar-empty-destructor |
 | match | highscore_hardcore_checkbox_destroy | 0x004443b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-hardcore-checkbox-empty-destructor |
 | match | ui_profile_menu_update | 0x004443c0 | 1033 | 1033/1033 | 0 | 261/261 | 100.00% | 261/261 | 109/0/0 |  | profile-saved-name-list-editing |
-| match | nullsub_67 | 0x004447d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_68 | 0x004447e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_69 | 0x004447f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_70 | 0x00444800 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | profile_name_list_destroy | 0x004447d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-profile-name-list-destroy |
+| match | profile_delete_button_destroy | 0x004447e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-profile-delete-button-destroy |
+| match | profile_add_button_destroy | 0x004447f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-profile-add-button-destroy |
+| match | profile_name_input_destroy | 0x00444800 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-profile-name-input-destroy |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 364/364 | 0 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | wip | player_fire_weapon | 0x00444980 | 1518 | 1506/1518 | 12 | 378/378 | 99.21% | 245/378 | 142/0/0 |  | typo-player-frame-and-shotgun-fire |
 | match | typo_word_pick_fragment | 0x00444f70 | 356 | 356/356 | 0 | 117/117 | 100.00% | 117/117 | 54/0/0 |  | typo-random-name-fragment-table |
@@ -702,7 +702,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | typo_target_find_by_name | 0x00445590 | 98 | 98/98 | 0 | 42/42 | 100.00% | 42/42 | 3/0/0 |  | typo-target-lookup |
 | match | typo_target_name_draw_labels | 0x00445600 | 434 | 434/434 | 0 | 111/111 | 100.00% | 111/111 | 20/0/0 |  | typo-active-creature-name-labels |
 | wip | typo_gameplay_update_and_render | 0x004457c0 | 2082 | 2049/2082 | 33 | 508/508 | 98.43% | 33/508 | 194/0/0 |  | typo-shooter-gameplay-loop |
-| match | nullsub_71 | 0x00445ff0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | typo_target_world_destroy | 0x00445ff0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-typo-target-world-destroy |
 | match | input_any_key_pressed | 0x00446000 | 40 | 40/40 | 0 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 188/188 | 0 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |
 | match | input_primary_is_down | 0x004460f0 | 74 | 74/74 | 0 | 24/24 | 100.00% | 24/24 | 5/0/0 |  | input-primary-held |
@@ -724,12 +724,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | ui_menu_pause_click_main_menu | 0x004474e0 | 160 | 160/160 | 0 | 40/40 | 100.00% | 40/40 | 22/0/0 |  | pause-menu-plugin-exit |
 | match | config_apply_detail_preset | 0x00447580 | 57 | 57/57 | 0 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
 | wip | options_menu_update | 0x004475d0 | 1621 | 1224/1621 | 397 | 378/377 | 75.50% | 10/377 | 151/0/1 |  | options-audio-detail-input-and-controls-navigation |
-| match | nullsub_73 | 0x00447c30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_74 | 0x00447c40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_75 | 0x00447c50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_76 | 0x00447c60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_77 | 0x00447c70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_78 | 0x00447c80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | options_controls_button_destroy | 0x00447c30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-options-controls-button-destroy |
+| match | options_mouse_sensitivity_slider_destroy | 0x00447c40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-options-mouse-sensitivity-slider-destroy |
+| match | options_graphics_detail_slider_destroy | 0x00447c50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-options-graphics-detail-slider-destroy |
+| match | options_music_volume_slider_destroy | 0x00447c60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-options-music-volume-slider-destroy |
+| match | options_sfx_volume_slider_destroy | 0x00447c70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-options-sfx-volume-slider-destroy |
+| match | options_info_checkbox_destroy | 0x00447c80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-options-info-checkbox-destroy |
 | match | input_configure_for_label | 0x00447c90 | 58 | 58/58 | 0 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 53/53 | 0 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
 | wip | quest_select_menu_update | 0x00447d40 | 3436 | 3273/3436 | 163 | 803/803 | 95.27% | 0/803 | 282/0/0 |  | quest-stage-picker-hardcore-gating-and-start-routing |
@@ -746,13 +746,13 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | input_detect_active_analog_axis | 0x00448b50 | 377 | 377/377 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | input-analog-axis-detection |
 | wip | controls_menu_update | 0x00448cd0 | 21289 | 17398/21289 | 3891 | 5413/5421 | 81.72% | 172/5421 | 1559/0/9 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
-| match | nullsub_89 | 0x0044ed10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_90 | 0x0044ed20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_91 | 0x0044ed30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_92 | 0x0044ed40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_93 | 0x0044ed50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_94 | 0x0044ed60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | nullsub_95 | 0x0044ed70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | controls_rebind_items_destroy | 0x0044ed10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-rebind-items-destroy |
+| match | controls_direction_arrow_checkbox_destroy | 0x0044ed20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-direction-arrow-checkbox-destroy |
+| match | controls_move_method_list_destroy | 0x0044ed30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-move-method-list-destroy |
+| match | controls_aim_method_list_destroy | 0x0044ed40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-aim-method-list-destroy |
+| match | controls_player_profile_list_destroy | 0x0044ed50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-player-profile-list-destroy |
+| match | controls_back_button_destroy | 0x0044ed60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-back-button-destroy |
+| match | controls_redefine_button_destroy | 0x0044ed70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-redefine-button-destroy |
 | wip | play_game_menu_update | 0x0044ed80 | 3238 | 2903/3238 | 335 | 778/777 | 89.65% | 120/777 | 285/0/21 |  | play-game-mode-buttons-player-count-and-routing |
 | match | play_game_player_count_list_destroy | 0x0044fa30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-player-count-list-empty-destructor |
 | match | play_game_tutorial_button_destroy | 0x0044fa40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-tutorial-button-empty-destructor |
@@ -775,28 +775,30 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## grim.dll
 
-**131/137** functions, **14938/21158** bytes (**70.6%**), **20801/21158** fuzzy-weighted bytes (**98.3%**), **137/137** reproducible candidates covering **21159/21158** bytes (**100.0%**), **131/137** scratches verified.
+**133/139** functions, **14944/21165** bytes (**70.6%**), **20807/21165** fuzzy-weighted bytes (**98.3%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **133/139** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| match | j_nullsub_11 | 0x10001020 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_11 | 0x10001030 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_12 | 0x10001040 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_12 | 0x10001050 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_13 | 0x10001060 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_13 | 0x10001070 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_14 | 0x10001080 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_14 | 0x10001090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_15 | 0x100010a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_15 | 0x100010b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_16 | 0x100010c0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_16 | 0x100010d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_17 | 0x100010e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_17 | 0x100010f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_18 | 0x10001100 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_18 | 0x10001110 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | j_nullsub_19 | 0x10001120 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_19 | 0x10001130 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | grim_crt_empty_initializer_slot_01_thunk | 0x10001000 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-empty-initializer |
+| match | grim_crt_empty_initializer_slot_01 | 0x10001010 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-initializer |
+| match | grim_crt_empty_initializer_slot_02_thunk | 0x10001020 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-02-thunk |
+| match | grim_crt_empty_initializer_slot_02 | 0x10001030 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-02 |
+| match | grim_crt_empty_initializer_slot_03_thunk | 0x10001040 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-03-thunk |
+| match | grim_crt_empty_initializer_slot_03 | 0x10001050 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-03 |
+| match | grim_crt_empty_initializer_slot_04_thunk | 0x10001060 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-04-thunk |
+| match | grim_crt_empty_initializer_slot_04 | 0x10001070 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-04 |
+| match | grim_crt_empty_initializer_slot_05_thunk | 0x10001080 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-05-thunk |
+| match | grim_crt_empty_initializer_slot_05 | 0x10001090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-05 |
+| match | grim_crt_empty_initializer_slot_06_thunk | 0x100010a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-06-thunk |
+| match | grim_crt_empty_initializer_slot_06 | 0x100010b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-06 |
+| match | grim_crt_empty_initializer_slot_07_thunk | 0x100010c0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-07-thunk |
+| match | grim_crt_empty_initializer_slot_07 | 0x100010d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-07 |
+| match | grim_crt_empty_initializer_slot_08_thunk | 0x100010e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-08-thunk |
+| match | grim_crt_empty_initializer_slot_08 | 0x100010f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-08 |
+| match | grim_crt_empty_initializer_slot_09_thunk | 0x10001100 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-09-thunk |
+| match | grim_crt_empty_initializer_slot_09 | 0x10001110 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-09 |
+| match | grim_crt_empty_initializer_slot_10_thunk | 0x10001120 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-10-thunk |
+| match | grim_crt_empty_initializer_slot_10 | 0x10001130 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-10 |
 | match | grim_missing_frame_callback | 0x10001140 | 13 | 13/13 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | default-missing-frame-callback |
 | match | grim_default_device_callback | 0x10001150 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | default-device-callback |
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
@@ -880,8 +882,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | grim_end_batch | 0x10007b20 | 104 | 104/104 | 0 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | grim2d-batch-lifecycle |
 | match | grim_draw_circle_filled | 0x10007b90 | 432 | 432/432 | 0 | 115/115 | 100.00% | 115/115 | 32/0/0 |  | grim2d-filled-circle |
 | match | grim_draw_circle_outline | 0x10007d40 | 462 | 462/462 | 0 | 120/120 | 100.00% | 120/120 | 31/0/0 |  | grim2d-circle-outline |
-| match | j_nullsub_20 | 0x10007f10 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
-| match | nullsub_20 | 0x10007f20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
+| match | grim_crt_empty_initializer_slot_12_thunk | 0x10007f10 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-12-thunk |
+| match | grim_crt_empty_initializer_slot_12 | 0x10007f20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-grim-crt-empty-initializer-slot-12 |
 | match | grim_set_rotation | 0x10007f30 | 85 | 85/85 | 0 | 19/19 | 100.00% | 19/19 | 11/0/0 |  | grim2d-rotation-matrix |
 | match | grim_set_color | 0x10007f90 | 166 | 166/166 | 0 | 42/42 | 100.00% | 42/42 | 16/0/0 |  | grim2d-packed-color |
 | match | grim_set_color_ptr | 0x10008040 | 104 | 104/104 | 0 | 25/25 | 100.00% | 25/25 | 12/0/0 |  | grim2d-packed-color-pointer |

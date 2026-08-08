@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "204fc8e4e808abf0ff3835ab89bf7037e576141fd464da86f8c7ee54d2287c46",
+  "audit_digest": "bafb04dfb771583cf32c5e1e358f27715b6c57c96eca70ebd874603703209bb0",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4230,7 +4230,7 @@
       ]
     }
   ],
-  "function_count": 137,
+  "function_count": 139,
   "image": "grim.dll",
   "kind": "crimson-native-object-manifest",
   "linker_alias_object_count": 1,
@@ -4255,16 +4255,200 @@
       "object_sha256": "aac7649073a5a8599107276c87312223ee469dbe6317e7b0cdc2c056e1606a2d"
     }
   ],
-  "object_count": 131,
+  "object_count": 133,
   "object_hash": {
     "algorithm": "sha256",
     "normalization": [
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "eb6da6dbbf0d286c465d672062e887228a7f3d5598007064dfb23df15f85c79d",
+  "object_list_sha256": "ebb8867472b40519461d87ea27c3cce63f7ca01579201243a98b5550f7968364",
   "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
+    {
+      "address": 268439552,
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "compile_argv": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-",
+        "scratch.cpp"
+      ],
+      "compile_inputs": [
+        {
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/scratch.cpp",
+          "repository_relative": true,
+          "sha256": "d712434d9292492a8c48b65d027a98c8d3fffeecb3ed71c251a5cf5d454eaa37"
+        },
+        {
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/scratch.conf",
+          "repository_relative": true,
+          "sha256": "c893eaf150e52628ded6d723b5ee095bc87bada0ce608af36bc4dff349cd5414"
+        },
+        {
+          "path": "tools/match/cl.sh",
+          "repository_relative": true,
+          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+        },
+        {
+          "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
+          "repository_relative": true,
+          "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+        }
+      ],
+      "compiler": "msvc6.5",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/scratch.conf",
+      "config_sha256": "c893eaf150e52628ded6d723b5ee095bc87bada0ce608af36bc4dff349cd5414",
+      "effective_end": 268439557,
+      "end": 268439557,
+      "function": "grim_crt_empty_initializer_slot_01_thunk",
+      "functions": [
+        {
+          "address": 268439552,
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/scratch.conf",
+          "canonical_config_sha256": "c893eaf150e52628ded6d723b5ee095bc87bada0ce608af36bc4dff349cd5414",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/scratch.cpp",
+          "canonical_source_sha256": "d712434d9292492a8c48b65d027a98c8d3fffeecb3ed71c251a5cf5d454eaa37",
+          "effective_end": 268439557,
+          "end": 268439557,
+          "function": "grim_crt_empty_initializer_slot_01_thunk",
+          "match": {
+            "candidate_instructions": 1,
+            "masked_mismatches": 0,
+            "masked_ok": 1,
+            "masked_unresolved": 0,
+            "prefix_instructions": 1,
+            "ratio": 1.0,
+            "state": "match",
+            "target_instructions": 1
+          },
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_01_thunk",
+          "target_size": 5
+        }
+      ],
+      "match": {
+        "candidate_instructions": 1,
+        "masked_mismatches": 0,
+        "masked_ok": 1,
+        "masked_unresolved": 0,
+        "prefix_instructions": 1,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 1
+      },
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/build/msvc6.5/5289a10f35be0521/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_01_thunk",
+      "object_sha256": "d118653cd09fb7fa45559547880a7327c165fda02c21d2e9038d27ea99d6c80d",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/scratch.cpp",
+      "source_sha256": "d712434d9292492a8c48b65d027a98c8d3fffeecb3ed71c251a5cf5d454eaa37",
+      "target_size": 5,
+      "translation_unit": {
+        "kind": "isolated",
+        "name": "grim_crt_empty_initializer_slot_01_thunk"
+      }
+    },
+    {
+      "address": 268439568,
+      "cflags": [
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-"
+      ],
+      "compile_argv": [
+        "/nologo",
+        "/c",
+        "/O2",
+        "/GB",
+        "/W3",
+        "/GR-",
+        "scratch.cpp"
+      ],
+      "compile_inputs": [
+        {
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_01/scratch.cpp",
+          "repository_relative": true,
+          "sha256": "f63d4a8f9bcc6ac9d4831b66912a5b27e769fdb953424d975230ed317bbc7295"
+        },
+        {
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_01/scratch.conf",
+          "repository_relative": true,
+          "sha256": "bdab7adae3eecb357bd4906fd3a60a3d229cecba2568469f839c27df2e68e21e"
+        },
+        {
+          "path": "tools/match/cl.sh",
+          "repository_relative": true,
+          "sha256": "b77a040856720e0916f04eef4641f2ee611fb8c216daa8842834d0e84642d8a8"
+        },
+        {
+          "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
+          "repository_relative": true,
+          "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
+        }
+      ],
+      "compiler": "msvc6.5",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_01/scratch.conf",
+      "config_sha256": "bdab7adae3eecb357bd4906fd3a60a3d229cecba2568469f839c27df2e68e21e",
+      "effective_end": 268439569,
+      "end": 268439569,
+      "function": "grim_crt_empty_initializer_slot_01",
+      "functions": [
+        {
+          "address": 268439568,
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_01/scratch.conf",
+          "canonical_config_sha256": "bdab7adae3eecb357bd4906fd3a60a3d229cecba2568469f839c27df2e68e21e",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_01",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_01/scratch.cpp",
+          "canonical_source_sha256": "f63d4a8f9bcc6ac9d4831b66912a5b27e769fdb953424d975230ed317bbc7295",
+          "effective_end": 268439569,
+          "end": 268439569,
+          "function": "grim_crt_empty_initializer_slot_01",
+          "match": {
+            "candidate_instructions": 1,
+            "masked_mismatches": 0,
+            "masked_ok": 0,
+            "masked_unresolved": 0,
+            "prefix_instructions": 1,
+            "ratio": 1.0,
+            "state": "match",
+            "target_instructions": 1
+          },
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_01",
+          "target_size": 1
+        }
+      ],
+      "match": {
+        "candidate_instructions": 1,
+        "masked_mismatches": 0,
+        "masked_ok": 0,
+        "masked_unresolved": 0,
+        "prefix_instructions": 1,
+        "ratio": 1.0,
+        "state": "match",
+        "target_instructions": 1
+      },
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01/build/msvc6.5/459d1fb816249b32/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_01",
+      "object_sha256": "81832fa967e561145511e1c6251ef1408896e40c06e9d62f0ceade3f118c015e",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_01",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_01/scratch.cpp",
+      "source_sha256": "f63d4a8f9bcc6ac9d4831b66912a5b27e769fdb953424d975230ed317bbc7295",
+      "target_size": 1,
+      "translation_unit": {
+        "kind": "isolated",
+        "name": "grim_crt_empty_initializer_slot_01"
+      }
+    },
     {
       "address": 268439584,
       "cflags": [
@@ -4284,14 +4468,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_11/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "f0880c8728c6f34cf197d2e71297efa266b1719d072eb5d3dcc17c7040a10ac7"
+          "sha256": "a5b53e4235f50642583f7583a3a8ada16278cc6cd6e135b3478bbca7fa8030fa"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_11/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "5d8b117552b179ef9a765d11cea1ebb964251a89ee91f43b20c47db321ad759c"
+          "sha256": "afa5f21749053191e533634a8946adedaf5f01e8ae252ffb1ea5eb5814a9c445"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4305,22 +4489,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_11/scratch.conf",
-      "config_sha256": "5d8b117552b179ef9a765d11cea1ebb964251a89ee91f43b20c47db321ad759c",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/scratch.conf",
+      "config_sha256": "afa5f21749053191e533634a8946adedaf5f01e8ae252ffb1ea5eb5814a9c445",
       "effective_end": 268439589,
       "end": 268439589,
-      "function": "j_nullsub_11",
+      "function": "grim_crt_empty_initializer_slot_02_thunk",
       "functions": [
         {
           "address": 268439584,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_11/scratch.conf",
-          "canonical_config_sha256": "5d8b117552b179ef9a765d11cea1ebb964251a89ee91f43b20c47db321ad759c",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_11",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_11/scratch.cpp",
-          "canonical_source_sha256": "f0880c8728c6f34cf197d2e71297efa266b1719d072eb5d3dcc17c7040a10ac7",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/scratch.conf",
+          "canonical_config_sha256": "afa5f21749053191e533634a8946adedaf5f01e8ae252ffb1ea5eb5814a9c445",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/scratch.cpp",
+          "canonical_source_sha256": "a5b53e4235f50642583f7583a3a8ada16278cc6cd6e135b3478bbca7fa8030fa",
           "effective_end": 268439589,
           "end": 268439589,
-          "function": "j_nullsub_11",
+          "function": "grim_crt_empty_initializer_slot_02_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4331,7 +4515,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_11",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_02_thunk",
           "target_size": 5
         }
       ],
@@ -4345,16 +4529,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/79ab851ee4c3df0f/scratch.obj",
-      "object_function_symbol": "_j_nullsub_11",
-      "object_sha256": "228f19a696ccbe14a5c8a994b07a2f79b45036d1fdff79b97d4651766020bd01",
-      "scratch": "tools/match/scratches/grim_j_nullsub_11",
-      "source": "tools/match/scratches/grim_j_nullsub_11/scratch.cpp",
-      "source_sha256": "f0880c8728c6f34cf197d2e71297efa266b1719d072eb5d3dcc17c7040a10ac7",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/build/msvc6.5/669ec2135459824b/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_02_thunk",
+      "object_sha256": "9e29c5f2082dfc3eda7be1407349913f47f0984ba0ec4b270fa1b17c91bc8e00",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/scratch.cpp",
+      "source_sha256": "a5b53e4235f50642583f7583a3a8ada16278cc6cd6e135b3478bbca7fa8030fa",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_11"
+        "name": "grim_crt_empty_initializer_slot_02_thunk"
       }
     },
     {
@@ -4376,14 +4560,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_11/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_02/scratch.cpp",
           "repository_relative": true,
-          "sha256": "f2825c33e1d7542c5d3673dfab954251942de4841fb3db6a6ea4e2753328a0c6"
+          "sha256": "2c41e75513c6901c6d53577c957c64e3aa4a72172a1b47273ffcc5528390fc95"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_11/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_02/scratch.conf",
           "repository_relative": true,
-          "sha256": "085636d93d5329a2751e81a597f58f6ccc1e20c0ba56941db7cbf49e8c6432a2"
+          "sha256": "e9a3f2c3352155a63e904529ffacac2194dec55c9a5aa1b9389b910553d628e3"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4397,22 +4581,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_11/scratch.conf",
-      "config_sha256": "085636d93d5329a2751e81a597f58f6ccc1e20c0ba56941db7cbf49e8c6432a2",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_02/scratch.conf",
+      "config_sha256": "e9a3f2c3352155a63e904529ffacac2194dec55c9a5aa1b9389b910553d628e3",
       "effective_end": 268439601,
       "end": 268439601,
-      "function": "nullsub_11",
+      "function": "grim_crt_empty_initializer_slot_02",
       "functions": [
         {
           "address": 268439600,
-          "canonical_config": "tools/match/scratches/grim_nullsub_11/scratch.conf",
-          "canonical_config_sha256": "085636d93d5329a2751e81a597f58f6ccc1e20c0ba56941db7cbf49e8c6432a2",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_11",
-          "canonical_source": "tools/match/scratches/grim_nullsub_11/scratch.cpp",
-          "canonical_source_sha256": "f2825c33e1d7542c5d3673dfab954251942de4841fb3db6a6ea4e2753328a0c6",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_02/scratch.conf",
+          "canonical_config_sha256": "e9a3f2c3352155a63e904529ffacac2194dec55c9a5aa1b9389b910553d628e3",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_02",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_02/scratch.cpp",
+          "canonical_source_sha256": "2c41e75513c6901c6d53577c957c64e3aa4a72172a1b47273ffcc5528390fc95",
           "effective_end": 268439601,
           "end": 268439601,
-          "function": "nullsub_11",
+          "function": "grim_crt_empty_initializer_slot_02",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4423,7 +4607,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_11",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_02",
           "target_size": 1
         }
       ],
@@ -4437,16 +4621,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_11/build/msvc6.5/58d1324b6c91909d/scratch.obj",
-      "object_function_symbol": "_nullsub_11",
-      "object_sha256": "dc7ad7dc0d3a99312781a6975c3e1c77bc5df430c9d68d5c377a7a8169b47d8e",
-      "scratch": "tools/match/scratches/grim_nullsub_11",
-      "source": "tools/match/scratches/grim_nullsub_11/scratch.cpp",
-      "source_sha256": "f2825c33e1d7542c5d3673dfab954251942de4841fb3db6a6ea4e2753328a0c6",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02/build/msvc6.5/db62f0b3f410c0a2/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_02",
+      "object_sha256": "e692f4c7884f4ca5533d0348422aefe11cfff262469f3119b1aee654d051f6ef",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_02",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_02/scratch.cpp",
+      "source_sha256": "2c41e75513c6901c6d53577c957c64e3aa4a72172a1b47273ffcc5528390fc95",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_11"
+        "name": "grim_crt_empty_initializer_slot_02"
       }
     },
     {
@@ -4468,14 +4652,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_12/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "f9c519c5a234fd5bc4478e54fd55fb34a071d8275b9152439e76c6df9b077aaa"
+          "sha256": "78d9744077a83d2658d362e469ba71f1b192f02d342c3bf72dddc54232773838"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_12/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "a25608205dc07287eb9e885e4cad2fcc443c9d48a96a6d31cc3841bcb0de5a49"
+          "sha256": "260eeab54b3c570a2089ce678b01b11c9411cc28d2ffb81ee30f368363b3d917"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4489,22 +4673,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_12/scratch.conf",
-      "config_sha256": "a25608205dc07287eb9e885e4cad2fcc443c9d48a96a6d31cc3841bcb0de5a49",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/scratch.conf",
+      "config_sha256": "260eeab54b3c570a2089ce678b01b11c9411cc28d2ffb81ee30f368363b3d917",
       "effective_end": 268439621,
       "end": 268439621,
-      "function": "j_nullsub_12",
+      "function": "grim_crt_empty_initializer_slot_03_thunk",
       "functions": [
         {
           "address": 268439616,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_12/scratch.conf",
-          "canonical_config_sha256": "a25608205dc07287eb9e885e4cad2fcc443c9d48a96a6d31cc3841bcb0de5a49",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_12",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_12/scratch.cpp",
-          "canonical_source_sha256": "f9c519c5a234fd5bc4478e54fd55fb34a071d8275b9152439e76c6df9b077aaa",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/scratch.conf",
+          "canonical_config_sha256": "260eeab54b3c570a2089ce678b01b11c9411cc28d2ffb81ee30f368363b3d917",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/scratch.cpp",
+          "canonical_source_sha256": "78d9744077a83d2658d362e469ba71f1b192f02d342c3bf72dddc54232773838",
           "effective_end": 268439621,
           "end": 268439621,
-          "function": "j_nullsub_12",
+          "function": "grim_crt_empty_initializer_slot_03_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4515,7 +4699,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_12",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_03_thunk",
           "target_size": 5
         }
       ],
@@ -4529,16 +4713,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/20611174d997d585/scratch.obj",
-      "object_function_symbol": "_j_nullsub_12",
-      "object_sha256": "708a55323bac5965d39dd9a123ce5cc10f308fba5c99133a9a080e3a077cef27",
-      "scratch": "tools/match/scratches/grim_j_nullsub_12",
-      "source": "tools/match/scratches/grim_j_nullsub_12/scratch.cpp",
-      "source_sha256": "f9c519c5a234fd5bc4478e54fd55fb34a071d8275b9152439e76c6df9b077aaa",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/build/msvc6.5/a09f506c53e90d1c/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_03_thunk",
+      "object_sha256": "d2ac1fd82706fa927cf4804dafa84e451f8e1eea365a2587334866ad1114d9a9",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/scratch.cpp",
+      "source_sha256": "78d9744077a83d2658d362e469ba71f1b192f02d342c3bf72dddc54232773838",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_12"
+        "name": "grim_crt_empty_initializer_slot_03_thunk"
       }
     },
     {
@@ -4560,14 +4744,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_12/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_03/scratch.cpp",
           "repository_relative": true,
-          "sha256": "a97f1e542a088283fde691a5b8a71e40f40f131a49fadc60530611ad8b873b60"
+          "sha256": "46cf07a86e1aabe51b0fb1f6226839ddfb942f15fc83d6d6ceaa6a7fb0df7acd"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_12/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_03/scratch.conf",
           "repository_relative": true,
-          "sha256": "59c23092b0d5875a54f141acb5c85918af92104a0a7df3a8bde33e148cf8b870"
+          "sha256": "5203c13f097d6d65501f04281a1007773095be35439934f2cf41f13f8819587f"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4581,22 +4765,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_12/scratch.conf",
-      "config_sha256": "59c23092b0d5875a54f141acb5c85918af92104a0a7df3a8bde33e148cf8b870",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_03/scratch.conf",
+      "config_sha256": "5203c13f097d6d65501f04281a1007773095be35439934f2cf41f13f8819587f",
       "effective_end": 268439633,
       "end": 268439633,
-      "function": "nullsub_12",
+      "function": "grim_crt_empty_initializer_slot_03",
       "functions": [
         {
           "address": 268439632,
-          "canonical_config": "tools/match/scratches/grim_nullsub_12/scratch.conf",
-          "canonical_config_sha256": "59c23092b0d5875a54f141acb5c85918af92104a0a7df3a8bde33e148cf8b870",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_12",
-          "canonical_source": "tools/match/scratches/grim_nullsub_12/scratch.cpp",
-          "canonical_source_sha256": "a97f1e542a088283fde691a5b8a71e40f40f131a49fadc60530611ad8b873b60",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_03/scratch.conf",
+          "canonical_config_sha256": "5203c13f097d6d65501f04281a1007773095be35439934f2cf41f13f8819587f",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_03",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_03/scratch.cpp",
+          "canonical_source_sha256": "46cf07a86e1aabe51b0fb1f6226839ddfb942f15fc83d6d6ceaa6a7fb0df7acd",
           "effective_end": 268439633,
           "end": 268439633,
-          "function": "nullsub_12",
+          "function": "grim_crt_empty_initializer_slot_03",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4607,7 +4791,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_12",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_03",
           "target_size": 1
         }
       ],
@@ -4621,16 +4805,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_12/build/msvc6.5/04eee2a778aa98bc/scratch.obj",
-      "object_function_symbol": "_nullsub_12",
-      "object_sha256": "1118307f33492f89a6325a7136b8e6abb7aeb978408afd0e8725d503ccf713f4",
-      "scratch": "tools/match/scratches/grim_nullsub_12",
-      "source": "tools/match/scratches/grim_nullsub_12/scratch.cpp",
-      "source_sha256": "a97f1e542a088283fde691a5b8a71e40f40f131a49fadc60530611ad8b873b60",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03/build/msvc6.5/284caa71050edec9/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_03",
+      "object_sha256": "d3ab135a39b4bc943e9340b79fa0a7ff428b16a057ba1ba87d6ddbb2bb7dc826",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_03",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_03/scratch.cpp",
+      "source_sha256": "46cf07a86e1aabe51b0fb1f6226839ddfb942f15fc83d6d6ceaa6a7fb0df7acd",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_12"
+        "name": "grim_crt_empty_initializer_slot_03"
       }
     },
     {
@@ -4652,14 +4836,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_13/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "651bab79cea8a85feb1976157413901c73ddf89d7b80fd552945190e4a3c229a"
+          "sha256": "0bef67d2e9c9778a02975fb1c3a62e42c3006719eab1e060aec8c30bc9ddb166"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_13/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "f8851feb0645f42162de6a3e5b0f206f3d141d06c9d46eeed0b36e852e71f934"
+          "sha256": "4985fe9f372294df3b1e0ee9889adefb94566e011ed77f1e65d70ff4c0ead19b"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4673,22 +4857,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_13/scratch.conf",
-      "config_sha256": "f8851feb0645f42162de6a3e5b0f206f3d141d06c9d46eeed0b36e852e71f934",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/scratch.conf",
+      "config_sha256": "4985fe9f372294df3b1e0ee9889adefb94566e011ed77f1e65d70ff4c0ead19b",
       "effective_end": 268439653,
       "end": 268439653,
-      "function": "j_nullsub_13",
+      "function": "grim_crt_empty_initializer_slot_04_thunk",
       "functions": [
         {
           "address": 268439648,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_13/scratch.conf",
-          "canonical_config_sha256": "f8851feb0645f42162de6a3e5b0f206f3d141d06c9d46eeed0b36e852e71f934",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_13",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_13/scratch.cpp",
-          "canonical_source_sha256": "651bab79cea8a85feb1976157413901c73ddf89d7b80fd552945190e4a3c229a",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/scratch.conf",
+          "canonical_config_sha256": "4985fe9f372294df3b1e0ee9889adefb94566e011ed77f1e65d70ff4c0ead19b",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/scratch.cpp",
+          "canonical_source_sha256": "0bef67d2e9c9778a02975fb1c3a62e42c3006719eab1e060aec8c30bc9ddb166",
           "effective_end": 268439653,
           "end": 268439653,
-          "function": "j_nullsub_13",
+          "function": "grim_crt_empty_initializer_slot_04_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4699,7 +4883,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_13",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_04_thunk",
           "target_size": 5
         }
       ],
@@ -4713,16 +4897,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/f21a962b4b07bfc0/scratch.obj",
-      "object_function_symbol": "_j_nullsub_13",
-      "object_sha256": "4f91e9a5e6aa17d0739c90087f8d4aff8190d8f08f2179433c70b64da1c48124",
-      "scratch": "tools/match/scratches/grim_j_nullsub_13",
-      "source": "tools/match/scratches/grim_j_nullsub_13/scratch.cpp",
-      "source_sha256": "651bab79cea8a85feb1976157413901c73ddf89d7b80fd552945190e4a3c229a",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/build/msvc6.5/3fd7420feee9e288/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_04_thunk",
+      "object_sha256": "bf71e1903c49ca9633d721b263d4a1f00c74c9754cf42503f4448cbaeb9971dc",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/scratch.cpp",
+      "source_sha256": "0bef67d2e9c9778a02975fb1c3a62e42c3006719eab1e060aec8c30bc9ddb166",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_13"
+        "name": "grim_crt_empty_initializer_slot_04_thunk"
       }
     },
     {
@@ -4744,14 +4928,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_13/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_04/scratch.cpp",
           "repository_relative": true,
-          "sha256": "b36bb757e42c91772a02b05076b75fa9c08f58d39530af4ff24a9e791952b8e7"
+          "sha256": "e6faff595d5a3173079a54593257fdefa9acccd16ef99342ddce2c82f52afd42"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_13/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_04/scratch.conf",
           "repository_relative": true,
-          "sha256": "b99bbb4f2ea7a0ff88b5549dd9a8d523724674e9fc720bb69dcb7f00087fb00e"
+          "sha256": "81628ecaddcc2c762319344490fe0615009228d1ed38babd62bc2d251e910047"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4765,22 +4949,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_13/scratch.conf",
-      "config_sha256": "b99bbb4f2ea7a0ff88b5549dd9a8d523724674e9fc720bb69dcb7f00087fb00e",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_04/scratch.conf",
+      "config_sha256": "81628ecaddcc2c762319344490fe0615009228d1ed38babd62bc2d251e910047",
       "effective_end": 268439665,
       "end": 268439665,
-      "function": "nullsub_13",
+      "function": "grim_crt_empty_initializer_slot_04",
       "functions": [
         {
           "address": 268439664,
-          "canonical_config": "tools/match/scratches/grim_nullsub_13/scratch.conf",
-          "canonical_config_sha256": "b99bbb4f2ea7a0ff88b5549dd9a8d523724674e9fc720bb69dcb7f00087fb00e",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_13",
-          "canonical_source": "tools/match/scratches/grim_nullsub_13/scratch.cpp",
-          "canonical_source_sha256": "b36bb757e42c91772a02b05076b75fa9c08f58d39530af4ff24a9e791952b8e7",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_04/scratch.conf",
+          "canonical_config_sha256": "81628ecaddcc2c762319344490fe0615009228d1ed38babd62bc2d251e910047",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_04",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_04/scratch.cpp",
+          "canonical_source_sha256": "e6faff595d5a3173079a54593257fdefa9acccd16ef99342ddce2c82f52afd42",
           "effective_end": 268439665,
           "end": 268439665,
-          "function": "nullsub_13",
+          "function": "grim_crt_empty_initializer_slot_04",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4791,7 +4975,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_13",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_04",
           "target_size": 1
         }
       ],
@@ -4805,16 +4989,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_13/build/msvc6.5/05501f63e31974e5/scratch.obj",
-      "object_function_symbol": "_nullsub_13",
-      "object_sha256": "8f876dfba7441bab5e3072588529c4cfa7c43c3fed6bbe422ebfacdb64699afc",
-      "scratch": "tools/match/scratches/grim_nullsub_13",
-      "source": "tools/match/scratches/grim_nullsub_13/scratch.cpp",
-      "source_sha256": "b36bb757e42c91772a02b05076b75fa9c08f58d39530af4ff24a9e791952b8e7",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04/build/msvc6.5/5f2db115899d3f6b/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_04",
+      "object_sha256": "cbe30777f425695208b3b627e86df3ecfe2e6c037ca87d5cc9b9908d07df6ed2",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_04",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_04/scratch.cpp",
+      "source_sha256": "e6faff595d5a3173079a54593257fdefa9acccd16ef99342ddce2c82f52afd42",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_13"
+        "name": "grim_crt_empty_initializer_slot_04"
       }
     },
     {
@@ -4836,14 +5020,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_14/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "60312bf5c8a4e51a1599d1d551de397d964dade10b2610159d87dbf0640b5036"
+          "sha256": "f82d0e83c4b12d3d384dc0afdaf02345f11215d48fd476716f8598bf7b4e778a"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_14/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "422e7729597f8f8b78b994c7b8fc04bfa6e9bb26f2b6b3f0d00a1e4599ed53fa"
+          "sha256": "0a53931345474b9168d6d7ca2b250b40ac2da522cd21b6a3d5fe07936a427e59"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4857,22 +5041,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_14/scratch.conf",
-      "config_sha256": "422e7729597f8f8b78b994c7b8fc04bfa6e9bb26f2b6b3f0d00a1e4599ed53fa",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/scratch.conf",
+      "config_sha256": "0a53931345474b9168d6d7ca2b250b40ac2da522cd21b6a3d5fe07936a427e59",
       "effective_end": 268439685,
       "end": 268439685,
-      "function": "j_nullsub_14",
+      "function": "grim_crt_empty_initializer_slot_05_thunk",
       "functions": [
         {
           "address": 268439680,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_14/scratch.conf",
-          "canonical_config_sha256": "422e7729597f8f8b78b994c7b8fc04bfa6e9bb26f2b6b3f0d00a1e4599ed53fa",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_14",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_14/scratch.cpp",
-          "canonical_source_sha256": "60312bf5c8a4e51a1599d1d551de397d964dade10b2610159d87dbf0640b5036",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/scratch.conf",
+          "canonical_config_sha256": "0a53931345474b9168d6d7ca2b250b40ac2da522cd21b6a3d5fe07936a427e59",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/scratch.cpp",
+          "canonical_source_sha256": "f82d0e83c4b12d3d384dc0afdaf02345f11215d48fd476716f8598bf7b4e778a",
           "effective_end": 268439685,
           "end": 268439685,
-          "function": "j_nullsub_14",
+          "function": "grim_crt_empty_initializer_slot_05_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4883,7 +5067,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_14",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_05_thunk",
           "target_size": 5
         }
       ],
@@ -4897,16 +5081,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/6e2f0708f203ad0b/scratch.obj",
-      "object_function_symbol": "_j_nullsub_14",
-      "object_sha256": "9432c65aaa4cb2899cca0b1157c8c2d017e155386242cf8288b37016c3643b4d",
-      "scratch": "tools/match/scratches/grim_j_nullsub_14",
-      "source": "tools/match/scratches/grim_j_nullsub_14/scratch.cpp",
-      "source_sha256": "60312bf5c8a4e51a1599d1d551de397d964dade10b2610159d87dbf0640b5036",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/build/msvc6.5/0af3e22aaacb953c/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_05_thunk",
+      "object_sha256": "23eb818b87b268bf9df63b28805ad09722ff13a3bc1145c13ad07f53c1378166",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/scratch.cpp",
+      "source_sha256": "f82d0e83c4b12d3d384dc0afdaf02345f11215d48fd476716f8598bf7b4e778a",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_14"
+        "name": "grim_crt_empty_initializer_slot_05_thunk"
       }
     },
     {
@@ -4928,14 +5112,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_14/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_05/scratch.cpp",
           "repository_relative": true,
-          "sha256": "229fa8f0166050703856add127c36d46ee4308f53094b2d38a14c7c247866a62"
+          "sha256": "3d4e85a26e547cbffc00616f9470a24d75d804e202e3170c3d154e60ea3f2cb4"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_14/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_05/scratch.conf",
           "repository_relative": true,
-          "sha256": "5911a3fe20e6f84cfc642d9ed26361e2cf94038536d9085812a29437f34cac43"
+          "sha256": "0b8d5aee1cdf573c97a773a9404776ff77f8ffe1ec74d7aebf761899b8c92307"
         },
         {
           "path": "tools/match/cl.sh",
@@ -4949,22 +5133,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_14/scratch.conf",
-      "config_sha256": "5911a3fe20e6f84cfc642d9ed26361e2cf94038536d9085812a29437f34cac43",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_05/scratch.conf",
+      "config_sha256": "0b8d5aee1cdf573c97a773a9404776ff77f8ffe1ec74d7aebf761899b8c92307",
       "effective_end": 268439697,
       "end": 268439697,
-      "function": "nullsub_14",
+      "function": "grim_crt_empty_initializer_slot_05",
       "functions": [
         {
           "address": 268439696,
-          "canonical_config": "tools/match/scratches/grim_nullsub_14/scratch.conf",
-          "canonical_config_sha256": "5911a3fe20e6f84cfc642d9ed26361e2cf94038536d9085812a29437f34cac43",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_14",
-          "canonical_source": "tools/match/scratches/grim_nullsub_14/scratch.cpp",
-          "canonical_source_sha256": "229fa8f0166050703856add127c36d46ee4308f53094b2d38a14c7c247866a62",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_05/scratch.conf",
+          "canonical_config_sha256": "0b8d5aee1cdf573c97a773a9404776ff77f8ffe1ec74d7aebf761899b8c92307",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_05",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_05/scratch.cpp",
+          "canonical_source_sha256": "3d4e85a26e547cbffc00616f9470a24d75d804e202e3170c3d154e60ea3f2cb4",
           "effective_end": 268439697,
           "end": 268439697,
-          "function": "nullsub_14",
+          "function": "grim_crt_empty_initializer_slot_05",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -4975,7 +5159,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_14",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_05",
           "target_size": 1
         }
       ],
@@ -4989,16 +5173,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_14/build/msvc6.5/8430b3e6f589b59a/scratch.obj",
-      "object_function_symbol": "_nullsub_14",
-      "object_sha256": "638ecbe7e08a9735cc11b53353503672640af0895603926b8c0d7817b5e2a212",
-      "scratch": "tools/match/scratches/grim_nullsub_14",
-      "source": "tools/match/scratches/grim_nullsub_14/scratch.cpp",
-      "source_sha256": "229fa8f0166050703856add127c36d46ee4308f53094b2d38a14c7c247866a62",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05/build/msvc6.5/e55220a8099fbbd3/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_05",
+      "object_sha256": "e64a10b2718c61a99c3300e38c82c31c0496facae6ab0eab2953d33d899de8bb",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_05",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_05/scratch.cpp",
+      "source_sha256": "3d4e85a26e547cbffc00616f9470a24d75d804e202e3170c3d154e60ea3f2cb4",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_14"
+        "name": "grim_crt_empty_initializer_slot_05"
       }
     },
     {
@@ -5020,14 +5204,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_15/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "9466cd505695a98d776097d01850cd6f0d029e24f279ef9823178fbc87616862"
+          "sha256": "c255be3716297bbc5e75eb21f0f5f856cc5826bd11b4a08266142e9b7b2ffaa8"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_15/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "b13be61a09fc479ed148eac3610d8d58bf457cca83b3f86bbf3d8ea940d57e9f"
+          "sha256": "99c13bd69af2b2db3c459fa89d5ed78b55e32c8af971a11f615ca846a012ab95"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5041,22 +5225,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_15/scratch.conf",
-      "config_sha256": "b13be61a09fc479ed148eac3610d8d58bf457cca83b3f86bbf3d8ea940d57e9f",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/scratch.conf",
+      "config_sha256": "99c13bd69af2b2db3c459fa89d5ed78b55e32c8af971a11f615ca846a012ab95",
       "effective_end": 268439717,
       "end": 268439717,
-      "function": "j_nullsub_15",
+      "function": "grim_crt_empty_initializer_slot_06_thunk",
       "functions": [
         {
           "address": 268439712,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_15/scratch.conf",
-          "canonical_config_sha256": "b13be61a09fc479ed148eac3610d8d58bf457cca83b3f86bbf3d8ea940d57e9f",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_15",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_15/scratch.cpp",
-          "canonical_source_sha256": "9466cd505695a98d776097d01850cd6f0d029e24f279ef9823178fbc87616862",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/scratch.conf",
+          "canonical_config_sha256": "99c13bd69af2b2db3c459fa89d5ed78b55e32c8af971a11f615ca846a012ab95",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/scratch.cpp",
+          "canonical_source_sha256": "c255be3716297bbc5e75eb21f0f5f856cc5826bd11b4a08266142e9b7b2ffaa8",
           "effective_end": 268439717,
           "end": 268439717,
-          "function": "j_nullsub_15",
+          "function": "grim_crt_empty_initializer_slot_06_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5067,7 +5251,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_15",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_06_thunk",
           "target_size": 5
         }
       ],
@@ -5081,16 +5265,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/2c7961f37aa93b34/scratch.obj",
-      "object_function_symbol": "_j_nullsub_15",
-      "object_sha256": "1f12be885e2ad276da3fbe4b36951b6b6c7125913aa6dcc0e6691bc5a86ad548",
-      "scratch": "tools/match/scratches/grim_j_nullsub_15",
-      "source": "tools/match/scratches/grim_j_nullsub_15/scratch.cpp",
-      "source_sha256": "9466cd505695a98d776097d01850cd6f0d029e24f279ef9823178fbc87616862",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/build/msvc6.5/70694df76f3f7373/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_06_thunk",
+      "object_sha256": "dbad3c816061b59f043a5732365614f774be3d1ca2c9a901bd7b83382e867502",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/scratch.cpp",
+      "source_sha256": "c255be3716297bbc5e75eb21f0f5f856cc5826bd11b4a08266142e9b7b2ffaa8",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_15"
+        "name": "grim_crt_empty_initializer_slot_06_thunk"
       }
     },
     {
@@ -5112,14 +5296,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_15/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_06/scratch.cpp",
           "repository_relative": true,
-          "sha256": "f5c72ef041d6b10ff9f013e2e3daaa8e7cb521a74a57f34ec28d55cfe670ac43"
+          "sha256": "e5597aface5fb6b4b75c1128bf4bcd5fedfb6f310b3d39ff2f3024a8d4b61caf"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_15/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_06/scratch.conf",
           "repository_relative": true,
-          "sha256": "8a3efcddee01ce6d9c962a0cc68da815309929d1143fc9f8d78341065680e6b8"
+          "sha256": "87bbf0f4419586d27027905215d3f46a6256d57ab74c4cf319b40f12e12efd2a"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5133,22 +5317,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_15/scratch.conf",
-      "config_sha256": "8a3efcddee01ce6d9c962a0cc68da815309929d1143fc9f8d78341065680e6b8",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_06/scratch.conf",
+      "config_sha256": "87bbf0f4419586d27027905215d3f46a6256d57ab74c4cf319b40f12e12efd2a",
       "effective_end": 268439729,
       "end": 268439729,
-      "function": "nullsub_15",
+      "function": "grim_crt_empty_initializer_slot_06",
       "functions": [
         {
           "address": 268439728,
-          "canonical_config": "tools/match/scratches/grim_nullsub_15/scratch.conf",
-          "canonical_config_sha256": "8a3efcddee01ce6d9c962a0cc68da815309929d1143fc9f8d78341065680e6b8",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_15",
-          "canonical_source": "tools/match/scratches/grim_nullsub_15/scratch.cpp",
-          "canonical_source_sha256": "f5c72ef041d6b10ff9f013e2e3daaa8e7cb521a74a57f34ec28d55cfe670ac43",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_06/scratch.conf",
+          "canonical_config_sha256": "87bbf0f4419586d27027905215d3f46a6256d57ab74c4cf319b40f12e12efd2a",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_06",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_06/scratch.cpp",
+          "canonical_source_sha256": "e5597aface5fb6b4b75c1128bf4bcd5fedfb6f310b3d39ff2f3024a8d4b61caf",
           "effective_end": 268439729,
           "end": 268439729,
-          "function": "nullsub_15",
+          "function": "grim_crt_empty_initializer_slot_06",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5159,7 +5343,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_15",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_06",
           "target_size": 1
         }
       ],
@@ -5173,16 +5357,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_15/build/msvc6.5/9f4066e5f2c49a33/scratch.obj",
-      "object_function_symbol": "_nullsub_15",
-      "object_sha256": "70e799e9b0686dce34c3f908e0ef3e31420151df1614623760ff387311b31ad4",
-      "scratch": "tools/match/scratches/grim_nullsub_15",
-      "source": "tools/match/scratches/grim_nullsub_15/scratch.cpp",
-      "source_sha256": "f5c72ef041d6b10ff9f013e2e3daaa8e7cb521a74a57f34ec28d55cfe670ac43",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06/build/msvc6.5/bed96818a78140e0/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_06",
+      "object_sha256": "517c0f0a4276e418e8e93bd47d5e11840038abd002a7bd93438ae87d21ced8ec",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_06",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_06/scratch.cpp",
+      "source_sha256": "e5597aface5fb6b4b75c1128bf4bcd5fedfb6f310b3d39ff2f3024a8d4b61caf",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_15"
+        "name": "grim_crt_empty_initializer_slot_06"
       }
     },
     {
@@ -5204,14 +5388,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_16/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "1d444d4ef19e30b71e1dec51bd8b3a5d0ad9c76f55667925ffbfbb108991b624"
+          "sha256": "0a97162a243b08fac14bfdf2e8083e701f27c027bb9c074e537abe819e281229"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_16/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "359176997b3e6765ed34fc5c65e61c643c016bc089619eea35d18e39d7875805"
+          "sha256": "a29923b5d22ba67f0adab17f0dbaab7a2452a607b857de066c4b76e7dd96491a"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5225,22 +5409,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_16/scratch.conf",
-      "config_sha256": "359176997b3e6765ed34fc5c65e61c643c016bc089619eea35d18e39d7875805",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/scratch.conf",
+      "config_sha256": "a29923b5d22ba67f0adab17f0dbaab7a2452a607b857de066c4b76e7dd96491a",
       "effective_end": 268439749,
       "end": 268439749,
-      "function": "j_nullsub_16",
+      "function": "grim_crt_empty_initializer_slot_07_thunk",
       "functions": [
         {
           "address": 268439744,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_16/scratch.conf",
-          "canonical_config_sha256": "359176997b3e6765ed34fc5c65e61c643c016bc089619eea35d18e39d7875805",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_16",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_16/scratch.cpp",
-          "canonical_source_sha256": "1d444d4ef19e30b71e1dec51bd8b3a5d0ad9c76f55667925ffbfbb108991b624",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/scratch.conf",
+          "canonical_config_sha256": "a29923b5d22ba67f0adab17f0dbaab7a2452a607b857de066c4b76e7dd96491a",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/scratch.cpp",
+          "canonical_source_sha256": "0a97162a243b08fac14bfdf2e8083e701f27c027bb9c074e537abe819e281229",
           "effective_end": 268439749,
           "end": 268439749,
-          "function": "j_nullsub_16",
+          "function": "grim_crt_empty_initializer_slot_07_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5251,7 +5435,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_16",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_07_thunk",
           "target_size": 5
         }
       ],
@@ -5265,16 +5449,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/a578c5a87c21348b/scratch.obj",
-      "object_function_symbol": "_j_nullsub_16",
-      "object_sha256": "81e36743ec5e31e4a30fb2d1c1c62ff9422132fa567c1a01fcf04ab64ef540b3",
-      "scratch": "tools/match/scratches/grim_j_nullsub_16",
-      "source": "tools/match/scratches/grim_j_nullsub_16/scratch.cpp",
-      "source_sha256": "1d444d4ef19e30b71e1dec51bd8b3a5d0ad9c76f55667925ffbfbb108991b624",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/build/msvc6.5/43c68f842a2015ce/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_07_thunk",
+      "object_sha256": "799c1a16a4c4ae44368de71144aa4c468e4fe658380e9b71c8be57bc5af76c9e",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/scratch.cpp",
+      "source_sha256": "0a97162a243b08fac14bfdf2e8083e701f27c027bb9c074e537abe819e281229",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_16"
+        "name": "grim_crt_empty_initializer_slot_07_thunk"
       }
     },
     {
@@ -5296,14 +5480,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_16/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_07/scratch.cpp",
           "repository_relative": true,
-          "sha256": "5c18d8793b882e2baa04b78dfb6f254373f1b38a9945c2fa755ba038b824809f"
+          "sha256": "1db9d4c39521443dc35f9afe0c119a95ade31bc6a02cfb637eda11358bc63326"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_16/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_07/scratch.conf",
           "repository_relative": true,
-          "sha256": "b73d476628bc127f34d8dc5a522f3a28fb8d6174baf73403a9613ac4995d4836"
+          "sha256": "f92c84673e2db9d70e2277c08600f7cca61cfc1b9ae799f0f92bfcf05376e9b0"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5317,22 +5501,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_16/scratch.conf",
-      "config_sha256": "b73d476628bc127f34d8dc5a522f3a28fb8d6174baf73403a9613ac4995d4836",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_07/scratch.conf",
+      "config_sha256": "f92c84673e2db9d70e2277c08600f7cca61cfc1b9ae799f0f92bfcf05376e9b0",
       "effective_end": 268439761,
       "end": 268439761,
-      "function": "nullsub_16",
+      "function": "grim_crt_empty_initializer_slot_07",
       "functions": [
         {
           "address": 268439760,
-          "canonical_config": "tools/match/scratches/grim_nullsub_16/scratch.conf",
-          "canonical_config_sha256": "b73d476628bc127f34d8dc5a522f3a28fb8d6174baf73403a9613ac4995d4836",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_16",
-          "canonical_source": "tools/match/scratches/grim_nullsub_16/scratch.cpp",
-          "canonical_source_sha256": "5c18d8793b882e2baa04b78dfb6f254373f1b38a9945c2fa755ba038b824809f",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_07/scratch.conf",
+          "canonical_config_sha256": "f92c84673e2db9d70e2277c08600f7cca61cfc1b9ae799f0f92bfcf05376e9b0",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_07",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_07/scratch.cpp",
+          "canonical_source_sha256": "1db9d4c39521443dc35f9afe0c119a95ade31bc6a02cfb637eda11358bc63326",
           "effective_end": 268439761,
           "end": 268439761,
-          "function": "nullsub_16",
+          "function": "grim_crt_empty_initializer_slot_07",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5343,7 +5527,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_16",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_07",
           "target_size": 1
         }
       ],
@@ -5357,16 +5541,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_16/build/msvc6.5/c5df5c1d9616e790/scratch.obj",
-      "object_function_symbol": "_nullsub_16",
-      "object_sha256": "65518c80115c8be4308acbfb6e38fe39eb89711a3a2fb82106aeec6acbd65422",
-      "scratch": "tools/match/scratches/grim_nullsub_16",
-      "source": "tools/match/scratches/grim_nullsub_16/scratch.cpp",
-      "source_sha256": "5c18d8793b882e2baa04b78dfb6f254373f1b38a9945c2fa755ba038b824809f",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07/build/msvc6.5/0ec1d56e65b7cd10/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_07",
+      "object_sha256": "5c9c7c70ea3b327835edcb640001f9aea2facb5fc144c8d76933059bebb0ba74",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_07",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_07/scratch.cpp",
+      "source_sha256": "1db9d4c39521443dc35f9afe0c119a95ade31bc6a02cfb637eda11358bc63326",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_16"
+        "name": "grim_crt_empty_initializer_slot_07"
       }
     },
     {
@@ -5388,14 +5572,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_17/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "45abea253338d34dab1022b9328d74388cbc80f82bd025b53b8c5ce8df2df62c"
+          "sha256": "79f91dac3d17befeb54f894715563eea90b075046bfd7d631069dc1251461f32"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_17/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "1f563a0637fee48ea564d233f19f92449a2b7a765e2b590191d35c491a7ce6d7"
+          "sha256": "a02c9c6b1d050683827d93641ffb6f13b17870e2e721414f9927822a3d9c7285"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5409,22 +5593,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_17/scratch.conf",
-      "config_sha256": "1f563a0637fee48ea564d233f19f92449a2b7a765e2b590191d35c491a7ce6d7",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/scratch.conf",
+      "config_sha256": "a02c9c6b1d050683827d93641ffb6f13b17870e2e721414f9927822a3d9c7285",
       "effective_end": 268439781,
       "end": 268439781,
-      "function": "j_nullsub_17",
+      "function": "grim_crt_empty_initializer_slot_08_thunk",
       "functions": [
         {
           "address": 268439776,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_17/scratch.conf",
-          "canonical_config_sha256": "1f563a0637fee48ea564d233f19f92449a2b7a765e2b590191d35c491a7ce6d7",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_17",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_17/scratch.cpp",
-          "canonical_source_sha256": "45abea253338d34dab1022b9328d74388cbc80f82bd025b53b8c5ce8df2df62c",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/scratch.conf",
+          "canonical_config_sha256": "a02c9c6b1d050683827d93641ffb6f13b17870e2e721414f9927822a3d9c7285",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/scratch.cpp",
+          "canonical_source_sha256": "79f91dac3d17befeb54f894715563eea90b075046bfd7d631069dc1251461f32",
           "effective_end": 268439781,
           "end": 268439781,
-          "function": "j_nullsub_17",
+          "function": "grim_crt_empty_initializer_slot_08_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5435,7 +5619,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_17",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_08_thunk",
           "target_size": 5
         }
       ],
@@ -5449,16 +5633,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/7eae35fc923c53c4/scratch.obj",
-      "object_function_symbol": "_j_nullsub_17",
-      "object_sha256": "7691568136d64cb8956c82097f0a70ecb1d196d09cbd6192fca6ff42c036e653",
-      "scratch": "tools/match/scratches/grim_j_nullsub_17",
-      "source": "tools/match/scratches/grim_j_nullsub_17/scratch.cpp",
-      "source_sha256": "45abea253338d34dab1022b9328d74388cbc80f82bd025b53b8c5ce8df2df62c",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/build/msvc6.5/112b6fcd0e98299d/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_08_thunk",
+      "object_sha256": "5343ca83213d7b0364dd7048512d0ae1d0f1c75d4b7f46897ee5e759f744b4e4",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/scratch.cpp",
+      "source_sha256": "79f91dac3d17befeb54f894715563eea90b075046bfd7d631069dc1251461f32",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_17"
+        "name": "grim_crt_empty_initializer_slot_08_thunk"
       }
     },
     {
@@ -5480,14 +5664,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_17/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_08/scratch.cpp",
           "repository_relative": true,
-          "sha256": "3c6642fac7d1053f57cbbd7de1c11b248e596eb84d316b5019f8d3fd68bce46f"
+          "sha256": "9e8df137f4fb3f482d601ea350d85a5cc130c21a0a54ccfaa79776d57fcc2a1e"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_17/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_08/scratch.conf",
           "repository_relative": true,
-          "sha256": "e1439b327b8bb882c038c80bfaff969aefdc5fc0b483337e5b5bb82311e45d02"
+          "sha256": "c3152d12c60135e1a4911f5fbfa63e8abefb203116e068eb4890f5fddaf6d5ab"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5501,22 +5685,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_17/scratch.conf",
-      "config_sha256": "e1439b327b8bb882c038c80bfaff969aefdc5fc0b483337e5b5bb82311e45d02",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_08/scratch.conf",
+      "config_sha256": "c3152d12c60135e1a4911f5fbfa63e8abefb203116e068eb4890f5fddaf6d5ab",
       "effective_end": 268439793,
       "end": 268439793,
-      "function": "nullsub_17",
+      "function": "grim_crt_empty_initializer_slot_08",
       "functions": [
         {
           "address": 268439792,
-          "canonical_config": "tools/match/scratches/grim_nullsub_17/scratch.conf",
-          "canonical_config_sha256": "e1439b327b8bb882c038c80bfaff969aefdc5fc0b483337e5b5bb82311e45d02",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_17",
-          "canonical_source": "tools/match/scratches/grim_nullsub_17/scratch.cpp",
-          "canonical_source_sha256": "3c6642fac7d1053f57cbbd7de1c11b248e596eb84d316b5019f8d3fd68bce46f",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_08/scratch.conf",
+          "canonical_config_sha256": "c3152d12c60135e1a4911f5fbfa63e8abefb203116e068eb4890f5fddaf6d5ab",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_08",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_08/scratch.cpp",
+          "canonical_source_sha256": "9e8df137f4fb3f482d601ea350d85a5cc130c21a0a54ccfaa79776d57fcc2a1e",
           "effective_end": 268439793,
           "end": 268439793,
-          "function": "nullsub_17",
+          "function": "grim_crt_empty_initializer_slot_08",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5527,7 +5711,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_17",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_08",
           "target_size": 1
         }
       ],
@@ -5541,16 +5725,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_17/build/msvc6.5/99fa410b17e56bc8/scratch.obj",
-      "object_function_symbol": "_nullsub_17",
-      "object_sha256": "9f7d522688fba81283d9299bf53812f927eacb2f348b8bda20ff94153dc1eeee",
-      "scratch": "tools/match/scratches/grim_nullsub_17",
-      "source": "tools/match/scratches/grim_nullsub_17/scratch.cpp",
-      "source_sha256": "3c6642fac7d1053f57cbbd7de1c11b248e596eb84d316b5019f8d3fd68bce46f",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08/build/msvc6.5/3500209e8fabfbdb/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_08",
+      "object_sha256": "b7d8c9dfeb1e41f333a39648189a24adc2dffbba3b7c07ad2d9505b4208d9af9",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_08",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_08/scratch.cpp",
+      "source_sha256": "9e8df137f4fb3f482d601ea350d85a5cc130c21a0a54ccfaa79776d57fcc2a1e",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_17"
+        "name": "grim_crt_empty_initializer_slot_08"
       }
     },
     {
@@ -5572,14 +5756,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_18/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "9e057e49f355c7ba51fc2da3042f1be4a325eb1fe0bf04d21a1e1b8de0ca6e3e"
+          "sha256": "88a2f17418ab64ffbf462b142cf78a558ee94a50627920eeabdec03b3dd81a47"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_18/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "12969e88b1a9e7d42aae95177229dd6184850d1a8bd1979a6b1aa74d17a76a6a"
+          "sha256": "68c7d913b34ab4819602fbaf4f4140f3653e6c32e175fc9ec66e86692e895396"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5593,22 +5777,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_18/scratch.conf",
-      "config_sha256": "12969e88b1a9e7d42aae95177229dd6184850d1a8bd1979a6b1aa74d17a76a6a",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/scratch.conf",
+      "config_sha256": "68c7d913b34ab4819602fbaf4f4140f3653e6c32e175fc9ec66e86692e895396",
       "effective_end": 268439813,
       "end": 268439813,
-      "function": "j_nullsub_18",
+      "function": "grim_crt_empty_initializer_slot_09_thunk",
       "functions": [
         {
           "address": 268439808,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_18/scratch.conf",
-          "canonical_config_sha256": "12969e88b1a9e7d42aae95177229dd6184850d1a8bd1979a6b1aa74d17a76a6a",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_18",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_18/scratch.cpp",
-          "canonical_source_sha256": "9e057e49f355c7ba51fc2da3042f1be4a325eb1fe0bf04d21a1e1b8de0ca6e3e",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/scratch.conf",
+          "canonical_config_sha256": "68c7d913b34ab4819602fbaf4f4140f3653e6c32e175fc9ec66e86692e895396",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/scratch.cpp",
+          "canonical_source_sha256": "88a2f17418ab64ffbf462b142cf78a558ee94a50627920eeabdec03b3dd81a47",
           "effective_end": 268439813,
           "end": 268439813,
-          "function": "j_nullsub_18",
+          "function": "grim_crt_empty_initializer_slot_09_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5619,7 +5803,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_18",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_09_thunk",
           "target_size": 5
         }
       ],
@@ -5633,16 +5817,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/59edc0f7af826b5f/scratch.obj",
-      "object_function_symbol": "_j_nullsub_18",
-      "object_sha256": "8cd054ab26504c3ace6fef8261eb67fc345141b71b10981db9d8febcc39fbe4d",
-      "scratch": "tools/match/scratches/grim_j_nullsub_18",
-      "source": "tools/match/scratches/grim_j_nullsub_18/scratch.cpp",
-      "source_sha256": "9e057e49f355c7ba51fc2da3042f1be4a325eb1fe0bf04d21a1e1b8de0ca6e3e",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/build/msvc6.5/8ef3f8561247fdf9/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_09_thunk",
+      "object_sha256": "f027fbb79a55d20dd600a9cdc4d5deebee9489e33016418b19f7d1887d92d14c",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/scratch.cpp",
+      "source_sha256": "88a2f17418ab64ffbf462b142cf78a558ee94a50627920eeabdec03b3dd81a47",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_18"
+        "name": "grim_crt_empty_initializer_slot_09_thunk"
       }
     },
     {
@@ -5664,14 +5848,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_18/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_09/scratch.cpp",
           "repository_relative": true,
-          "sha256": "7d84b015410e5987ddc3cf653c3afeb8749da5c63c83d5aa080d87c44b30f6b3"
+          "sha256": "554986ac69cdb124d5ebe0ce2f69ae598871591398c5fe72a2898bf9907db6c1"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_18/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_09/scratch.conf",
           "repository_relative": true,
-          "sha256": "9a8cac24705dfcd00f6fdbf6cbd4f29aa352374e04baa50a373fff2fff2f3b89"
+          "sha256": "d7fdf9d0efbeacd1a32c6c3364d4e4fed2fb4548572ab663af21ac7fc06e24f9"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5685,22 +5869,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_18/scratch.conf",
-      "config_sha256": "9a8cac24705dfcd00f6fdbf6cbd4f29aa352374e04baa50a373fff2fff2f3b89",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_09/scratch.conf",
+      "config_sha256": "d7fdf9d0efbeacd1a32c6c3364d4e4fed2fb4548572ab663af21ac7fc06e24f9",
       "effective_end": 268439825,
       "end": 268439825,
-      "function": "nullsub_18",
+      "function": "grim_crt_empty_initializer_slot_09",
       "functions": [
         {
           "address": 268439824,
-          "canonical_config": "tools/match/scratches/grim_nullsub_18/scratch.conf",
-          "canonical_config_sha256": "9a8cac24705dfcd00f6fdbf6cbd4f29aa352374e04baa50a373fff2fff2f3b89",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_18",
-          "canonical_source": "tools/match/scratches/grim_nullsub_18/scratch.cpp",
-          "canonical_source_sha256": "7d84b015410e5987ddc3cf653c3afeb8749da5c63c83d5aa080d87c44b30f6b3",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_09/scratch.conf",
+          "canonical_config_sha256": "d7fdf9d0efbeacd1a32c6c3364d4e4fed2fb4548572ab663af21ac7fc06e24f9",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_09",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_09/scratch.cpp",
+          "canonical_source_sha256": "554986ac69cdb124d5ebe0ce2f69ae598871591398c5fe72a2898bf9907db6c1",
           "effective_end": 268439825,
           "end": 268439825,
-          "function": "nullsub_18",
+          "function": "grim_crt_empty_initializer_slot_09",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5711,7 +5895,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_18",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_09",
           "target_size": 1
         }
       ],
@@ -5725,16 +5909,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_18/build/msvc6.5/45e152490fa6fec0/scratch.obj",
-      "object_function_symbol": "_nullsub_18",
-      "object_sha256": "46e0f642e8b72fb89a5e67dd8f8e36cd68658d759a73ebb2d7ea3f0ab2a3faf5",
-      "scratch": "tools/match/scratches/grim_nullsub_18",
-      "source": "tools/match/scratches/grim_nullsub_18/scratch.cpp",
-      "source_sha256": "7d84b015410e5987ddc3cf653c3afeb8749da5c63c83d5aa080d87c44b30f6b3",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09/build/msvc6.5/12fe005aa6a59590/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_09",
+      "object_sha256": "97f8ac161688849826123b06d904cd04cf9567dfe237379ac2b11a4d0a238b9e",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_09",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_09/scratch.cpp",
+      "source_sha256": "554986ac69cdb124d5ebe0ce2f69ae598871591398c5fe72a2898bf9907db6c1",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_18"
+        "name": "grim_crt_empty_initializer_slot_09"
       }
     },
     {
@@ -5756,14 +5940,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_19/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "c9ca56dbf5b9819baf216e44f02572a36002d7e4359017b68b9528300a5e93b7"
+          "sha256": "f14849e832bdabb138b53b574700d53896de6843177474c1132eafa2faeecfd1"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_19/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "11f61404c992cad3e8c403bf8c7a360f4ba23b191c4244682e286ad61983e6c5"
+          "sha256": "ccaadcac30a62220ea64f1f85c05696afd1ba0a5c98a80f51e6cb7ef81b44b5b"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5777,22 +5961,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_19/scratch.conf",
-      "config_sha256": "11f61404c992cad3e8c403bf8c7a360f4ba23b191c4244682e286ad61983e6c5",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/scratch.conf",
+      "config_sha256": "ccaadcac30a62220ea64f1f85c05696afd1ba0a5c98a80f51e6cb7ef81b44b5b",
       "effective_end": 268439845,
       "end": 268439845,
-      "function": "j_nullsub_19",
+      "function": "grim_crt_empty_initializer_slot_10_thunk",
       "functions": [
         {
           "address": 268439840,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_19/scratch.conf",
-          "canonical_config_sha256": "11f61404c992cad3e8c403bf8c7a360f4ba23b191c4244682e286ad61983e6c5",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_19",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_19/scratch.cpp",
-          "canonical_source_sha256": "c9ca56dbf5b9819baf216e44f02572a36002d7e4359017b68b9528300a5e93b7",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/scratch.conf",
+          "canonical_config_sha256": "ccaadcac30a62220ea64f1f85c05696afd1ba0a5c98a80f51e6cb7ef81b44b5b",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/scratch.cpp",
+          "canonical_source_sha256": "f14849e832bdabb138b53b574700d53896de6843177474c1132eafa2faeecfd1",
           "effective_end": 268439845,
           "end": 268439845,
-          "function": "j_nullsub_19",
+          "function": "grim_crt_empty_initializer_slot_10_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5803,7 +5987,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_19",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_10_thunk",
           "target_size": 5
         }
       ],
@@ -5817,16 +6001,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/1640cbda9bd7c1b1/scratch.obj",
-      "object_function_symbol": "_j_nullsub_19",
-      "object_sha256": "599b2cc5b3df1cb82e7e514ef3112af98636177c1b955c68c63176d62b35788a",
-      "scratch": "tools/match/scratches/grim_j_nullsub_19",
-      "source": "tools/match/scratches/grim_j_nullsub_19/scratch.cpp",
-      "source_sha256": "c9ca56dbf5b9819baf216e44f02572a36002d7e4359017b68b9528300a5e93b7",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/build/msvc6.5/d70610983dde1f81/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_10_thunk",
+      "object_sha256": "e53477da7f9d98d1b58d0e99ac7e5aa80b67a8c6bb34ba25fd40185ea4de6103",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/scratch.cpp",
+      "source_sha256": "f14849e832bdabb138b53b574700d53896de6843177474c1132eafa2faeecfd1",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_19"
+        "name": "grim_crt_empty_initializer_slot_10_thunk"
       }
     },
     {
@@ -5848,14 +6032,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_19/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_10/scratch.cpp",
           "repository_relative": true,
-          "sha256": "193461e94c1b06e810dfc337727a582b39d87892483aef35a9c87126aef4dd67"
+          "sha256": "dc091c0c560e6ea661c2c112c812e37df746177f578bf6b8e3560221fa2c2145"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_19/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_10/scratch.conf",
           "repository_relative": true,
-          "sha256": "4eaadfd52e41d176f3ebc4135b73dfc05b8728176df6ab6ed17bec5f8f6fa35f"
+          "sha256": "7bc0605604000826653c04bd68e022f8ca04fba11277816a27f1eeb2cd5a1e5a"
         },
         {
           "path": "tools/match/cl.sh",
@@ -5869,22 +6053,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_19/scratch.conf",
-      "config_sha256": "4eaadfd52e41d176f3ebc4135b73dfc05b8728176df6ab6ed17bec5f8f6fa35f",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_10/scratch.conf",
+      "config_sha256": "7bc0605604000826653c04bd68e022f8ca04fba11277816a27f1eeb2cd5a1e5a",
       "effective_end": 268439857,
       "end": 268439857,
-      "function": "nullsub_19",
+      "function": "grim_crt_empty_initializer_slot_10",
       "functions": [
         {
           "address": 268439856,
-          "canonical_config": "tools/match/scratches/grim_nullsub_19/scratch.conf",
-          "canonical_config_sha256": "4eaadfd52e41d176f3ebc4135b73dfc05b8728176df6ab6ed17bec5f8f6fa35f",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_19",
-          "canonical_source": "tools/match/scratches/grim_nullsub_19/scratch.cpp",
-          "canonical_source_sha256": "193461e94c1b06e810dfc337727a582b39d87892483aef35a9c87126aef4dd67",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_10/scratch.conf",
+          "canonical_config_sha256": "7bc0605604000826653c04bd68e022f8ca04fba11277816a27f1eeb2cd5a1e5a",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_10",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_10/scratch.cpp",
+          "canonical_source_sha256": "dc091c0c560e6ea661c2c112c812e37df746177f578bf6b8e3560221fa2c2145",
           "effective_end": 268439857,
           "end": 268439857,
-          "function": "nullsub_19",
+          "function": "grim_crt_empty_initializer_slot_10",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -5895,7 +6079,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_19",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_10",
           "target_size": 1
         }
       ],
@@ -5909,16 +6093,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_19/build/msvc6.5/26a3fd79322debfe/scratch.obj",
-      "object_function_symbol": "_nullsub_19",
-      "object_sha256": "e03d7b0f972d2ea26bdb2b5335b831bba76c7c67bf4ac44bcc21aa60d77fbe53",
-      "scratch": "tools/match/scratches/grim_nullsub_19",
-      "source": "tools/match/scratches/grim_nullsub_19/scratch.cpp",
-      "source_sha256": "193461e94c1b06e810dfc337727a582b39d87892483aef35a9c87126aef4dd67",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10/build/msvc6.5/ecde4ad18ff8141c/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_10",
+      "object_sha256": "581d5afdbed6669d5d6923111c2bbb98941ac2ef367440e8cd92b91614171a50",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_10",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_10/scratch.cpp",
+      "source_sha256": "dc091c0c560e6ea661c2c112c812e37df746177f578bf6b8e3560221fa2c2145",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_19"
+        "name": "grim_crt_empty_initializer_slot_10"
       }
     },
     {
@@ -7358,7 +7542,7 @@
       "config": "tools/match/scratches/grim_jaz_jpeg_error_exit/scratch.conf",
       "config_sha256": "509acf8e901614945b73bba9532018f39de5f96b0ea87425b0f5f6240eee110b",
       "effective_end": 268455609,
-      "end": 268455608,
+      "end": 268455609,
       "function": "grim_jaz_jpeg_error_exit",
       "functions": [
         {
@@ -7369,7 +7553,7 @@
           "canonical_source": "tools/match/scratches/grim_jaz_jpeg_error_exit/scratch.cpp",
           "canonical_source_sha256": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
           "effective_end": 268455609,
-          "end": 268455608,
+          "end": 268455609,
           "function": "grim_jaz_jpeg_error_exit",
           "match": {
             "candidate_instructions": 14,
@@ -7382,7 +7566,7 @@
             "target_instructions": 14
           },
           "object_function_symbol": "_grim_jaz_jpeg_error_exit",
-          "target_size": 40
+          "target_size": 41
         }
       ],
       "match": {
@@ -7401,7 +7585,7 @@
       "scratch": "tools/match/scratches/grim_jaz_jpeg_error_exit",
       "source": "tools/match/scratches/grim_jaz_jpeg_error_exit/scratch.cpp",
       "source_sha256": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
-      "target_size": 40,
+      "target_size": 41,
       "translation_unit": {
         "kind": "isolated",
         "name": "grim_jaz_jpeg_error_exit"
@@ -13947,14 +14131,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_j_nullsub_20/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/scratch.cpp",
           "repository_relative": true,
-          "sha256": "ffcdf8e06cd95c7e76d803fb79bb1c05cf9e2a54a847fd9eb58500b23400907e"
+          "sha256": "e79caf77b786ee9b70f7c7726d1a5aa01eb15dc71dbb47e4a984c21457b63131"
         },
         {
-          "path": "tools/match/scratches/grim_j_nullsub_20/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/scratch.conf",
           "repository_relative": true,
-          "sha256": "8f22537a4497a913848a3563822f602388e7fab8674f068e8370606ed37aa3f9"
+          "sha256": "be915338a8fcb85b43f903ebbe049f3e4ddc7cc2e9e0c61284311363f8eb8034"
         },
         {
           "path": "tools/match/cl.sh",
@@ -13968,22 +14152,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_j_nullsub_20/scratch.conf",
-      "config_sha256": "8f22537a4497a913848a3563822f602388e7fab8674f068e8370606ed37aa3f9",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/scratch.conf",
+      "config_sha256": "be915338a8fcb85b43f903ebbe049f3e4ddc7cc2e9e0c61284311363f8eb8034",
       "effective_end": 268467989,
       "end": 268467989,
-      "function": "j_nullsub_20",
+      "function": "grim_crt_empty_initializer_slot_12_thunk",
       "functions": [
         {
           "address": 268467984,
-          "canonical_config": "tools/match/scratches/grim_j_nullsub_20/scratch.conf",
-          "canonical_config_sha256": "8f22537a4497a913848a3563822f602388e7fab8674f068e8370606ed37aa3f9",
-          "canonical_scratch": "tools/match/scratches/grim_j_nullsub_20",
-          "canonical_source": "tools/match/scratches/grim_j_nullsub_20/scratch.cpp",
-          "canonical_source_sha256": "ffcdf8e06cd95c7e76d803fb79bb1c05cf9e2a54a847fd9eb58500b23400907e",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/scratch.conf",
+          "canonical_config_sha256": "be915338a8fcb85b43f903ebbe049f3e4ddc7cc2e9e0c61284311363f8eb8034",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/scratch.cpp",
+          "canonical_source_sha256": "e79caf77b786ee9b70f7c7726d1a5aa01eb15dc71dbb47e4a984c21457b63131",
           "effective_end": 268467989,
           "end": 268467989,
-          "function": "j_nullsub_20",
+          "function": "grim_crt_empty_initializer_slot_12_thunk",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -13994,7 +14178,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_j_nullsub_20",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_12_thunk",
           "target_size": 5
         }
       ],
@@ -14008,16 +14192,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/0dc782c62f1d36c8/scratch.obj",
-      "object_function_symbol": "_j_nullsub_20",
-      "object_sha256": "e6671037c7aca3d8be2c9a3a2bb8184553c4f7e2d890e28ae21a34242fb2991d",
-      "scratch": "tools/match/scratches/grim_j_nullsub_20",
-      "source": "tools/match/scratches/grim_j_nullsub_20/scratch.cpp",
-      "source_sha256": "ffcdf8e06cd95c7e76d803fb79bb1c05cf9e2a54a847fd9eb58500b23400907e",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/build/msvc6.5/53926a05a2ddbedf/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_12_thunk",
+      "object_sha256": "334727db01d837162dbe5bc645e09d0ae0c0850fc788d9f61b2895a50e980c8f",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/scratch.cpp",
+      "source_sha256": "e79caf77b786ee9b70f7c7726d1a5aa01eb15dc71dbb47e4a984c21457b63131",
       "target_size": 5,
       "translation_unit": {
         "kind": "isolated",
-        "name": "j_nullsub_20"
+        "name": "grim_crt_empty_initializer_slot_12_thunk"
       }
     },
     {
@@ -14039,14 +14223,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_nullsub_20/scratch.cpp",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_12/scratch.cpp",
           "repository_relative": true,
-          "sha256": "b31bd98bf5ca90961741825c6ed40664a2069ed17e504ed9bb059ea9c51af044"
+          "sha256": "68a4be1625b94b6c4a5823e3ebcdf64d41386c7eb5c408a7b26fd00f881fa38c"
         },
         {
-          "path": "tools/match/scratches/grim_nullsub_20/scratch.conf",
+          "path": "tools/match/scratches/grim_crt_empty_initializer_slot_12/scratch.conf",
           "repository_relative": true,
-          "sha256": "4ef202c3c0bf5e6d8e6761c692cab0982889e629724641b3f5efa15dfd9b86ec"
+          "sha256": "00ab224bc2e961238946ce7bc00d79ed5b58a5e2bd783c67cbf9e28f9f7ed800"
         },
         {
           "path": "tools/match/cl.sh",
@@ -14060,22 +14244,22 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_nullsub_20/scratch.conf",
-      "config_sha256": "4ef202c3c0bf5e6d8e6761c692cab0982889e629724641b3f5efa15dfd9b86ec",
+      "config": "tools/match/scratches/grim_crt_empty_initializer_slot_12/scratch.conf",
+      "config_sha256": "00ab224bc2e961238946ce7bc00d79ed5b58a5e2bd783c67cbf9e28f9f7ed800",
       "effective_end": 268468001,
       "end": 268468001,
-      "function": "nullsub_20",
+      "function": "grim_crt_empty_initializer_slot_12",
       "functions": [
         {
           "address": 268468000,
-          "canonical_config": "tools/match/scratches/grim_nullsub_20/scratch.conf",
-          "canonical_config_sha256": "4ef202c3c0bf5e6d8e6761c692cab0982889e629724641b3f5efa15dfd9b86ec",
-          "canonical_scratch": "tools/match/scratches/grim_nullsub_20",
-          "canonical_source": "tools/match/scratches/grim_nullsub_20/scratch.cpp",
-          "canonical_source_sha256": "b31bd98bf5ca90961741825c6ed40664a2069ed17e504ed9bb059ea9c51af044",
+          "canonical_config": "tools/match/scratches/grim_crt_empty_initializer_slot_12/scratch.conf",
+          "canonical_config_sha256": "00ab224bc2e961238946ce7bc00d79ed5b58a5e2bd783c67cbf9e28f9f7ed800",
+          "canonical_scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_12",
+          "canonical_source": "tools/match/scratches/grim_crt_empty_initializer_slot_12/scratch.cpp",
+          "canonical_source_sha256": "68a4be1625b94b6c4a5823e3ebcdf64d41386c7eb5c408a7b26fd00f881fa38c",
           "effective_end": 268468001,
           "end": 268468001,
-          "function": "nullsub_20",
+          "function": "grim_crt_empty_initializer_slot_12",
           "match": {
             "candidate_instructions": 1,
             "masked_mismatches": 0,
@@ -14086,7 +14270,7 @@
             "state": "match",
             "target_instructions": 1
           },
-          "object_function_symbol": "_nullsub_20",
+          "object_function_symbol": "_grim_crt_empty_initializer_slot_12",
           "target_size": 1
         }
       ],
@@ -14100,16 +14284,16 @@
         "state": "match",
         "target_instructions": 1
       },
-      "object": "tools/match/scratches/grim_nullsub_20/build/msvc6.5/01223f069ef89fc5/scratch.obj",
-      "object_function_symbol": "_nullsub_20",
-      "object_sha256": "ce151ed498476a9f1fc8ce0431b409dfc69445db719554ec52b8fcf3cc3071c9",
-      "scratch": "tools/match/scratches/grim_nullsub_20",
-      "source": "tools/match/scratches/grim_nullsub_20/scratch.cpp",
-      "source_sha256": "b31bd98bf5ca90961741825c6ed40664a2069ed17e504ed9bb059ea9c51af044",
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12/build/msvc6.5/1faa3576ce3676e3/scratch.obj",
+      "object_function_symbol": "_grim_crt_empty_initializer_slot_12",
+      "object_sha256": "585f5f27bcd0d0b7d59ef7f015d5d3a939e7f1835496883e969fb34dab8ca088",
+      "scratch": "tools/match/scratches/grim_crt_empty_initializer_slot_12",
+      "source": "tools/match/scratches/grim_crt_empty_initializer_slot_12/scratch.cpp",
+      "source_sha256": "68a4be1625b94b6c4a5823e3ebcdf64d41386c7eb5c408a7b26fd00f881fa38c",
       "target_size": 1,
       "translation_unit": {
         "kind": "isolated",
-        "name": "nullsub_20"
+        "name": "grim_crt_empty_initializer_slot_12"
       }
     },
     {
@@ -17060,7 +17244,7 @@
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",
         "repository_relative": true,
-        "sha256": "c2226db5bc1c854d75bc72b50588c6fad64f2577de8ebe360fa0eead7679e104"
+        "sha256": "a8771cd74e8ce0c3dc9f2d22ee470c4b093e814af3739ffb0a62059e20801f26"
       },
       {
         "path": "analysis/ida/raw/grim.dll/metadata.json",
@@ -17074,7 +17258,7 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "c4e710c5be79d0a5d9b29e118b26743953fc473c4419d97b14c7d9fa2de0df5d"
+        "sha256": "3d8500401f83ff7f27bee77284c3724ae8e4c5d44f52d7d13d6641ecdd98069d"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -17140,11 +17324,11 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 131,
+    "match": 133,
     "wip": 6
   },
   "translation_units": {
     "cluster_count": 3,
-    "isolated_count": 126
+    "isolated_count": 128
   }
 }

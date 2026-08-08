@@ -1,5 +1,5 @@
 {
-  "audit_digest": "204fc8e4e808abf0ff3835ab89bf7037e576141fd464da86f8c7ee54d2287c46",
+  "audit_digest": "bafb04dfb771583cf32c5e1e358f27715b6c57c96eca70ebd874603703209bb0",
   "entries": [
     {
       "address": 268747320,
@@ -6740,7 +6740,7 @@
       "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
-      "comment": "Byte size of the external lookup blob loaded by FUN_10005a40.",
+      "comment": "Byte size of the external lookup blob loaded by grim_lookup_blob_load.",
       "definition_group": "literal-int32",
       "definition_state": "fully-specified",
       "initializer_hex": "00000000",
@@ -7027,7 +7027,7 @@
       "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
-      "comment": "Heap buffer containing the lookup blob loaded by FUN_10005a40.",
+      "comment": "Heap buffer containing the lookup blob loaded by grim_lookup_blob_load.",
       "definition_group": "zero-pointer32",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
@@ -7794,7 +7794,7 @@
       "aliases": [],
       "alignment": 1,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_bool_alignment_is_one and default_char_alignment_is_one",
-      "comment": "Lookup-blob availability flag set from FUN_10005a40 return value.",
+      "comment": "Lookup-blob availability flag set from grim_lookup_blob_load's return value.",
       "definition_group": "zero-byte",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
@@ -10223,7 +10223,7 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "cfc31d615e6c774d1e38ff742b212fe1d323195060bc64557fcb4e2be8d5235a",
+    "data_map_sha256": "7ca65f4ad10d69e632b0b4239d66e3adadd3f9a1b06a5fb95713dc0639086220",
     "definitions": "tools/native/data_definitions/grim.dll.json",
     "definitions_sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55",
     "reference_image": {

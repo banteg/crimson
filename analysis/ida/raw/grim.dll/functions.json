@@ -774,12 +774,12 @@
     "calls": [
       "0x1004C0F8"
     ],
-    "end": "0x10004EB8",
+    "end": "0x10004EB9",
     "external": false,
     "library": false,
     "name": "grim_jaz_jpeg_error_exit",
     "signature": "void(void **context)",
-    "size": 40,
+    "size": 41,
     "thunk": false
   },
   {

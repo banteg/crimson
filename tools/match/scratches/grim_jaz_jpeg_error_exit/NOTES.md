@@ -2,6 +2,11 @@
 
 Exact 41-byte, 14-instruction match with MSVC 6.5 `/O2 /GB /MD`.
 
+The final `pop esi` at `0x10004eb8` is compiler-emitted unreachable cleanup after
+the imported `longjmp` call. IDA stops the function at the non-returning call,
+but both the live image and the exact object retain this byte before alignment
+padding, so the canonical matching extent includes it.
+
 The field layout is the IJG libjpeg 6b API used elsewhere in the decoder:
 `format_message` is callback slot 3, `JMSG_LENGTH_MAX` is 200, the base
 `jpeg_error_mgr` is 132 bytes, and the following field is a `jmp_buf`. The

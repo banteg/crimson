@@ -1,5 +1,5 @@
 {
-  "audit_digest": "204fc8e4e808abf0ff3835ab89bf7037e576141fd464da86f8c7ee54d2287c46",
+  "audit_digest": "bafb04dfb771583cf32c5e1e358f27715b6c57c96eca70ebd874603703209bb0",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -533,7 +533,7 @@
   "default_libraries": [
     {
       "name": "LIBC",
-      "object_count": 124,
+      "object_count": 126,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/b933394e24eca8dd/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/f3d37ff0bdab2452/scratch.obj",
@@ -543,6 +543,28 @@
         "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/ac94ecc0000c935c/scratch.obj",
         "tools/match/scratches/grim_config_defaults_init_thunk/build/msvc6.5/e132a75058db8e3d/scratch.obj",
         "tools/match/scratches/grim_create_texture/build/msvc6.5/1938b9f65efbfb9e/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_01/build/msvc6.5/459d1fb816249b32/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/build/msvc6.5/5289a10f35be0521/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_02/build/msvc6.5/db62f0b3f410c0a2/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/build/msvc6.5/669ec2135459824b/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_03/build/msvc6.5/284caa71050edec9/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/build/msvc6.5/a09f506c53e90d1c/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_04/build/msvc6.5/5f2db115899d3f6b/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/build/msvc6.5/3fd7420feee9e288/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_05/build/msvc6.5/e55220a8099fbbd3/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/build/msvc6.5/0af3e22aaacb953c/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_06/build/msvc6.5/bed96818a78140e0/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/build/msvc6.5/70694df76f3f7373/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_07/build/msvc6.5/0ec1d56e65b7cd10/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/build/msvc6.5/43c68f842a2015ce/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_08/build/msvc6.5/3500209e8fabfbdb/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/build/msvc6.5/112b6fcd0e98299d/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_09/build/msvc6.5/12fe005aa6a59590/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/build/msvc6.5/8ef3f8561247fdf9/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_10/build/msvc6.5/ecde4ad18ff8141c/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/build/msvc6.5/d70610983dde1f81/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_12/build/msvc6.5/1faa3576ce3676e3/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/build/msvc6.5/53926a05a2ddbedf/scratch.obj",
         "tools/match/scratches/grim_default_device_callback/build/msvc6.5/2b47843139e1c458/scratch.obj",
         "tools/match/scratches/grim_destroy_texture/build/msvc6.5/dc9ec74595d6b917/scratch.obj",
         "tools/match/scratches/grim_dll_main/build/msvc6.5/689f2dbb447dd654/scratch.obj",
@@ -593,16 +615,6 @@
         "tools/match/scratches/grim_is_key_down/build/msvc6.5/1169381c6592c840/scratch.obj",
         "tools/match/scratches/grim_is_mouse_button_down/build/msvc6.5/5f3f4a88170fd9ea/scratch.obj",
         "tools/match/scratches/grim_is_texture_format_supported/build/msvc6.5/d996c7abf0d0d98b/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/79ab851ee4c3df0f/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/20611174d997d585/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/f21a962b4b07bfc0/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/6e2f0708f203ad0b/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/2c7961f37aa93b34/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/a578c5a87c21348b/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/7eae35fc923c53c4/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/59edc0f7af826b5f/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/1640cbda9bd7c1b1/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/0dc782c62f1d36c8/scratch.obj",
         "tools/match/scratches/grim_joystick_down_active/build/msvc6.5/a088eb425d806178/scratch.obj",
         "tools/match/scratches/grim_joystick_left_active/build/msvc6.5/b3b3cb40087bbdb7/scratch.obj",
         "tools/match/scratches/grim_joystick_right_active/build/msvc6.5/d042e7f571c2c294/scratch.obj",
@@ -615,16 +627,6 @@
         "tools/match/scratches/grim_measure_text_width/build/msvc6.5/b601781bd804f376/scratch.obj",
         "tools/match/scratches/grim_missing_frame_callback/build/msvc6.5/9eb85928079aa1c1/scratch.obj",
         "tools/match/scratches/grim_noop/build/msvc6.5/1c694a99ab93af9a/scratch.obj",
-        "tools/match/scratches/grim_nullsub_11/build/msvc6.5/58d1324b6c91909d/scratch.obj",
-        "tools/match/scratches/grim_nullsub_12/build/msvc6.5/04eee2a778aa98bc/scratch.obj",
-        "tools/match/scratches/grim_nullsub_13/build/msvc6.5/05501f63e31974e5/scratch.obj",
-        "tools/match/scratches/grim_nullsub_14/build/msvc6.5/8430b3e6f589b59a/scratch.obj",
-        "tools/match/scratches/grim_nullsub_15/build/msvc6.5/9f4066e5f2c49a33/scratch.obj",
-        "tools/match/scratches/grim_nullsub_16/build/msvc6.5/c5df5c1d9616e790/scratch.obj",
-        "tools/match/scratches/grim_nullsub_17/build/msvc6.5/99fa410b17e56bc8/scratch.obj",
-        "tools/match/scratches/grim_nullsub_18/build/msvc6.5/45e152490fa6fec0/scratch.obj",
-        "tools/match/scratches/grim_nullsub_19/build/msvc6.5/26a3fd79322debfe/scratch.obj",
-        "tools/match/scratches/grim_nullsub_20/build/msvc6.5/01223f069ef89fc5/scratch.obj",
         "tools/match/scratches/grim_path_has_extension/build/msvc6.5/00f79b94db42082a/scratch.obj",
         "tools/match/scratches/grim_recreate_texture/build/msvc6.5/a72acfbe1046bb3d/scratch.obj",
         "tools/match/scratches/grim_release/build/msvc6.5/ab0465289855b477/scratch.obj",
@@ -674,7 +676,7 @@
     },
     {
       "name": "OLDNAMES",
-      "object_count": 129,
+      "object_count": 131,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/b933394e24eca8dd/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/f3d37ff0bdab2452/scratch.obj",
@@ -684,6 +686,28 @@
         "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/ac94ecc0000c935c/scratch.obj",
         "tools/match/scratches/grim_config_defaults_init_thunk/build/msvc6.5/e132a75058db8e3d/scratch.obj",
         "tools/match/scratches/grim_create_texture/build/msvc6.5/1938b9f65efbfb9e/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_01/build/msvc6.5/459d1fb816249b32/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/build/msvc6.5/5289a10f35be0521/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_02/build/msvc6.5/db62f0b3f410c0a2/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/build/msvc6.5/669ec2135459824b/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_03/build/msvc6.5/284caa71050edec9/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/build/msvc6.5/a09f506c53e90d1c/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_04/build/msvc6.5/5f2db115899d3f6b/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/build/msvc6.5/3fd7420feee9e288/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_05/build/msvc6.5/e55220a8099fbbd3/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/build/msvc6.5/0af3e22aaacb953c/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_06/build/msvc6.5/bed96818a78140e0/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/build/msvc6.5/70694df76f3f7373/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_07/build/msvc6.5/0ec1d56e65b7cd10/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/build/msvc6.5/43c68f842a2015ce/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_08/build/msvc6.5/3500209e8fabfbdb/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/build/msvc6.5/112b6fcd0e98299d/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_09/build/msvc6.5/12fe005aa6a59590/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/build/msvc6.5/8ef3f8561247fdf9/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_10/build/msvc6.5/ecde4ad18ff8141c/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/build/msvc6.5/d70610983dde1f81/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_12/build/msvc6.5/1faa3576ce3676e3/scratch.obj",
+        "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/build/msvc6.5/53926a05a2ddbedf/scratch.obj",
         "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/3242db88e23502e7/scratch.obj",
         "tools/match/scratches/grim_default_device_callback/build/msvc6.5/2b47843139e1c458/scratch.obj",
         "tools/match/scratches/grim_destroy_texture/build/msvc6.5/dc9ec74595d6b917/scratch.obj",
@@ -735,16 +759,6 @@
         "tools/match/scratches/grim_is_key_down/build/msvc6.5/1169381c6592c840/scratch.obj",
         "tools/match/scratches/grim_is_mouse_button_down/build/msvc6.5/5f3f4a88170fd9ea/scratch.obj",
         "tools/match/scratches/grim_is_texture_format_supported/build/msvc6.5/d996c7abf0d0d98b/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/79ab851ee4c3df0f/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/20611174d997d585/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/f21a962b4b07bfc0/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/6e2f0708f203ad0b/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/2c7961f37aa93b34/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/a578c5a87c21348b/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/7eae35fc923c53c4/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/59edc0f7af826b5f/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/1640cbda9bd7c1b1/scratch.obj",
-        "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/0dc782c62f1d36c8/scratch.obj",
         "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/de0a392047f07957/scratch.obj",
         "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/12144aa0b1c57754/scratch.obj",
         "tools/match/scratches/grim_joystick_down_active/build/msvc6.5/a088eb425d806178/scratch.obj",
@@ -759,16 +773,6 @@
         "tools/match/scratches/grim_measure_text_width/build/msvc6.5/b601781bd804f376/scratch.obj",
         "tools/match/scratches/grim_missing_frame_callback/build/msvc6.5/9eb85928079aa1c1/scratch.obj",
         "tools/match/scratches/grim_noop/build/msvc6.5/1c694a99ab93af9a/scratch.obj",
-        "tools/match/scratches/grim_nullsub_11/build/msvc6.5/58d1324b6c91909d/scratch.obj",
-        "tools/match/scratches/grim_nullsub_12/build/msvc6.5/04eee2a778aa98bc/scratch.obj",
-        "tools/match/scratches/grim_nullsub_13/build/msvc6.5/05501f63e31974e5/scratch.obj",
-        "tools/match/scratches/grim_nullsub_14/build/msvc6.5/8430b3e6f589b59a/scratch.obj",
-        "tools/match/scratches/grim_nullsub_15/build/msvc6.5/9f4066e5f2c49a33/scratch.obj",
-        "tools/match/scratches/grim_nullsub_16/build/msvc6.5/c5df5c1d9616e790/scratch.obj",
-        "tools/match/scratches/grim_nullsub_17/build/msvc6.5/99fa410b17e56bc8/scratch.obj",
-        "tools/match/scratches/grim_nullsub_18/build/msvc6.5/45e152490fa6fec0/scratch.obj",
-        "tools/match/scratches/grim_nullsub_19/build/msvc6.5/26a3fd79322debfe/scratch.obj",
-        "tools/match/scratches/grim_nullsub_20/build/msvc6.5/01223f069ef89fc5/scratch.obj",
         "tools/match/scratches/grim_path_has_extension/build/msvc6.5/00f79b94db42082a/scratch.obj",
         "tools/match/scratches/grim_recreate_texture/build/msvc6.5/a72acfbe1046bb3d/scratch.obj",
         "tools/match/scratches/grim_release/build/msvc6.5/ab0465289855b477/scratch.obj",
@@ -7316,6 +7320,402 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_01",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_01",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01/build/msvc6.5/459d1fb816249b32/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_01"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_01_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_01_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/build/msvc6.5/5289a10f35be0521/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_01_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_02",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_02",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02/build/msvc6.5/db62f0b3f410c0a2/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_02"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_02_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_02_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/build/msvc6.5/669ec2135459824b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_02_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_03",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_03",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03/build/msvc6.5/284caa71050edec9/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_03"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_03_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_03_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/build/msvc6.5/a09f506c53e90d1c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_03_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_04",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_04",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04/build/msvc6.5/5f2db115899d3f6b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_04"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_04_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_04_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/build/msvc6.5/3fd7420feee9e288/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_04_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_05",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_05",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05/build/msvc6.5/e55220a8099fbbd3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_05"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_05_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_05_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/build/msvc6.5/0af3e22aaacb953c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_05_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_06",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_06",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06/build/msvc6.5/bed96818a78140e0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_06"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_06_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_06_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/build/msvc6.5/70694df76f3f7373/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_06_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_07",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_07",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07/build/msvc6.5/0ec1d56e65b7cd10/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_07"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_07_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_07_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/build/msvc6.5/43c68f842a2015ce/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_07_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_08",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_08",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08/build/msvc6.5/3500209e8fabfbdb/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_08"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_08_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_08_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/build/msvc6.5/112b6fcd0e98299d/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_08_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_09",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_09",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09/build/msvc6.5/12fe005aa6a59590/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_09"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_09_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_09_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/build/msvc6.5/8ef3f8561247fdf9/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_09_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_10",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_10",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10/build/msvc6.5/ecde4ad18ff8141c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_10"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_10_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_10_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/build/msvc6.5/d70610983dde1f81/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_10_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_12",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_12",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12/build/msvc6.5/1faa3576ce3676e3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_12"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_12_thunk",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_12_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/build/msvc6.5/53926a05a2ddbedf/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_12_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_grim_default_device_callback",
           "comdat_selection": 1,
           "function": "grim_default_device_callback",
@@ -7719,366 +8119,6 @@
         }
       ],
       "name": "_grim_zlib_status_is_error"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_11",
-          "comdat_selection": 1,
-          "function": "j_nullsub_11",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/79ab851ee4c3df0f/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_11"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_12",
-          "comdat_selection": 1,
-          "function": "j_nullsub_12",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/20611174d997d585/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_12"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_13",
-          "comdat_selection": 1,
-          "function": "j_nullsub_13",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/f21a962b4b07bfc0/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_13"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_14",
-          "comdat_selection": 1,
-          "function": "j_nullsub_14",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/6e2f0708f203ad0b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_14"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_15",
-          "comdat_selection": 1,
-          "function": "j_nullsub_15",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/2c7961f37aa93b34/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_15"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_16",
-          "comdat_selection": 1,
-          "function": "j_nullsub_16",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/a578c5a87c21348b/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_16"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_17",
-          "comdat_selection": 1,
-          "function": "j_nullsub_17",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/7eae35fc923c53c4/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_17"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_18",
-          "comdat_selection": 1,
-          "function": "j_nullsub_18",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/59edc0f7af826b5f/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_18"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_19",
-          "comdat_selection": 1,
-          "function": "j_nullsub_19",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/1640cbda9bd7c1b1/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_19"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_nullsub_20",
-          "comdat_selection": 1,
-          "function": "j_nullsub_20",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/0dc782c62f1d36c8/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_nullsub_20"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_11",
-          "comdat_selection": 1,
-          "function": "nullsub_11",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_11/build/msvc6.5/58d1324b6c91909d/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_11"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_12",
-          "comdat_selection": 1,
-          "function": "nullsub_12",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_12/build/msvc6.5/04eee2a778aa98bc/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_12"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_13",
-          "comdat_selection": 1,
-          "function": "nullsub_13",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_13/build/msvc6.5/05501f63e31974e5/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_13"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_14",
-          "comdat_selection": 1,
-          "function": "nullsub_14",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_14/build/msvc6.5/8430b3e6f589b59a/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_14"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_15",
-          "comdat_selection": 1,
-          "function": "nullsub_15",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_15/build/msvc6.5/9f4066e5f2c49a33/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_15"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_16",
-          "comdat_selection": 1,
-          "function": "nullsub_16",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_16/build/msvc6.5/c5df5c1d9616e790/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_16"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_17",
-          "comdat_selection": 1,
-          "function": "nullsub_17",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_17/build/msvc6.5/99fa410b17e56bc8/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_17"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_18",
-          "comdat_selection": 1,
-          "function": "nullsub_18",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_18/build/msvc6.5/45e152490fa6fec0/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_18"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_19",
-          "comdat_selection": 1,
-          "function": "nullsub_19",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_19/build/msvc6.5/26a3fd79322debfe/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_19"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_20",
-          "comdat_selection": 1,
-          "function": "nullsub_20",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_20/build/msvc6.5/01223f069ef89fc5/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_20"
     }
   ],
   "directives": [
@@ -8147,6 +8187,160 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/grim_create_texture/build/msvc6.5/1938b9f65efbfb9e/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01/build/msvc6.5/459d1fb816249b32/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/build/msvc6.5/5289a10f35be0521/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02/build/msvc6.5/db62f0b3f410c0a2/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/build/msvc6.5/669ec2135459824b/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03/build/msvc6.5/284caa71050edec9/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/build/msvc6.5/a09f506c53e90d1c/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04/build/msvc6.5/5f2db115899d3f6b/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/build/msvc6.5/3fd7420feee9e288/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05/build/msvc6.5/e55220a8099fbbd3/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/build/msvc6.5/0af3e22aaacb953c/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06/build/msvc6.5/bed96818a78140e0/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/build/msvc6.5/70694df76f3f7373/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07/build/msvc6.5/0ec1d56e65b7cd10/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/build/msvc6.5/43c68f842a2015ce/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08/build/msvc6.5/3500209e8fabfbdb/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/build/msvc6.5/112b6fcd0e98299d/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09/build/msvc6.5/12fe005aa6a59590/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/build/msvc6.5/8ef3f8561247fdf9/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10/build/msvc6.5/ecde4ad18ff8141c/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/build/msvc6.5/d70610983dde1f81/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12/build/msvc6.5/1faa3576ce3676e3/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/build/msvc6.5/53926a05a2ddbedf/scratch.obj"
     },
     {
       "directives": [
@@ -8537,76 +8731,6 @@
     },
     {
       "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/79ab851ee4c3df0f/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/20611174d997d585/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/f21a962b4b07bfc0/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/6e2f0708f203ad0b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/2c7961f37aa93b34/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/a578c5a87c21348b/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/7eae35fc923c53c4/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/59edc0f7af826b5f/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/1640cbda9bd7c1b1/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/0dc782c62f1d36c8/scratch.obj"
-    },
-    {
-      "directives": [
         "-defaultlib:MSVCRT",
         "-defaultlib:OLDNAMES"
       ],
@@ -8706,76 +8830,6 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/grim_noop/build/msvc6.5/1c694a99ab93af9a/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_11/build/msvc6.5/58d1324b6c91909d/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_12/build/msvc6.5/04eee2a778aa98bc/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_13/build/msvc6.5/05501f63e31974e5/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_14/build/msvc6.5/8430b3e6f589b59a/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_15/build/msvc6.5/9f4066e5f2c49a33/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_16/build/msvc6.5/c5df5c1d9616e790/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_17/build/msvc6.5/99fa410b17e56bc8/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_18/build/msvc6.5/45e152490fa6fec0/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_19/build/msvc6.5/26a3fd79322debfe/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_nullsub_20/build/msvc6.5/01223f069ef89fc5/scratch.obj"
     },
     {
       "directives": [
@@ -17501,6 +17555,281 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_01",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_01",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01/build/msvc6.5/459d1fb816249b32/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_01",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_01_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk/build/msvc6.5/5289a10f35be0521/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_02",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_02",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02/build/msvc6.5/db62f0b3f410c0a2/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_02",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_02_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk/build/msvc6.5/669ec2135459824b/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_03",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_03",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03/build/msvc6.5/284caa71050edec9/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_03",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_03_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk/build/msvc6.5/a09f506c53e90d1c/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_04",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_04",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04/build/msvc6.5/5f2db115899d3f6b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_04",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_04_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk/build/msvc6.5/3fd7420feee9e288/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_05",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_05",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05/build/msvc6.5/e55220a8099fbbd3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_05",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_05_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk/build/msvc6.5/0af3e22aaacb953c/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_06",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_06",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06/build/msvc6.5/bed96818a78140e0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_06",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_06_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk/build/msvc6.5/70694df76f3f7373/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_07",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_07",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07/build/msvc6.5/0ec1d56e65b7cd10/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_07",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_07_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk/build/msvc6.5/43c68f842a2015ce/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_08",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_08",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08/build/msvc6.5/3500209e8fabfbdb/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_08",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_08_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk/build/msvc6.5/112b6fcd0e98299d/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_09",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_09",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09/build/msvc6.5/12fe005aa6a59590/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_09",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_09_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk/build/msvc6.5/8ef3f8561247fdf9/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_10",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_10",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10/build/msvc6.5/ecde4ad18ff8141c/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_10",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_10_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk/build/msvc6.5/d70610983dde1f81/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_grim_crt_empty_initializer_slot_12",
+          "comdat_selection": 1,
+          "function": "grim_crt_empty_initializer_slot_12",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12/build/msvc6.5/1faa3576ce3676e3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_crt_empty_initializer_slot_12",
+      "referenced_by": [
+        {
+          "function": "grim_crt_empty_initializer_slot_12_thunk",
+          "object": "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk/build/msvc6.5/53926a05a2ddbedf/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_grim_default_device_callback",
           "comdat_selection": 1,
           "function": "grim_default_device_callback",
@@ -18038,256 +18367,6 @@
           "weak": false
         }
       ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_11",
-          "comdat_selection": 1,
-          "function": "nullsub_11",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_11/build/msvc6.5/58d1324b6c91909d/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_11",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_11",
-          "object": "tools/match/scratches/grim_j_nullsub_11/build/msvc6.5/79ab851ee4c3df0f/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_12",
-          "comdat_selection": 1,
-          "function": "nullsub_12",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_12/build/msvc6.5/04eee2a778aa98bc/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_12",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_12",
-          "object": "tools/match/scratches/grim_j_nullsub_12/build/msvc6.5/20611174d997d585/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_13",
-          "comdat_selection": 1,
-          "function": "nullsub_13",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_13/build/msvc6.5/05501f63e31974e5/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_13",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_13",
-          "object": "tools/match/scratches/grim_j_nullsub_13/build/msvc6.5/f21a962b4b07bfc0/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_14",
-          "comdat_selection": 1,
-          "function": "nullsub_14",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_14/build/msvc6.5/8430b3e6f589b59a/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_14",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_14",
-          "object": "tools/match/scratches/grim_j_nullsub_14/build/msvc6.5/6e2f0708f203ad0b/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_15",
-          "comdat_selection": 1,
-          "function": "nullsub_15",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_15/build/msvc6.5/9f4066e5f2c49a33/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_15",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_15",
-          "object": "tools/match/scratches/grim_j_nullsub_15/build/msvc6.5/2c7961f37aa93b34/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_16",
-          "comdat_selection": 1,
-          "function": "nullsub_16",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_16/build/msvc6.5/c5df5c1d9616e790/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_16",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_16",
-          "object": "tools/match/scratches/grim_j_nullsub_16/build/msvc6.5/a578c5a87c21348b/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_17",
-          "comdat_selection": 1,
-          "function": "nullsub_17",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_17/build/msvc6.5/99fa410b17e56bc8/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_17",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_17",
-          "object": "tools/match/scratches/grim_j_nullsub_17/build/msvc6.5/7eae35fc923c53c4/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_18",
-          "comdat_selection": 1,
-          "function": "nullsub_18",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_18/build/msvc6.5/45e152490fa6fec0/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_18",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_18",
-          "object": "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/59edc0f7af826b5f/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_19",
-          "comdat_selection": 1,
-          "function": "nullsub_19",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_19/build/msvc6.5/26a3fd79322debfe/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_19",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_19",
-          "object": "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/1640cbda9bd7c1b1/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_nullsub_20",
-          "comdat_selection": 1,
-          "function": "nullsub_20",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_nullsub_20/build/msvc6.5/01223f069ef89fc5/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_nullsub_20",
-      "referenced_by": [
-        {
-          "function": "j_nullsub_20",
-          "object": "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/0dc782c62f1d36c8/scratch.obj",
-          "weak": false
-        }
-      ]
     }
   ],
   "schema": 2,
@@ -18302,7 +18381,7 @@
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",
         "repository_relative": true,
-        "sha256": "c2226db5bc1c854d75bc72b50588c6fad64f2577de8ebe360fa0eead7679e104"
+        "sha256": "a8771cd74e8ce0c3dc9f2d22ee470c4b093e814af3739ffb0a62059e20801f26"
       },
       {
         "path": "analysis/ida/raw/grim.dll/metadata.json",
@@ -18321,7 +18400,7 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "cfc31d615e6c774d1e38ff742b212fe1d323195060bc64557fcb4e2be8d5235a"
+        "sha256": "7ca65f4ad10d69e632b0b4239d66e3adadd3f9a1b06a5fb95713dc0639086220"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -18330,7 +18409,7 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "c4e710c5be79d0a5d9b29e118b26743953fc473c4419d97b14c7d9fa2de0df5d"
+        "sha256": "3d8500401f83ff7f27bee77284c3724ae8e4c5d44f52d7d13d6641ecdd98069d"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -18342,16 +18421,16 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 12,
-    "defined_symbols": 331,
+    "defined_symbols": 333,
     "function_closure": true,
-    "function_count": 137,
+    "function_count": 139,
     "game_function_debt": {},
     "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 131,
+    "object_count": 133,
     "reference_exports_closed": true,
-    "resolved_symbols": 268,
+    "resolved_symbols": 269,
     "unresolved_by_category": {
       "excluded_function": 39,
       "import": 13,
