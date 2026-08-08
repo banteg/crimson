@@ -82,7 +82,8 @@ COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_TEXT_SUBTLE = rl.Color(255, 255, 255, int(255 * 0.7))
 COLOR_GREEN = rl.Color(25, 200, 25, 255)
-# `sub_41e070` initializes DAT_004965f8..600 to this blue tint (149,175,198),
+# `render_tint_color_global_init_thunk` initializes `render_tint_color` to this
+# blue tint (149,175,198),
 # reused by quest/game-over captions and score-card separator outlines.
 COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
 
@@ -305,7 +306,8 @@ class QuestResultsUi(msgspec.Struct):
             col_label,
         )
 
-        # Native path: FUN_00441220 sets current color from DAT_004ccca8 just before
+        # Native path: highscore_card_draw_vertical_divider sets current color from
+        # highscore_card_divider_color_r just before
         # drawing "Experience", so it uses the accent-blue tint (alpha*0.7).
         self._draw_small(font, "Experience", Vec2(right_label_x, y), 1.0 * scale, col_line)
         xp_value_w = self._text_width(font, xp_value, 1.0 * scale)
@@ -317,7 +319,8 @@ class QuestResultsUi(msgspec.Struct):
             col_label,
         )
 
-        # Native vertical separator drawn via FUN_00441220 from x+84, height 48.
+        # Native vertical separator drawn via highscore_card_draw_vertical_divider
+        # from x+84, height 48.
         sep_x = x + 84.0 * scale
         rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0 * scale), col_line)
 

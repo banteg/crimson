@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Perk ids and runtime metadata extracted from `perks_init_database` (FUN_0042fd90)."""
+"""Perk ids and runtime metadata extracted from `perks_init_database`."""
 
 from enum import IntEnum, IntFlag, unique
 
@@ -17,7 +17,7 @@ class PerkFlags(IntFlag):
 
 
 # Native perk metadata defaults to both quest and multiplayer allow bits enabled
-# (`sub_42fac0` initializes flags to 3).
+# (`perk_meta_entry_init` initializes flags to 3).
 PERK_DEFAULT_FLAGS = PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.MULTIPLAYER_ALLOWED
 
 

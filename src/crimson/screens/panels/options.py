@@ -116,7 +116,7 @@ class OptionsMenuView(PanelMenuView):
             config.gameplay.show_info_texts = self._ui_info_texts
             self._dirty = True
 
-        # `sub_4475d0`: controls button is aligned with the panel content base.
+        # `options_menu_update`: controls button is aligned with the panel content base.
         controls_pos = base_pos.offset(dy=155.0 * scale)
         dt_ms = min(float(dt), 0.1) * 1000.0
         mouse = rl.get_mouse_position()
@@ -207,7 +207,7 @@ class OptionsMenuView(PanelMenuView):
             + self._panel_offset * panel_scale
         )
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
-        # `sub_4475d0`: title label is anchored at panel_top + 40.
+        # `options_menu_update`: title label is anchored at panel_top + 40.
         label_pos = base_pos.offset(dx=8.0 * panel_scale)
         slider_pos = label_pos.offset(dx=130.0 * panel_scale)
         return _OptionsContentLayout(

@@ -256,7 +256,7 @@ def creature_apply_damage(
 ) -> bool:
     """Apply damage to a creature, returning True if the hit killed it.
 
-    This is a partial port of `creature_apply_damage` (FUN_004207c0).
+    This is a partial port of `creature_apply_damage`.
 
     Notes:
     - Death side-effects (handle_death, doubled lethal impulse, then shock burst /

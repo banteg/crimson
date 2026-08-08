@@ -1098,6 +1098,58 @@ def cmd_match_status(
         raise typer.Exit(code=1)
 
 
+@match_app.command("resolved-name-audit")
+def cmd_match_resolved_name_audit(
+    root: Path = typer.Option(matchlib.REPO_ROOT, "--root", help="repository root to scan"),
+    name_map: Path = typer.Option(
+        matchlib.DEFAULT_NAME_MAP_PATH,
+        "--name-map",
+        help="curated function-name map",
+    ),
+    data_map: Path = typer.Option(
+        matchlib.DEFAULT_DATA_MAP_PATH,
+        "--data-map",
+        help="curated data-name map",
+    ),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
+    summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate debt only"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail when resolved labels remain"),
+) -> None:
+    """Find address-derived references whose curated identity is already stronger."""
+
+    rows = matchlib.collect_resolved_name_references(
+        repo_root=root,
+        name_map_path=name_map,
+        data_map_path=data_map,
+    )
+    displayed_rows = rows[:limit] if limit is not None else rows
+    if as_json:
+        typer.echo(
+            json.dumps(
+                {
+                    "summary": matchlib.resolved_name_reference_summary_payload(rows),
+                    "rows": (
+                        []
+                        if summary_only
+                        else [
+                            matchlib.resolved_name_reference_payload(row)
+                            for row in displayed_rows
+                        ]
+                    ),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
+    elif summary_only:
+        typer.echo(matchlib.render_resolved_name_reference_summary(rows))
+    else:
+        typer.echo(matchlib.render_resolved_name_reference_table(displayed_rows))
+    if check and rows:
+        raise typer.Exit(code=1)
+
+
 @match_app.command("naming-audit")
 def cmd_match_naming_audit(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),

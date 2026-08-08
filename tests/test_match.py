@@ -61,6 +61,7 @@ from crimson.match import (
     collect_image_totals,
     collect_naming_debt,
     collect_native_link_statuses,
+    collect_resolved_name_references,
     collect_scratch_statuses,
     collect_triage_rows,
     common_prefix_length,
@@ -98,6 +99,7 @@ from crimson.match import (
     render_native_link_status_markdown,
     render_probe_result,
     render_profile_table,
+    render_resolved_name_reference_summary,
     render_status_markdown,
     render_status_rows,
     render_status_summary,
@@ -2623,6 +2625,117 @@ def test_render_naming_debt_table_handles_clean_result() -> None:
         "rows=0; suggested=0; issues="
     )
     assert render_naming_debt_summary([]) == "rows=0; suggested=0; issues="
+
+
+def test_collect_resolved_name_references_covers_text_and_native_initializers(
+    tmp_path: Path,
+) -> None:
+    source_root = tmp_path / "src"
+    source_root.mkdir()
+    source_root.joinpath("notes.py").write_text(
+        "# FUN_00401000 reads DAT_00405000\n"
+        "# data_406000 and sub_00409999 remain unresolved\n",
+        encoding="utf-8",
+    )
+    definitions_root = tmp_path / "tools" / "native" / "data_definitions"
+    definitions_root.mkdir(parents=True)
+    definitions_root.joinpath("grim.dll.json").write_text(
+        json.dumps(
+            {
+                "image": "grim.dll",
+                "entries": [
+                    {
+                        "initializer_symbols": [
+                            ["0x0", "0x10002000", "nullsub_3"],
+                        ],
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00401000",
+                    "name": "known_function",
+                },
+                {
+                    "program": "grim.dll",
+                    "address": "0x10002000",
+                    "name": "known_noop",
+                },
+            ],
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    data_map = tmp_path / "data_map.json"
+    data_map.write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "program": "crimsonland.exe",
+                        "address": "0x00405000",
+                        "name": "known_table",
+                    },
+                    {
+                        "program": "crimsonland.exe",
+                        "address": "0x00406000",
+                        "name": "data_406000",
+                    },
+                ],
+            },
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = collect_resolved_name_references(
+        repo_root=tmp_path,
+        name_map_path=name_map,
+        data_map_path=data_map,
+    )
+
+    assert {
+        (row.source, row.token, row.image, row.address, row.canonical_names)
+        for row in rows
+    } == {
+        ("text", "FUN_00401000", "crimsonland.exe", 0x00401000, ("known_function",)),
+        ("text", "DAT_00405000", "crimsonland.exe", 0x00405000, ("known_table",)),
+        ("native-initializer", "nullsub_3", "grim.dll", 0x10002000, ("known_noop",)),
+    }
+    assert render_resolved_name_reference_summary(rows) == (
+        "rows=3; sources=native-initializer:1,text:2"
+    )
+
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "resolved-name-audit",
+            "--root",
+            str(tmp_path),
+            "--name-map",
+            str(name_map),
+            "--data-map",
+            str(data_map),
+            "--json",
+            "--check",
+        ],
+    )
+
+    assert completed.exit_code == 1
+    payload = json.loads(completed.output)
+    assert payload["summary"] == {
+        "row_count": 3,
+        "sources": {"native-initializer": 1, "text": 2},
+    }
 
 
 def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path) -> None:

@@ -177,12 +177,12 @@ const LINK_BASE = {
 // Known addresses from docs/data_map.json (static VAs).
 const ADDR = {
   // crimsonland.exe globals
-  grim_interface_ptr: 0x0048083c, // DAT_0048083c
-  player_health_base: 0x004908d4, // DAT_004908d4
-  projectile_pool_base: 0x004926b8, // DAT_004926b8
-  creature_pool_base: 0x0049bf38, // DAT_0049bf38
-  weapon_table_base: 0x004d7a2c, // DAT_004d7a2c (name buffer start)
-  weapon_ammo_class_base: 0x004d7a28, // DAT_004d7a28
+  grim_interface_ptr: 0x0048083c,
+  player_health_base: 0x004908d4,
+  projectile_pool_base: 0x004926b8,
+  creature_pool_base: 0x0049bf38,
+  weapon_table_base: 0x004d7a2c, // name buffer start
+  weapon_ammo_class_base: 0x004d7a28,
 
   // crimsonland.exe functions (static VAs from analysis/ghidra/maps/name_map.json)
   grim_load_interface: 0x0041dc80,

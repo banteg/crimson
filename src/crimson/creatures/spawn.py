@@ -4,7 +4,7 @@ from __future__ import annotations
 
 This module combines:
 - a spawn-id labeling index (direct `type_id`/`flags` assignments extracted from
-  `creature_spawn_template`, `FUN_00430af0`)
+  `creature_spawn_template`)
 - a partial 1:1 rewrite of `creature_spawn_template` as a pure plan builder
 
 Note: in the original game, `creature_spawn_template` is an algorithm (formations,

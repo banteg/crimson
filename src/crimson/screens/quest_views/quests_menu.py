@@ -71,7 +71,7 @@ from .shared import (
 class QuestsMenuView:
     """Quest selection menu.
 
-    Layout and gating are based on `sub_447d40` (crimsonland.exe).
+    Layout and gating are based on `quest_select_menu_update` (crimsonland.exe).
 
     The classic game treats this as a distinct UI state (transition target `0x0b`),
     entered from the Play Game panel.
@@ -267,7 +267,7 @@ class QuestsMenuView:
             end_ms=PANEL_TIMELINE_END_MS,
             width=MENU_PANEL_WIDTH,
         )
-        # `sub_447d40` base sums:
+        # `quest_select_menu_update` base sums:
         #   x_sum = <ui_element_x> + <ui_element_offset_x>  (x=-5)
         #   y_sum = <ui_element_y> + <ui_element_offset_y>  (y=185 + widescreen shift via ui_menu_layout_init)
         x_sum = QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X
@@ -343,7 +343,7 @@ class QuestsMenuView:
         return None
 
     def _rows_y0(self, layout: _QuestMenuLayout) -> float:
-        # `sub_447d40` adds +10 to the list Y after rendering the Hardcore checkbox.
+        # `quest_select_menu_update` adds +10 to the list Y after rendering the Hardcore checkbox.
         status = self.state.status
         y0 = layout.list_pos.y
         if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
@@ -394,7 +394,7 @@ class QuestsMenuView:
 
     @staticmethod
     def _quest_row_colors(*, hardcore: bool) -> tuple[rl.Color, rl.Color]:
-        # `sub_447d40` uses different RGB when hardcore is toggled.
+        # `quest_select_menu_update` uses different RGB when hardcore is toggled.
         if hardcore:
             # (0.980392, 0.274509, 0.235294, alpha)
             r, g, b = 250, 70, 60
@@ -404,7 +404,7 @@ class QuestsMenuView:
         return (rl.Color(r, g, b, 153), rl.Color(r, g, b, 255))
 
     def _quest_counts(self, *, stage: int, row: int) -> tuple[int, int] | None:
-        # In `sub_447d40`, counts are indexed by (row + stage*10) and split across two
+        # In `quest_select_menu_update`, counts are indexed by (row + stage*10) and split across two
         # arrays at offsets 0xDC (games) and 0x17C (completed) within game.cfg.
         #
         # Stage 5 does not fit cleanly in the saved blob:

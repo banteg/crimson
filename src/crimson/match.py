@@ -44,6 +44,51 @@ ANALYZER_PLACEHOLDER_TOKEN_RE = re.compile(
     r"unknown_libname(?:_[0-9]+)?|unknown_[0-9]+|nullsub_[0-9]+)(?![0-9a-z])",
     re.IGNORECASE,
 )
+ADDRESS_DERIVED_IDENTITY_RE = re.compile(
+    r"^(?:j_(?:FUN|sub)_|FUN_|sub_|DAT_|data_|LAB_|loc_|PTR_|"
+    r"(?:switchD|caseD|lookup_table)_|(?:byte|word|dword|qword|off|unk|field)_)[0-9a-f]+$|"
+    r"^(?:j_)?nullsub_[0-9]+$|^unknown(?:_libname)?(?:_[0-9]+)?$",
+    re.IGNORECASE,
+)
+ADDRESS_DERIVED_REFERENCE_RE = re.compile(
+    r"(?<![0-9a-z_])(?P<token>(?P<prefix>j_FUN|j_sub|FUN|sub|DAT|data|LAB|loc|PTR|"
+    r"switchD|caseD|lookup_table|byte|word|dword|qword|off|unk|field)_"
+    r"(?P<address>[0-9a-f]{6,16}))(?![0-9a-z_])",
+    re.IGNORECASE,
+)
+FUNCTION_REFERENCE_PREFIXES = frozenset({"j_fun", "j_sub", "fun", "sub"})
+RESOLVED_NAME_AUDIT_SUFFIXES = frozenset(
+    {
+        ".c",
+        ".cc",
+        ".cpp",
+        ".h",
+        ".hpp",
+        ".inc",
+        ".js",
+        ".json",
+        ".md",
+        ".py",
+        ".sh",
+        ".toml",
+        ".ts",
+        ".yaml",
+        ".yml",
+        ".zig",
+    },
+)
+RESOLVED_NAME_AUDIT_PRUNED_DIRECTORIES = frozenset(
+    {
+        ".cache",
+        ".git",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".venv",
+        "__pycache__",
+        "build",
+        "node_modules",
+    },
+)
 MATCH_SCOPE_SCHEMA = 2
 MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset(
     {
@@ -3230,6 +3275,17 @@ class NamingDebtRow:
 
 
 @dataclass(frozen=True, slots=True)
+class ResolvedNameReferenceRow:
+    path: str
+    line: int
+    source: str
+    token: str
+    image: str
+    address: int
+    canonical_names: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class NamingHint:
     image: str
     address: int
@@ -5765,6 +5821,197 @@ def collect_naming_debt(
     return sorted(rows, key=lambda row: (row.image, row.address, row.map_kind, row.scratch))
 
 
+def _resolved_name_audit_files(repo_root: Path) -> tuple[Path, ...]:
+    files: list[Path] = []
+    for relative_root in ("src", "scripts", "tools"):
+        source_root = repo_root / relative_root
+        if not source_root.is_dir():
+            continue
+        for current_root, directories, filenames in os.walk(source_root):
+            directories[:] = sorted(
+                directory
+                for directory in directories
+                if directory not in RESOLVED_NAME_AUDIT_PRUNED_DIRECTORIES
+            )
+            current_path = Path(current_root)
+            for filename in sorted(filenames):
+                path = current_path / filename
+                if path.name == "STATUS.md" or path.suffix.casefold() not in RESOLVED_NAME_AUDIT_SUFFIXES:
+                    continue
+                files.append(path)
+    return tuple(files)
+
+
+def _stronger_identity_names(
+    names: Collection[str],
+    *,
+    token: str,
+) -> tuple[str, ...]:
+    folded_token = token.casefold()
+    return tuple(
+        dict.fromkeys(
+            name
+            for name in names
+            if name.casefold() != folded_token and ADDRESS_DERIVED_IDENTITY_RE.fullmatch(name) is None
+        ),
+    )
+
+
+def collect_resolved_name_references(
+    *,
+    repo_root: Path = REPO_ROOT,
+    name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+    data_map_path: Path = DEFAULT_DATA_MAP_PATH,
+) -> list[ResolvedNameReferenceRow]:
+    """Find address-derived labels whose addresses now have stronger curated names."""
+
+    function_names: dict[tuple[str, int], list[str]] = defaultdict(list)
+    for row in load_name_map_rows(name_map_path):
+        function_names[(str(row.get("program", "")), parse_int(row["address"]))].append(
+            str(row.get("name", "")),
+        )
+
+    data_payload = json.loads(data_map_path.read_text(encoding="utf-8"))
+    raw_data_rows = data_payload.get("entries") if isinstance(data_payload, dict) else None
+    if not isinstance(raw_data_rows, list):
+        raise TypeError(f"{data_map_path}: data map must contain an entries array")
+    data_names: dict[tuple[str, int], list[str]] = defaultdict(list)
+    for index, raw_row in enumerate(raw_data_rows):
+        if not isinstance(raw_row, dict):
+            raise TypeError(f"{data_map_path}: data-map row {index} must be an object")
+        row = cast(dict[str, Any], raw_row)
+        data_names[(str(row.get("program", "")), parse_int(row["address"]))].append(
+            str(row.get("name", "")),
+        )
+
+    function_by_address: dict[int, list[tuple[str, tuple[str, ...]]]] = defaultdict(list)
+    for (image, address), names in function_names.items():
+        function_by_address[address].append((image, tuple(names)))
+    data_by_address: dict[int, list[tuple[str, tuple[str, ...]]]] = defaultdict(list)
+    for (image, address), names in data_names.items():
+        data_by_address[address].append((image, tuple(names)))
+
+    rows: list[ResolvedNameReferenceRow] = []
+    seen: set[tuple[str, int, str, str, int]] = set()
+    native_definitions_root = repo_root / "tools" / "native" / "data_definitions"
+
+    def append_row(
+        *,
+        path: Path,
+        line: int,
+        source: str,
+        token: str,
+        image: str,
+        address: int,
+        names: Collection[str],
+    ) -> None:
+        canonical_names = _stronger_identity_names(names, token=token)
+        if not canonical_names:
+            return
+        try:
+            display_path = path.resolve().relative_to(repo_root.resolve()).as_posix()
+        except ValueError:
+            display_path = path.as_posix()
+        key = (display_path, line, token, image, address)
+        if key in seen:
+            return
+        seen.add(key)
+        rows.append(
+            ResolvedNameReferenceRow(
+                path=display_path,
+                line=line,
+                source=source,
+                token=token,
+                image=image,
+                address=address,
+                canonical_names=canonical_names,
+            ),
+        )
+
+    for path in _resolved_name_audit_files(repo_root):
+        if path.is_relative_to(native_definitions_root):
+            continue
+        try:
+            contents = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for line_number, line in enumerate(contents.splitlines(), start=1):
+            for match in ADDRESS_DERIVED_REFERENCE_RE.finditer(line):
+                token = match.group("token")
+                address = int(match.group("address"), 16)
+                prefix = match.group("prefix").casefold()
+                candidates = (
+                    function_by_address.get(address, ())
+                    if prefix in FUNCTION_REFERENCE_PREFIXES
+                    else data_by_address.get(address, ())
+                )
+                for image, names in candidates:
+                    append_row(
+                        path=path,
+                        line=line_number,
+                        source="text",
+                        token=token,
+                        image=image,
+                        address=address,
+                        names=names,
+                    )
+
+    if native_definitions_root.is_dir():
+        for path in sorted(native_definitions_root.glob("*.json")):
+            contents = path.read_text(encoding="utf-8")
+            lines = contents.splitlines()
+            payload = json.loads(contents)
+            image = str(payload.get("image", "")) if isinstance(payload, dict) else ""
+            raw_entries = payload.get("entries") if isinstance(payload, dict) else None
+            if not isinstance(raw_entries, list):
+                raise TypeError(f"{path}: native data definitions require an entries array")
+            location_offsets: dict[tuple[str, str], int] = defaultdict(int)
+            for entry in raw_entries:
+                if not isinstance(entry, dict):
+                    continue
+                initializer_symbols = entry.get("initializer_symbols", ())
+                if not isinstance(initializer_symbols, list):
+                    continue
+                for raw_symbol in initializer_symbols:
+                    if not isinstance(raw_symbol, list) or len(raw_symbol) not in {2, 3}:
+                        continue
+                    address_text, token = raw_symbol[-2:]
+                    if not isinstance(address_text, str) or not isinstance(token, str):
+                        continue
+                    if ADDRESS_DERIVED_IDENTITY_RE.fullmatch(token) is None:
+                        continue
+                    address = parse_int(address_text)
+                    names = function_names.get((image, address), ())
+                    if not names:
+                        names = data_names.get((image, address), ())
+                    if not names:
+                        continue
+                    location_key = (address_text.casefold(), token)
+                    occurrence = location_offsets[location_key]
+                    matching_lines = [
+                        index
+                        for index, line in enumerate(lines, start=1)
+                        if json.dumps(address_text) in line and json.dumps(token) in line
+                    ]
+                    line_number = (
+                        matching_lines[min(occurrence, len(matching_lines) - 1)]
+                        if matching_lines
+                        else 1
+                    )
+                    location_offsets[location_key] += 1
+                    append_row(
+                        path=path,
+                        line=line_number,
+                        source="native-initializer",
+                        token=token,
+                        image=image,
+                        address=address,
+                        names=names,
+                    )
+
+    return sorted(rows, key=lambda row: (row.path, row.line, row.token, row.image, row.address))
+
+
 def apply_naming_suggestions(
     rows: Collection[NamingDebtRow],
     *,
@@ -6386,6 +6633,60 @@ def naming_debt_payload(row: NamingDebtRow) -> dict[str, Any]:
         "suggestion_sources": list(row.suggestion_sources),
         "suggestion_comment": row.suggestion_comment,
     }
+
+
+def resolved_name_reference_payload(row: ResolvedNameReferenceRow) -> dict[str, Any]:
+    return {
+        "path": row.path,
+        "line": row.line,
+        "source": row.source,
+        "token": row.token,
+        "image": row.image,
+        "address": row.address,
+        "canonical_names": list(row.canonical_names),
+    }
+
+
+def resolved_name_reference_summary_payload(
+    rows: Collection[ResolvedNameReferenceRow],
+) -> dict[str, Any]:
+    sources = Counter(row.source for row in rows)
+    return {
+        "row_count": len(rows),
+        "sources": {source: sources[source] for source in sorted(sources)},
+    }
+
+
+def render_resolved_name_reference_summary(
+    rows: Collection[ResolvedNameReferenceRow],
+) -> str:
+    summary = resolved_name_reference_summary_payload(rows)
+    return f"rows={summary['row_count']}; sources=" + ",".join(
+        f"{source}:{count}" for source, count in summary["sources"].items()
+    )
+
+
+def render_resolved_name_reference_table(
+    rows: Collection[ResolvedNameReferenceRow],
+) -> str:
+    header = ("path", "line", "source", "token", "canonical")
+    rendered = [
+        header,
+        *(
+            (
+                row.path,
+                str(row.line),
+                row.source,
+                row.token,
+                "|".join(row.canonical_names),
+            )
+            for row in rows
+        ),
+    ]
+    widths = [max(len(row[column]) for row in rendered) for column in range(len(header))]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rendered]
+    lines.append(f"\n{render_resolved_name_reference_summary(rows)}")
+    return "\n".join(lines)
 
 
 def naming_debt_summary_payload(rows: Collection[NamingDebtRow]) -> dict[str, Any]:

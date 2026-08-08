@@ -1,5 +1,5 @@
 {
-  "audit_digest": "4074e18bde9e927ed2bcbc507906888029ed63fa21fdf28f583730b9ef0b49f4",
+  "audit_digest": "5d0701530803bd03f6eb344a80b4e4dc104a558a635494887320a588fe7a0e90",
   "entries": [
     {
       "address": 268747320,
@@ -538,17 +538,17 @@
         {
           "address": 268530501,
           "offset": 0,
-          "symbol": "FUN_10017345"
+          "symbol": "d3dx_codec_scalar_deleting_dtor"
         },
         {
           "address": 268527937,
           "offset": 4,
-          "symbol": "nullsub_6"
+          "symbol": "grim_vertex_space_converter_noop"
         },
         {
           "address": 268527937,
           "offset": 8,
-          "symbol": "nullsub_6"
+          "symbol": "grim_vertex_space_converter_noop"
         },
         {
           "address": 268530652,
@@ -890,7 +890,7 @@
         {
           "address": 268530968,
           "offset": 8,
-          "symbol": "FUN_10017518"
+          "symbol": "d3dx_pixel_encode_r8g8b8"
         },
         {
           "address": 268530652,
@@ -972,7 +972,7 @@
         {
           "address": 268531204,
           "offset": 8,
-          "symbol": "FUN_10017604"
+          "symbol": "d3dx_pixel_encode_a8r8g8b8"
         },
         {
           "address": 268530652,
@@ -1013,7 +1013,7 @@
         {
           "address": 268531495,
           "offset": 8,
-          "symbol": "FUN_10017727"
+          "symbol": "d3dx_pixel_encode_x8r8g8b8"
         },
         {
           "address": 268530652,
@@ -1054,7 +1054,7 @@
         {
           "address": 268531752,
           "offset": 8,
-          "symbol": "FUN_10017828"
+          "symbol": "d3dx_pixel_encode_r5g6b5"
         },
         {
           "address": 268530652,
@@ -1095,7 +1095,7 @@
         {
           "address": 268532009,
           "offset": 8,
-          "symbol": "FUN_10017929"
+          "symbol": "d3dx_pixel_encode_x1r5g5b5"
         },
         {
           "address": 268530652,
@@ -1136,7 +1136,7 @@
         {
           "address": 268532266,
           "offset": 8,
-          "symbol": "FUN_10017a2a"
+          "symbol": "d3dx_pixel_encode_a1r5g5b5"
         },
         {
           "address": 268530652,
@@ -1177,7 +1177,7 @@
         {
           "address": 268532551,
           "offset": 8,
-          "symbol": "FUN_10017b47"
+          "symbol": "d3dx_pixel_encode_a4r4g4b4"
         },
         {
           "address": 268530652,
@@ -1218,7 +1218,7 @@
         {
           "address": 268532842,
           "offset": 8,
-          "symbol": "FUN_10017c6a"
+          "symbol": "d3dx_pixel_encode_r3g3b2"
         },
         {
           "address": 268530652,
@@ -1259,7 +1259,7 @@
         {
           "address": 268533096,
           "offset": 8,
-          "symbol": "FUN_10017d68"
+          "symbol": "d3dx_pixel_encode_a8"
         },
         {
           "address": 268530652,
@@ -1300,7 +1300,7 @@
         {
           "address": 268533265,
           "offset": 8,
-          "symbol": "FUN_10017e11"
+          "symbol": "d3dx_pixel_encode_a8r3g3b2"
         },
         {
           "address": 268530652,
@@ -1341,7 +1341,7 @@
         {
           "address": 268533556,
           "offset": 8,
-          "symbol": "FUN_10017f34"
+          "symbol": "d3dx_pixel_encode_x4r4g4b4"
         },
         {
           "address": 268530652,
@@ -1382,7 +1382,7 @@
         {
           "address": 268533813,
           "offset": 8,
-          "symbol": "FUN_10018035"
+          "symbol": "d3dx_pixel_encode_a2b10g10r10"
         },
         {
           "address": 268530652,
@@ -1423,7 +1423,7 @@
         {
           "address": 268534104,
           "offset": 8,
-          "symbol": "FUN_10018158"
+          "symbol": "d3dx_pixel_encode_g16r16"
         },
         {
           "address": 268530652,
@@ -1464,7 +1464,7 @@
         {
           "address": 268534312,
           "offset": 8,
-          "symbol": "FUN_10018228"
+          "symbol": "d3dx_pixel_encode_a8p8"
         },
         {
           "address": 268530652,
@@ -1505,7 +1505,7 @@
         {
           "address": 268534592,
           "offset": 8,
-          "symbol": "FUN_10018340"
+          "symbol": "d3dx_pixel_encode_p8"
         },
         {
           "address": 268530652,
@@ -1546,7 +1546,7 @@
         {
           "address": 268534789,
           "offset": 8,
-          "symbol": "FUN_10018405"
+          "symbol": "d3dx_pixel_encode_l8"
         },
         {
           "address": 268530652,
@@ -1587,7 +1587,7 @@
         {
           "address": 268534986,
           "offset": 8,
-          "symbol": "FUN_100184ca"
+          "symbol": "d3dx_pixel_encode_a8l8"
         },
         {
           "address": 268530652,
@@ -1628,7 +1628,7 @@
         {
           "address": 268535232,
           "offset": 8,
-          "symbol": "FUN_100185c0"
+          "symbol": "d3dx_pixel_encode_a4l4"
         },
         {
           "address": 268530652,
@@ -1669,7 +1669,7 @@
         {
           "address": 268535467,
           "offset": 8,
-          "symbol": "FUN_100186ab"
+          "symbol": "d3dx_pixel_encode_v8u8"
         },
         {
           "address": 268530652,
@@ -1710,7 +1710,7 @@
         {
           "address": 268535680,
           "offset": 8,
-          "symbol": "FUN_10018780"
+          "symbol": "d3dx_pixel_encode_l6v5u5"
         },
         {
           "address": 268530652,
@@ -1751,7 +1751,7 @@
         {
           "address": 268535941,
           "offset": 8,
-          "symbol": "FUN_10018885"
+          "symbol": "d3dx_pixel_encode_x8l8v8u8"
         },
         {
           "address": 268530652,
@@ -1792,7 +1792,7 @@
         {
           "address": 268536208,
           "offset": 8,
-          "symbol": "FUN_10018990"
+          "symbol": "d3dx_pixel_encode_q8w8v8u8"
         },
         {
           "address": 268530652,
@@ -1833,7 +1833,7 @@
         {
           "address": 268536522,
           "offset": 8,
-          "symbol": "FUN_10018aca"
+          "symbol": "d3dx_pixel_encode_v16u16"
         },
         {
           "address": 268530652,
@@ -1874,7 +1874,7 @@
         {
           "address": 268536736,
           "offset": 8,
-          "symbol": "FUN_10018ba0"
+          "symbol": "d3dx_pixel_encode_w11v11u10"
         },
         {
           "address": 268530652,
@@ -1915,7 +1915,7 @@
         {
           "address": 268537002,
           "offset": 8,
-          "symbol": "FUN_10018caa"
+          "symbol": "d3dx_pixel_encode_a2w10v10u10"
         },
         {
           "address": 268530652,
@@ -1956,7 +1956,7 @@
         {
           "address": 268537312,
           "offset": 8,
-          "symbol": "FUN_10018de0"
+          "symbol": "d3dx_pixel_encode_d16_lockable"
         },
         {
           "address": 268530652,
@@ -1997,7 +1997,7 @@
         {
           "address": 268537511,
           "offset": 8,
-          "symbol": "FUN_10018ea7"
+          "symbol": "d3dx_pixel_encode_l16"
         },
         {
           "address": 268530652,
@@ -2038,7 +2038,7 @@
         {
           "address": 268537710,
           "offset": 8,
-          "symbol": "FUN_10018f6e"
+          "symbol": "d3dx_pixel_encode_a16l16"
         },
         {
           "address": 268530652,
@@ -2079,7 +2079,7 @@
         {
           "address": 268537948,
           "offset": 8,
-          "symbol": "FUN_1001905c"
+          "symbol": "d3dx_pixel_encode_r16g16b16"
         },
         {
           "address": 268530652,
@@ -2120,7 +2120,7 @@
         {
           "address": 268538187,
           "offset": 8,
-          "symbol": "FUN_1001914b"
+          "symbol": "d3dx_pixel_encode_a16r16g16b16"
         },
         {
           "address": 268530652,
@@ -10251,7 +10251,7 @@
     },
     "data_map_sha256": "44c921f9055a19b99270c94e8bead8c1a9e3d13fe6620274b5165fd37d931bc0",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "6c46e99acd09ae95e11a1861c7d4291d7bab816606cfef8b4a8495e7a0cf3054",
+    "definitions_sha256": "4b1a9f7f47790572e8b121029cb7bef1b5d28c07549c5cb1098851ed0b7c5204",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"

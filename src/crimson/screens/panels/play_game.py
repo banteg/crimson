@@ -55,7 +55,7 @@ class _PlayerCountWidgetLayout(msgspec.Struct, frozen=True):
 class PlayGameMenuView(PanelMenuView):
     """Play Game mode select panel.
 
-    Layout and gating are based on `sub_44ed80` (crimsonland.exe).
+    Layout and gating are based on `play_game_menu_update` (crimsonland.exe).
     """
 
     _PLAYER_COUNT_LABELS = ("1 player", "2 players", "3 players", "4 players")
@@ -200,7 +200,7 @@ class PlayGameMenuView(PanelMenuView):
             + self._panel_offset * panel_scale
         )
 
-        # `sub_44ed80`:
+        # `play_game_menu_update`:
         #   xy = panel_offset_x + panel_x + 330 - 64  (+ animated X offset)
         #   var_1c = panel_offset_y + panel_y + 50
         base_pos = panel_top_left + Vec2(266.0 * panel_scale, 50.0 * panel_scale)
@@ -216,7 +216,7 @@ class PlayGameMenuView(PanelMenuView):
         counts = self.state.status.quest_play_counts
         if not counts:
             return 0
-        # `sub_44ed80` sums 40 ints from game_status_blob+0x104..0x1a4.
+        # `play_game_menu_update` sums 40 ints from game_status_blob+0x104..0x1a4.
         # Our `quest_play_counts` array starts at blob+0xd8, so this is indices 11..50.
         return int(sum(int(v) for v in counts[11:51]))
 
@@ -243,10 +243,10 @@ class PlayGameMenuView(PanelMenuView):
         quests_total = self._quests_total_played()
         rush_total = int(status.mode_play_count_for_mode(GameMode.RUSH))
         survival_total = int(status.mode_play_count_for_mode(GameMode.SURVIVAL))
-        # Matches the tutorial placement gating in `sub_44ed80` (excludes Typ-o).
+        # Matches the tutorial placement gating in `play_game_menu_update` (excludes Typ-o).
         main_total = quests_total + rush_total + survival_total
 
-        # `sub_44ed80` uses tighter spacing when quest_unlock>=40 and player_count==1.
+        # `play_game_menu_update` uses tighter spacing when quest_unlock>=40 and player_count==1.
         tight_spacing = not (quest_unlock < 0x28 or player_count > 1)
         y_step = 28.0 if tight_spacing else 32.0
         y_start = 26.0 if tight_spacing else 32.0
@@ -327,7 +327,7 @@ class PlayGameMenuView(PanelMenuView):
                 ),
             )
 
-        # The y after the last row is used as a tooltip anchor in `sub_44ed80`.
+        # The y after the last row is used as a tooltip anchor in `play_game_menu_update`.
         y_end = y_start + y_step * float(len(entries))
         return entries, y_step, y_start, y_end
 
@@ -455,7 +455,7 @@ class PlayGameMenuView(PanelMenuView):
         text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
-        # `sub_44ed80`: title label at (xy - 64, var_1c - 8), size 128x32.
+        # `play_game_menu_update`: title label at (xy - 64, var_1c - 8), size 128x32.
         title_w = 128.0
         title_h = MENU_LABEL_ROW_HEIGHT
         title_pos = base_pos + Vec2(-64.0 * scale, -8.0 * scale)
@@ -500,7 +500,7 @@ class PlayGameMenuView(PanelMenuView):
                 )
             y += y_step * scale
 
-        # `sub_44ed80`: the list widget is drawn before tooltips, so tooltips can overlay it.
+        # `play_game_menu_update`: the list widget is drawn before tooltips, so tooltips can overlay it.
         self._draw_player_count(layout.drop_pos, scale, resources=resources, font=font)
         self._draw_tooltips(entries, base_pos, y_end, scale, font=font)
 
@@ -613,7 +613,7 @@ class PlayGameMenuView(PanelMenuView):
         *,
         font: SmallFontData,
     ) -> None:
-        # `sub_44ed80` draws these below the mode list based on per-button hover timers.
+        # `play_game_menu_update` draws these below the mode list based on per-button hover timers.
         tooltip_x = base_pos.x - 55.0 * scale
         tooltip_y = base_pos.y + (y_end + 16.0) * scale
 

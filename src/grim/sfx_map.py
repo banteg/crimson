@@ -162,6 +162,6 @@ _SFX_NATIVE_SPECS: Final[tuple[tuple[SfxId, SfxSpec], ...]] = (
 
 SFX_SPECS: Final[dict[SfxId, SfxSpec]] = dict(_SFX_NATIVE_SPECS)
 
-# Extracted from `audio_init_sfx` (FUN_0043caa0) in `crimsonland.exe`.
+# Extracted from `audio_init_sfx` in `crimsonland.exe`.
 # `sfx_load_sample()` allocates the first free slot, so the load order defines stable ids.
 SFX_NATIVE_ORDER: Final[tuple[SfxId, ...]] = tuple(sfx_id for sfx_id, _spec in _SFX_NATIVE_SPECS)

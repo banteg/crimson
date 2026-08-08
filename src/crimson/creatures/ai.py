@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Creature AI helpers.
 
-Ported from `creature_update_all` (`FUN_00426220`).
+Ported from `creature_update_all`.
 """
 
 import math

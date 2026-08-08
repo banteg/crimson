@@ -43,7 +43,7 @@ BONUS_TABLE = [
         description=None,
         icon_id=None,
         native_amount=None,
-        notes="`DAT_004853dc` is set to `0`, disabling this entry.",
+        notes="`bonus_meta_enabled` is set to `0`, disabling this entry.",
     ),
     BonusMeta(
         bonus_id=BonusId.POINTS,
@@ -125,7 +125,7 @@ BONUS_TABLE = [
         description="Force field protects you for a while.",
         icon_id=6,
         native_amount=7,
-        notes="`bonus_apply` updates `player_shield_timer` (`DAT_00490bc8`).",
+        notes="`bonus_apply` updates `player_shield_timer`.",
     ),
     BonusMeta(
         bonus_id=BonusId.FREEZE,
@@ -149,7 +149,7 @@ BONUS_TABLE = [
         description="Your movement speed increases for a while.",
         icon_id=9,
         native_amount=8,
-        notes="`bonus_apply` updates `player_speed_bonus_timer` (`DAT_00490bc4`).",
+        notes="`bonus_apply` updates `player_speed_bonus_timer`.",
     ),
     BonusMeta(
         bonus_id=BonusId.FIRE_BULLETS,
@@ -159,7 +159,7 @@ BONUS_TABLE = [
         # Native stored amount is 4; the pickup adds a fixed 5 seconds (scaled by Bonus Economist).
         native_amount=4,
         apply_seconds=5.0,
-        notes="`bonus_apply` updates `player_fire_bullets_timer` (`DAT_00490bcc`) (fixed +5 seconds, scaled by Bonus Economist). While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `weapon_projectile_pellet_count[weapon_id]`).",
+        notes="`bonus_apply` updates `player_fire_bullets_timer` (fixed +5 seconds, scaled by Bonus Economist). While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `weapon_projectile_pellet_count[weapon_id]`).",
     ),
 ]
 

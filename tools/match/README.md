@@ -635,6 +635,7 @@ uv run crimson match naming-audit --provider-member d3dxmath.obj --prune-placeho
 uv run crimson match naming-audit --rewrite-placeholder-references
 uv run crimson match naming-audit --repair-provider-comments
 uv run crimson match naming-audit --json --check
+uv run crimson match resolved-name-audit --check
 ```
 
 Suggestions are intentionally narrow. The command proposes a canonical name
@@ -686,6 +687,13 @@ target while leaving decorated object/linkage symbols untouched.
 `--repair-provider-comments` restores the exact source or linkage symbol when
 an older bulk rename rewrote an auto-generated provider comment to the new
 canonical identity.
+
+`resolved-name-audit` is the repository-wide companion to the scratch/map
+audit. It scans maintained source, scripts, matching notes, and native data
+initializers for address-derived labels whose address already has a stronger
+curated identity. Build artifacts, experiment logs, and genuinely unresolved
+address-named fields are excluded, while vtable slots such as a stale
+`nullsub_*` are checked against their explicit target address.
 
 ## No Fakematching
 

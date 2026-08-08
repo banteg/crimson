@@ -41,8 +41,8 @@ const LINK_BASE = {
 };
 
 const ADDR = {
-  weapon_assign_player: 0x00452d40, // FUN_00452d40
-  player_health_base: 0x004908d4, // DAT_004908d4
+  weapon_assign_player: 0x00452d40,
+  player_health_base: 0x004908d4,
 };
 
 function exePtr(staticVa) {

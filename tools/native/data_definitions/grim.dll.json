@@ -131,9 +131,9 @@
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
       "initializer_symbols": [
-        ["0x0", "0x10017345", "FUN_10017345"],
-        ["0x4", "0x10016941", "nullsub_6"],
-        ["0x8", "0x10016941", "nullsub_6"],
+        ["0x0", "0x10017345", "d3dx_codec_scalar_deleting_dtor"],
+        ["0x4", "0x10016941", "grim_vertex_space_converter_noop"],
+        ["0x8", "0x10016941", "grim_vertex_space_converter_noop"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cae4; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -163,7 +163,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x100192a7", "grim_pixel_format_read_r8g8b8"],
-        ["0x8", "0x10017518", "FUN_10017518"],
+        ["0x8", "0x10017518", "d3dx_pixel_encode_r8g8b8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cb6c; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -193,7 +193,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019333", "grim_pixel_format_read_a8r8g8b8"],
-        ["0x8", "0x10017604", "FUN_10017604"],
+        ["0x8", "0x10017604", "d3dx_pixel_encode_a8r8g8b8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cb8c; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -208,7 +208,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x100193d9", "grim_pixel_format_read_x8r8g8b8"],
-        ["0x8", "0x10017727", "FUN_10017727"],
+        ["0x8", "0x10017727", "d3dx_pixel_encode_x8r8g8b8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cb9c; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -223,7 +223,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019475", "grim_pixel_format_read_r5g6b5"],
-        ["0x8", "0x10017828", "FUN_10017828"],
+        ["0x8", "0x10017828", "d3dx_pixel_encode_r5g6b5"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cbac; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -238,7 +238,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001951a", "grim_pixel_format_read_x1r5g5b5"],
-        ["0x8", "0x10017929", "FUN_10017929"],
+        ["0x8", "0x10017929", "d3dx_pixel_encode_x1r5g5b5"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cbdc; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -253,7 +253,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x100195bc", "grim_pixel_format_read_a1r5g5b5"],
-        ["0x8", "0x10017a2a", "FUN_10017a2a"],
+        ["0x8", "0x10017a2a", "d3dx_pixel_encode_a1r5g5b5"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cbec; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -268,7 +268,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001966c", "grim_pixel_format_read_a4r4g4b4"],
-        ["0x8", "0x10017b47", "FUN_10017b47"],
+        ["0x8", "0x10017b47", "d3dx_pixel_encode_a4r4g4b4"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc10; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -283,7 +283,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019883", "grim_pixel_format_read_r3g3b2"],
-        ["0x8", "0x10017c6a", "FUN_10017c6a"],
+        ["0x8", "0x10017c6a", "d3dx_pixel_encode_r3g3b2"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc20; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -298,7 +298,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019925", "grim_pixel_format_read_a8"],
-        ["0x8", "0x10017d68", "FUN_10017d68"],
+        ["0x8", "0x10017d68", "d3dx_pixel_encode_a8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc30; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -313,7 +313,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019997", "grim_pixel_format_read_a8r3g3b2"],
-        ["0x8", "0x10017e11", "FUN_10017e11"],
+        ["0x8", "0x10017e11", "d3dx_pixel_encode_a8r3g3b2"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc40; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -328,7 +328,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019a49", "grim_pixel_format_read_x4r4g4b4"],
-        ["0x8", "0x10017f34", "FUN_10017f34"],
+        ["0x8", "0x10017f34", "d3dx_pixel_encode_x4r4g4b4"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc50; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -343,7 +343,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001971b", "grim_pixel_format_read_a2b10g10r10"],
-        ["0x8", "0x10018035", "FUN_10018035"],
+        ["0x8", "0x10018035", "d3dx_pixel_encode_a2b10g10r10"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc60; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -358,7 +358,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x100197f1", "grim_pixel_format_read_g16r16"],
-        ["0x8", "0x10018158", "FUN_10018158"],
+        ["0x8", "0x10018158", "d3dx_pixel_encode_g16r16"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc70; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -373,7 +373,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019ae8", "grim_pixel_format_read_a8p8"],
-        ["0x8", "0x10018228", "FUN_10018228"],
+        ["0x8", "0x10018228", "d3dx_pixel_encode_a8p8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc80; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -388,7 +388,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019b6f", "grim_pixel_format_read_p8"],
-        ["0x8", "0x10018340", "FUN_10018340"],
+        ["0x8", "0x10018340", "d3dx_pixel_encode_p8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cc90; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -403,7 +403,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019bd3", "grim_pixel_format_read_l8"],
-        ["0x8", "0x10018405", "FUN_10018405"],
+        ["0x8", "0x10018405", "d3dx_pixel_encode_l8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cca0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -418,7 +418,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019c41", "grim_pixel_format_read_a8l8"],
-        ["0x8", "0x100184ca", "FUN_100184ca"],
+        ["0x8", "0x100184ca", "d3dx_pixel_encode_a8l8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccb0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -433,7 +433,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019cca", "grim_pixel_format_read_a4l4"],
-        ["0x8", "0x100185c0", "FUN_100185c0"],
+        ["0x8", "0x100185c0", "d3dx_pixel_encode_a4l4"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccc0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -448,7 +448,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019d53", "grim_pixel_format_read_v8u8"],
-        ["0x8", "0x100186ab", "FUN_100186ab"],
+        ["0x8", "0x100186ab", "d3dx_pixel_encode_v8u8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccd0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -463,7 +463,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019dd5", "grim_pixel_format_read_l6v5u5"],
-        ["0x8", "0x10018780", "FUN_10018780"],
+        ["0x8", "0x10018780", "d3dx_pixel_encode_l6v5u5"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cce0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -478,7 +478,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019e86", "grim_pixel_format_read_x8l8v8u8"],
-        ["0x8", "0x10018885", "FUN_10018885"],
+        ["0x8", "0x10018885", "d3dx_pixel_encode_x8l8v8u8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004ccf0; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -493,7 +493,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019f17", "grim_pixel_format_read_q8w8v8u8"],
-        ["0x8", "0x10018990", "FUN_10018990"],
+        ["0x8", "0x10018990", "d3dx_pixel_encode_q8w8v8u8"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd00; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -508,7 +508,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x10019fae", "grim_pixel_format_read_v16u16"],
-        ["0x8", "0x10018aca", "FUN_10018aca"],
+        ["0x8", "0x10018aca", "d3dx_pixel_encode_v16u16"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd10; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -523,7 +523,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001a031", "grim_pixel_format_read_w11v11u10"],
-        ["0x8", "0x10018ba0", "FUN_10018ba0"],
+        ["0x8", "0x10018ba0", "d3dx_pixel_encode_w11v11u10"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd20; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -538,7 +538,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001a0eb", "grim_pixel_format_read_a2w10v10u10"],
-        ["0x8", "0x10018caa", "FUN_10018caa"],
+        ["0x8", "0x10018caa", "d3dx_pixel_encode_a2w10v10u10"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd30; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -553,7 +553,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001a1be", "grim_pixel_format_read_unorm16"],
-        ["0x8", "0x10018de0", "FUN_10018de0"],
+        ["0x8", "0x10018de0", "d3dx_pixel_encode_d16_lockable"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd40; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -568,7 +568,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001a1be", "grim_pixel_format_read_unorm16"],
-        ["0x8", "0x10018ea7", "FUN_10018ea7"],
+        ["0x8", "0x10018ea7", "d3dx_pixel_encode_l16"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd50; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -583,7 +583,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001a22e", "grim_pixel_format_read_al16"],
-        ["0x8", "0x10018f6e", "FUN_10018f6e"],
+        ["0x8", "0x10018f6e", "d3dx_pixel_encode_a16l16"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd60; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -598,7 +598,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001a2bc", "grim_pixel_format_read_r16"],
-        ["0x8", "0x1001905c", "FUN_1001905c"],
+        ["0x8", "0x1001905c", "d3dx_pixel_encode_r16g16b16"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd70; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"
@@ -613,7 +613,7 @@
       "initializer_symbols": [
         ["0x0", "0x1001ae58", "grim_pixel_format_scalar_deleting_destroy"],
         ["0x4", "0x1001a348", "grim_pixel_format_read_ar16"],
-        ["0x8", "0x1001914b", "FUN_1001914b"],
+        ["0x8", "0x1001914b", "d3dx_pixel_encode_a16r16g16b16"],
         ["0xc", "0x100173dc", "grim_pixel_format_quantize_color_key"]
       ],
       "initializer_source": "Binary Ninja grim.dll session: exact four-slot table at VA 0x1004cd80; crimson match archive against the pinned DirectX 8.1 d3dx8.lib identifies the target bodies in obj\\i386\\cd3dxcodec.obj; game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .rdata bytes"

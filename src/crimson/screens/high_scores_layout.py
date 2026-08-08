@@ -35,7 +35,7 @@ def hs_right_panel_pos_x(screen_width: float) -> float:
     """
     Return the classic right-panel base X for high-scores/databases screens.
 
-    Modeled from `ui_menu_layout_init` (`sub_450190`) writes to `data_48a110`:
+    Modeled from `ui_menu_layout_init` writes to `data_48a110`:
       x = screen_width - 350
       if screen_width <= 800:
           x += 10  (<=640)  or  x -= 30  (641..800)

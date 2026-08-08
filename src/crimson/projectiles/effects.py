@@ -108,7 +108,7 @@ def _spawn_ion_hit_effects(
 
     detail = int(detail_preset)
 
-    # Port of `FUN_0042f270(pos, ring_scale, ring_strength)`: ring burst (effect_id=1).
+    # Port of `effect_spawn_ion_hit_core(pos, ring_scale, ring_strength)`.
     effects.spawn(
         effect_id=int(EffectId.RING),
         pos=pos,
@@ -126,7 +126,7 @@ def _spawn_ion_hit_effects(
         detail_preset=detail,
     )
 
-    # Port of `FUN_0042f540(pos, burst_scale)`: burst cloud (effect_id=0).
+    # Port of `effect_spawn_ion_hit_sparks(pos, burst_scale)`.
     burst = float(burst_scale) * 0.8
     lifetime = min(burst * 0.7, 1.1)
     half = burst * 32.0
@@ -172,8 +172,8 @@ def _spawn_plasma_cannon_hit_effects(
     Native does:
     - `sfx_play_panned(sfx_explosion_medium)`
     - `sfx_play_panned(sfx_shockwave)`
-    - `FUN_0042f330(pos, 1.5, 1.0)`
-    - `FUN_0042f330(pos, 1.0, 1.0)`
+    - `effect_spawn_plasma_hit_core(pos, 1.5, 1.0)`
+    - `effect_spawn_plasma_hit_core(pos, 1.0, 1.0)`
     """
 
     if effects is None:
@@ -214,7 +214,7 @@ def _spawn_splitter_hit_effects(
     rng: CrandLike,
     detail_preset: int,
 ) -> None:
-    """Port of `FUN_0042f3f0(pos, 26.0, 3)` from the Splitter Gun hit branch."""
+    """Port of `effect_spawn_splitter_hit_burst(pos, 26.0, 3)`."""
 
     if effects is None:
         return

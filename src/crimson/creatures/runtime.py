@@ -646,7 +646,7 @@ class CreaturePool:
         return [entry for entry in self._entries if entry.active and entry.hp > 0.0]
 
     def _plaguebearer_spread_infection(self, origin_index: int) -> None:
-        """Port of `FUN_00425d80` (infects nearby creatures when Plaguebearer is active)."""
+        """Port of `plaguebearer_spread_infection`."""
 
         origin_index = int(origin_index)
         if not (0 <= origin_index < len(self._entries)):

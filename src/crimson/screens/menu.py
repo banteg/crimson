@@ -539,7 +539,7 @@ class MenuView:
         return 1.0, 0.0
 
     def _menu_item_bounds(self, entry: MenuEntry, resources: RuntimeResources) -> Rect:
-        # FUN_0044fb50: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
+        # ui_element_layout_calc: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
         item = resources.texture(TextureId.UI_MENU_ITEM)
         item_w = float(item.width)
         item_h = float(item.height)

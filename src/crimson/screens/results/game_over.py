@@ -43,7 +43,7 @@ GAME_OVER_PANEL_X = -45.0
 #   _DAT_0048cc60 = 0xc2340000 (-45.0)
 #   _DAT_0048cc64 = 0x42dc0000 (110.0)
 GAME_OVER_PANEL_Y = 110.0
-# `DAT_0048cc48` is cloned from the 3-slice menu panel layout (`ui_menu_item_element._pad4+0xac`)
+# `ui_element_slot_30` is cloned from the 3-slice menu panel layout (`ui_menu_item_element._pad4+0xac`)
 # in `ui_menu_layout_init`; trace confirms a 510x378 bbox for both phase 0 and phase 1.
 GAME_OVER_PANEL_W = 510.0
 GAME_OVER_PANEL_H = 378.0
@@ -454,7 +454,7 @@ class GameOverUi(msgspec.Struct):
             label_color,
         )
 
-        # Separator between columns (mirrors FUN_00441220 + offset adjustments).
+        # Separator between columns (mirrors highscore_card_draw_vertical_divider).
         separator_x = card_origin.x + 80.0 * scale
         rl.draw_line(
             int(separator_x),
