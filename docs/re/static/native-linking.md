@@ -93,7 +93,9 @@ mixed-generation JSON, and component hashes cover the object list and export
 definition. The report never adds fake providers.
 
 The shared semantic `name_map.json` and `data_map.json` inputs use a canonical
-per-image JSON projection. An edit to Grim-only rows therefore invalidates the
+per-image JSON projection. The name map contains callable entry points only;
+arrays, scalar globals, sentinels, and function-pointer variables belong in
+the data map. An edit to Grim-only rows therefore invalidates the
 Grim audit without needlessly rebuilding Crimsonland, while edits to shared
 top-level data-map metadata still invalidate both images. Older audit records
 without projection metadata retain their full-file hash behavior.

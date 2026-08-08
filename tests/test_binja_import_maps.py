@@ -5,6 +5,7 @@ import json
 from enum import Enum
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import Mock, call
 
 import pytest
 
@@ -115,6 +116,24 @@ def test_resolve_splits_padding_prefixed_function_without_create_flag(monkeypatc
     assert view.created == [0x2008]
 
 
+def test_resolve_creates_bounded_overlap_without_removing_owner(monkeypatch):
+    importer = _load_importer()
+    containing = SimpleNamespace(start=0x3000)
+    view = _FakeView([containing], prefix=b"\x55\x8b\xec")
+    monkeypatch.setattr(importer, "_is_direct_jump_wrapper", lambda _bv, _func, _addr: False)
+
+    func, created = importer._resolve_function_for_name_row(
+        view,
+        {"name": "archive_entry", "end": "0x3040"},
+        0x3030,
+    )
+
+    assert created is True
+    assert func.start == 0x3030
+    assert view.created == [0x3030]
+    assert view.removed == []
+
+
 def test_resolve_rejects_non_padding_interior_function_without_create_flag(monkeypatch):
     importer = _load_importer()
     containing = SimpleNamespace(start=0x3000)
@@ -144,6 +163,42 @@ def test_resolve_rejects_explicit_non_padding_interior_function(monkeypatch):
             {"name": "unsafe_split", "create": True},
             0x4003,
         )
+
+
+def test_name_map_typed_rows_are_function_declarations():
+    importer = _load_importer()
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "name_map.json"
+    )
+    rows = json.loads(map_path.read_text(encoding="utf-8"))
+
+    invalid = [
+        row["name"]
+        for row in rows
+        if row.get("signature")
+        and not importer._is_function_declaration(str(row["signature"]))
+    ]
+
+    assert invalid == []
+
+
+@pytest.mark.parametrize(
+    ("declaration", "expected"),
+    [
+        ("void archive_entry(void)", True),
+        ("const int lookup_table[16]", False),
+        ("unsigned char state_flag", False),
+        ("void (*callback)(void)", False),
+    ],
+)
+def test_function_declaration_classifier(declaration, expected):
+    importer = _load_importer()
+
+    assert importer._is_function_declaration(declaration) is expected
 
 
 def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
@@ -328,6 +383,13 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         "unrelated_complete_type",
         object(),
         object(),
+    )
+
+    current = object()
+    assert not importer._should_replace_repo_type(
+        "projectile_t",
+        current,
+        current,
     )
 
 
@@ -755,6 +817,29 @@ def test_written_variable_at_rejects_missing_definition():
         importer._written_variable_at(function, 0x4502F1)
 
 
+def test_written_variable_at_rejects_unavailable_mlil():
+    importer = _load_importer()
+    function = SimpleNamespace(mlil=None)
+
+    with pytest.raises(LookupError, match="MLIL unavailable"):
+        importer._written_variable_at(function, 0x4502F1)
+
+
+def test_written_variable_at_prefers_confirmed_available_mlil():
+    importer = _load_importer()
+    variable = object()
+    instruction = SimpleNamespace(
+        address=0x4502F1,
+        vars_written=[SimpleNamespace(var=variable)],
+    )
+    function = SimpleNamespace(
+        mlil=None,
+        mlil_if_available=SimpleNamespace(ssa_form=[[instruction]]),
+    )
+
+    assert importer._written_variable_at(function, 0x4502F1) is variable
+
+
 def test_written_variable_at_uses_source_name_for_ambiguous_address():
     importer = _load_importer()
     induction_cursor = SimpleNamespace(name="i_4")
@@ -790,12 +875,14 @@ def test_analysis_skip_override_is_idempotent():
                 AnalysisOverride.DefaultFunctionAnalysis
             )
             self.llil_if_available = None
+            self.mlil_if_available = None
             self._advanced_analysis_requests = 0
             self.reanalysis_count = 0
 
         def request_advanced_analysis_data(self):
             self._advanced_analysis_requests += 1
             self.llil_if_available = object()
+            self.mlil_if_available = object()
 
         def reanalyze(self):
             self.reanalysis_count += 1
@@ -818,6 +905,144 @@ def test_analysis_skip_override_is_idempotent():
     )
     assert function.reanalysis_count == 1
     assert function._advanced_analysis_requests == 1
+
+
+def test_analysis_skip_override_can_defer_retained_analysis():
+    importer = _load_importer()
+
+    class AnalysisOverride(Enum):
+        DefaultFunctionAnalysis = 0
+        NeverSkipFunctionAnalysis = 1
+
+    class FakeFunction:
+        def __init__(self):
+            self.analysis_skip_override = (
+                AnalysisOverride.DefaultFunctionAnalysis
+            )
+            self.mlil_if_available = None
+            self._advanced_analysis_requests = 0
+            self.reanalysis_count = 0
+
+        def request_advanced_analysis_data(self):
+            self._advanced_analysis_requests += 1
+
+        def reanalyze(self):
+            self.reanalysis_count += 1
+
+    function = FakeFunction()
+
+    assert importer._apply_analysis_skip_override(
+        function,
+        "never_skip",
+        retain_analysis=False,
+    )
+    assert (
+        function.analysis_skip_override
+        == AnalysisOverride.NeverSkipFunctionAnalysis
+    )
+    assert function._advanced_analysis_requests == 0
+    assert function.reanalysis_count == 0
+
+
+def test_update_analysis_resumes_aborted_workflow(monkeypatch):
+    importer = _load_importer()
+    events = []
+    log_info = Mock()
+
+    class FakeView:
+        analysis_is_aborted = True
+
+        def __init__(self):
+            self.workflow = SimpleNamespace(
+                machine=SimpleNamespace(enable=self.enable_workflow),
+            )
+
+        def enable_workflow(self):
+            events.append("enable")
+            self.analysis_is_aborted = False
+
+        def update_analysis_and_wait(self):
+            events.append("update")
+
+    monkeypatch.setattr(importer, "_log_info", log_info)
+    importer._update_analysis(FakeView())
+
+    assert events == ["enable", "update"]
+    log_info.assert_called_once_with(
+        "Re-enabled an aborted Binary Ninja analysis workflow",
+    )
+
+
+def test_local_type_functions_are_analyzed_sequentially(monkeypatch, tmp_path):
+    importer = _load_importer()
+    map_path = tmp_path / "name_map.json"
+    map_path.write_text("[]", encoding="utf-8")
+    rows = [
+        {
+            "address": "0x1000",
+            "name": "first_annotated",
+            "local_types": [{"address": "0x1001", "name": "a", "type": "int"}],
+        },
+        {
+            "address": "0x2000",
+            "name": "second_annotated",
+            "local_types": [{"address": "0x2001", "name": "b", "type": "int"}],
+        },
+    ]
+    functions = {
+        address: SimpleNamespace(
+            start=address,
+            name=row["name"],
+            mlil_if_available=None,
+        )
+        for address, row in zip((0x1000, 0x2000), rows, strict=True)
+    }
+    view = SimpleNamespace(get_function_at=functions.get)
+    recorder = Mock()
+    retained_address = None
+
+    monkeypatch.setattr(importer, "_load_entries", lambda _path: rows)
+    monkeypatch.setattr(importer, "_program_candidates", lambda _bv: set())
+    monkeypatch.setattr(
+        importer,
+        "_resolve_function_for_name_row",
+        lambda _bv, _row, address: (functions[address], False),
+    )
+    def retain_analysis(function, _policy):
+        nonlocal retained_address
+        retained_address = function.start
+        recorder.retain(function.start)
+        return True
+
+    monkeypatch.setattr(importer, "_apply_analysis_skip_override", retain_analysis)
+
+    def update_analysis(_view):
+        recorder.update()
+        if retained_address is not None:
+            functions[retained_address].mlil_if_available = object()
+
+    monkeypatch.setattr(importer, "_update_analysis", update_analysis)
+
+    def apply_local_types(_bv, function, _entries, _mlil):
+        recorder.local(function.start)
+        return 1
+
+    monkeypatch.setattr(importer, "_apply_function_local_types", apply_local_types)
+    monkeypatch.setattr(importer, "_log_info", lambda _message: None)
+
+    stats = importer.apply_name_map(view, map_path)
+
+    assert recorder.mock_calls == [
+        call.retain(0x1000),
+        call.update(),
+        call.local(0x1000),
+        call.retain(0x2000),
+        call.update(),
+        call.local(0x2000),
+        call.update(),
+    ]
+    assert stats["analysis_overrides"] == 2
+    assert stats["local_types"] == 2
 
 
 def test_apply_function_local_types_is_idempotent(monkeypatch):
@@ -863,8 +1088,189 @@ def test_apply_function_local_types_is_idempotent(monkeypatch):
         ],
     )
 
-    assert count == 1
+    assert count == 0
     assert function.created == []
+
+
+def test_apply_function_local_types_uses_captured_mlil(monkeypatch):
+    importer = _load_importer()
+    local_type = object()
+    variable = SimpleNamespace(name="temporary", type=object())
+    captured_mlil = SimpleNamespace(
+        ssa_form=[
+            [
+                SimpleNamespace(
+                    address=0x4502F1,
+                    vars_written=[SimpleNamespace(var=variable)],
+                ),
+            ],
+        ],
+    )
+
+    class FakeFunction:
+        mlil = None
+        mlil_if_available = None
+
+        def __init__(self):
+            self.created = []
+
+        def is_var_user_defined(self, _var):
+            return False
+
+        def create_user_var(self, var, var_type, name):
+            self.created.append((var, var_type, name))
+
+    function = FakeFunction()
+    monkeypatch.setattr(
+        importer,
+        "_resolve_data_type",
+        lambda _bv, _type_text: local_type,
+    )
+
+    count = importer._apply_function_local_types(
+        object(),
+        function,
+        [
+            {
+                "address": "0x004502f1",
+                "name": "menu_item_vertex0_element",
+                "type": "ui_element_t *",
+            },
+        ],
+        captured_mlil,
+    )
+
+    assert count == 1
+    assert function.created == [
+        (variable, local_type, "menu_item_vertex0_element"),
+    ]
+
+
+def test_function_signature_replay_is_idempotent(monkeypatch):
+    importer = _load_importer()
+    function_type = object()
+
+    class FakeFunction:
+        type = function_type
+
+        def __init__(self):
+            self.applied = []
+
+        def set_user_type(self, type_obj):
+            self.applied.append(type_obj)
+
+    function = FakeFunction()
+    monkeypatch.setattr(importer, "_seed_common_types", lambda _bv: None)
+    monkeypatch.setattr(
+        importer,
+        "_sanitize_signature",
+        lambda signature, _bv: signature,
+    )
+    monkeypatch.setattr(
+        importer,
+        "_parse_type_string",
+        lambda _bv, _signature: function_type,
+    )
+
+    assert not importer._apply_function_signature(
+        object(),
+        function,
+        "void recovered(void)",
+    )
+    assert function.applied == []
+
+
+def test_function_type_parser_reuses_equivalent_named_declarations(monkeypatch):
+    importer = _load_importer()
+    function_type = object()
+    view = object()
+    parse_type = Mock(return_value=function_type)
+    monkeypatch.setattr(importer, "_seed_common_types", lambda _bv: None)
+    monkeypatch.setattr(
+        importer,
+        "_sanitize_signature",
+        lambda signature, _bv: signature,
+    )
+    monkeypatch.setattr(importer, "_parse_type_string", parse_type)
+    cache = {}
+
+    assert importer._resolve_function_type(
+        view,
+        "void first(int value)",
+        cache,
+    ) is function_type
+    assert importer._resolve_function_type(
+        view,
+        "void second(int value)",
+        cache,
+    ) is function_type
+    parse_type.assert_called_once_with(view, "void first(int value)")
+
+
+def test_data_type_parser_reuses_identical_declarations(monkeypatch):
+    importer = _load_importer()
+    data_type = object()
+    view = object()
+    resolve_type = Mock(return_value=data_type)
+    monkeypatch.setattr(importer, "_resolve_data_type", resolve_type)
+    cache = {}
+
+    assert importer._resolve_data_type_cached(
+        view,
+        "unsigned char[12]",
+        cache,
+    ) is data_type
+    assert importer._resolve_data_type_cached(
+        view,
+        "unsigned char[12]",
+        cache,
+    ) is data_type
+    resolve_type.assert_called_once_with(view, "unsigned char[12]")
+
+
+def test_comment_replay_is_idempotent():
+    importer = _load_importer()
+    function = SimpleNamespace(comment="recovered identity")
+    comments = {0x4710FC: "CRT range sentinel"}
+
+    class FakeView:
+        def get_comment_at(self, addr):
+            return comments.get(addr, "")
+
+        def set_comment_at(self, addr, comment):
+            comments[addr] = comment
+
+    view = FakeView()
+
+    assert not importer._set_function_comment(
+        function,
+        "recovered identity",
+    )
+    assert not importer._set_data_comment(
+        view,
+        0x4710FC,
+        "CRT range sentinel",
+    )
+
+
+def test_data_type_replay_is_idempotent():
+    importer = _load_importer()
+    data_type = object()
+
+    class FakeView:
+        def __init__(self):
+            self.defined = []
+
+        def get_data_var_at(self, addr):
+            return SimpleNamespace(address=addr, type=data_type)
+
+        def define_user_data_var(self, addr, type_obj):
+            self.defined.append((addr, type_obj))
+
+    view = FakeView()
+
+    assert not importer._set_data_type(view, 0x4710FC, data_type)
+    assert view.defined == []
 
 
 def test_name_map_preserves_recovered_core_pointer_signatures():
@@ -1012,6 +1418,7 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
         "ui_draw_progress_bar",
         "bonus_hud_slot_activate",
         "highscore_screen_update",
+        "quest_results_screen_update",
         "controls_menu_update",
     } <= never_skip
     assert rows_by_name["projectile_update"]["local_types"] == [

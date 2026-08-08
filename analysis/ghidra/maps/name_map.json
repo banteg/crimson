@@ -1318,6 +1318,7 @@
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",
     "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons. Runtime capture (2026-02-06 gameplay_state_capture): sfx_play_exclusive id 5 is dominant (3989/3989).",
+    "analysis_skip_override": "never_skip",
     "local_types": [
       {
         "address": "0x0041184d",
@@ -9010,6 +9011,7 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00465219",
+    "end": "0x004652bc",
     "name": "crt_check_range_exit",
     "comment": "Exact archive recovery from ..\\build\\intel\\mt_obj\\common.obj symbol __check_range_exit.",
     "create": false,
@@ -9154,6 +9156,7 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00465e70",
+    "end": "0x00465f2d",
     "name": "crt_except_handler3",
     "comment": "Exact archive recovery from build\\intel\\mt_obj\\exsup3.obj symbol __except_handler3.",
     "create": false,
@@ -10296,6 +10299,7 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046cb6f",
+    "end": "0x0046cb86",
     "name": "crt_abort",
     "comment": "Exact archive recovery from build\\intel\\mt_obj\\abort.obj symbol _abort.",
     "create": false,
@@ -10796,112 +10800,6 @@
     "name": "ov_read",
     "signature": "long ov_read(OggVorbis_File * vf, char * buffer, int length, int bigendianp, int word, int sgned, int * bitstream)",
     "comment": "libvorbisfile: decode PCM"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046fa10",
-    "name": "crt_thread_entry_scope_table",
-    "aliases": [
-      "$T17507"
-    ],
-    "signature": "const unsigned char crt_thread_entry_scope_table[12]",
-    "comment": "VC6 SEH scope table occupying thread.obj's complete 12-byte .rdata section, proven by the exact __threadstart relocation.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004710fc",
-    "name": "crt_pre_terminator_begin",
-    "aliases": [
-      "___xp_a"
-    ],
-    "comment": "VC6 .CRT$XPA begin marker proven by the exact _doexit relocation in crt0dat.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00471104",
-    "name": "crt_pre_terminator_end",
-    "aliases": [
-      "___xp_z"
-    ],
-    "comment": "VC6 .CRT$XPZ end marker proven by the exact _doexit relocation in crt0dat.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00471108",
-    "name": "crt_terminator_begin",
-    "aliases": [
-      "___xt_a"
-    ],
-    "comment": "VC6 .CRT$XTA begin marker proven by the exact _doexit relocation in crt0dat.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00471110",
-    "name": "crt_terminator_end",
-    "aliases": [
-      "___xt_z"
-    ],
-    "comment": "VC6 .CRT$XTZ end marker proven by the exact _doexit relocation in crt0dat.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0047b164",
-    "name": "crt_fp_mt_init",
-    "aliases": [
-      "__FPmtinit"
-    ],
-    "signature": "void (*crt_fp_mt_init)(void)",
-    "comment": "VC6 multithread floating-point initializer pointer proven by the exact __threadstart relocation in thread.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0047b168",
-    "name": "crt_fp_mt_term",
-    "aliases": [
-      "__FPmtterm"
-    ],
-    "signature": "void (*crt_fp_mt_term)(void)",
-    "comment": "VC6 multithread floating-point terminator pointer proven by the exact __endthread relocation in thread.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0047b180",
-    "name": "crt_exit_routine",
-    "aliases": [
-      "__aexit_rtn"
-    ],
-    "signature": "void (*crt_exit_routine)(int)",
-    "comment": "VC6 WinCRT process-crt_immediate_exit routine pointer proven by the exact crt_amsg_exit relocation in wincrt0.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004d99bc",
-    "name": "crt_termination_done",
-    "aliases": [
-      "__C_Termination_Done"
-    ],
-    "signature": "unsigned char crt_termination_done",
-    "comment": "VC6 CRT termination-state flag proven by the exact _doexit relocation in crt0dat.obj.",
-    "create": false
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004d99c0",
-    "name": "crt_exit_done",
-    "aliases": [
-      "__C_Exit_Done"
-    ],
-    "signature": "int crt_exit_done",
-    "comment": "VC6 CRT crt_immediate_exit-state flag proven by the exact _doexit relocation in crt0dat.obj.",
-    "create": false
   },
   {
     "program": "grim.dll",
@@ -16688,22 +16586,6 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x1004ea00",
-    "name": "d3dx_jpeg_first_pool_slop",
-    "signature": "const size_t d3dx_jpeg_first_pool_slop[2]",
-    "comment": "Archive-confirmed IJG 6a first-allocation pool slop table in the D3DX provider",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1004ea08",
-    "name": "d3dx_jpeg_extra_pool_slop",
-    "signature": "const size_t d3dx_jpeg_extra_pool_slop[2]",
-    "comment": "Archive-confirmed IJG 6a subsequent-allocation pool slop table in the D3DX provider",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
     "address": "0x1002eb3f",
     "name": "d3dx_jpeg_process_data_crank_post",
     "signature": "void d3dx_jpeg_process_data_crank_post(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)",
@@ -16925,46 +16807,6 @@
     "name": "d3dx_jpeg_init_d_post_controller",
     "signature": "void d3dx_jpeg_init_d_post_controller(j_decompress_ptr cinfo, boolean need_full_buffer)",
     "comment": "Archive-confirmed IJG 6a postprocessor controller initializer in the D3DX provider"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1004e8c0",
-    "name": "d3dx_jpeg_natural_order",
-    "signature": "const int d3dx_jpeg_natural_order[80]",
-    "comment": "Archive-confirmed IJG 6a natural coefficient order table in the D3DX provider",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1004f3a8",
-    "name": "d3dx_jpeg_huff_extend_test",
-    "signature": "const int d3dx_jpeg_huff_extend_test[16]",
-    "comment": "Archive-confirmed IJG 6a baseline Huffman sign-extension threshold table",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1004f3e8",
-    "name": "d3dx_jpeg_huff_extend_offset",
-    "signature": "const int d3dx_jpeg_huff_extend_offset[16]",
-    "comment": "Archive-confirmed IJG 6a baseline Huffman sign-extension offset table",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1004f490",
-    "name": "d3dx_jpeg_phuff_extend_test",
-    "signature": "const int d3dx_jpeg_phuff_extend_test[16]",
-    "comment": "Archive-confirmed IJG 6a progressive Huffman sign-extension threshold table",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1004f4d0",
-    "name": "d3dx_jpeg_phuff_extend_offset",
-    "signature": "const int d3dx_jpeg_phuff_extend_offset[16]",
-    "comment": "Archive-confirmed IJG 6a progressive Huffman sign-extension offset table",
-    "create": false
   },
   {
     "program": "grim.dll",
@@ -17972,70 +17814,6 @@
     ],
     "signature": "JHUFF_TBL *grim_jpeg_alloc_huff_table(j_common_ptr cinfo)",
     "comment": "JAZ IJG 6a Huffman-table allocator; exact VC6 provider body",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050550",
-    "name": "grim_jpeg_natural_order",
-    "signature": "const int grim_jpeg_natural_order[80]",
-    "comment": "JAZ IJG 6a zigzag-to-natural coefficient order with safety tail",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050690",
-    "name": "grim_jpeg_huff_extend_test",
-    "signature": "const int grim_jpeg_huff_extend_test[16]",
-    "comment": "JAZ IJG 6a baseline Huffman sign-extension thresholds",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100506d0",
-    "name": "grim_jpeg_huff_extend_offset",
-    "signature": "const int grim_jpeg_huff_extend_offset[16]",
-    "comment": "JAZ IJG 6a baseline Huffman sign-extension offsets",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050710",
-    "name": "grim_jpeg_phuff_extend_test",
-    "signature": "const int grim_jpeg_phuff_extend_test[16]",
-    "comment": "JAZ IJG 6a progressive Huffman sign-extension thresholds",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050750",
-    "name": "grim_jpeg_phuff_extend_offset",
-    "signature": "const int grim_jpeg_phuff_extend_offset[16]",
-    "comment": "JAZ IJG 6a progressive Huffman sign-extension offsets",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050790",
-    "name": "grim_jpeg_idct_aanscales",
-    "signature": "const INT16 grim_jpeg_idct_aanscales[DCTSIZE2]",
-    "comment": "JAZ IJG 6a fixed-point AA&N inverse-DCT scale table",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050810",
-    "name": "grim_jpeg_idct_aanscalefactor",
-    "signature": "const double grim_jpeg_idct_aanscalefactor[DCTSIZE]",
-    "comment": "JAZ IJG 6a floating-point AA&N inverse-DCT scale factors",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1005035c",
-    "name": "grim_jpeg_std_message_table",
-    "signature": "const char * const grim_jpeg_std_message_table[]",
-    "comment": "JAZ IJG 6a standard diagnostic-message table",
     "create": false
   },
   {
@@ -19211,38 +18989,6 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x10059608",
-    "name": "zlib_inflate_mask",
-    "signature": "const uInt zlib_inflate_mask[17]",
-    "comment": "Plain-C zlib 1.1.3 low-bit masks used by the inflate decoders",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10051454",
-    "name": "zlib_inflate_border",
-    "signature": "const uInt zlib_inflate_border[19]",
-    "comment": "Plain-C zlib 1.1.3 bit-length code ordering table",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050a24",
-    "name": "zlib_extra_literal_bits",
-    "signature": "const int zlib_extra_literal_bits[29]",
-    "comment": "Plain-C zlib 1.1.3 literal-length extra-bit counts",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10050a98",
-    "name": "zlib_extra_distance_bits",
-    "signature": "const int zlib_extra_distance_bits[30]",
-    "comment": "Plain-C zlib 1.1.3 distance extra-bit counts",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
     "address": "0x10047b90",
     "name": "zlib_tr_flush_block",
     "aliases": [
@@ -19250,108 +18996,6 @@
     ],
     "signature": "void zlib_tr_flush_block(deflate_state *state, char *buffer, unsigned long stored_length, int end_of_file)",
     "comment": "Plain-C zlib 1.1.3 compressed-block tree flush routine",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10051068",
-    "name": "zlib_distance_code",
-    "aliases": [
-      "dist_code"
-    ],
-    "signature": "const uch zlib_distance_code[512]",
-    "comment": "Plain-C zlib 1.1.3 normalized distance-code lookup",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10051268",
-    "name": "zlib_length_code",
-    "aliases": [
-      "length_code"
-    ],
-    "signature": "const uch zlib_length_code[256]",
-    "comment": "Plain-C zlib 1.1.3 normalized match-length lookup",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10051368",
-    "name": "zlib_base_length",
-    "signature": "const int zlib_base_length[29]",
-    "comment": "Plain-C zlib 1.1.3 normalized length-code bases",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100513dc",
-    "name": "zlib_base_distance",
-    "signature": "const int zlib_base_distance[30]",
-    "comment": "Plain-C zlib 1.1.3 normalized distance-code bases",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100514d0",
-    "name": "zlib_cplens",
-    "signature": "const uInt zlib_cplens[31]",
-    "comment": "Plain-C zlib 1.1.3 literal code copy-length bases",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1005154c",
-    "name": "zlib_cplext",
-    "signature": "const uInt zlib_cplext[31]",
-    "comment": "Plain-C zlib 1.1.3 literal code extra-bit counts",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100515c8",
-    "name": "zlib_cpdist",
-    "signature": "const uInt zlib_cpdist[30]",
-    "comment": "Plain-C zlib 1.1.3 distance code bases",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10051640",
-    "name": "zlib_cpdext",
-    "signature": "const uInt zlib_cpdext[30]",
-    "comment": "Plain-C zlib 1.1.3 distance code extra-bit counts",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10058410",
-    "name": "zlib_fixed_literal_bits",
-    "signature": "uInt zlib_fixed_literal_bits",
-    "comment": "Plain-C zlib 1.1.3 fixed literal-tree bit depth",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10058414",
-    "name": "zlib_fixed_distance_bits",
-    "signature": "uInt zlib_fixed_distance_bits",
-    "comment": "Plain-C zlib 1.1.3 fixed distance-tree bit depth",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10058418",
-    "name": "zlib_fixed_literal_tree",
-    "signature": "inflate_huft zlib_fixed_literal_tree[512]",
-    "comment": "Plain-C zlib 1.1.3 prebuilt fixed literal tree",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10059418",
-    "name": "zlib_fixed_distance_tree",
-    "signature": "inflate_huft zlib_fixed_distance_tree[32]",
-    "comment": "Plain-C zlib 1.1.3 prebuilt fixed distance tree",
     "create": false
   },
   {
@@ -21364,28 +21008,6 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x10053e28",
-    "name": "d3dx_bmp_formats",
-    "aliases": [
-      "_g_pBMPFormats"
-    ],
-    "signature": "const int d3dx_bmp_formats[6]",
-    "comment": "Six-entry CD3DXImage BMP format preference table from the pinned DirectX 8.1 archive.",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10053e40",
-    "name": "d3dx_dds_formats",
-    "aliases": [
-      "_g_pDDSFormats"
-    ],
-    "signature": "const int d3dx_dds_formats[6]",
-    "comment": "Six-entry CD3DXImage DDS format preference table from the pinned DirectX 8.1 archive.",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
     "address": "0x1004b845",
     "name": "d3dx_save_surface_to_file_eh_handler",
     "signature": "void d3dx_save_surface_to_file_eh_handler(void)",
@@ -21509,30 +21131,6 @@
     ],
     "signature": "int msvc_array_unwind_filter(void *exception_pointers)",
     "comment": "VC6 ArrayUnwindFilter identity proven by the exact __ArrayUnwind relocation.",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100516b8",
-    "name": "msvc_vector_destructor_iterator_scope_table",
-    "signature": "const int msvc_vector_destructor_iterator_scope_table[4]",
-    "comment": "VC6 SEH scope table referenced by the exact vector-destructor iterator.",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100516c8",
-    "name": "msvc_array_unwind_scope_table",
-    "signature": "const int msvc_array_unwind_scope_table[4]",
-    "comment": "VC6 SEH scope table referenced by the exact __ArrayUnwind helper.",
-    "create": false
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100516d8",
-    "name": "msvc_vector_constructor_iterator_eh_scope_table",
-    "signature": "const int msvc_vector_constructor_iterator_eh_scope_table[4]",
-    "comment": "VC6 SEH scope table referenced by the exact exception-safe vector constructor iterator.",
     "create": false
   }
 ]

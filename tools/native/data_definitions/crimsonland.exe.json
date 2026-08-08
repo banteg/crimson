@@ -365,7 +365,8 @@
     {
       "name": "literal-compiler-rdata-0000c",
       "types": [
-        "unsigned char[12]"
+        "unsigned char[12]",
+        "const unsigned char[12]"
       ],
       "size": 12,
       "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
@@ -388,6 +389,11 @@
           "0x0046fa00",
           "crt_array_unwind_scope_table",
           "ffffffffbf1a4600c91a4600"
+        ],
+        [
+          "0x0046fa10",
+          "crt_thread_entry_scope_table",
+          "ffffffff5423460068234600"
         ],
         [
           "0x0046fa68",
@@ -903,7 +909,7 @@
     },
     {
       "name": "literal-pointer32",
-      "types": ["void *", "char *", "wchar_t *"],
+      "types": ["void *", "char *", "wchar_t *", "void (*)(void)", "void (*)(int)"],
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "alignment": 4,
@@ -915,7 +921,14 @@
         ["0x004710e0", "crt_xc_end", "00000000"],
         ["0x004710e4", "crt_xi_begin", "00000000"],
         ["0x004710f8", "crt_xi_end", "00000000"],
+        ["0x004710fc", "crt_pre_terminator_begin", "00000000"],
+        ["0x00471104", "crt_pre_terminator_end", "00000000"],
+        ["0x00471108", "crt_terminator_begin", "00000000"],
+        ["0x00471110", "crt_terminator_end", "00000000"],
         ["0x0047b160", "crt_fp_init_hook", "b80c4600"],
+        ["0x0047b164", "crt_fp_mt_init", "cf0c4600"],
+        ["0x0047b168", "crt_fp_mt_term", "cf0c4600"],
+        ["0x0047b180", "crt_exit_routine", "ee2e4600"],
         ["0x0047b658", "crt_null_string", "44fb4600"],
         ["0x0047b65c", "crt_wide_null_string", "34fb4600"],
         ["0x0047b928", "crt_inconsistency_handler", "485f4600"],
@@ -3636,6 +3649,7 @@
         ["0x004d9980", "crt_umask"],
         ["0x004d9994", "crt_argc"],
         ["0x004d99b8", "crt_exit_flag"],
+        ["0x004d99c0", "crt_exit_done"],
         ["0x004d99cc", "crt_error_mode"],
         ["0x004d99d0", "crt_cflush"],
         ["0x004d9a64", "crt_lcmap_string_use_wide_api"],
@@ -3879,7 +3893,8 @@
         ["0x0049bfa8", "creature_target_player"],
         ["0x004cc910", "menu_item_palette_init_flags"],
         ["0x004cc930", "ui_update_notice_button_init_guard"],
-        ["0x004cccd8", "profile_menu_init_flags"]
+        ["0x004cccd8", "profile_menu_init_flags"],
+        ["0x004d99bc", "crt_termination_done"]
       ]
     },
     {

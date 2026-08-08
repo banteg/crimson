@@ -1,5 +1,5 @@
 {
-  "audit_digest": "600d5adf27126f5aa34d890ae9c95e74eac1b51bcababf490dfb3ddd7e41147c",
+  "audit_digest": "014c997dd5cb0af2537e6cc0bd98b622f3ccbef2e817350f0cd46c69f59b2a14",
   "entries": [
     {
       "address": 4211888,
@@ -914,6 +914,28 @@
       "type": "unsigned char[12]"
     },
     {
+      "address": 4651536,
+      "aliases": [
+        "$T17507"
+      ],
+      "alignment": 4,
+      "alignment_source": "VC6 object .rdata sections and their linked image locations are at least four-byte aligned",
+      "comment": "VC6 SEH scope table occupying thread.obj's complete 12-byte .rdata section, proven by the exact __threadstart relocation.",
+      "definition_group": "literal-compiler-rdata-0000c",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ffffffff5423460068234600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image bytes at each linked compiler-local table VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_thread_entry_scope_table",
+      "section": ".rdata",
+      "section_offset": 2040,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 12,
+      "size_source": "pinned VC6 libcmt objects: each compiler-local $T symbol occupies its complete 0x0c-byte .rdata section",
+      "type": "const unsigned char[12]"
+    },
+    {
       "address": 4651552,
       "aliases": [
         "$T17377"
@@ -1370,6 +1392,94 @@
       "name": "crt_xi_end",
       "section": ".data",
       "section_offset": 248,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *"
+    },
+    {
+      "address": 4657404,
+      "aliases": [
+        "___xp_a"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "VC6 .CRT$XPA begin marker proven by the exact _doexit relocation in crt0dat.obj.",
+      "definition_group": "literal-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image pointer bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_pre_terminator_begin",
+      "section": ".data",
+      "section_offset": 252,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *"
+    },
+    {
+      "address": 4657412,
+      "aliases": [
+        "___xp_z"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "VC6 .CRT$XPZ end marker proven by the exact _doexit relocation in crt0dat.obj.",
+      "definition_group": "literal-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image pointer bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_pre_terminator_end",
+      "section": ".data",
+      "section_offset": 260,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *"
+    },
+    {
+      "address": 4657416,
+      "aliases": [
+        "___xt_a"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "VC6 .CRT$XTA begin marker proven by the exact _doexit relocation in crt0dat.obj.",
+      "definition_group": "literal-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image pointer bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_terminator_begin",
+      "section": ".data",
+      "section_offset": 264,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void *"
+    },
+    {
+      "address": 4657424,
+      "aliases": [
+        "___xt_z"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "VC6 .CRT$XTZ end marker proven by the exact _doexit relocation in crt0dat.obj.",
+      "definition_group": "literal-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image pointer bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_terminator_end",
+      "section": ".data",
+      "section_offset": 272,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
@@ -6899,6 +7009,72 @@
       "size": 4,
       "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "void *"
+    },
+    {
+      "address": 4698468,
+      "aliases": [
+        "__FPmtinit"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "VC6 multithread floating-point initializer pointer proven by the exact __threadstart relocation in thread.obj.",
+      "definition_group": "literal-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "cf0c4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image pointer bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_fp_mt_init",
+      "section": ".data",
+      "section_offset": 41316,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void (*)(void)"
+    },
+    {
+      "address": 4698472,
+      "aliases": [
+        "__FPmtterm"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "VC6 multithread floating-point terminator pointer proven by the exact __endthread relocation in thread.obj.",
+      "definition_group": "literal-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "cf0c4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image pointer bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_fp_mt_term",
+      "section": ".data",
+      "section_offset": 41320,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void (*)(void)"
+    },
+    {
+      "address": 4698496,
+      "aliases": [
+        "__aexit_rtn"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "comment": "VC6 WinCRT process-crt_immediate_exit routine pointer proven by the exact crt_amsg_exit relocation in wincrt0.obj.",
+      "definition_group": "literal-pointer32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "ee2e4600",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: reference-image pointer bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_exit_routine",
+      "section": ".data",
+      "section_offset": 41344,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: VC6 CRT pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "type": "void (*)(int)"
     },
     {
       "address": 4698500,
@@ -35979,6 +36155,52 @@
       "type": "int"
     },
     {
+      "address": 5085628,
+      "aliases": [
+        "__C_Termination_Done"
+      ],
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "VC6 CRT termination-state flag proven by the exact _doexit relocation in crt0dat.obj.",
+      "definition_group": "mapped-bss-zero-uchar",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_termination_done",
+      "section": ".data",
+      "section_offset": 428476,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 1,
+      "size_source": "analysis/ghidra/maps/data_map.json: recovered unsigned-char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "type": "unsigned char"
+    },
+    {
+      "address": 5085632,
+      "aliases": [
+        "__C_Exit_Done"
+      ],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "VC6 CRT crt_immediate_exit-state flag proven by the exact _doexit relocation in crt0dat.obj.",
+      "definition_group": "mapped-bss-zero-int32",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "crt_exit_done",
+      "section": ".data",
+      "section_offset": 428480,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "type": "int"
+    },
+    {
       "address": 5085636,
       "aliases": [
         "__aenvptr"
@@ -37556,9 +37778,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "31ff7792cac3cdee7d6a5dd8962b634df579a014b7d134520e7639de49530b38",
+    "data_map_sha256": "946d427941a6e490fb923b10735bd07a375006fe31a9012d52d97af01b845a1c",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "69f5e1b005a5f9676ff5b544586b4922cd5020c9d42ed9aab369c6220bf9d652",
+    "definitions_sha256": "1219a86e630f6e57bd8b2e49ac5606174a3138cb421656048f46f07134e4fb9b",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -37567,17 +37789,17 @@
     "segments_sha256": "65e2a4e6a7d63516ac68264a83f3d001d2476b750d982afe1fbc72d25eae9b44"
   },
   "summary": {
-    "alias_names": 244,
-    "alias_rows": 241,
+    "alias_names": 254,
+    "alias_rows": 251,
     "code_label_entries": 54,
-    "definition_group_entries": 1669,
+    "definition_group_entries": 1679,
     "definition_groups": 175,
-    "entry_count": 1778,
-    "explicit_alignment_entries": 1778,
-    "explicit_initializer_entries": 1778,
-    "explicit_size_entries": 1778,
-    "fixed_array_types": 369,
-    "fully_specified_entries": 1778,
+    "entry_count": 1788,
+    "explicit_alignment_entries": 1788,
+    "explicit_initializer_entries": 1788,
+    "explicit_size_entries": 1788,
+    "fixed_array_types": 370,
+    "fully_specified_entries": 1788,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 5,
@@ -37585,14 +37807,14 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 1721,
+      ".data": 1730,
       ".data1": 6,
-      ".rdata": 50,
+      ".rdata": 51,
       ".text": 1
     },
-    "source_entry_count": 1832,
-    "typed_entries": 1778,
-    "unique_addresses": 1771,
+    "source_entry_count": 1842,
+    "typed_entries": 1788,
+    "unique_addresses": 1781,
     "untyped_entries": 0
   }
 }
