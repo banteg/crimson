@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**696/810** functions matched exactly, **130912/341970** code bytes (**38.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**697/810** functions matched exactly, **131190/341970** code bytes (**38.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303253/341970** code bytes (**88.7%**).
+Fuzzy-weighted alignment is **303326/341970** code bytes (**88.7%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 563/671 | 115968/320805 | 36.1% | 282447/320805 | 88.0% | 671/671 | 320805/320805 | 100.0% | 563/671 |
+| crimsonland.exe | 564/671 | 116246/320805 | 36.2% | 282519/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 564/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**563/671** functions, **115968/320805** bytes (**36.1%**), **282447/320805** fuzzy-weighted bytes (**88.0%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **563/671** scratches verified.
+**564/671** functions, **116246/320805** bytes (**36.2%**), **282519/320805** fuzzy-weighted bytes (**88.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **564/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -559,7 +559,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | quest_build_frontline_assault | 0x00437e10 | 285 | 240/285 | 45 | 82/84 | 84.34% | 18/84 | 1/0/0 |  | quest-frontline-assault-builder |
 | wip | quest_build_the_collaboration | 0x00437f30 | 286 | 246/286 | 40 | 86/86 | 86.05% | 22/86 | 7/0/0 |  | quest-the-collaboration-builder |
 | wip | quest_build_the_blighting | 0x00438050 | 624 | 591/624 | 33 | 190/190 | 94.74% | 17/190 | 11/0/0 |  | quest-the-blighting-fixed-spawners |
-| wip | quest_build_the_annihilation | 0x004382c0 | 278 | 206/278 | 72 | 77/77 | 74.03% | 15/77 | 1/0/0 |  | quest-the-annihilation-builder |
+| match | quest_build_the_annihilation | 0x004382c0 | 278 | 278/278 | 0 | 77/77 | 100.00% | 77/77 | 1/0/0 |  | quest-the-annihilation-builder |
 | match | quest_build_the_massacre | 0x004383e0 | 184 | 184/184 | 0 | 61/61 | 100.00% | 61/61 | 4/0/0 |  | quest-the-massacre-builder |
 | match | quest_build_the_killing | 0x004384a0 | 602 | 602/602 | 0 | 173/173 | 100.00% | 173/173 | 14/0/0 |  | quest-the-killing-discarded-rng-cycle |
 | match | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 311/311 | 0 | 95/95 | 100.00% | 95/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |

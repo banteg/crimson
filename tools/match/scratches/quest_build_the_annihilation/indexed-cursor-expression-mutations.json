@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-loop-cursor-expression",
+      "find": "        quest_entry_original_t *spawn = &spawns[index + 1];\n",
+      "replacements": [
+        {
+          "name": "base-plus-index",
+          "text": "        quest_entry_original_t *spawn = &spawns[1] + index;\n"
+        },
+        {
+          "name": "pointer-plus-index-plus-one",
+          "text": "        quest_entry_original_t *spawn = spawns + index + 1;\n"
+        },
+        {
+          "name": "pointer-plus-one-plus-index",
+          "text": "        quest_entry_original_t *spawn = spawns + 1 + index;\n"
+        },
+        {
+          "name": "index-plus-base",
+          "text": "        quest_entry_original_t *spawn = &spawns[1 + index];\n"
+        },
+        {
+          "name": "index-address-plus-one",
+          "text": "        quest_entry_original_t *spawn = &spawns[index] + 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-loop-cursor-expression",
+      "find": "        quest_entry_original_t *spawn = &spawns[index + 13];\n",
+      "replacements": [
+        {
+          "name": "base-plus-index",
+          "text": "        quest_entry_original_t *spawn = &spawns[13] + index;\n"
+        },
+        {
+          "name": "pointer-plus-index-plus-thirteen",
+          "text": "        quest_entry_original_t *spawn = spawns + index + 13;\n"
+        },
+        {
+          "name": "pointer-plus-thirteen-plus-index",
+          "text": "        quest_entry_original_t *spawn = spawns + 13 + index;\n"
+        },
+        {
+          "name": "index-plus-base",
+          "text": "        quest_entry_original_t *spawn = &spawns[13 + index];\n"
+        },
+        {
+          "name": "index-address-plus-thirteen",
+          "text": "        quest_entry_original_t *spawn = &spawns[index] + 13;\n"
+        }
+      ]
+    }
+  ]
+}

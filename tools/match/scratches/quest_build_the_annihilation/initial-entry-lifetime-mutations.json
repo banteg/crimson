@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "initial-height-lifetime",
+      "find": "    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n",
+      "replacements": [
+        {
+          "name": "named-integer-height",
+          "text": "    int initial_height = terrain_texture_width / 2;\n    spawns[0].pos.y = (float)initial_height;\n"
+        },
+        {
+          "name": "named-float-height",
+          "text": "    float initial_height = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = initial_height;\n"
+        },
+        {
+          "name": "staged-integer-height",
+          "text": "    int initial_height;\n    initial_height = terrain_texture_width / 2;\n    spawns[0].pos.y = (float)initial_height;\n"
+        }
+      ]
+    },
+    {
+      "name": "initial-induction-order",
+      "find": "    int index = 0;\n    int y_offset = 0;\n",
+      "replacements": [
+        {
+          "name": "offset-before-index",
+          "text": "    int y_offset = 0;\n    int index = 0;\n"
+        },
+        {
+          "name": "declared-then-initialized",
+          "text": "    int index;\n    int y_offset;\n    index = 0;\n    y_offset = 0;\n"
+        }
+      ]
+    },
+    {
+      "name": "initial-metadata-boundary",
+      "find": "    quest_entry_original_t *spawn = &spawns[1];\n    spawns[0].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = 2;\n",
+      "replacements": [
+        {
+          "name": "cursor-then-helper",
+          "text": "    quest_entry_original_t *spawn = &spawns[1];\n    spawns[0].set_spawn(\n        SPAWN_ID_ALIEN_DEADLY_FAST_2B,\n        trigger_time_ms,\n        2);\n"
+        },
+        {
+          "name": "fields-then-cursor",
+          "text": "    spawns[0].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n    spawns[0].trigger_time_ms = trigger_time_ms;\n    spawns[0].count = 2;\n    quest_entry_original_t *spawn = &spawns[1];\n"
+        },
+        {
+          "name": "helper-then-cursor",
+          "text": "    spawns[0].set_spawn(\n        SPAWN_ID_ALIEN_DEADLY_FAST_2B,\n        trigger_time_ms,\n        2);\n    quest_entry_original_t *spawn = &spawns[1];\n"
+        }
+      ]
+    }
+  ]
+}

@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "a920ec927f789917363d4c1d429f5413cc273544a4fc31ef132a19ee124a8222",
+  "audit_digest": "e36907835d87c1fb3441813f9b462e8d87de6714f30f519c9c5297e206c7b98b",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -67016,12 +67016,12 @@
         {
           "path": "tools/match/scratches/quest_build_the_annihilation/scratch.cpp",
           "repository_relative": true,
-          "sha256": "e5abb07db503ff97c7e9ba000ffafe9a1a65af452aab4c084adc7f39ec807371"
+          "sha256": "be8329a98fa0344d7b10f1e8866134ffcecf8650d935fc11b19f5c94156e7926"
         },
         {
           "path": "tools/match/scratches/quest_build_the_annihilation/scratch.conf",
           "repository_relative": true,
-          "sha256": "d82a5b6fda9fd22ff4bb19fde599d19ab14ef09c541f143d3141851aaaf15804"
+          "sha256": "82fdc123f92c52c935cba742d163815a6577ba2a8bb1b0b60c145dad7c797786"
         },
         {
           "path": "tools/match/cl.sh",
@@ -67051,7 +67051,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_the_annihilation/scratch.conf",
-      "config_sha256": "d82a5b6fda9fd22ff4bb19fde599d19ab14ef09c541f143d3141851aaaf15804",
+      "config_sha256": "82fdc123f92c52c935cba742d163815a6577ba2a8bb1b0b60c145dad7c797786",
       "effective_end": 4424662,
       "end": 4424662,
       "function": "quest_build_the_annihilation",
@@ -67059,10 +67059,10 @@
         {
           "address": 4424384,
           "canonical_config": "tools/match/scratches/quest_build_the_annihilation/scratch.conf",
-          "canonical_config_sha256": "d82a5b6fda9fd22ff4bb19fde599d19ab14ef09c541f143d3141851aaaf15804",
+          "canonical_config_sha256": "82fdc123f92c52c935cba742d163815a6577ba2a8bb1b0b60c145dad7c797786",
           "canonical_scratch": "tools/match/scratches/quest_build_the_annihilation",
           "canonical_source": "tools/match/scratches/quest_build_the_annihilation/scratch.cpp",
-          "canonical_source_sha256": "e5abb07db503ff97c7e9ba000ffafe9a1a65af452aab4c084adc7f39ec807371",
+          "canonical_source_sha256": "be8329a98fa0344d7b10f1e8866134ffcecf8650d935fc11b19f5c94156e7926",
           "effective_end": 4424662,
           "end": 4424662,
           "function": "quest_build_the_annihilation",
@@ -67071,9 +67071,9 @@
             "masked_mismatches": 0,
             "masked_ok": 1,
             "masked_unresolved": 0,
-            "prefix_instructions": 15,
-            "ratio": 0.7402597402597403,
-            "state": "wip",
+            "prefix_instructions": 77,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 77
           },
           "object_function_symbol": "_quest_build_the_annihilation",
@@ -67085,17 +67085,17 @@
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
-        "prefix_instructions": 15,
-        "ratio": 0.7402597402597403,
-        "state": "wip",
+        "prefix_instructions": 77,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 77
       },
       "object": "tools/match/scratches/quest_build_the_annihilation/build/msvc6.5/8f6cd9b5826f8230/scratch.obj",
       "object_function_symbol": "_quest_build_the_annihilation",
-      "object_sha256": "3373ac84227beed99b3f0950b2b3ebd774cf920fded9430d58d2406af8456076",
+      "object_sha256": "9b28e0c25a4f1b74e42962f6478eb0085d3d7fbb7e13fcbb0f8856113b04fe83",
       "scratch": "tools/match/scratches/quest_build_the_annihilation",
       "source": "tools/match/scratches/quest_build_the_annihilation/scratch.cpp",
-      "source_sha256": "e5abb07db503ff97c7e9ba000ffafe9a1a65af452aab4c084adc7f39ec807371",
+      "source_sha256": "be8329a98fa0344d7b10f1e8866134ffcecf8650d935fc11b19f5c94156e7926",
       "target_size": 278,
       "translation_unit": {
         "kind": "isolated",
@@ -88760,8 +88760,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 563,
-    "wip": 108
+    "match": 564,
+    "wip": 107
   },
   "translation_units": {
     "cluster_count": 3,

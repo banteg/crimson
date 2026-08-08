@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "set-spawn-store-order",
+      "find": "        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n",
+      "replacements": [
+        {
+          "name": "template-count-trigger",
+          "text": "        template_id = spawn_template_id;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        },
+        {
+          "name": "trigger-template-count",
+          "text": "        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n        count = spawn_count;\n"
+        },
+        {
+          "name": "trigger-count-template",
+          "text": "        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        template_id = spawn_template_id;\n"
+        },
+        {
+          "name": "count-template-trigger",
+          "text": "        count = spawn_count;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        },
+        {
+          "name": "count-trigger-template",
+          "text": "        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n"
+        }
+      ]
+    }
+  ]
+}

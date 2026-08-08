@@ -9,34 +9,31 @@ The first alternates x 832/896, triggers 500 through 6000 in 500 ms steps;
 the second alternates x 896/832, triggers 45000 through 48300 in 300 ms
 steps. All column entries have count one, and the final count is 25.
 
-The candidate reproduces the native registers, signed division by twelve,
-parity branches, loop limits, update order, 24-byte stride, and output count.
-Placing the loop locals after the initial position assignment preserves the
-native 15-instruction prefix. The candidate has the same 77 instructions and
-resolves the terrain-width reference.
+The retained source exactly reproduces all 278 native bytes and all 77
+instructions, including the signed division by twelve, parity branches, loop
+limits, store schedule, 24-byte stride, output count, and terrain-width
+reference. Its normalized prefix is the full 77 instructions.
 
-The residual is induction-base selection and independent-store scheduling.
-The native anchors both loops at `template_id` and addresses position through
-negative offsets; VC6 anchors the equivalent source at the record start. A
-metadata-only setter emits the same best result, while moving the loop-local
-lifetimes earlier degrades register initialization. `msvc6.5pp` is identical.
-The 74.03% candidate remains an honest WIP rather than encoding the optimizer's
-negative-field cursor into the source.
+The missing source shape was a separate append count and parity index.
+`entry_count` selects each output record while `index` controls alternating x
+positions. VC6 strength-reduces the append count into the native
+`template_id`-anchored induction pointer, so the position stores naturally use
+negative offsets and the pointer advances before the parity index. This
+recovers the native shape without declaring a negative-field cursor.
 
-Binary Ninja now gives those two evidenced native induction values a
+Binary Ninja gives those two evidenced native induction values a
 layout-equivalent `quest_spawn_entry_template_cursor_t` presentation type.
 Each cursor exposes the current `template_id`, `trigger_time_ms`, and `count`,
 plus the next entry's position block, while retaining the actual 0x18-byte
-stride. This recovers the optimized loop shape without pretending that the
-compiler-facing source declared a negative-field cursor.
+stride. The exact compiler-facing source confirms that this is the optimized
+form of the append count, not a source-level negative pointer.
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, constants,
+record stores, induction policy, and output count. The candidate is an exact
+normalized instruction and reference match, so no recovery or compiler
+residual remains.
 
 ## 2026-07-27 focused family pass
 
@@ -64,3 +61,22 @@ byte-for-byte neutral at 74.03%, 77/77 instructions, prefix fifteen, and
 `1/0/0` references. This confirms that its improvement is tied to
 Unblitzkrieg's longer metadata schedule rather than a missing shared helper ABI
 in every looped quest builder.
+
+## 2026-08-08 exact recovery
+
+The initial-entry lifetime sweep evaluated 29 variants without improving the
+74.03% persistent-cursor baseline. Replacing each persistent cursor with an
+index-relative local then raised the candidate to 90.91% and naturally selected
+the native `template_id` induction base. Five helper-store permutations and 35
+cursor-expression variants were neutral or worse at that intermediate score.
+
+`append-count-recovery-mutations.json` (SHA-256
+`c0f576c08f4a29dd3a3b1243da4bf7683f24ee9547056d3867fc46502198ce0b`)
+then tested the shared append-count hypothesis from the original 74.03%
+baseline. The complete three-site variant is exact and improves the weighted
+score by 72.20779220779221 bytes; partial variants fail to compile because the
+shared `entry_count` definition and both consumers are intentionally one
+atomic source model. The retained source SHA-256 is
+`be8329a98fa0344d7b10f1e8866134ffcecf8650d935fc11b19f5c94156e7926`.
+The experiment ledger records 83 unique variants, one exact winner, no
+tradeoffs, and no repeated variants.
