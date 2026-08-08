@@ -308,7 +308,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | bonus_metadata_init | 0x00412660 | 735 | 735/735 | 0 | 131/131 | 100.00% | 131/131 | 109/0/0 |  | bonus-metadata-initialization |
 | match | bonus_reset_availability | 0x00412940 | 26 | 26/26 | 0 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | gameplay-bonus-availability-reset |
 | match | game_mode_label | 0x00412960 | 176 | 176/176 | 0 | 69/69 | 100.00% | 69/69 | 12/0/0 |  | game-mode-display-label |
-| match | game_sequence_load | 0x00412a10 | 101 | 101/101 | 0 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-sequence-registry-load |
+| match | play_time_load | 0x00412a10 | 101 | 101/101 | 0 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-play-time-registry-load |
 | match | game_save_status | 0x00412a80 | 399 | 399/399 | 0 | 123/123 | 100.00% | 123/123 | 36/0/0 |  | game-status-save-transform |
 | match | game_load_status | 0x00412c10 | 420 | 420/420 | 0 | 134/134 | 100.00% | 134/134 | 43/0/0 |  | game-status-load-transform |
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 1623/1639 | 16 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
@@ -357,7 +357,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | vorbis_read_pcm16 | 0x0041df00 | 55 | 55/55 | 0 | 22/22 | 100.00% | 22/22 | 1/0/0 |  | vorbis-pcm16-decode |
 | match | game_is_full_version | 0x0041df40 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | full-version-constant |
 | match | demo_trial_time_limit_ms | 0x0041df50 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | demo-trial-duration |
-| match | game_sequence_get | 0x0041df60 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | play_time_get | 0x0041df60 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | unused_fx_queue_random_prefix_color_global_init_thunk | 0x0041df70 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-queue-prefix-color-constructor-thunk |
 | match | unused_fx_queue_random_prefix_color_global_init | 0x0041df80 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-fx-queue-prefix-color-constructor |
 | match | unused_fx_rotated_effect_id_prefix_color_global_init_thunk | 0x0041dfb0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-rotated-effect-id-prefix-color-constructor-thunk |

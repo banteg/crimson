@@ -201,7 +201,7 @@ test "relay room builds room state and room start messages" {
     slots[1] = .{ .slot_index = 1, .peer_id = "guest", .peer_name = "guest", .ready = false, .reconnect_token = "guest-token" };
 
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 77;
+    status.play_time_ms = 77;
     const code = try room_code.parseRoomCode("WXYZ");
     const room: Room = .{
         .room_code = code,
@@ -235,5 +235,5 @@ test "relay room builds room state and room start messages" {
     try std.testing.expectEqual(@as(i32, 9), start.start_tick);
     try std.testing.expectEqual(@as(i32, 1), start.slot_index);
     try std.testing.expectEqualStrings("guest-token", start.reconnect_token);
-    try std.testing.expectEqual(@as(u32, 77), start.status.?.game_sequence_id);
+    try std.testing.expectEqual(@as(u32, 77), start.status.?.play_time_ms);
 }

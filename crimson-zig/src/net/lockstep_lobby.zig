@@ -313,7 +313,7 @@ test "lockstep host lobby rejects invalid hello and full lobby" {
 test "lockstep host lobby start match mirrors session settings" {
     const allocator = std.testing.allocator;
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 77;
+    status.play_time_ms = 77;
     var lobby = HostLobby.init(.{
         .mode_id = 3,
         .player_count = 1,
@@ -333,7 +333,7 @@ test "lockstep host lobby start match mirrors session settings" {
     try std.testing.expect(start.preserve_bugs);
     try std.testing.expectEqual(@as(i32, 123), start.seed);
     try std.testing.expectEqual(@as(i32, 9), start.start_tick);
-    try std.testing.expectEqual(@as(u32, 77), start.status.?.game_sequence_id);
+    try std.testing.expectEqual(@as(u32, 77), start.status.?.play_time_ms);
 }
 
 test "lockstep client lobby tracks welcome state and match start" {

@@ -1471,12 +1471,12 @@ const App = struct {
                     true,
                     gameplay.runner.session.game_mode,
                     current_demo_info.visible,
-                    self.runtime.status.game_sequence_id,
+                    self.runtime.status.play_time_ms,
                     self.demo_trial_elapsed_ms,
                     dt_ms,
                 );
-                if (timer_tick.global_playtime_ms != self.runtime.status.game_sequence_id) {
-                    self.runtime.status.game_sequence_id = timer_tick.global_playtime_ms;
+                if (timer_tick.global_playtime_ms != self.runtime.status.play_time_ms) {
+                    self.runtime.status.play_time_ms = timer_tick.global_playtime_ms;
                     self.runtime.status_dirty = true;
                 }
                 self.demo_trial_elapsed_ms = timer_tick.quest_grace_elapsed_ms;
@@ -2156,7 +2156,7 @@ const App = struct {
         return demo_trial.demoTrialOverlayInfo(
             self.demo_enabled,
             gameplay.runner.session.game_mode,
-            self.runtime.status.game_sequence_id,
+            self.runtime.status.play_time_ms,
             self.demo_trial_elapsed_ms,
             gameplay.run_config.quest_level_key,
         );
@@ -6029,7 +6029,7 @@ test "window network live runtime opens host session" {
 test "window network live runtime starts single-player lockstep host on update" {
     const io = std.Io.Threaded.global_single_threaded.io();
     var status = std.mem.zeroes(formats.game_cfg.Status);
-    status.game_sequence_id = 45;
+    status.play_time_ms = 45;
 
     var runtime = try NetworkLiveRuntime.initWithStatus(.{
         .role = .host,
@@ -6225,7 +6225,7 @@ test "window network live runtime carries quest level into network sessions" {
 test "window network host carries deterministic status into session start" {
     const io = std.Io.Threaded.global_single_threaded.io();
     var status = std.mem.zeroes(formats.game_cfg.Status);
-    status.game_sequence_id = 77;
+    status.play_time_ms = 77;
 
     var lockstep = try NetworkLiveRuntime.initWithStatus(.{
         .role = .host,
@@ -6239,7 +6239,7 @@ test "window network host carries deterministic status into session start" {
     defer lockstep.deinit(std.testing.allocator, io);
 
     switch (lockstep) {
-        .host => |host| try std.testing.expectEqual(@as(u32, 77), host.session.runtime.status.?.game_sequence_id),
+        .host => |host| try std.testing.expectEqual(@as(u32, 77), host.session.runtime.status.?.play_time_ms),
         .client, .rollback => return error.TestUnexpectedResult,
     }
 
@@ -6255,14 +6255,14 @@ test "window network host carries deterministic status into session start" {
     defer rollback.deinit(std.testing.allocator, io);
 
     switch (rollback) {
-        .rollback => |session| try std.testing.expectEqual(@as(u32, 77), session.session.options.status.?.game_sequence_id),
+        .rollback => |session| try std.testing.expectEqual(@as(u32, 77), session.session.options.status.?.play_time_ms),
         .host, .client => return error.TestUnexpectedResult,
     }
 }
 
 test "window network join ignores local deterministic status" {
     var status = std.mem.zeroes(formats.game_cfg.Status);
-    status.game_sequence_id = 77;
+    status.play_time_ms = 77;
 
     var rollback = try NetworkLiveRuntime.initWithStatus(.{
         .role = .join,

@@ -54,7 +54,7 @@ void config_ensure_file(void);
 bool config_load_presets(bool skip_grim_settings);
 bool config_sync_from_grim(void);
 void game_load_status(void);
-void game_sequence_load(void);
+void play_time_load(void);
 void game_save_status(void);
 void register_core_cvars(void);
 void init_audio_and_terrain(void);
@@ -273,7 +273,7 @@ extern "C" int WINAPI crimsonland_main(
     console_printf(&console_log_queue, "...loading config pre-sets\n");
     config_load_presets(false);
     game_load_status();
-    game_sequence_load();
+    play_time_load();
     console_log_queue.flush_log("console.log");
 
     console_printf(&console_log_queue, "...invoking grim config\n");

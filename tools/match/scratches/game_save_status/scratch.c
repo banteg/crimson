@@ -12,7 +12,7 @@ unsigned int crt_fwrite(
     void *ptr, unsigned int size, unsigned int count, FILE *fp);
 int crt_fclose(FILE *fp);
 void game_load_status(void);
-void game_sequence_load(void);
+void play_time_load(void);
 
 void game_save_status(void)
 {
@@ -39,7 +39,7 @@ void game_save_status(void)
             &key,
             0)
         == ERROR_SUCCESS) {
-        sequence = game_sequence_id;
+        sequence = play_time_ms;
         reg_write_dword(key, "sequence", sequence);
         reg_write_dword(key, "dataPathId", (sequence * 13 + 3) >> 1);
         reg_write_dword(key, "transferFailed", 0);
@@ -87,11 +87,11 @@ void game_save_status(void)
             console_printf(&console_log_queue, "GAME_SaveStatus OK.\n");
         }
         game_load_status();
-        game_sequence_load();
-        game_sequence_load();
+        play_time_load();
+        play_time_load();
         return;
     }
 
     console_printf(&console_log_queue, "GAME_SaveStatus FAILED!\n");
-    game_sequence_load();
+    play_time_load();
 }

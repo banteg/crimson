@@ -990,7 +990,7 @@ Init timing note:
   - Evidence: wraps `RegQueryValueExA` for `REG_DWORD` and writes fallback on failure.
 - `FUN_0042a9c0` -> `reg_write_dword`
   - Evidence: wraps `RegSetValueExA` with `REG_DWORD`.
-- `FUN_00412a10` -> `game_sequence_load`
+- `FUN_00412a10` -> `play_time_load`
   - Evidence: reads the `sequence` registry value and updates `DAT_00485794`.
 - `FUN_00412a80` -> `game_save_status`
   - Evidence: writes registry values (`sequence`, `dataPathId`, `transferFailed`) and saves a

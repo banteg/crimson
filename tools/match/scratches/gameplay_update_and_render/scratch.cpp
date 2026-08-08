@@ -34,7 +34,7 @@ extern int music_track_extra_0;
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
 
-int game_sequence_get(void);
+int play_time_get(void);
 void perks_update_effects(void);
 void creature_update_all(void);
 void projectile_update(void);
@@ -58,8 +58,8 @@ void ui_render_keybind_help(float *xy, float alpha);
 
 static __inline bool demo_trial_limit_reached(void)
 {
-    game_sequence_id = game_sequence_get();
-    if ((int)game_sequence_id > 2400000) {
+    play_time_ms = play_time_get();
+    if ((int)play_time_ms > 2400000) {
         return true;
     }
 

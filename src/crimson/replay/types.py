@@ -20,7 +20,7 @@ from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperatio
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 17
+REPLAY_FORMAT_VERSION = 18
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 

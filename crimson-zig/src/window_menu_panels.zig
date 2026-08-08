@@ -918,16 +918,16 @@ fn stage5CompletedCount(status: formats.game_cfg.Status, stage: i32, minor: i32)
         1 => status.mode_play_rush,
         2 => status.mode_play_typo,
         3 => status.mode_play_other,
-        4 => status.game_sequence_id,
-        5...8 => statusUnknownTailU32(status, @intCast(tail_slot - 5)),
+        4 => status.play_time_ms,
+        5...8 => statusReservedSeedWordsU32(status, @intCast(tail_slot - 5)),
         else => 0,
     };
 }
 
-fn statusUnknownTailU32(status: formats.game_cfg.Status, slot: usize) u32 {
+fn statusReservedSeedWordsU32(status: formats.game_cfg.Status, slot: usize) u32 {
     const off = slot * 4;
-    if (off + 4 > status.unknown_tail.len) return 0;
-    return std.mem.readInt(u32, status.unknown_tail[off..][0..4], .little);
+    if (off + 4 > status.reserved_seed_words.len) return 0;
+    return std.mem.readInt(u32, status.reserved_seed_words[off..][0..4], .little);
 }
 
 test "quest counts read tracked stage four counters" {
@@ -952,8 +952,8 @@ test "quest counts mirror native stage five overflow fields" {
     status.mode_play_rush = 222;
     status.mode_play_typo = 333;
     status.mode_play_other = 444;
-    status.game_sequence_id = 0x01020304;
-    status.unknown_tail = [_]u8{
+    status.play_time_ms = 0x01020304;
+    status.reserved_seed_words = [_]u8{
         0x00, 0x01, 0x02, 0x03,
         0x04, 0x05, 0x06, 0x07,
         0x08, 0x09, 0x0a, 0x0b,

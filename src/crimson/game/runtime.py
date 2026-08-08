@@ -140,9 +140,9 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             value = int(float(args[0]))
         except ValueError:
             value = 0
-        state.status.game_sequence_id = max(0, value)
+        state.status.play_time_ms = max(0, value)
         state.status.save_if_dirty()
-        console.log.log(f"demo trial: playtime={state.status.game_sequence_id}ms (total {DEMO_TOTAL_PLAY_TIME_MS}ms)")
+        console.log.log(f"demo trial: playtime={state.status.play_time_ms}ms (total {DEMO_TOTAL_PLAY_TIME_MS}ms)")
 
     def cmd_demo_trial_set_grace(args: list[str]) -> None:
         if len(args) != 1:
@@ -156,7 +156,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         console.log.log(f"demo trial: quest grace={state.demo_trial_elapsed_ms}ms (total {DEMO_QUEST_GRACE_TIME_MS}ms)")
 
     def cmd_demo_trial_reset(_args: list[str]) -> None:
-        state.status.game_sequence_id = 0
+        state.status.play_time_ms = 0
         state.status.save_if_dirty()
         state.demo_trial_elapsed_ms = 0
         console.log.log("demo trial: timers reset")
@@ -176,7 +176,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         info = demo_trial_overlay_info(
             demo_build=bool(state.demo_enabled),
             game_mode_id=mode_id,
-            global_playtime_ms=int(state.status.game_sequence_id),
+            global_playtime_ms=int(state.status.play_time_ms),
             quest_grace_elapsed_ms=int(state.demo_trial_elapsed_ms),
             quest_level=quest_level,
         )
@@ -186,7 +186,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             f"demo={int(state.demo_enabled)} "
             f"mode={int(mode_id)} "
             f"quest={(quest_level.text if quest_level is not None else '0.0')} "
-            f"playtime={int(state.status.game_sequence_id)}ms "
+            f"playtime={int(state.status.play_time_ms)}ms "
             f"grace={int(state.demo_trial_elapsed_ms)}ms "
             f"visible={int(info.visible)} "
             f"kind={info.kind} "

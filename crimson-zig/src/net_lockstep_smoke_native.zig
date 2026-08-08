@@ -58,7 +58,7 @@ pub fn runLockstepSmoke(
 
 fn runSmoke(allocator: std.mem.Allocator, io: Io) !SmokePayload {
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 101;
+    status.play_time_ms = 101;
 
     var host = try lockstep_live_session.HostLiveSession.init(.{
         .bind_host = "127.0.0.1",

@@ -10,7 +10,7 @@ const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v2\n";
 pub const trace_format_version: u32 = 2;
-pub const trace_schema_version: i32 = 16;
+pub const trace_schema_version: i32 = 17;
 pub const trace_required_channels = "replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
 const trace_chunk_ticks: usize = 256;
 
@@ -388,8 +388,8 @@ const TraceStatusRead = struct {
     mode_play_rush: i32 = 0,
     mode_play_typo: i32 = 0,
     mode_play_other: i32 = 0,
-    game_sequence_id: i32 = 0,
-    unknown_tail: replay_codec.BinaryBytes = .{ .data = "" },
+    play_time_ms: i32 = 0,
+    reserved_seed_words: replay_codec.BinaryBytes = .{ .data = "" },
 };
 
 const TraceMetaRead = struct {

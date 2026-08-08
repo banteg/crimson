@@ -16,7 +16,7 @@ from ..game_modes import GameMode
 from ..net.session_settings import session_settings_for_lockstep
 from ..persistence.save_status import (
     QUEST_PLAY_COUNT,
-    UNKNOWN_TAIL_SIZE,
+    RESERVED_SEED_WORDS_BYTE_SIZE,
     WEAPON_USAGE_COUNT,
     GameStatusData,
 )
@@ -61,7 +61,7 @@ _EVIDENCE_FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-FRIDA_CAPTURE_FORMAT_VERSION = 24
+FRIDA_CAPTURE_FORMAT_VERSION = 25
 FRIDA_EVIDENCE_FORMAT_VERSION = 3
 FRIDA_RUNTIME_VERSION = "17.15.4"
 _EVIDENCE_ZSTD_LEVEL = 10
@@ -279,8 +279,8 @@ class _CaptureGameStatusRow(msgspec.Struct, frozen=True, forbid_unknown_fields=T
     mode_play_rush: int
     mode_play_typo: int
     mode_play_other: int
-    game_sequence_id: int
-    unknown_tail: list[int]
+    play_time_ms: int
+    reserved_seed_words: list[int]
 
 
 class _RunSettingsRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -795,9 +795,9 @@ def _capture_status(row: _CaptureGameStatusRow, *, field: str) -> GameStatusData
         raise FridaFinalizeError(
             f"{field}.quest_play_counts must contain exactly {int(QUEST_PLAY_COUNT)} entries",
         )
-    if len(row.unknown_tail) != int(UNKNOWN_TAIL_SIZE):
+    if len(row.reserved_seed_words) != int(RESERVED_SEED_WORDS_BYTE_SIZE):
         raise FridaFinalizeError(
-            f"{field}.unknown_tail must contain exactly {int(UNKNOWN_TAIL_SIZE)} bytes",
+            f"{field}.reserved_seed_words must contain exactly {int(RESERVED_SEED_WORDS_BYTE_SIZE)} bytes",
         )
     weapon_usage_counts = tuple(
         _capture_u32(value, field=f"{field}.weapon_usage_counts[{index}]")
@@ -807,17 +807,17 @@ def _capture_status(row: _CaptureGameStatusRow, *, field: str) -> GameStatusData
         _capture_u32(value, field=f"{field}.quest_play_counts[{index}]")
         for index, value in enumerate(row.quest_play_counts)
     )
-    unknown_tail_values = []
-    for index, value in enumerate(row.unknown_tail):
+    reserved_seed_words_values = []
+    for index, value in enumerate(row.reserved_seed_words):
         byte = int(value)
         if not (0 <= byte <= 0xFF):
-            raise FridaFinalizeError(f"{field}.unknown_tail[{index}] must be a byte")
-        unknown_tail_values.append(byte)
+            raise FridaFinalizeError(f"{field}.reserved_seed_words[{index}] must be a byte")
+        reserved_seed_words_values.append(byte)
     mode_play_survival = _capture_u32(row.mode_play_survival, field=f"{field}.mode_play_survival")
     mode_play_rush = _capture_u32(row.mode_play_rush, field=f"{field}.mode_play_rush")
     mode_play_typo = _capture_u32(row.mode_play_typo, field=f"{field}.mode_play_typo")
     mode_play_other = _capture_u32(row.mode_play_other, field=f"{field}.mode_play_other")
-    game_sequence_id = _capture_u32(row.game_sequence_id, field=f"{field}.game_sequence_id")
+    play_time_ms = _capture_u32(row.play_time_ms, field=f"{field}.play_time_ms")
     return GameStatusData(
         quest_unlock_index=int(row.quest_unlock_index),
         quest_unlock_index_full=int(row.quest_unlock_index_full),
@@ -827,8 +827,8 @@ def _capture_status(row: _CaptureGameStatusRow, *, field: str) -> GameStatusData
         mode_play_rush=mode_play_rush,
         mode_play_typo=mode_play_typo,
         mode_play_other=mode_play_other,
-        game_sequence_id=game_sequence_id,
-        unknown_tail=bytes(unknown_tail_values),
+        play_time_ms=play_time_ms,
+        reserved_seed_words=bytes(reserved_seed_words_values),
     )
 
 

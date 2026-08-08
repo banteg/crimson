@@ -12,7 +12,7 @@ from crimson.weapons import WeaponId
 def test_game_cfg_roundtrip(tmp_path: Path) -> None:
     path = tmp_path / save_status.GAME_CFG_NAME
     data = save_status.GameStatusData(
-        unknown_tail=b"crimsonland-test".ljust(save_status.UNKNOWN_TAIL_SIZE, b"\x00"),
+        reserved_seed_words=b"crimsonland-test".ljust(save_status.RESERVED_SEED_WORDS_BYTE_SIZE, b"\x00"),
     )
 
     save_status.save_status(path, data)
@@ -37,7 +37,7 @@ def test_game_status_edit_persists(tmp_path: Path) -> None:
 
     status.quest_unlock_index = 12
     status.quest_unlock_index_full = 34
-    status.game_sequence_id = 0x12345678
+    status.play_time_ms = 0x12345678
     status.increment_mode_play_count_for_mode(GameMode.SURVIVAL)
     status.increment_weapon_usage_slot(5)
     status.increment_quest_play_count(7, delta=2)
@@ -46,7 +46,7 @@ def test_game_status_edit_persists(tmp_path: Path) -> None:
     reloaded = save_status.load_status(status.path)
     assert reloaded.quest_unlock_index == 12
     assert reloaded.quest_unlock_index_full == 34
-    assert reloaded.game_sequence_id == 0x12345678
+    assert reloaded.play_time_ms == 0x12345678
     assert reloaded.mode_play_count_for_mode(GameMode.SURVIVAL) == 1
     assert reloaded.weapon_usage_count_slot(5) == 1
     assert reloaded.quest_play_count(7) == 2

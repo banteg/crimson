@@ -48,7 +48,7 @@ def validate_demo_trial_overlay_events(events: list[dict], *, source: str) -> li
             continue
 
         mode_id = _as_int(evt.get("mode_id"))
-        used_ms = _as_int(evt.get("game_sequence_id_ms"))
+        used_ms = _as_int(evt.get("play_time_ms"))
         grace_ms = _as_int(evt.get("demo_trial_elapsed_ms"))
         quest_major = _as_int(evt.get("quest_stage_major"))
         quest_minor = _as_int(evt.get("quest_stage_minor"))
@@ -59,7 +59,7 @@ def validate_demo_trial_overlay_events(events: list[dict], *, source: str) -> li
             errors.append(f"{source}:{idx}: missing mode_id")
             continue
         if used_ms is None:
-            errors.append(f"{source}:{idx}: missing game_sequence_id_ms")
+            errors.append(f"{source}:{idx}: missing play_time_ms")
             continue
         if grace_ms is None:
             errors.append(f"{source}:{idx}: missing demo_trial_elapsed_ms")
@@ -123,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
             "link_base": start_event.get("link_base"),
             "addrs": {
                 "demo_trial_overlay_render": addrs.get("demo_trial_overlay_render"),
-                "game_sequence_get": addrs.get("game_sequence_get"),
+                "play_time_get": addrs.get("play_time_get"),
                 "game_is_full_version": addrs.get("game_is_full_version"),
             },
         }
@@ -146,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Samples: {min(args.samples, len(samples))} / {len(samples)}")
             for idx, evt in samples[: args.samples]:
                 mode_id = _as_int(evt.get("mode_id"))
-                used_ms = _as_int(evt.get("game_sequence_id_ms"))
+                used_ms = _as_int(evt.get("play_time_ms"))
                 grace_ms = _as_int(evt.get("demo_trial_elapsed_ms"))
                 quest_major = _as_int(evt.get("quest_stage_major"))
                 quest_minor = _as_int(evt.get("quest_stage_minor"))
@@ -172,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
                     "mode_id": mode_id,
                     "quest_stage_major": quest_major,
                     "quest_stage_minor": quest_minor,
-                    "game_sequence_id_ms": used_ms,
+                    "play_time_ms": used_ms,
                     "demo_trial_elapsed_ms": grace_ms,
                     "remaining_ms": _as_int(evt.get("remaining_ms")),
                     "tier_locked": evt.get("tier_locked"),

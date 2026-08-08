@@ -5470,7 +5470,7 @@
     },
     {
       "address": "0x004852d0",
-      "comment": "Registry key path buffer built at startup (\"Software\\\\SocketPlugins\\\\Default\\\\\") and passed to game_sequence_load/game_save_status.",
+      "comment": "Registry key path buffer built at startup (\"Software\\\\SocketPlugins\\\\Default\\\\\") and passed to play_time_load/game_save_status.",
       "name": "registry_key_status_root_path",
       "program": "crimsonland.exe",
       "type": "char *"
@@ -5687,8 +5687,8 @@
     },
     {
       "address": "0x00485794",
-      "comment": "Saved game sequence id loaded from registry.",
-      "name": "game_sequence_id",
+      "comment": "Saved play time in milliseconds; synchronized with the registry value named sequence.",
+      "name": "play_time_ms",
       "program": "crimsonland.exe",
       "type": "unsigned int"
     },

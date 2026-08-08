@@ -2606,7 +2606,7 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["quest_meta_terrain_desc_unlock_gt_0x13"]["size"] == 0x2C
     assert defined["weapon_usage_counts"]["size"] == 0xD4
     assert defined["quest_play_counts"]["size"] == 0x16C
-    assert defined["game_sequence_id"]["definition_group"] == "zero-uint32"
+    assert defined["play_time_ms"]["definition_group"] == "zero-uint32"
     assert defined["fire_bullets_fallback_spread_heat"]["size"] == 4
     assert defined["perk_available_table"]["size"] == 1
     assert defined["survival_elapsed_ms"]["definition_group"] == "zero-uint32"

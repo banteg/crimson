@@ -199,7 +199,7 @@ tools/match/scratches/bonus_pick_random_type/build/msvc6.5/da6d155f514c3e33/scra
 tools/match/scratches/bonus_metadata_init/build/msvc6.5/bec9c255b6fd7fcf/scratch.obj
 tools/match/scratches/bonus_reset_availability/build/msvc6.5/7310cf29d0fe4868/scratch.obj
 tools/match/scratches/game_mode_label/build/msvc6.5/b8ce7bcabd06fb1e/scratch.obj
-tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj
+tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj
 tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj
 tools/match/scratches/game_load_status/build/msvc6.5/0da3053e4464575b/scratch.obj
 tools/match/scratches/gameplay_reset_state/build/msvc6.5/8866570c9e2d3e5f/scratch.obj
@@ -248,7 +248,7 @@ tools/match/scratches/vorbis_mem_close/build/msvc6.5/d6fab1c1847d6e25/scratch.ob
 tools/match/scratches/vorbis_read_pcm16/build/msvc6.5/b988d88ed873e743/scratch.obj
 tools/match/scratches/game_is_full_version/build/msvc6.5/23c1f297f5724af3/scratch.obj
 tools/match/scratches/demo_trial_time_limit_ms/build/msvc6.5/9a6ae447c75950c5/scratch.obj
-tools/match/scratches/game_sequence_get/build/msvc6.5/7e38b25a4daef251/scratch.obj
+tools/match/scratches/play_time_get/build/msvc6.5/c3e5f63919f3c538/scratch.obj
 tools/match/scratches/unused_fx_queue_random_prefix_color_global_init_thunk/build/msvc6.5/ebaf25b5fdfc3230/scratch.obj
 tools/match/scratches/unused_fx_queue_random_prefix_color_global_init/build/msvc6.5/e4eda4e2364fd7b9/scratch.obj
 tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init_thunk/build/msvc6.5/5c86fe9016aa93a4/scratch.obj

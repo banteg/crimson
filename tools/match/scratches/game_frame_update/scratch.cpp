@@ -36,7 +36,7 @@ extern unsigned char full_version_recheck_pending_slot_3;
 extern int quest_unlock_index;
 extern int quest_stage_major;
 extern int quest_stage_minor;
-extern unsigned int game_sequence_id;
+extern unsigned int play_time_ms;
 extern int game_time_ms;
 extern int frame_dt_ms;
 extern int demo_trial_elapsed_ms;
@@ -66,7 +66,7 @@ extern int perk_id_reflex_boosted;
 extern int music_track_intro_id;
 
 unsigned char game_is_full_version(...);
-int game_sequence_get(void);
+int play_time_get(void);
 int demo_trial_time_limit_ms(void);
 void terrain_generate(quest_meta_t *quest);
 void terrain_generate_random(void);
@@ -147,10 +147,10 @@ extern "C" unsigned char game_frame_update(void)
     }
 
     if (!game_is_full_version()) {
-        if ((int)game_sequence_id < 0) {
-            game_sequence_id = 1200000;
+        if ((int)play_time_ms < 0) {
+            play_time_ms = 1200000;
         }
-        game_sequence_id = game_sequence_get();
+        play_time_ms = play_time_get();
         config_blob.hardcore = 0;
     }
 
@@ -239,11 +239,11 @@ extern "C" unsigned char game_frame_update(void)
     }
 
     if (!demo_mode_active && !demo_trial_overlay_active) {
-        game_sequence_id = game_sequence_get();
+        play_time_ms = play_time_get();
         game_state_id_t current_state = game_state_id;
         if (!console_log_queue.open && render_pass_mode
             && current_state == GAME_STATE_GAMEPLAY) {
-            game_sequence_id += (int)(frame_dt * 1000.0f);
+            play_time_ms += (int)(frame_dt * 1000.0f);
         }
         if (demo_trial_elapsed_ms > 0 && !console_log_queue.open
             && render_pass_mode && current_state == GAME_STATE_GAMEPLAY
@@ -449,7 +449,7 @@ extern "C" unsigned char game_frame_update(void)
 
     if (!game_is_full_version() && !demo_mode_active) {
         int time_limit_ms = demo_trial_time_limit_ms();
-        float ratio = (float)(int)game_sequence_id;
+        float ratio = (float)(int)play_time_ms;
         float time_limit = (float)time_limit_ms;
         ratio /= time_limit;
         if (ratio > 1.0f) {

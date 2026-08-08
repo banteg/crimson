@@ -6,7 +6,7 @@ pub const blob_size: usize = 0x268;
 pub const file_size: usize = blob_size + 4;
 pub const weapon_usage_count: usize = 53;
 pub const quest_play_count: usize = 91;
-pub const unknown_tail_size: usize = 0x10;
+pub const reserved_seed_words_byte_size: usize = 0x10;
 
 pub const GameCfgError = binary.BinaryError || error{
     InvalidSize,
@@ -21,8 +21,8 @@ pub const Status = struct {
     mode_play_rush: u32,
     mode_play_typo: u32,
     mode_play_other: u32,
-    game_sequence_id: u32,
-    unknown_tail: [unknown_tail_size]u8,
+    play_time_ms: u32,
+    reserved_seed_words: [reserved_seed_words_byte_size]u8,
 
     pub fn msgpackWrite(self: Status, packer: anytype) !void {
         try packer.writeMapHeader(10);
@@ -42,10 +42,10 @@ pub const Status = struct {
         try packer.writeInt(self.mode_play_typo);
         try packer.writeString("mode_play_other");
         try packer.writeInt(self.mode_play_other);
-        try packer.writeString("game_sequence_id");
-        try packer.writeInt(self.game_sequence_id);
-        try packer.writeString("unknown_tail");
-        try packer.writeBinary(self.unknown_tail[0..]);
+        try packer.writeString("play_time_ms");
+        try packer.writeInt(self.play_time_ms);
+        try packer.writeString("reserved_seed_words");
+        try packer.writeBinary(self.reserved_seed_words[0..]);
     }
 
     pub fn msgpackRead(unpacker: anytype) !Status {
@@ -71,11 +71,11 @@ pub const Status = struct {
                 status.mode_play_typo = try unpacker.readInt(u32);
             } else if (std.mem.eql(u8, key, "mode_play_other")) {
                 status.mode_play_other = try unpacker.readInt(u32);
-            } else if (std.mem.eql(u8, key, "game_sequence_id")) {
-                status.game_sequence_id = try unpacker.readInt(u32);
-            } else if (std.mem.eql(u8, key, "unknown_tail")) {
-                const bytes = try unpacker.readBinaryInto(status.unknown_tail[0..]);
-                if (bytes.len != unknown_tail_size) return error.InvalidSize;
+            } else if (std.mem.eql(u8, key, "play_time_ms")) {
+                status.play_time_ms = try unpacker.readInt(u32);
+            } else if (std.mem.eql(u8, key, "reserved_seed_words")) {
+                const bytes = try unpacker.readBinaryInto(status.reserved_seed_words[0..]);
+                if (bytes.len != reserved_seed_words_byte_size) return error.InvalidSize;
             } else {
                 return error.UnknownStatusField;
             }
@@ -194,8 +194,8 @@ pub fn parseStatusBlob(decoded: []const u8) GameCfgError!Status {
         .mode_play_rush = try reader.readU32Le(),
         .mode_play_typo = try reader.readU32Le(),
         .mode_play_other = try reader.readU32Le(),
-        .game_sequence_id = try reader.readU32Le(),
-        .unknown_tail = try reader.readArray(unknown_tail_size),
+        .play_time_ms = try reader.readU32Le(),
+        .reserved_seed_words = try reader.readArray(reserved_seed_words_byte_size),
     };
 }
 
@@ -211,8 +211,8 @@ pub fn buildStatusBlob(status: Status) [blob_size]u8 {
     writer.writeU32Le(status.mode_play_rush) catch unreachable;
     writer.writeU32Le(status.mode_play_typo) catch unreachable;
     writer.writeU32Le(status.mode_play_other) catch unreachable;
-    writer.writeU32Le(status.game_sequence_id) catch unreachable;
-    writer.writeBytes(&status.unknown_tail) catch unreachable;
+    writer.writeU32Le(status.play_time_ms) catch unreachable;
+    writer.writeBytes(&status.reserved_seed_words) catch unreachable;
 
     std.debug.assert(writer.pos == blob_size);
     return out;
@@ -266,8 +266,8 @@ test "game.cfg status blob parse/build roundtrip" {
     status.mode_play_rush = 2;
     status.mode_play_typo = 3;
     status.mode_play_other = 4;
-    status.game_sequence_id = 0x12345678;
-    status.unknown_tail = [_]u8{0xA5} ** unknown_tail_size;
+    status.play_time_ms = 0x12345678;
+    status.reserved_seed_words = [_]u8{0xA5} ** reserved_seed_words_byte_size;
 
     const blob = buildStatusBlob(status);
     const parsed = try parseStatusBlob(blob[0..]);
@@ -280,8 +280,8 @@ test "game.cfg status blob parse/build roundtrip" {
     try std.testing.expectEqual(status.mode_play_rush, parsed.mode_play_rush);
     try std.testing.expectEqual(status.mode_play_typo, parsed.mode_play_typo);
     try std.testing.expectEqual(status.mode_play_other, parsed.mode_play_other);
-    try std.testing.expectEqual(status.game_sequence_id, parsed.game_sequence_id);
-    try std.testing.expectEqualSlices(u8, &status.unknown_tail, &parsed.unknown_tail);
+    try std.testing.expectEqual(status.play_time_ms, parsed.play_time_ms);
+    try std.testing.expectEqualSlices(u8, &status.reserved_seed_words, &parsed.reserved_seed_words);
 }
 
 test "game.cfg status msgpack roundtrip mirrors python data shape" {
@@ -294,8 +294,8 @@ test "game.cfg status msgpack roundtrip mirrors python data shape" {
     status.mode_play_rush = 2;
     status.mode_play_typo = 3;
     status.mode_play_other = 4;
-    status.game_sequence_id = 0x12345678;
-    status.unknown_tail = [_]u8{0xA5} ** unknown_tail_size;
+    status.play_time_ms = 0x12345678;
+    status.reserved_seed_words = [_]u8{0xA5} ** reserved_seed_words_byte_size;
 
     var writer: std.Io.Writer.Allocating = .init(std.testing.allocator);
     defer writer.deinit();
@@ -311,6 +311,6 @@ test "game.cfg status msgpack roundtrip mirrors python data shape" {
     try std.testing.expectEqual(status.mode_play_rush, decoded.value.mode_play_rush);
     try std.testing.expectEqual(status.mode_play_typo, decoded.value.mode_play_typo);
     try std.testing.expectEqual(status.mode_play_other, decoded.value.mode_play_other);
-    try std.testing.expectEqual(status.game_sequence_id, decoded.value.game_sequence_id);
-    try std.testing.expectEqualSlices(u8, &status.unknown_tail, &decoded.value.unknown_tail);
+    try std.testing.expectEqual(status.play_time_ms, decoded.value.play_time_ms);
+    try std.testing.expectEqualSlices(u8, &status.reserved_seed_words, &decoded.value.reserved_seed_words);
 }

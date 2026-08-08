@@ -1,5 +1,5 @@
 {
-  "audit_digest": "fb42373fc01a9c1d118c8d69a3578542d72db8d6d74669738ed3984756e91d28",
+  "audit_digest": "cbe25b224232b06fd036da88a804a115ffa6369142521b7a688029afcc8da822",
   "entries": [
     {
       "address": 4211888,
@@ -14661,7 +14661,7 @@
       "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
-      "comment": "Registry key path buffer built at startup (\"Software\\\\SocketPlugins\\\\Default\\\\\") and passed to game_sequence_load/game_save_status.",
+      "comment": "Registry key path buffer built at startup (\"Software\\\\SocketPlugins\\\\Default\\\\\") and passed to play_time_load/game_save_status.",
       "definition_group": "zero-pointer32",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
@@ -15310,7 +15310,7 @@
       "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default unsigned-int alignment is four",
-      "comment": "Saved game sequence id loaded from registry.",
+      "comment": "Saved play time in milliseconds; synchronized with the registry value named sequence.",
       "definition_group": "zero-uint32",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
@@ -15318,7 +15318,7 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "initializer_target": null,
       "linker_reference_count": 0,
-      "name": "game_sequence_id",
+      "name": "play_time_ms",
       "section": ".data",
       "section_offset": 83860,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
@@ -37778,9 +37778,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "946d427941a6e490fb923b10735bd07a375006fe31a9012d52d97af01b845a1c",
+    "data_map_sha256": "7fecc366cf579103b2b822a03adb32dea53dff0aa5434c8f283e9552042db745",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "1219a86e630f6e57bd8b2e49ac5606174a3138cb421656048f46f07134e4fb9b",
+    "definitions_sha256": "17cbad1f56dc748f9fcdf9b8e4d32d96ddc6655ab439a4ed52b467abcc78345e",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"

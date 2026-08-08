@@ -737,7 +737,7 @@ fn drawHub(state: *const HubState, runtime_assets: ?*const window_assets.Runtime
         drawPanelShellNoTitle(state.panel.timeline_ms, assets, stats_panel_rect);
         drawAtlasTitle(assets, panel_rect, 290.0, 52.0, window_menu.label_row_statistics);
         var playtime_buf: [64]u8 = undefined;
-        window_ui.drawSmallText(assets, formatPlaytimeText(&playtime_buf, status.game_sequence_id, preserve_bugs), panel_rect.x + 204.0, panel_rect.y + 334.0, muted_text);
+        window_ui.drawSmallText(assets, formatPlaytimeText(&playtime_buf, status.play_time_ms, preserve_bugs), panel_rect.x + 204.0, panel_rect.y + 334.0, muted_text);
         if (state.easter_text_x) |x| {
             window_ui.drawSmallText(assets, stats_easter_text, x, stats_easter_text_y, rl.Color.init(51, 255, 153, 128));
         }

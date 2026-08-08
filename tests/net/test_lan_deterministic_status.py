@@ -7,7 +7,7 @@ from crimson.gameplay import GameplayState
 from crimson.net.deterministic_status import build_lan_deterministic_status, hash_status_data, status_data_from_status
 from crimson.persistence.save_status import (
     QUEST_PLAY_COUNT,
-    UNKNOWN_TAIL_SIZE,
+    RESERVED_SEED_WORDS_BYTE_SIZE,
     WEAPON_USAGE_COUNT,
     GameStatus,
     GameStatusData,
@@ -52,8 +52,8 @@ def _make_status(*, pistol_used: bool) -> GameStatus:
             mode_play_rush=0,
             mode_play_typo=0,
             mode_play_other=0,
-            game_sequence_id=0,
-            unknown_tail=b"\x00" * int(UNKNOWN_TAIL_SIZE),
+            play_time_ms=0,
+            reserved_seed_words=b"\x00" * int(RESERVED_SEED_WORDS_BYTE_SIZE),
         ),
         dirty=False,
     )

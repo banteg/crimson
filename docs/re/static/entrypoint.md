@@ -59,7 +59,7 @@ uv run scripts/entrypoint_trace.py --depth 2 --skip-external
     - audio_shutdown_all -> sfx_release_all, dsound_shutdown (FUN_0043bc20), music_release_all
     - reg_write_dword
     - crt_free -> crt_free_base
-    - game_load_status -> game_build_path (FUN_00402bd0), game_sequence_load, crt_fopen (FUN_0046103f), crt_fseek (FUN_00461d91), crt_ftell (FUN_00461c0e), crt_fclose, game_save_status, console_printf ...
+    - game_load_status -> game_build_path (FUN_00402bd0), play_time_load, crt_fopen (FUN_0046103f), crt_fseek (FUN_00461d91), crt_ftell (FUN_00461c0e), crt_fclose, game_save_status, console_printf ...
     - console_flush_log -> crt_fflush (FUN_00461448), game_build_path (FUN_00402bd0), crt_fopen (FUN_0046103f), crt_fclose, crt_fwrite (FUN_004615ae)
     - dx_get_version -> dx_get_version_fallback_from_files, crt_tolower (FUN_00461e9b), FUN_0041cdb0, crt_snprintf (FUN_00461e4a)
     - HlinkNavigateString
@@ -127,7 +127,7 @@ loaded. All callsites below are in `crimsonland_main` at `0x0042c450`; use
    - `register_core_cvars`.
 5) Config + save bootstrap:
    - `config_load_presets`.
-   - `game_load_status` + `game_sequence_load`.
+   - `game_load_status` + `play_time_load`.
 6) Grim config dialog + settings:
    - `grim_apply_config` (`vtable +0x10`).
    - `config_sync_from_grim`, then `config_load_presets` again.

@@ -2,10 +2,10 @@ const std = @import("std");
 const msgpack = @import("msgpack");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 17;
+pub const replay_format_version: i32 = 18;
 pub const weapon_usage_count: usize = 53;
 pub const quest_play_count: usize = 91;
-pub const status_unknown_tail_size: usize = 16;
+pub const status_reserved_seed_words_byte_size: usize = 16;
 pub const max_players: usize = 4;
 pub const perk_choice_slot_count: usize = 7;
 pub const zstd_magic = [_]u8{ 0x28, 0xB5, 0x2F, 0xFD };
@@ -78,8 +78,8 @@ pub const ReplayStatus = struct {
     mode_play_rush: i32 = 0,
     mode_play_typo: i32 = 0,
     mode_play_other: i32 = 0,
-    game_sequence_id: i32 = 0,
-    unknown_tail: [status_unknown_tail_size]u8 = [_]u8{0} ** status_unknown_tail_size,
+    play_time_ms: i32 = 0,
+    reserved_seed_words: [status_reserved_seed_words_byte_size]u8 = [_]u8{0} ** status_reserved_seed_words_byte_size,
 
     pub fn msgpackWrite(self: ReplayStatus, packer: anytype) !void {
         try packer.writeMapHeader(10);
@@ -99,10 +99,10 @@ pub const ReplayStatus = struct {
         try packer.writeInt(self.mode_play_typo);
         try packer.writeString("mode_play_other");
         try packer.writeInt(self.mode_play_other);
-        try packer.writeString("game_sequence_id");
-        try packer.writeInt(self.game_sequence_id);
-        try packer.writeString("unknown_tail");
-        try packer.writeBinary(self.unknown_tail[0..]);
+        try packer.writeString("play_time_ms");
+        try packer.writeInt(self.play_time_ms);
+        try packer.writeString("reserved_seed_words");
+        try packer.writeBinary(self.reserved_seed_words[0..]);
     }
 };
 
@@ -810,8 +810,8 @@ pub const ReplayStatusCurrentWire = struct {
     mode_play_rush: i32 = 0,
     mode_play_typo: i32 = 0,
     mode_play_other: i32 = 0,
-    game_sequence_id: i32 = 0,
-    unknown_tail: BinaryBytes = .{ .data = &([_]u8{0} ** status_unknown_tail_size) },
+    play_time_ms: i32 = 0,
+    reserved_seed_words: BinaryBytes = .{ .data = &([_]u8{0} ** status_reserved_seed_words_byte_size) },
 
     pub fn msgpackRead(unpacker: anytype) !ReplayStatusCurrentWire {
         const field_count = try unpacker.readMapHeader(u16);
@@ -846,12 +846,12 @@ pub const ReplayStatusCurrentWire = struct {
             } else if (std.mem.eql(u8, field_name, "mode_play_other")) {
                 fields_seen |= 1 << 7;
                 status.mode_play_other = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "game_sequence_id")) {
+            } else if (std.mem.eql(u8, field_name, "play_time_ms")) {
                 fields_seen |= 1 << 8;
-                status.game_sequence_id = try unpacker.readInt(i32);
-            } else if (std.mem.eql(u8, field_name, "unknown_tail")) {
+                status.play_time_ms = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "reserved_seed_words")) {
                 fields_seen |= 1 << 9;
-                status.unknown_tail = .{ .data = try readExactBinary(unpacker) };
+                status.reserved_seed_words = .{ .data = try readExactBinary(unpacker) };
             } else {
                 return error.UnknownStructField;
             }
@@ -2084,7 +2084,7 @@ fn buildHeaderCurrentWithQuestLevelText(
     if (isMissingQuestLevel(wire.game_mode_id, quest_level)) return error.MissingQuestLevel;
     if (wire.status.weapon_usage_counts.len != weapon_usage_count or
         wire.status.quest_play_counts.len != quest_play_count or
-        wire.status.unknown_tail.data.len != status_unknown_tail_size)
+        wire.status.reserved_seed_words.data.len != status_reserved_seed_words_byte_size)
     {
         return error.InvalidHeaderValue;
     }
@@ -2097,8 +2097,8 @@ fn buildHeaderCurrentWithQuestLevelText(
     for (wire.status.quest_play_counts, 0..) |value, idx| {
         quest_play_counts[idx] = try parseU32(value);
     }
-    var unknown_tail: [status_unknown_tail_size]u8 = undefined;
-    @memcpy(unknown_tail[0..], wire.status.unknown_tail.data);
+    var reserved_seed_words: [status_reserved_seed_words_byte_size]u8 = undefined;
+    @memcpy(reserved_seed_words[0..], wire.status.reserved_seed_words.data);
 
     const claimed_stats: ReplayClaimedStats = .{
         .complete = wire.claimed_stats.complete,
@@ -2147,8 +2147,8 @@ fn buildHeaderCurrentWithQuestLevelText(
             .mode_play_rush = wire.status.mode_play_rush,
             .mode_play_typo = wire.status.mode_play_typo,
             .mode_play_other = wire.status.mode_play_other,
-            .game_sequence_id = wire.status.game_sequence_id,
-            .unknown_tail = unknown_tail,
+            .play_time_ms = wire.status.play_time_ms,
+            .reserved_seed_words = reserved_seed_words,
         },
         .claimed_stats = claimed_stats,
         .input_quantization = allocator.dupe(u8, wire.input_quantization) catch return error.OutOfMemory,

@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 24;
+const CAPTURE_FORMAT_VERSION = 25;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -36,7 +36,7 @@ const CAPTURE_FIELD_SETS = {
     "rng_bootstrap_calls", "pool_residue", "settings"
   ],
   "run_start.settings": ["tick_rate", "quest_fail_retry_count", "hardcore", "detail_preset", "violence_disabled", "world_size", "status"],
-  "run_start.settings.status": ["quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts", "quest_play_counts", "mode_play_survival", "mode_play_rush", "mode_play_typo", "mode_play_other", "game_sequence_id", "unknown_tail"],
+  "run_start.settings.status": ["quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts", "quest_play_counts", "mode_play_survival", "mode_play_rush", "mode_play_typo", "mode_play_other", "play_time_ms", "reserved_seed_words"],
   "run_start.pool_residue[]": ["index", "active", "phase_seed", "state_flag", "collision_flag", "collision_timer", "lifecycle_stage", "pos", "vel", "hp", "max_hp", "heading", "target_heading", "size", "hit_flash_timer", "tint", "force_target", "target", "contact_damage", "move_speed", "attack_cooldown", "reward_value", "type_id", "target_player", "link_index", "target_offset", "orbit_angle", "orbit_radius_u32", "flags", "ai_mode", "anim_phase"],
   "tick": ["event", "run_id", "tick_index", "global_tick_index", "elapsed_ms", "dt_ms_i32", "mode_id", "channels", "quest_stage_major", "quest_stage_minor", "rng_calls", "rng_outside_before", "rng_state_enter_u32", "rng_state_leave_u32", "evidence"],
   "tick.evidence": ["event_counts", "event_overflow", "event_heads", "diagnostics", "input_queries", "input_player_keys", "input_approx", "before", "after", "samples", "frame_dt_ms", "frame_dt_ms_i32", "checkpoint_private", "clocks"],
@@ -605,7 +605,7 @@ const COUNTS = {
 
 const STATUS_WEAPON_USAGE_COUNT = 53;
 const STATUS_QUEST_PLAY_COUNT = 91;
-const STATUS_UNKNOWN_TAIL_SIZE = 16;
+const STATUS_RESERVED_SEED_WORDS_BYTE_SIZE = 16;
 const PERK_CHOICE_COUNT = 7;
 const PERK_COUNT_PER_PLAYER = 0x80;
 const PROJECTILE_UPDATE_START = 0x00420b90;
@@ -1817,17 +1817,17 @@ function statusFromSnapshot(status, field) {
       requireNonNegativeInt(questPlayCounts[i], field + ".quest_play_counts[" + i + "]"),
     );
   }
-  const unknownTail = requireArray(row.unknown_tail, field + ".unknown_tail");
-  if (unknownTail.length !== STATUS_UNKNOWN_TAIL_SIZE) {
+  const reservedSeedWords = requireArray(row.reserved_seed_words, field + ".reserved_seed_words");
+  if (reservedSeedWords.length !== STATUS_RESERVED_SEED_WORDS_BYTE_SIZE) {
     failCaptureContract(
-      field + ".unknown_tail length " + unknownTail.length + " does not match expected " + STATUS_UNKNOWN_TAIL_SIZE,
+      field + ".reserved_seed_words length " + reservedSeedWords.length + " does not match expected " + STATUS_RESERVED_SEED_WORDS_BYTE_SIZE,
     );
   }
-  const normalizedUnknownTail = [];
-  for (let i = 0; i < unknownTail.length; i++) {
-    const value = requireNonNegativeInt(unknownTail[i], field + ".unknown_tail[" + i + "]");
-    if (value > 0xff) failCaptureContract(field + ".unknown_tail[" + i + "] must be a byte");
-    normalizedUnknownTail.push(value);
+  const normalizedReservedSeedWords = [];
+  for (let i = 0; i < reservedSeedWords.length; i++) {
+    const value = requireNonNegativeInt(reservedSeedWords[i], field + ".reserved_seed_words[" + i + "]");
+    if (value > 0xff) failCaptureContract(field + ".reserved_seed_words[" + i + "] must be a byte");
+    normalizedReservedSeedWords.push(value);
   }
   return {
     quest_unlock_index: questUnlockIndex,
@@ -1838,8 +1838,8 @@ function statusFromSnapshot(status, field) {
     mode_play_rush: requireNonNegativeInt(row.mode_play_rush, field + ".mode_play_rush"),
     mode_play_typo: requireNonNegativeInt(row.mode_play_typo, field + ".mode_play_typo"),
     mode_play_other: requireNonNegativeInt(row.mode_play_other, field + ".mode_play_other"),
-    game_sequence_id: requireNonNegativeInt(row.game_sequence_id, field + ".game_sequence_id"),
-    unknown_tail: normalizedUnknownTail,
+    play_time_ms: requireNonNegativeInt(row.play_time_ms, field + ".play_time_ms"),
+    reserved_seed_words: normalizedReservedSeedWords,
   };
 }
 
@@ -2757,7 +2757,7 @@ function readStatusSnapshot() {
   const questUnlockFull = packed == null ? null : (packed >>> 16) & 0xffff;
   const weaponUsageCounts = [];
   const questPlayCounts = [];
-  const unknownTail = [];
+  const reservedSeedWords = [];
   if (base) {
     for (let i = 0; i < STATUS_WEAPON_USAGE_COUNT; i++) {
       const value = safeReadU32(base.add(0x04 + i * 4));
@@ -2767,8 +2767,8 @@ function readStatusSnapshot() {
       const value = safeReadU32(base.add(0xd8 + i * 4));
       questPlayCounts.push(value == null ? null : value >>> 0);
     }
-    for (let i = 0; i < STATUS_UNKNOWN_TAIL_SIZE; i++) {
-      unknownTail.push(safeReadU8(base.add(0x258 + i)));
+    for (let i = 0; i < STATUS_RESERVED_SEED_WORDS_BYTE_SIZE; i++) {
+      reservedSeedWords.push(safeReadU8(base.add(0x258 + i)));
     }
   }
   return {
@@ -2780,8 +2780,8 @@ function readStatusSnapshot() {
     mode_play_rush: base ? safeReadU32(base.add(0x248)) : null,
     mode_play_typo: base ? safeReadU32(base.add(0x24c)) : null,
     mode_play_other: base ? safeReadU32(base.add(0x250)) : null,
-    game_sequence_id: base ? safeReadU32(base.add(0x254)) : null,
-    unknown_tail: unknownTail,
+    play_time_ms: base ? safeReadU32(base.add(0x254)) : null,
+    reserved_seed_words: reservedSeedWords,
   };
 }
 

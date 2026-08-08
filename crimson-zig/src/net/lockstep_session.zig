@@ -226,7 +226,7 @@ test "lockstep sessions handshake over udp" {
     const io = std.Io.Threaded.global_single_threaded.io();
 
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 42;
+    status.play_time_ms = 42;
     var host = HostSession.init(.{
         .bind_host = "127.0.0.1",
         .bind_port = 0,
@@ -282,7 +282,7 @@ test "lockstep host session starts single-player lobby on update" {
     const io = std.Io.Threaded.global_single_threaded.io();
 
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 44;
+    status.play_time_ms = 44;
     var host = HostSession.init(.{
         .bind_host = "127.0.0.1",
         .bind_port = 0,
@@ -310,7 +310,7 @@ test "lockstep sessions exchange input and canonical tick frame" {
     const io = std.Io.Threaded.global_single_threaded.io();
 
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 43;
+    status.play_time_ms = 43;
     var host = HostSession.init(.{
         .bind_host = "127.0.0.1",
         .bind_port = 0,

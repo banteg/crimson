@@ -12,7 +12,7 @@ unsigned int crt_fread(
     void *ptr, unsigned int size, unsigned int count, FILE *fp);
 int crt_fclose(FILE *fp);
 extern "C" void game_save_status(void);
-extern "C" void game_sequence_load(void);
+extern "C" void play_time_load(void);
 
 extern "C" void game_load_status(void)
 {
@@ -36,7 +36,7 @@ extern "C" void game_load_status(void)
             console_printf(
                 &console_log_queue,
                 "GAME_LoadStatus FAILED, invalid file size\n");
-            game_sequence_load();
+            play_time_load();
             return;
         }
 
@@ -76,7 +76,7 @@ extern "C" void game_load_status(void)
             console_printf(
                 &console_log_queue,
                 "GAME_LoadStatus FAILED, check sum invalid\n");
-            game_sequence_load();
+            play_time_load();
             return;
         }
 
@@ -93,7 +93,7 @@ extern "C" void game_load_status(void)
     console_printf(&console_log_queue, "Generating new file..\n");
     game_status_blob.quest_unlock_index = 0;
     game_status_blob.quest_unlock_index_full = 0;
-    game_sequence_load();
+    play_time_load();
     game_save_status();
-    game_sequence_load();
+    play_time_load();
 }

@@ -9,7 +9,7 @@
 // - Addresses are for the repo's PE (1.9.93-gog) with link base 0x00400000.
 // - This hook is intended for demo builds; the retail build may never render the overlay.
 // - For other builds, override addresses via:
-//     CRIMSON_FRIDA_ADDRS="demo_trial_overlay_render=0x401000,game_sequence_get=0x402000"
+//     CRIMSON_FRIDA_ADDRS="demo_trial_overlay_render=0x401000,play_time_get=0x402000"
 //     CRIMSON_FRIDA_ADDRS_PATH="C:\\share\\frida\\crimson_addrs.json" (JSON object)
 //     CRIMSON_FRIDA_LINK_BASE="0x00400000"
 
@@ -44,7 +44,7 @@ const CONFIG = {
   // Optional: patch game_is_full_version() + config_full_version to force demo/shareware behavior.
   forceDemoPatch: true,
   // Optional: force the demo playtime (ms) only for gameplay_update_and_render's calls
-  // to game_sequence_get(). Useful to trigger the overlay without waiting ~40 minutes.
+  // to play_time_get(). Useful to trigger the overlay without waiting ~40 minutes.
   // Note: this does not force demo gates by itself; pair with forceDemoInGameplayLoop.
   forcePlaytimeMs: null,
   // Optional: log at most once per N milliseconds (0 = log every call).
@@ -66,7 +66,7 @@ const DEMO_QUEST_GRACE_TIME_MS = 300000;
 
 const ADDR = {
   game_is_full_version: 0x0041df40,
-  game_sequence_get: 0x0041df60,
+  play_time_get: 0x0041df60,
   gameplay_update_and_render: 0x0040aab0,
   gameplay_update_and_render_end: 0x0040b5d0, // start of next function
 
@@ -74,7 +74,7 @@ const ADDR = {
 
   config_game_mode: 0x00480360,
   demo_trial_elapsed_ms: 0x0048084c,
-  game_sequence_id: 0x00485794,
+  play_time_ms: 0x00485794,
   quest_stage_major: 0x00487004,
   quest_stage_minor: 0x00487008,
   game_state_id: 0x00487270,
@@ -387,12 +387,12 @@ function hookGameIsFullVersion() {
   });
 }
 
-function hookGameSequenceGet() {
+function hookPlayTimeGet() {
   if (CONFIG.forcePlaytimeMs === null || CONFIG.forcePlaytimeMs === undefined) return;
 
-  const addr = exePtr(ADDR.game_sequence_get);
+  const addr = exePtr(ADDR.play_time_get);
   if (!addr) {
-    writeLog({ event: 'hook_error', target: 'game_sequence_get', error: 'addr_unavailable' });
+    writeLog({ event: 'hook_error', target: 'play_time_get', error: 'addr_unavailable' });
     return;
   }
 
@@ -414,7 +414,7 @@ function hookGameSequenceGet() {
 
   writeLog({
     event: 'hook',
-    target: 'game_sequence_get',
+    target: 'play_time_get',
     addr: addr.toString(),
     force_playtime_ms: forcedValue,
   });
@@ -456,7 +456,7 @@ function hookOverlayRender() {
       }
 
       const modeId = readS32(ADDR.config_game_mode);
-      const usedMs = readS32(ADDR.game_sequence_id);
+      const usedMs = readS32(ADDR.play_time_ms);
       const graceMs = readS32(ADDR.demo_trial_elapsed_ms);
       const questMajor = readS32(ADDR.quest_stage_major);
       const questMinor = readS32(ADDR.quest_stage_minor);
@@ -486,7 +486,7 @@ function hookOverlayRender() {
         game_state_id: gameStateId,
         quest_stage_major: questMajor,
         quest_stage_minor: questMinor,
-        game_sequence_id_ms: usedMs,
+        play_time_ms: usedMs,
         demo_trial_elapsed_ms: graceMs,
         remaining_ms: remainingMs,
         tier_locked: tierLocked,
@@ -528,7 +528,7 @@ function main() {
     hookGameIsFullVersion();
   }
   if (CONFIG.forcePlaytimeMs !== null && CONFIG.forcePlaytimeMs !== undefined) {
-    hookGameSequenceGet();
+    hookPlayTimeGet();
   }
 
   hookOverlayRender();

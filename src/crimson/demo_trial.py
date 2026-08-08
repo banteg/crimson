@@ -93,7 +93,7 @@ def demo_trial_overlay_info(
     Modeled after `demo_trial_overlay_render` (0x004047c0) call sites and time formatting.
 
     Notes:
-      - `global_playtime_ms` maps to `game_status_blob.game_sequence_id` (ms).
+      - `global_playtime_ms` maps to `game_status_blob.play_time_ms` (ms).
       - `quest_grace_elapsed_ms` maps to `demo_trial_elapsed_ms` (ms) once activated.
     """
 

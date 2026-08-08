@@ -6,7 +6,7 @@ from pathlib import Path
 from crimson.net.deterministic_status import build_lan_deterministic_status, status_data_from_status
 from crimson.persistence.save_status import (
     QUEST_PLAY_COUNT,
-    UNKNOWN_TAIL_SIZE,
+    RESERVED_SEED_WORDS_BYTE_SIZE,
     WEAPON_USAGE_COUNT,
     GameStatus,
     GameStatusData,
@@ -30,8 +30,8 @@ def test_status_data_from_status_uses_full_typed_payload() -> None:
         mode_play_rush=22,
         mode_play_typo=33,
         mode_play_other=44,
-        game_sequence_id=55,
-        unknown_tail=b"\xAB" * int(UNKNOWN_TAIL_SIZE),
+        play_time_ms=55,
+        reserved_seed_words=b"\xAB" * int(RESERVED_SEED_WORDS_BYTE_SIZE),
     )
     status = GameStatus.from_data(path=Path("game.cfg"), data=data, dirty=False)
 
@@ -43,7 +43,7 @@ def test_build_lan_deterministic_status_uses_full_payload() -> None:
     data = GameStatusData(
         quest_unlock_index=7,
         quest_unlock_index_full=9,
-        unknown_tail=b"\xCD" * int(UNKNOWN_TAIL_SIZE),
+        reserved_seed_words=b"\xCD" * int(RESERVED_SEED_WORDS_BYTE_SIZE),
     )
 
     status = build_lan_deterministic_status(status=data)
@@ -60,7 +60,7 @@ def test_hash_status_data_hashes_full_blob() -> None:
         quest_unlock_index=1,
         quest_unlock_index_full=2,
         quest_play_counts=tuple(quest_counts),
-        unknown_tail=bytes(range(int(UNKNOWN_TAIL_SIZE))),
+        reserved_seed_words=bytes(range(int(RESERVED_SEED_WORDS_BYTE_SIZE))),
     )
 
     assert hash_status_data(data) == hashlib.sha256(build_status_blob(data)).hexdigest()

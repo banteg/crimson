@@ -24,7 +24,7 @@ WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 # Quest play count length inferred from known trailing fields in the blob (0xD8..0x244).
 QUEST_PLAY_COUNT = 91
 
-UNKNOWN_TAIL_SIZE = 0x10
+RESERVED_SEED_WORDS_BYTE_SIZE = 0x10
 
 type QuestPlayCounts = Annotated[
     tuple[int, ...],
@@ -32,7 +32,7 @@ type QuestPlayCounts = Annotated[
 ]
 
 _ZERO_QUEST_PLAY_COUNTS: Final[QuestPlayCounts] = tuple(0 for _ in range(QUEST_PLAY_COUNT))
-_ZERO_UNKNOWN_TAIL: Final[bytes] = b"\x00" * UNKNOWN_TAIL_SIZE
+_ZERO_RESERVED_SEED_WORDS: Final[bytes] = b"\x00" * RESERVED_SEED_WORDS_BYTE_SIZE
 _STATUS_FIELD_NAMES: Final[frozenset[str]] = frozenset(
     {
         "quest_unlock_index",
@@ -43,8 +43,8 @@ _STATUS_FIELD_NAMES: Final[frozenset[str]] = frozenset(
         "mode_play_rush",
         "mode_play_typo",
         "mode_play_other",
-        "game_sequence_id",
-        "unknown_tail",
+        "play_time_ms",
+        "reserved_seed_words",
     },
 )
 
@@ -57,8 +57,8 @@ GAME_STATUS_STRUCT = Struct(
     "mode_play_rush" / Int32ul,
     "mode_play_typo" / Int32ul,
     "mode_play_other" / Int32ul,
-    "game_sequence_id" / Int32ul,
-    "unknown_tail" / Bytes(UNKNOWN_TAIL_SIZE),
+    "play_time_ms" / Int32ul,
+    "reserved_seed_words" / Bytes(RESERVED_SEED_WORDS_BYTE_SIZE),
 )
 
 GAME_CFG_STRUCT = Struct(
@@ -76,8 +76,8 @@ class GameStatusData(msgspec.Struct, forbid_unknown_fields=True):
     mode_play_rush: int = 0
     mode_play_typo: int = 0
     mode_play_other: int = 0
-    game_sequence_id: int = 0
-    unknown_tail: bytes = _ZERO_UNKNOWN_TAIL
+    play_time_ms: int = 0
+    reserved_seed_words: bytes = _ZERO_RESERVED_SEED_WORDS
 
 
 class GameStatus(GameStatusData, kw_only=True):
@@ -109,8 +109,8 @@ class GameStatus(GameStatusData, kw_only=True):
             mode_play_rush=data.mode_play_rush,
             mode_play_typo=data.mode_play_typo,
             mode_play_other=data.mode_play_other,
-            game_sequence_id=data.game_sequence_id,
-            unknown_tail=bytes(data.unknown_tail),
+            play_time_ms=data.play_time_ms,
+            reserved_seed_words=bytes(data.reserved_seed_words),
         )
 
     def as_data(self) -> GameStatusData:
@@ -123,8 +123,8 @@ class GameStatus(GameStatusData, kw_only=True):
             mode_play_rush=self.mode_play_rush,
             mode_play_typo=self.mode_play_typo,
             mode_play_other=self.mode_play_other,
-            game_sequence_id=self.game_sequence_id,
-            unknown_tail=bytes(self.unknown_tail),
+            play_time_ms=self.play_time_ms,
+            reserved_seed_words=bytes(self.reserved_seed_words),
         )
 
     def mode_play_count_for_mode(self, game_mode: GameMode) -> int:
@@ -217,8 +217,8 @@ def _status_blob_dict(data: GameStatusData) -> dict[str, object]:
         "mode_play_rush": data.mode_play_rush,
         "mode_play_typo": data.mode_play_typo,
         "mode_play_other": data.mode_play_other,
-        "game_sequence_id": data.game_sequence_id,
-        "unknown_tail": bytes(data.unknown_tail),
+        "play_time_ms": data.play_time_ms,
+        "reserved_seed_words": bytes(data.reserved_seed_words),
     }
 
 
@@ -239,8 +239,8 @@ def parse_status_blob(decoded: bytes) -> GameStatusData:
         mode_play_rush=int(raw["mode_play_rush"]),
         mode_play_typo=int(raw["mode_play_typo"]),
         mode_play_other=int(raw["mode_play_other"]),
-        game_sequence_id=int(raw["game_sequence_id"]),
-        unknown_tail=bytes(raw["unknown_tail"]),
+        play_time_ms=int(raw["play_time_ms"]),
+        reserved_seed_words=bytes(raw["reserved_seed_words"]),
     )
 
 
@@ -330,7 +330,7 @@ __all__ = [
     "GAME_CFG_STRUCT",
     "GAME_STATUS_STRUCT",
     "QUEST_PLAY_COUNT",
-    "UNKNOWN_TAIL_SIZE",
+    "RESERVED_SEED_WORDS_BYTE_SIZE",
     "WEAPON_USAGE_COUNT",
     "GameStatus",
     "GameStatusData",

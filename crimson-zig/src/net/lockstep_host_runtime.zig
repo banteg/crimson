@@ -416,7 +416,7 @@ test "lockstep host runtime starts once peer is ready" {
     const allocator = std.testing.allocator;
     const peer = PeerAddr.loopback(42003);
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 77;
+    status.play_time_ms = 77;
 
     var host = HostRuntime.init(.{
         .mode_id = 3,
@@ -447,7 +447,7 @@ test "lockstep host runtime starts once peer is ready" {
             .match_start => |start| {
                 saw_start = true;
                 try std.testing.expectEqual(@as(i32, 123), start.seed);
-                try std.testing.expectEqual(@as(u32, 77), start.status.?.game_sequence_id);
+                try std.testing.expectEqual(@as(u32, 77), start.status.?.play_time_ms);
             },
             else => {},
         }
@@ -458,7 +458,7 @@ test "lockstep host runtime starts once peer is ready" {
 test "lockstep host runtime starts single player when polled" {
     const allocator = std.testing.allocator;
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 78;
+    status.play_time_ms = 78;
 
     var host = HostRuntime.init(.{
         .mode_id = 3,

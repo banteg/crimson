@@ -1456,16 +1456,12 @@ typedef struct game_status_t {
     unsigned int mode_play_rush;
     unsigned int mode_play_typo;
     unsigned int mode_play_other;
-    unsigned int game_sequence_id;
-    union {
-        unsigned char reserved0[0x10];
-        unsigned int reserved_seed_words[4];
-    };
+    unsigned int play_time_ms;
+    unsigned int reserved_seed_words[4];
 } game_status_t;
 
 // Layout-equivalent Binary Ninja view of the persisted status blob. Native
-// initialization writes the tail as four dwords; flattening that proven view
-// prevents the anonymous union from degrading them to reserved0 offsets.
+// initialization writes the tail as four dwords.
 typedef struct game_status_binja_t {
     unsigned short quest_unlock_index;
     unsigned short quest_unlock_index_full;
@@ -1475,7 +1471,7 @@ typedef struct game_status_binja_t {
     unsigned int mode_play_rush;
     unsigned int mode_play_typo;
     unsigned int mode_play_other;
-    unsigned int game_sequence_id;
+    unsigned int play_time_ms;
     unsigned int reserved_seed_words[4];
 } game_status_binja_t;
 

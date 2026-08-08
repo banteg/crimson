@@ -407,7 +407,7 @@ def _validate_status(status: GameStatusData) -> None:
         "mode_play_rush",
         "mode_play_typo",
         "mode_play_other",
-        "game_sequence_id",
+        "play_time_ms",
     ):
         _require_int_range(
             getattr(status, field),
@@ -426,8 +426,8 @@ def _validate_status(status: GameStatusData) -> None:
                 high=0xFFFFFFFF,
                 field=f"replay.header.status.{field}[{index}]",
             )
-    if len(status.unknown_tail) != 0x10:
-        raise ReplayCodecError("replay.header.status.unknown_tail must contain exactly 16 bytes")
+    if len(status.reserved_seed_words) != 0x10:
+        raise ReplayCodecError("replay.header.status.reserved_seed_words must contain exactly 16 bytes")
 
 
 def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:

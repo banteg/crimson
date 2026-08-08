@@ -81,7 +81,7 @@ test "lockstep pump moves hello ready and match start over udp" {
     defer client_transport.close(io);
 
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 42;
+    status.play_time_ms = 42;
     var host = lockstep_host_runtime.HostRuntime.init(.{
         .mode_id = 2,
         .player_count = 2,

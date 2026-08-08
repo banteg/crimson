@@ -171,7 +171,7 @@ def test_demo_trial_purchase_requests_quit(make_game_state, mocker) -> None:
         demo_enabled=True,
         config_updates={"game_mode": int(GameMode.SURVIVAL)},
     )
-    state.status.game_sequence_id = DEMO_TOTAL_PLAY_TIME_MS
+    state.status.play_time_ms = DEMO_TOTAL_PLAY_TIME_MS
     loop = GameLoopView(state)
     overlay = SimpleNamespace(update=mocker.Mock(return_value="purchase"))
 
@@ -190,7 +190,7 @@ def test_demo_trial_overlay_prepares_gameplay_frame_when_visible(make_game_state
         demo_enabled=True,
         config_updates={"game_mode": int(GameMode.SURVIVAL)},
     )
-    state.status.game_sequence_id = DEMO_TOTAL_PLAY_TIME_MS
+    state.status.play_time_ms = DEMO_TOTAL_PLAY_TIME_MS
     loop = GameLoopView(state)
     gameplay = _DummyGameplay()
     loop._front_active = gameplay

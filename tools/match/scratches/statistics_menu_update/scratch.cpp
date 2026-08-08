@@ -145,7 +145,7 @@ extern "C" void statistics_menu_update(void)
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.23f);
     grim_interface_ptr->grim_set_config_var(0x18, 0.43f);
 
-    int session_minutes = (int)game_sequence_id / 1000 / 60;
+    int session_minutes = (int)play_time_ms / 1000 / 60;
     int session_hours = session_minutes / 60;
     int session_minute_part = session_minutes - session_hours * 60;
     grim_interface_ptr->grim_draw_text_small_fmt(
@@ -154,7 +154,7 @@ extern "C" void statistics_menu_update(void)
         "played for %d hours %d minutes",
         session_hours,
         session_minute_part,
-        (int)game_sequence_id / 1000 - session_minute_part * 60);
+        (int)play_time_ms / 1000 - session_minute_part * 60);
 
     if (online_sync_status != 0) {
         Sleep(10);

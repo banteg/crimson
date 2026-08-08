@@ -237,7 +237,7 @@ test "lockstep live bridge maps client runtime match start to live runner config
     try std.testing.expect(liveConfigFromClientRuntime(client) == null);
 
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 7;
+    status.play_time_ms = 7;
     client.lobby.ingestMatchStart(.{
         .session_id = "session",
         .mode_id = @intFromEnum(game_ids.GameModeId.survival),

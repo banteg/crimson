@@ -3,55 +3,55 @@
   "sites": [
     {
       "name": "session-playtime-allocation",
-      "find": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)game_sequence_id / 1000 - session_minute_part * 60);",
+      "find": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)play_time_ms / 1000 - session_minute_part * 60);",
       "replacements": [
         {
           "name": "named-seconds",
-          "text": "    int session_seconds = (int)game_sequence_id / 1000;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
         },
         {
           "name": "in-place-minute-reduction",
-          "text": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        (int)game_sequence_id / 1000 - session_minutes * 60);"
+          "text": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        (int)play_time_ms / 1000 - session_minutes * 60);"
         },
         {
           "name": "named-seconds-in-place-minute-reduction",
-          "text": "    int session_seconds = (int)game_sequence_id / 1000;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        session_seconds - session_minutes * 60);"
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        session_seconds - session_minutes * 60);"
         },
         {
           "name": "split-hour-and-part-assignments",
-          "text": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    int session_hours;\n    int session_minute_part;\n    session_hours = session_minutes / 60;\n    session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)game_sequence_id / 1000 - session_minute_part * 60);"
+          "text": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    int session_hours;\n    int session_minute_part;\n    session_hours = session_minutes / 60;\n    session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)play_time_ms / 1000 - session_minute_part * 60);"
         },
         {
           "name": "split-minute-part-assignment",
-          "text": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part;\n    session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)game_sequence_id / 1000 - session_minute_part * 60);"
+          "text": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part;\n    session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)play_time_ms / 1000 - session_minute_part * 60);"
         },
         {
           "name": "hour-declared-before-minutes",
-          "text": "    int session_hours;\n    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)game_sequence_id / 1000 - session_minute_part * 60);"
+          "text": "    int session_hours;\n    int session_minutes = (int)play_time_ms / 1000 / 60;\n    session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)play_time_ms / 1000 - session_minute_part * 60);"
         },
         {
           "name": "renderer-before-hours",
-          "text": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)game_sequence_id / 1000 - session_minute_part * 60);"
+          "text": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)play_time_ms / 1000 - session_minute_part * 60);"
         },
         {
           "name": "renderer-before-hours-in-place-minute-reduction",
-          "text": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        (int)game_sequence_id / 1000 - session_minutes * 60);"
+          "text": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        (int)play_time_ms / 1000 - session_minutes * 60);"
         },
         {
           "name": "named-seconds-renderer-before-minutes",
-          "text": "    int session_seconds = (int)game_sequence_id / 1000;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
         },
         {
           "name": "named-seconds-renderer-in-place-minute-reduction",
-          "text": "    int session_seconds = (int)game_sequence_id / 1000;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        session_seconds - session_minutes * 60);"
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    session_minutes -= session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minutes,\n        session_seconds - session_minutes * 60);"
         },
         {
           "name": "renderer-reference-before-hours",
-          "text": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    IGrim2D_cpp &session_renderer = *grim_interface_ptr;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer.grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)game_sequence_id / 1000 - session_minute_part * 60);"
+          "text": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    IGrim2D_cpp &session_renderer = *grim_interface_ptr;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer.grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)play_time_ms / 1000 - session_minute_part * 60);"
         },
         {
           "name": "dereferenced-interface-call",
-          "text": "    int session_minutes = (int)game_sequence_id / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    (*grim_interface_ptr).grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)game_sequence_id / 1000 - session_minute_part * 60);"
+          "text": "    int session_minutes = (int)play_time_ms / 1000 / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    (*grim_interface_ptr).grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        (int)play_time_ms / 1000 - session_minute_part * 60);"
         }
       ]
     },

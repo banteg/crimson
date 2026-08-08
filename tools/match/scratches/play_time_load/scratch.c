@@ -8,10 +8,10 @@ unsigned int reg_read_dword_default(
     unsigned int *out,
     unsigned int fallback);
 
-void game_sequence_load(void)
+void play_time_load(void)
 {
     HKEY key;
-    unsigned int sequence;
+    unsigned int stored_play_time_ms;
 
     if (RegCreateKeyExA(
             HKEY_LOCAL_MACHINE,
@@ -24,9 +24,9 @@ void game_sequence_load(void)
             &key,
             0)
         == ERROR_SUCCESS) {
-        reg_read_dword_default(key, "sequence", &sequence, 0);
-        if (game_sequence_id < sequence) {
-            game_sequence_id = sequence;
+        reg_read_dword_default(key, "sequence", &stored_play_time_ms, 0);
+        if (play_time_ms < stored_play_time_ms) {
+            play_time_ms = stored_play_time_ms;
         }
         RegCloseKey(key);
     }

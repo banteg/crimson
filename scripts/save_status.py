@@ -22,15 +22,15 @@ def extract_fields(decoded: bytes) -> dict:
     mode_counts = {name: int(data[field]) for name, field in MODE_COUNT_ORDER}
     weapon_usage = [int(value) for value in data["weapon_usage_counts"]]
     quest_play_counts = [int(value) for value in data["quest_play_counts"]]
-    unknown_tail = bytes(data["unknown_tail"])
+    reserved_seed_words = bytes(data["reserved_seed_words"])
     return {
         "quest_unlock_index": int(data["quest_unlock_index"]),
         "quest_unlock_index_full": int(data["quest_unlock_index_full"]),
         "weapon_usage_counts": weapon_usage,
         "quest_play_counts": quest_play_counts,
         "mode_play_counts": mode_counts,
-        "game_sequence_id": int(data["game_sequence_id"]),
-        "unknown_tail_hex": unknown_tail.hex(),
+        "play_time_ms": int(data["play_time_ms"]),
+        "reserved_seed_words_hex": reserved_seed_words.hex(),
     }
 
 
@@ -39,8 +39,8 @@ def apply_updates(data: dict, updates: dict) -> None:
         data["quest_unlock_index"] = int(updates["quest_unlock_index"]) & 0xFFFF
     if "quest_unlock_index_full" in updates:
         data["quest_unlock_index_full"] = int(updates["quest_unlock_index_full"]) & 0xFFFF
-    if "game_sequence_id" in updates:
-        data["game_sequence_id"] = int(updates["game_sequence_id"]) & 0xFFFFFFFF
+    if "play_time_ms" in updates:
+        data["play_time_ms"] = int(updates["play_time_ms"]) & 0xFFFFFFFF
 
     weapon_updates = updates.get("weapon_usage_counts", {})
     for key, value in weapon_updates.items():
@@ -83,7 +83,7 @@ def parse_kv_pairs(pairs: Iterable[str]) -> dict:
         elif key.startswith("mode_play."):
             mode = key.split(".", 1)[1]
             updates.setdefault("mode_play_counts", {})[mode] = int(value, 0)
-        elif key in {"quest_unlock_index", "quest_unlock_index_full", "game_sequence_id"}:
+        elif key in {"quest_unlock_index", "quest_unlock_index_full", "play_time_ms"}:
             updates[key] = int(value, 0)
         else:
             raise ValueError(f"unknown key: {key}")
@@ -98,7 +98,7 @@ def cmd_info(args: argparse.Namespace) -> int:
     print(f"Checksum valid: {blob.checksum_valid}")
     print(f"Quest unlock index: {fields['quest_unlock_index']}")
     print(f"Quest unlock index (full): {fields['quest_unlock_index_full']}")
-    print(f"Game sequence id: {fields['game_sequence_id']}")
+    print(f"Play time (ms): {fields['play_time_ms']}")
     print("Mode play counts:")
     for name, _ in MODE_COUNT_ORDER:
         print(f"  {name}: {fields['mode_play_counts'][name]}")
@@ -196,7 +196,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help=(
             "key=value updates (repeatable). Keys: quest_unlock_index, "
-            "quest_unlock_index_full, game_sequence_id, weapon_usage.<slot>, "
+            "quest_unlock_index_full, play_time_ms, weapon_usage.<slot>, "
             "quest_play.<index>, mode_play.<survival|rush|typo|other>"
         ),
     )

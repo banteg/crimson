@@ -23,8 +23,8 @@ def test_zig_status_human_output_reports_summary(tmp_path: Path) -> None:
         mode_play_rush=2,
         mode_play_typo=3,
         mode_play_other=4,
-        game_sequence_id=123456,
-        unknown_tail=b"zig-status-test!",
+        play_time_ms=123456,
+        reserved_seed_words=b"zig-status-test!",
     )
     path = tmp_path / save_status.GAME_CFG_NAME
     save_status.save_status(path, data)
@@ -45,9 +45,9 @@ def test_zig_status_human_output_reports_summary(tmp_path: Path) -> None:
     assert "mode_plays: survival=1 rush=2 typo=3 other=4" in result.stdout
     assert "total_weapon_usage: 9" in result.stdout
     assert "total_quest_plays: 8" in result.stdout
-    assert "game_sequence_id: 123456" in result.stdout
+    assert "play_time_ms: 123456" in result.stdout
     assert "fields:" in result.stdout
-    assert "unknown_tail: 0x7a69672d7374617475732d7465737421 (len=16)" in result.stdout
+    assert "reserved_seed_words: 0x7a69672d7374617475732d7465737421 (len=16)" in result.stdout
 
 
 def test_zig_status_json_output_reports_summary_and_fields(tmp_path: Path) -> None:
@@ -64,8 +64,8 @@ def test_zig_status_json_output_reports_summary_and_fields(tmp_path: Path) -> No
         mode_play_rush=2,
         mode_play_typo=3,
         mode_play_other=4,
-        game_sequence_id=0x12345678,
-        unknown_tail=b"crimsonland-test".ljust(save_status.UNKNOWN_TAIL_SIZE, b"\x00"),
+        play_time_ms=0x12345678,
+        reserved_seed_words=b"crimsonland-test".ljust(save_status.RESERVED_SEED_WORDS_BYTE_SIZE, b"\x00"),
     )
     path = tmp_path / save_status.GAME_CFG_NAME
     save_status.save_status(path, data)
@@ -104,16 +104,16 @@ def test_zig_status_json_output_reports_summary_and_fields(tmp_path: Path) -> No
         "mode_play_rush": 2,
         "mode_play_typo": 3,
         "mode_play_other": 4,
-        "game_sequence_id": 0x12345678,
+        "play_time_ms": 0x12345678,
     }
     assert payload["fields"]["weapon_usage_counts"][5] == 99
     assert payload["fields"]["quest_play_counts"][7] == 1234
-    assert payload["fields"]["unknown_tail"] == list(b"crimsonland-test".ljust(save_status.UNKNOWN_TAIL_SIZE, b"\x00"))
+    assert payload["fields"]["reserved_seed_words"] == list(b"crimsonland-test".ljust(save_status.RESERVED_SEED_WORDS_BYTE_SIZE, b"\x00"))
 
 
-def test_zig_status_json_preserves_binary_unknown_tail(tmp_path: Path) -> None:
+def test_zig_status_json_preserves_binary_reserved_seed_words(tmp_path: Path) -> None:
     data = save_status.GameStatusData(
-        unknown_tail=bytes(range(0xF0, 0x100)),
+        reserved_seed_words=bytes(range(0xF0, 0x100)),
     )
     path = tmp_path / save_status.GAME_CFG_NAME
     save_status.save_status(path, data)
@@ -129,7 +129,7 @@ def test_zig_status_json_preserves_binary_unknown_tail(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     payload = json.loads(result.stdout)
     assert payload["schema_version"] == 2
-    assert payload["fields"]["unknown_tail"] == list(range(0xF0, 0x100))
+    assert payload["fields"]["reserved_seed_words"] == list(range(0xF0, 0x100))
 
 
 def test_zig_status_rejects_checksum_mismatch(tmp_path: Path) -> None:

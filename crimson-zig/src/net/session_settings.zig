@@ -389,7 +389,7 @@ test "lockstep session settings build hello and welcome messages" {
 
 test "lockstep session settings roundtrip match start messages" {
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 42;
+    status.play_time_ms = 42;
     const settings = forLockstep(.{
         .mode_id = 3,
         .player_count = 2,
@@ -413,7 +413,7 @@ test "lockstep session settings roundtrip match start messages" {
     try std.testing.expectEqual(@as(i32, 2), start.quest_level.?.major);
     try std.testing.expectEqual(@as(i32, 9), start.quest_level.?.minor);
     try std.testing.expect(start.preserve_bugs);
-    try std.testing.expectEqual(@as(u32, 42), start.status.?.game_sequence_id);
+    try std.testing.expectEqual(@as(u32, 42), start.status.?.play_time_ms);
 
     const roundtrip = fromMatchStart(start, .{ .tick_rate = 60, .input_delay_ticks = 3 });
     try std.testing.expectEqual(@as(i32, 3), roundtrip.mode_id);
@@ -485,7 +485,7 @@ test "relay session settings build room messages" {
         .{ .slot_index = 1, .connected = true, .ready = false, .is_host = false, .peer_name = "guest" },
     };
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 99;
+    status.play_time_ms = 99;
     const settings = forRelay(.{
         .mode_id = 3,
         .player_count = 2,
@@ -506,7 +506,7 @@ test "relay session settings build room messages" {
     try std.testing.expectEqual(@as(i32, 2), create.input_delay_ticks);
     try std.testing.expectEqual(@as(i32, 6), create.rollback_max_ticks);
     try std.testing.expectEqual(relay_protocol.NetcodeMode.rollback, create.netcode_mode);
-    try std.testing.expectEqual(@as(u32, 99), create.status.?.game_sequence_id);
+    try std.testing.expectEqual(@as(u32, 99), create.status.?.play_time_ms);
 
     const state = roomStateFromSettings(settings, .{
         .room_code = code,
@@ -538,5 +538,5 @@ test "relay session settings build room messages" {
     try std.testing.expectEqual(@as(i32, 1), start.slot_index);
     try std.testing.expectEqual(@as(i32, 0), start.host_slot_index);
     try std.testing.expectEqualStrings("token", start.reconnect_token);
-    try std.testing.expectEqual(@as(u32, 99), start.status.?.game_sequence_id);
+    try std.testing.expectEqual(@as(u32, 99), start.status.?.play_time_ms);
 }

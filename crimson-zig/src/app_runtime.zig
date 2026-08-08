@@ -125,7 +125,7 @@ pub const DesktopRuntime = struct {
         if (!(delta_ms_f32 > 0.0)) return;
         const delta_ms: u32 = @intFromFloat(delta_ms_f32);
         if (delta_ms == 0) return;
-        self.status.game_sequence_id +%= delta_ms;
+        self.status.play_time_ms +%= delta_ms;
         self.status_dirty = true;
     }
 
@@ -246,7 +246,7 @@ test "desktop runtime creates default config and status files" {
     try std.testing.expectEqual(@as(u32, 1024), cfg.screen_width);
     try std.testing.expectEqual(@as(u32, 768), cfg.screen_height);
     try std.testing.expectEqual(@as(u16, 0), status.quest_unlock_index);
-    try std.testing.expectEqual(@as(u32, 0), status.game_sequence_id);
+    try std.testing.expectEqual(@as(u32, 0), status.play_time_ms);
 }
 
 test "desktop runtime records tracked quest counters" {

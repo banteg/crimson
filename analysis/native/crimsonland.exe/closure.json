@@ -1,5 +1,5 @@
 {
-  "audit_digest": "fb42373fc01a9c1d118c8d69a3578542d72db8d6d74669738ed3984756e91d28",
+  "audit_digest": "cbe25b224232b06fd036da88a804a115ffa6369142521b7a688029afcc8da822",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -6984,10 +6984,10 @@
           "comdat_associative_section": null,
           "comdat_key": "??_C@_08MNMF@sequence?$AA@",
           "comdat_selection": 2,
-          "function": "game_sequence_load",
+          "function": "play_time_load",
           "kind": "section",
           "logical_section_size": 9,
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -27094,8 +27094,6 @@
         "tools/match/scratches/game_over_play_again_button_destroy/build/msvc6.5/16d338a10aed17bd/scratch.obj",
         "tools/match/scratches/game_over_screen_update/build/msvc6.5/6f7dfd02e49258ae/scratch.obj",
         "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
-        "tools/match/scratches/game_sequence_get/build/msvc6.5/7e38b25a4daef251/scratch.obj",
-        "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
         "tools/match/scratches/game_startup_init/build/msvc6.5/7cfbb92c112bf8b8/scratch.obj",
         "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
         "tools/match/scratches/game_state_set/build/msvc6.5/49d7f1558f743c2d/scratch.obj",
@@ -27248,6 +27246,8 @@
         "tools/match/scratches/play_game_survival_button_destroy/build/msvc6.5/39fb63964b38f2e1/scratch.obj",
         "tools/match/scratches/play_game_tutorial_button_destroy/build/msvc6.5/f2e35b0b43c097a1/scratch.obj",
         "tools/match/scratches/play_game_typo_button_destroy/build/msvc6.5/c2a8246981d3180f/scratch.obj",
+        "tools/match/scratches/play_time_get/build/msvc6.5/c3e5f63919f3c538/scratch.obj",
+        "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
         "tools/match/scratches/player_apply_move_with_spawn_avoidance/build/msvc6.5/eab0edb854382fae/scratch.obj",
         "tools/match/scratches/player_find_in_radius/build/msvc6.5/76278a43bb2ca4e9/scratch.obj",
         "tools/match/scratches/player_fire_weapon/build/msvc6.5/862cd09623515db8/scratch.obj",
@@ -27762,8 +27762,6 @@
         "tools/match/scratches/game_over_play_again_button_destroy/build/msvc6.5/16d338a10aed17bd/scratch.obj",
         "tools/match/scratches/game_over_screen_update/build/msvc6.5/6f7dfd02e49258ae/scratch.obj",
         "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
-        "tools/match/scratches/game_sequence_get/build/msvc6.5/7e38b25a4daef251/scratch.obj",
-        "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
         "tools/match/scratches/game_startup_init/build/msvc6.5/7cfbb92c112bf8b8/scratch.obj",
         "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
         "tools/match/scratches/game_state_set/build/msvc6.5/49d7f1558f743c2d/scratch.obj",
@@ -27916,6 +27914,8 @@
         "tools/match/scratches/play_game_survival_button_destroy/build/msvc6.5/39fb63964b38f2e1/scratch.obj",
         "tools/match/scratches/play_game_tutorial_button_destroy/build/msvc6.5/f2e35b0b43c097a1/scratch.obj",
         "tools/match/scratches/play_game_typo_button_destroy/build/msvc6.5/c2a8246981d3180f/scratch.obj",
+        "tools/match/scratches/play_time_get/build/msvc6.5/c3e5f63919f3c538/scratch.obj",
+        "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
         "tools/match/scratches/player_apply_move_with_spawn_avoidance/build/msvc6.5/eab0edb854382fae/scratch.obj",
         "tools/match/scratches/player_find_in_radius/build/msvc6.5/76278a43bb2ca4e9/scratch.obj",
         "tools/match/scratches/player_fire_weapon/build/msvc6.5/862cd09623515db8/scratch.obj",
@@ -28225,7 +28225,6 @@
         "tools/match/scratches/dsound_shutdown/build/msvc6.5/1d1546c24bb086ba/scratch.obj",
         "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
         "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
-        "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
         "tools/match/scratches/game_startup_init/build/msvc6.5/7cfbb92c112bf8b8/scratch.obj",
         "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
         "tools/match/scratches/grim_load_interface/build/msvc6.5/4a4303debbd4be23/scratch.obj",
@@ -28285,6 +28284,7 @@
         "tools/match/scratches/music_release_track/build/msvc6.5/9c9dae93732c4d4d/scratch.obj",
         "tools/match/scratches/music_stream_fill/build/msvc6.5/8d35f597ce099360/scratch.obj",
         "tools/match/scratches/music_stream_update/build/msvc6.5/7952d7ed17953bff/scratch.obj",
+        "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
         "tools/match/scratches/plugin_runtime_update_and_render/build/msvc6.5/8882123e81a7b05d/scratch.obj",
         "tools/match/scratches/sfx_entry_create_buffers/build/msvc6.5/d899483a160286ba/scratch.obj",
         "tools/match/scratches/sfx_entry_load_ogg/build/msvc6.5/ddad5333e35952ff/scratch.obj",
@@ -38919,10 +38919,10 @@
           "comdat_associative_section": null,
           "comdat_key": "??_C@_08MNMF@sequence?$AA@",
           "comdat_selection": 2,
-          "function": "game_sequence_load",
+          "function": "play_time_load",
           "kind": "section",
           "logical_section_size": 9,
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -88253,66 +88253,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_game_sequence_get",
-          "comdat_selection": 1,
-          "function": "game_sequence_get",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/game_sequence_get/build/msvc6.5/7e38b25a4daef251/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_game_sequence_get"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4741012,
-          "data_binding_kind": "definition",
-          "data_name": "game_sequence_id",
-          "data_storage_address": 4741012,
-          "data_storage_name": "game_sequence_id",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 616,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_game_sequence_id"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_game_sequence_load",
-          "comdat_selection": 1,
-          "function": "game_sequence_load",
-          "kind": "section",
-          "logical_section_size": 112,
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_game_sequence_load"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_game_startup_init",
           "comdat_selection": 1,
           "function": "game_startup_init",
@@ -94211,6 +94151,66 @@
         }
       ],
       "name": "_play_game_typo_button_destroy"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_play_time_get",
+          "comdat_selection": 1,
+          "function": "play_time_get",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/play_time_get/build/msvc6.5/c3e5f63919f3c538/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_play_time_get"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_play_time_load",
+          "comdat_selection": 1,
+          "function": "play_time_load",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_play_time_load"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4741012,
+          "data_binding_kind": "definition",
+          "data_name": "play_time_ms",
+          "data_storage_address": 4741012,
+          "data_storage_name": "play_time_ms",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 616,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_play_time_ms"
     },
     {
       "definitions": [
@@ -110384,22 +110384,6 @@
     },
     {
       "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/game_sequence_get/build/msvc6.5/7e38b25a4daef251/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:uuid.lib",
-        "-defaultlib:uuid.lib",
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj"
-    },
-    {
-      "directives": [
         "-defaultlib:uuid.lib",
         "-defaultlib:uuid.lib",
         "-defaultlib:LIBC",
@@ -111579,6 +111563,22 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/play_game_typo_button_destroy/build/msvc6.5/c2a8246981d3180f/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/play_time_get/build/msvc6.5/c3e5f63919f3c538/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:uuid.lib",
+        "-defaultlib:uuid.lib",
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj"
     },
     {
       "directives": [
@@ -133228,137 +133228,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_game_sequence_get",
-          "comdat_selection": 1,
-          "function": "game_sequence_get",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/game_sequence_get/build/msvc6.5/7e38b25a4daef251/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_game_sequence_get",
-      "referenced_by": [
-        {
-          "function": "demo_trial_overlay_render",
-          "object": "tools/match/scratches/demo_trial_overlay_render/build/msvc6.5/8afed9ee908754e4/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4741012,
-          "data_binding_kind": "definition",
-          "data_name": "game_sequence_id",
-          "data_storage_address": 4741012,
-          "data_storage_name": "game_sequence_id",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 616,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_game_sequence_id",
-      "referenced_by": [
-        {
-          "function": "demo_trial_overlay_render",
-          "object": "tools/match/scratches/demo_trial_overlay_render/build/msvc6.5/8afed9ee908754e4/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_save_status",
-          "object": "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_sequence_get",
-          "object": "tools/match/scratches/game_sequence_get/build/msvc6.5/7e38b25a4daef251/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_sequence_load",
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "statistics_menu_update",
-          "object": "tools/match/scratches/statistics_menu_update/build/msvc6.5/05882b85edc36983/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_game_sequence_load",
-          "comdat_selection": 1,
-          "function": "game_sequence_load",
-          "kind": "section",
-          "logical_section_size": 112,
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_game_sequence_load",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_load_status",
-          "object": "tools/match/scratches/game_load_status/build/msvc6.5/0da3053e4464575b/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_save_status",
-          "object": "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_game_startup_init",
           "comdat_selection": 1,
           "function": "game_startup_init",
@@ -142456,6 +142325,137 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_play_time_get",
+          "comdat_selection": 1,
+          "function": "play_time_get",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/play_time_get/build/msvc6.5/c3e5f63919f3c538/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_play_time_get",
+      "referenced_by": [
+        {
+          "function": "demo_trial_overlay_render",
+          "object": "tools/match/scratches/demo_trial_overlay_render/build/msvc6.5/8afed9ee908754e4/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_frame_update",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "gameplay_update_and_render",
+          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_play_time_load",
+          "comdat_selection": 1,
+          "function": "play_time_load",
+          "kind": "section",
+          "logical_section_size": 112,
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_play_time_load",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_load_status",
+          "object": "tools/match/scratches/game_load_status/build/msvc6.5/0da3053e4464575b/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_save_status",
+          "object": "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4741012,
+          "data_binding_kind": "definition",
+          "data_name": "play_time_ms",
+          "data_storage_address": 4741012,
+          "data_storage_name": "play_time_ms",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 616,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_play_time_ms",
+      "referenced_by": [
+        {
+          "function": "demo_trial_overlay_render",
+          "object": "tools/match/scratches/demo_trial_overlay_render/build/msvc6.5/8afed9ee908754e4/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_frame_update",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_save_status",
+          "object": "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "gameplay_update_and_render",
+          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "play_time_get",
+          "object": "tools/match/scratches/play_time_get/build/msvc6.5/c3e5f63919f3c538/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "play_time_load",
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "statistics_menu_update",
+          "object": "tools/match/scratches/statistics_menu_update/build/msvc6.5/05882b85edc36983/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -147692,8 +147692,8 @@
           "weak": false
         },
         {
-          "function": "game_sequence_load",
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
+          "function": "play_time_load",
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
           "weak": false
         }
       ]
@@ -164858,7 +164858,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "946d427941a6e490fb923b10735bd07a375006fe31a9012d52d97af01b845a1c"
+        "sha256": "7fecc366cf579103b2b822a03adb32dea53dff0aa5434c8f283e9552042db745"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -164867,7 +164867,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "caf8ecdc1f552fe6451967152fe2e753e53ebdcf365751130b1eb64d8b92381a"
+        "sha256": "d3dd7b2f44fcbbdb25c0a5cb0f1831be8a59d6c9921cb9a34edeab15074fe1d0"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -167480,13 +167480,13 @@
           "weak": false
         },
         {
-          "function": "game_sequence_load",
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
+          "function": "game_startup_init_prelude",
+          "object": "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
           "weak": false
         },
         {
-          "function": "game_startup_init_prelude",
-          "object": "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
+          "function": "play_time_load",
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
           "weak": false
         }
       ]
@@ -167515,13 +167515,13 @@
           "weak": false
         },
         {
-          "function": "game_sequence_load",
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
+          "function": "game_startup_init_prelude",
+          "object": "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
           "weak": false
         },
         {
-          "function": "game_startup_init_prelude",
-          "object": "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
+          "function": "play_time_load",
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
           "weak": false
         }
       ]
@@ -169416,13 +169416,13 @@
       "name": "_reg_read_dword_default",
       "referenced_by": [
         {
-          "function": "game_sequence_load",
-          "object": "tools/match/scratches/game_sequence_load/build/msvc6.5/6c07173393ccdfdd/scratch.obj",
+          "function": "game_startup_init_prelude",
+          "object": "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
           "weak": false
         },
         {
-          "function": "game_startup_init_prelude",
-          "object": "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/118d5f69f9ecace1/scratch.obj",
+          "function": "play_time_load",
+          "object": "tools/match/scratches/play_time_load/build/msvc6.5/b9e368697015ea8b/scratch.obj",
           "weak": false
         }
       ]

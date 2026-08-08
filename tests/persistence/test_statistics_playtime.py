@@ -50,8 +50,8 @@ def test_tick_statistics_playtime_behavior(
     state = make_game_state(demo_enabled=demo_enabled)
     loop = GameLoopView(state)
     loop._front_active = loop._front_views[front_view_key]
-    state.status.game_sequence_id = start_value
+    state.status.play_time_ms = start_value
 
     loop._tick_statistics_playtime(dt)
 
-    assert state.status.game_sequence_id == expected_value
+    assert state.status.play_time_ms == expected_value

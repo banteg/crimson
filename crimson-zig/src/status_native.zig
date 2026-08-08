@@ -41,7 +41,7 @@ const StatusSummaryPayload = struct {
     mode_play_rush: u32,
     mode_play_typo: u32,
     mode_play_other: u32,
-    game_sequence_id: u32,
+    play_time_ms: u32,
 };
 
 const StatusPayload = struct {
@@ -62,12 +62,12 @@ const StatusFieldsPayload = struct {
     mode_play_rush: u32,
     mode_play_typo: u32,
     mode_play_other: u32,
-    game_sequence_id: u32,
-    unknown_tail: ByteArrayPayload,
+    play_time_ms: u32,
+    reserved_seed_words: ByteArrayPayload,
 };
 
 pub const ByteArrayPayload = struct {
-    bytes: [game_cfg.unknown_tail_size]u8,
+    bytes: [game_cfg.reserved_seed_words_byte_size]u8,
 
     pub fn jsonStringify(self: ByteArrayPayload, jws: anytype) !void {
         try jws.beginArray();
@@ -204,7 +204,7 @@ fn buildHumanStatusOutput(
     });
     try writer.print("total_weapon_usage: {d}\n", .{summary.total_weapon_usage});
     try writer.print("total_quest_plays: {d}\n", .{summary.total_quest_plays});
-    try writer.print("game_sequence_id: {d}\n", .{summary.game_sequence_id});
+    try writer.print("play_time_ms: {d}\n", .{summary.play_time_ms});
     if (json_out) |json_out_path| {
         try writer.print("json_report: {s}\n", .{json_out_path});
     }
@@ -256,7 +256,7 @@ fn summaryPayload(status: game_cfg.Status) StatusSummaryPayload {
         .mode_play_rush = status.mode_play_rush,
         .mode_play_typo = status.mode_play_typo,
         .mode_play_other = status.mode_play_other,
-        .game_sequence_id = status.game_sequence_id,
+        .play_time_ms = status.play_time_ms,
     };
 }
 
@@ -270,8 +270,8 @@ fn fieldsPayload(status: game_cfg.Status) StatusFieldsPayload {
         .mode_play_rush = status.mode_play_rush,
         .mode_play_typo = status.mode_play_typo,
         .mode_play_other = status.mode_play_other,
-        .game_sequence_id = status.game_sequence_id,
-        .unknown_tail = .{ .bytes = status.unknown_tail },
+        .play_time_ms = status.play_time_ms,
+        .reserved_seed_words = .{ .bytes = status.reserved_seed_words },
     };
 }
 

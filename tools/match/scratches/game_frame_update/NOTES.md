@@ -30,7 +30,7 @@ delta. Axis values come from the Grim2D config-float slot at vtable offset
 `0x84`; the cursor dead zone is `0.2f` and its analog scale is `540.0f`.
 Component-wise assignment handles the first active stick, while the second
 uses the game's ordinary vector `operator+=` shape. The shareware bar uses
-`game_sequence_id / demo_trial_time_limit_ms()` clamped at `1.0f`, including
+`play_time_ms / demo_trial_time_limit_ms()` clamped at `1.0f`, including
 its native color curve and geometry.
 
 The mouse-delta latch at `0x0040c5ce..0x0040c632` owns two side effects that

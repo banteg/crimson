@@ -458,7 +458,7 @@ test "lockstep client runtime starts and queues local input" {
     const allocator = std.testing.allocator;
     const host_addr = PeerAddr.loopback(31993);
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 88;
+    status.play_time_ms = 88;
     var client = ClientRuntime.init(.{
         .mode_id = 0,
         .player_count = 1,

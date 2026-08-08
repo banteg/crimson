@@ -410,7 +410,7 @@ class QuestsMenuView:
         # Stage 5 does not fit cleanly in the saved blob:
         # - The "games" index range would overlap stage-1 completion counters.
         # - The "completed" index range reads into trailing fields (mode counters,
-        #   game_sequence_id, and unknown tail bytes), and the last row would run past
+        #   play_time_ms, and unknown tail bytes), and the last row would run past
         #   the decoded payload.
         #
         # We emulate this layout so the debug `F1` overlay matches the classic build.
@@ -441,9 +441,9 @@ class QuestsMenuView:
             elif tail_slot == 3:
                 completed = int(status.mode_play_other)
             elif tail_slot == 4:
-                completed = int(status.game_sequence_id)
+                completed = int(status.play_time_ms)
             elif 5 <= tail_slot <= 8:
-                tail = status.unknown_tail
+                tail = status.reserved_seed_words
                 off = (tail_slot - 5) * 4
                 if len(tail) < off + 4:
                     completed = 0

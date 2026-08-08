@@ -609,7 +609,7 @@ test "relay packet encodes and decodes tagged ping message" {
 test "relay packet encodes and decodes status-bearing room start" {
     const code = try room_code.parseRoomCode("ABCD");
     var status = std.mem.zeroes(game_cfg.Status);
-    status.game_sequence_id = 99;
+    status.play_time_ms = 99;
     const packet: RelayPacket = .{
         .message = .{ .room_start = .{
             .room_code = code,
@@ -628,7 +628,7 @@ test "relay packet encodes and decodes status-bearing room start" {
             try std.testing.expectEqualStrings("abcd", room_code.roomCodeSlice(&start.room_code));
             try std.testing.expectEqualStrings("session", start.session_id);
             try std.testing.expectEqual(@as(i32, 42), start.seed);
-            try std.testing.expectEqual(@as(u32, 99), start.status.?.game_sequence_id);
+            try std.testing.expectEqual(@as(u32, 99), start.status.?.play_time_ms);
         },
         else => return error.TestExpectedEqual,
     }

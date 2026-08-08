@@ -542,7 +542,7 @@ def test_data_map_preserves_recovered_aggregate_alias_types():
     )
     assert types_by_name["console_log_head"] == "console_log_node_t *"
     assert types_by_name["credits_secret_match_mask_v1"] == "int"
-    assert types_by_name["game_sequence_id"] == "unsigned int"
+    assert types_by_name["play_time_ms"] == "unsigned int"
     assert types_by_name["highscore_score_xp"] == "unsigned int"
     assert types_by_name["highscore_record_weapon_id"] == "unsigned char"
     assert types_by_name["quest_selected_builder"] == "quest_builder_fn_t"

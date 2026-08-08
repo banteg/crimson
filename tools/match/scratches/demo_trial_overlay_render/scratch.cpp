@@ -64,7 +64,7 @@ extern int music_track_crimson_theme_id;
 extern int music_track_extra_0;
 
 int demo_trial_time_limit_ms(void);
-int game_sequence_get(void);
+int play_time_get(void);
 bool ui_button_update(float *xy, ui_button_t *button);
 void sfx_mute_all(int sfx_id);
 void sfx_play_exclusive(int sfx_id);
@@ -95,7 +95,7 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
         position.x += 26.0f;
         position.y += 80.0f;
 
-        int remaining_ms = demo_trial_time_limit_ms() - (int)game_sequence_id;
+        int remaining_ms = demo_trial_time_limit_ms() - (int)play_time_ms;
         if (demo_trial_elapsed_ms > 0) {
             remaining_ms = 300000 - demo_trial_elapsed_ms;
         }
@@ -126,7 +126,7 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
         }
 
         if (!game_is_full_version() && config_game_mode != GAME_MODE_TUTORIAL &&
-            (int)(game_sequence_id = game_sequence_get()) <= 2400000 &&
+            (int)(play_time_ms = play_time_get()) <= 2400000 &&
             ((demo_trial_elapsed_ms > 0 && config_game_mode == GAME_MODE_QUEST &&
               (float)(demo_trial_elapsed_ms / 1000) * 0.016666668f <= 5.0f) ||
              (demo_trial_elapsed_ms <= 0 && config_game_mode == GAME_MODE_QUEST)) &&

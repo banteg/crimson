@@ -17,7 +17,7 @@ links the editor script in `scripts/save_status.py`.
 
 ## Struct view (game_status_t)
 
-`game_status_blob` (`DAT_00485540`) is typed as `game_status_t`:
+`game_status_blob` is typed as `game_status_t`:
 
 ```c
 typedef struct game_status_t {
@@ -29,8 +29,8 @@ typedef struct game_status_t {
     unsigned int mode_play_rush;
     unsigned int mode_play_typo;
     unsigned int mode_play_other;
-    unsigned int game_sequence_id;
-    unsigned char reserved0[0x10];
+    unsigned int play_time_ms;
+    unsigned int reserved_seed_words[4];
 } game_status_t;
 ```
 
@@ -78,8 +78,8 @@ Offsets are relative to the decoded payload (`game_status_blob`).
 | `0x248` | u32 | `mode_play_rush` | Incremented when starting Rush (mode 2). |
 | `0x24C` | u32 | `mode_play_typo` | Incremented when starting Typ‑o‑Shooter (mode 4). |
 | `0x250` | u32 | `mode_play_other` | Incremented for other modes (e.g. tutorial). |
-| `0x254` | u32 | `game_sequence_id` | Also written to registry on save. |
-| `0x258` | 0x10 | — | Unknown/reserved tail bytes. |
+| `0x254` | u32 | `play_time_ms` | Native `playTime` counter in milliseconds; used by statistics/demo limits and synchronized with the registry value named `sequence`. |
+| `0x258` | u32[4] | `reserved_seed_words` | Four constructor seeds (`rand() % 345354345`), named `reserved1..reserved4` in the recovered source header. |
 
 ## Editor tool
 
@@ -92,7 +92,7 @@ uv run scripts/save_status.py set game.cfg --set quest_unlock_index=30 --set wea
 
 Supported edits:
 
-- `quest_unlock_index`, `quest_unlock_index_full`, `game_sequence_id`
+- `quest_unlock_index`, `quest_unlock_index_full`, `play_time_ms`
 - `weapon_usage.<slot>` (0–52; status slot, not full weapon-id domain)
 - `quest_play.<index>` (0–90)
 - `mode_play.<survival|rush|typo|other>`

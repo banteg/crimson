@@ -1587,9 +1587,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00412a10",
-    "name": "game_sequence_load",
-    "signature": "void game_sequence_load(void)",
-    "comment": "reads the sequence value from registry"
+    "name": "play_time_load",
+    "signature": "void play_time_load(void)",
+    "comment": "raises the saved play time from the registry value named sequence"
   },
   {
     "program": "crimsonland.exe",
@@ -2066,9 +2066,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0041df60",
-    "name": "game_sequence_get",
-    "signature": "int game_sequence_get(void)",
-    "comment": "returns the saved game_sequence_id"
+    "name": "play_time_get",
+    "signature": "int play_time_get(void)",
+    "comment": "returns the saved play time in milliseconds"
   },
   {
     "program": "crimsonland.exe",

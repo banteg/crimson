@@ -18,7 +18,7 @@ extern "C" void game_status_global_init(void)
 
     game_status_blob.quest_unlock_index = 0;
     game_status_blob.quest_unlock_index_full = 0;
-    game_status_blob.game_sequence_id = 0;
+    game_status_blob.play_time_ms = 0;
 
     game_status_blob.reserved_seed_words[0] = crt_rand() % 345354345;
     game_status_blob.reserved_seed_words[1] = crt_rand() % 345354345;

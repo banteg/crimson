@@ -17,7 +17,7 @@ from crimson.dbg.frida_finalize import (
     load_frida_evidence_file,
 )
 from crimson.dbg.trace import load_trace
-from crimson.persistence.save_status import QUEST_PLAY_COUNT, UNKNOWN_TAIL_SIZE, WEAPON_USAGE_COUNT
+from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
 from crimson.replay.codec import load_replay_file
 from crimson.replay.types import quantize_f32
 from crimson.sim.input_providers import (
@@ -108,8 +108,8 @@ def _status_stub() -> dict[str, object]:
         "mode_play_rush": 3,
         "mode_play_typo": 4,
         "mode_play_other": 5,
-        "game_sequence_id": 1234,
-        "unknown_tail": list(range(int(UNKNOWN_TAIL_SIZE))),
+        "play_time_ms": 1234,
+        "reserved_seed_words": list(range(int(RESERVED_SEED_WORDS_BYTE_SIZE))),
     }
 
 
@@ -786,7 +786,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert replay.header.status.quest_unlock_index == 7
     assert replay.header.status.weapon_usage_counts[1] == 17
     assert replay.header.status.quest_play_counts[3] == 9
-    assert replay.header.status.unknown_tail == bytes(range(int(UNKNOWN_TAIL_SIZE)))
+    assert replay.header.status.reserved_seed_words == bytes(range(int(RESERVED_SEED_WORDS_BYTE_SIZE)))
     assert len(replay.ticks) == 2
 
     meta, ticks, footer = load_trace(out_trace.out_path)

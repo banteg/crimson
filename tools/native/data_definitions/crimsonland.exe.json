@@ -2243,7 +2243,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
-        ["0x00485794", "game_sequence_id"],
+        ["0x00485794", "play_time_ms"],
         ["0x00487060", "survival_elapsed_ms"],
         ["0x00487064", "highscore_score_xp"],
         ["0x0048706c", "highscore_record_shots_fired"],

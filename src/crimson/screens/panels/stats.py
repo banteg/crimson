@@ -329,7 +329,7 @@ class StatisticsMenuView:
         # "played for # hours # minutes"
         font = resources.small_font
         draw_small_text(font, _format_playtime_text(
-            int(self.state.status.game_sequence_id),
+            int(self.state.status.play_time_ms),
             preserve_bugs=bool(self.state.preserve_bugs),
         ), panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale), rl.Color(255, 255, 255, int(255 * 0.8)))
 

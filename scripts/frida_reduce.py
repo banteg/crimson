@@ -513,7 +513,7 @@ def main() -> int:
                         "game_state_id": obj.get("game_state_id"),
                         "quest_stage_major": obj.get("quest_stage_major"),
                         "quest_stage_minor": obj.get("quest_stage_minor"),
-                        "game_sequence_id_ms": obj.get("game_sequence_id_ms"),
+                        "play_time_ms": obj.get("play_time_ms"),
                         "demo_trial_elapsed_ms": obj.get("demo_trial_elapsed_ms"),
                         "remaining_ms": obj.get("remaining_ms"),
                         "tier_locked": obj.get("tier_locked"),
