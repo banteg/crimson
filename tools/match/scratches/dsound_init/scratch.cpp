@@ -20,7 +20,7 @@ extern "C" unsigned char dsound_init(
 
     if (FAILED(DirectSoundCreate8(
             0,
-            &dsound_iface,
+            (LPDIRECTSOUND8 *)&dsound_iface,
             0))) {
         return 0;
     }

@@ -5,6 +5,20 @@
 #include <dsound.h>
 #include <vorbis/vorbisfile.h>
 
+#ifndef DSBCAPS_CTRLFX
+typedef LPDIRECTSOUND LPDIRECTSOUND8;
+#ifdef __cplusplus
+extern "C" {
+#endif
+HRESULT WINAPI DirectSoundCreate8(
+    GUID *guid,
+    LPDIRECTSOUND8 *iface_out,
+    LPUNKNOWN outer);
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 #include "crimsonland_console.h"
 #include "crimsonland_types.h"
 
@@ -100,10 +114,6 @@ extern int audio_asset_id_table[83];
 int crt_sprintf(char *dst, const char *format, ...);
 int crt_rand(void);
 void crt_free(void *ptr);
-HRESULT WINAPI DirectSoundCreate8(
-    GUID *guid,
-    LPDIRECTSOUND *iface_out,
-    LPUNKNOWN outer);
 unsigned char dsound_init(
     HWND hwnd,
     DWORD coop_level,

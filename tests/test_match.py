@@ -4987,6 +4987,67 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert "CRIMSON_MATCH_INCLUDE_OVERLAY" not in environments[1]
 
 
+def test_msvc7_platform_header_fallbacks_compile(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    match_root = repo_root / "tools" / "match"
+    compiler = match_root / "compilers" / "msvc7.0" / "Bin" / "CL.EXE"
+    wibo = match_root / "bin" / "wibo"
+    if not compiler.is_file() or not wibo.is_file():
+        pytest.skip("local msvc7.0 compiler and wibo are required")
+
+    scratch = tmp_path / "msvc7_platform_header_smoke"
+    scratch.mkdir()
+    (scratch / "scratch.cpp").write_text(
+        "#include <d3d8.h>\n"
+        "#include <dinput.h>\n"
+        "#include <dsound.h>\n"
+        "#include <shellapi.h>\n"
+        "#include <urlmon.h>\n"
+        "#include <wininet.h>\n"
+        "HRESULT platform_header_smoke(\n"
+        "    IDirect3DDevice8 *device, IDirect3DBaseTexture8 *texture)\n"
+        "{\n"
+        "    DIDEVICEOBJECTDATA input_data = {0};\n"
+        "    SYSTEMTIME system_time = {0};\n"
+        "    LPDIRECTSOUND8 sound = 0;\n"
+        "    HINTERNET internet = InternetOpenA(\"smoke\", 0, 0, 0, 0);\n"
+        "    char key_name[MAX_PATH];\n"
+        "    DWORD bytes_read = 0;\n"
+        "    DirectSoundCreate8(0, &sound, 0);\n"
+        "    InternetReadFile(internet, 0, 0, &bytes_read);\n"
+        "    InternetCloseHandle(internet);\n"
+        "    ShellExecuteA(0, \"open\", \"about:blank\", 0, 0, SW_SHOWNORMAL);\n"
+        "    HlinkNavigateString(0, 0);\n"
+        "    GetKeyNameTextA(0, key_name, MAX_PATH);\n"
+        "    MessageBoxA(0, key_name, key_name, MB_OK);\n"
+        "    Sleep(system_time.wMilliseconds + input_data.uAppData);\n"
+        "    HRESULT result = device->SetTexture(0, texture);\n"
+        "    if (result == 0) {\n"
+        "        result = device->SetRenderState(D3DRS_ZENABLE, 1);\n"
+        "    }\n"
+        "    device->Release();\n"
+        "    return result;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    config = ScratchConfig(
+        directory=scratch,
+        function="platform_header_smoke",
+        image="grim.dll",
+        compiler="msvc7.0",
+        cflags="/O2 /GB",
+        source="scratch.cpp",
+        end_va=None,
+        symbol="platform_header_smoke",
+        note="",
+    )
+
+    obj_path = compile_scratch(config, match_root, force=True)
+
+    assert obj_path.is_file()
+    assert extract_object_function(parse_coff_object(obj_path.read_bytes())).data
+
+
 def test_compile_scratch_stages_auto_inline_boundaries(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

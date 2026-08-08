@@ -27,7 +27,7 @@ extern "C" void ui_cursor_render(void)
     grim_interface_ptr->grim_begin_batch();
 
     float pulse = (float)sin(ui_cursor_pulse_phase);
-    float pulse_power = (float)pow(pulse, 2.0);
+    float pulse_power = (float)pow((double)pulse, 2.0);
     grim_interface_ptr->grim_set_color(
         1.0f,
         1.0f,

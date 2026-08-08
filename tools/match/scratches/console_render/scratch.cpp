@@ -189,7 +189,7 @@ void console_queue_t::render(void)
         ++visible_lines;
 
         float pulse = (float)sin(game_time_s * 3.0f);
-        float pulse_power = (float)pow(pulse, 8.0);
+        float pulse_power = (float)pow((double)pulse, 8.0);
         if (pulse_power < 0.2f) {
             pulse_power = 0.2f;
         }

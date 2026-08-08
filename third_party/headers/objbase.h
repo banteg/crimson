@@ -5,15 +5,48 @@
 #include <guiddef.h>
 
 #ifndef STDMETHODCALLTYPE
-#define STDMETHODCALLTYPE
-#endif
-#ifndef STDMETHODCALLTYPE
-#define STDMETHODCALLTYPE STDMETHODCALLTYPE
+#define STDMETHODCALLTYPE __stdcall
 #endif
 
-#ifndef __cplusplus
+#ifndef interface
 #define interface struct
 #endif
+
+#ifdef __cplusplus
+
+#ifndef STDMETHOD
+#define STDMETHOD(method) virtual HRESULT STDMETHODCALLTYPE method
+#endif
+#ifndef STDMETHOD_
+#define STDMETHOD_(type, method) virtual type STDMETHODCALLTYPE method
+#endif
+#ifndef PURE
+#define PURE = 0
+#endif
+
+#ifndef THIS_
+#define THIS_
+#endif
+#ifndef THIS
+#define THIS void
+#endif
+
+#ifndef DECLARE_INTERFACE
+#define DECLARE_INTERFACE(iface) interface iface
+#endif
+
+#ifndef DECLARE_INTERFACE_
+#define DECLARE_INTERFACE_(iface, baseiface) interface iface : public baseiface
+#endif
+
+typedef interface IUnknown IUnknown;
+interface IUnknown {
+    STDMETHOD(QueryInterface)(REFIID riid, void **ppvObject) PURE;
+    STDMETHOD_(ULONG, AddRef)(THIS) PURE;
+    STDMETHOD_(ULONG, Release)(THIS) PURE;
+};
+
+#else
 
 #ifndef STDMETHOD
 #define STDMETHOD(method) HRESULT (STDMETHODCALLTYPE *method)
@@ -54,6 +87,8 @@ typedef struct IUnknownVtbl {
 struct IUnknown {
     const IUnknownVtbl *lpVtbl;
 };
+
+#endif
 
 typedef IUnknown *LPUNKNOWN;
 

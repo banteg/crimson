@@ -17,6 +17,7 @@ typedef long long LONGLONG;
 typedef unsigned long long ULONGLONG;
 typedef long LONG_PTR;
 typedef unsigned long ULONG_PTR;
+typedef ULONG_PTR UINT_PTR;
 typedef DWORD DWORD_PTR;
 typedef void *PVOID;
 typedef void *LPVOID;
@@ -24,6 +25,7 @@ typedef const void *LPCVOID;
 typedef char CHAR;
 typedef unsigned char UCHAR;
 typedef unsigned short WCHAR;
+typedef void VOID;
 typedef CHAR *LPSTR;
 typedef const CHAR *LPCSTR;
 typedef WCHAR *LPWSTR;
@@ -48,6 +50,11 @@ typedef HANDLE HBRUSH;
 typedef HANDLE HFONT;
 typedef HANDLE HMENU;
 typedef HANDLE HBITMAP;
+typedef HANDLE HKEY;
+
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
 
 typedef struct tagRECT {
     LONG left;
@@ -101,6 +108,17 @@ typedef struct _FILETIME {
     DWORD dwHighDateTime;
 } FILETIME;
 
+typedef struct _SYSTEMTIME {
+    WORD wYear;
+    WORD wMonth;
+    WORD wDayOfWeek;
+    WORD wDay;
+    WORD wHour;
+    WORD wMinute;
+    WORD wSecond;
+    WORD wMilliseconds;
+} SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
+
 #ifndef __GNU_EXTENSION
 #define __GNU_EXTENSION
 #endif
@@ -110,10 +128,19 @@ typedef struct _FILETIME {
 #endif
 
 #ifndef WINAPI
-#define WINAPI
+#define WINAPI __stdcall
 #endif
 #ifndef CALLBACK
-#define CALLBACK
+#define CALLBACK __stdcall
+#endif
+#ifndef APIENTRY
+#define APIENTRY WINAPI
+#endif
+#ifndef FAR
+#define FAR
+#endif
+#ifndef NEAR
+#define NEAR
 #endif
 
 #ifndef MAKE_HRESULT
@@ -132,6 +159,10 @@ typedef struct _FILETIME {
 #endif
 #ifndef E_FAIL
 #define E_FAIL ((HRESULT)0x80004005L)
+#endif
+
+#ifndef WAVE_FORMAT_PCM
+#define WAVE_FORMAT_PCM 1
 #endif
 
 #ifndef _WAVEFORMATEX_DEFINED

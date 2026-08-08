@@ -104,6 +104,11 @@ profile calibration point: it is exact with `msvc6.5` and `msvc6.6`, but not
 decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
 `msvc7.0` archives. The default dashboard profile is `msvc6.5 /O2 /GB`;
 alternate archives remain available for controlled shape experiments.
+Some archives, including the local `msvc7.0` profile, do not carry a complete
+Platform SDK. The repository's `third_party/headers/` fallbacks therefore
+provide the Win32 declarations used by the corpus and preserve both C vtable
+declarations and C++ COM inheritance. The focused matcher test compiles that
+surface, including inherited Direct3D calls, with the sparse profile.
 
 ### Grim build-8047 attribution control
 

@@ -159,7 +159,7 @@ extern "C" void bonus_render(void)
                 (float)sin(
                     (float)bonus_index + bonus_render_anim_phase);
             icon_scale *=
-                (float)pow(pulse_value, 2.0) * 0.25f + 0.75f;
+                (float)pow((double)pulse_value, 2.0) * 0.25f + 0.75f;
             grim_interface_ptr->grim_set_color_ptr(&color.r);
             grim_interface_ptr->grim_set_rotation(
                 (float)sin(
@@ -199,7 +199,7 @@ extern "C" void bonus_render(void)
         grim_interface_ptr->grim_set_color_ptr(&color.r);
         float pulse_value = (float)sin(bonus_render_anim_phase);
         icon_scale =
-            ((float)pow(pulse_value, 2.0) * 0.25f + 0.75f)
+            ((float)pow((double)pulse_value, 2.0) * 0.25f + 0.75f)
             * icon_scale;
         grim_interface_ptr->grim_set_color_ptr(&color.r);
         grim_interface_ptr->grim_set_rotation(

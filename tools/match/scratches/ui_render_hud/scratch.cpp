@@ -125,7 +125,7 @@ extern "C" void ui_render_hud(float transition_alpha)
             float pulse_value =
                 (float)sin(game_time_s * pulse_speed);
             pulse =
-                (float)pow(pulse_value, 4.0) * 4.0f + 14.0f;
+                (float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f;
             grim_interface_ptr->grim_draw_quad(
                 center.x - pulse,
                 center.y - pulse,
@@ -138,7 +138,7 @@ extern "C" void ui_render_hud(float transition_alpha)
             float pulse_value =
                 (float)sin(game_time_s * pulse_speed);
             pulse =
-                ((float)pow(pulse_value, 4.0) * 4.0f + 14.0f)
+                ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)
                 * 0.5f;
             grim_interface_ptr->grim_draw_quad(
                 center.x - pulse,
@@ -153,7 +153,7 @@ extern "C" void ui_render_hud(float transition_alpha)
             pulse_value = (float)sin(
                 game_time_s * player_two_speed + 1.57079637f);
             pulse =
-                ((float)pow(pulse_value, 4.0) * 4.0f + 14.0f)
+                ((float)pow((double)pulse_value, 4.0) * 4.0f + 14.0f)
                 * 0.5f;
             grim_interface_ptr->grim_draw_quad(
                 center.x - pulse,
