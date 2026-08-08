@@ -118,6 +118,7 @@ def test_experiment_summary_surfaces_repeats_stalls_and_tradeoffs(
         "improving_variants": 1,
         "neutral_variants": 2,
         "degrading_variants": 1,
+        "errored_variants": 0,
         "tradeoff_variants": 1,
         "improving_sweeps": 1,
         "improving_probes": 1,
@@ -163,3 +164,22 @@ def test_experiment_summary_check_rejects_malformed_logs(tmp_path: Path) -> None
     assert payload["summary"]["stalled_scratches"] == 1
     assert payload["summary"]["errors"] == 1
     assert payload["rows"][0]["flags"] == ["stalled", "malformed"]
+
+
+def test_experiment_summary_separates_variant_errors_from_regressions(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "scratches" / "failed" / "experiments.jsonl"
+    failed = _result("variant-failed", -10)
+    failed["status"]["state"] = "error"
+    _write_jsonl(log, [_sweep("spec-failed", [failed])])
+
+    payload = summarize_experiments(tmp_path)
+
+    assert payload["summary"]["evaluated_variants"] == 1
+    assert payload["summary"]["degrading_variants"] == 0
+    assert payload["summary"]["errored_variants"] == 1
+    assert payload["rows"][0]["flags"] == ["variant-errors"]
+
+    sorted_payload = summarize_experiments(tmp_path, sort_by="errors")
+    assert sorted_payload["rows"][0]["errored_variants"] == 1

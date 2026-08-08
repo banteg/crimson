@@ -41,7 +41,7 @@ code-generation-only wrapper.
 
 ## Recorded mutation evidence
 
-Two complete sweeps add 49 variants around the dominant compiler residual.
+Three complete sweeps add 53 variants around the dominant compiler residual.
 `bottom-entry-shape-mutations.json` evaluates eight nested, independent,
 defaulted, switch, and repeated-entry forms. The greater-first nesting is
 byte-neutral, while duplicating the complete entry construction regresses
@@ -54,6 +54,15 @@ pointer forms. All 41 are byte-identical to the baseline, ruling out AST
 spelling and their interaction as controls for the native `add -5000` and
 final `ecx` allocation. Its SHA-256 is
 `8b841b0ad44299e42ec85d1fcab0525d074b829331f4aeb42b0bee81821f2e34`.
+
+`template-condition-lifetime-mutations.json` tests four named-boolean forms
+around the pale/blue/pale template ladder. Naming the early and late bounds,
+separately or together, is byte-neutral; naming the complete middle range
+regresses to 64.74% and shortens the exact prefix to seven instructions. The
+complete four-variant sweep has SHA-256
+`e07cc77e1f691b983c51bb30214917f83dc472ed677b479b2524c1dc5623b0cc`.
+VC6's equal-arm folding is therefore not controlled by an elided condition
+temporary.
 
 ## Recovery classification audit
 

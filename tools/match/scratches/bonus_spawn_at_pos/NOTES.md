@@ -78,3 +78,12 @@ is recorded under spec SHA-256
 `e882b73953bb6ea1430a1e6b993bd11b91bd7786ae7d88f5efd7652afe38fa72`.
 An inlined guard boundary therefore does not reproduce native's shrink-wrapped
 `ESI` save.
+
+`entry-scan-declaration-mutations.json` directly tests the native save boundary
+at `bonus_alloc_slot()`. Splitting either pointer declaration from assignment,
+declaring both pointers before either assignment, and reversing the declaration
+order are byte-neutral at 88.44%; initializing the scan before allocation
+regresses to 61.69% and loses one resolved reference. All five variants are
+recorded under spec SHA-256
+`3670bec0873e59fdc94f445a9460db318ae5216700b581ea533caef6c2a6d298`.
+The early `ESI` save is not controlled by the entry/scan declaration lifetime.

@@ -533,15 +533,19 @@ Summarize the append-only experiment corpus before scheduling more sweeps:
 
 ```sh
 uv run crimson match experiments --sort no-improvement --limit 20
+uv run crimson match experiments --sort errors --limit 20
 uv run crimson match experiments --scratch player_update --json --check
 ```
 
-The summary counts improving, byte-neutral, and degrading variants, repeated
-source/profile evaluations, repeated specs, exact winners, metric tradeoffs,
-and each scratch's trailing no-improvement streak. `stalled` means at least
-three recorded mutation sweeps since the last improving sweep; it is a prompt
-to change or falsify the current hypothesis, not a claim that the function is
-unmatchable. `--check` rejects malformed or internally inconsistent JSONL.
+The summary counts improving, byte-neutral, degrading, and evaluation-error
+variants separately, along with repeated source/profile evaluations, repeated
+specs, exact winners, metric tradeoffs, and each scratch's trailing
+no-improvement streak. Sorting by `errors` surfaces plans whose intended
+complete variants may need an authoring audit instead of treating a failed
+compile as negative matching evidence. `stalled` means at least three recorded
+mutation sweeps since the last improving sweep; it is a prompt to change or
+falsify the current hypothesis, not a claim that the function is unmatchable.
+`--check` rejects malformed or internally inconsistent JSONL.
 
 The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the

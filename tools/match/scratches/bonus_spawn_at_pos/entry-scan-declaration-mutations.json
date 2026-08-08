@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-scan-declaration-shape",
+      "find": "    {\n        bonus_entry_t *entry = bonus_alloc_slot();\n        bonus_entry_t *scan = &bonus_pool[0];\n",
+      "replacements": [
+        {
+          "name": "split-entry-initialization",
+          "text": "    {\n        bonus_entry_t *entry;\n        entry = bonus_alloc_slot();\n        bonus_entry_t *scan = &bonus_pool[0];\n"
+        },
+        {
+          "name": "split-scan-initialization",
+          "text": "    {\n        bonus_entry_t *entry = bonus_alloc_slot();\n        bonus_entry_t *scan;\n        scan = &bonus_pool[0];\n"
+        },
+        {
+          "name": "declare-both-then-assign",
+          "text": "    {\n        bonus_entry_t *entry;\n        bonus_entry_t *scan;\n        entry = bonus_alloc_slot();\n        scan = &bonus_pool[0];\n"
+        },
+        {
+          "name": "scan-declared-first",
+          "text": "    {\n        bonus_entry_t *scan;\n        bonus_entry_t *entry;\n        entry = bonus_alloc_slot();\n        scan = &bonus_pool[0];\n"
+        },
+        {
+          "name": "scan-initialized-first",
+          "text": "    {\n        bonus_entry_t *scan = &bonus_pool[0];\n        bonus_entry_t *entry = bonus_alloc_slot();\n"
+        }
+      ]
+    }
+  ]
+}

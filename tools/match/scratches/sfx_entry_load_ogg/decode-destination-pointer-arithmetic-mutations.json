@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "decode-destination-pointer-arithmetic",
+      "find": "            (char *)(entry->pcm_bytes - remaining +\n                (unsigned int)entry->pcm_data),\n",
+      "replacements": [
+        {
+          "name": "integer-offset-plus-typed-pointer",
+          "text": "            (entry->pcm_bytes - remaining)\n                + (char *)entry->pcm_data,\n"
+        },
+        {
+          "name": "signed-integer-offset-plus-address",
+          "text": "            (char *)((int)entry->pcm_bytes - (int)remaining\n                + (unsigned int)entry->pcm_data),\n"
+        },
+        {
+          "name": "signed-grouped-offset-plus-address",
+          "text": "            (char *)(((int)entry->pcm_bytes - (int)remaining)\n                + (int)entry->pcm_data),\n"
+        },
+        {
+          "name": "typed-pointer-plus-signed-offset",
+          "text": "            (char *)entry->pcm_data\n                + (int)(entry->pcm_bytes - remaining),\n"
+        },
+        {
+          "name": "typed-pointer-index",
+          "text": "            &((char *)entry->pcm_data)\n                [entry->pcm_bytes - remaining],\n"
+        },
+        {
+          "name": "typed-pointer-minus-remaining-plus-bytes",
+          "text": "            ((char *)entry->pcm_data - remaining)\n                + entry->pcm_bytes,\n"
+        },
+        {
+          "name": "bytes-plus-typed-pointer-minus-remaining",
+          "text": "            entry->pcm_bytes\n                + ((char *)entry->pcm_data - remaining),\n"
+        },
+        {
+          "name": "typed-pointer-plus-bytes-minus-remaining",
+          "text": "            ((char *)entry->pcm_data + entry->pcm_bytes)\n                - remaining,\n"
+        }
+      ]
+    }
+  ]
+}

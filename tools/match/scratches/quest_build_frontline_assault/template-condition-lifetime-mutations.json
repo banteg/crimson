@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-condition-lifetime",
+      "find": "        if (wave <= 4) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else if (wave < 10) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        } else {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n",
+      "replacements": [
+        {
+          "name": "named-early-condition",
+          "text": "        bool early_wave = wave <= 4;\n        if (early_wave) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else if (wave < 10) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        } else {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n"
+        },
+        {
+          "name": "named-middle-limit",
+          "text": "        bool before_late_wave = wave < 10;\n        if (wave <= 4) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else if (before_late_wave) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        } else {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n"
+        },
+        {
+          "name": "named-both-conditions",
+          "text": "        bool early_wave = wave <= 4;\n        bool before_late_wave = wave < 10;\n        if (early_wave) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else if (before_late_wave) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        } else {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n"
+        },
+        {
+          "name": "named-middle-range",
+          "text": "        bool middle_wave = wave > 4 && wave < 10;\n        if (wave <= 4) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else if (middle_wave) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        } else {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

@@ -17,11 +17,11 @@
       "replacements": [
         {
           "name": "assign-data-then-offset",
-          "text": "    while (remaining > 0 && read_bytes != 0) {\n        write_base = entry->pcm_data;\n        write_offset = entry->pcm_bytes - remaining;\n        read_bytes = stream.read_pcm16(\n            (char *)write_base + write_offset,\n            remaining);\n        remaining -= read_bytes;\n    }\n"
+          "text": "    while (remaining > 0 && read_bytes != 0) {\n        write_base = (unsigned char *)entry->pcm_data;\n        write_offset = entry->pcm_bytes - remaining;\n        read_bytes = stream.read_pcm16(\n            (char *)write_base + write_offset,\n            remaining);\n        remaining -= read_bytes;\n    }\n"
         },
         {
           "name": "assign-offset-then-data",
-          "text": "    while (remaining > 0 && read_bytes != 0) {\n        write_offset = entry->pcm_bytes - remaining;\n        write_base = entry->pcm_data;\n        read_bytes = stream.read_pcm16(\n            (char *)write_base + write_offset,\n            remaining);\n        remaining -= read_bytes;\n    }\n"
+          "text": "    while (remaining > 0 && read_bytes != 0) {\n        write_offset = entry->pcm_bytes - remaining;\n        write_base = (unsigned char *)entry->pcm_data;\n        read_bytes = stream.read_pcm16(\n            (char *)write_base + write_offset,\n            remaining);\n        remaining -= read_bytes;\n    }\n"
         }
       ]
     }

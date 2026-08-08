@@ -760,6 +760,7 @@ def cmd_match_experiments(
         help="scratch name, directory, or experiments.jsonl; repeat to restrict",
     ),
     sort_by: Literal[
+        "errors",
         "no-improvement",
         "records",
         "repeats",

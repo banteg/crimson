@@ -10,6 +10,7 @@ EXPERIMENT_FILE = "experiments.jsonl"
 EXPERIMENT_SCHEMA = 1
 EXPERIMENT_SORTS = frozenset(
     {
+        "errors",
         "no-improvement",
         "records",
         "repeats",
@@ -189,6 +190,7 @@ def summarize_experiment_log(
     improving_variants = 0
     neutral_variants = 0
     degrading_variants = 0
+    errored_variants = 0
     tradeoff_variants = 0
     improving_sweeps = 0
     improving_probes = 0
@@ -254,21 +256,28 @@ def summarize_experiment_log(
                     errors.append(f"{context}: result {result_index} requires source_sha256")
                 else:
                     variant_keys[key] += 1
+                status = typed_result.get("status")
+                variant_errored = isinstance(status, dict) and status.get("state") == "error"
+                if variant_errored:
+                    errored_variants += 1
                 delta = typed_result.get("delta")
                 fuzzy_delta = _number(delta.get("fuzzy_weighted_bytes")) if isinstance(delta, dict) else None
                 if fuzzy_delta is None:
                     errors.append(
                         f"{context}: result {result_index} requires a fuzzy byte delta",
                     )
+                elif variant_errored:
+                    pass
                 elif fuzzy_delta > 0:
                     improving_variants += 1
                 elif fuzzy_delta == 0:
                     neutral_variants += 1
                 else:
                     degrading_variants += 1
-                tradeoff_variants += bool(
-                    _inferred_tradeoffs(typed_result, baseline_status),
-                )
+                if not variant_errored:
+                    tradeoff_variants += bool(
+                        _inferred_tradeoffs(typed_result, baseline_status),
+                    )
         elif kind == "probe":
             delta = record.get("delta")
             fuzzy_delta = _number(delta.get("fuzzy_weighted_bytes")) if isinstance(delta, dict) else None
@@ -290,6 +299,8 @@ def summarize_experiment_log(
         flags.append("stalled")
     if tradeoff_variants:
         flags.append("metric-tradeoffs")
+    if errored_variants:
+        flags.append("variant-errors")
     if errors:
         flags.append("malformed")
 
@@ -308,6 +319,7 @@ def summarize_experiment_log(
             "improving_variants": improving_variants,
             "neutral_variants": neutral_variants,
             "degrading_variants": degrading_variants,
+            "errored_variants": errored_variants,
             "tradeoff_variants": tradeoff_variants,
             "improving_sweeps": improving_sweeps,
             "improving_probes": improving_probes,
@@ -334,6 +346,7 @@ def sort_experiment_rows(
     if sort_by == "scratch":
         return sorted(rows, key=lambda row: str(row["scratch"]))
     fields = {
+        "errors": ("errored_variants", "evaluated_variants"),
         "no-improvement": ("no_improvement_streak", "no_improvement_sweeps"),
         "records": ("records", "evaluated_variants"),
         "repeats": ("repeated_variants", "repeated_spec_runs"),
@@ -380,6 +393,7 @@ def summarize_experiments(
             "improving_variants": sum(int(row["improving_variants"]) for row in rows),
             "neutral_variants": sum(int(row["neutral_variants"]) for row in rows),
             "degrading_variants": sum(int(row["degrading_variants"]) for row in rows),
+            "errored_variants": sum(int(row["errored_variants"]) for row in rows),
             "tradeoff_variants": sum(int(row["tradeoff_variants"]) for row in rows),
             "improving_sweeps": sum(int(row["improving_sweeps"]) for row in rows),
             "improving_probes": sum(int(row["improving_probes"]) for row in rows),
@@ -400,7 +414,7 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
             "sweeps",
             "probes",
             "variants",
-            "better/same/worse",
+            "better/same/worse/error",
             "repeats",
             "wins",
             "exact",
@@ -416,7 +430,10 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
                 str(row["mutation_sweeps"]),
                 str(row["probes"]),
                 str(row["evaluated_variants"]),
-                (f"{row['improving_variants']}/{row['neutral_variants']}/{row['degrading_variants']}"),
+                (
+                    f"{row['improving_variants']}/{row['neutral_variants']}/"
+                    f"{row['degrading_variants']}/{row['errored_variants']}"
+                ),
                 str(row["repeated_variants"]),
                 str(row["improving_sweeps"]),
                 str(row["exact_winners"]),
@@ -434,8 +451,9 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
             + "/".join(f"{kind}:{count}" for kind, count in summary["kinds"].items())
             + f"; variants={summary['evaluated_variants']} "
             f"unique={summary['unique_variants']} repeats={summary['repeated_variants']} "
-            f"better/same/worse={summary['improving_variants']}/"
-            f"{summary['neutral_variants']}/{summary['degrading_variants']} "
+            f"better/same/worse/error={summary['improving_variants']}/"
+            f"{summary['neutral_variants']}/{summary['degrading_variants']}/"
+            f"{summary['errored_variants']} "
             f"tradeoffs={summary['tradeoff_variants']} "
             f"sweep-wins={summary['improving_sweeps']} exact={summary['exact_winners']} "
             f"stalled={summary['stalled_scratches']} errors={summary['errors']}"
