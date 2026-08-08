@@ -640,7 +640,8 @@ def test_matching_workspace_stays_inside_port_scope() -> None:
 def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
     (tmp_path / "scratch.conf").write_text(
         "FUNCTION=foo RECOVERY=semantic-complete RESIDUAL=compiler,references "
-        "AUTO_INLINE_OFF=select_colors,create_index\n",
+        "AUTO_INLINE_OFF=select_colors,create_index "
+        "DISPROVEN_COMPILERS=msvc6.5pp,msvc7.0\n",
         encoding="utf-8",
     )
 
@@ -649,6 +650,17 @@ def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
     assert config.recovery == "semantic-complete"
     assert config.residuals == ("compiler", "references")
     assert config.auto_inline_off == ("select_colors", "create_index")
+    assert config.disproven_compilers == ("msvc6.5pp", "msvc7.0")
+
+
+def test_scratch_config_rejects_invalid_disproven_compiler(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=foo DISPROVEN_COMPILERS='msvc6.5pp,bad compiler'\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="invalid DISPROVEN_COMPILERS values 'bad compiler'"):
+        load_scratch_config(tmp_path)
 
 
 def test_scratch_config_rejects_invalid_auto_inline_identifier(tmp_path: Path) -> None:
@@ -5346,6 +5358,73 @@ def test_compiler_scan_cli_reports_only_leads_by_default(
     }
     assert payload["rows"][0]["classification"] == "exact"
     assert payload["rows"][0]["best"]["compiler"] == "msvc6.5pp"
+
+
+def test_compiler_scan_cli_skips_disproven_profiles_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = ScratchConfig(
+        directory=tmp_path / "foo",
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+        disproven_compilers=("msvc6.5pp",),
+    )
+    baseline = ScratchStatus(
+        config=config,
+        address=0x401000,
+        target_size=20,
+        ratio=0.75,
+        prefix_instructions=2,
+        target_instructions=5,
+        candidate_instructions=5,
+        error=None,
+        masked_ok=1,
+    )
+    calls: list[str | None] = []
+
+    def fake_collect(*args: object, **kwargs: object) -> list[ScratchStatus]:
+        del args
+        compiler = kwargs.get("compiler")
+        calls.append(compiler if isinstance(compiler, str) else None)
+        return [baseline]
+
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", fake_collect)
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.available_scratch_compilers",
+        lambda match_root: ("msvc6.5", "msvc6.5pp"),
+    )
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["compiler-scan", "--match-root", str(tmp_path), "--jobs", "1", "--json", "--check"],
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    assert calls == [None, "msvc6.5"]
+    assert payload["summary"] == {
+        "targets": 1,
+        "profiles": 1,
+        "exact": 0,
+        "improved": 0,
+        "tied": 1,
+        "errors": 0,
+    }
+    assert payload["rows"] == []
+    assert payload["disproven_skips"] == [
+        {
+            "compiler": "msvc6.5pp",
+            "function": "foo",
+            "image": "crimsonland.exe",
+        },
+    ]
 
 
 def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPatch) -> None:

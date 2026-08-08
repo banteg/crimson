@@ -3132,6 +3132,7 @@ SCRATCH_CONFIG_KEYS = frozenset(
         "AUTO_INLINE_OFF",
         "CFLAGS",
         "COMPILER",
+        "DISPROVEN_COMPILERS",
         "END",
         "FUNCTION",
         "IMAGE",
@@ -3168,6 +3169,7 @@ class ScratchConfig:
     archive_size: int | None = None
     import_thunk: str | None = None
     auto_inline_off: tuple[str, ...] = ()
+    disproven_compilers: tuple[str, ...] = ()
     include_overlay: Path | None = None
 
 
@@ -3499,6 +3501,24 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             f"{directory}/scratch.conf has invalid AUTO_INLINE_OFF identifiers {invalid}",
         )
 
+    disproven_compilers = tuple(
+        dict.fromkeys(
+            value.strip()
+            for value in values.get("DISPROVEN_COMPILERS", "").split(",")
+            if value.strip()
+        ),
+    )
+    invalid_disproven_compilers = [
+        value
+        for value in disproven_compilers
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.+-]*", value) is None
+    ]
+    if invalid_disproven_compilers:
+        invalid = ", ".join(repr(value) for value in invalid_disproven_compilers)
+        raise ValueError(
+            f"{directory}/scratch.conf has invalid DISPROVEN_COMPILERS values {invalid}",
+        )
+
     archive = values.get("ARCHIVE")
     archive_member = values.get("ARCHIVE_MEMBER")
     archive_sha256 = values.get("ARCHIVE_SHA256")
@@ -3612,6 +3632,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         archive_size=archive_size,
         import_thunk=import_thunk,
         auto_inline_off=auto_inline_off,
+        disproven_compilers=disproven_compilers,
     )
 
 

@@ -566,6 +566,9 @@ uv run crimson match compiler-scan --scope port --state wip \
 The scan keeps each scratch's canonical flags, compiles selected profiles in
 parallel, and prints only exact or improved leads by default; pass `--all` to
 include ties. Its summary still counts every selected target and evaluation.
+Set `DISPROVEN_COMPILERS=compiler-a,compiler-b` in `scratch.conf` when object or
+image provenance rules those profiles out. Corpus scans skip those evaluations
+by default; pass `--include-disproven` to revisit them as source-shape evidence.
 An alternate compiler win is deliberately labeled search evidence rather than
 provenance: confirm the image's PE/Rich records or object-local COFF/archive
 evidence before changing a canonical `COMPILER` value.

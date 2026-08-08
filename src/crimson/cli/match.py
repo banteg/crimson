@@ -849,6 +849,11 @@ def cmd_match_compiler_scan(
         help="matching ownership scope",
     ),
     show_all: bool = typer.Option(False, "--all", help="include compiler ties"),
+    include_disproven: bool = typer.Option(
+        False,
+        "--include-disproven",
+        help="evaluate profiles rejected by recorded compiler provenance",
+    ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
     check: bool = typer.Option(False, "--check", help="fail when any requested profile cannot be evaluated"),
@@ -876,7 +881,6 @@ def cmd_match_compiler_scan(
         and status.config.archive is None
         and status.config.import_thunk is None
     ]
-    directories = [status.config.directory for status in selected]
     compilers = tuple(
         dict.fromkeys(
             compiler
@@ -885,14 +889,29 @@ def cmd_match_compiler_scan(
         ),
     )
     profiles: list[matchlib.ScratchStatus] = []
+    disproven_skips: list[dict[str, str]] = []
     for profile_compiler in compilers:
+        profile_directories: list[Path] = []
+        for status in selected:
+            if not include_disproven and profile_compiler in status.config.disproven_compilers:
+                disproven_skips.append(
+                    {
+                        "image": status.config.image,
+                        "function": status.config.function,
+                        "compiler": profile_compiler,
+                    },
+                )
+                continue
+            profile_directories.append(status.config.directory)
+        if not profile_directories:
+            continue
         profiles.extend(
             matchlib.collect_scratch_statuses(
                 match_root,
                 compiler=profile_compiler,
                 jobs=jobs,
                 scope=scope,
-                directories=directories,
+                directories=profile_directories,
             ),
         )
 
@@ -927,6 +946,7 @@ def cmd_match_compiler_scan(
                     "summary": summary,
                     "rows": [matchlib.compiler_scan_row_payload(row) for row in visible_rows],
                     "evaluation_errors": evaluation_errors,
+                    "disproven_skips": disproven_skips,
                     "provenance_note": provenance_note,
                 },
                 indent=2,
@@ -940,8 +960,10 @@ def cmd_match_compiler_scan(
             typer.echo("no exact or improved compiler profiles")
         typer.echo(
             "targets={targets} profiles={profiles} exact={exact} improved={improved} "
-            "tied={tied} errors={errors} compilers={compilers}".format(
+            "tied={tied} errors={errors} skipped_disproven={skipped_disproven} "
+            "compilers={compilers}".format(
                 **summary,
+                skipped_disproven=len(disproven_skips),
                 compilers=",".join(compilers) or "-",
             ),
         )
@@ -953,6 +975,11 @@ def cmd_match_compiler_scan(
                 )
             if len(evaluation_errors) > 20:
                 typer.echo(f"- ... and {len(evaluation_errors) - 20} more")
+        if disproven_skips:
+            typer.echo(
+                f"skipped {len(disproven_skips)} profile evaluations rejected by recorded provenance; "
+                "pass --include-disproven to inspect them",
+            )
         typer.echo(provenance_note)
     if check and summary["errors"]:
         raise typer.Exit(code=1)
