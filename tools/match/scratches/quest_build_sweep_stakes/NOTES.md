@@ -12,26 +12,25 @@ constant final count 64.
 
 The candidate reproduces the signed remainder, 24-byte frame, saved cosine and
 live sine, two-stage rounded vector construction, `fxch`/`fpatan` heading,
-nested loop boundaries, trigger clamp, and all seven references. It compiles
-to 75 instructions against the native 76 and scores 76.82%.
+nested loop boundaries, trigger clamp, and all seven references. A separate
+integer append count selects each record while the radius remains the inner
+loop control. VC6 strength-reduces that source into the native trigger-field
+induction base, restoring the missing pointer advance. The candidate now has
+the exact 76-instruction count, a 30-instruction prefix, and scores 92.11%.
 
-The structural residual is one `add entry_cursor, 16`: the native selects
-`trigger_time_ms` as its induction base, while VC6 selects the record start for
-the same source and schedules the three independent metadata stores earlier.
-A post-incremented spawn pointer, direct fields, an explicit trigger-cursor
-view, `msvc6.5pp`, `msvc6.6`, `msvc7.0`, and `/G6` were checked. The explicit
-view recovers the offset but damages the proven x87/vector shape or frame and
-does not improve the score. This remains an honest WIP without encoding the
-optimizer's negative-field cursor into the source.
+The remaining localized delta is independent metadata-store placement around
+the radius advance and x87 vector construction, plus the resulting branch
+displacement. Natural source-order, helper, position-local, and increment-
+placement variants did not improve it. This remains an honest WIP without
+encoding artificial dependencies into the source.
 
 ## Recovery classification audit
 
 Binary Ninja confirms the complete 16-wave policy, random angle, four radii,
-heading, trigger clamp, entry metadata, and final count. The candidate emits 75
-instructions against 76 native instructions with `7/0/0` references. The
-localized regions reflect only the trigger-field induction anchor and
-independent-store/x87 schedule described above. Recovery is classified
-`semantic-complete` with a `compiler` residual.
+heading, trigger clamp, entry metadata, and final count. The candidate emits
+the native 76 instructions with `7/0/0` references. The localized regions
+reflect only the independent-store/x87 schedule described above. Recovery is
+classified `semantic-complete` with a `compiler` residual.
 
 `typed-trigger-cursor-mutations.json` records all fifteen single and combined
 typed-cursor choices. The complete combination falls to 59.46%, and none
@@ -53,3 +52,20 @@ A five-variant helper-store-order follow-up found no additional improvement.
 The complete sweeps are recorded in `experiments.jsonl`; the remaining
 localized delta is still the native trigger-field induction anchor and x87
 scheduling described above.
+
+## Append-count recovery (2026-08-08)
+
+`append-count-recovery-mutations.json` records the atomic replacement of the
+persistent output cursor with a base pointer plus integer append count. The
+complete two-site variant raises weighted bytes from
+`198.19867549668876/258` to `237.6315789473684/258` (76.82% to 92.11%),
+extends the exact prefix from 6 to 30 instructions, restores the exact 76/76
+instruction count, and preserves `7/0/0` references. The two partial variants
+correctly fail to compile because declaration and use form one source model.
+
+The recorded mutation spec SHA-256 is
+`257b3625f9c1ec1abcc8af17056e173dcf05fa31b117311021b8c336ae1aef1d`;
+the retained source SHA-256 is
+`72bc9f98ef7fdcdceef401ca34942a2e43382b49fac1d86f1a80393f29036484`.
+Follow-up source-order and helper experiments were byte-neutral or regressed,
+so the remaining metadata/x87 scheduler residual is left explicit.

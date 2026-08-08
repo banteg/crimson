@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **697/810** functions matched exactly, **131190/341970** code bytes (**38.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303344/341970** code bytes (**88.7%**).
+Fuzzy-weighted alignment is **303384/341970** code bytes (**88.7%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 564/671 | 116246/320805 | 36.2% | 282538/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 564/671 |
+| crimsonland.exe | 564/671 | 116246/320805 | 36.2% | 282577/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 564/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**564/671** functions, **116246/320805** bytes (**36.2%**), **282538/320805** fuzzy-weighted bytes (**88.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **564/671** scratches verified.
+**564/671** functions, **116246/320805** bytes (**36.2%**), **282577/320805** fuzzy-weighted bytes (**88.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **564/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -552,7 +552,7 @@ Artifact freshness issues:
 | match | quest_build_evil_zombies_at_large | 0x004374a0 | 244 | 244/244 | 0 | 81/81 | 100.00% | 81/81 | 6/0/0 |  | quest-evil-zombies-at-large-builder |
 | wip | quest_build_everred_pastures | 0x004375a0 | 367 | 341/367 | 26 | 114/114 | 92.98% | 30/114 | 7/0/0 |  | quest-everred-pastures-cardinal-waves |
 | wip | quest_build_lizard_kings | 0x00437710 | 254 | 200/254 | 54 | 66/66 | 78.79% | 7/66 | 6/0/0 |  | quest-lizard-kings-builder |
-| wip | quest_build_sweep_stakes | 0x00437810 | 258 | 198/258 | 60 | 75/76 | 76.82% | 6/76 | 7/0/0 |  | quest-sweep-stakes-builder |
+| wip | quest_build_sweep_stakes | 0x00437810 | 258 | 238/258 | 20 | 76/76 | 92.11% | 30/76 | 7/0/0 |  | quest-sweep-stakes-append-count |
 | wip | quest_build_deja_vu | 0x00437920 | 209 | 176/209 | 33 | 63/63 | 84.13% | 7/63 | 4/0/0 |  | quest-deja-vu-radial-waves |
 | wip | quest_build_target_practice | 0x00437a00 | 240 | 216/240 | 24 | 69/69 | 89.86% | 23/69 | 8/0/0 |  | quest-target-practice-radial-builder |
 | wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 164/167 | 3 | 48/48 | 97.92% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |

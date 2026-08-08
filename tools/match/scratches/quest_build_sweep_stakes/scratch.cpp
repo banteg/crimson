@@ -44,16 +44,16 @@ extern "C" void quest_build_sweep_stakes(
 {
     int trigger_time_ms = 2000;
     int trigger_step_ms = 2000;
-    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;
+    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
     do {
         float angle = (float)(crt_rand() % 612) * 0.01f;
         float angle_cos = (float)cos(angle);
         float angle_sin = (float)sin(angle);
-        quest_entry_original_t *wave_entry = cursor;
-        cursor += 4;
 
         for (int radius = 84; radius < 252; radius += 42) {
+            quest_entry_original_t *wave_entry = &spawns[entry_count];
             quest_vec2_t offset(
                 (float)radius * angle_cos,
                 (float)radius * angle_sin);
@@ -67,7 +67,7 @@ extern "C" void quest_build_sweep_stakes(
             wave_entry->heading =
                 (wave_entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()
                 - 1.57079637f;
-            ++wave_entry;
+            ++entry_count;
         }
 
         int trigger_increment_ms = trigger_step_ms;

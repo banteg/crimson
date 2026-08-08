@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "append-count-state",
+      "find": "    int trigger_time_ms = 2000;\n    int trigger_step_ms = 2000;\n    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;",
+      "replacements": [
+        {
+          "name": "indexed-output-state",
+          "text": "    int trigger_time_ms = 2000;\n    int trigger_step_ms = 2000;\n    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int entry_count = 0;"
+        }
+      ]
+    },
+    {
+      "name": "append-count-wave",
+      "find": "        float angle_sin = (float)sin(angle);\n        quest_entry_original_t *wave_entry = cursor;\n        cursor += 4;\n\n        for (int radius = 84; radius < 252; radius += 42) {\n            quest_vec2_t offset(\n                (float)radius * angle_cos,\n                (float)radius * angle_sin);\n            wave_entry->set(\n                quest_vec2_t(\n                    offset.x + 512.0f,\n                    offset.y + 512.0f),\n                SPAWN_ID_ALIEN_AI7_ORBITER_36,\n                trigger_time_ms,\n                1);\n            wave_entry->heading =\n                (wave_entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n                - 1.57079637f;\n            ++wave_entry;\n        }",
+      "replacements": [
+        {
+          "name": "indexed-wave-entries",
+          "text": "        float angle_sin = (float)sin(angle);\n\n        for (int radius = 84; radius < 252; radius += 42) {\n            quest_entry_original_t *wave_entry = &spawns[entry_count];\n            quest_vec2_t offset(\n                (float)radius * angle_cos,\n                (float)radius * angle_sin);\n            wave_entry->set(\n                quest_vec2_t(\n                    offset.x + 512.0f,\n                    offset.y + 512.0f),\n                SPAWN_ID_ALIEN_AI7_ORBITER_36,\n                trigger_time_ms,\n                1);\n            wave_entry->heading =\n                (wave_entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n                - 1.57079637f;\n            ++entry_count;\n        }"
+        }
+      ]
+    }
+  ]
+}
