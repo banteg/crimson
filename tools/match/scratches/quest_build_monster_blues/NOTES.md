@@ -16,8 +16,9 @@ position temporary and pair copies. Assigning the loop template directly in
 each branch reproduces the native biased induction pointer, signed remainder
 correction, branch stores, signed divide-by-eight lowering, trigger recurrence,
 constant position registers, pointer stride, loop bound, and epilogue. That
-64-entry loop matches exactly. The full candidate has the same 95 instructions,
-all two references, a nine-instruction prefix, and scores 82.11%.
+64-entry loop matches exactly. Publishing the four fixed opening entries
+through one count raises the full candidate to 92.63% with the same 95
+instructions, a 22-instruction prefix, and three resolved references.
 
 Binary Ninja now types the native loop's template-anchored induction value as
 `quest_spawn_entry_template_cursor_t *`. The 0x18-byte view exposes the
@@ -52,3 +53,12 @@ direct metadata spellings are at best neutral, and all helper store
 permutations are neutral or worse. The exact repeated loop remains untouched,
 and the source stays at `285.7263157894737/348` weighted bytes, 95/95
 instructions, a nine-instruction prefix, and `2/0/0` references.
+
+## 2026-08-08 append-prefix improvement
+
+Replacing the four fixed opening indices with zero-based publication improves
+the candidate from 82.11% to 92.63% and extends the exact prefix from nine to
+22 instructions. The loop retains its original `index + 4` ownership, exact
+lowering, and fixed output count, so the gain is isolated to the opening table.
+The retained source SHA-256 is
+`90d0455855d1626d12b05e43ebf2ac5c42114c44bdd34dc69fb1bd35541be315`.

@@ -26,12 +26,12 @@ schedule. Signed `wave % 8` is required for the target's correction sequence,
 even though the runtime wave never becomes negative. The opening count is also
 the initial logical entry count, explaining the shared `edi` value.
 
-The candidate has the exact 141-instruction length, all 17 audited references,
-and scores 95.74%. The complete loop body and backedge match. Its six residual
-mismatches are scheduling of independent opening vector work, callee-save
-pushes, and the initial trigger load. `while` and `do/while` compile identically;
-the simpler decompiler-aligned `while` is retained without artificial ordering
-dependencies.
+The append-count candidate has the exact 141-instruction length, resolves 18
+audited references, and scores 96.45%. The complete loop body and backedge
+match. Starting the count at zero and publishing the opening brute through it
+narrows the residual to independent opening vector work, callee-save pushes,
+and the initial trigger load. The decompiler-aligned `while` remains free of
+artificial ordering dependencies.
 
 ## Recorded opening-lifetime search
 
@@ -52,6 +52,13 @@ No helper shape improves the baseline; the complete result is recorded in
 `3345a931147cba67328d3a8fa60d9ada42e5b5669cba0e3c77ce624535bf1f30`).
 Together with the opening-lifetime sweep, this bounds both the call-site and
 type-helper levers for the localized residual.
+
+## 2026-08-08 append-count improvement
+
+Replacing the preseeded opening count with zero-based publication improves the
+candidate from 95.74% to 96.45% while preserving 141/141 instructions and the
+exact loop body. The retained source SHA-256 is
+`4b8c28bcc0838ca0c9dcf673bc42044ad32e0d4957aee0007bedece2b4efcc70`.
 
 ## Recovery classification audit
 

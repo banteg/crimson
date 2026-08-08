@@ -28,12 +28,12 @@ shape: native emits immediate coordinate stores, and direct metadata fields
 preserve template-before-trigger ordering. Using vector constructors there
 hoists four constants, saves an extra register, and adds 11 instructions.
 
-The final candidate has the exact 108-instruction length and scores 89.81%.
-The entire repeated loop body matches. The eleven residual mismatches are VC6
-scheduling of independent fixed-entry vector and metadata stores, plus the
-order of the loop cursor adjustment and initial trigger load. An explicit
-cursor is ruled out because VC6 then proves the final count is constant and
-eliminates the native count register; indexed source is the plausible shape.
+The append-count candidate has the exact 108-instruction length and scores
+94.44%. The entire repeated loop body matches. Publishing the eight fixed
+entries through the same count used by the loop removes nearly half of the
+former fixed-prefix gap while preserving the indexed source and native count
+register. The remaining differences are independent fixed-entry vector and
+metadata scheduling plus the loop cursor adjustment and trigger load.
 
 Binary Ninja now types the repeated-wave cursor as a layout-equivalent
 `quest_spawn_pair_binja_t *` presentation view. The loop consequently renders
@@ -58,3 +58,11 @@ sweep covers the remaining setter permutations. None improves the
 `455.3611111111111/507` weighted bytes, exact 108 instructions,
 ten-instruction prefix, or `0/0/0` references, so the fixed-entry source and
 the already exact repeated loop remain unchanged.
+
+## 2026-08-08 append-count improvement
+
+Replacing the eight fixed indices and preseeded loop count with continuous
+publication improves the candidate from 89.81% to 94.44% while preserving
+108/108 instructions, a ten-instruction prefix, and the exact repeated loop.
+The retained source SHA-256 is
+`5fec8611109e15b3a8cb11a84792b3e7ac1c71d4e839b907d1fc1c6e0d5aabbd`.

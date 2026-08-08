@@ -29,22 +29,29 @@ extern "C" void quest_build_monster_blues(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         -50.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[0].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);
+    spawns[entry_count].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);
+    ++entry_count;
 
-    spawns[1].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         1074.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[1].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);
+    ++entry_count;
 
-    spawns[2].pos = quest_vec2_t(512.0f, 1088.0f);
-    spawns[2].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);
+    spawns[entry_count].pos = quest_vec2_t(512.0f, 1088.0f);
+    spawns[entry_count].set_spawn(
+        SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);
+    ++entry_count;
 
-    spawns[3].pos = quest_vec2_t(512.0f, -64.0f);
-    spawns[3].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);
+    spawns[entry_count].pos = quest_vec2_t(512.0f, -64.0f);
+    spawns[entry_count].set_spawn(
+        SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);
+    ++entry_count;
 
     int trigger_time_ms = 27500;
     int index = 0;
