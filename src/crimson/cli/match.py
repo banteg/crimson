@@ -671,12 +671,12 @@ def cmd_match_mutate(
     write_best: Path | None = typer.Option(
         None,
         "--write-best",
-        help="write the best source only when it improves the baseline",
+        help="write the best tradeoff-free source only when it improves the baseline",
     ),
     require_improvement: bool = typer.Option(
         False,
         "--require-improvement",
-        help="fail when no variant improves the baseline",
+        help="fail when no tradeoff-free variant improves the baseline",
     ),
     record: bool = typer.Option(False, "--record", help="append the complete sweep to experiments.jsonl"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
@@ -709,9 +709,9 @@ def cmd_match_mutate(
 
     written_to: str | None = None
     if write_best is not None and sweep.best_improves:
-        assert sweep.best is not None
+        assert sweep.winner is not None
         write_best.parent.mkdir(parents=True, exist_ok=True)
-        write_best.write_text(sweep.best.variant.source_text, encoding="utf-8")
+        write_best.write_text(sweep.winner.variant.source_text, encoding="utf-8")
         written_to = str(write_best)
 
     recorded_to: str | None = None
@@ -739,7 +739,7 @@ def cmd_match_mutate(
         if written_to is not None:
             typer.echo(f"best_source={written_to}")
         elif write_best is not None:
-            typer.echo("best_source=not-written (no improving variant)")
+            typer.echo("best_source=not-written (no tradeoff-free improving variant)")
         if recorded_to is not None:
             typer.echo(f"recorded={recorded_to}")
 

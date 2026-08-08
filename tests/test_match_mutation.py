@@ -265,9 +265,12 @@ def test_mutation_payload_warns_when_fuzzy_gain_regresses_other_metrics(
     payload = mutation_sweep_payload(sweep)
     assert payload["tradeoff_variants"] == 1
     assert payload["best_tradeoffs"] == mutation_evaluation_payload(evaluation)["tradeoffs"]
+    assert payload["metric_best_improves"] is True
+    assert payload["best_improves"] is False
+    assert payload["winner"] is None
 
 
-def test_mutate_cli_writes_only_an_improving_winner(
+def test_mutate_cli_writes_only_a_tradeoff_free_improving_winner(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -294,14 +297,15 @@ def test_mutate_cli_writes_only_an_improving_winner(
             ),
         ),
     )
+    evaluation_status = _status(
+        replace(config, directory=Path("/tmp/shadow")),
+        0.75,
+        first_target_offset=0x18,
+        first_candidate_offset=0x1C,
+    )
     evaluation = MutationEvaluation(
         variant=variant,
-        status=_status(
-            replace(config, directory=Path("/tmp/shadow")),
-            0.75,
-            first_target_offset=0x18,
-            first_candidate_offset=0x1C,
-        ),
+        status=replace(evaluation_status, candidate_instructions=12),
         baseline=baseline,
     )
     second_variant = MutationVariant(
@@ -355,6 +359,8 @@ def test_mutate_cli_writes_only_an_improving_winner(
     assert completed.exit_code == 0
     payload = json.loads(completed.output)
     assert payload["best_improves"] is True
+    assert payload["metric_best_improves"] is True
+    assert payload["best_tradeoffs"] == ["instruction-count-further-from-target"]
     assert payload["best_source_written_to"] == str(output)
     assert payload["mutation_source"] == str(included_source)
     assert payload["recorded_to"] == str(scratch / "experiments.jsonl")
@@ -368,10 +374,10 @@ def test_mutate_cli_writes_only_an_improving_winner(
     assert payload["combinations_never_evaluated"] == 3
     assert payload["results"][0]["delta"]["first_mismatch"]["probe_target_offset"] == 0x18
     assert len(payload["results"]) == 1
-    assert output.read_text(encoding="utf-8") == variant.source_text
+    assert output.read_text(encoding="utf-8") == second_variant.source_text
     assert source.read_text(encoding="utf-8") == "int value = x + y;\n"
     recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
     assert recorded["kind"] == "mutation-sweep"
     assert recorded["spec_sha256"] == sweep.spec.sha256
-    assert recorded["winner"]["label"] == variant.label
+    assert recorded["winner"]["label"] == second_variant.label
     assert len(recorded["results"]) == 2

@@ -60,7 +60,7 @@ and regressed to 43.45%, so those variants were rejected.
 
 Recovery is classified `semantic-complete` with a `compiler` residual.
 
-## 2026-07-27 focused profile and mutation pass
+## Profile and fixed-position audit
 
 MSVC 6.0, 6.5, 6.5 Processor Pack, and 6.6 tied at the
 68.07228915662651% baseline; MSVC 7.0 regressed to 44.64% with references
@@ -68,17 +68,14 @@ MSVC 6.0, 6.5, 6.5 Processor Pack, and 6.6 tied at the
 
 `fixed-position-store-mutations.json` (SHA-256
 `fbea9d4516b925edd0ff05344e55e6f42503a675c57c78322adc714460542854`)
-recorded seven variants. The retained `left-big-alien-position/direct-fields`
-variant spells the fixed entry-ten position as direct x/y stores, matching
-the native scalar-store shape without changing the quest entry. The analogous
-right-side change improved less but shortened the prefix, and combining both
-regressed below baseline; neither was retained.
-
-Fresh scratch recomputation improved 441.78915662650604/649 to
-478.8353658536585/649 weighted bytes: 68.07228915662651% to
-73.78048780487805%, with the gap falling from 207.21084337349396 to
-170.16463414634148. The validated result has 162/166 instructions, preserves
-the 37-instruction prefix, and preserves references 7/0/0.
+recorded seven variants. Its `left-big-alien-position/direct-fields` variant
+appears to improve the fuzzy score from 68.07% to 73.78%, but does so by
+deleting the four stack-temporary instructions present in native and moving
+the candidate from 166/166 to 162/166 instructions. The matcher now classifies
+that result as `instruction-count-further-from-target` and refuses to select it
+as an automatic winner. The whole-vector assignment is restored as the
+evidence-backed canonical source at 68.07%, 166/166 instructions, prefix 37,
+and `7/0/0` references.
 
 ## First-line cursor/offset ordering audit
 
@@ -86,7 +83,7 @@ Live native disassembly advances both the entry cursor and x offset inside the
 first coordinate-conversion window. `first-line-advance-order-mutations.json`
 (SHA-256 `df2bdeabb596459e7475753725fff7e720e9d199df7c6aac99f89d207fbf09c8`)
 tested the remaining cursor-before-offset source order. VC6 emitted identical
-bytes, so the canonical smaller ordering and 73.7805% score remain unchanged.
+bytes, so the canonical ordering and 68.07% score remain unchanged.
 
 ## Trigger-field cursor audit
 
@@ -98,12 +95,30 @@ interior-cursor shape recovered in neighboring quest builders, so
 `0bc5ee9315638da0568078ce8a1ab7cb13dd6f80ec79f9702430b1ee172ca383`)
 tested it independently in the right, left, ghost, and ring walks.
 
-All fifteen single, pair, triple, and complete four-walk combinations compile
-to exactly the retained 162-instruction candidate: 478.8353658536585 weighted
-bytes, 73.78048780487805%, a 37-instruction prefix, and `7/0/0` references.
+All fifteen single, pair, triple, and complete four-walk combinations were
+rerun against the restored whole-vector source and compile to exactly the
+same 166-instruction candidate: 441.7892 weighted bytes, 68.07%, a
+37-instruction prefix, and `7/0/0` references.
 The explicit `int *` trigger cursors and negative metadata offsets are therefore
 source-equivalent under VC6 optimization; they do not recover the native
 register assignment. Together with the earlier current-entry pointer,
 reference, helper-call, and advance-order sweeps, this closes the natural
 cursor-type and cursor-lifetime search without encoding an artificial
 dependency.
+
+## First-walk value-lifetime follow-up
+
+`right-wave-position-lifetime-mutations.json` tests five named integer/float X
+and center-Y lifetimes around the first repeated walk. All five preserve the
+166-instruction count and clean references but lose 3.93 weighted bytes; none
+reproduces native's delayed height load. The complete sweep has SHA-256
+`cad213e7776f42bcf057868fefeb5ba333aeca9a1bdc0df29afaaf1ff9ec99c0`.
+
+`right-wave-advanced-trigger-cursor-mutations.json` then expresses the native
+advance-first interior pointer directly and publishes the position through a
+vector pointer, a named vector pointer, or a recovered entry pointer. The two
+named forms are byte-neutral and the direct cast loses 7.80 weighted bytes.
+The initial authoring record failed because it also removed the later-used
+`spawn` declaration; the corrected complete three-variant run has SHA-256
+`18b8e2ab967f8e022e9bce831e17e83d21184d17e5b22ebc0932031220e8752b`.
+No variant changes the compiler's chosen entry-base induction register.

@@ -549,7 +549,11 @@ falsify the current hypothesis, not a claim that the function is unmatchable.
 
 The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the
-baseline; combine it with `--require-improvement` in scripted searches.
+baseline without increasing reference debt, regressing the exact prefix or
+first mismatch, or moving the instruction count farther from native. Higher
+fuzzy-scoring tradeoffs remain ranked and recorded with warnings but are never
+selected as the retained winner. Combine `--write-best` with
+`--require-improvement` in scripted searches.
 
 Sweep one scratch across installed compilers and one or more flag sets. Options
 are repeatable and the result is ranked with exact, reference-clean matches

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "4b6453aa9e3c7413cfc830c6293db1121613f362703b326503640efe092fc7ca",
+  "audit_digest": "c601ba518da7123f0e886e96dac838f4343aeaa07954af69d8cf03fdd2ebe0a5",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -96063,7 +96063,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_beating",
           "kind": "section",
-          "logical_section_size": 640,
+          "logical_section_size": 656,
           "object": "tools/match/scratches/quest_build_the_beating/build/msvc6.5/c613e02815ff7d51/scratch.obj",
           "section": ".text",
           "size": null,
@@ -145296,7 +145296,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_beating",
           "kind": "section",
-          "logical_section_size": 640,
+          "logical_section_size": 656,
           "object": "tools/match/scratches/quest_build_the_beating/build/msvc6.5/c613e02815ff7d51/scratch.obj",
           "section": ".text",
           "size": null,

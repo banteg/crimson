@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-wave-advanced-trigger-cursor",
+      "find": "    do {\n        spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);\n",
+      "replacements": [
+        {
+          "name": "advance-then-vector-pointer",
+          "text": "    int *right_trigger = &spawns[2].trigger_time_ms;\n    do {\n        right_trigger += 6;\n        *(quest_vec2_t *)(right_trigger - 10) = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        right_trigger[-7] = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        right_trigger[-6] = trigger_time_ms;\n        right_trigger[-5] = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);\n"
+        },
+        {
+          "name": "advance-then-named-vector-pointer",
+          "text": "    int *right_trigger = &spawns[2].trigger_time_ms;\n    do {\n        right_trigger += 6;\n        quest_vec2_t *current_pos =\n            (quest_vec2_t *)(right_trigger - 10);\n        *current_pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        right_trigger[-7] = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        right_trigger[-6] = trigger_time_ms;\n        right_trigger[-5] = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);\n"
+        },
+        {
+          "name": "advance-then-entry-pointer",
+          "text": "    int *right_trigger = &spawns[2].trigger_time_ms;\n    do {\n        right_trigger += 6;\n        quest_entry_original_t *current =\n            (quest_entry_original_t *)(right_trigger - 10);\n        current->pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        right_trigger[-7] = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        right_trigger[-6] = trigger_time_ms;\n        right_trigger[-5] = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);\n"
+        }
+      ]
+    }
+  ]
+}

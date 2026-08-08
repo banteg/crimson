@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "4b6453aa9e3c7413cfc830c6293db1121613f362703b326503640efe092fc7ca",
+  "audit_digest": "c601ba518da7123f0e886e96dac838f4343aeaa07954af69d8cf03fdd2ebe0a5",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -63485,7 +63485,7 @@
         {
           "path": "tools/match/scratches/quest_build_the_beating/scratch.cpp",
           "repository_relative": true,
-          "sha256": "dde7a9370d0fca56cfe7f6e9b449261bae121f90f9229e44c5e5a1291cf68289"
+          "sha256": "f26d20af96f4ae9478a4b4a510390da29947f2dfec12f29d72a2706a5de97675"
         },
         {
           "path": "tools/match/scratches/quest_build_the_beating/scratch.conf",
@@ -63531,17 +63531,17 @@
           "canonical_config_sha256": "f90d9b94ba8c4f6390a34cbd5585c7c9cd63fa9952ff96e5a4be0b2cb42a15f5",
           "canonical_scratch": "tools/match/scratches/quest_build_the_beating",
           "canonical_source": "tools/match/scratches/quest_build_the_beating/scratch.cpp",
-          "canonical_source_sha256": "dde7a9370d0fca56cfe7f6e9b449261bae121f90f9229e44c5e5a1291cf68289",
+          "canonical_source_sha256": "f26d20af96f4ae9478a4b4a510390da29947f2dfec12f29d72a2706a5de97675",
           "effective_end": 4413593,
           "end": 4413593,
           "function": "quest_build_the_beating",
           "match": {
-            "candidate_instructions": 162,
+            "candidate_instructions": 166,
             "masked_mismatches": 0,
             "masked_ok": 7,
             "masked_unresolved": 0,
             "prefix_instructions": 37,
-            "ratio": 0.7378048780487805,
+            "ratio": 0.6807228915662651,
             "state": "wip",
             "target_instructions": 166
           },
@@ -63550,21 +63550,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 162,
+        "candidate_instructions": 166,
         "masked_mismatches": 0,
         "masked_ok": 7,
         "masked_unresolved": 0,
         "prefix_instructions": 37,
-        "ratio": 0.7378048780487805,
+        "ratio": 0.6807228915662651,
         "state": "wip",
         "target_instructions": 166
       },
       "object": "tools/match/scratches/quest_build_the_beating/build/msvc6.5/c613e02815ff7d51/scratch.obj",
       "object_function_symbol": "_quest_build_the_beating",
-      "object_sha256": "a378f837dce5a6a60d2c052b1cdfaab0d85c804fe311dd8de5aba722fa876168",
+      "object_sha256": "968dec886816e4d190f338d3ce58755bfeb046d3b054f13f3db77cea5020694f",
       "scratch": "tools/match/scratches/quest_build_the_beating",
       "source": "tools/match/scratches/quest_build_the_beating/scratch.cpp",
-      "source_sha256": "dde7a9370d0fca56cfe7f6e9b449261bae121f90f9229e44c5e5a1291cf68289",
+      "source_sha256": "f26d20af96f4ae9478a4b4a510390da29947f2dfec12f29d72a2706a5de97675",
       "target_size": 649,
       "translation_unit": {
         "kind": "isolated",
@@ -64555,7 +64555,7 @@
         {
           "path": "tools/match/scratches/quest_build_spider_wave_syndrome/scratch.cpp",
           "repository_relative": true,
-          "sha256": "f120840d793d270e29852275517ef8b2459100873025b7f9db34a47d8f745cb9"
+          "sha256": "52d5f092d09532001c7e26bb3c63daeb360f9dd8f7369ff289a84b70a3078abe"
         },
         {
           "path": "tools/match/scratches/quest_build_spider_wave_syndrome/scratch.conf",
@@ -64601,7 +64601,7 @@
           "canonical_config_sha256": "c7474d8d8f91aba0b46d47a604b77d95742766674e38a734fa32270fc9b53513",
           "canonical_scratch": "tools/match/scratches/quest_build_spider_wave_syndrome",
           "canonical_source": "tools/match/scratches/quest_build_spider_wave_syndrome/scratch.cpp",
-          "canonical_source_sha256": "f120840d793d270e29852275517ef8b2459100873025b7f9db34a47d8f745cb9",
+          "canonical_source_sha256": "52d5f092d09532001c7e26bb3c63daeb360f9dd8f7369ff289a84b70a3078abe",
           "effective_end": 4416671,
           "end": 4416671,
           "function": "quest_build_spider_wave_syndrome",
@@ -64610,8 +64610,8 @@
             "masked_mismatches": 0,
             "masked_ok": 2,
             "masked_unresolved": 0,
-            "prefix_instructions": 9,
-            "ratio": 0.8709677419354839,
+            "prefix_instructions": 12,
+            "ratio": 0.8387096774193549,
             "state": "wip",
             "target_instructions": 31
           },
@@ -64624,17 +64624,17 @@
         "masked_mismatches": 0,
         "masked_ok": 2,
         "masked_unresolved": 0,
-        "prefix_instructions": 9,
-        "ratio": 0.8709677419354839,
+        "prefix_instructions": 12,
+        "ratio": 0.8387096774193549,
         "state": "wip",
         "target_instructions": 31
       },
       "object": "tools/match/scratches/quest_build_spider_wave_syndrome/build/msvc6.5/cf448429ae6abfda/scratch.obj",
       "object_function_symbol": "_quest_build_spider_wave_syndrome",
-      "object_sha256": "a47539e1a84039a182688ec9b5291b7815429f266b5d1a8276a19f59a9dc6470",
+      "object_sha256": "7f5377836b084458b941e8ebe1bff8dace7a01442c0c03ccf04ee4f2f80f835e",
       "scratch": "tools/match/scratches/quest_build_spider_wave_syndrome",
       "source": "tools/match/scratches/quest_build_spider_wave_syndrome/scratch.cpp",
-      "source_sha256": "f120840d793d270e29852275517ef8b2459100873025b7f9db34a47d8f745cb9",
+      "source_sha256": "52d5f092d09532001c7e26bb3c63daeb360f9dd8f7369ff289a84b70a3078abe",
       "target_size": 95,
       "translation_unit": {
         "kind": "isolated",

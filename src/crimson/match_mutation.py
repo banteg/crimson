@@ -125,8 +125,16 @@ class MutationSweep:
         return self.evaluations[0] if self.evaluations else None
 
     @property
-    def best_improves(self) -> bool:
+    def metric_best_improves(self) -> bool:
         return self.best is not None and _status_rank(self.best.status) > _status_rank(self.baseline)
+
+    @property
+    def winner(self) -> MutationEvaluation | None:
+        return next((evaluation for evaluation in self.evaluations if not evaluation.tradeoffs), None)
+
+    @property
+    def best_improves(self) -> bool:
+        return self.winner is not None and _status_rank(self.winner.status) > _status_rank(self.baseline)
 
 
 @dataclass(frozen=True, slots=True)
@@ -388,7 +396,10 @@ def evaluate_mutation_sweep(
             with ThreadPoolExecutor(max_workers=len(variants)) as executor:
                 completed = list(executor.map(evaluate, variants))
         evaluations.extend(completed)
-        if stop_on_improvement and any(_status_rank(result.status) > _status_rank(baseline) for result in completed):
+        if stop_on_improvement and any(
+            not result.tradeoffs and _status_rank(result.status) > _status_rank(baseline)
+            for result in completed
+        ):
             stop_reason = "improvement"
             break
     if stop_reason is None and batch.truncated:
@@ -447,8 +458,8 @@ def mutation_evaluation_payload(evaluation: MutationEvaluation) -> dict[str, Any
 def mutation_sweep_payload(sweep: MutationSweep, *, limit: int | None = None) -> dict[str, Any]:
     evaluations = sweep.evaluations if limit is None else sweep.evaluations[:limit]
     winner = (
-        mutation_evaluation_payload(sweep.best)
-        if sweep.best is not None and sweep.best_improves
+        mutation_evaluation_payload(sweep.winner)
+        if sweep.winner is not None and sweep.best_improves
         else None
     )
     return {
@@ -478,6 +489,7 @@ def mutation_sweep_payload(sweep: MutationSweep, *, limit: int | None = None) ->
         "combinations_never_evaluated": sweep.unevaluated_interactions,
         "truncated": sweep.truncated,
         "stop_reason": sweep.stop_reason,
+        "metric_best_improves": sweep.metric_best_improves,
         "best_improves": sweep.best_improves,
         "best_tradeoffs": list(sweep.best.tradeoffs) if sweep.best is not None else [],
         "tradeoff_variants": sum(bool(evaluation.tradeoffs) for evaluation in sweep.evaluations),
@@ -515,6 +527,7 @@ def render_mutation_sweep(sweep: MutationSweep, *, limit: int = 20) -> str:
         (
             f"variants: evaluated={len(sweep.evaluations)} possible={sweep.possible_variants} "
             f"truncated={'yes' if sweep.truncated else 'no'} "
+            f"metric_best_improves={'yes' if sweep.metric_best_improves else 'no'} "
             f"best_improves={'yes' if sweep.best_improves else 'no'} "
             f"tradeoffs={sum(bool(evaluation.tradeoffs) for evaluation in sweep.evaluations)} "
             f"best_warnings={','.join(sweep.best.tradeoffs) if sweep.best and sweep.best.tradeoffs else '-'} "

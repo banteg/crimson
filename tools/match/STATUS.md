@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **696/810** functions matched exactly, **130912/341970** code bytes (**38.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303294/341970** code bytes (**88.7%**).
+Fuzzy-weighted alignment is **303253/341970** code bytes (**88.7%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 563/671 | 115968/320805 | 36.1% | 282487/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 563/671 |
+| crimsonland.exe | 563/671 | 115968/320805 | 36.1% | 282447/320805 | 88.0% | 671/671 | 320805/320805 | 100.0% | 563/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**563/671** functions, **115968/320805** bytes (**36.1%**), **282487/320805** fuzzy-weighted bytes (**88.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **563/671** scratches verified.
+**563/671** functions, **115968/320805** bytes (**36.1%**), **282447/320805** fuzzy-weighted bytes (**88.0%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **563/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -526,7 +526,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 378/424 | 46 | 92/92 | 89.13% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 412/429 | 17 | 102/102 | 96.08% | 21/102 | 8/0/0 |  | quest-fortress-overwritten-grid-seed |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 318/390 | 72 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
-| wip | quest_build_the_beating | 0x00435610 | 649 | 479/649 | 170 | 162/166 | 73.78% | 37/166 | 7/0/0 |  | quest-the-beating-four-lines |
+| wip | quest_build_the_beating | 0x00435610 | 649 | 442/649 | 207 | 166/166 | 68.07% | 37/166 | 7/0/0 |  | quest-the-beating-four-lines |
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 251/391 | 140 | 87/94 | 64.09% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
 | wip | quest_build_hidden_evil | 0x00435a30 | 407 | 395/407 | 12 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
@@ -536,7 +536,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 204/213 | 9 | 68/68 | 95.59% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
 | wip | quest_build_ghost_patrols | 0x00436200 | 334 | 271/334 | 63 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 215/237 | 22 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
-| wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 83/95 | 12 | 31/31 | 87.10% | 9/31 | 2/0/0 |  | quest-spider-wave-syndrome |
+| wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 80/95 | 15 | 31/31 | 83.87% | 12/31 | 2/0/0 |  | quest-spider-wave-syndrome |
 | wip | quest_build_nesting_grounds | 0x004364a0 | 626 | 621/626 | 5 | 138/138 | 99.28% | 10/138 | 15/0/0 |  | quest-nesting-grounds-fixed-nests |
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 232/249 | 17 | 60/60 | 93.33% | 8/60 | 1/0/0 |  | quest-alien-dens-builder |
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 358/382 | 24 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |

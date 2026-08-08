@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-wave-position-lifetime",
+      "find": "    do {\n        spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n",
+      "replacements": [
+        {
+          "name": "integer-x-before-advance",
+          "text": "    do {\n        int current_x = terrain_texture_width + x_offset;\n        x_offset += 32;\n        spawn->pos = quest_vec2_t(\n            (float)current_x,\n            (float)(terrain_texture_height / 2));\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n"
+        },
+        {
+          "name": "integer-x-after-construction",
+          "text": "    do {\n        int current_x = terrain_texture_width + x_offset;\n        spawn->pos = quest_vec2_t(\n            (float)current_x,\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n"
+        },
+        {
+          "name": "float-x-before-advance",
+          "text": "    do {\n        float current_x = (float)(terrain_texture_width + x_offset);\n        x_offset += 32;\n        spawn->pos = quest_vec2_t(\n            current_x,\n            (float)(terrain_texture_height / 2));\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n"
+        },
+        {
+          "name": "integer-x-then-center-y",
+          "text": "    do {\n        int current_x = terrain_texture_width + x_offset;\n        x_offset += 32;\n        int center_y = terrain_texture_height / 2;\n        spawn->pos = quest_vec2_t(\n            (float)current_x,\n            (float)center_y);\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n"
+        },
+        {
+          "name": "center-y-then-integer-x",
+          "text": "    do {\n        int center_y = terrain_texture_height / 2;\n        int current_x = terrain_texture_width + x_offset;\n        x_offset += 32;\n        spawn->pos = quest_vec2_t(\n            (float)current_x,\n            (float)center_y);\n        ++spawn;\n        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n"
+        }
+      ]
+    }
+  ]
+}
