@@ -18,15 +18,16 @@ Zig now share an explicitly exact-position append path for this proven
 exception to the usual native quest-coordinate truncation.
 
 The candidate reproduces the exact 92-instruction body and all eight audited
-references, scoring 94.57%. A continuous append index now publishes the two
+references, scoring 98.91%. A continuous append index publishes the two
 opening records. Their metadata is written directly, with a shared count-one
 lifetime carried across the boundary. This recovers the complete prologue and
 opening table through instruction 33. The integer index is then strength-
 reduced into the same native loop pointer anchors and remains substantially
-stronger than an explicit cursor. Residuals are three independent scheduling
-clusters around the two loop anchors, the later fixed entry, and epilogue pops.
-VC6.5pp and VC6.6 produce the same result as the default profile, so no override
-is justified.
+stronger than an explicit cursor. One-field trigger publication on both fixed
+chain entries recovers the complete middle and tail schedules. The sole
+residual is an independent swap between the first loop cursor anchor and its
+initial trigger load. VC6.5pp and VC6.6 produce the same result as the default
+profile, so no override is justified.
 
 ## Recovery classification audit
 
@@ -58,3 +59,14 @@ Replaying explicit record and trigger-field cursors against this stronger
 prefix regresses the already correct loop, while direct later metadata and
 staged left-wave position variants are byte-neutral. Only the opening
 publication shape is retained.
+
+## Fixed-chain trigger boundary recovery (2026-08-08)
+
+Splitting each fixed chain's metadata into a direct template store, an inlined
+one-field trigger setter, and a direct count store recovers two independent
+native schedules. At entry 12, VC6 now publishes template and trigger before
+constructing the left-wave x component. At entry 23, the same boundary lets
+the epilogue pops interleave between the final metadata stores exactly as in
+the target. The score rises from 94.57% to 98.91% with the exact 92/92
+instructions and references `8/0/0`. Applying the setter inside the repeated
+right loop is byte-neutral and is not retained.

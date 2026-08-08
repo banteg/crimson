@@ -23,6 +23,11 @@ struct quest_entry_original_t {
         trigger_time_ms = spawn_trigger_time_ms;
         count = spawn_count;
     }
+
+    void set_trigger(int spawn_trigger_time_ms)
+    {
+        trigger_time_ms = spawn_trigger_time_ms;
+    }
 };
 
 extern "C" void quest_build_the_gang_wars(
@@ -63,10 +68,9 @@ extern "C" void quest_build_the_gang_wars(
     } while (--waves_remaining != 0);
 
     spawns[12].pos = quest_vec2_t(512.0f, 1152.0f);
-    spawns[12].set_spawn(
-        SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13,
-        50500,
-        1);
+    spawns[12].template_id = SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13;
+    spawns[12].set_trigger(50500);
+    spawns[12].count = 1;
 
     spawn_index = 13;
     trigger_time_ms = 59500;
@@ -83,10 +87,9 @@ extern "C" void quest_build_the_gang_wars(
     } while (trigger_time_ms < 0x184AC);
 
     spawns[23].pos = quest_vec2_t(512.0f, 1152.0f);
-    spawns[23].set_spawn(
-        SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13,
-        107500,
-        3);
+    spawns[23].template_id = SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13;
+    spawns[23].set_trigger(107500);
+    spawns[23].count = 3;
 
     *count = 24;
 }

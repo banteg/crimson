@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **715/810** functions matched exactly, **137076/341970** code bytes (**40.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304680/341970** code bytes (**89.1%**).
+Fuzzy-weighted alignment is **304698/341970** code bytes (**89.1%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 582/671 | 122132/320805 | 38.1% | 283874/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 582/671 |
+| crimsonland.exe | 582/671 | 122132/320805 | 38.1% | 283892/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 582/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**582/671** functions, **122132/320805** bytes (**38.1%**), **283874/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **582/671** scratches verified.
+**582/671** functions, **122132/320805** bytes (**38.1%**), **283892/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **582/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -526,7 +526,7 @@ Artifact freshness issues:
 | wip | quest_build_the_gathering | 0x004349c0 | 725 | 649/725 | 76 | 134/134 | 89.55% | 12/134 | 0/0/0 |  | quest-the-gathering-fixed-table |
 | wip | quest_build_army_of_three | 0x00434ca0 | 608 | 603/608 | 5 | 116/116 | 99.14% | 13/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |
 | wip | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 537/541 | 4 | 141/141 | 99.29% | 20/141 | 18/0/0 |  | quest-knee-deep-direct-opening |
-| wip | quest_build_the_gang_wars | 0x00435120 | 424 | 401/424 | 23 | 92/92 | 94.57% | 33/92 | 8/0/0 |  | quest-gang-wars-append-prefix |
+| wip | quest_build_the_gang_wars | 0x00435120 | 424 | 419/424 | 5 | 92/92 | 98.91% | 33/92 | 8/0/0 |  | quest-gang-wars-append-prefix |
 | match | quest_build_the_fortress | 0x004352d0 | 429 | 429/429 | 0 | 102/102 | 100.00% | 102/102 | 8/0/0 |  | quest-fortress-field-cursor-grid |
 | match | quest_build_cross_fire | 0x00435480 | 390 | 390/390 | 0 | 76/76 | 100.00% | 76/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
 | wip | quest_build_the_beating | 0x00435610 | 649 | 504/649 | 145 | 166/166 | 77.71% | 39/166 | 7/0/0 |  | quest-the-beating-append-count |
