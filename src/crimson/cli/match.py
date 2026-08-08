@@ -1390,7 +1390,7 @@ def cmd_match_triage(
     image: str | None = typer.Option(None, "--image", help="restrict to one tracked image"),
     state: str | None = typer.Option(None, "--state", help="comma-separated manifest states"),
     min_bytes: int = typer.Option(0, "--min-bytes", min=0, help="minimum native function bytes"),
-    sort_by: Literal["address", "fuzzy-gap", "size", "fuzzy"] = typer.Option(
+    sort_by: Literal["address", "fuzzy-gap", "size", "fuzzy", "unexplored"] = typer.Option(
         "fuzzy-gap",
         "--sort",
         help="row ordering",

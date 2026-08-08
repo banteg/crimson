@@ -14,6 +14,8 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, cast
 
+from . import match_experiments
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_VERSION = "1.9.93-gog"
 DEFAULT_GAME_DIR = REPO_ROOT / "game_bins" / "crimsonland" / DEFAULT_VERSION
@@ -3439,6 +3441,19 @@ class NativeLinkStatus:
 
 
 @dataclass(frozen=True, slots=True)
+class TriageExperimentEvidence:
+    records: int = 0
+    mutation_sweeps: int = 0
+    probes: int = 0
+    evaluated_variants: int = 0
+    unique_variants: int = 0
+    unique_specs: int = 0
+    no_improvement_streak: int = 0
+    flags: tuple[str, ...] = ()
+    errors: int = 0
+
+
+@dataclass(frozen=True, slots=True)
 class TriageRow:
     image: str
     function: str
@@ -3450,6 +3465,7 @@ class TriageRow:
     candidate_bytes: int
     scratch_count: int
     best_status: ScratchStatus | None = None
+    experiments: TriageExperimentEvidence = TriageExperimentEvidence()
 
     @property
     def fuzzy_gap_bytes(self) -> float:
@@ -6857,6 +6873,9 @@ TRIAGE_HEADER = (
     "prefix",
     "refs",
     "scratch",
+    "search",
+    "streak",
+    "flags",
     "note",
 )
 PROFILE_HEADER = (
@@ -7015,6 +7034,7 @@ def collect_triage_rows(
                 state = "error"
             else:
                 state = "missing"
+            experiments = triage_experiment_evidence(best_status)
             rows.append(
                 TriageRow(
                     image=image_name,
@@ -7027,9 +7047,33 @@ def collect_triage_rows(
                     candidate_bytes=candidate_bytes,
                     scratch_count=len(function_statuses),
                     best_status=best_status,
+                    experiments=experiments,
                 ),
             )
     return rows
+
+
+def triage_experiment_evidence(status: ScratchStatus | None) -> TriageExperimentEvidence:
+    if status is None:
+        return TriageExperimentEvidence()
+    path = status.config.directory / match_experiments.EXPERIMENT_FILE
+    if not path.is_file():
+        return TriageExperimentEvidence()
+    row, errors = match_experiments.summarize_experiment_log(
+        path,
+        match_root=status.config.directory.parent.parent,
+    )
+    return TriageExperimentEvidence(
+        records=int(row["records"]),
+        mutation_sweeps=int(row["mutation_sweeps"]),
+        probes=int(row["probes"]),
+        evaluated_variants=int(row["evaluated_variants"]),
+        unique_variants=int(row["unique_variants"]),
+        unique_specs=int(row["unique_specs"]),
+        no_improvement_streak=int(row["no_improvement_streak"]),
+        flags=tuple(str(flag) for flag in row["flags"]),
+        errors=len(errors),
+    )
 
 
 def _safe_scratch_name(function: str) -> str:
@@ -7423,7 +7467,7 @@ def sort_scratch_statuses(statuses: list[ScratchStatus], *, sort_by: str = "addr
 
 
 def sort_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> list[TriageRow]:
-    if sort_by not in {"address", "fuzzy-gap", "size", "fuzzy"}:
+    if sort_by not in {"address", "fuzzy-gap", "size", "fuzzy", "unexplored"}:
         raise ValueError(f"unknown triage sort {sort_by!r}")
 
     def key(row: TriageRow) -> tuple[Any, ...]:
@@ -7433,9 +7477,18 @@ def sort_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> list
             return (row.fuzzy_gap_bytes, row.target_size, -row.fuzzy_weighted_bytes)
         if sort_by == "size":
             return (row.target_size, row.fuzzy_gap_bytes)
+        if sort_by == "unexplored":
+            return (
+                row.experiments.unique_variants,
+                row.experiments.records,
+                -row.fuzzy_gap_bytes,
+                -row.target_size,
+                row.image,
+                row.address,
+            )
         return (row.fuzzy_weighted_bytes, row.target_size)
 
-    return sorted(rows, key=key, reverse=sort_by != "address")
+    return sorted(rows, key=key, reverse=sort_by not in {"address", "unexplored"})
 
 
 def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
@@ -7859,6 +7912,17 @@ def triage_row_payload(row: TriageRow) -> dict[str, Any]:
         "fuzzy_gap_bytes": row.fuzzy_gap_bytes,
         "candidate_bytes": row.candidate_bytes,
         "scratch_count": row.scratch_count,
+        "experiments": {
+            "records": row.experiments.records,
+            "mutation_sweeps": row.experiments.mutation_sweeps,
+            "probes": row.experiments.probes,
+            "evaluated_variants": row.experiments.evaluated_variants,
+            "unique_variants": row.experiments.unique_variants,
+            "unique_specs": row.experiments.unique_specs,
+            "no_improvement_streak": row.experiments.no_improvement_streak,
+            "flags": list(row.experiments.flags),
+            "errors": row.experiments.errors,
+        },
         "best_scratch": scratch_status_payload(row.best_status) if row.best_status is not None else None,
     }
 
@@ -7944,6 +8008,9 @@ def render_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> li
                     else "-"
                 ),
                 best.config.directory.name if best is not None else "-",
+                f"{row.experiments.records}/{row.experiments.unique_variants}",
+                str(row.experiments.no_improvement_streak),
+                ",".join(row.experiments.flags) or "-",
                 (best.error or best.config.note) if best is not None else "",
             ),
         )

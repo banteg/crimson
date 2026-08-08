@@ -42,6 +42,7 @@ from crimson.match import (
     ReferenceCatalog,
     ScratchConfig,
     ScratchStatus,
+    TriageExperimentEvidence,
     TriageRow,
     _coff_local_jump_table_key,
     _coff_vc6_single_delete_unwind_key,
@@ -4650,6 +4651,52 @@ def test_triage_command_filters_and_emits_json(monkeypatch: pytest.MonkeyPatch) 
     payload = json.loads(completed.output)
     assert payload["summary"]["row_count"] == 1
     assert payload["rows"][0]["function"] == "large_missing"
+
+
+def test_triage_surfaces_and_sorts_recorded_search_evidence() -> None:
+    explored = TriageRow(
+        image="crimsonland.exe",
+        function="explored",
+        address=0x401000,
+        target_size=100,
+        state="wip",
+        exact_bytes=0,
+        fuzzy_weighted_bytes=90.0,
+        candidate_bytes=100,
+        scratch_count=1,
+        experiments=TriageExperimentEvidence(
+            records=4,
+            mutation_sweeps=3,
+            probes=1,
+            evaluated_variants=12,
+            unique_variants=10,
+            unique_specs=3,
+            no_improvement_streak=3,
+            flags=("stalled",),
+        ),
+    )
+    unexplored = replace(
+        explored,
+        function="unexplored",
+        address=0x401100,
+        experiments=TriageExperimentEvidence(),
+    )
+
+    assert sort_triage_rows([explored, unexplored], sort_by="unexplored")[0] is unexplored
+    payload = triage_row_payload(explored)["experiments"]
+    assert payload == {
+        "records": 4,
+        "mutation_sweeps": 3,
+        "probes": 1,
+        "evaluated_variants": 12,
+        "unique_variants": 10,
+        "unique_specs": 3,
+        "no_improvement_streak": 3,
+        "flags": ["stalled"],
+        "errors": 0,
+    }
+    rendered = render_triage_rows([explored])[0]
+    assert rendered[-4:-1] == ("4/10", "3", "stalled")
 
 
 def test_match_shard_excludes_semantic_complete_by_default(

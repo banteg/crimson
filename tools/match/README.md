@@ -440,9 +440,17 @@ cannot create a false missing-function report.
 ```sh
 uv run crimson match triage --image crimsonland.exe \
   --state missing,wip --min-bytes 32 --sort fuzzy-gap --limit 30
+uv run crimson match triage --state wip --sort unexplored --limit 30
 uv run crimson match triage --image crimsonland.exe --summary-only
 uv run crimson match triage --image crimsonland.exe --state missing --json
 ```
+
+The `search` column is `experiment records/unique variants`; `streak` counts
+consecutive non-improving mutation sweeps, and `flags` carries experiment-log
+signals such as `stalled`, repeated variants, tradeoffs, or evaluation errors.
+`--sort unexplored` puts the least-tested targets first, then favors the larger
+remaining fuzzy gap, so residual work does not repeatedly reopen saturated
+compiler-scheduling boundaries.
 
 All matcher `--json` modes keep the rendering stack lazy and write only the
 JSON document to stdout, so their output can be piped directly to tools such as
