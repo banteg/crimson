@@ -2,6 +2,59 @@
 
 #include "crimsonland_gameplay.h"
 
+inline float m_fabs(float value)
+{
+    int bits = (*(int *)&value) & 0x7fffffff;
+    return *(float *)&bits;
+}
+
+struct projectile_vec2_t {
+    union {
+        struct {
+            float x;
+            float y;
+        };
+        float values[2];
+    };
+
+    projectile_vec2_t()
+    {
+    }
+
+    projectile_vec2_t(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
+
+    inline projectile_vec2_t operator-(const projectile_vec2_t &other)
+    {
+        return projectile_vec2_t(x - other.x, y - other.y);
+    }
+};
+
+inline projectile_vec2_t operator*(
+    const projectile_vec2_t &value,
+    float scalar)
+{
+    return projectile_vec2_t(scalar * value.x, scalar * value.y);
+}
+
+inline float projectile_vec2_angle(const projectile_vec2_t &value)
+{
+    return (float)atan2(value.y, value.x);
+}
+
+inline float projectile_vec2_dot(const vec2f_t &value)
+{
+    return value.x * value.x + value.y * value.y;
+}
+
+inline float projectile_vec2_length(vec2f_t &value)
+{
+    return (float)sqrt(projectile_vec2_dot(value));
+}
+
 extern "C" {
 extern int projectile_update_tick;
 extern int perk_id_ion_gun_master;
@@ -826,29 +879,33 @@ extern "C" void projectile_update(void)
 
                     creature_t *target = &creature_pool[
                         secondary->pos.vx.vy.target_id];
-                    float target_angle = (float)atan2(
-                        secondary->position.y - target->position.y,
-                        secondary->position.x - target->position.x);
-                    secondary->angle = target_angle - 1.5707964f;
-                    secondary->pos.vx.vel_x +=
+                    projectile_vec2_t &secondary_position =
+                        *(projectile_vec2_t *)&secondary->position;
+                    projectile_vec2_t &target_position =
+                        *(projectile_vec2_t *)&target->position;
+                    projectile_vec2_t &secondary_velocity =
+                        *(projectile_vec2_t *)&secondary->pos.vx.velocity;
+                    secondary->angle =
+                        projectile_vec2_angle(
+                            secondary_position - target_position)
+                        - 1.5707964f;
+                    secondary_velocity.x +=
                         (float)cos(
-                            (target_angle - 1.5707964f) - 1.5707964f)
+                            secondary->angle - 1.5707964f)
                         * frame_dt * 800.0f;
-                    secondary->pos.vx.vy.vel_y +=
-                        (float)sin(secondary->angle - 1.5707964f)
+                    secondary_velocity.y +=
+                        (float)sin(
+                            secondary->angle - 1.5707964f)
                         * frame_dt * 800.0f;
 
-                    float speed = (float)sqrt(
-                        secondary->pos.vx.vel_x
-                                * secondary->pos.vx.vel_x
-                            + secondary->pos.vx.vy.vel_y
-                                * secondary->pos.vx.vy.vel_y);
+                    float speed = projectile_vec2_length(
+                        secondary->pos.vx.velocity);
                     if (speed > 350.0f) {
-                        secondary->pos.vx.vel_x -=
+                        secondary_velocity.x -=
                             (float)cos(
                                 secondary->angle - 1.5707964f)
                             * frame_dt * 800.0f;
-                        secondary->pos.vx.vy.vel_y -=
+                        secondary_velocity.y -=
                             (float)sin(
                                 secondary->angle - 1.5707964f)
                             * frame_dt * 800.0f;
@@ -857,25 +914,29 @@ extern "C" void projectile_update(void)
                 }
 
                 secondary->pos.vx.vy.trail_timer -=
-                    ((float)fabs(secondary->pos.vx.vel_x)
-                        + (float)fabs(secondary->pos.vx.vy.vel_y))
+                    (m_fabs(secondary->pos.vx.vel_x)
+                        + m_fabs(secondary->pos.vx.vy.vel_y))
                     * frame_dt * 0.01f;
                 if (secondary->pos.vx.vy.trail_timer < 0.0f) {
                     float trail_cos =
                         (float)cos(secondary->angle + 1.5707964f);
-                    vec2f_t trail_velocity = {
+                    projectile_vec2_t trail_velocity(
                         trail_cos * 90.0f,
-                        trail_cos * 90.0f,
-                    };
+                        trail_cos * 90.0f);
                     float trail_heading =
                         secondary->angle - 1.5707964f;
-                    vec2f_t trail_pos = {
-                        secondary->position.x
-                            - (float)cos(trail_heading) * 9.0f,
-                        secondary->position.y
-                            - (float)sin(trail_heading) * 9.0f,
-                    };
-                    int effect_id = fx_spawn_sprite(&trail_pos, &trail_velocity, 14.0f);
+                    projectile_vec2_t &trail_origin =
+                        *(projectile_vec2_t *)&secondary->position;
+                    projectile_vec2_t trail_pos =
+                        trail_origin
+                        - projectile_vec2_t(
+                            (float)cos(trail_heading),
+                            (float)sin(trail_heading))
+                            * 9.0f;
+                    int effect_id = fx_spawn_sprite(
+                        (const vec2f_t *)&trail_pos,
+                        (const vec2f_t *)&trail_velocity,
+                        14.0f);
                     secondary->pos.vx.vy.trail_timer = 0.06f;
                     sprite_effect_pool[effect_id].color_a = 0.25f;
                 }

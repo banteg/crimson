@@ -982,3 +982,23 @@ instructions, and `403/0/20` references, with source SHA-256
 `d90b2a4f66c78e180738a4d51ba1614958d4f7ccc17377dbc5585c3857a4e90b`.
 The 64-record, 960-variant `experiments.jsonl` SHA-256 is
 `eb7bcc6263b1e24baef730a3f0bae4441032e953df59fc4dead52059007c4c3a`.
+
+## Seeker and smoke vector house style
+
+The recovered SDK `vec2_t` establishes the source idiom behind the large
+secondary-projectile residual: two-float constructors, temporary-returning
+subtraction and scalar multiplication operators, `VEC2_Angle`, and the
+bit-mask `m_fabs(float)` helper. Native `0x00421c87..0x00421e68` independently
+shows each consequence. The seeker direction evaluates x before y and uses
+`fxch` before `fpatan`; acceleration and clamping reload the stored heading
+for each component; the trail timer clears sign bits through integer masks;
+and smoke position construction materializes the cosine before sine and then
+applies the scalar/vector subtraction.
+
+The matching source now uses a layout-compatible local vector class for the
+direction and smoke temporaries, keeps the velocity component updates direct,
+and restores `m_fabs`. This raises the canonical result by 246.5322 weighted
+bytes to `5085.8557/8409` (`60.4810997%`), moves the candidate from
+2,155 to 2,162 of 2,203 instructions, and improves references from
+`403/0/20` to `408/0/19`. The retained source SHA-256 is
+`d19d18a72f4955ad49d2de0594c1ccbc72c1605d72e89304eb5c6ee08eb988aa`.
