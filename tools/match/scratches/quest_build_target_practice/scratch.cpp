@@ -42,9 +42,10 @@ struct quest_entry_original_t {
 extern "C" void quest_build_target_practice(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;
     int trigger_time_ms = 2000;
     int trigger_step_ms = 2000;
+    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
     do {
         float angle = (float)(crt_rand() % 612) * 0.01f;
@@ -56,14 +57,14 @@ extern "C" void quest_build_target_practice(
         quest_vec2_t position(
             offset.x + 512.0f,
             offset.y + 512.0f);
-        cursor->pos = position;
-        cursor->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;
-        cursor->trigger_time_ms = trigger_time_ms;
-        cursor->count = 1;
-        cursor->heading =
-            (cursor->pos - quest_vec2_t(512.0f, 512.0f)).angle()
+        spawns[entry_count].pos = position;
+        spawns[entry_count].template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = 1;
+        spawns[entry_count].heading =
+            (spawns[entry_count].pos - quest_vec2_t(512.0f, 512.0f)).angle()
             - 1.57079637f;
-        ++cursor;
+        ++entry_count;
 
         int trigger_increment_ms = trigger_step_ms;
         if (trigger_increment_ms < 1100) {

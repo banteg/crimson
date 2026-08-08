@@ -11,10 +11,10 @@ and contributes at least 1100 ms until the reduced step reaches 500.
 The source constructs a rounded radial-offset vector and a translated position
 vector, then computes heading through vector subtraction and `angle()`, minus
 half pi. That reproduces the native signed remainder lowering, 20-byte frame,
-x87 position sequence, and exact `fxch`/`fpatan` heading sequence. The candidate
-has the same 69 instructions and scores 89.86%. Residuals are the early
-scheduling of three independent entry metadata stores, cursor advancement, and
-one trigger-step register move. They remain unconstrained.
+x87 position sequence, and exact `fxch`/`fpatan` heading sequence. Retaining the
+spawn-array base and indexing it with a logical entry count also reproduces the
+native biased field cursor, its early advance, and the late metadata stores.
+The result matches all 69 instructions and all eight audited references exactly.
 
 ## Recorded entry-lifetime search
 
@@ -29,8 +29,18 @@ schedule of the retained cursor source. The complete matrix is recorded in
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, calls,
+constants, record stores, and output-count policy. The candidate is an exact
+normalized instruction and reference match, so no recovery or compiler
+residual remains.
+
+## 2026-08-08 indexed-builder exact recovery
+
+The earlier retained-pointer source scored 89.86% at 69/69 instructions. Its
+semantic shape hid that the native code keeps the spawn-array owner stable and
+derives each record from a logical append count. Replacing the carried record
+cursor with `spawns[entry_count]` lets VC6 derive the native trigger-field-biased
+cursor and advance it before the x87 work without source-level pointer tricks.
+It also keeps the position and heading expressions tied to the indexed record,
+recovering the native late metadata publication. Retained source SHA-256:
+`a781828bd80f01758fda51804c064519c1cd0d4c95db1d65b3176dde2e29c4a1`.
