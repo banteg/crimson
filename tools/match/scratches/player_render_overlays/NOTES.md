@@ -29,7 +29,7 @@ allocation. Masked-reference auditing reports `325/0/0`: every aligned symbol
 resolves and agrees without a speculative alias.
 
 The target-trail direction is a two-component value passed in place as both
-the destination and immutable source of `vec2_normalize_dispatch`. Its live
+the destination and immutable source of `D3DXVec2Normalize`. Its live
 prototype is now the proven stdcall
 `vec2f_t *(vec2f_t *, const vec2f_t *)`, replacing Binary Ninja's former cdecl
 `float *(float *, float *)` guess. Propagating that contract through this
@@ -169,7 +169,7 @@ imprecision in the recovered target-trail construction. Native computes the
 target x delta at `0x0042940f-0x0042941c`, writes it to `var_8.x` at
 `0x00429435`, computes the y delta at `0x00429420-0x0042943d`, and writes it
 to `var_8.y` at `0x00429457`. This is component assignment into the vector
-passed in place to `vec2_normalize_dispatch`, not construction of a temporary
+passed in place to `D3DXVec2Normalize`, not construction of a temporary
 vector followed by whole-object assignment.
 
 `direction-pod-storage-mutations.json` tested the recovered assignment shape

@@ -61,7 +61,7 @@ extern ui_element_t ui_element_slot_35;
 extern ui_element_t ui_sign_crimson;
 extern int ui_text_reaper_texture;
 
-void j_highscore_load_table(void);
+void highscore_load_table_thunk(void);
 int highscore_rank_index(void);
 int console_input_poll(void);
 unsigned char sfx_is_unmuted(int sfx_id);
@@ -116,7 +116,7 @@ extern "C" void quest_failed_screen_update(void)
                 ui_text_reaper_texture);
 
             if (ui_screen_phase == -1) {
-                j_highscore_load_table();
+                highscore_load_table_thunk();
                 quest_failed_highscore_rank_index = highscore_rank_index();
                 highscore_active_record.game_mode_id =
                     (unsigned char)config_game_mode;

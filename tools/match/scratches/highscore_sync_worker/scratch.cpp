@@ -20,7 +20,7 @@ extern char s_empty_string;
 
 extern "C" unsigned char game_is_full_version(void);
 extern "C" int crt_rand(void);
-extern "C" void j_highscore_load_table(void);
+extern "C" void highscore_load_table_thunk(void);
 extern "C" void crt_endthread(void);
 
 extern "C" void highscore_sync_worker(void *)
@@ -63,7 +63,7 @@ extern "C" void highscore_sync_worker(void *)
     char *data = new char[0x8000];
     config_highscore_date_mode = 0;
     config_show_online_scores = 0;
-    j_highscore_load_table();
+    highscore_load_table_thunk();
     config_show_online_scores = 1;
 
     memset(data, 0, 0x8000);
@@ -304,7 +304,7 @@ cleanup:
         InternetCloseHandle(internet);
     }
 
-    j_highscore_load_table();
+    highscore_load_table_thunk();
     unsigned char batch_mode = highscore_batch_sync_mode;
     highscore_active_record = active_record_backup;
     if (success) {

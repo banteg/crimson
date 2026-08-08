@@ -35,6 +35,7 @@ from crimson.match import (
     MaskedOperandAuditEntry,
     MaskedReference,
     MatchResult,
+    NamingDebtRow,
     NativeLinkStatus,
     ObjectFunction,
     ObjectRelocationReference,
@@ -2460,8 +2461,8 @@ def test_is_analyzer_placeholder_rejects_only_weak_generated_names() -> None:
     assert is_analyzer_placeholder("DAT_10050550")
     assert is_analyzer_placeholder("LAB_10001000")
     assert is_analyzer_placeholder("lookup_table_4044b0")
+    assert is_analyzer_placeholder("j_known_function")
     assert not is_analyzer_placeholder("crt_array_unwind_filter")
-    assert not is_analyzer_placeholder("j_config_init_defaults")
     assert not is_analyzer_placeholder("?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z")
 
 
@@ -2629,6 +2630,44 @@ def test_render_naming_debt_table_handles_clean_result() -> None:
     assert render_naming_debt_summary([]) == "rows=0; suggested=0; issues="
 
 
+def test_collect_naming_debt_normalizes_address_suffixed_directory(tmp_path: Path) -> None:
+    config = ScratchConfig(
+        directory=tmp_path / "known_function_00401000",
+        function="known_function",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="",
+        source="",
+        end_va=None,
+        symbol="known_function",
+        note="known-function",
+    )
+    status = ScratchStatus(
+        config=config,
+        address=0x00401000,
+        target_size=8,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        '[{"program":"crimsonland.exe","address":"0x00401000",'
+        '"name":"known_function"}]\n',
+        encoding="utf-8",
+    )
+
+    row = collect_naming_debt([status], name_map_path=name_map)[0]
+
+    assert row.issues == ("address-suffixed-directory",)
+    assert row.suggestion == "known_function"
+    assert row.suggestion_sources == (
+        "canonical-identity:crimsonland.exe:0x00401000",
+    )
+
+
 def test_collect_resolved_name_references_covers_text_and_native_initializers(
     tmp_path: Path,
 ) -> None:
@@ -2643,7 +2682,21 @@ def test_collect_resolved_name_references_covers_text_and_native_initializers(
     source_root.joinpath("notes.py").write_text(
         "# FUN_00401000 reads DAT_00405000\n"
         "# _DAT_00405000 is the same recovered table\n"
+        "# former_function has a stronger curated identity\n"
         "# data_406000 and sub_00409999 remain unresolved\n",
+        encoding="utf-8",
+    )
+    raw_functions_root = tmp_path / "analysis" / "ida" / "raw" / "crimsonland.exe"
+    raw_functions_root.mkdir(parents=True)
+    raw_functions_root.joinpath("functions.json").write_text(
+        json.dumps(
+            [
+                {
+                    "address": "0x00401000",
+                    "name": "former_function",
+                },
+            ],
+        ),
         encoding="utf-8",
     )
     definitions_root = tmp_path / "tools" / "native" / "data_definitions"
@@ -2719,6 +2772,13 @@ def test_collect_resolved_name_references_covers_text_and_native_initializers(
         ("text", "FUN_00401000", "crimsonland.exe", 0x00401000, ("known_function",)),
         ("text", "DAT_00405000", "crimsonland.exe", 0x00405000, ("known_table",)),
         ("text", "_DAT_00405000", "crimsonland.exe", 0x00405000, ("known_table",)),
+        (
+            "superseded-identity",
+            "former_function",
+            "crimsonland.exe",
+            0x00401000,
+            ("known_function",),
+        ),
         ("native-initializer", "nullsub_3", "grim.dll", 0x10002000, ("known_noop",)),
     }
     assert [row.path for row in rows if row.path.startswith("docs/")] == [
@@ -2726,7 +2786,7 @@ def test_collect_resolved_name_references_covers_text_and_native_initializers(
         "docs/recovered.md",
     ]
     assert render_resolved_name_reference_summary(rows) == (
-        "rows=6; sources=native-initializer:1,text:5"
+        "rows=7; sources=native-initializer:1,superseded-identity:1,text:5"
     )
 
     completed = CliRunner().invoke(
@@ -2747,15 +2807,15 @@ def test_collect_resolved_name_references_covers_text_and_native_initializers(
     assert completed.exit_code == 1
     payload = json.loads(completed.output)
     assert payload["summary"] == {
-        "row_count": 6,
-        "sources": {"native-initializer": 1, "text": 5},
+        "row_count": 7,
+        "sources": {"native-initializer": 1, "superseded-identity": 1, "text": 5},
     }
 
     rewrite_result = rewrite_resolved_name_references(rows, repo_root=tmp_path)
 
     assert rewrite_result == {
         "files_updated": 3,
-        "references_updated": 6,
+        "references_updated": 7,
         "rows_skipped": 0,
     }
     assert docs_root.joinpath("recovered.md").read_text(encoding="utf-8") == (
@@ -2764,12 +2824,48 @@ def test_collect_resolved_name_references_covers_text_and_native_initializers(
     assert source_root.joinpath("notes.py").read_text(encoding="utf-8") == (
         "# known_function reads known_table\n"
         "# known_table is the same recovered table\n"
+        "# known_function has a stronger curated identity\n"
         "# data_406000 and sub_00409999 remain unresolved\n"
     )
     rewritten_payload = json.loads(
         definitions_root.joinpath("grim.dll.json").read_text(encoding="utf-8"),
     )
     assert rewritten_payload["entries"][0]["initializer_symbols"][0][2] == "known_noop"
+    assert collect_resolved_name_references(
+        repo_root=tmp_path,
+        name_map_path=name_map,
+        data_map_path=data_map,
+    ) == []
+
+
+def test_collect_resolved_name_references_keeps_identity_canonical_elsewhere(
+    tmp_path: Path,
+) -> None:
+    source_root = tmp_path / "src"
+    source_root.mkdir()
+    source_root.joinpath("notes.py").write_text(
+        "# wrapper calls shared_identity\n",
+        encoding="utf-8",
+    )
+    raw_functions_root = tmp_path / "analysis" / "ida" / "raw" / "crimsonland.exe"
+    raw_functions_root.mkdir(parents=True)
+    raw_functions_root.joinpath("functions.json").write_text(
+        '[{"address":"0x00401010","name":"shared_identity"}]\n',
+        encoding="utf-8",
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        "["
+        '{"program":"crimsonland.exe","address":"0x00401000",'
+        '"name":"shared_identity"},'
+        '{"program":"crimsonland.exe","address":"0x00401010",'
+        '"name":"body_identity"}'
+        "]\n",
+        encoding="utf-8",
+    )
+    data_map = tmp_path / "data_map.json"
+    data_map.write_text('{"entries":[]}\n', encoding="utf-8")
+
     assert collect_resolved_name_references(
         repo_root=tmp_path,
         name_map_path=name_map,
@@ -3570,16 +3666,177 @@ def test_apply_naming_suggestions_namespaces_exact_source_provider_symbol(
     assert result["scope_dispositions_updated"] == 1
 
 
+def test_apply_naming_suggestions_rewrites_curated_source_identity(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "old_initializer"
+    scratch.mkdir(parents=True)
+    scratch.joinpath("scratch.conf").write_text(
+        "FUNCTION=old_initializer\n"
+        "SYMBOL=old_initializer\n"
+        "SOURCE=scratch.cpp\n"
+        "NOTE=resolved-initializer\n",
+        encoding="utf-8",
+    )
+    scratch.joinpath("scratch.cpp").write_text(
+        'extern "C" void old_initializer(void) {}\n',
+        encoding="utf-8",
+    )
+    status = ScratchStatus(
+        config=load_scratch_config(scratch),
+        address=0x00401000,
+        target_size=1,
+        ratio=1.0,
+        prefix_instructions=1,
+        target_instructions=1,
+        candidate_instructions=1,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        '[{"program":"crimsonland.exe","address":"0x00401000",'
+        '"name":"old_initializer"}]\n',
+        encoding="utf-8",
+    )
+    hints = tmp_path / "naming_hints.json"
+    hints.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "entries": [
+                    {
+                        "program": "crimsonland.exe",
+                        "address": "0x00401000",
+                        "name": "resolved_initializer",
+                        "comment": "Initializer identity recovered from its only data writes.",
+                        "evidence": "complete initializer write set",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    row = collect_naming_debt(
+        [status],
+        name_map_path=name_map,
+        naming_hints_path=hints,
+    )[0]
+    result = apply_naming_suggestions(
+        [row],
+        match_root=match_root,
+        name_map_path=name_map,
+    )
+
+    renamed = match_root / "scratches" / "resolved_initializer"
+    renamed_config = load_scratch_config(renamed)
+    assert row.issues == ("curated-directory-conflict", "curated-name-conflict")
+    assert renamed_config.function == "resolved_initializer"
+    assert renamed_config.symbol == "resolved_initializer"
+    assert renamed.joinpath("scratch.cpp").read_text(encoding="utf-8") == (
+        'extern "C" void resolved_initializer(void) {}\n'
+    )
+    assert result["text_references_updated"] == 1
+
+
+def test_apply_naming_suggestions_rewrites_address_cleanup_identity_repo_wide(
+    tmp_path: Path,
+) -> None:
+    match_root = tmp_path / "tools" / "match"
+    scratches = match_root / "scratches"
+    provider = scratches / "old_provider_00401000"
+    consumer = scratches / "consumer"
+    provider.mkdir(parents=True)
+    consumer.mkdir()
+    provider.joinpath("scratch.conf").write_text(
+        "IMAGE=crimsonland.exe\n"
+        "FUNCTION=old_provider\n"
+        "SOURCE=scratch.cpp\n"
+        "SYMBOL=old_provider\n"
+        "NOTE=resolved-provider\n",
+        encoding="utf-8",
+    )
+    provider.joinpath("scratch.cpp").write_text(
+        'extern "C" void old_provider(void) {}\n',
+        encoding="utf-8",
+    )
+    consumer.joinpath("scratch.conf").write_text(
+        "IMAGE=crimsonland.exe\n"
+        "FUNCTION=consumer\n"
+        "SOURCE=scratch.cpp\n"
+        "SYMBOL=consumer\n"
+        "REFERENCE_ALIASES=_old_provider:old_provider\n"
+        "NOTE=consumer\n",
+        encoding="utf-8",
+    )
+    consumer.joinpath("scratch.cpp").write_text(
+        'extern "C" void old_provider(void);\n'
+        'extern "C" void consumer(void) { old_provider(); }\n',
+        encoding="utf-8",
+    )
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    docs.joinpath("identity.md").write_text(
+        "The exact provider is old_provider.\n",
+        encoding="utf-8",
+    )
+    name_map = tmp_path / "analysis" / "ghidra" / "maps" / "name_map.json"
+    name_map.parent.mkdir(parents=True)
+    name_map.write_text(
+        '[{"program":"crimsonland.exe","address":"0x00401000",'
+        '"name":"old_provider"}]\n',
+        encoding="utf-8",
+    )
+    row = NamingDebtRow(
+        image="crimsonland.exe",
+        address=0x00401000,
+        function="old_provider",
+        configured_function="old_provider",
+        scratch=provider.as_posix(),
+        issues=("address-suffixed-directory",),
+        placeholder_aliases=(),
+        placeholder_references=(),
+        reference_suggestions=(),
+        provider_symbol=None,
+        provider_member=None,
+        suggestion="known_provider",
+        suggestion_sources=("canonical-peer:grim.dll:0x10001000",),
+    )
+
+    result = apply_naming_suggestions(
+        [row],
+        match_root=match_root,
+        name_map_path=name_map,
+        matching_scope_path=tmp_path / "analysis" / "matching_scope.json",
+        repository_root=tmp_path,
+    )
+
+    renamed = scratches / "known_provider"
+    assert not provider.exists()
+    assert load_scratch_config(renamed).function == "known_provider"
+    assert load_scratch_config(renamed).symbol == "known_provider"
+    assert load_scratch_config(consumer).reference_aliases == (
+        ("_old_provider", "known_provider"),
+    )
+    assert "old_provider" not in renamed.joinpath("scratch.cpp").read_text(encoding="utf-8")
+    assert "old_provider" not in consumer.joinpath("scratch.cpp").read_text(encoding="utf-8")
+    assert docs.joinpath("identity.md").read_text(encoding="utf-8") == (
+        "The exact provider is known_provider.\n"
+    )
+    assert load_name_map_rows(name_map)[0]["name"] == "known_provider"
+    assert result["config_references_updated"] == 1
+    assert result["text_references_updated"] == 4
+
+
 def test_apply_naming_suggestions_replaces_weaker_d3dx_semantic_identity(tmp_path: Path) -> None:
     match_root = tmp_path / "match"
-    scratch = match_root / "scratches" / "vec2_normalize_dispatch_init_00401000"
+    scratch = match_root / "scratches" / "legacy_vec2_normalize_00401000"
     scratch.mkdir(parents=True)
     symbol = "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     scratch.joinpath("scratch.conf").write_text(
         "\n".join(
             (
                 "IMAGE=crimsonland.exe",
-                "FUNCTION=vec2_normalize_dispatch_init",
+                "FUNCTION=legacy_vec2_normalize",
                 "ARCHIVE=d3dx8.lib",
                 r"ARCHIVE_MEMBER='obj\i386\d3dxmath.obj'",
                 f"ARCHIVE_SHA256={'a' * 64}",
@@ -3608,8 +3865,8 @@ def test_apply_naming_suggestions_replaces_weaker_d3dx_semantic_identity(tmp_pat
                 {
                     "program": "crimsonland.exe",
                     "address": "0x00401000",
-                    "name": "vec2_normalize_dispatch_init",
-                    "signature": "void vec2_normalize_dispatch_init(void)",
+                    "name": "legacy_vec2_normalize",
+                    "signature": "void legacy_vec2_normalize(void)",
                 },
             ],
         ),

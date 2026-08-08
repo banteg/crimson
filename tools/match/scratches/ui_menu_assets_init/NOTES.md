@@ -71,7 +71,7 @@ The native address island immediately around this function is:
 - `ui_element_load` at `0x00419d00`, exact at 67/67 instructions and
   `refs=10/0/0`;
 - `ui_menu_assets_init` at `0x00419dd0`;
-- the exact `j___cfltcvt_init_3` / `__cfltcvt_init_3` initializer pair at
+- the exact `reserved_color_global_init_thunk` / `reserved_color_global_init` initializer pair at
   `0x0041a000` / `0x0041a010`;
 - `ui_cursor_render` at `0x0041a040`, on the far side of that initializer pair
   and still a WIP.

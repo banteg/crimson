@@ -102,7 +102,7 @@ bool ui_text_input_update(float *xy, ui_text_input_state_t *input_state);
 bool ui_button_update(float *xy, ui_button_t *button);
 int ui_list_widget_update(float *xy, ui_list_widget_t *list);
 bool input_primary_just_pressed(void);
-void j_highscore_load_table(void);
+void highscore_load_table_thunk(void);
 }
 
 static __inline bool profile_add_button_update(
@@ -165,7 +165,7 @@ extern "C" bool ui_profile_menu_update(float *xy, char enabled)
             profile_name_input_buffer[0] = 0;
             name_input.cursor = 0;
             profile_name_add_mode = 0;
-            j_highscore_load_table();
+            highscore_load_table_thunk();
         }
     } else if (!profile_name_list_open
                && config_blob.selected_saved_name_slot != 0) {
@@ -179,7 +179,7 @@ extern "C" bool ui_profile_menu_update(float *xy, char enabled)
                     config_blob.selected_saved_name_slot],
                 config_blob.saved_names[config_blob.saved_name_count]);
             config_blob.selected_saved_name_slot = 0;
-            j_highscore_load_table();
+            highscore_load_table_thunk();
         }
     }
 
@@ -200,7 +200,7 @@ extern "C" bool ui_profile_menu_update(float *xy, char enabled)
             name_list.selected_index = selected;
             config_blob.selected_saved_name_slot = selected;
             if (selected != item_count - 1) {
-                j_highscore_load_table();
+                highscore_load_table_thunk();
             }
             profile_name_selection_dirty = 1;
             profile_name_filter_dirty = 1;

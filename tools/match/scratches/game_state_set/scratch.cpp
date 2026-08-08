@@ -62,7 +62,7 @@ int console_input_poll(void);
 bool mods_any_available(void);
 void gameplay_reset_state(void);
 void quest_start_selected(int major, int minor);
-void j_highscore_load_table(void);
+void highscore_load_table_thunk(void);
 void game_save_status(void);
 
 void ui_menu_main_click_mods(void);
@@ -246,7 +246,7 @@ extern "C" void game_state_set(game_state_id_t state_id)
         ui_sign_crimson.active = 1;
         ui_element_slot_09.active = 1;
         ui_element_slot_09.on_update = ui_callback_noop;
-        j_highscore_load_table();
+        highscore_load_table_thunk();
     } else if (state_id == GAME_STATE_CONTROLS_MENU) {
         float screen_scale =
             (float)config_blob.screen_width * 0.00156250002f;
@@ -263,7 +263,7 @@ extern "C" void game_state_set(game_state_id_t state_id)
         ui_element_slot_09.active = 1;
         ui_element_slot_33.active = 1;
         ui_element_slot_09.on_update = highscore_screen_update;
-        j_highscore_load_table();
+        highscore_load_table_thunk();
     }
 
     ui_element_slot_33.on_update = 0;

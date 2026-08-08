@@ -261,11 +261,10 @@ reference to the recovered `_crimsonland_main@16`, so the link exercises the
 GUI startup graph instead of selecting the console startup and fabricating a
 `_main` shim.
 
-The vector-normalization callsites had previously been labeled as an excluded
-game helper. Archive matching instead proves that the initializer and thunk
+Archive matching proves that the vector-normalization initializer and thunk
 are D3DX8's `init_D3DXVec2Normalize` and `_D3DXVec2Normalize@8` in
-`d3dxmath.obj`. A weak alias now resolves the recovered
-`_vec2_normalize_dispatch@8` name to that original archive symbol.
+`d3dxmath.obj`. Recovered callsites now use the original archive identity
+directly, so this provider needs no compatibility alias.
 
 The combined archive-backed graph declares 99 transitive symbols. Eighty-seven
 map to reference-backed KERNEL32, ADVAPI32, OLE32, OLEAUT32, or VERSION imports,

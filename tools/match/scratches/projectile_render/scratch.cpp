@@ -15,7 +15,7 @@ extern int quest_spawn_timeline;
 
 void effect_select_texture(int effect_id);
 int creature_find_in_radius(float *pos, float radius, int start_index);
-vec2f_t *__stdcall vec2_normalize_dispatch(
+vec2f_t *__stdcall D3DXVec2Normalize(
     vec2f_t *dst,
     const vec2f_t *src);
 }
@@ -729,7 +729,7 @@ extern "C" void projectile_render(float transition_alpha)
                 primary->origin_y - projectile->pos.pos_y);
             vec2f_t direction = *(vec2f_t *)&direction_result;
             float distance = direction_result.length();
-            vec2_normalize_dispatch(&direction, &direction);
+            D3DXVec2Normalize(&direction, &direction);
             if (primary->vy.type_id
                 == PROJECTILE_TYPE_FIRE_BULLETS) {
                 grim_interface_ptr->grim_set_color(
@@ -795,7 +795,7 @@ extern "C" void projectile_render(float transition_alpha)
             direction.x = direction_result.x;
             direction.y = direction_result.y;
             float distance = direction_result.length();
-            vec2_normalize_dispatch(&direction, &direction);
+            D3DXVec2Normalize(&direction, &direction);
 
             float effect_scale;
             if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
@@ -873,7 +873,7 @@ extern "C" void projectile_render(float transition_alpha)
                              &creature_pool[creature_index].pos_x
                         - *(projectile_render_vec2_t *)&projectile->position;
                     projectile_render_vec2_t arc = arc_result;
-                    vec2_normalize_dispatch(
+                    D3DXVec2Normalize(
                         (vec2f_t *)&arc, (const vec2f_t *)&arc);
                     float old_arc_x = arc.x;
                     arc.x = -arc.y;

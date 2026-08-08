@@ -17,11 +17,11 @@
     },
     {
       "name": "secondary-impulse-scale-use",
-      "find": "                            vec2f_t impulse = {dx, dy};\n                            vec2_normalize_dispatch(&impulse, &impulse);\n                            impulse.x *= 0.1f;\n                            impulse.y *= 0.1f;\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);",
+      "find": "                            vec2f_t impulse = {dx, dy};\n                            D3DXVec2Normalize(&impulse, &impulse);\n                            impulse.x *= 0.1f;\n                            impulse.y *= 0.1f;\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);",
       "replacements": [
         {
           "name": "normalized-source-returned-scale",
-          "text": "                            vec2f_t direction = {dx, dy};\n                            vec2_normalize_dispatch(&direction, &direction);\n                            vec2f_t impulse =\n                                projectile_scale_vector(direction, 0.1f);\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);"
+          "text": "                            vec2f_t direction = {dx, dy};\n                            D3DXVec2Normalize(&direction, &direction);\n                            vec2f_t impulse =\n                                projectile_scale_vector(direction, 0.1f);\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);"
         }
       ]
     }

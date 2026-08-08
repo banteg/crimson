@@ -110,7 +110,7 @@ extern int music_track_crimsonquest_id;
 extern int music_track_crimson_theme_id;
 extern int music_track_extra_0;
 
-void j_highscore_load_table(void);
+void highscore_load_table_thunk(void);
 int highscore_rank_index(void);
 void highscore_record_init(void);
 void highscore_save_active(void);
@@ -379,7 +379,7 @@ extern "C" void quest_results_screen_update(void)
     }
 
     if (phase == 0) {
-        j_highscore_load_table();
+        highscore_load_table_thunk();
         quest_results_highscore_rank_index = highscore_rank_index();
         grim_interface_ptr->grim_flush_input();
         grim_interface_ptr->grim_was_key_pressed(0x1c);
@@ -462,7 +462,7 @@ extern "C" void quest_results_screen_update(void)
                 highscore_active_record.player_name[cursor] = 0;
                 name_input.text = quest_results_name_input_buffer;
                 highscore_save_active();
-                j_highscore_load_table();
+                highscore_load_table_thunk();
             } else {
                 name_submit_button.activated = false;
                 sfx_play(sfx_shock_hit_01, 1.0f);

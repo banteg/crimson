@@ -65,7 +65,7 @@ bool input_primary_just_pressed(void);
 bool input_aim_pov_left_active(void);
 bool input_aim_pov_right_active(void);
 float player_heading_approach_target(float target_heading);
-vec2f_t *__stdcall vec2_normalize_dispatch(
+vec2f_t *__stdcall D3DXVec2Normalize(
     vec2f_t *dst,
     const vec2f_t *src);
 void player_start_reload(void);
@@ -489,7 +489,7 @@ extern "C" void player_update(void)
                     movement_input.x * movement_input.x
                     + movement_input.y * movement_input.y)
                 > 0.2f) {
-                vec2_normalize_dispatch(&movement_input, &movement_input);
+                D3DXVec2Normalize(&movement_input, &movement_input);
                 movement_heading =
                     (float)atan2(movement_input.y, movement_input.x)
                     - 1.5707964f;
@@ -901,7 +901,7 @@ extern "C" void player_update(void)
             if (scalar > 1.0f) {
                 scalar = 1.0f;
             }
-            vec2_normalize_dispatch(&movement_input, &movement_input);
+            D3DXVec2Normalize(&movement_input, &movement_input);
             scalar = scalar * cv_padAimDistMul->value + 42.0f;
             move_delta.x = scalar * movement_input.x;
             scratch_pos.y =
@@ -932,7 +932,7 @@ extern "C" void player_update(void)
                     movement_input.x * movement_input.x
                     + movement_input.y * movement_input.y)
                 > 30.0f) {
-                vec2_normalize_dispatch(
+                D3DXVec2Normalize(
                     &movement_input,
                     &movement_input);
                 move_delta.y = movement_input.y * 30.0f;
@@ -992,7 +992,7 @@ extern "C" void player_update(void)
             movement_input.y * movement_input.y
             + movement_input.x * movement_input.x);
         if (scalar >= 4.0f) {
-            vec2_normalize_dispatch(&movement_input, &movement_input);
+            D3DXVec2Normalize(&movement_input, &movement_input);
             angle_step = (scalar * 6.0f) * frame_dt;
             move_delta.x = movement_input.x * angle_step;
             player->aim.x = player->aim.x + move_delta.x;

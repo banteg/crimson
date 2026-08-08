@@ -1,5 +1,5 @@
 {
-  "audit_digest": "c601ba518da7123f0e886e96dac838f4343aeaa07954af69d8cf03fdd2ebe0a5",
+  "audit_digest": "a920ec927f789917363d4c1d429f5413cc273544a4fc31ef132a19ee124a8222",
   "entries": [
     {
       "address": 4211888,
@@ -5962,10 +5962,10 @@
       "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
-      "comment": "Lazy vector-normalization implementation pointer; starts at vec2_normalize_dispatch_init and is retargeted to vec2_normalize_safe on first use.",
+      "comment": "Lazy vector-normalization implementation pointer; starts at d3dx_init_vec2_normalize and is retargeted to d3dx_c_vec2_normalize on first use.",
       "definition_state": "fully-specified",
       "initializer_hex": "1d2f4500",
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: renderer_dispatch_table slot 46 at VA 0x00479658 points to vec2_normalize_dispatch_init",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: renderer_dispatch_table slot 46 at VA 0x00479658 points to d3dx_init_vec2_normalize",
       "initializer_target": null,
       "linker_reference_count": 0,
       "name": "vec2_normalize_impl",
@@ -37453,7 +37453,7 @@
       "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
-      "comment": "CRT FILE* stream pointer table used by crt_flushall (MSVCRT __piob-style).",
+      "comment": "CRT FILE* stream pointer table used by crt_flsall (MSVCRT __piob-style).",
       "definition_group": "mapped-bss-zero-pointer32",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
@@ -37778,9 +37778,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "7fecc366cf579103b2b822a03adb32dea53dff0aa5434c8f283e9552042db745",
+    "data_map_sha256": "4b8977f4542912182326fd9922f5acbeffe5433935d24e549cea8732eaa8444d",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "17cbad1f56dc748f9fcdf9b8e4d32d96ddc6655ab439a4ed52b467abcc78345e",
+    "definitions_sha256": "24a4d581a8054eb2aafc417b7c45c43e8a2db19f822e132998fcafc5812d6470",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"

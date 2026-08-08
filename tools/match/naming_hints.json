@@ -3,6 +3,13 @@
   "entries": [
     {
       "program": "crimsonland.exe",
+      "address": "0x004028e0",
+      "name": "config_init_defaults_thunk",
+      "comment": "Exact tail thunk to config_init_defaults at 0x004028f0.",
+      "evidence": "single resolved tail jump to config_init_defaults"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00408970",
       "name": "tutorial_primary_button_destroy",
       "comment": "Exact empty destructor for the tutorial primary-button state.",
@@ -28,6 +35,13 @@
       "name": "crimson_crt_empty_initializer_slot_05",
       "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 05 tail thunk at 0x0040df70.",
       "evidence": "crimsonland .CRT$XC slot 05 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0040df90",
+      "name": "mod_api_init_thunk",
+      "comment": "Exact tail thunk to mod_api_init at 0x0040dfa0.",
+      "evidence": "single resolved tail jump to mod_api_init"
     },
     {
       "program": "crimsonland.exe",
@@ -66,6 +80,13 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004120a0",
+      "name": "gameplay_run_state_init_thunk",
+      "comment": "Exact tail thunk to gameplay_run_state_init at 0x004120b0.",
+      "evidence": "single resolved tail jump to gameplay_run_state_init"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00412160",
       "name": "crimson_crt_empty_initializer_slot_09_thunk",
       "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 09; it jumps to the paired exact empty initializer at 0x00412170.",
@@ -77,6 +98,34 @@
       "name": "crimson_crt_empty_initializer_slot_09",
       "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 09 tail thunk at 0x00412160.",
       "evidence": "crimsonland .CRT$XC slot 09 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00412350",
+      "name": "highscore_init_sentinels_thunk",
+      "comment": "Exact tail thunk to highscore_init_sentinels at 0x00412360.",
+      "evidence": "single resolved tail jump to highscore_init_sentinels"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00417680",
+      "name": "ui_menu_template_pool_init_thunk",
+      "comment": "Exact tail thunk to ui_menu_template_pool_init at 0x00417690.",
+      "evidence": "single resolved tail jump to ui_menu_template_pool_init"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041a000",
+      "name": "reserved_color_global_init_thunk",
+      "comment": "Exact tail thunk to reserved_color_global_init at 0x0041a010.",
+      "evidence": "single resolved tail jump to reserved color initializer"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041a010",
+      "name": "reserved_color_global_init",
+      "comment": "Initializes the reserved four-float color at 0x004871b8 to (1, 0, 0, 1).",
+      "evidence": "complete exact initializer write set"
     },
     {
       "program": "crimsonland.exe",
@@ -217,6 +266,13 @@
       "name": "crimson_crt_empty_initializer_slot_49",
       "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 49 tail thunk at 0x0042de60.",
       "evidence": "crimsonland .CRT$XC slot 49 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0043b800",
+      "name": "highscore_load_table_thunk",
+      "comment": "Exact tail thunk to highscore_load_table at 0x0043afa0.",
+      "evidence": "single resolved tail jump to highscore_load_table"
     },
     {
       "program": "crimsonland.exe",
@@ -422,6 +478,13 @@
       "evidence": "controls screen static-object declaration order"
     },
     {
+      "program": "crimsonland.exe",
+      "address": "0x0045ed12",
+      "name": "vec3_transform_coord_thunk",
+      "comment": "Exact DirectX 8.1 x3d tail thunk to x3d_vec3_transform_coord_inline at 0x0045eac0.",
+      "evidence": "pinned x3d_vec3.obj symbol and resolved tail jump"
+    },
+    {
       "program": "grim.dll",
       "address": "0x10001000",
       "name": "grim_crt_empty_initializer_slot_01_thunk",
@@ -574,6 +637,27 @@
       "name": "grim_crt_empty_initializer_slot_12",
       "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 12 tail thunk at 0x10007f10.",
       "evidence": "grim .CRT$XC slot 12 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1001a574",
+      "name": "grim_vertex_space_converter_destroy_thunk",
+      "comment": "Exact tail thunk to the shared Grim vertex-space-converter destructor.",
+      "evidence": "pinned destructor object and resolved tail jump"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1001b48e",
+      "name": "grim_pixel_format_destroy_dxt_thunk",
+      "comment": "Exact tail thunk to the shared DXT1-DXT5 regular destructor.",
+      "evidence": "pinned DXT destructor object and resolved tail jump"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1001bca0",
+      "name": "grim_pixel_format_destroy_yuv_thunk",
+      "comment": "Exact tail thunk to the shared UYVY/YUY2 regular destructor.",
+      "evidence": "pinned YUV destructor object and resolved tail jump"
     }
   ]
 }

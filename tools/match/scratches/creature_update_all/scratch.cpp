@@ -59,7 +59,7 @@ void effect_spawn_blood_splatter(
     const vec2f_t *pos,
     float angle,
     float age);
-vec2f_t *__stdcall vec2_normalize_dispatch(vec2f_t *dst, const vec2f_t *src);
+vec2f_t *__stdcall D3DXVec2Normalize(vec2f_t *dst, const vec2f_t *src);
 }
 
 extern "C" void creature_update_all(void)
@@ -646,7 +646,7 @@ extern "C" void creature_update_all(void)
                                     creature_vec2_t contact_delta(
                                         player_state_table[current_player_index].position.x - position->x,
                                         player_state_table[current_player_index].position.y - position->y);
-                                    vec2_normalize_dispatch(
+                                    D3DXVec2Normalize(
                                         (vec2f_t *)&contact_delta,
                                         (vec2f_t *)&contact_delta);
                                     creature_vec2_t impact(

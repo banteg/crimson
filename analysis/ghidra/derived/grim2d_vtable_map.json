@@ -69,7 +69,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0042c450:L19443"
+      "crimsonland_main:L19443"
     ],
     "func_addr": "0x10005d40",
     "section": ".text",
@@ -87,7 +87,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0042c450:L19504"
+      "crimsonland_main:L19504"
     ],
     "func_addr": "0x10005eb0",
     "section": ".text",
@@ -105,7 +105,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0042c450:L19599"
+      "crimsonland_main:L19599"
     ],
     "func_addr": "0x10005ff0",
     "section": ".text",
@@ -123,7 +123,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0042c450:L19581"
+      "crimsonland_main:L19581"
     ],
     "func_addr": "0x10006020",
     "section": ".text",
@@ -141,14 +141,14 @@
     "callsites": 206,
     "unique_functions": 35,
     "sample_calls": [
-      "FUN_00401dd0:L754",
-      "FUN_00401dd0:L755",
-      "FUN_00401dd0:L847",
-      "FUN_00402d50:L1438",
-      "FUN_00402d50:L1460",
-      "FUN_004047c0:L3147",
-      "FUN_00405160:L3373",
-      "FUN_00405160:L3377"
+      "console_render:L754",
+      "console_render:L755",
+      "console_render:L847",
+      "ui_render_loading:L1438",
+      "ui_render_loading:L1460",
+      "demo_trial_overlay_render:L3147",
+      "ui_render_keybind_help:L3373",
+      "ui_render_keybind_help:L3377"
     ],
     "func_addr": "0x10006580",
     "section": ".text",
@@ -166,14 +166,14 @@
     "callsites": 17,
     "unique_functions": 4,
     "sample_calls": [
-      "FUN_0041ec60:L13402",
-      "FUN_0041ec60:L13410",
-      "FUN_0041ec60:L13413",
-      "FUN_0041ec60:L13415",
-      "FUN_0041ec60:L13417",
-      "FUN_0041ec60:L13419",
-      "FUN_0042c450:L19456",
-      "FUN_0042c450:L19458"
+      "config_sync_from_grim:L13402",
+      "config_sync_from_grim:L13410",
+      "config_sync_from_grim:L13413",
+      "config_sync_from_grim:L13415",
+      "config_sync_from_grim:L13417",
+      "config_sync_from_grim:L13419",
+      "crimsonland_main:L19456",
+      "crimsonland_main:L19458"
     ],
     "func_addr": "0x10006c30",
     "section": ".text",
@@ -191,7 +191,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0042c450:L19509"
+      "crimsonland_main:L19509"
     ],
     "func_addr": "0x10006ca0",
     "section": ".text",
@@ -209,11 +209,11 @@
     "callsites": 5,
     "unique_functions": 3,
     "sample_calls": [
-      "FUN_00417b80:L9215",
-      "FUN_004181b0:L9452",
-      "FUN_0042c450:L19534",
-      "FUN_0042c450:L19538",
-      "FUN_0042c450:L19547"
+      "terrain_generate:L9215",
+      "terrain_generate_random:L9452",
+      "crimsonland_main:L19534",
+      "crimsonland_main:L19538",
+      "crimsonland_main:L19547"
     ],
     "func_addr": "0x10006cb0",
     "section": ".text",
@@ -231,12 +231,12 @@
     "callsites": 6,
     "unique_functions": 3,
     "sample_calls": [
-      "FUN_00417b80:L9209",
-      "FUN_00417b80:L9333",
-      "FUN_004181b0:L9446",
-      "FUN_004181b0:L9563",
-      "FUN_00427920:L17949",
-      "FUN_00427920:L18035"
+      "terrain_generate:L9209",
+      "terrain_generate:L9333",
+      "terrain_generate_random:L9446",
+      "terrain_generate_random:L9563",
+      "fx_queue_render:L17949",
+      "fx_queue_render:L18035"
     ],
     "func_addr": "0x10006d50",
     "section": ".text",
@@ -318,12 +318,12 @@
     "callsites": 6,
     "unique_functions": 2,
     "sample_calls": [
-      "FUN_00401a40:L509",
-      "FUN_00401a40:L511",
-      "FUN_00401a40:L526",
-      "FUN_00401a40:L528",
-      "FUN_0043d830:L26638",
-      "FUN_0043d830:L26639"
+      "console_update:L509",
+      "console_update:L511",
+      "console_update:L526",
+      "console_update:L528",
+      "ui_focus_update:L26638",
+      "ui_focus_update:L26639"
     ],
     "func_addr": "0x10007320",
     "section": ".text",
@@ -341,14 +341,14 @@
     "callsites": 39,
     "unique_functions": 16,
     "sample_calls": [
-      "FUN_00401a40:L514",
-      "FUN_00401a40:L522",
-      "FUN_00401a40:L531",
-      "FUN_00401a40:L543",
-      "FUN_00401a40:L547",
-      "FUN_00401a40:L551",
-      "FUN_00401a40:L574",
-      "FUN_00401a40:L578"
+      "console_update:L514",
+      "console_update:L522",
+      "console_update:L531",
+      "console_update:L543",
+      "console_update:L547",
+      "console_update:L551",
+      "console_update:L574",
+      "console_update:L578"
     ],
     "func_addr": "0x10007390",
     "section": ".text",
@@ -366,14 +366,14 @@
     "callsites": 12,
     "unique_functions": 10,
     "sample_calls": [
-      "FUN_004018b0:L346",
-      "FUN_004070e0:L4357",
-      "FUN_00408530:L5083",
-      "FUN_00408530:L5104",
-      "FUN_0040aab0:L5879",
-      "FUN_0040ffc0:L7055",
-      "FUN_004107e0:L7326",
-      "FUN_00410d20:L7702"
+      "console_set_open:L346",
+      "quest_mode_update:L4357",
+      "tutorial_prompt_dialog:L5083",
+      "tutorial_prompt_dialog:L5104",
+      "gameplay_update_and_render:L5879",
+      "game_over_screen_update:L7055",
+      "quest_failed_screen_update:L7326",
+      "quest_results_screen_update:L7702"
     ],
     "func_addr": "0x10007330",
     "section": ".text",
@@ -391,7 +391,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_00401060:L33"
+      "console_input_poll:L33"
     ],
     "func_addr": "0x10005c40",
     "section": ".text",
@@ -409,8 +409,8 @@
     "callsites": 2,
     "unique_functions": 2,
     "sample_calls": [
-      "FUN_0042c450:L19559",
-      "FUN_0043ecf0:L27394"
+      "crimsonland_main:L19559",
+      "ui_text_input_update:L27394"
     ],
     "func_addr": "0x10005c20",
     "section": ".text",
@@ -428,10 +428,10 @@
     "callsites": 4,
     "unique_functions": 3,
     "sample_calls": [
-      "FUN_0040aab0:L5953",
-      "FUN_00446030:L29260",
-      "FUN_00446030:L29278",
-      "FUN_004460f0:L29306"
+      "gameplay_update_and_render:L5953",
+      "input_primary_just_pressed:L29260",
+      "input_primary_just_pressed:L29278",
+      "input_primary_is_down:L29306"
     ],
     "func_addr": "0x10007410",
     "section": ".text",
@@ -465,8 +465,8 @@
     "callsites": 2,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0043def0:L26948",
-      "FUN_0043def0:L26952"
+      "ui_scrollbar_update:L26948",
+      "ui_scrollbar_update:L26952"
     ],
     "func_addr": "0x10007560",
     "section": ".text",
@@ -596,12 +596,12 @@
     "callsites": 6,
     "unique_functions": 4,
     "sample_calls": [
-      "FUN_0040aab0:L5929",
-      "FUN_00446000:L29232",
-      "FUN_00446030:L29266",
-      "FUN_00446030:L29282",
-      "FUN_004460f0:L29308",
-      "FUN_004460f0:L29310"
+      "gameplay_update_and_render:L5929",
+      "input_any_key_pressed:L29232",
+      "input_primary_just_pressed:L29266",
+      "input_primary_just_pressed:L29282",
+      "input_primary_is_down:L29308",
+      "input_primary_is_down:L29310"
     ],
     "func_addr": "0x10006fe0",
     "section": ".text",
@@ -619,12 +619,12 @@
     "callsites": 6,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_00448b50:L30229",
-      "FUN_00448b50:L30233",
-      "FUN_00448b50:L30237",
-      "FUN_00448b50:L30241",
-      "FUN_00448b50:L30245",
-      "FUN_00448b50:L30249"
+      "input_detect_active_analog_axis:L30229",
+      "input_detect_active_analog_axis:L30233",
+      "input_detect_active_analog_axis:L30237",
+      "input_detect_active_analog_axis:L30241",
+      "input_detect_active_analog_axis:L30245",
+      "input_detect_active_analog_axis:L30249"
     ],
     "func_addr": "0x100071b0",
     "section": ".text",
@@ -754,8 +754,8 @@
     "callsites": 2,
     "unique_functions": 2,
     "sample_calls": [
-      "FUN_0041e8d0:L13164",
-      "FUN_0041e8f0:L13177"
+      "input_aim_pov_left_active:L13164",
+      "input_aim_pov_right_active:L13177"
     ],
     "func_addr": "0x100075b0",
     "section": ".text",
@@ -789,7 +789,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0042a9f0:L19084"
+      "init_audio_and_terrain:L19084"
     ],
     "func_addr": "0x100075d0",
     "section": ".text",
@@ -823,9 +823,9 @@
     "callsites": 3,
     "unique_functions": 3,
     "sample_calls": [
-      "FUN_00419d00:L10132",
-      "FUN_0042a670:L18970",
-      "FUN_0042a700:L18996"
+      "ui_element_load:L10132",
+      "texture_get_or_load:L18970",
+      "texture_get_or_load_alt:L18996"
     ],
     "func_addr": "0x100076e0",
     "section": ".text",
@@ -875,14 +875,14 @@
     "callsites": 22,
     "unique_functions": 8,
     "sample_calls": [
-      "FUN_0040b740:L6362",
-      "FUN_0040b740:L6374",
-      "FUN_00412dc0:L8687",
-      "FUN_00412dc0:L8698",
-      "FUN_00412dc0:L8710",
-      "FUN_00412dc0:L8722",
-      "FUN_00412dc0:L8734",
-      "FUN_00412dc0:L8750"
+      "demo_purchase_screen_update:L6362",
+      "demo_purchase_screen_update:L6374",
+      "gameplay_reset_state:L8687",
+      "gameplay_reset_state:L8698",
+      "gameplay_reset_state:L8710",
+      "gameplay_reset_state:L8722",
+      "gameplay_reset_state:L8734",
+      "gameplay_reset_state:L8750"
     ],
     "func_addr": "0x10007740",
     "section": ".text",
@@ -900,14 +900,14 @@
     "callsites": 66,
     "unique_functions": 22,
     "sample_calls": [
-      "FUN_004061e0:L3882",
-      "FUN_004061e0:L3891",
-      "FUN_0040a510:L5641",
-      "FUN_0040a510:L5663",
-      "FUN_00417ae0:L9120",
-      "FUN_00417b80:L9220",
-      "FUN_00417b80:L9265",
-      "FUN_00417b80:L9296"
+      "ui_draw_clock_gauge:L3882",
+      "ui_draw_clock_gauge:L3891",
+      "ui_render_aim_indicators:L5641",
+      "ui_render_aim_indicators:L5663",
+      "ui_draw_textured_quad:L9120",
+      "terrain_generate:L9220",
+      "terrain_generate:L9265",
+      "terrain_generate:L9296"
     ],
     "func_addr": "0x10007830",
     "section": ".text",
@@ -925,7 +925,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_004188a0:L9637"
+      "terrain_render:L9637"
     ],
     "func_addr": "0x10007870",
     "section": ".text",
@@ -943,8 +943,8 @@
     "callsites": 2,
     "unique_functions": 2,
     "sample_calls": [
-      "FUN_00405960:L3696",
-      "FUN_00406af0:L4120"
+      "gameplay_render_world:L3696",
+      "game_update_generic_menu:L4120"
     ],
     "func_addr": "0x100079b0",
     "section": ".text",
@@ -962,14 +962,14 @@
     "callsites": 24,
     "unique_functions": 14,
     "sample_calls": [
-      "FUN_00401dd0:L740",
-      "FUN_00401dd0:L752",
-      "FUN_00402d50:L1448",
-      "FUN_004047c0:L3096",
-      "FUN_00405160:L3369",
-      "FUN_00408530:L5029",
-      "FUN_0040b740:L6476",
-      "FUN_0040b740:L6480"
+      "console_render:L740",
+      "console_render:L752",
+      "ui_render_loading:L1448",
+      "demo_trial_overlay_render:L3096",
+      "ui_render_keybind_help:L3369",
+      "tutorial_prompt_dialog:L5029",
+      "demo_purchase_screen_update:L6476",
+      "demo_purchase_screen_update:L6480"
     ],
     "func_addr": "0x100078e0",
     "section": ".text",
@@ -987,14 +987,14 @@
     "callsites": 12,
     "unique_functions": 11,
     "sample_calls": [
-      "FUN_00402d50:L1454",
-      "FUN_004047c0:L3107",
-      "FUN_00405160:L3372",
-      "FUN_00408530:L5031",
-      "FUN_00410d20:L7694",
-      "FUN_0043e5e0:L27177",
-      "FUN_0043ecf0:L27413",
-      "FUN_0043ecf0:L27448"
+      "ui_render_loading:L1454",
+      "demo_trial_overlay_render:L3107",
+      "ui_render_keybind_help:L3372",
+      "tutorial_prompt_dialog:L5031",
+      "quest_results_screen_update:L7694",
+      "ui_menu_item_update:L27177",
+      "ui_text_input_update:L27413",
+      "ui_text_input_update:L27448"
     ],
     "func_addr": "0x10008f10",
     "section": ".text",
@@ -1012,7 +1012,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0040a510:L5640"
+      "ui_render_aim_indicators:L5640"
     ],
     "func_addr": "0x10007b90",
     "section": ".text",
@@ -1030,7 +1030,7 @@
     "callsites": 1,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_0040a510:L5644"
+      "ui_render_aim_indicators:L5644"
     ],
     "func_addr": "0x10007d40",
     "section": ".text",
@@ -1080,14 +1080,14 @@
     "callsites": 79,
     "unique_functions": 23,
     "sample_calls": [
-      "FUN_004061e0:L3887",
-      "FUN_004061e0:L3892",
-      "FUN_0040a510:L5683",
-      "FUN_00417b80:L9228",
-      "FUN_00417b80:L9271",
-      "FUN_00417b80:L9299",
-      "FUN_004181b0:L9464",
-      "FUN_004181b0:L9506"
+      "ui_draw_clock_gauge:L3887",
+      "ui_draw_clock_gauge:L3892",
+      "ui_render_aim_indicators:L5683",
+      "terrain_generate:L9228",
+      "terrain_generate:L9271",
+      "terrain_generate:L9299",
+      "terrain_generate_random:L9464",
+      "terrain_generate_random:L9506"
     ],
     "func_addr": "0x10007ac0",
     "section": ".text",
@@ -1121,14 +1121,14 @@
     "callsites": 86,
     "unique_functions": 28,
     "sample_calls": [
-      "FUN_00401dd0:L753",
-      "FUN_004047c0:L3134",
-      "FUN_004061e0:L3889",
-      "FUN_004061e0:L3895",
-      "FUN_0040a510:L5702",
-      "FUN_0040b740:L6346",
-      "FUN_00417ae0:L9125",
-      "FUN_00417b80:L9261"
+      "console_render:L753",
+      "demo_trial_overlay_render:L3134",
+      "ui_draw_clock_gauge:L3889",
+      "ui_draw_clock_gauge:L3895",
+      "ui_render_aim_indicators:L5702",
+      "demo_purchase_screen_update:L6346",
+      "ui_draw_textured_quad:L9125",
+      "terrain_generate:L9261"
     ],
     "func_addr": "0x10007b20",
     "section": ".text",
@@ -1178,14 +1178,14 @@
     "callsites": 65,
     "unique_functions": 17,
     "sample_calls": [
-      "FUN_00401dd0:L736",
-      "FUN_004061e0:L3886",
-      "FUN_004061e0:L3893",
-      "FUN_0040a510:L5662",
-      "FUN_0040b740:L6325",
-      "FUN_004188a0:L9599",
-      "FUN_004188a0:L9630",
-      "FUN_00418b60:L9718"
+      "console_render:L736",
+      "ui_draw_clock_gauge:L3886",
+      "ui_draw_clock_gauge:L3893",
+      "ui_render_aim_indicators:L5662",
+      "demo_purchase_screen_update:L6325",
+      "terrain_render:L9599",
+      "terrain_render:L9630",
+      "creature_render_type:L9718"
     ],
     "func_addr": "0x10007f30",
     "section": ".text",
@@ -1203,14 +1203,14 @@
     "callsites": 59,
     "unique_functions": 23,
     "sample_calls": [
-      "FUN_004047c0:L3126",
-      "FUN_004061e0:L3884",
-      "FUN_0040a510:L5635",
-      "FUN_0040a510:L5642",
-      "FUN_0040a510:L5664",
-      "FUN_0040b740:L6331",
-      "FUN_00417ae0:L9121",
-      "FUN_00417b80:L9206"
+      "demo_trial_overlay_render:L3126",
+      "ui_draw_clock_gauge:L3884",
+      "ui_render_aim_indicators:L5635",
+      "ui_render_aim_indicators:L5642",
+      "ui_render_aim_indicators:L5664",
+      "demo_purchase_screen_update:L6331",
+      "ui_draw_textured_quad:L9121",
+      "terrain_generate:L9206"
     ],
     "func_addr": "0x10008350",
     "section": ".text",
@@ -1228,14 +1228,14 @@
     "callsites": 25,
     "unique_functions": 6,
     "sample_calls": [
-      "FUN_00418b60:L9704",
-      "FUN_00418b60:L9715",
-      "FUN_00418b60:L9759",
-      "FUN_00418b60:L9770",
-      "FUN_00418b60:L9819",
-      "FUN_00418b60:L9830",
-      "FUN_0041a8b0:L10630",
-      "FUN_00422c70:L16482"
+      "creature_render_type:L9704",
+      "creature_render_type:L9715",
+      "creature_render_type:L9759",
+      "creature_render_type:L9770",
+      "creature_render_type:L9819",
+      "creature_render_type:L9830",
+      "bonus_hud_slot_update_and_render:L10630",
+      "projectile_render:L16482"
     ],
     "func_addr": "0x10008230",
     "section": ".text",
@@ -1253,12 +1253,12 @@
     "callsites": 6,
     "unique_functions": 3,
     "sample_calls": [
-      "FUN_0041aed0:L10950",
-      "FUN_0041aed0:L10961",
-      "FUN_0041aed0:L10964",
-      "FUN_0041aed0:L11488",
-      "FUN_004295f0:L18733",
-      "FUN_004413a0:L27845"
+      "ui_render_hud:L10950",
+      "ui_render_hud:L10961",
+      "ui_render_hud:L10964",
+      "ui_render_hud:L11488",
+      "bonus_render:L18733",
+      "ui_text_input_render:L27845"
     ],
     "func_addr": "0x100082c0",
     "section": ".text",
@@ -1276,10 +1276,10 @@
     "callsites": 4,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_00422c70:L16721",
-      "FUN_00422c70:L16725",
-      "FUN_00422c70:L16728",
-      "FUN_00422c70:L16729"
+      "projectile_render:L16721",
+      "projectile_render:L16725",
+      "projectile_render:L16728",
+      "projectile_render:L16729"
     ],
     "func_addr": "0x100083a0",
     "section": ".text",
@@ -1297,14 +1297,14 @@
     "callsites": 20,
     "unique_functions": 10,
     "sample_calls": [
-      "FUN_0040ffc0:L7098",
-      "FUN_0040ffc0:L7171",
-      "FUN_00410d20:L7782",
-      "FUN_00410d20:L7851",
-      "FUN_00418b60:L9717",
-      "FUN_00418b60:L9772",
-      "FUN_00418b60:L9832",
-      "FUN_00418b60:L9894"
+      "game_over_screen_update:L7098",
+      "game_over_screen_update:L7171",
+      "quest_results_screen_update:L7782",
+      "quest_results_screen_update:L7851",
+      "creature_render_type:L9717",
+      "creature_render_type:L9772",
+      "creature_render_type:L9832",
+      "creature_render_type:L9894"
     ],
     "func_addr": "0x10008040",
     "section": ".text",
@@ -1322,14 +1322,14 @@
     "callsites": 203,
     "unique_functions": 37,
     "sample_calls": [
-      "FUN_00401dd0:L733",
-      "FUN_00401dd0:L741",
-      "FUN_00401dd0:L756",
-      "FUN_00401dd0:L764",
-      "FUN_00401dd0:L769",
-      "FUN_00401dd0:L787",
-      "FUN_00401dd0:L833",
-      "FUN_00402d50:L1451"
+      "console_render:L733",
+      "console_render:L741",
+      "console_render:L756",
+      "console_render:L764",
+      "console_render:L769",
+      "console_render:L787",
+      "console_render:L833",
+      "ui_render_loading:L1451"
     ],
     "func_addr": "0x10007f90",
     "section": ".text",
@@ -1347,14 +1347,14 @@
     "callsites": 12,
     "unique_functions": 2,
     "sample_calls": [
-      "FUN_0040b740:L6302",
-      "FUN_0040b740:L6308",
-      "FUN_0040b740:L6315",
-      "FUN_0040b740:L6322",
-      "FUN_00422c70:L15993",
-      "FUN_00422c70:L16000",
-      "FUN_00422c70:L16068",
-      "FUN_00422c70:L16075"
+      "demo_purchase_screen_update:L6302",
+      "demo_purchase_screen_update:L6308",
+      "demo_purchase_screen_update:L6315",
+      "demo_purchase_screen_update:L6322",
+      "projectile_render:L15993",
+      "projectile_render:L16000",
+      "projectile_render:L16068",
+      "projectile_render:L16075"
     ],
     "func_addr": "0x100081c0",
     "section": ".text",
@@ -1372,14 +1372,14 @@
     "callsites": 100,
     "unique_functions": 21,
     "sample_calls": [
-      "FUN_004047c0:L3132",
-      "FUN_004061e0:L3888",
-      "FUN_004061e0:L3894",
-      "FUN_0040a510:L5701",
-      "FUN_0040b740:L6344",
-      "FUN_00417ae0:L9124",
-      "FUN_004188a0:L9613",
-      "FUN_00418b60:L9720"
+      "demo_trial_overlay_render:L3132",
+      "ui_draw_clock_gauge:L3888",
+      "ui_draw_clock_gauge:L3894",
+      "ui_render_aim_indicators:L5701",
+      "demo_purchase_screen_update:L6344",
+      "ui_draw_textured_quad:L9124",
+      "terrain_render:L9613",
+      "creature_render_type:L9720"
     ],
     "func_addr": "0x10008b10",
     "section": ".text",
@@ -1397,12 +1397,12 @@
     "callsites": 6,
     "unique_functions": 2,
     "sample_calls": [
-      "FUN_00417b80:L9255",
-      "FUN_00417b80:L9289",
-      "FUN_00417b80:L9317",
-      "FUN_004181b0:L9491",
-      "FUN_004181b0:L9524",
-      "FUN_004181b0:L9547"
+      "terrain_generate:L9255",
+      "terrain_generate:L9289",
+      "terrain_generate:L9317",
+      "terrain_generate_random:L9491",
+      "terrain_generate_random:L9524",
+      "terrain_generate_random:L9547"
     ],
     "func_addr": "0x10008720",
     "section": ".text",
@@ -1436,11 +1436,11 @@
     "callsites": 5,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_00446c40:L29980",
-      "FUN_00446c40:L29985",
-      "FUN_00446c40:L29986",
-      "FUN_00446c40:L30065",
-      "FUN_00446c40:L30107"
+      "ui_element_render:L29980",
+      "ui_element_render:L29985",
+      "ui_element_render:L29986",
+      "ui_element_render:L30065",
+      "ui_element_render:L30107"
     ],
     "func_addr": "0x100085c0",
     "section": ".text",
@@ -1458,10 +1458,10 @@
     "callsites": 4,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_00446c40:L30035",
-      "FUN_00446c40:L30042",
-      "FUN_00446c40:L30045",
-      "FUN_00446c40:L30074"
+      "ui_element_render:L30035",
+      "ui_element_render:L30042",
+      "ui_element_render:L30045",
+      "ui_element_render:L30074"
     ],
     "func_addr": "0x10008680",
     "section": ".text",
@@ -1479,9 +1479,9 @@
     "callsites": 3,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_00446c40:L30006",
-      "FUN_00446c40:L30014",
-      "FUN_00446c40:L30018"
+      "ui_element_render:L30006",
+      "ui_element_render:L30014",
+      "ui_element_render:L30018"
     ],
     "func_addr": "0x10008430",
     "section": ".text",
@@ -1499,11 +1499,11 @@
     "callsites": 5,
     "unique_functions": 2,
     "sample_calls": [
-      "FUN_0042e820:L20025",
-      "FUN_0042e820:L20053",
-      "FUN_00446c40:L29953",
-      "FUN_00446c40:L29959",
-      "FUN_00446c40:L29962"
+      "effects_render:L20025",
+      "effects_render:L20053",
+      "ui_element_render:L29953",
+      "ui_element_render:L29959",
+      "ui_element_render:L29962"
     ],
     "func_addr": "0x100084e0",
     "section": ".text",
@@ -1521,10 +1521,10 @@
     "callsites": 4,
     "unique_functions": 1,
     "sample_calls": [
-      "FUN_00422c70:L16048",
-      "FUN_00422c70:L16204",
-      "FUN_00422c70:L16755",
-      "FUN_00422c70:L16768"
+      "projectile_render:L16048",
+      "projectile_render:L16204",
+      "projectile_render:L16755",
+      "projectile_render:L16768"
     ],
     "func_addr": "0x10009080",
     "section": ".text",
@@ -1542,11 +1542,11 @@
     "callsites": 5,
     "unique_functions": 3,
     "sample_calls": [
-      "FUN_00401dd0:L781",
-      "FUN_00401dd0:L804",
-      "FUN_00401dd0:L843",
-      "FUN_0040b740:L6491",
-      "FUN_0041aed0:L11263"
+      "console_render:L781",
+      "console_render:L804",
+      "console_render:L843",
+      "demo_purchase_screen_update:L6491",
+      "ui_render_hud:L11263"
     ],
     "func_addr": "0x100092b0",
     "section": ".text",
@@ -1564,9 +1564,9 @@
     "callsites": 3,
     "unique_functions": 3,
     "sample_calls": [
-      "FUN_00405160:L3374",
-      "FUN_00406350:L3950",
-      "FUN_0041aed0:L11281"
+      "ui_render_keybind_help:L3374",
+      "game_update_victory_screen:L3950",
+      "ui_render_hud:L11281"
     ],
     "func_addr": "0x10009940",
     "section": ".text",
@@ -1584,14 +1584,14 @@
     "callsites": 20,
     "unique_functions": 9,
     "sample_calls": [
-      "FUN_00401dd0:L760",
-      "FUN_00401dd0:L800",
-      "FUN_00405be0:L3808",
-      "FUN_0040b740:L6398",
-      "FUN_0040b740:L6401",
-      "FUN_0040b740:L6409",
-      "FUN_0040b740:L6426",
-      "FUN_0040b740:L6428"
+      "console_render:L760",
+      "console_render:L800",
+      "perk_selection_screen_update:L3808",
+      "demo_purchase_screen_update:L6398",
+      "demo_purchase_screen_update:L6401",
+      "demo_purchase_screen_update:L6409",
+      "demo_purchase_screen_update:L6426",
+      "demo_purchase_screen_update:L6428"
     ],
     "func_addr": "0x10009730",
     "section": ".text",
@@ -1609,14 +1609,14 @@
     "callsites": 86,
     "unique_functions": 15,
     "sample_calls": [
-      "FUN_004047c0:L3140",
-      "FUN_004047c0:L3193",
-      "FUN_004047c0:L3197",
-      "FUN_004047c0:L3201",
-      "FUN_004047c0:L3206",
-      "FUN_004047c0:L3211",
-      "FUN_004047c0:L3214",
-      "FUN_004047c0:L3217"
+      "demo_trial_overlay_render:L3140",
+      "demo_trial_overlay_render:L3193",
+      "demo_trial_overlay_render:L3197",
+      "demo_trial_overlay_render:L3201",
+      "demo_trial_overlay_render:L3206",
+      "demo_trial_overlay_render:L3211",
+      "demo_trial_overlay_render:L3214",
+      "demo_trial_overlay_render:L3217"
     ],
     "func_addr": "0x10009980",
     "section": ".text",
@@ -1634,14 +1634,14 @@
     "callsites": 14,
     "unique_functions": 10,
     "sample_calls": [
-      "FUN_00408530:L5007",
-      "FUN_004295f0:L18761",
-      "FUN_0042fd00:L20753",
-      "FUN_0043dc80:L26810",
-      "FUN_0043e5e0:L27164",
-      "FUN_0043e830:L27225",
-      "FUN_0043ecf0:L27429",
-      "FUN_0043efc0:L27482"
+      "tutorial_prompt_dialog:L5007",
+      "bonus_render:L18761",
+      "wrap_text_to_width_alloc:L20753",
+      "ui_checkbox_update:L26810",
+      "ui_menu_item_update:L27164",
+      "ui_button_update:L27225",
+      "ui_text_input_update:L27429",
+      "ui_list_widget_update:L27482"
     ],
     "func_addr": "0x100096c0",
     "section": ".text",

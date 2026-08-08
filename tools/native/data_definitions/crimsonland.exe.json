@@ -4478,7 +4478,7 @@
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_pointer_alignment_is_four",
       "initializer_hex": "1d2f4500",
-      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: renderer_dispatch_table slot 46 at VA 0x00479658 points to vec2_normalize_dispatch_init"
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: renderer_dispatch_table slot 46 at VA 0x00479658 points to d3dx_init_vec2_normalize"
     },
     {
       "address": "0x00479688",

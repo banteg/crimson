@@ -1122,7 +1122,7 @@ def cmd_match_resolved_name_audit(
     ),
     check: bool = typer.Option(False, "--check", help="fail when resolved labels remain"),
 ) -> None:
-    """Find address-derived references whose curated identity is already stronger."""
+    """Find analyzer identities whose curated identity is already stronger."""
 
     rows = matchlib.collect_resolved_name_references(
         repo_root=root,
@@ -1338,6 +1338,7 @@ def cmd_match_naming_audit(
             selected_rows,
             match_root=match_root,
             name_map_path=name_map,
+            repository_root=matchlib.REPO_ROOT,
         )
         if as_json:
             typer.echo(json.dumps(result, indent=2, sort_keys=True))

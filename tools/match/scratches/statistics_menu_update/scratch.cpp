@@ -68,7 +68,7 @@ extern int music_track_extra_0;
 extern char menu_label_back[];
 
 bool ui_button_update(float *xy, ui_button_t *button);
-void j_highscore_load_table(void);
+void highscore_load_table_thunk(void);
 void sfx_mute_all(int sfx_id);
 void sfx_play_exclusive(int sfx_id);
 void statistics_update_check_worker(void *arg);
@@ -245,12 +245,12 @@ extern "C" void statistics_menu_update(void)
         }
         if (quest_stage_minor < 1) {
             quest_stage_minor = 1;
-            j_highscore_load_table();
+            highscore_load_table_thunk();
         } else {
             if (quest_stage_minor > 10) {
                 quest_stage_minor = 10;
             }
-            j_highscore_load_table();
+            highscore_load_table_thunk();
         }
     }
 

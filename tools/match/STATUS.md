@@ -140,7 +140,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | console_command_find | 0x00402750 | 93 | 93/93 | 0 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-command-lookup |
 | match | console_command_autocomplete | 0x004027b0 | 165 | 165/165 | 0 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | console_flush_log | 0x00402860 | 121 | 121/121 | 0 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
-| match | j_config_init_defaults | 0x004028e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-config-defaults |
+| match | config_init_defaults_thunk | 0x004028e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-config-defaults |
 | wip | config_init_defaults | 0x004028f0 | 734 | 729/734 | 5 | 140/140 | 99.29% | 21/140 | 83/0/0 |  | config-defaults-and-input-bindings |
 | match | game_build_path | 0x00402bd0 | 34 | 34/34 | 0 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | register_core_cvars | 0x00402c00 | 326 | 326/326 | 0 | 66/66 | 100.00% | 66/66 | 65/0/0 |  | core-console-variable-registration |
@@ -211,7 +211,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | credits_back_button_destroy | 0x0040df60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | credits-back-button-empty-destructor |
 | match | crimson_crt_empty_initializer_slot_05_thunk | 0x0040df70 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-05-thunk |
 | match | crimson_crt_empty_initializer_slot_05 | 0x0040df80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-05 |
-| match | j_mod_api_init | 0x0040df90 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-mod-api-init |
+| match | mod_api_init_thunk | 0x0040df90 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-mod-api-init |
 | match | mod_api_init | 0x0040dfa0 | 21 | 21/21 | 0 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
 | match | mod_api_core_printf | 0x0040dfc0 | 52 | 52/52 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | mod-api-core-console-output |
 | match | mod_api_debug_printf | 0x0040e000 | 50 | 50/50 | 0 | 14/14 | 100.00% | 14/14 | 2/0/0 |  | mod-api-debug-output |
@@ -280,7 +280,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | quest_results_name_submit_button_destroy | 0x00412070 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-name-submit-button-empty-destructor |
 | match | crimson_crt_empty_initializer_slot_07_thunk | 0x00412080 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-07-thunk |
 | match | crimson_crt_empty_initializer_slot_07 | 0x00412090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-07 |
-| match | j_gameplay_run_state_init | 0x004120a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-gameplay-run-state-init |
+| match | gameplay_run_state_init_thunk | 0x004120a0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-gameplay-run-state-init |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 172/172 | 0 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | crimson_crt_empty_initializer_slot_09_thunk | 0x00412160 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-09-thunk |
 | match | crimson_crt_empty_initializer_slot_09 | 0x00412170 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-09 |
@@ -296,7 +296,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | creature_spawn_slot_table_global_init | 0x00412260 | 45 | 45/45 | 0 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | creature-spawn-slot-global-initialization |
 | match | game_status_global_init_thunk | 0x00412290 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | game-status-global-init-thunk |
 | match | game_status_global_init | 0x004122a0 | 171 | 171/171 | 0 | 45/45 | 100.00% | 45/45 | 18/0/0 |  | game-status-global-constructor |
-| match | j_highscore_init_sentinels | 0x00412350 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-sentinel-init |
+| match | highscore_init_sentinels_thunk | 0x00412350 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-sentinel-init |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 96/96 | 0 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
 | match | bonus_meta_global_construct_and_register | 0x004123c0 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | bonus-metadata-global-lifecycle |
 | match | bonus_meta_table_init | 0x004123d0 | 25 | 25/25 | 0 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-construction |
@@ -317,7 +317,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | player_update | 0x004136b0 | 16257 | 10182/16257 | 6075 | 4052/4206 | 62.63% | 7/4206 | 800/0/2 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
-| match | j_ui_menu_template_pool_init | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
+| match | ui_menu_template_pool_init_thunk | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
 | match | ui_menu_template_pool_init | 0x00417690 | 336 | 336/336 | 0 | 92/92 | 100.00% | 92/92 | 42/0/0 |  | ui-template-pool-construction |
 | match | ui_element_globals_init_thunk | 0x004177e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | ui-element-global-init-thunk |
 | match | ui_element_globals_init | 0x004177f0 | 662 | 662/662 | 0 | 135/135 | 100.00% | 135/135 | 121/0/0 |  | ui-element-global-construction |
@@ -333,8 +333,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | ui_element_set_rect | 0x00419ba0 | 348 | 348/348 | 0 | 91/91 | 100.00% | 91/91 | 6/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 207/207 | 0 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
 | match | ui_menu_assets_init | 0x00419dd0 | 551 | 551/551 | 0 | 110/110 | 100.00% | 110/110 | 66/0/0 |  | ui-menu-template-assets |
-| match | j___cfltcvt_init_3 | 0x0041a000 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-global-initializer |
-| match | __cfltcvt_init_3 | 0x0041a010 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | reserved-four-float-global-initializer |
+| match | reserved_color_global_init_thunk | 0x0041a000 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-global-initializer |
+| match | reserved_color_global_init | 0x0041a010 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | reserved-four-float-global-initializer |
 | wip | ui_cursor_render | 0x0041a040 | 730 | 722/730 | 8 | 177/177 | 98.87% | 158/177 | 57/0/0 |  | ui-cursor-particle-renderer |
 | match | ui_render_aim_enhancement | 0x0041a320 | 518 | 518/518 | 0 | 131/131 | 100.00% | 131/131 | 35/0/0 |  | ui-aim-enhancement-overlay |
 | match | ui_elements_update_and_render | 0x0041a530 | 409 | 409/409 | 0 | 103/103 | 100.00% | 103/103 | 41/0/0 |  | ui-transition-update-render |
@@ -587,7 +587,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | highscore_rank_index | 0x0043b520 | 133 | 78/133 | 55 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
 | match | highscore_build_path | 0x0043b5b0 | 402 | 402/402 | 0 | 104/104 | 100.00% | 104/104 | 54/0/0 | msvc6.5 /O2 /GB /W3 /GR- /TP | highscore-mode-path-builder |
 | match | highscore_record_init | 0x0043b750 | 165 | 165/165 | 0 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
-| match | j_highscore_load_table | 0x0043b800 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-loader |
+| match | highscore_load_table_thunk | 0x0043b800 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-loader |
 | match | sfx_entry_reset_runtime_state | 0x0043b810 | 54 | 54/54 | 0 | 19/19 | 100.00% | 19/19 | 0/0/0 |  | audio-entry-initialization |
 | match | buffer_reader_init | 0x0043b850 | 30 | 30/30 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
 | match | buffer_reader_seek | 0x0043b870 | 10 | 10/10 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | resource-buffer-reader |

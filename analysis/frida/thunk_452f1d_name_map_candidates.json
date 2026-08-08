@@ -2,22 +2,22 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00452f1d",
-    "name": "vec2_normalize_dispatch_init",
-    "signature": "float * vec2_normalize_dispatch_init(float *dst, float *src)",
-    "comment": "capture-driven: lazy init calls renderer_select_backend(1) then jumps via DAT_00479658; calls=1, unit_after=1"
+    "name": "d3dx_init_vec2_normalize",
+    "signature": "float * d3dx_init_vec2_normalize(float *dst, float *src)",
+    "comment": "capture-driven: lazy init calls D3DXCpuOptimizations(1) then jumps via vec2_normalize_impl; calls=1, unit_after=1"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00452f2a",
-    "name": "vec2_normalize_dispatch",
-    "signature": "float * vec2_normalize_dispatch(float *dst, float *src)",
-    "comment": "capture-driven: hot-path thunk that tail-jumps via DAT_00479658 after lazy init"
+    "name": "D3DXVec2Normalize",
+    "signature": "float * D3DXVec2Normalize(float *dst, float *src)",
+    "comment": "capture-driven: hot-path thunk that tail-jumps via vec2_normalize_impl after lazy init"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00455587",
-    "name": "vec2_normalize_safe",
-    "signature": "float * vec2_normalize_safe(float *dst, float *src)",
-    "comment": "capture-driven: DAT_00479658 callback target after init; normalizes src into dst and zeroes near-zero vectors"
+    "name": "d3dx_c_vec2_normalize",
+    "signature": "float * d3dx_c_vec2_normalize(float *dst, float *src)",
+    "comment": "capture-driven: vec2_normalize_impl callback target after init; normalizes src into dst and zeroes near-zero vectors"
   }
 ]

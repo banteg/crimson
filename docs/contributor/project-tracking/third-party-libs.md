@@ -47,7 +47,7 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
   reason to recreate D3DX from decompilation.
 
 - Native provider: both images now link the pinned archive.
-  Crimsonland resolves its recovered `vec2_normalize_dispatch` name to the
+  Crimsonland resolves its recovered `D3DXVec2Normalize` name to the
   exact `D3DXVec2Normalize` thunk and initializer in `d3dxmath.obj`; the
   selected graph retains six additional KERNEL32/ADVAPI32 imports already
   present in the reference executable and eliminates the last non-platform
@@ -179,7 +179,7 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 
 ### libpng (version 1.0.5)
 - Evidence: Grim function `d3dx_image_load_dib` at `0x100103d6` calls
-  `png_create_read_struct("1.0.5", ...)`.
+  `d3dx_png_create_read_struct("1.0.5", ...)`.
 
 - Status: headers imported (`third_party/headers/png_struct_stub.h`).
 - Status: public headers synced from libpng v1.0.5 (`third_party/headers/png.h`,

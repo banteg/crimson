@@ -37,7 +37,7 @@ crimsonland.exe_functions.json
    3    1 0046ad79 crt_file_buffer_init undefined crt_file_buffer_init(undefined4 * param_1)
    3    1 0046d5c7 crt_mbcs_init undefined crt_mbcs_init(void)
    3    0 00420040 creature_find_nearest int creature_find_nearest(float * param_1, int param_2, float param_3)
-   3    0 0045eac0 vec3_transform_coord undefined8 * vec3_transform_coord(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3)
+   3    0 0045eac0 x3d_vec3_transform_coord_inline undefined8 * x3d_vec3_transform_coord_inline(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3)
    3    0 0045eb4b mat4_mul undefined8 * mat4_mul(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3)
    3    0 004601c0 math_acos_packed ulonglong math_acos_packed(void)
    3    0 004608c0 math_sin_packed undefined math_sin_packed(void)
@@ -772,7 +772,7 @@ Init timing note:
 
 ### Renderer backend selection (medium confidence)
 
-- `0x004566d3` -> `renderer_select_backend`
+- `0x004566d3` -> `D3DXCpuOptimizations`
   - Evidence: copies a function table, reads config `DisableD3DXPSGP`,
     and switches between multiple vtable variants (`renderer_patch_sse`, `renderer_patch_sse2`, `renderer_patch_3dnow`).
 
@@ -889,21 +889,21 @@ Init timing note:
     writing zero-filled blocks, then restores the file offset.
 ### Grim/libpng helpers (high confidence)
 
-- `d3dx_png_error` -> `png_error`
+- `d3dx_png_error` -> `0x1001e114`
   - Evidence: calls `png_ptr->error_fn` when set and then `longjmp(png_ptr, 1)`.
 - `0x1001e132` -> `png_warning`
   - Evidence: calls `png_ptr->warning_fn` when set.
 - `0x1002047c` -> `png_read_data`
-  - Evidence: dispatches to `read_data_fn` or raises `png_error` on NULL.
+  - Evidence: dispatches to `read_data_fn` or raises `d3dx_png_error` on NULL.
 - `0x10020583` -> `png_reset_crc`
   - Evidence: seeds `png_ptr->crc` via `crc32(0, NULL, 0)`.
 - `0x1002059b` -> `png_calculate_crc`
   - Evidence: updates CRC unless skip flags indicate the chunk is ignored.
-- `d3dx_png_malloc` -> `png_malloc`
-  - Evidence: malloc wrapper that calls `png_error` on OOM.
+- `d3dx_png_malloc` -> `0x10024741`
+  - Evidence: malloc wrapper that calls `d3dx_png_error` on OOM.
 - `0x10024777` -> `png_free`
   - Evidence: free wrapper with `(png_ptr, ptr)` signature.
-- `png_destroy_struct` -> `png_free_ptr`
+- `png_destroy_struct` -> `0x10024734`
   - Evidence: simple free wrapper used for png buffers and the main png_ptr.
 - `0x10024807` -> `png_crc_read`
   - Evidence: calls `png_read_data` then `png_calculate_crc` on the same buffer.

@@ -35,7 +35,7 @@ uv run scripts/entrypoint_trace.py --depth 2 --skip-external
   - crt_run_initializers -> crt_fpmath, crt_call_fn_range
     - crt_init_locks
     - crt_init_thread_data (0x004654a5)
-    - crt_calloc (0x004667ac) -> crt_sbh_alloc_units, crt_calloc_sbh_unlock_cleanup, crt_calloc_old_sbh_unlock_cleanup, crt_call_new_handler (0x00467e47), crt_lock, crt_sbh_alloc, _memset
+    - crt_calloc (0x004667ac) -> crt_old_sbh_alloc_block, crt_calloc_sbh_unlock_cleanup, crt_calloc_old_sbh_unlock_cleanup, crt_call_new_handler (0x00467e47), crt_lock, crt_sbh_alloc_block, _memset
     - __amsg_exit -> crt_runtime_error_banner, __exit, crt_report_runtime_error
     - _malloc -> __nh_malloc
     - crt_mbcs_init (0x0046d5c7) -> crt_setmbcp (0x0046d1ef)

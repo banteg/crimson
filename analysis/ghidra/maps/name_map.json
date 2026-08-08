@@ -306,6 +306,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004028e0",
+    "name": "config_init_defaults_thunk",
+    "comment": "Exact tail thunk to config_init_defaults at 0x004028f0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004028f0",
     "name": "config_init_defaults",
     "signature": "void config_init_defaults(void)",
@@ -850,9 +857,10 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0040df90",
-    "name": "j_mod_api_init",
-    "signature": "void j_mod_api_init(void)",
-    "comment": "tail-call thunk for mod_api_init"
+    "name": "mod_api_init_thunk",
+    "signature": "void mod_api_init_thunk(void)",
+    "comment": "Exact tail thunk to mod_api_init at 0x0040dfa0.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -1385,6 +1393,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004120a0",
+    "name": "gameplay_run_state_init_thunk",
+    "comment": "Exact tail thunk to gameplay_run_state_init at 0x004120b0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004120b0",
     "name": "gameplay_run_state_init",
     "signature": "int gameplay_run_state_init(void)",
@@ -1496,6 +1511,13 @@
     "signature": "void game_status_global_init(void)",
     "analysis_skip_override": "never_skip",
     "comment": "zeros persisted status counters and seeds the four reserved tail words"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412350",
+    "name": "highscore_init_sentinels_thunk",
+    "comment": "Exact tail thunk to highscore_init_sentinels at 0x00412360.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -1661,6 +1683,13 @@
     "name": "vec2_length",
     "signature": "float vec2_length(const vec2f_t *v)",
     "comment": "returns sqrt(x*x + y*y) for a 2-float vector"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417680",
+    "name": "ui_menu_template_pool_init_thunk",
+    "comment": "Exact tail thunk to ui_menu_template_pool_init at 0x00417690.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -1846,6 +1875,20 @@
     "name": "ui_menu_assets_init",
     "signature": "void ui_menu_assets_init(void)",
     "comment": "loads menu UI elements and seeds layout copies"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041a000",
+    "name": "reserved_color_global_init_thunk",
+    "comment": "Exact tail thunk to reserved_color_global_init at 0x0041a010.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041a010",
+    "name": "reserved_color_global_init",
+    "comment": "Initializes the reserved four-float color at 0x004871b8 to (1, 0, 0, 1).",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -3972,6 +4015,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043b800",
+    "name": "highscore_load_table_thunk",
+    "comment": "Exact tail thunk to highscore_load_table at 0x0043afa0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043b810",
     "name": "sfx_entry_reset_runtime_state",
     "aliases": [
@@ -5416,14 +5466,18 @@
     "address": "0x00452ef0",
     "name": "float_near_equal",
     "signature": "int float_near_equal(float a, float b)",
-    "comment": "returns 1 when |a-b| <= 1.1920929e-07 (FLT_EPSILON)"
+    "comment": "returns 1 when |a-b| <= 1.1920929e-07 (FLT_EPSILON)",
+    "aliases": [
+      "?WithinEpsilon@@YAHMM@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00452f1d",
     "name": "d3dx_init_vec2_normalize",
     "signature": "vec2f_t * __stdcall d3dx_init_vec2_normalize(vec2f_t *dst, const vec2f_t *src)",
-    "comment": "dispatch initializer: calls renderer_select_backend(1), then tail-jumps via vec2_normalize_impl; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0",
+    "comment": "dispatch initializer: calls D3DXCpuOptimizations(1), then tail-jumps via vec2_normalize_impl; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0",
     "aliases": [
       "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     ],
@@ -5432,9 +5486,13 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00452f2a",
-    "name": "vec2_normalize_dispatch",
-    "signature": "vec2f_t * __stdcall vec2_normalize_dispatch(vec2f_t *dst, const vec2f_t *src)",
-    "comment": "hot-path thunk: jmp [vec2_normalize_impl] after lazy init; used by player_update, projectile_update, and creature_update_all callsites"
+    "name": "D3DXVec2Normalize",
+    "signature": "vec2f_t * __stdcall D3DXVec2Normalize(vec2f_t *dst, const vec2f_t *src)",
+    "comment": "hot-path thunk: jmp [vec2_normalize_impl] after lazy init; used by player_update, projectile_update, and creature_update_all callsites",
+    "aliases": [
+      "_D3DXVec2Normalize@8"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -6571,9 +6629,13 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004566d3",
-    "name": "renderer_select_backend",
-    "signature": "int renderer_select_backend(int reset)",
-    "comment": "selects renderer table based on config"
+    "name": "D3DXCpuOptimizations",
+    "signature": "int D3DXCpuOptimizations(int reset)",
+    "comment": "selects renderer table based on config",
+    "aliases": [
+      "_D3DXCpuOptimizations@4"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7481,9 +7543,13 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0045eac0",
-    "name": "vec3_transform_coord",
-    "signature": "float * vec3_transform_coord(float *out, float *vec, float *mat)",
-    "comment": "transforms a vec3 by a matrix and divides by W (perspective)"
+    "name": "x3d_vec3_transform_coord_inline",
+    "signature": "float * x3d_vec3_transform_coord_inline(float *out, float *vec, float *mat)",
+    "comment": "transforms a vec3 by a matrix and divides by W (perspective)",
+    "aliases": [
+      "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7491,6 +7557,16 @@
     "name": "mat4_mul",
     "signature": "float * mat4_mul(float *out, float *lhs, float *rhs)",
     "comment": "multiplies two 4x4 matrices (SSE)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045ed12",
+    "name": "vec3_transform_coord_thunk",
+    "comment": "Exact DirectX 8.1 x3d tail thunk to x3d_vec3_transform_coord_inline at 0x0045eac0.",
+    "create": false,
+    "aliases": [
+      "?x3d_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -14577,6 +14653,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001a574",
+    "name": "grim_vertex_space_converter_destroy_thunk",
+    "comment": "Exact tail thunk to the shared Grim vertex-space-converter destructor.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001a579",
     "name": "grim_pixel_format_ctor_r5g6b5",
     "signature": "void * grim_pixel_format_ctor_r5g6b5(void *this, uint *desc)",
@@ -14872,9 +14955,10 @@
   {
     "program": "grim.dll",
     "address": "0x1001b48e",
-    "name": "j_grim_pixel_format_destroy_dxt",
-    "signature": "void j_grim_pixel_format_destroy_dxt(void *this)",
-    "comment": "tail thunk to the shared DXT1-DXT5 regular destructor"
+    "name": "grim_pixel_format_destroy_dxt_thunk",
+    "signature": "void grim_pixel_format_destroy_dxt_thunk(void *this)",
+    "comment": "Exact tail thunk to the shared DXT1-DXT5 regular destructor.",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -14926,9 +15010,10 @@
   {
     "program": "grim.dll",
     "address": "0x1001bca0",
-    "name": "j_grim_pixel_format_destroy_yuv",
-    "signature": "void j_grim_pixel_format_destroy_yuv(void *this)",
-    "comment": "tail thunk to the shared UYVY/YUY2 regular destructor"
+    "name": "grim_pixel_format_destroy_yuv_thunk",
+    "signature": "void grim_pixel_format_destroy_yuv_thunk(void *this)",
+    "comment": "Exact tail thunk to the shared UYVY/YUY2 regular destructor.",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -15202,7 +15287,7 @@
     "signature": "void d3dx_png_error(png_structp png_ptr, char * msg)",
     "comment": "png error handler: call error_fn then longjmp",
     "aliases": [
-      "?png_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
+      "?d3dx_png_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
     ],
     "create": false
   },
@@ -15240,7 +15325,7 @@
     "address": "0x1001e191",
     "name": "d3dx_png_create_read_struct",
     "aliases": [
-      "?png_create_read_struct@D3DX@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@Z3@Z"
+      "?d3dx_png_create_read_struct@D3DX@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@Z3@Z"
     ],
     "signature": "png_structp d3dx_png_create_read_struct(char * user_png_ver, png_voidp error_ptr, void * error_fn, void * warn_fn)",
     "comment": "allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr callbacks",
@@ -16278,7 +16363,7 @@
     "signature": "void * d3dx_png_malloc(png_structp png_ptr, png_uint_32 size)",
     "comment": "png malloc wrapper (errors on OOM)",
     "aliases": [
-      "?png_malloc@D3DX@@YAPAXPAUpng_struct_def@1@K@Z"
+      "?d3dx_png_malloc@D3DX@@YAPAXPAUpng_struct_def@1@K@Z"
     ],
     "create": false
   },

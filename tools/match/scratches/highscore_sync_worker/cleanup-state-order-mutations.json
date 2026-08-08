@@ -3,27 +3,27 @@
   "sites": [
     {
       "name": "cleanup-state-order",
-      "find": "    j_highscore_load_table();\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    highscore_active_record = active_record_backup;\n    if (success) {",
+      "find": "    highscore_load_table_thunk();\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    highscore_active_record = active_record_backup;\n    if (success) {",
       "replacements": [
         {
           "name": "success-batch-restore",
-          "text": "    j_highscore_load_table();\n    bool sync_success = success;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    highscore_active_record = active_record_backup;\n    if (sync_success) {"
+          "text": "    highscore_load_table_thunk();\n    bool sync_success = success;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    highscore_active_record = active_record_backup;\n    if (sync_success) {"
         },
         {
           "name": "success-restore-batch",
-          "text": "    j_highscore_load_table();\n    bool sync_success = success;\n    highscore_active_record = active_record_backup;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    if (sync_success) {"
+          "text": "    highscore_load_table_thunk();\n    bool sync_success = success;\n    highscore_active_record = active_record_backup;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    if (sync_success) {"
         },
         {
           "name": "restore-success-batch",
-          "text": "    j_highscore_load_table();\n    highscore_active_record = active_record_backup;\n    bool sync_success = success;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    if (sync_success) {"
+          "text": "    highscore_load_table_thunk();\n    highscore_active_record = active_record_backup;\n    bool sync_success = success;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    if (sync_success) {"
         },
         {
           "name": "batch-success-restore",
-          "text": "    j_highscore_load_table();\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    bool sync_success = success;\n    highscore_active_record = active_record_backup;\n    if (sync_success) {"
+          "text": "    highscore_load_table_thunk();\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    bool sync_success = success;\n    highscore_active_record = active_record_backup;\n    if (sync_success) {"
         },
         {
           "name": "restore-before-batch",
-          "text": "    j_highscore_load_table();\n    highscore_active_record = active_record_backup;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    if (success) {"
+          "text": "    highscore_load_table_thunk();\n    highscore_active_record = active_record_backup;\n    unsigned char batch_mode = highscore_batch_sync_mode;\n    if (success) {"
         }
       ]
     }

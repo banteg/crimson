@@ -1,5 +1,5 @@
 {
-  "audit_digest": "c601ba518da7123f0e886e96dac838f4343aeaa07954af69d8cf03fdd2ebe0a5",
+  "audit_digest": "a920ec927f789917363d4c1d429f5413cc273544a4fc31ef132a19ee124a8222",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -26908,10 +26908,10 @@
         "tools/match/scratches/buffer_reader_seek/build/msvc6.5/0ea25cf56d732a40/scratch.obj",
         "tools/match/scratches/buffer_reader_skip/build/msvc6.5/a58699a823b7adbb/scratch.obj",
         "tools/match/scratches/camera_update/build/msvc6.5/2198fbdf234063e0/scratch.obj",
-        "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/b7ebb0b2a3a56dd5/scratch.obj",
         "tools/match/scratches/config_apply_detail_preset/build/msvc6.5/b70537600c44eb0a/scratch.obj",
         "tools/match/scratches/config_ensure_file/build/msvc6.5/8b2c5f29abf742ba/scratch.obj",
         "tools/match/scratches/config_init_defaults/build/msvc6.5/64f297d5309433a3/scratch.obj",
+        "tools/match/scratches/config_init_defaults_thunk/build/msvc6.5/52b71318626bafbe/scratch.obj",
         "tools/match/scratches/config_load_presets/build/msvc6.5/98dec07b07092ee6/scratch.obj",
         "tools/match/scratches/config_sync_from_grim/build/msvc6.5/1a59e4f60f19917a/scratch.obj",
         "tools/match/scratches/console_clear_log/build/msvc6.5/f250ce3cc11dcfa3/scratch.obj",
@@ -27104,6 +27104,7 @@
         "tools/match/scratches/gameplay_render_world/build/msvc6.5/30745326ae4d4684/scratch.obj",
         "tools/match/scratches/gameplay_reset_state/build/msvc6.5/8866570c9e2d3e5f/scratch.obj",
         "tools/match/scratches/gameplay_run_state_init/build/msvc6.5/e961cdea14d9acc1/scratch.obj",
+        "tools/match/scratches/gameplay_run_state_init_thunk/build/msvc6.5/0aad0a6fd93b88dc/scratch.obj",
         "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj",
         "tools/match/scratches/grim_load_interface/build/msvc6.5/4a4303debbd4be23/scratch.obj",
         "tools/match/scratches/highscore_back_button_destroy/build/msvc6.5/56e958f4743d7117/scratch.obj",
@@ -27120,7 +27121,9 @@
         "tools/match/scratches/highscore_game_mode_list_destroy/build/msvc6.5/27c1c8a34497e35e/scratch.obj",
         "tools/match/scratches/highscore_hardcore_checkbox_destroy/build/msvc6.5/9f1fcf583641e203/scratch.obj",
         "tools/match/scratches/highscore_init_sentinels/build/msvc6.5/759433ef98d52eab/scratch.obj",
+        "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/70adb36294b3fc93/scratch.obj",
         "tools/match/scratches/highscore_load_table/build/msvc6.5/e59c801eb5d273f1/scratch.obj",
+        "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/2781d13c4e2c15a8/scratch.obj",
         "tools/match/scratches/highscore_online_scores_checkbox_destroy/build/msvc6.5/199ec6acbe68bec1/scratch.obj",
         "tools/match/scratches/highscore_play_button_destroy/build/msvc6.5/9ad3a227a39322fe/scratch.obj",
         "tools/match/scratches/highscore_player_count_list_destroy/build/msvc6.5/177a29e31d8fa590/scratch.obj",
@@ -27150,13 +27153,6 @@
         "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/958ba186a29b5e4e/scratch.obj",
         "tools/match/scratches/input_scheme_label/build/msvc6.5/13e4b54d24a24801/scratch.obj",
         "tools/match/scratches/invoke_callback_n/build/msvc6.5/432f8289444c2f9c/scratch.obj",
-        "tools/match/scratches/j___cfltcvt_init_3/build/msvc6.5/026a7aa8bf10285a/scratch.obj",
-        "tools/match/scratches/j_config_init_defaults/build/msvc6.5/5d63c114d8507cbb/scratch.obj",
-        "tools/match/scratches/j_gameplay_run_state_init/build/msvc6.5/9f9e8343ddbb0c39/scratch.obj",
-        "tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/754e49e4514574e5/scratch.obj",
-        "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj",
-        "tools/match/scratches/j_mod_api_init/build/msvc6.5/7b5d8b7001ee35cb/scratch.obj",
-        "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/2ae817964da1cfa2/scratch.obj",
         "tools/match/scratches/mod_api_cl_enter_menu/build/msvc6.5/96a883fe99d3b369/scratch.obj",
         "tools/match/scratches/mod_api_core_add_command/build/msvc6.5/3b36442ebebf12ba/scratch.obj",
@@ -27183,6 +27179,7 @@
         "tools/match/scratches/mod_api_gfx_set_texture/build/msvc6.5/a74aec43da8474c3/scratch.obj",
         "tools/match/scratches/mod_api_gfx_set_texture_filter/build/msvc6.5/9cfd263f7dc3c1b0/scratch.obj",
         "tools/match/scratches/mod_api_init/build/msvc6.5/b32d5b90ad59613c/scratch.obj",
+        "tools/match/scratches/mod_api_init_thunk/build/msvc6.5/7b8b7bb9b87f479f/scratch.obj",
         "tools/match/scratches/mod_api_inp_get_analog/build/msvc6.5/27eebfac33e2391b/scratch.obj",
         "tools/match/scratches/mod_api_inp_get_key_name/build/msvc6.5/aea65d99288879ab/scratch.obj",
         "tools/match/scratches/mod_api_inp_get_pressed_char/build/msvc6.5/6be178f3f8477a0b/scratch.obj",
@@ -27357,6 +27354,8 @@
         "tools/match/scratches/register_core_cvars/build/msvc6.5/dd6a035812ab29a0/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init/build/msvc6.5/401c5d0386a7badc/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init_thunk/build/msvc6.5/459f02044f8c41b3/scratch.obj",
+        "tools/match/scratches/reserved_color_global_init/build/msvc6.5/246128698e5afe66/scratch.obj",
+        "tools/match/scratches/reserved_color_global_init_thunk/build/msvc6.5/7eae66798afb7f1a/scratch.obj",
         "tools/match/scratches/resource_close/build/msvc6.5/b96bdeb804273911/scratch.obj",
         "tools/match/scratches/resource_open_read/build/msvc6.5/e0f13d035fffecbf/scratch.obj",
         "tools/match/scratches/resource_pack_read_cstring/build/msvc6.5/9b7580e185113874/scratch.obj",
@@ -27463,6 +27462,7 @@
         "tools/match/scratches/ui_menu_pause_click_main_menu/build/msvc6.5/3f8aa9a87ee7ed39/scratch.obj",
         "tools/match/scratches/ui_menu_pause_click_resume/build/msvc6.5/a4d62835cbed6cd4/scratch.obj",
         "tools/match/scratches/ui_menu_template_pool_init/build/msvc6.5/99b89f810a518dae/scratch.obj",
+        "tools/match/scratches/ui_menu_template_pool_init_thunk/build/msvc6.5/675c0da31fcc695b/scratch.obj",
         "tools/match/scratches/ui_mouse_inside_rect/build/msvc6.5/949c3045acd428c1/scratch.obj",
         "tools/match/scratches/ui_mouse_inside_rect_with_padding/build/msvc6.5/90e5c98d7c90771d/scratch.obj",
         "tools/match/scratches/ui_profile_menu_update/build/msvc6.5/fb5be7541c835182/scratch.obj",
@@ -27576,10 +27576,10 @@
         "tools/match/scratches/buffer_reader_seek/build/msvc6.5/0ea25cf56d732a40/scratch.obj",
         "tools/match/scratches/buffer_reader_skip/build/msvc6.5/a58699a823b7adbb/scratch.obj",
         "tools/match/scratches/camera_update/build/msvc6.5/2198fbdf234063e0/scratch.obj",
-        "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/b7ebb0b2a3a56dd5/scratch.obj",
         "tools/match/scratches/config_apply_detail_preset/build/msvc6.5/b70537600c44eb0a/scratch.obj",
         "tools/match/scratches/config_ensure_file/build/msvc6.5/8b2c5f29abf742ba/scratch.obj",
         "tools/match/scratches/config_init_defaults/build/msvc6.5/64f297d5309433a3/scratch.obj",
+        "tools/match/scratches/config_init_defaults_thunk/build/msvc6.5/52b71318626bafbe/scratch.obj",
         "tools/match/scratches/config_load_presets/build/msvc6.5/98dec07b07092ee6/scratch.obj",
         "tools/match/scratches/config_sync_from_grim/build/msvc6.5/1a59e4f60f19917a/scratch.obj",
         "tools/match/scratches/console_clear_log/build/msvc6.5/f250ce3cc11dcfa3/scratch.obj",
@@ -27772,6 +27772,7 @@
         "tools/match/scratches/gameplay_render_world/build/msvc6.5/30745326ae4d4684/scratch.obj",
         "tools/match/scratches/gameplay_reset_state/build/msvc6.5/8866570c9e2d3e5f/scratch.obj",
         "tools/match/scratches/gameplay_run_state_init/build/msvc6.5/e961cdea14d9acc1/scratch.obj",
+        "tools/match/scratches/gameplay_run_state_init_thunk/build/msvc6.5/0aad0a6fd93b88dc/scratch.obj",
         "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj",
         "tools/match/scratches/grim_load_interface/build/msvc6.5/4a4303debbd4be23/scratch.obj",
         "tools/match/scratches/highscore_back_button_destroy/build/msvc6.5/56e958f4743d7117/scratch.obj",
@@ -27788,7 +27789,9 @@
         "tools/match/scratches/highscore_game_mode_list_destroy/build/msvc6.5/27c1c8a34497e35e/scratch.obj",
         "tools/match/scratches/highscore_hardcore_checkbox_destroy/build/msvc6.5/9f1fcf583641e203/scratch.obj",
         "tools/match/scratches/highscore_init_sentinels/build/msvc6.5/759433ef98d52eab/scratch.obj",
+        "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/70adb36294b3fc93/scratch.obj",
         "tools/match/scratches/highscore_load_table/build/msvc6.5/e59c801eb5d273f1/scratch.obj",
+        "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/2781d13c4e2c15a8/scratch.obj",
         "tools/match/scratches/highscore_online_scores_checkbox_destroy/build/msvc6.5/199ec6acbe68bec1/scratch.obj",
         "tools/match/scratches/highscore_play_button_destroy/build/msvc6.5/9ad3a227a39322fe/scratch.obj",
         "tools/match/scratches/highscore_player_count_list_destroy/build/msvc6.5/177a29e31d8fa590/scratch.obj",
@@ -27818,13 +27821,6 @@
         "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/958ba186a29b5e4e/scratch.obj",
         "tools/match/scratches/input_scheme_label/build/msvc6.5/13e4b54d24a24801/scratch.obj",
         "tools/match/scratches/invoke_callback_n/build/msvc6.5/432f8289444c2f9c/scratch.obj",
-        "tools/match/scratches/j___cfltcvt_init_3/build/msvc6.5/026a7aa8bf10285a/scratch.obj",
-        "tools/match/scratches/j_config_init_defaults/build/msvc6.5/5d63c114d8507cbb/scratch.obj",
-        "tools/match/scratches/j_gameplay_run_state_init/build/msvc6.5/9f9e8343ddbb0c39/scratch.obj",
-        "tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/754e49e4514574e5/scratch.obj",
-        "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj",
-        "tools/match/scratches/j_mod_api_init/build/msvc6.5/7b5d8b7001ee35cb/scratch.obj",
-        "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/2ae817964da1cfa2/scratch.obj",
         "tools/match/scratches/mod_api_cl_enter_menu/build/msvc6.5/96a883fe99d3b369/scratch.obj",
         "tools/match/scratches/mod_api_core_add_command/build/msvc6.5/3b36442ebebf12ba/scratch.obj",
@@ -27851,6 +27847,7 @@
         "tools/match/scratches/mod_api_gfx_set_texture/build/msvc6.5/a74aec43da8474c3/scratch.obj",
         "tools/match/scratches/mod_api_gfx_set_texture_filter/build/msvc6.5/9cfd263f7dc3c1b0/scratch.obj",
         "tools/match/scratches/mod_api_init/build/msvc6.5/b32d5b90ad59613c/scratch.obj",
+        "tools/match/scratches/mod_api_init_thunk/build/msvc6.5/7b8b7bb9b87f479f/scratch.obj",
         "tools/match/scratches/mod_api_inp_get_analog/build/msvc6.5/27eebfac33e2391b/scratch.obj",
         "tools/match/scratches/mod_api_inp_get_key_name/build/msvc6.5/aea65d99288879ab/scratch.obj",
         "tools/match/scratches/mod_api_inp_get_pressed_char/build/msvc6.5/6be178f3f8477a0b/scratch.obj",
@@ -28025,6 +28022,8 @@
         "tools/match/scratches/register_core_cvars/build/msvc6.5/dd6a035812ab29a0/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init/build/msvc6.5/401c5d0386a7badc/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init_thunk/build/msvc6.5/459f02044f8c41b3/scratch.obj",
+        "tools/match/scratches/reserved_color_global_init/build/msvc6.5/246128698e5afe66/scratch.obj",
+        "tools/match/scratches/reserved_color_global_init_thunk/build/msvc6.5/7eae66798afb7f1a/scratch.obj",
         "tools/match/scratches/resource_close/build/msvc6.5/b96bdeb804273911/scratch.obj",
         "tools/match/scratches/resource_open_read/build/msvc6.5/e0f13d035fffecbf/scratch.obj",
         "tools/match/scratches/resource_pack_read_cstring/build/msvc6.5/9b7580e185113874/scratch.obj",
@@ -28131,6 +28130,7 @@
         "tools/match/scratches/ui_menu_pause_click_main_menu/build/msvc6.5/3f8aa9a87ee7ed39/scratch.obj",
         "tools/match/scratches/ui_menu_pause_click_resume/build/msvc6.5/a4d62835cbed6cd4/scratch.obj",
         "tools/match/scratches/ui_menu_template_pool_init/build/msvc6.5/99b89f810a518dae/scratch.obj",
+        "tools/match/scratches/ui_menu_template_pool_init_thunk/build/msvc6.5/675c0da31fcc695b/scratch.obj",
         "tools/match/scratches/ui_mouse_inside_rect/build/msvc6.5/949c3045acd428c1/scratch.obj",
         "tools/match/scratches/ui_mouse_inside_rect_with_padding/build/msvc6.5/90e5c98d7c90771d/scratch.obj",
         "tools/match/scratches/ui_profile_menu_update/build/msvc6.5/fb5be7541c835182/scratch.obj",
@@ -59965,24 +59965,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "___cfltcvt_init_3",
-          "comdat_selection": 1,
-          "function": "__cfltcvt_init_3",
-          "kind": "section",
-          "logical_section_size": 48,
-          "object": "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/b7ebb0b2a3a56dd5/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "___cfltcvt_init_3"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "__real@4@00000000000000000000",
           "comdat_selection": 2,
           "function": "angle_approach",
@@ -81453,6 +81435,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_config_init_defaults_thunk",
+          "comdat_selection": 1,
+          "function": "config_init_defaults_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/config_init_defaults_thunk/build/msvc6.5/52b71318626bafbe/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_config_init_defaults_thunk"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -88623,6 +88623,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_gameplay_run_state_init_thunk",
+          "comdat_selection": 1,
+          "function": "gameplay_run_state_init_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/gameplay_run_state_init_thunk/build/msvc6.5/0aad0a6fd93b88dc/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_gameplay_run_state_init_thunk"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -89129,6 +89147,24 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_highscore_init_sentinels_thunk",
+          "comdat_selection": 1,
+          "function": "highscore_init_sentinels_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/70adb36294b3fc93/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_highscore_init_sentinels_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_highscore_load_table",
           "comdat_selection": 1,
           "function": "highscore_load_table",
@@ -89141,6 +89177,24 @@
         }
       ],
       "name": "_highscore_load_table"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_highscore_load_table_thunk",
+          "comdat_selection": 1,
+          "function": "highscore_load_table_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/2781d13c4e2c15a8/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_highscore_load_table_thunk"
     },
     {
       "definitions": [
@@ -90171,132 +90225,6 @@
     {
       "definitions": [
         {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j___cfltcvt_init_3",
-          "comdat_selection": 1,
-          "function": "j___cfltcvt_init_3",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j___cfltcvt_init_3/build/msvc6.5/026a7aa8bf10285a/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j___cfltcvt_init_3"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_config_init_defaults",
-          "comdat_selection": 1,
-          "function": "j_config_init_defaults",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_config_init_defaults/build/msvc6.5/5d63c114d8507cbb/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_config_init_defaults"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_gameplay_run_state_init",
-          "comdat_selection": 1,
-          "function": "j_gameplay_run_state_init",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_gameplay_run_state_init/build/msvc6.5/9f9e8343ddbb0c39/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_gameplay_run_state_init"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_highscore_init_sentinels",
-          "comdat_selection": 1,
-          "function": "j_highscore_init_sentinels",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/754e49e4514574e5/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_highscore_init_sentinels"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_highscore_load_table",
-          "comdat_selection": 1,
-          "function": "j_highscore_load_table",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_highscore_load_table"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_mod_api_init",
-          "comdat_selection": 1,
-          "function": "j_mod_api_init",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_mod_api_init/build/msvc6.5/7b5d8b7001ee35cb/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_mod_api_init"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_ui_menu_template_pool_init",
-          "comdat_selection": 1,
-          "function": "j_ui_menu_template_pool_init",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_ui_menu_template_pool_init"
-    },
-    {
-      "definitions": [
-        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -90587,6 +90515,24 @@
         }
       ],
       "name": "_mod_api_init"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_mod_api_init_thunk",
+          "comdat_selection": 1,
+          "function": "mod_api_init_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/mod_api_init_thunk/build/msvc6.5/7b8b7bb9b87f479f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_mod_api_init_thunk"
     },
     {
       "definitions": [
@@ -98093,6 +98039,42 @@
         }
       ],
       "name": "_reserved_color_4871b8"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_reserved_color_global_init",
+          "comdat_selection": 1,
+          "function": "reserved_color_global_init",
+          "kind": "section",
+          "logical_section_size": 48,
+          "object": "tools/match/scratches/reserved_color_global_init/build/msvc6.5/246128698e5afe66/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_reserved_color_global_init"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_reserved_color_global_init_thunk",
+          "comdat_selection": 1,
+          "function": "reserved_color_global_init_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/reserved_color_global_init_thunk/build/msvc6.5/7eae66798afb7f1a/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_reserved_color_global_init_thunk"
     },
     {
       "definitions": [
@@ -106515,6 +106497,24 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_ui_menu_template_pool_init_thunk",
+          "comdat_selection": 1,
+          "function": "ui_menu_template_pool_init_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/ui_menu_template_pool_init_thunk/build/msvc6.5/675c0da31fcc695b/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_ui_menu_template_pool_init_thunk"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -109061,13 +109061,6 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/b7ebb0b2a3a56dd5/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
       "object": "tools/match/scratches/config_apply_detail_preset/build/msvc6.5/b70537600c44eb0a/scratch.obj"
     },
     {
@@ -109083,6 +109076,13 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/config_init_defaults/build/msvc6.5/64f297d5309433a3/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/config_init_defaults_thunk/build/msvc6.5/52b71318626bafbe/scratch.obj"
     },
     {
       "directives": [
@@ -110461,6 +110461,13 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
+      "object": "tools/match/scratches/gameplay_run_state_init_thunk/build/msvc6.5/0aad0a6fd93b88dc/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
       "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj"
     },
     {
@@ -110572,12 +110579,26 @@
     },
     {
       "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/70adb36294b3fc93/scratch.obj"
+    },
+    {
+      "directives": [
         "-defaultlib:uuid.lib",
         "-defaultlib:uuid.lib",
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e59c801eb5d273f1/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/2781d13c4e2c15a8/scratch.obj"
     },
     {
       "directives": [
@@ -110793,55 +110814,6 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/invoke_callback_n/build/msvc6.5/432f8289444c2f9c/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j___cfltcvt_init_3/build/msvc6.5/026a7aa8bf10285a/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_config_init_defaults/build/msvc6.5/5d63c114d8507cbb/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_gameplay_run_state_init/build/msvc6.5/9f9e8343ddbb0c39/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/754e49e4514574e5/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_mod_api_init/build/msvc6.5/7b5d8b7001ee35cb/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj"
     },
     {
       "directives": [
@@ -111076,6 +111048,13 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/mod_api_init/build/msvc6.5/b32d5b90ad59613c/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/mod_api_init_thunk/build/msvc6.5/7b8b7bb9b87f479f/scratch.obj"
     },
     {
       "directives": [
@@ -112350,6 +112329,20 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
+      "object": "tools/match/scratches/reserved_color_global_init/build/msvc6.5/246128698e5afe66/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/reserved_color_global_init_thunk/build/msvc6.5/7eae66798afb7f1a/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
       "object": "tools/match/scratches/resource_close/build/msvc6.5/b96bdeb804273911/scratch.obj"
     },
     {
@@ -113160,6 +113153,13 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/ui_menu_template_pool_init/build/msvc6.5/99b89f810a518dae/scratch.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/ui_menu_template_pool_init_thunk/build/msvc6.5/675c0da31fcc695b/scratch.obj"
     },
     {
       "directives": [
@@ -119255,31 +119255,6 @@
     {
       "definitions": [
         {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "___cfltcvt_init_3",
-          "comdat_selection": 1,
-          "function": "__cfltcvt_init_3",
-          "kind": "section",
-          "logical_section_size": 48,
-          "object": "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/b7ebb0b2a3a56dd5/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "___cfltcvt_init_3",
-      "referenced_by": [
-        {
-          "function": "j___cfltcvt_init_3",
-          "object": "tools/match/scratches/j___cfltcvt_init_3/build/msvc6.5/026a7aa8bf10285a/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -122786,8 +122761,8 @@
       "name": "_config_init_defaults",
       "referenced_by": [
         {
-          "function": "j_config_init_defaults",
-          "object": "tools/match/scratches/j_config_init_defaults/build/msvc6.5/5d63c114d8507cbb/scratch.obj",
+          "function": "config_init_defaults_thunk",
+          "object": "tools/match/scratches/config_init_defaults_thunk/build/msvc6.5/52b71318626bafbe/scratch.obj",
           "weak": false
         }
       ]
@@ -134100,8 +134075,8 @@
       "name": "_gameplay_run_state_init",
       "referenced_by": [
         {
-          "function": "j_gameplay_run_state_init",
-          "object": "tools/match/scratches/j_gameplay_run_state_init/build/msvc6.5/9f9e8343ddbb0c39/scratch.obj",
+          "function": "gameplay_run_state_init_thunk",
+          "object": "tools/match/scratches/gameplay_run_state_init_thunk/build/msvc6.5/0aad0a6fd93b88dc/scratch.obj",
           "weak": false
         }
       ]
@@ -134824,8 +134799,8 @@
       "name": "_highscore_init_sentinels",
       "referenced_by": [
         {
-          "function": "j_highscore_init_sentinels",
-          "object": "tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/754e49e4514574e5/scratch.obj",
+          "function": "highscore_init_sentinels_thunk",
+          "object": "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/70adb36294b3fc93/scratch.obj",
           "weak": false
         }
       ]
@@ -134849,8 +134824,78 @@
       "name": "_highscore_load_table",
       "referenced_by": [
         {
-          "function": "j_highscore_load_table",
-          "object": "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj",
+          "function": "highscore_load_table_thunk",
+          "object": "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/2781d13c4e2c15a8/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_highscore_load_table_thunk",
+          "comdat_selection": 1,
+          "function": "highscore_load_table_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/2781d13c4e2c15a8/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_highscore_load_table_thunk",
+      "referenced_by": [
+        {
+          "function": "game_over_screen_update",
+          "object": "tools/match/scratches/game_over_screen_update/build/msvc6.5/6f7dfd02e49258ae/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_state_set",
+          "object": "tools/match/scratches/game_state_set/build/msvc6.5/49d7f1558f743c2d/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "highscore_screen_update",
+          "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "highscore_sync_worker",
+          "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "play_game_menu_update",
+          "object": "tools/match/scratches/play_game_menu_update/build/msvc6.5/439667ebc79d2a0b/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "quest_failed_screen_update",
+          "object": "tools/match/scratches/quest_failed_screen_update/build/msvc6.5/71992757d19fe748/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "quest_results_screen_update",
+          "object": "tools/match/scratches/quest_results_screen_update/build/msvc6.5/7ef5db505139e121/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "statistics_menu_update",
+          "object": "tools/match/scratches/statistics_menu_update/build/msvc6.5/05882b85edc36983/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "typo_word_pick_highscore_name",
+          "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "ui_profile_menu_update",
+          "object": "tools/match/scratches/ui_profile_menu_update/build/msvc6.5/fb5be7541c835182/scratch.obj",
           "weak": false
         }
       ]
@@ -136394,76 +136439,6 @@
     {
       "definitions": [
         {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_j_highscore_load_table",
-          "comdat_selection": 1,
-          "function": "j_highscore_load_table",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/j_highscore_load_table/build/msvc6.5/be8b0c23badc3d81/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_j_highscore_load_table",
-      "referenced_by": [
-        {
-          "function": "game_over_screen_update",
-          "object": "tools/match/scratches/game_over_screen_update/build/msvc6.5/6f7dfd02e49258ae/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_state_set",
-          "object": "tools/match/scratches/game_state_set/build/msvc6.5/49d7f1558f743c2d/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "highscore_screen_update",
-          "object": "tools/match/scratches/highscore_screen_update/build/msvc6.5/a710dc9d3b51a44b/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "highscore_sync_worker",
-          "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/c6ecf1bf00e01fb7/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "play_game_menu_update",
-          "object": "tools/match/scratches/play_game_menu_update/build/msvc6.5/439667ebc79d2a0b/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "quest_failed_screen_update",
-          "object": "tools/match/scratches/quest_failed_screen_update/build/msvc6.5/71992757d19fe748/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "quest_results_screen_update",
-          "object": "tools/match/scratches/quest_results_screen_update/build/msvc6.5/7ef5db505139e121/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "statistics_menu_update",
-          "object": "tools/match/scratches/statistics_menu_update/build/msvc6.5/05882b85edc36983/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "typo_word_pick_highscore_name",
-          "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "ui_profile_menu_update",
-          "object": "tools/match/scratches/ui_profile_menu_update/build/msvc6.5/fb5be7541c835182/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -136900,8 +136875,8 @@
       "name": "_mod_api_init",
       "referenced_by": [
         {
-          "function": "j_mod_api_init",
-          "object": "tools/match/scratches/j_mod_api_init/build/msvc6.5/7b5d8b7001ee35cb/scratch.obj",
+          "function": "mod_api_init_thunk",
+          "object": "tools/match/scratches/mod_api_init_thunk/build/msvc6.5/7b8b7bb9b87f479f/scratch.obj",
           "weak": false
         }
       ]
@@ -148200,8 +148175,33 @@
       "name": "_reserved_color_4871b8",
       "referenced_by": [
         {
-          "function": "__cfltcvt_init_3",
-          "object": "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/b7ebb0b2a3a56dd5/scratch.obj",
+          "function": "reserved_color_global_init",
+          "object": "tools/match/scratches/reserved_color_global_init/build/msvc6.5/246128698e5afe66/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_reserved_color_global_init",
+          "comdat_selection": 1,
+          "function": "reserved_color_global_init",
+          "kind": "section",
+          "logical_section_size": 48,
+          "object": "tools/match/scratches/reserved_color_global_init/build/msvc6.5/246128698e5afe66/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_reserved_color_global_init",
+      "referenced_by": [
+        {
+          "function": "reserved_color_global_init_thunk",
+          "object": "tools/match/scratches/reserved_color_global_init_thunk/build/msvc6.5/7eae66798afb7f1a/scratch.obj",
           "weak": false
         }
       ]
@@ -161475,8 +161475,8 @@
       "name": "_ui_menu_template_pool_init",
       "referenced_by": [
         {
-          "function": "j_ui_menu_template_pool_init",
-          "object": "tools/match/scratches/j_ui_menu_template_pool_init/build/msvc6.5/6c28fb9cdc21da46/scratch.obj",
+          "function": "ui_menu_template_pool_init_thunk",
+          "object": "tools/match/scratches/ui_menu_template_pool_init_thunk/build/msvc6.5/675c0da31fcc695b/scratch.obj",
           "weak": false
         }
       ]
@@ -164858,7 +164858,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "7fecc366cf579103b2b822a03adb32dea53dff0aa5434c8f283e9552042db745"
+        "sha256": "4b8977f4542912182326fd9922f5acbeffe5433935d24e549cea8732eaa8444d"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -164867,7 +164867,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "d3dd7b2f44fcbbdb25c0a5cb0f1831be8a59d6c9921cb9a34edeab15074fe1d0"
+        "sha256": "97d0dfe48758924d3c8f04466a056a9fba07b925db7ca99c96627226493bdda0"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -165243,6 +165243,46 @@
       "candidate_definitions": [],
       "catalog": [
         {
+          "address": 4534058,
+          "disposition": "outside-port-scope",
+          "function": "D3DXVec2Normalize"
+        }
+      ],
+      "category": "excluded_function",
+      "lookup_name": "D3DXVec2Normalize",
+      "name": "_D3DXVec2Normalize@8",
+      "referenced_by": [
+        {
+          "function": "creature_update_all",
+          "object": "tools/match/scratches/creature_update_all/build/msvc6.5/236de815d9c6e91a/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "player_render_overlays",
+          "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "player_update",
+          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "projectile_render",
+          "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "projectile_update",
+          "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "candidate_definitions": [],
+      "catalog": [
+        {
           "address": 4647242,
           "disposition": "outside-port-scope",
           "function": "Direct3DCreate8"
@@ -165472,11 +165512,6 @@
         {
           "function": "camera_update",
           "object": "tools/match/scratches/camera_update/build/msvc6.5/2198fbdf234063e0/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "__cfltcvt_init_3",
-          "object": "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/b7ebb0b2a3a56dd5/scratch.obj",
           "weak": false
         },
         {
@@ -166332,6 +166367,11 @@
         {
           "function": "render_tint_color_global_init",
           "object": "tools/match/scratches/render_tint_color_global_init/build/msvc6.5/401c5d0386a7badc/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "reserved_color_global_init",
+          "object": "tools/match/scratches/reserved_color_global_init/build/msvc6.5/246128698e5afe66/scratch.obj",
           "weak": false
         },
         {
@@ -169658,46 +169698,6 @@
         {
           "function": "statistics_update_check_worker",
           "object": "tools/match/scratches/statistics_update_check_worker/build/msvc6.5/7b103e09a3170e6e/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4534058,
-          "disposition": "outside-port-scope",
-          "function": "vec2_normalize_dispatch"
-        }
-      ],
-      "category": "excluded_function",
-      "lookup_name": "vec2_normalize_dispatch",
-      "name": "_vec2_normalize_dispatch@8",
-      "referenced_by": [
-        {
-          "function": "creature_update_all",
-          "object": "tools/match/scratches/creature_update_all/build/msvc6.5/236de815d9c6e91a/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "player_render_overlays",
-          "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "player_update",
-          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "projectile_render",
-          "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "projectile_update",
-          "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
           "weak": false
         }
       ]

@@ -21,19 +21,19 @@
     },
     {
       "name": "arc-result-copy",
-      "find": "                    projectile_render_vec2_t arc =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);",
+      "find": "                    projectile_render_vec2_t arc =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    D3DXVec2Normalize(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);",
       "replacements": [
         {
           "name": "default-then-assign",
-          "text": "                    projectile_render_vec2_t arc;\n                    arc = *(projectile_render_vec2_t *)\n                              &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
+          "text": "                    projectile_render_vec2_t arc;\n                    arc = *(projectile_render_vec2_t *)\n                              &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    D3DXVec2Normalize(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
         },
         {
           "name": "named-result-then-copy",
-          "text": "                    projectile_render_vec2_t arc_result =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t arc = arc_result;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
+          "text": "                    projectile_render_vec2_t arc_result =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t arc = arc_result;\n                    D3DXVec2Normalize(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
         },
         {
           "name": "named-result-member-copy",
-          "text": "                    projectile_render_vec2_t arc_result =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t arc;\n                    arc.x = arc_result.x;\n                    arc.y = arc_result.y;\n                    vec2_normalize_dispatch(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
+          "text": "                    projectile_render_vec2_t arc_result =\n                        *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x\n                        - *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t arc;\n                    arc.x = arc_result.x;\n                    arc.y = arc_result.y;\n                    D3DXVec2Normalize(\n                        (vec2f_t *)&arc, (const vec2f_t *)&arc);"
         }
       ]
     },

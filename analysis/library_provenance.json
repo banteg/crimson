@@ -1306,13 +1306,13 @@
       "component": "d3dx8",
       "left": {
         "artifact": "crimsonland.exe",
-        "name": "renderer_select_backend",
+        "name": "D3DXCpuOptimizations",
         "start": "0x004566D3",
         "end": "0x004567B0"
       },
       "right": {
         "artifact": "grim.dll",
-        "name": "grim_select_renderer_backend",
+        "name": "D3DXCpuOptimizations",
         "start": "0x1001C188",
         "end": "0x1001C265"
       }
@@ -1327,7 +1327,7 @@
       },
       "right": {
         "artifact": "grim.dll",
-        "name": "sub_1002CE9A",
+        "name": "x3d_matrix_inverse_inline",
         "start": "0x1002CE9A",
         "end": "0x1002D1CE"
       }

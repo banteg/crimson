@@ -197,7 +197,7 @@ extern "C" void grim_png_read_start_row(grim_png_source_t *png_ptr)
             1;
         png_ptr->irowbytes = (png_size_t)row_bytes;
         if ((png_uint_32)png_ptr->irowbytes != row_bytes)
-            png_error(
+            d3dx_png_error(
                 (png_structp)png_ptr,
                 "Rowbytes overflow in png_read_start_row");
     } else {
@@ -250,8 +250,8 @@ extern "C" void grim_png_read_start_row(grim_png_source_t *png_ptr)
         ((row_bytes * (png_uint_32)max_pixel_depth + 7) >> 3) + 1 +
         ((max_pixel_depth + 7) >> 3);
     png_ptr->row_buf =
-        (png_bytep)png_malloc((png_structp)png_ptr, row_bytes);
-    png_ptr->prev_row = (png_bytep)png_malloc(
+        (png_bytep)d3dx_png_malloc((png_structp)png_ptr, row_bytes);
+    png_ptr->prev_row = (png_bytep)d3dx_png_malloc(
         (png_structp)png_ptr, (png_uint_32)(png_ptr->rowbytes + 1));
 
     png_memset_check(
@@ -324,7 +324,7 @@ extern "C" void grim_png_do_chop(png_row_infop row_info, png_bytep row)
 extern "C" voidpf grim_png_zalloc(voidpf png_ptr, uInt items, uInt size)
 {
     png_uint_32 num_bytes = (png_uint_32)items * size;
-    png_voidp ptr = (png_voidp)png_malloc((png_structp)png_ptr, num_bytes);
+    png_voidp ptr = (png_voidp)d3dx_png_malloc((png_structp)png_ptr, num_bytes);
 
     if (ptr == NULL)
         return NULL;
@@ -361,7 +361,7 @@ extern "C" png_voidp grim_png_memcpy_check(
 {
     png_size_t size = (png_size_t)length;
     if ((png_uint_32)size != length)
-        png_error(png_ptr, "Overflow in png_memcpy_check.");
+        d3dx_png_error(png_ptr, "Overflow in png_memcpy_check.");
     return png_memcpy(s1, s2, size);
 }
 
@@ -373,7 +373,7 @@ extern "C" png_voidp grim_png_memset_check(
 {
     png_size_t size = (png_size_t)length;
     if ((png_uint_32)size != length)
-        png_error(png_ptr, "Overflow in png_memset_check.");
+        d3dx_png_error(png_ptr, "Overflow in png_memset_check.");
     return png_memset(s1, value, size);
 }
 
@@ -524,7 +524,7 @@ extern "C" void grim_png_handle_iend(
 {
     if (!(png_ptr->mode & PNG_HAVE_IHDR) ||
         !(png_ptr->mode & PNG_HAVE_IDAT)) {
-        png_error((png_structp)png_ptr, "No image in file");
+        d3dx_png_error((png_structp)png_ptr, "No image in file");
         if (info_ptr == NULL)
             return;
     }

@@ -3,45 +3,45 @@
   "sites": [
     {
       "name": "live-ion-direction-result",
-      "find": "            vec2f_t direction;\n            direction.x = projectile->pos.origin_x - projectile->pos_x;\n            direction.y = primary->origin_y\n                - projectile->pos.pos_y;\n            float distance = (float)sqrt(\n                direction.x * direction.x\n                + direction.y * direction.y);\n            vec2_normalize_dispatch(&direction, &direction);\n            if (primary->vy.type_id",
+      "find": "            vec2f_t direction;\n            direction.x = projectile->pos.origin_x - projectile->pos_x;\n            direction.y = primary->origin_y\n                - projectile->pos.pos_y;\n            float distance = (float)sqrt(\n                direction.x * direction.x\n                + direction.y * direction.y);\n            D3DXVec2Normalize(&direction, &direction);\n            if (primary->vy.type_id",
       "replacements": [
         {
           "name": "constructor-result-member-copy",
-          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n            if (primary->vy.type_id"
+          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n            if (primary->vy.type_id"
         },
         {
           "name": "subtraction-result-member-copy",
-          "text": "            projectile_render_vec2_t direction_result =\n                *(projectile_render_vec2_t *)&projectile->pos.origin_x\n                - *(projectile_render_vec2_t *)&projectile->position;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n            if (primary->vy.type_id"
+          "text": "            projectile_render_vec2_t direction_result =\n                *(projectile_render_vec2_t *)&projectile->pos.origin_x\n                - *(projectile_render_vec2_t *)&projectile->position;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n            if (primary->vy.type_id"
         },
         {
           "name": "assigned-result-member-copy",
-          "text": "            projectile_render_vec2_t direction_result;\n            direction_result.x =\n                projectile->pos.origin_x - projectile->pos_x;\n            direction_result.y =\n                primary->origin_y - projectile->pos.pos_y;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n            if (primary->vy.type_id"
+          "text": "            projectile_render_vec2_t direction_result;\n            direction_result.x =\n                projectile->pos.origin_x - projectile->pos_x;\n            direction_result.y =\n                primary->origin_y - projectile->pos.pos_y;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n            if (primary->vy.type_id"
         },
         {
           "name": "constructor-result-aggregate-copy",
-          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction = *(vec2f_t *)&direction_result;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n            if (primary->vy.type_id"
+          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction = *(vec2f_t *)&direction_result;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n            if (primary->vy.type_id"
         }
       ]
     },
     {
       "name": "fading-ion-direction-result",
-      "find": "            vec2f_t direction;\n            direction.x = projectile->pos.origin_x - projectile->pos_x;\n            direction.y = primary->origin_y\n                - projectile->pos.pos_y;\n            float distance = (float)sqrt(\n                direction.x * direction.x\n                + direction.y * direction.y);\n            vec2_normalize_dispatch(&direction, &direction);\n\n            float effect_scale;",
+      "find": "            vec2f_t direction;\n            direction.x = projectile->pos.origin_x - projectile->pos_x;\n            direction.y = primary->origin_y\n                - projectile->pos.pos_y;\n            float distance = (float)sqrt(\n                direction.x * direction.x\n                + direction.y * direction.y);\n            D3DXVec2Normalize(&direction, &direction);\n\n            float effect_scale;",
       "replacements": [
         {
           "name": "constructor-result-member-copy",
-          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n\n            float effect_scale;"
+          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n\n            float effect_scale;"
         },
         {
           "name": "subtraction-result-member-copy",
-          "text": "            projectile_render_vec2_t direction_result =\n                *(projectile_render_vec2_t *)&projectile->pos.origin_x\n                - *(projectile_render_vec2_t *)&projectile->position;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n\n            float effect_scale;"
+          "text": "            projectile_render_vec2_t direction_result =\n                *(projectile_render_vec2_t *)&projectile->pos.origin_x\n                - *(projectile_render_vec2_t *)&projectile->position;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n\n            float effect_scale;"
         },
         {
           "name": "assigned-result-member-copy",
-          "text": "            projectile_render_vec2_t direction_result;\n            direction_result.x =\n                projectile->pos.origin_x - projectile->pos_x;\n            direction_result.y =\n                primary->origin_y - projectile->pos.pos_y;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n\n            float effect_scale;"
+          "text": "            projectile_render_vec2_t direction_result;\n            direction_result.x =\n                projectile->pos.origin_x - projectile->pos_x;\n            direction_result.y =\n                primary->origin_y - projectile->pos.pos_y;\n            vec2f_t direction;\n            direction.x = direction_result.x;\n            direction.y = direction_result.y;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n\n            float effect_scale;"
         },
         {
           "name": "constructor-result-aggregate-copy",
-          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction = *(vec2f_t *)&direction_result;\n            float distance = direction_result.length();\n            vec2_normalize_dispatch(&direction, &direction);\n\n            float effect_scale;"
+          "text": "            projectile_render_vec2_t direction_result(\n                projectile->pos.origin_x - projectile->pos_x,\n                primary->origin_y - projectile->pos.pos_y);\n            vec2f_t direction = *(vec2f_t *)&direction_result;\n            float distance = direction_result.length();\n            D3DXVec2Normalize(&direction, &direction);\n\n            float effect_scale;"
         }
       ]
     }

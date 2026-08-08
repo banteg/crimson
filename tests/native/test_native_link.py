@@ -744,12 +744,7 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
         for provider in config.providers
         if provider.name == "directx-8.1-d3dx8-math"
     )
-    assert [
-        (alias.alias, alias.target)
-        for alias in d3dx_math.aliases
-    ] == [
-        ("_vec2_normalize_dispatch@8", "_D3DXVec2Normalize@8"),
-    ]
+    assert d3dx_math.aliases == ()
 
 
 def test_default_grim_link_manifest_records_recovered_platform_frontier() -> None:
@@ -775,7 +770,7 @@ def test_default_grim_link_manifest_records_recovered_platform_frontier() -> Non
     assert manifest["summary"]["retained_placeholder_symbols"] == 1
     assert manifest["summary"]["retained_link_dependency_import_symbols"] == 56
     assert manifest["summary"]["validated_output_import_symbols"] == 96
-    assert manifest["summary"]["input_object_count"] == 166
+    assert manifest["summary"]["input_object_count"] == 168
     assert manifest["entry"] == {"symbol": "DllMain"}
     assert manifest["placeholder_object"]["discarded_symbols"] == []
     assert manifest["placeholder_object"]["retained_symbols"] == [
@@ -822,7 +817,7 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["summary"]["retained_placeholder_symbols"] == 0
     assert manifest["summary"]["retained_link_dependency_import_symbols"] == 87
     assert manifest["summary"]["validated_output_import_symbols"] == 121
-    assert manifest["summary"]["input_object_count"] == 706
+    assert manifest["summary"]["input_object_count"] == 705
     assert manifest["entry"]["symbol"] == "WinMainCRTStartup"
     assert manifest["entry"]["aliases"]["symbols"] == [
         {
@@ -847,7 +842,7 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["output"]["pe"] == {
         "characteristics": 271,
         "dll": False,
-        "entry_point_rva": 323918,
+        "entry_point_rva": 323934,
         "image_base": 0x00400000,
         "image_size": 868352,
         "machine": matchlib.IMAGE_FILE_MACHINE_I386,
@@ -896,12 +891,7 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
         if provider["name"] == "directx-8.1-d3dx8-math"
     )
     assert d3dx_provider["archive"] == "directx-8.1-d3dx8"
-    assert d3dx_provider["aliases"]["symbols"] == [
-        {
-            "alias": "_vec2_normalize_dispatch@8",
-            "target": "_D3DXVec2Normalize@8",
-        },
-    ]
+    assert "aliases" not in d3dx_provider
 
 
 def test_provider_archive_can_be_absent_but_present_bytes_are_hash_checked(
@@ -1123,7 +1113,7 @@ def test_crimsonland_placeholder_object_records_transitive_archive_shims() -> No
     assert "_main" not in symbols
     tls_free = symbols["__imp__TlsFree@4"]
     assert coff.sections[tls_free.section_number - 1].name == ".data"
-    assert "_vec2_normalize_dispatch@8" not in symbols
+    assert "_D3DXVec2Normalize@8" not in symbols
     assert "_dx_get_version" not in symbols
     assert "_RtlUnwind@16" not in symbols
 

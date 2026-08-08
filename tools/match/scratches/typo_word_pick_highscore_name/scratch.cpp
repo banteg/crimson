@@ -2,7 +2,7 @@
 
 #include "crimsonland_gameplay.h"
 
-extern "C" void j_highscore_load_table(void);
+extern "C" void highscore_load_table_thunk(void);
 extern "C" int crt_isalpha(int ch);
 
 extern "C" char typo_word_highscore_cache[20][32];
@@ -12,7 +12,7 @@ extern "C" int typo_word_highscore_cache_count;
 extern "C" char *typo_word_pick_highscore_name(void)
 {
     if (!typo_word_highscore_cache_ready) {
-        j_highscore_load_table();
+        highscore_load_table_thunk();
 
         int accepted_count = 0;
         highscore_record_t *record = &highscore_table[0];

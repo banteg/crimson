@@ -66,7 +66,7 @@ extern creature_t creature_pool[];
 
 int perk_count_get(int perk_id);
 void effect_select_texture(int effect_id);
-vec2f_t *__stdcall vec2_normalize_dispatch(
+vec2f_t *__stdcall D3DXVec2Normalize(
     vec2f_t *dst,
     const vec2f_t *src);
 }
@@ -497,7 +497,7 @@ extern "C" void player_render_overlays(void)
                     float distance = (float)sqrt(
                         direction.y * direction.y
                         + direction.x * direction.x);
-                    vec2_normalize_dispatch(
+                    D3DXVec2Normalize(
                         (vec2f_t *)&direction,
                         (const vec2f_t *)&direction);
                     player_render_vec2_t draw_origin(

@@ -1329,8 +1329,8 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "float * __thiscall vec2_add_out("
         "vec2f_t *self, float *dst, const vec2f_t *rhs)"
     )
-    assert signatures_by_name["vec2_normalize_dispatch"] == (
-        "vec2f_t * __stdcall vec2_normalize_dispatch("
+    assert signatures_by_name["D3DXVec2Normalize"] == (
+        "vec2f_t * __stdcall D3DXVec2Normalize("
         "vec2f_t *dst, const vec2f_t *src)"
     )
     assert signatures_by_name["wav_parse_into_entry"] == (

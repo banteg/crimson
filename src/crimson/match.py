@@ -34,6 +34,7 @@ DEFAULT_MATCH_SCOPE = "port"
 ANALYZER_PLACEHOLDER_RE = re.compile(
     r"^(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|unknown(?:_libname)?(?:_[0-9]+)?|"
     r"nullsub_[0-9]+|j_(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|nullsub_[0-9]+)|"
+    r"j_[a-z_][a-z0-9_]*|"
     r"DAT_[0-9a-f]+|LAB_[0-9a-f]+|PTR_[0-9a-f]+|"
     r"(?:switchD|caseD|lookup_table)_[0-9a-f]+)$",
     re.IGNORECASE,
@@ -46,6 +47,7 @@ ANALYZER_PLACEHOLDER_TOKEN_RE = re.compile(
     r"unknown_libname(?:_[0-9]+)?|unknown_[0-9]+|nullsub_[0-9]+)(?![0-9a-z])",
     re.IGNORECASE,
 )
+IDENTIFIER_TOKEN_RE = re.compile(r"(?<![0-9a-z_])[a-z_][a-z0-9_]*(?![0-9a-z_])", re.IGNORECASE)
 ADDRESS_DERIVED_IDENTITY_RE = re.compile(
     r"^(?:j_(?:FUN|sub)_|FUN_|sub_|DAT_|data_|LAB_|loc_|PTR_|"
     r"(?:switchD|caseD|lookup_table)_|(?:byte|word|dword|qword|off|unk|field)_)[0-9a-f]+$|"
@@ -5623,8 +5625,20 @@ def collect_naming_debt(
         issues: list[str] = []
         if is_analyzer_placeholder(canonical) or is_analyzer_placeholder(status.config.function):
             issues.append("placeholder-function")
+        address_suffixed_directory = status.config.directory.name.casefold() in {
+            f"{canonical}_{status.address:x}".casefold(),
+            f"{canonical}_{status.address:08x}".casefold(),
+            f"{status.config.function}_{status.address:x}".casefold(),
+            f"{status.config.function}_{status.address:08x}".casefold(),
+        }
         if is_analyzer_placeholder(status.config.directory.name):
             issues.append("placeholder-directory")
+        elif (
+            address_suffixed_directory
+            and not is_analyzer_placeholder(canonical)
+            and (identity_suggestion is None or identity_suggestion == canonical)
+        ):
+            issues.append("address-suffixed-directory")
         elif identity_suggestion is not None:
             expected_directories = {
                 identity_suggestion.casefold(),
@@ -5667,6 +5681,7 @@ def collect_naming_debt(
         key = _archive_provider_key(status)
         if (
             "placeholder-function" in issues
+            or "address-suffixed-directory" in issues
             or "provider-name-conflict" in issues
             or "provider-directory-conflict" in issues
             or "curated-name-conflict" in issues
@@ -5706,6 +5721,9 @@ def collect_naming_debt(
                                 },
                             ),
                         )
+            if suggestion is None and "address-suffixed-directory" in issues:
+                suggestion = canonical
+                suggestion_sources = (f"canonical-identity:{status.config.image}:0x{status.address:08x}",)
 
         try:
             scratch = status.config.directory.resolve().relative_to(REPO_ROOT).as_posix()
@@ -5839,15 +5857,21 @@ def collect_naming_debt(
 
 def _resolved_name_audit_files(repo_root: Path) -> tuple[Path, ...]:
     files: list[Path] = []
-    for relative_root in ("docs", "src", "scripts", "tools"):
+    for relative_root in ("analysis", "crimson-zig", "docs", "src", "scripts", "tools"):
         source_root = repo_root / relative_root
         if not source_root.is_dir():
             continue
         for current_root, directories, filenames in os.walk(source_root):
+            analysis_only_pruned = (
+                {"binary_ninja", "native", "raw"}
+                if relative_root == "analysis"
+                else set()
+            )
             directories[:] = sorted(
                 directory
                 for directory in directories
                 if directory not in RESOLVED_NAME_AUDIT_PRUNED_DIRECTORIES
+                and directory not in analysis_only_pruned
             )
             current_path = Path(current_root)
             for filename in sorted(filenames):
@@ -5879,13 +5903,23 @@ def collect_resolved_name_references(
     name_map_path: Path = DEFAULT_NAME_MAP_PATH,
     data_map_path: Path = DEFAULT_DATA_MAP_PATH,
 ) -> list[ResolvedNameReferenceRow]:
-    """Find address-derived labels whose addresses now have stronger curated names."""
+    """Find analyzer identities whose addresses now have stronger curated names."""
 
     function_names: dict[tuple[str, int], list[str]] = defaultdict(list)
+    function_aliases: dict[tuple[str, int], set[str]] = defaultdict(set)
+    function_identifiers: dict[str, set[str]] = defaultdict(set)
     for row in load_name_map_rows(name_map_path):
-        function_names[(str(row.get("program", "")), parse_int(row["address"]))].append(
-            str(row.get("name", "")),
-        )
+        key = (str(row.get("program", "")), parse_int(row["address"]))
+        name = str(row.get("name", ""))
+        aliases = {
+            str(alias).casefold()
+            for alias in row.get("aliases", ())
+            if isinstance(alias, str)
+        }
+        function_names[key].append(name)
+        function_aliases[key].update(aliases)
+        function_identifiers[key[0]].add(name.casefold())
+        function_identifiers[key[0]].update(aliases)
 
     data_payload = json.loads(data_map_path.read_text(encoding="utf-8"))
     raw_data_rows = data_payload.get("entries") if isinstance(data_payload, dict) else None
@@ -5906,6 +5940,39 @@ def collect_resolved_name_references(
     data_by_address: dict[int, list[tuple[str, tuple[str, ...]]]] = defaultdict(list)
     for (image, address), names in data_names.items():
         data_by_address[address].append((image, tuple(names)))
+
+    superseded_function_names: dict[
+        str,
+        list[tuple[str, str, int, tuple[str, ...]]],
+    ] = defaultdict(list)
+    raw_functions_root = repo_root / "analysis" / "ida" / "raw"
+    for image in sorted({image for image, _ in function_names}):
+        functions_path = raw_functions_root / image / "functions.json"
+        if not functions_path.is_file():
+            continue
+        payload = json.loads(functions_path.read_text(encoding="utf-8"))
+        if not isinstance(payload, list):
+            raise TypeError(f"{functions_path}: raw functions must contain a list")
+        for index, raw_row in enumerate(payload):
+            if not isinstance(raw_row, dict):
+                raise TypeError(f"{functions_path}: function row {index} must be an object")
+            token = str(raw_row.get("name", ""))
+            if IDENTIFIER_TOKEN_RE.fullmatch(token) is None:
+                continue
+            if token.casefold() in function_identifiers[image]:
+                continue
+            raw_address = raw_row.get("address")
+            if not isinstance(raw_address, (str, int)):
+                raise TypeError(f"{functions_path}: function row {index} has invalid address")
+            address = parse_int(raw_address)
+            key = (image, address)
+            names = function_names.get(key, ())
+            canonical_names = _stronger_identity_names(names, token=token)
+            if not canonical_names:
+                continue
+            superseded_function_names[token.casefold()].append(
+                (token, image, address, canonical_names),
+            )
 
     rows: list[ResolvedNameReferenceRow] = []
     seen: set[tuple[str, int, str, str, int]] = set()
@@ -5971,6 +6038,20 @@ def collect_resolved_name_references(
                         address=address,
                         names=names,
                     )
+            for match in IDENTIFIER_TOKEN_RE.finditer(line):
+                for token, image, address, names in superseded_function_names.get(
+                    match.group(0).casefold(),
+                    (),
+                ):
+                    append_row(
+                        path=path,
+                        line=line_number,
+                        source="superseded-identity",
+                        token=token,
+                        image=image,
+                        address=address,
+                        names=names,
+                    )
 
     if native_definitions_root.is_dir():
         for path in sorted(native_definitions_root.glob("*.json")):
@@ -5994,13 +6075,21 @@ def collect_resolved_name_references(
                     address_text, token = raw_symbol[-2:]
                     if not isinstance(address_text, str) or not isinstance(token, str):
                         continue
-                    if ADDRESS_DERIVED_IDENTITY_RE.fullmatch(token) is None:
-                        continue
                     address = parse_int(address_text)
                     names = function_names.get((image, address), ())
                     if not names:
                         names = data_names.get((image, address), ())
                     if not names:
+                        continue
+                    is_address_derived = ADDRESS_DERIVED_IDENTITY_RE.fullmatch(token) is not None
+                    is_superseded = any(
+                        candidate_image == image and candidate_address == address
+                        for _, candidate_image, candidate_address, _ in superseded_function_names.get(
+                            token.casefold(),
+                            (),
+                        )
+                    )
+                    if not is_address_derived and not is_superseded:
                         continue
                     location_key = (address_text.casefold(), token)
                     occurrence = location_offsets[location_key]
@@ -6115,12 +6204,63 @@ def rewrite_resolved_name_references(
     }
 
 
+def _rewrite_superseded_identity_references(
+    replacements_by_image: dict[str, dict[str, str]],
+    *,
+    repo_root: Path,
+    match_root: Path,
+    excluded_paths: Collection[Path] = (),
+) -> int:
+    """Rewrite semantic identities while the superseded names are still known."""
+
+    targets_by_token: dict[str, dict[str, str]] = defaultdict(dict)
+    spelling_by_token: dict[str, str] = {}
+    for image in sorted(replacements_by_image):
+        for old_name, canonical_name in sorted(replacements_by_image[image].items()):
+            if old_name.casefold() == canonical_name.casefold():
+                continue
+            folded_old = old_name.casefold()
+            spelling_by_token.setdefault(folded_old, old_name)
+            targets_by_token[folded_old].setdefault(canonical_name.casefold(), canonical_name)
+    global_replacements = {
+        spelling_by_token[folded_old]: next(iter(targets.values()))
+        for folded_old, targets in targets_by_token.items()
+        if len(targets) == 1
+    }
+
+    excluded = {path.resolve() for path in excluded_paths}
+    scratch_root = (match_root / "scratches").resolve()
+    references_updated = 0
+    for path in _resolved_name_audit_files(repo_root):
+        resolved_path = path.resolve()
+        if resolved_path in excluded:
+            continue
+        replacements = global_replacements
+        if resolved_path.is_relative_to(scratch_root):
+            relative = resolved_path.relative_to(scratch_root)
+            if len(relative.parts) >= 2:
+                config_path = scratch_root / relative.parts[0] / "scratch.conf"
+                if config_path.is_file():
+                    image = load_scratch_config(config_path.parent).image
+                    replacements = replacements_by_image.get(image, {})
+        if not replacements:
+            continue
+        original = path.read_text(encoding="utf-8")
+        rewritten, count = _replace_identity_tokens(original, replacements)
+        if rewritten == original:
+            continue
+        path.write_text(rewritten, encoding="utf-8")
+        references_updated += count
+    return references_updated
+
+
 def apply_naming_suggestions(
     rows: Collection[NamingDebtRow],
     *,
     match_root: Path = DEFAULT_MATCH_ROOT,
     name_map_path: Path = DEFAULT_NAME_MAP_PATH,
     matching_scope_path: Path = DEFAULT_MATCHING_SCOPE_PATH,
+    repository_root: Path | None = None,
 ) -> dict[str, Any]:
     """Apply deterministic naming suggestions across scratches and the curated map.
 
@@ -6170,9 +6310,10 @@ def apply_naming_suggestions(
             f"sub_{row.address:X}",
         }
         image_replacements = replacements_by_image[row.image]
-        replaces_semantic_name = bool(
-            {"provider-name-conflict", "curated-name-conflict"}.intersection(row.issues),
-        )
+        replaces_semantic_name = row.suggestion.casefold() not in {
+            row.function.casefold(),
+            row.configured_function.casefold(),
+        }
         for old_name in old_names:
             if not old_name or (
                 not is_analyzer_placeholder(old_name)
@@ -6208,6 +6349,7 @@ def apply_naming_suggestions(
         )
         if (
             "placeholder-directory" not in row.issues
+            and "address-suffixed-directory" not in row.issues
             and "provider-directory-conflict" not in row.issues
             and "curated-directory-conflict" not in row.issues
             and not carries_old_identity
@@ -6257,13 +6399,21 @@ def apply_naming_suggestions(
         config = load_scratch_config(config_path.parent)
         original = config_path.read_text(encoding="utf-8")
         updated = original
+        selected_row = selected_by_source.get(config_path.parent.resolve())
         suggestion = suggestion_by_source.get(config_path.parent.resolve())
         if suggestion is not None:
             updated = _replace_config_assignment(updated, "FUNCTION", suggestion)
             if (
                 config.archive is None
                 and config.symbol is not None
-                and is_analyzer_placeholder(config.symbol)
+                and (
+                    is_analyzer_placeholder(config.symbol)
+                    or (
+                        selected_row is not None
+                        and config.symbol.casefold()
+                        == selected_row.configured_function.casefold()
+                    )
+                )
             ):
                 updated = _replace_config_assignment(updated, "SYMBOL", suggestion)
             if _is_placeholder_note(config.note):
@@ -6281,11 +6431,7 @@ def apply_naming_suggestions(
         if tuple(rewritten_aliases) != config.reference_aliases:
             encoded = ",".join(f"{source}:{target}" for source, target in rewritten_aliases)
             updated = _replace_config_assignment(updated, "REFERENCE_ALIASES", encoded)
-        source_replacements = {
-            old_name: new_name
-            for old_name, new_name in image_replacements.items()
-            if is_analyzer_placeholder(old_name)
-        }
+        source_replacements = image_replacements
         for source_path in sorted(config_path.parent.iterdir()):
             if (
                 not source_replacements
@@ -6461,6 +6607,14 @@ def apply_naming_suggestions(
         staged_renames.append((staging, destination))
     for staging, destination in staged_renames:
         staging.rename(destination)
+
+    if repository_root is not None:
+        text_references_updated += _rewrite_superseded_identity_references(
+            replacements_by_image,
+            repo_root=repository_root,
+            match_root=match_root,
+            excluded_paths=(name_map_path, matching_scope_path),
+        )
 
     return {
         "applied": len(selected),

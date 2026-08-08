@@ -261,8 +261,8 @@
   },
   {
     "address": "0x0040d090",
-    "name": "FUN_0040d090",
-    "signature": "undefined FUN_0040d090(void)",
+    "name": "credits_build_lines",
+    "signature": "undefined credits_build_lines(void)",
     "events": {
       "grim": 2480,
       "sfx": 41
@@ -365,8 +365,8 @@
   },
   {
     "address": "0x0040f400",
-    "name": "FUN_0040f400",
-    "signature": "undefined4 FUN_0040f400(int * param_1, int * param_2, undefined1 * param_3)",
+    "name": "credits_secret_match3_find",
+    "signature": "undefined4 credits_secret_match3_find(int * param_1, int * param_2, undefined1 * param_3)",
     "events": {
       "grim": 735,
       "sfx": 7
@@ -403,8 +403,8 @@
   },
   {
     "address": "0x0043d9b0",
-    "name": "FUN_0043d9b0",
-    "signature": "undefined FUN_0043d9b0(float * param_1, int * param_2)",
+    "name": "ui_segmented_slider_update",
+    "signature": "undefined ui_segmented_slider_update(float * param_1, int * param_2)",
     "events": {
       "grim": 578
     },
@@ -575,8 +575,8 @@
   },
   {
     "address": "0x00447580",
-    "name": "FUN_00447580",
-    "signature": "undefined FUN_00447580(void)",
+    "name": "config_apply_detail_preset",
+    "signature": "undefined config_apply_detail_preset(void)",
     "events": {
       "grim": 72
     },
@@ -913,8 +913,8 @@
   },
   {
     "address": "0x0040d040",
-    "name": "FUN_0040d040",
-    "signature": "undefined FUN_0040d040(int param_1)",
+    "name": "credits_line_clear_flag",
+    "signature": "undefined credits_line_clear_flag(int param_1)",
     "events": {
       "sfx": 4
     },

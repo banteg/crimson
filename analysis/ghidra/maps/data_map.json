@@ -13233,7 +13233,7 @@
     },
     {
       "address": "0x004da4c4",
-      "comment": "CRT FILE* stream pointer table used by crt_flushall (MSVCRT __piob-style).",
+      "comment": "CRT FILE* stream pointer table used by crt_flsall (MSVCRT __piob-style).",
       "name": "crt_stream_table",
       "program": "crimsonland.exe",
       "type": "FILE **"
@@ -15903,7 +15903,7 @@
     },
     {
       "address": "0x00479658",
-      "comment": "Lazy vector-normalization implementation pointer; starts at vec2_normalize_dispatch_init and is retargeted to vec2_normalize_safe on first use.",
+      "comment": "Lazy vector-normalization implementation pointer; starts at d3dx_init_vec2_normalize and is retargeted to d3dx_c_vec2_normalize on first use.",
       "name": "vec2_normalize_impl",
       "program": "crimsonland.exe",
       "type": "float * (__stdcall *)(float *, float *)"

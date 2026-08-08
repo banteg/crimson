@@ -1990,15 +1990,9 @@
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images."
         }
       ],
-      "aliases": [
-        {
-          "alias": "_vec2_normalize_dispatch@8",
-          "target": "_D3DXVec2Normalize@8"
-        }
-      ],
       "symbols": [
         {
-          "name": "_vec2_normalize_dispatch@8",
+          "name": "_D3DXVec2Normalize@8",
           "binding": "function"
         }
       ]

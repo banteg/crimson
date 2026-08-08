@@ -98,7 +98,7 @@ extern float render_tint_color_a;
 extern int player_name_length;
 extern int sfx_ui_typeenter;
 
-void j_highscore_load_table(void);
+void highscore_load_table_thunk(void);
 int highscore_rank_index(void);
 void highscore_save_active(void);
 int console_input_poll(void);
@@ -174,7 +174,7 @@ extern "C" void game_over_screen_update(void)
         ui_text_reaper_texture);
 
     if (ui_screen_phase == -1) {
-        j_highscore_load_table();
+        highscore_load_table_thunk();
         game_over_highscore_rank_index = highscore_rank_index();
         highscore_active_record.game_mode_id =
             (unsigned char)config_game_mode;
@@ -228,7 +228,7 @@ extern "C" void game_over_screen_update(void)
                 player_name_length = name_input.cursor;
                 highscore_active_record.player_name[name_input.cursor] = 0;
                 highscore_save_active();
-                j_highscore_load_table();
+                highscore_load_table_thunk();
             } else {
                 name_submit_button.activated = false;
                 sfx_play(sfx_shock_hit_01, 1.0f);

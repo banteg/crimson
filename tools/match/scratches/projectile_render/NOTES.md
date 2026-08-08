@@ -129,7 +129,7 @@ temporary lifetimes and allocator scheduling; the candidate frame is now
 
 A fresh live Binary Ninja bundle confirms that every native primary and
 secondary projectile type arm is present, as are all five direct callees:
-`effect_select_texture`, `perk_count_get`, `vec2_normalize_dispatch`,
+`effect_select_texture`, `perk_count_get`, `D3DXVec2Normalize`,
 `creature_find_in_radius`, and `__ftol`. Address-matched IDA and Ghidra
 snapshots independently report the same `void(float transition_alpha)`
 signature and callee set. The candidate has no unresolved static references;

@@ -116,7 +116,7 @@ extern int music_track_extra_0;
 bool ui_button_update(float *xy, ui_button_t *button);
 int ui_list_widget_update(float *xy, ui_list_widget_t *list);
 bool input_primary_just_pressed(void);
-void j_highscore_load_table(void);
+void highscore_load_table_thunk(void);
 void sfx_mute_all(int sfx_id);
 void ui_menu_click_back_contextual(void);
 }
@@ -304,7 +304,7 @@ extern "C" void play_game_menu_update(void)
         if (selected >= 0) {
             player_count_list.selected_index = selected;
             config_player_count = selected + 1;
-            j_highscore_load_table();
+            highscore_load_table_thunk();
         }
     }
 

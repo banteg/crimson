@@ -644,8 +644,9 @@ PE/COFF records or identified archive members; for link-sensitive code, check
 `/MD` vs `/MT` first.
 
 Audit recovered identities whose current presentation still exposes analyzer
-placeholders in canonical names, scratch directories, curated function/data
-aliases, reference aliases, or notes:
+placeholders, semantic `j_*` names, or redundant address suffixes in canonical
+names, scratch directories, curated function/data aliases, reference aliases,
+or notes:
 
 ```sh
 uv run crimson match naming-audit --summary-only
@@ -690,11 +691,12 @@ generated names such as `FUN_*`, `sub_*`, and `unknown_libname_*` are naming
 debt once a stronger identity is proven.
 `--apply-suggestions` updates canonical map rows, exact scratch `FUNCTION`
 assignments, scratch reference aliases, and matching-scope disposition names
-together. It also updates analyzer-placeholder identifiers in local scratch
-source files, while leaving linkage symbols and shared provider sources intact.
-It removes superseded
-analyzer aliases and gives a renamed scratch an image prefix when the canonical
-directory is already occupied by the cross-image provider peer.
+together. While the former identities are still known, it rewrites unambiguous
+semantic and analyzer-name references across maintained analysis, source,
+documentation, scripts, and matching notes. Decorated linkage symbols remain
+intact. It removes superseded analyzer aliases and gives a renamed scratch an
+image prefix when the canonical directory is already occupied by the
+cross-image provider peer.
 `--prune-placeholder-aliases` removes only the generated aliases reported on
 the selected function and data rows; decorated provider and linkage aliases
 are retained. Curated-map aliases are audited even when no exact scratch owns
@@ -711,16 +713,18 @@ an older bulk rename rewrote an auto-generated provider comment to the new
 canonical identity.
 
 `resolved-name-audit` is the repository-wide companion to the scratch/map
-audit. It scans maintained documentation, source, scripts, matching notes, and native data
-initializers for address-derived labels whose address already has a stronger
-curated identity. Build artifacts, experiment logs, and genuinely unresolved
-address-named fields are excluded, while vtable slots such as a stale
-`nullsub_*` are checked against their explicit target address. `--rewrite`
-replaces unambiguous labels with their curated identity; when that identity is
-already present on the line, it keeps the useful address as a plain hexadecimal
-literal instead of repeating the name. Ambiguous multi-name addresses remain
-reported for manual review. The same check runs as a pre-commit gate whenever
-maintained maps, documentation, source, scripts, or tools change.
+audit. It scans maintained analysis, Zig, documentation, source, scripts,
+matching notes, and native data initializers for analyzer identities whose
+address already has a stronger curated identity. This includes semantic raw
+function names, not only address-derived labels. Raw analyzer exports, native
+build artifacts, experiment logs, and genuinely unresolved address-named
+fields are excluded, while vtable slots such as a stale `nullsub_*` are checked
+against their explicit target address. `--rewrite` replaces unambiguous labels
+with their curated identity; when that identity is already present on the line,
+it keeps the useful address as a plain hexadecimal literal instead of repeating
+the name. Ambiguous multi-name addresses remain reported for manual review. The
+same check runs as a pre-commit gate whenever maintained maps, documentation,
+source, scripts, or tools change.
 
 ## No Fakematching
 

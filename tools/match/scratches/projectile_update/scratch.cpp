@@ -53,7 +53,7 @@ int fx_spawn_sprite(
     const vec2f_t *pos,
     const vec2f_t *vel,
     float scale);
-vec2f_t *__stdcall vec2_normalize_dispatch(
+vec2f_t *__stdcall D3DXVec2Normalize(
     vec2f_t *dst,
     const vec2f_t *src);
 }
@@ -756,7 +756,7 @@ extern "C" void projectile_update(void)
                             (float)sqrt(distance_dx * dx + dy * dy);
                         if (distance < radius) {
                             vec2f_t impulse = {dx, dy};
-                            vec2_normalize_dispatch(&impulse, &impulse);
+                            D3DXVec2Normalize(&impulse, &impulse);
                             impulse.x *= 0.1f;
                             impulse.y *= 0.1f;
                             creature_apply_damage(
