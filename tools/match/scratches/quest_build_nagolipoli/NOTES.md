@@ -26,9 +26,10 @@ corrected the Python and Zig ports, which previously scaled Nagolipoli against
 the runtime terrain.
 
 The candidate represents 255 of the native body's 258 instructions and
-resolves all 12 audited references, scoring 60.04% fuzzy-weighted with a
-seven-instruction exact prefix. A two-field builder preserves the native live
-entry count. Separate `set` and scalar-add calls on both ring positions recover
+resolves all 12 audited references, scoring 61.99% fuzzy-weighted with a
+32-instruction exact prefix. One flat append counter preserves the native live
+entry count and reusable x87 conversion slot. Separate `set` and scalar-add
+calls on both ring positions recover
 the native raw sine/cosine stores followed by 512 reload/add/store operations;
 advancing the second-ring cursor before its index recovers the native loop
 schedule. Four corner vectors recover the native stack materialization, with
@@ -51,10 +52,12 @@ than untyped dword offsets. Ring and line cursors intentionally remain interior
 pointers: their negative displacements are native VC6 strength reduction, not
 missing record fields.
 
-A flat local count scored 36.68%; adding the builder and using its count for
-the first ring materially improved the result. Indexing every corner wave back
-through the builder count, extending an existing corner vector through the
-tail, reusing the bottom-right vector for the line loops,
+The earlier 36.68% flat-count measurement predated the staged publication
+recoveries and is superseded. Replaying the ordinary function-local counter
+against the recovered source raises the result from 60.04% to 61.99% and
+removes the provisional builder type. Indexing every corner wave back through
+the append count, extending an existing corner vector through the tail,
+reusing the bottom-right vector for the line loops,
 aggregate-constructor ring assignments, and alternative line temporaries all
 scored worse. A combined entry setter was codegen-equivalent for the line
 loops. No artificial dependencies, volatile state, dummy work, or
@@ -86,7 +89,7 @@ Fresh live Binary Ninja output confirms all 164 entries and each ring, corner
 wave, vertical line, and four-entry tail. The candidate remains 255/258
 instructions with all 12 audited references resolved and matched.
 
-## Builder and second-ring cursor bounds
+## Superseded builder and second-ring cursor bounds
 
 Two more complete mutation matrices tested the remaining native-looking
 cursor idioms without changing the canonical source.
@@ -106,8 +109,8 @@ entry-reference, and indexed-entry forms lost between 3.09 and 11.95 weighted
 bytes, with the latter forms also losing a resolved reference. Its SHA-256 is
 `5c43d7fcd6b249adfe38052a4b01e472eae0f8b0468a35153b286d50b2c1cddc`.
 
-These complete negatives strengthen the existing compiler-residual
-classification. The source remains SHA-256
+At that checkpoint these complete negatives strengthened the existing
+compiler-residual classification. The then-current source was SHA-256
 `83ac8f02a631f5f3036f15ad168eb4942d0b3b90dcf574e5fd55a4434ce55285`,
 at **60.04%**, 255/258 instructions, and reference audit 12/0/0. The updated
 `experiments.jsonl` SHA-256 is
@@ -126,6 +129,23 @@ regressed.
 recorded five complete variants. Explicit-inline, force-inline, and
 return-by-reference helper spellings were byte-neutral; moving count before
 trigger lost 22.994 weighted bytes and reversing the metadata stores lost
-49.821. No variant was retained. The validated source remains at
+49.821. No variant was retained. At that checkpoint the validated source was
+at
 590.1832358674463/983 weighted bytes, a 392.81676413255366 gap, 255/258
 instructions, prefix seven, and references 12/0/0.
+
+## 2026-08-09 flat append-counter recovery
+
+The surviving SDK's ordinary function-local counter style transfers after the
+later ring and publication recoveries. Replacing the two-field builder with a
+plain `entry_count` lets VC6 keep the append count in `ESI` while reusing the
+native `esp+0x10` scalar conversion slot. The first ring consequently matches
+through 32 instructions instead of seven.
+
+The retained source improves from 590.1832358674463/983 weighted bytes
+(60.04%) to 609.3450292397661/983 (61.99%). It preserves 255/258 instructions
+and references `12/0/0`; no quest entry, trigger, position, heading, or count
+changes. A hybrid that reintroduced the builder after the rings reached only
+61.21%, and interior `pos.y` cursor aliases were neutral or regressed, so the
+smaller flat-counter source is retained. Source SHA-256:
+`776cec3d813c94de1229e5c213256ff868710a5af8f8a09c7d8963511a567870`.

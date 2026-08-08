@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **716/810** functions matched exactly, **137385/341970** code bytes (**40.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304789/341970** code bytes (**89.1%**).
+Fuzzy-weighted alignment is **304808/341970** code bytes (**89.1%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 61 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 62 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 583/671 | 122441/320805 | 38.2% | 283983/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 583/671 |
+| crimsonland.exe | 583/671 | 122441/320805 | 38.2% | 284002/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 583/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**583/671** functions, **122441/320805** bytes (**38.2%**), **283983/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **583/671** scratches verified.
+**583/671** functions, **122441/320805** bytes (**38.2%**), **284002/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **583/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -521,7 +521,7 @@ Artifact freshness issues:
 | wip | quest_spawn_timeline_update | 0x00434250 | 368 | 336/368 | 32 | 113/115 | 91.23% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 30/30 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | match | quest_build_fallback | 0x004343e0 | 150 | 150/150 | 0 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | quest-fallback-append-count |
-| wip | quest_build_nagolipoli | 0x00434480 | 983 | 590/983 | 393 | 255/258 | 60.04% | 7/258 | 12/0/0 |  | quest-nagolipoli-rings-waves-lines |
+| wip | quest_build_nagolipoli | 0x00434480 | 983 | 609/983 | 374 | 255/258 | 61.99% | 32/258 | 12/0/0 |  | quest-nagolipoli-rings-waves-lines |
 | match | quest_build_monster_blues | 0x00434860 | 348 | 348/348 | 0 | 95/95 | 100.00% | 95/95 | 4/0/0 |  | quest-monster-blues-append-prefix |
 | wip | quest_build_the_gathering | 0x004349c0 | 725 | 649/725 | 76 | 134/134 | 89.55% | 12/134 | 0/0/0 |  | quest-the-gathering-fixed-table |
 | wip | quest_build_army_of_three | 0x00434ca0 | 608 | 603/608 | 5 | 116/116 | 99.14% | 13/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |

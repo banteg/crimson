@@ -37,23 +37,15 @@ struct quest_entry_original_t {
     }
 };
 
-struct quest_spawn_builder_t {
-    quest_entry_original_t *spawns;
-    int count;
-
-    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)
-        : spawns(spawn_entries), count(0) {}
-};
-
 extern "C" void quest_build_nagolipoli(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
-    quest_spawn_builder_t builder(spawns);
+    int entry_count = 0;
     quest_entry_original_t *spawn = spawns;
 
-    while (builder.count < 8) {
-        float angle = (float)builder.count * 0.785398185f;
+    while (entry_count < 8) {
+        float angle = (float)entry_count * 0.785398185f;
         spawn->pos.set(
             (float)cos(angle) * 128.0f,
             (float)sin(angle) * 128.0f);
@@ -63,13 +55,13 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_SPIDER_SMALL_BLUE_40,
             2000,
             1);
-        ++builder.count;
+        ++entry_count;
         ++spawn;
     }
 
     int ring_index = 0;
-    spawn = &spawns[builder.count];
-    builder.count += 12;
+    spawn = &spawns[entry_count];
+    entry_count += 12;
     while (ring_index < 12) {
         float angle = (float)ring_index * 0.52359879f;
         spawn->pos.set(
@@ -100,7 +92,7 @@ extern "C" void quest_build_nagolipoli(
 
     int wave = 0;
     int trigger_time_ms = 13000;
-    spawn = &spawns[builder.count];
+    spawn = &spawns[entry_count];
     while (trigger_time_ms < 0x96c8) {
         int spawn_count = wave / 8 + 1;
 
@@ -110,7 +102,7 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
             trigger_time_ms,
             spawn_count);
-        ++builder.count;
+        ++entry_count;
         ++spawn;
 
         spawn->pos = top_right;
@@ -119,7 +111,7 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
             trigger_time_ms,
             spawn_count);
-        ++builder.count;
+        ++entry_count;
         ++spawn;
 
         spawn->pos = bottom_left;
@@ -128,7 +120,7 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
             trigger_time_ms,
             spawn_count);
-        ++builder.count;
+        ++entry_count;
         ++spawn;
 
         spawn->pos = bottom_right;
@@ -137,7 +129,7 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
             trigger_time_ms,
             spawn_count);
-        ++builder.count;
+        ++entry_count;
         ++spawn;
 
         trigger_time_ms += 800;
@@ -147,8 +139,8 @@ extern "C" void quest_build_nagolipoli(
     int line_index = 0;
     trigger_time_ms = (wave * 5 + 150) * 160;
     bottom_left.x = 64.0f;
-    spawn = &spawns[builder.count];
-    builder.count += 6;
+    spawn = &spawns[entry_count];
+    entry_count += 6;
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
         spawn->pos = bottom_left;
@@ -165,8 +157,8 @@ extern "C" void quest_build_nagolipoli(
     line_index = 0;
     trigger_time_ms = wave * 800 + 25000;
     bottom_left.x = 960.0f;
-    spawn = &spawns[builder.count];
-    builder.count += 6;
+    spawn = &spawns[entry_count];
+    entry_count += 6;
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
         spawn->pos = bottom_left;
@@ -183,7 +175,7 @@ extern "C" void quest_build_nagolipoli(
     quest_vec2_t tail_pos;
 
     trigger_time_ms = (wave * 5 + 175) * 160;
-    spawn = &spawns[builder.count];
+    spawn = &spawns[entry_count];
     tail_pos.x = 512.0f;
     tail_pos.y = 256.0f;
     spawn->pos = tail_pos;
@@ -192,9 +184,9 @@ extern "C" void quest_build_nagolipoli(
         SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,
         trigger_time_ms,
         1);
-    ++builder.count;
+    ++entry_count;
 
-    spawn = &spawns[builder.count];
+    spawn = &spawns[entry_count];
     tail_pos.x = 512.0f;
     tail_pos.y = 768.0f;
     spawn->pos = tail_pos;
@@ -203,10 +195,10 @@ extern "C" void quest_build_nagolipoli(
         SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,
         trigger_time_ms,
         1);
-    ++builder.count;
+    ++entry_count;
 
     trigger_time_ms = wave * 800 + 0x6f54;
-    spawn = &spawns[builder.count];
+    spawn = &spawns[entry_count];
     tail_pos.x = 512.0f;
     tail_pos.y = 1088.0f;
     spawn->pos = tail_pos;
@@ -215,9 +207,9 @@ extern "C" void quest_build_nagolipoli(
         SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
         trigger_time_ms,
         8);
-    ++builder.count;
+    ++entry_count;
 
-    spawn = &spawns[builder.count];
+    spawn = &spawns[entry_count];
     tail_pos.x = 512.0f;
     tail_pos.y = -64.0f;
     spawn->pos = tail_pos;
@@ -226,7 +218,7 @@ extern "C" void quest_build_nagolipoli(
         SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
         trigger_time_ms,
         8);
-    ++builder.count;
+    ++entry_count;
 
-    *count = builder.count;
+    *count = entry_count;
 }
