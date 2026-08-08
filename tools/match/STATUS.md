@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **715/810** functions matched exactly, **137076/341970** code bytes (**40.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304698/341970** code bytes (**89.1%**).
+Fuzzy-weighted alignment is **304726/341970** code bytes (**89.1%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 57 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 58 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 582/671 | 122132/320805 | 38.1% | 283892/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 582/671 |
+| crimsonland.exe | 582/671 | 122132/320805 | 38.1% | 283920/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 582/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**582/671** functions, **122132/320805** bytes (**38.1%**), **283892/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **582/671** scratches verified.
+**582/671** functions, **122132/320805** bytes (**38.1%**), **283920/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **582/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -715,7 +715,7 @@ Artifact freshness issues:
 | match | ui_elements_max_timeline | 0x00446190 | 35 | 35/35 | 0 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | ui-element-timeline-extent |
 | wip | game_state_set | 0x004461c0 | 1854 | 1582/1854 | 272 | 393/399 | 85.35% | 166/399 | 162/0/0 |  | game-state-ui-transition-dispatch |
 | match | ui_element_update | 0x00446900 | 831 | 831/831 | 0 | 226/226 | 100.00% | 226/226 | 29/0/0 |  | ui-element-interaction-and-transition |
-| wip | ui_element_render | 0x00446c40 | 1801 | 1642/1801 | 159 | 521/521 | 91.17% | 145/521 | 65/0/0 |  | ui-focus-panel-offset-and-counter-overlay-rendering |
+| wip | ui_element_render | 0x00446c40 | 1801 | 1670/1801 | 131 | 521/521 | 92.71% | 165/521 | 65/0/0 |  | ui-focus-panel-offset-and-counter-overlay-rendering |
 | match | ui_menu_main_click_mods | 0x00447350 | 18 | 18/18 | 0 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
 | match | ui_menu_main_click_options | 0x00447370 | 18 | 18/18 | 0 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
 | match | ui_menu_main_click_statistics | 0x00447390 | 67 | 67/67 | 0 | 16/16 | 100.00% | 16/16 | 10/0/0 |  | ui-menu-statistics-audio |

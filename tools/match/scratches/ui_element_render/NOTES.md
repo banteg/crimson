@@ -2,8 +2,8 @@
 
 Native target: `crimsonland.exe` at `0x00446c40` (1,801 bytes).
 
-Current reconstruction: **91.17%**, exactly 521 candidate and native
-instructions, a 145-instruction exact prefix, and all 65 emitted references
+Current reconstruction: **92.71%**, exactly 521 candidate and native
+instructions, a 165-instruction exact prefix, and all 65 emitted references
 resolved.
 
 Live Binary Ninja and IDA evidence recovers the game-owned UI element render
@@ -65,6 +65,17 @@ preincrements that same interior cursor before storing through the prior
 record; it is an optimizer cursor artifact rather than an anonymous structure
 field.
 
+The original 2003 mod SDK establishes the local vector house style: an empty
+default constructor, a two-float constructor that assigns `x` and `y` in its
+body, and direct construction at the declaration site. Applying that style to
+the first transform-shadow position, the first offset-shadow position, and
+the first offset-render position raises the result from **91.17%** to
+**92.71%** and extends the exact prefix from 145 to 165 instructions without
+changing instruction count or references. Applying it to the later repeated
+counter position is byte-neutral; assigning a temporary into the existing
+shadow variable or introducing separate block-local shadows regresses, so
+those variants are not retained.
+
 The remaining residual is code-generation shape: VC6 schedules otherwise
 equivalent vertex-call arguments and cursor registers differently.
 Introducing artificial volatility or extra aggregates changes the native
@@ -72,9 +83,9 @@ frame and lowers the match, so the plausible expression form is retained.
 
 ## Recovery classification audit
 
-A fresh focused `--regions` run is metric-neutral before and after
-classification: **91.17%**, 521/521 instructions, prefix 145, and `65/0/0`
-references. Every localized region preserves the same call, vertex window,
+A fresh focused `--regions` run after the SDK-style recovery reports
+**92.71%**, 521/521 instructions, prefix 165, and `65/0/0` references. Every
+remaining localized region preserves the same call, vertex window,
 offset/matrix input, constants, and control-flow edge; the differences are
 argument-push, x87-store, and temporary-slot scheduling. The existing live
 Binary Ninja recovery accounts for both render modes, all three base-panel
@@ -113,5 +124,6 @@ winner:
   base-plus-stride, and force-inline helper combinations. Every variant is
   byte-identical to baseline.
 
-The final verified result therefore remains **91.1708%**, a 159.013-byte
-fuzzy gap, 521/521 instructions, prefix 145, and references `65/0/0`.
+The retained SDK-style construction recovery supersedes that earlier
+baseline. The final verified result is **92.71%**, 521/521 instructions,
+prefix 165, and references `65/0/0`.
