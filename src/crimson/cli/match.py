@@ -1654,6 +1654,8 @@ def cmd_match_inspect(
                 f"match={ratio} recovery={scratch['recovery']} "
                 f"residual={','.join(scratch['residuals']) or '-'}",
             )
+            typer.echo(f"    object: {scratch['candidate_object']}")
+            typer.echo(f"    dump: {scratch['commands']['dump']}")
     else:
         typer.echo("matcher: missing scratch")
     evidence = payload.get("mismatch_evidence")

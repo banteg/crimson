@@ -836,6 +836,39 @@ def test_inspect_joins_scoped_tool_views() -> None:
     assert grim["observed"]["ghidra"]["function"]["name"] == "grim_is_key_down"
 
 
+def test_inspect_exposes_profile_scoped_candidate_object(tmp_path: Path) -> None:
+    config = ScratchConfig(
+        directory=tmp_path / "scratches" / "game_is_full_version",
+        function="game_is_full_version",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2 /GB",
+        source="scratch.cpp",
+        end_va=None,
+        symbol="game_is_full_version",
+        note="",
+    )
+    status = ScratchStatus(
+        config=config,
+        address=0x0041DF40,
+        target_size=1,
+        ratio=1.0,
+        prefix_instructions=1,
+        target_instructions=1,
+        candidate_instructions=1,
+        error=None,
+    )
+
+    payload = inspect_match_function("game_is_full_version", statuses=[status])
+    scratch = payload["scratches"][0]
+    candidate_object = Path(scratch["candidate_object"])
+
+    assert candidate_object.parent.parent.name == "msvc6.5"
+    assert candidate_object.name == "scratch.obj"
+    assert str(candidate_object) in scratch["commands"]["dump"]
+    assert "--symbol game_is_full_version" in scratch["commands"]["dump"]
+
+
 def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(

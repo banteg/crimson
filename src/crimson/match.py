@@ -3978,6 +3978,17 @@ def _scratch_build_directory(config: ScratchConfig) -> Path:
     return config.directory / "build" / profile / _scratch_profile_digest(config)
 
 
+def _scratch_object_path(config: ScratchConfig) -> Path:
+    build_dir = _scratch_build_directory(config)
+    if config.import_thunk is not None:
+        return build_dir / "import-thunk.obj"
+    if config.archive is not None:
+        member_name = Path((config.archive_member or "candidate.obj").replace("\\", "/")).name
+        obj_name = member_name if member_name.casefold().endswith(".obj") else "candidate.obj"
+        return build_dir / obj_name
+    return build_dir / Path(config.source).with_suffix(".obj").name
+
+
 def _write_text_atomic(path: Path, text: str) -> None:
     import tempfile
 
@@ -4184,8 +4195,8 @@ def compile_scratch(
 
     match_root = match_root.resolve()
     if config.import_thunk is not None:
-        build_dir = _scratch_build_directory(config)
-        obj_path = build_dir / "import-thunk.obj"
+        obj_path = _scratch_object_path(config)
+        build_dir = obj_path.parent
         if not force and _scratch_object_is_current(
             obj_path,
             config,
@@ -4200,10 +4211,8 @@ def compile_scratch(
         )
         return obj_path
     if config.archive is not None:
-        build_dir = _scratch_build_directory(config)
-        member_name = Path((config.archive_member or "candidate.obj").replace("\\", "/")).name
-        obj_name = member_name if member_name.casefold().endswith(".obj") else "candidate.obj"
-        obj_path = build_dir / obj_name
+        obj_path = _scratch_object_path(config)
+        build_dir = obj_path.parent
         if not force and _scratch_object_is_current(
             obj_path,
             config,
@@ -4227,9 +4236,9 @@ def compile_scratch(
         source=source,
     )
     _validate_scratch_source_text(staged_source_text, source)
-    build_dir = _scratch_build_directory(config)
-    obj_name = Path(config.source).with_suffix(".obj").name
-    obj_path = build_dir / obj_name
+    obj_path = _scratch_object_path(config)
+    build_dir = obj_path.parent
+    obj_name = obj_path.name
     if not force and _scratch_object_is_current(
         obj_path,
         config,
@@ -4659,6 +4668,33 @@ def _analysis_function_metadata(path: Path, image: str, function: str) -> dict[s
     return metadata if isinstance(metadata, dict) else {}
 
 
+def _scratch_dump_command(config: ScratchConfig) -> str:
+    argv = [
+        "crimson",
+        "match",
+        "dump",
+        str(_scratch_object_path(config)),
+        config.function,
+        "--image",
+        str(default_image_path(config.image)),
+        "--functions",
+        str(default_functions_path(config.image)),
+        "--metadata",
+        str(default_metadata_path(config.image)),
+    ]
+    if config.symbol is not None:
+        argv.extend(("--symbol", config.symbol))
+    if config.end_va is not None:
+        argv.extend(("--end", f"0x{config.end_va:08x}"))
+    if config.archive_extent != "symbol":
+        argv.extend(("--object-extent", config.archive_extent))
+    if config.archive_end_symbol is not None:
+        argv.extend(("--object-end-symbol", config.archive_end_symbol))
+    if config.archive_size is not None:
+        argv.extend(("--object-size", str(config.archive_size)))
+    return shlex.join(argv)
+
+
 def inspect_match_function(
     query: str,
     *,
@@ -4731,6 +4767,15 @@ def inspect_match_function(
         image,
         symbol.name,
     )
+    scratch_payloads = []
+    for status in matching_statuses:
+        scratch_payload = scratch_status_payload(status)
+        scratch_payload["candidate_object"] = str(_scratch_object_path(status.config))
+        scratch_payload["commands"] = {
+            "dump": _scratch_dump_command(status.config),
+        }
+        scratch_payloads.append(scratch_payload)
+
     return {
         "scope": scope,
         "image": image,
@@ -4751,7 +4796,7 @@ def inspect_match_function(
             },
         },
         "observed": observed,
-        "scratches": [scratch_status_payload(status) for status in matching_statuses],
+        "scratches": scratch_payloads,
         "selected_scratch": str(selected_config.directory) if selected_config is not None else None,
     }
 
