@@ -37,9 +37,9 @@ extern "C" void quest_build_land_of_lizards(
     spawns[entry_count].pos = quest_vec2_t(256.0f, 256.0f);
     spawns[entry_count].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;
     int one = 1;
-    quest_vec2_t next_position_1(768.0f, 256.0f);
     spawns[entry_count].trigger_time_ms = 2000;
     spawns[entry_count].count = one;
+    quest_vec2_t next_position_1(768.0f, 256.0f);
     ++entry_count;
 
     spawns[entry_count].pos = next_position_1;

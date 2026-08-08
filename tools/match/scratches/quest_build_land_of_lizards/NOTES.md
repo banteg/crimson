@@ -7,14 +7,12 @@ Recovered Tier 2 Quest 8's complete four-entry spawn policy. Spawn template
 `(768, 768)` at 2000, 12000, 22000, and 32000 ms respectively, one creature per
 entry.
 
-The candidate has the same 46 instructions and scores 97.83%. One continuous
-append count owns all four entries and the final output. The first three
-records publish their template, construct the following position, and then
-publish trigger/count; the last record retains the shared full-entry setter.
-This reproduces the native saved-`ESI`, template, position-temporary, and
-epilogue schedule. The sole remaining difference is one independent placement
-of the shared count-one load. No dummy dependency or synthetic control flow is
-used to reorder it, so this remains a WIP.
+The candidate matches all 46 instructions exactly. One continuous append count
+owns all four entries and the final output. The first record completes its
+metadata before constructing the following position; the next two retain the
+interleaved publication boundary recovered from the native schedule, and the
+last record uses the shared full-entry setter. This reproduces the native
+saved-`ESI`, template, position-temporary, and epilogue schedule.
 
 `entry-shape-mutations.json` records six aggregate, direct-field, and shared
 constant spellings. Shared constants are byte-neutral and every structural
@@ -45,3 +43,11 @@ trigger and count follow that construction. The candidate remains 46/46
 instructions with no reference debt. The one residual instruction is the
 shared `mov ecx, 1` on the opposite side of the first following-position
 construction.
+
+## 2026-08-09 complete-entry house style
+
+The same opening pattern that finishes Army of Three applies here: the source
+completes the first record's trigger and count before declaring the next
+position. VC6 schedules that following constructor between the shared
+count-one load and the record stores, producing the native order exactly. The
+result matches all 204 bytes and all 46 instructions.

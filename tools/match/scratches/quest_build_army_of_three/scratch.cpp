@@ -36,8 +36,8 @@ extern "C" void quest_build_army_of_three(
         SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;
     int one = 1;
     spawns[entry_count].trigger_time_ms = 500;
-    quest_vec2_t next_position_1(-64.0f, 512.0f);
     spawns[entry_count].count = one;
+    quest_vec2_t next_position_1(-64.0f, 512.0f);
     ++entry_count;
 
     spawns[entry_count].pos = next_position_1;

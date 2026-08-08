@@ -55,9 +55,9 @@ extern "C" void quest_build_lizard_kings(
     spawns[entry_count].template_id = chain_template_id;
     int trigger_time_ms = 1500;
     int one = 1;
-    quest_vec2_t next_position_1(-128.0f, 512.0f);
     spawns[entry_count].trigger_time_ms = trigger_time_ms;
     spawns[entry_count].count = one;
+    quest_vec2_t next_position_1(-128.0f, 512.0f);
     ++entry_count;
 
     spawns[entry_count].pos = next_position_1;

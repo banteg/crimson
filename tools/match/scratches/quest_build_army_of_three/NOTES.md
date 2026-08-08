@@ -20,18 +20,14 @@ Whole-vector construction and the shared inlined metadata setter reproduce the
 native eight-byte temporary, template register reuse across each group, count
 reuse, exact entry offsets, and epilogue. A continuous append count and five
 explicit metadata-to-next-position publication boundaries raise the candidate
-to 99.14% with the exact 116-instruction length. There are no auditable
-external references in this constant-only builder. The sole residual is one
-independent placement of the shared count-one load; no artificial dependency
-or register forcing is used.
+to an exact 116-instruction match. There are no auditable external references
+in this constant-only builder.
 
-## Recovery classification audit
+## Recovery validation
 
 The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+present), constant, record-store, and output-count policy. The candidate now
+matches the native instruction stream exactly.
 
 ## 2026-07-27 focused family pass
 
@@ -87,3 +83,12 @@ larger tail region. Reconstructing the opening through the same boundary raises
 the result to 99.14%, leaving only `mov ecx, 1` on the opposite side of the
 following position construction. The candidate remains 116/116 instructions
 with identical recovered values and table order.
+
+## 2026-08-09 complete-entry house style
+
+The SDK source consistently completes a record's scalar publication before
+constructing the next aggregate. Moving the first entry's count assignment
+ahead of the following position construction restores that source order; VC6
+then interleaves the constructor load into exactly the native schedule. The
+result matches all 608 bytes and all 116 instructions without a barrier,
+dummy dependency, or register forcing.

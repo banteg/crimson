@@ -14,19 +14,19 @@ native x87 ring stack: the integer index remains live below the positive angle,
 cosine and sine consume the duplicated angle, and the original index is then
 multiplied by the negative step for heading. The three fixed entries now publish
 through one append count. Each following position is constructed while the
-current entry's metadata remains live, and the ring index begins before the
-third count is published. The retained source models the native template-field
-induction pointer directly and emits the same 66 instructions, with all six
-constant references resolved. Its current weighted match is 87.88% with a
-13-instruction exact prefix.
+current entry's metadata remains live after the first record, and the ring
+index begins before the third count is published. The retained source models
+the native template-field induction pointer directly and emits the same 66
+instructions, with all six constant references resolved. Its current weighted
+match is 89.39% with a 38-instruction exact prefix.
 
-The fixed prefix now differs by only one independent load placement. The larger
-remaining residual is the x87 ring body: the template cursor removes the former
-loop-invariant `mov edi, 0x31`, but VC6 still schedules ring metadata and loop
-updates around the trigonometric stack differently. Direct position fields,
-all-fields and metadata-only setters, compiler profiles, cursor views, member
-access, pointer-advance placements, fixed-value lifetimes, and helper orders
-are bounded without artificial dependencies, so this remains an honest WIP.
+The fixed table now matches exactly. The remaining residual is the x87 ring
+body: the template cursor removes the former loop-invariant `mov edi, 0x31`,
+but VC6 still schedules ring metadata and loop updates around the trigonometric
+stack differently. Direct position fields, all-fields and metadata-only
+setters, compiler profiles, cursor views, member access, pointer-advance
+placements, fixed-value lifetimes, and helper orders are bounded without
+artificial dependencies, so this remains an honest WIP.
 
 ## Binary Ninja loop recovery
 
@@ -101,3 +101,12 @@ the third fixed count. The change preserves 66/66 instructions and `6/0/0`
 references while extending the exact prefix from seven to 13 instructions.
 Split-component positions and typed count pointers are byte-neutral, and a full
 aggregate ring setter regresses, so only the staged prefix is retained.
+
+## Complete-entry house-style improvement (2026-08-09)
+
+Completing the first fixed record's trigger and count before declaring the next
+position transfers the exact pattern from Army of Three and Land of Lizards.
+VC6 schedules the following constructor between the shared count-one load and
+the record stores, matching the whole fixed table. The score rises from 87.88%
+to 89.39% and the exact prefix from 13 to 38 instructions; the independent ring
+loop remains unchanged at 66/66 instructions and references `6/0/0`.
