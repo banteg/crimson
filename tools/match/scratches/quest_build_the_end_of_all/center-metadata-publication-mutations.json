@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "center-metadata-publication",
+      "find": "    spawns[entry_count].set_spawn(\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,\n        ring_index * 300 + 13000,\n        one);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[entry_count].template_id =\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B;\n    spawns[entry_count].trigger_time_ms = ring_index * 300 + 13000;\n    spawns[entry_count].count = one;"
+        }
+      ]
+    }
+  ]
+}

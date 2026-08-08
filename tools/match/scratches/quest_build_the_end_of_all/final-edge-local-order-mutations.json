@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-edge-local-order",
+      "find": "    edge_y = 256;\n    edge_index = 0;\n    trigger_time_ms = 48000;",
+      "replacements": [
+        {
+          "name": "trigger-edge-index",
+          "text": "    trigger_time_ms = 48000;\n    edge_y = 256;\n    edge_index = 0;"
+        },
+        {
+          "name": "edge-trigger-index",
+          "text": "    edge_y = 256;\n    trigger_time_ms = 48000;\n    edge_index = 0;"
+        },
+        {
+          "name": "index-trigger-edge",
+          "text": "    edge_index = 0;\n    trigger_time_ms = 48000;\n    edge_y = 256;"
+        },
+        {
+          "name": "index-edge-trigger",
+          "text": "    edge_index = 0;\n    edge_y = 256;\n    trigger_time_ms = 48000;"
+        },
+        {
+          "name": "trigger-index-edge",
+          "text": "    trigger_time_ms = 48000;\n    edge_index = 0;\n    edge_y = 256;"
+        }
+      ]
+    }
+  ]
+}

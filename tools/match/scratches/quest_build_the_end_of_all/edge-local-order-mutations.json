@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "edge-local-order",
+      "find": "    int edge_y = 256;\n    int edge_index = 0;\n    int spawn_count = 2;\n    trigger_time_ms = 18000;",
+      "replacements": [
+        {
+          "name": "spawn-edge-index-trigger",
+          "text": "    int spawn_count = 2;\n    int edge_y = 256;\n    int edge_index = 0;\n    trigger_time_ms = 18000;"
+        },
+        {
+          "name": "edge-spawn-index-trigger",
+          "text": "    int edge_y = 256;\n    int spawn_count = 2;\n    int edge_index = 0;\n    trigger_time_ms = 18000;"
+        },
+        {
+          "name": "edge-index-trigger-spawn",
+          "text": "    int edge_y = 256;\n    int edge_index = 0;\n    trigger_time_ms = 18000;\n    int spawn_count = 2;"
+        },
+        {
+          "name": "spawn-edge-trigger-index",
+          "text": "    int spawn_count = 2;\n    int edge_y = 256;\n    trigger_time_ms = 18000;\n    int edge_index = 0;"
+        },
+        {
+          "name": "trigger-edge-index-spawn",
+          "text": "    trigger_time_ms = 18000;\n    int edge_y = 256;\n    int edge_index = 0;\n    int spawn_count = 2;"
+        },
+        {
+          "name": "trigger-edge-spawn-index",
+          "text": "    trigger_time_ms = 18000;\n    int edge_y = 256;\n    int spawn_count = 2;\n    int edge_index = 0;"
+        },
+        {
+          "name": "edge-trigger-spawn-index",
+          "text": "    int edge_y = 256;\n    trigger_time_ms = 18000;\n    int spawn_count = 2;\n    int edge_index = 0;"
+        }
+      ]
+    }
+  ]
+}

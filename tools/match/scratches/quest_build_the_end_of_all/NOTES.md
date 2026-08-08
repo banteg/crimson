@@ -28,21 +28,19 @@ assumptions. The optional radius-180 ring is keyed to hardcore rather than
 full-version status, quest coordinates do not scale with the runtime terrain,
 and the hardcore angle operation order changes two f32-truncated coordinates.
 
-The candidate reproduces 173 of the native body's 174 instructions and all 18
-audited references, scoring 66.28% with a four-instruction exact prefix. A
-position member setter is important: it retains the ring angle across `fcos`
-and `fsin` exactly like native. Expressing the center trigger from the completed
-ring index also recovers the native multiply-by-300 LEA chain.
+The recovered source matches all 692 native bytes and all 174 instructions,
+including the full instruction prefix and all 18 audited references. One
+continuous append count replaces six hardcoded phase cursors and both fixed
+final-count assignments. Direct indexed publication then gives VC6 the native
+template-id induction bases without negative-field cursors or artificial
+dependencies.
 
-The residual is consistent VC6 induction-base and register allocation. Native
-anchors each loop cursor at `template_id`, preadvances it, and addresses the
-position and metadata through negative offsets; the candidate anchors the same
-24-byte cursor at the record start. Native also uses ESI for the initial
-template constant and hoists count two into EBP, while the candidate uses EBP
-for the template and emits the count immediate. A combined vector-and-metadata
-setter, metadata-first order, and explicit preincrement cursor all scored worse.
-No artificial dependencies, volatile state, or register-forcing constructs are
-used.
+The first corner's template and count lifetimes recover the native prologue,
+while a separate declaration and assignment for the first ring index preserves
+the native transition into the ring loop. Position setters retain each ring
+angle across `fcos` and `fsin`; the center entry deliberately publishes its
+metadata through direct fields, which is the final source-shape distinction
+needed for the exact build.
 
 ## 2026-07-27 focused profile and mutation pass
 
@@ -69,3 +67,23 @@ tested moving either or both semantic constants to that boundary.
 separately tested direct position, metadata, and all-field stores. All seven
 variants were byte-identical, confirming that VC6 erases these source-level
 distinctions. The canonical source and 66.2824% score remain unchanged.
+
+## 2026-08-08 exact recovery
+
+The committed baseline scored 458.6743515850144/692 weighted bytes
+(66.28242074927954%), with 173/174 instructions, prefix four, and references
+18/0/0. Replacing the phase-specific cursors with one append count, publishing
+loop entries through direct indexing, and preserving the native opening-local
+lifetimes raised the candidate first to 97.13% and then 98.28%.
+
+`edge-local-order-mutations.json` (SHA-256
+`3f2f105d9df6ecc46d7540bbbf7611335919a23a0eab5c30cb61fbd3dc5840e3`)
+recorded seven byte-neutral first-edge declaration orders.
+`final-edge-local-order-mutations.json` (SHA-256
+`f3342fb121299eb0f760fc04dc144413eb007f6daccfd04af026da1a238e2334`)
+identified `index-trigger-edge`, an eight-weighted-byte improvement to 98.28%.
+Finally, `center-metadata-publication-mutations.json` (SHA-256
+`b4a7f31e12dc0c6092d2bea86500aa64ed5be42a85122c98c200b57f3029e78e`)
+confirmed that direct center metadata fields recover the remaining 12 weighted
+bytes. The exact source SHA-256 is
+`c22882d9af4314ebcfaa82e072ebd17aa8222176bbd398dc0b5cb666e115d8e0`.
