@@ -14,20 +14,21 @@ Python and Zig ports agree with every recovered entry.
 The candidate preserves the native fixed three-entry prefix, base-plus-count
 builder, signed width halving, x87 integer-to-float conversions, 24-byte entry
 stride, paired loop, trigger and count recurrences, and all eight references.
-Keeping the initial entries explicitly indexed and advancing the builder count
-between coordinate assignment and metadata reproduces the native induction
-shape. It compiles to 106 instructions versus the native 105, preserves a
-nine-instruction prefix, and scores 69.19%.
+Each fixed record is completed through the indexed builder before its count is
+advanced. In the loop, a record pointer owns the coordinate stores while the
+metadata is published through the current indexed builder entry. It compiles
+to 106 instructions versus the native 105, preserves a nine-instruction
+prefix, and scores 84.36%.
 
 The residual is VC6 allocation and independent-store scheduling. Native reuses
 EBX for the loop trigger, keeps the wave count in EBP and the entry pointer in
 EDI, and completes each x87 conversion before metadata stores. The candidate
-assigns those values to EBP, EDI and EBX and fills conversion latency with the
-independent stores. Direct metadata fields, a metadata setter, a vector setter,
-post-incremented and explicit builder-count forms, a raw pointer/count view,
-`msvc6.5pp`, `msvc7.0`, and `/G6` were checked. The default VC6 profile remains
-the strongest evidence-backed shape without volatile state, dummy dependencies,
-or forced-register constructs.
+keeps the trigger in EBP and the wave count in EBX, with one extra instruction
+and a different prologue schedule. Direct metadata fields, a metadata setter, a
+vector setter, post-incremented and explicit builder-count forms, a raw
+pointer/count view, `msvc6.5pp`, `msvc7.0`, and `/G6` were checked. The default
+VC6 profile remains the strongest evidence-backed shape without volatile state,
+dummy dependencies, or forced-register constructs.
 
 ## Recovery classification audit
 
@@ -67,3 +68,21 @@ then tested the complete interaction that builds the count wrapper only after
 the fixed entries. The full four-site form was also byte-identical; incomplete
 site subsets correctly failed because they intentionally lacked one side of
 the coordinated rename. No source change is retained.
+
+## 2026-08-08 complete-record publication pass
+
+Applying the recovered quest-builder house style improves the retained source
+from 69.19% to 84.36% while preserving the 106/105 instruction counts, the
+nine-instruction prefix, and all `8/0/0` references. The three opening records
+now publish coordinates and metadata through `builder.spawns[builder.count]`,
+then advance the count only after each record is complete. Each loop record
+keeps a local pointer for its position, republishes metadata through the
+indexed current entry, and advances the count at the same completion boundary.
+
+Pointer and reference spellings, and `for` versus explicit `while` induction,
+are byte-identical. The retained pointer-and-`for` form is the clearest source
+expression of the native construction pattern. The remaining diff is the
+localized EBX/EBP trigger and wave-count allocation swap, one extra candidate
+instruction, and the associated prologue/store scheduling. The retained source
+SHA-256 is
+`6f7d78a2bc1afdfaf4ad8bbdb084327161bd6f29e95ff6ab6a0883749270d19e`.

@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **709/810** functions matched exactly, **134819/341970** code bytes (**39.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304172/341970** code bytes (**88.9%**).
+Fuzzy-weighted alignment is **304225/341970** code bytes (**89.0%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 38 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 40 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 576/671 | 119875/320805 | 37.4% | 283366/320805 | 88.3% | 671/671 | 320805/320805 | 100.0% | 576/671 |
+| crimsonland.exe | 576/671 | 119875/320805 | 37.4% | 283418/320805 | 88.3% | 671/671 | 320805/320805 | 100.0% | 576/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**576/671** functions, **119875/320805** bytes (**37.4%**), **283366/320805** fuzzy-weighted bytes (**88.3%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **576/671** scratches verified.
+**576/671** functions, **119875/320805** bytes (**37.4%**), **283418/320805** fuzzy-weighted bytes (**88.3%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **576/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -570,7 +570,7 @@ Artifact freshness issues:
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 242/242 | 0 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
 | wip | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 740/975 | 235 | 291/291 | 75.95% | 16/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
 | match | quest_build_the_end_of_all | 0x00438e10 | 692 | 692/692 | 0 | 174/174 | 100.00% | 174/174 | 18/0/0 |  | quest-the-end-of-all-append-count |
-| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 239/346 | 107 | 106/105 | 69.19% | 9/105 | 8/0/0 |  | quest-spiders-inc-staged-spider-waves |
+| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 292/346 | 54 | 106/105 | 84.36% | 9/105 | 8/0/0 |  | quest-spiders-inc-split-publication |
 | match | quest_database_init | 0x00439230 | 5466 | 5466/5466 | 0 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |
 | wip | quest_start_selected | 0x0043a790 | 434 | 397/434 | 37 | 116/116 | 91.38% | 80/116 | 47/0/0 |  | quest-start-state-and-spawn-table |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 262/262 | 0 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
