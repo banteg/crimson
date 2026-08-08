@@ -17,8 +17,9 @@ each branch reproduces the native biased induction pointer, signed remainder
 correction, branch stores, signed divide-by-eight lowering, trigger recurrence,
 constant position registers, pointer stride, loop bound, and epilogue. That
 64-entry loop matches exactly. Publishing the four fixed opening entries
-through one count raises the full candidate to 92.63% with the same 95
-instructions, a 22-instruction prefix, and three resolved references.
+through one count, spelling the last three metadata groups directly, and
+declaring the loop index before its trigger reproduces all 95 native
+instructions and all four audited references exactly.
 
 Binary Ninja now types the native loop's template-anchored induction value as
 `quest_spawn_entry_template_cursor_t *`. The 0x18-byte view exposes the
@@ -26,22 +27,19 @@ current `template_id` and `trigger_time_ms` fields, keeps the record-sized
 advance explicit, and leaves the compiler-facing source on the canonical
 `quest_spawn_entry_t` array.
 
-The residual is independent VC6 scheduling in the four fixed entries. Native
-pushes long-lived loop registers between the first x87 conversion and metadata
-stores, while the candidate completes more entry stores before those pushes;
-the final fixed-entry trigger store also crosses loop initialization. Scalar
-positions, a cursor loop, a local template selector, direct fixed metadata, a
-whole-entry setter, `msvc6.5pp`, `msvc7.0`, and `/G6` were checked. They remove
-the proven temporary, lose the exact loop lowering, or regress the score. This
-remains an honest exact-length WIP without dependency-only scheduler steering.
+The direct metadata boundaries recover the native fixed-entry store schedule
+without constraining independent operations. In particular, the second entry's
+count remains after its template and trigger, the two spider templates publish
+at their native boundaries, and the fourth trigger store completes before loop
+initialization. The index-first declaration then yields native's final
+`xor esi, esi` / `mov edi, 27500` order while preserving the exact loop.
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, constants,
+record stores, induction policy, and output count. The candidate is an exact
+normalized instruction and reference match, so no recovery or compiler
+residual remains.
 
 ## Exact-tail follow-up (2026-07-27)
 
@@ -62,3 +60,13 @@ the candidate from 82.11% to 92.63% and extends the exact prefix from nine to
 lowering, and fixed output count, so the gain is isolated to the opening table.
 The retained source SHA-256 is
 `90d0455855d1626d12b05e43ebf2ac5c42114c44bdd34dc69fb1bd35541be315`.
+
+## 2026-08-08 exact fixed-prefix recovery
+
+Replaying direct fixed-entry metadata after the append-count improvement
+exposed an interaction missed by the older isolated sweep. Direct metadata for
+entries one through three raises the score from 92.63% to 98.95% and extends
+the exact prefix from 22 to 54 instructions. Declaring `index` before
+`trigger_time_ms` removes the final initialization swap, producing an exact
+95/95-instruction match with references `4/0/0`. Retained source SHA-256:
+`9e40722e1228605b71d90d568c027277903f74beb9d8d9980c51d7dd71a99c15`.

@@ -40,21 +40,25 @@ extern "C" void quest_build_monster_blues(
     spawns[entry_count].pos = quest_vec2_t(
         1074.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_RANDOM_06;
+    spawns[entry_count].trigger_time_ms = 7500;
+    spawns[entry_count].count = 10;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(512.0f, 1088.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SP1_RANDOM_03;
+    spawns[entry_count].trigger_time_ms = 17500;
+    spawns[entry_count].count = 12;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(512.0f, -64.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SP1_RANDOM_03;
+    spawns[entry_count].trigger_time_ms = 17500;
+    spawns[entry_count].count = 12;
     ++entry_count;
 
-    int trigger_time_ms = 27500;
     int index = 0;
+    int trigger_time_ms = 27500;
     do {
         quest_entry_original_t *spawn = &spawns[index + 4];
         spawn->pos = quest_vec2_t(-64.0f, 512.0f);
