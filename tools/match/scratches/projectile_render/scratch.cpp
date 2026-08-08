@@ -384,7 +384,7 @@ extern "C" void projectile_render(float transition_alpha)
                     56.0f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.3f);
-                if (config_blob.fx_detail_flag1) {
+                if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x - 128.0f,
                         camera_offset_y + projectile->pos.pos_y - 128.0f,
@@ -435,7 +435,7 @@ extern "C" void projectile_render(float transition_alpha)
                     16.0f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.15f);
-                if (config_blob.fx_detail_flag1) {
+                if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x - 60.0f,
                         camera_offset_y + projectile->pos.pos_y - 60.0f,
@@ -485,7 +485,7 @@ extern "C" void projectile_render(float transition_alpha)
                     84.0f);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-                if (config_blob.fx_detail_flag1) {
+                if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x - 128.0f,
                         camera_offset_y + projectile->pos.pos_y - 128.0f,
@@ -535,7 +535,7 @@ extern "C" void projectile_render(float transition_alpha)
                     16.0f);
                 grim_interface_ptr->grim_set_color(
                     0.3f, 1.0f, 0.3f, transition_alpha * 0.15f);
-                if (config_blob.fx_detail_flag1) {
+                if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x - 60.0f,
                         camera_offset_y + projectile->pos.pos_y - 60.0f,
@@ -585,7 +585,7 @@ extern "C" void projectile_render(float transition_alpha)
                     16.0f);
                 grim_interface_ptr->grim_set_color(
                     0.3f, 0.3f, 1.0f, transition_alpha * 0.15f);
-                if (config_blob.fx_detail_flag1) {
+                if (config_blob.flame_glow_enabled) {
                     grim_interface_ptr->grim_draw_quad(
                         camera_offset_x + projectile->pos_x - 60.0f,
                         camera_offset_y + projectile->pos.pos_y - 60.0f,
@@ -1095,7 +1095,7 @@ extern "C" void projectile_render(float transition_alpha)
     }
     grim_interface_ptr->grim_end_batch();
 
-    if (config_blob.fx_detail_flag1) {
+    if (config_blob.flame_glow_enabled) {
         grim_interface_ptr->grim_set_config_var(0x13, 5u);
         grim_interface_ptr->grim_set_config_var(0x14, 2u);
         grim_interface_ptr->grim_bind_texture(particles_texture, 0);
@@ -1188,7 +1188,7 @@ extern "C" void projectile_render(float transition_alpha)
     }
     grim_interface_ptr->grim_end_batch();
 
-    if (!config_blob.fx_detail_flag1) {
+    if (!config_blob.flame_glow_enabled) {
         return;
     }
     grim_interface_ptr->grim_set_config_var(0x13, 5u);

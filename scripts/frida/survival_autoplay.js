@@ -73,8 +73,8 @@ const FN = {
 };
 
 const DATA = {
-  config_player_mode_flags: 0x00480364,
-  config_aim_scheme: 0x0048038c,
+  config_movement_schemes: 0x00480364,
+  config_aim_schemes: 0x0048038c,
 
   game_state_id: 0x00487270,
 };
@@ -172,16 +172,16 @@ function writePlayerS32IfDifferent(name, playerIndex, value) {
 function enforceAssistConfig(reason) {
   let changed = false;
 
-  changed = writePlayerS32IfDifferent("config_player_mode_flags", CONFIG.playerIndex, CONFIG.forceMoveMode) || changed;
-  changed = writePlayerS32IfDifferent("config_aim_scheme", CONFIG.playerIndex, CONFIG.forceAimScheme) || changed;
+  changed = writePlayerS32IfDifferent("config_movement_schemes", CONFIG.playerIndex, CONFIG.forceMoveMode) || changed;
+  changed = writePlayerS32IfDifferent("config_aim_schemes", CONFIG.playerIndex, CONFIG.forceAimScheme) || changed;
 
   if (changed || reason !== "frame") {
     writeLog({
       event: "config_enforced",
       reason,
       game_state_id: readS32("game_state_id"),
-      move_mode: readPlayerI32("config_player_mode_flags", CONFIG.playerIndex),
-      aim_scheme: readPlayerI32("config_aim_scheme", CONFIG.playerIndex),
+      move_mode: readPlayerI32("config_movement_schemes", CONFIG.playerIndex),
+      aim_scheme: readPlayerI32("config_aim_schemes", CONFIG.playerIndex),
     });
   }
 }
@@ -219,8 +219,8 @@ function main() {
     exe: { base: exeModule.base.toString(), size: exeModule.size, path: exeModule.path },
     ptrs: {
       gameplay_update_and_render: !!fnPtrs.gameplay_update_and_render,
-      config_player_mode_flags: !!dataPtrs.config_player_mode_flags,
-      config_aim_scheme: !!dataPtrs.config_aim_scheme,
+      config_movement_schemes: !!dataPtrs.config_movement_schemes,
+      config_aim_schemes: !!dataPtrs.config_aim_schemes,
     },
     out_path: CONFIG.outPath,
   });

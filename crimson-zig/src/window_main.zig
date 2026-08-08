@@ -2348,7 +2348,7 @@ const App = struct {
             self.player_count_override orelse @as(i32, @intCast(self.runtime.config.player_count));
         configured_run.player_count = livePlayerCountForMode(configured_run.game_mode, requested_player_count);
         configured_run.detail_preset = self.detail_preset_override orelse @as(i32, @intCast(std.math.clamp(self.runtime.config.detail_preset, @as(u32, 1), @as(u32, 5))));
-        configured_run.gore_disabled = if (self.gore_disabled_override) |disabled| @intFromBool(disabled) else @intCast(self.runtime.config.gore_disabled);
+        configured_run.violence_disabled = if (self.gore_disabled_override) |disabled| @intFromBool(disabled) else @intCast(self.runtime.config.violence_disabled);
         configured_run.hardcore = self.hardcore_override orelse (self.runtime.config.hardcore_flag != 0);
         configured_run.preserve_bugs = configured_run.preserve_bugs or self.preserve_bugs;
         configured_run.status_quest_unlock_index = @intCast(self.runtime.status.quest_unlock_index);
@@ -2542,7 +2542,7 @@ const App = struct {
             runner.session.game_mode,
             reason,
             run_config.preserve_bugs,
-            self.runtime.config.gore_disabled,
+            self.runtime.config.violence_disabled,
         );
         const save_error: ?[]const u8 = save_err: {
             self.runtime.saveStatusIfDirty() catch |err| break :save_err resultsStatusSaveErrorDetail(err);
@@ -2872,18 +2872,18 @@ const App = struct {
             runner.session.state.camera_shake_offset,
         );
         const entity_alpha: f32 = 1.0;
-        const fx_detail_0 = self.runtime.config.fx_detail_0 != 0;
-        const fx_detail_1 = self.runtime.config.fx_detail_1 != 0;
-        const fx_detail_2 = self.runtime.config.fx_detail_2 != 0;
+        const shadows_enabled = self.runtime.config.shadows_enabled != 0;
+        const flame_glow_enabled = self.runtime.config.flame_glow_enabled != 0;
+        const smoke_enabled = self.runtime.config.smoke_enabled != 0;
 
         camera.begin();
         drawWorld(runner, runtime_assets, ground);
         drawPlayers(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, false);
-        drawCreatures(runner, runtime_assets, entity_alpha, fx_detail_0);
+        drawCreatures(runner, runtime_assets, entity_alpha, shadows_enabled);
         drawFreezeOverlay(runner, runtime_assets, entity_alpha);
         drawPlayers(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, true);
-        drawProjectiles(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, fx_detail_1);
-        drawWorldEffects(runner, runtime_assets, entity_alpha, fx_detail_1, fx_detail_2);
+        drawProjectiles(runner, runtime_assets, self.network_live_render_time_s, entity_alpha, flame_glow_enabled);
+        drawWorldEffects(runner, runtime_assets, entity_alpha, flame_glow_enabled, smoke_enabled);
         drawBonuses(runner, runtime_assets, self.network_live_render_time_s, entity_alpha);
         camera.end();
 
@@ -2929,9 +2929,9 @@ const App = struct {
                     .y = @floatFromInt(rl.getScreenHeight()),
                 },
             );
-            const fx_detail_0 = self.runtime.config.fx_detail_0 != 0;
-            const fx_detail_1 = self.runtime.config.fx_detail_1 != 0;
-            const fx_detail_2 = self.runtime.config.fx_detail_2 != 0;
+            const shadows_enabled = self.runtime.config.shadows_enabled != 0;
+            const flame_glow_enabled = self.runtime.config.flame_glow_enabled != 0;
+            const smoke_enabled = self.runtime.config.smoke_enabled != 0;
             const camera = buildWorldCamera(
                 runner.session.world_size,
                 &self.runtime.config,
@@ -2942,11 +2942,11 @@ const App = struct {
             camera.begin();
             drawWorld(runner, runtime_assets, if (gameplay.ground) |*ground| ground else null);
             drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, false);
-            drawCreatures(runner, runtime_assets, entity_alpha, fx_detail_0);
+            drawCreatures(runner, runtime_assets, entity_alpha, shadows_enabled);
             drawFreezeOverlay(runner, runtime_assets, entity_alpha);
             drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, true);
-            drawProjectiles(runner, runtime_assets, gameplay.render_time_s, entity_alpha, fx_detail_1);
-            drawWorldEffects(runner, runtime_assets, entity_alpha, fx_detail_1, fx_detail_2);
+            drawProjectiles(runner, runtime_assets, gameplay.render_time_s, entity_alpha, flame_glow_enabled);
+            drawWorldEffects(runner, runtime_assets, entity_alpha, flame_glow_enabled, smoke_enabled);
             drawBonuses(runner, runtime_assets, gameplay.render_time_s, entity_alpha);
             camera.end();
 
@@ -3517,7 +3517,7 @@ fn windowLaunchRunConfig(args: WindowArgs, config: formats.crimson_cfg.CrimsonCf
     const requested_player_count = args.player_count orelse @as(i32, @intCast(config.player_count));
     run_config.player_count = livePlayerCountForMode(run_config.game_mode, requested_player_count);
     run_config.detail_preset = args.detail_preset orelse @as(i32, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
-    run_config.gore_disabled = if (args.gore_disabled) |disabled| @intFromBool(disabled) else @intCast(config.gore_disabled);
+    run_config.violence_disabled = if (args.gore_disabled) |disabled| @intFromBool(disabled) else @intCast(config.violence_disabled);
     run_config.hardcore = args.hardcore orelse (config.hardcore_flag != 0);
     run_config.preserve_bugs = args.preserve_bugs;
     run_config.status_quest_unlock_index = @intCast(status.quest_unlock_index);
@@ -3545,7 +3545,7 @@ fn runWindowStartSmoke(io: std.Io, config: formats.crimson_cfg.CrimsonCfg, statu
             quest_text,
             run_config.seed,
             run_config.detail_preset,
-            run_config.gore_disabled,
+            run_config.violence_disabled,
             run_config.hardcore,
             run_config.demo_mode_active,
             run_config.preserve_bugs,
@@ -7089,7 +7089,7 @@ fn drawCreatures(
     runner: *const live_runner.LiveRunner,
     runtime_assets: ?*const window_assets.RuntimeAssets,
     entity_alpha: f32,
-    fx_detail_0: bool,
+    shadows_enabled: bool,
 ) void {
     const monster_vision_active = if (runner.player0Const()) |player|
         runtime_perks.perkActive(player, .monster_vision)
@@ -7120,7 +7120,7 @@ fn drawCreatures(
                         creature.lifecycle_stage,
                     );
                     const shadow_enabled = !monster_vision_active;
-                    if (shadow_enabled and fx_detail_0) {
+                    if (shadow_enabled and shadows_enabled) {
                         const is_long = runtime_anim.creatureAnimIsLongStrip(creature.flags);
                         var shadow_alpha: f32 = creature.tint[3] * 0.4;
                         if (creature.lifecycle_stage < 0.0) {
@@ -7193,7 +7193,7 @@ fn drawProjectiles(
     runtime_assets: ?*const window_assets.RuntimeAssets,
     render_time_s: f32,
     entity_alpha: f32,
-    fx_detail_1: bool,
+    flame_glow_enabled: bool,
 ) void {
     for (runner.session.projectiles.entries, 0..) |projectile, proj_index| {
         if (!projectile.active) continue;
@@ -7203,7 +7203,7 @@ fn drawProjectiles(
                 .assets = assets,
                 .render_time_s = render_time_s,
                 .entity_alpha = entity_alpha,
-                .fx_detail_1 = fx_detail_1,
+                .flame_glow_enabled = flame_glow_enabled,
             })) continue;
         }
         rl.drawCircleV(toRlVec(projectile.pos), 3.0, colorWithAlpha(projectile_color, entity_alpha));
@@ -7214,16 +7214,16 @@ fn drawWorldEffects(
     runner: *const live_runner.LiveRunner,
     runtime_assets: ?*const window_assets.RuntimeAssets,
     entity_alpha: f32,
-    fx_detail_1: bool,
-    fx_detail_2: bool,
+    flame_glow_enabled: bool,
+    smoke_enabled: bool,
 ) void {
     if (runtime_assets) |assets| {
         window_effects.drawParticlePool(.{
             .session = &runner.session,
             .assets = assets,
             .entity_alpha = entity_alpha,
-            .fx_detail_1 = fx_detail_1,
-            .fx_detail_2 = fx_detail_2,
+            .flame_glow_enabled = flame_glow_enabled,
+            .smoke_enabled = smoke_enabled,
         });
     }
     for (runner.session.secondary_projectiles.entries) |projectile| {
@@ -7233,7 +7233,7 @@ fn drawWorldEffects(
                 .session = &runner.session,
                 .assets = assets,
                 .entity_alpha = entity_alpha,
-                .fx_detail_1 = fx_detail_1,
+                .flame_glow_enabled = flame_glow_enabled,
             })) continue;
         }
         rl.drawCircleV(toRlVec(projectile.pos), 6.0, colorWithAlpha(secondary_projectile_color, entity_alpha));
@@ -7243,15 +7243,15 @@ fn drawWorldEffects(
             .session = &runner.session,
             .assets = assets,
             .entity_alpha = entity_alpha,
-            .fx_detail_1 = fx_detail_1,
-            .fx_detail_2 = fx_detail_2,
+            .flame_glow_enabled = flame_glow_enabled,
+            .smoke_enabled = smoke_enabled,
         });
         window_effects.drawEffectPool(.{
             .session = &runner.session,
             .assets = assets,
             .entity_alpha = entity_alpha,
-            .fx_detail_1 = fx_detail_1,
-            .fx_detail_2 = fx_detail_2,
+            .flame_glow_enabled = flame_glow_enabled,
+            .smoke_enabled = smoke_enabled,
         });
     }
 }

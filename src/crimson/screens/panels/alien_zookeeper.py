@@ -416,8 +416,8 @@ class AlienZooKeeperView:
             MENU_PANEL_WIDTH * scale,
             378.0 * scale,
         )
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
+        shadows_enabled = self.state.config.display.shadows_enabled
+        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
 
         draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), rl.WHITE)
         draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), rl.WHITE)
@@ -527,8 +527,8 @@ class AlienZooKeeperView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),

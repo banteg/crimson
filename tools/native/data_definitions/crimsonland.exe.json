@@ -3361,9 +3361,9 @@
       ]
     },
     {
-      "name": "config-blob-zero-uchar-array-00002",
-      "types": ["unsigned char[2]"],
-      "size": 2,
+      "name": "config-blob-zero-uchar-array-0000a",
+      "types": ["unsigned char[10]"],
+      "size": 10,
       "size_source": "third_party/headers/crimsonland_types.h: crimson_cfg_t.direction_arrow_flags; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "alignment": 1,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
@@ -3374,17 +3374,17 @@
       ]
     },
     {
-      "name": "config-blob-zero-int-array-00010",
-      "types": ["int[4]"],
-      "size": 16,
+      "name": "config-blob-zero-int-array-00028",
+      "types": ["int[10]"],
+      "size": 40,
       "size_source": "third_party/headers/crimsonland_types.h: crimson_cfg_t.movement_schemes and aim_schemes; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill inherited from config_blob",
       "members": [
-        ["0x00480364", "config_player_mode_flags"],
-        ["0x0048038c", "config_aim_scheme"]
+        ["0x00480364", "config_movement_schemes"],
+        ["0x0048038c", "config_aim_schemes"]
       ]
     },
     {
@@ -3512,6 +3512,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: mapped .data zero-fill at each member VA",
       "members": [
+        ["0x004803b4", "config_for"],
         ["0x004803c8", "config_selected_saved_name_slot"],
         ["0x004803cc", "config_saved_name_count"],
         ["0x004804e8", "config_player_name_length"],
@@ -3549,7 +3550,10 @@
         ["0x00480584", "config_p2_padding_0"],
         ["0x00480588", "config_p2_padding_1"],
         ["0x0048058c", "config_p2_padding_2"],
-        ["0x00480794", "config_perk_prompt_counter"],
+        ["0x00480794", "config_level_up_count"],
+        ["0x00480798", "config_ten_tons_logging_completed"],
+        ["0x0048079c", "config_unique_id_1"],
+        ["0x004807a0", "config_unique_id_2"],
         ["0x004807b8", "config_detail_preset"],
         ["0x004807c0", "config_key_pick_perk"],
         ["0x004807c4", "config_key_reload"],
@@ -3852,14 +3856,15 @@
         ["0x00480349", "config_music_disabled"],
         ["0x0048034a", "config_highscore_date_mode"],
         ["0x0048034b", "config_highscore_duplicate_mode"],
-        ["0x00480356", "config_fx_detail_flag0"],
-        ["0x00480358", "config_fx_detail_flag1"],
-        ["0x00480359", "config_fx_detail_flag2"],
+        ["0x00480356", "config_shadows_enabled"],
+        ["0x00480357", "config_sharp_ground_enabled"],
+        ["0x00480358", "config_flame_glow_enabled"],
+        ["0x00480359", "config_smoke_enabled"],
         ["0x0048050c", "config_windowed"],
         ["0x00480791", "config_ui_info_texts"],
         ["0x004807a8", "config_sound_frequency_adjustment"],
         ["0x004807b4", "config_violence_disabled"],
-        ["0x004807b5", "config_score_load_gate"],
+        ["0x004807b5", "config_show_online_scores"],
         ["0x004807b6", "config_safe_mode_backend_enabled"],
         ["0x0048118d", "credits_secret_button_clicked"],
         ["0x004811a5", "credits_back_button_clicked"],

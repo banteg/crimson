@@ -53,7 +53,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
 - Menu terrain selection matches original unlock-gated random variants (`(0,1,0)`, `(2,3,2)`, `(4,5,4)`, `(6,7,6)`).
 - Survival/Rush regenerate terrain on start (menu terrain does not carry into a fresh gameplay run).
-- Menu sign shadow pass matches the original when `fx_detail` is enabled.
+- Menu sign shadow pass matches the original when `shadows_enabled` is enabled.
 - Demo/attract mode: idle trigger + variant sequencing; upsell overlay + trial overlay + purchase screen flow in demo builds.
 
 ### Assets + rendering

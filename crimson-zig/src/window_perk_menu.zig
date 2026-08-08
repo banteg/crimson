@@ -244,14 +244,14 @@ pub fn drawMenu(
     }
 
     for (choices, 0..) |perk_id, idx| {
-        const label = game_ids.perkDisplayName(perk_id, config.gore_disabled, runner.session.state.preserve_bugs);
+        const label = game_ids.perkDisplayName(perk_id, config.violence_disabled, runner.session.state.preserve_bugs);
         const pos = rl.Vector2.init(layout.list_pos.x, layout.list_pos.y + @as(f32, @floatFromInt(idx)) * layout.list_step_y);
         const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), menuItemHitRect(runtime_assets, label, pos)) or idx == selected_index;
         drawMenuItem(runtime_assets, label, pos, hovered);
     }
 
     const selected = choices[selected_index];
-    const desc = game_ids.perkDisplayDescription(selected, config.gore_disabled, runner.session.state.preserve_bugs);
+    const desc = game_ids.perkDisplayDescription(selected, config.violence_disabled, runner.session.state.preserve_bugs);
     var wrapped_buf: [2048]u8 = undefined;
     const wrapped = wrapSmallTextNative(runtime_assets, desc, layout.desc.width, wrapped_buf[0..]);
     window_ui.drawSmallText(runtime_assets, wrapped, layout.desc.x, layout.desc.y, text_color);
@@ -285,7 +285,7 @@ fn updateMenuInput(
     const click = rl.isMouseButtonPressed(.left);
 
     for (choices, 0..) |perk_id, idx| {
-        const label = game_ids.perkDisplayName(perk_id, config.gore_disabled, runner.session.state.preserve_bugs);
+        const label = game_ids.perkDisplayName(perk_id, config.violence_disabled, runner.session.state.preserve_bugs);
         const item_pos = rl.Vector2.init(layout.list_pos.x, layout.list_pos.y + @as(f32, @floatFromInt(idx)) * layout.list_step_y);
         const rect = menuItemHitRect(assets, label, item_pos);
         if (rl.checkCollisionPointRec(rl.getMousePosition(), rect)) {

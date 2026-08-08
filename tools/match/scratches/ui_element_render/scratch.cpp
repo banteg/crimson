@@ -102,7 +102,7 @@ extern "C" void ui_element_render(ui_element_t *element)
         unsigned long shadow_color = 0x44444444;
 
         if (element->use_offset_render == 0) {
-            if (config_blob.fx_detail_flag0) {
+            if (config_blob.shadows_enabled) {
                 grim_interface_ptr->grim_set_config_var(0x13, 1u);
                 grim_interface_ptr->grim_begin_batch();
 
@@ -157,7 +157,7 @@ extern "C" void ui_element_render(ui_element_t *element)
             }
             grim_interface_ptr->grim_end_batch();
         } else if (element->use_offset_render == 1) {
-            if (config_blob.fx_detail_flag0) {
+            if (config_blob.shadows_enabled) {
                 grim_interface_ptr->grim_set_config_var(0x13, 1u);
                 grim_interface_ptr->grim_begin_batch();
 

@@ -356,8 +356,8 @@ test "native computer aim preserves configured movement" {
         .aim = .{ .x = 560.0, .y = 500.0 },
     };
     var config = cz.formats.crimson_cfg.defaultConfig();
-    config.player_mode_flag_p1 = @intCast(cz.local_input.movement_control_dual_action_pad);
-    config.aim_scheme_p1 = @bitCast(@as(i32, cz.local_input.aim_scheme_computer));
+    config.movement_schemes[0] = @intCast(cz.local_input.movement_control_dual_action_pad);
+    config.aim_schemes[0] = @bitCast(@as(i32, cz.local_input.aim_scheme_computer));
     const creatures = [_]struct { active: bool, hp: f32, pos: cz.state.Vec2 }{
         .{ .active = true, .hp = 20.0, .pos = .{ .x = 560.0, .y = 500.0 } },
     };
@@ -388,7 +388,7 @@ test "native computer movement without a target orbits center" {
         .aim = .{ .x = 672.0, .y = 512.0 },
     };
     var config = cz.formats.crimson_cfg.defaultConfig();
-    config.player_mode_flag_p1 = @intCast(cz.local_input.movement_control_computer);
+    config.movement_schemes[0] = @intCast(cz.local_input.movement_control_computer);
     const no_creatures = [_]struct { active: bool, hp: f32, pos: cz.state.Vec2 }{
         .{ .active = false, .hp = 0.0, .pos = .{} },
     };

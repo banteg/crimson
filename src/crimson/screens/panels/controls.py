@@ -643,7 +643,7 @@ class ControlsMenuView(PanelMenuView):
         return bool(consumed)
 
     def _draw_panel(self) -> None:
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
+        shadows_enabled = self.state.config.display.shadows_enabled
         panel_scale, _local_y_shift = self._menu_item_scale(0)
         panel_w = MENU_PANEL_WIDTH * panel_scale
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
@@ -655,7 +655,7 @@ class ControlsMenuView(PanelMenuView):
             panel,
             dst=rl.Rectangle(left_top_left.x, left_top_left.y, panel_w, left_h),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
         )
 
         # Right (configured bindings) panel: tall 378px panel rendered as 3 vertical slices.
@@ -665,7 +665,7 @@ class ControlsMenuView(PanelMenuView):
             panel,
             dst=rl.Rectangle(right_top_left.x, right_top_left.y, panel_w, right_h),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
             # Original ui_element_slot_40 sets direction_flag=1, which mirrors panel UVs.
             flip_x=True,
         )

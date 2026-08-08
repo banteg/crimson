@@ -396,8 +396,8 @@ const FN_GRIM_RVA = {
 const DATA = {
   config_player_count: 0x0048035c,
   config_game_mode: 0x00480360,
-  config_player_mode_flags: 0x00480364,
-  config_aim_scheme: 0x0048038c,
+  config_movement_schemes: 0x00480364,
+  config_aim_schemes: 0x0048038c,
   config_key_reload: 0x004807c4,
   config_hardcore: 0x00480790,
   config_violence_disabled: 0x004807b4,
@@ -529,8 +529,8 @@ const REQUIRED_REPLAY_FN_NAMES = [
 const REQUIRED_REPLAY_DATA_NAMES = [
   "config_player_count",
   "config_game_mode",
-  "config_player_mode_flags",
-  "config_aim_scheme",
+  "config_movement_schemes",
+  "config_aim_schemes",
   "config_key_reload",
   "config_hardcore",
   "config_violence_disabled",
@@ -1640,11 +1640,11 @@ function replayInputIntentFromTick(tickObj) {
   const globals = requireObject(after.globals, "after.globals");
   const afterPlayers = requireNonEmptyArray(after.players, "after.players");
   const keyRows = requireArray(tick.input_player_keys, "input_player_keys");
-  const moveModes = requireArray(globals.config_player_mode_flags, "after.globals.config_player_mode_flags");
-  const aimSchemes = requireArray(globals.config_aim_scheme, "after.globals.config_aim_scheme");
+  const moveModes = requireArray(globals.config_movement_schemes, "after.globals.config_movement_schemes");
+  const aimSchemes = requireArray(globals.config_aim_schemes, "after.globals.config_aim_schemes");
   if (moveModes.length !== afterPlayers.length) {
     failCaptureContract(
-      "after.globals.config_player_mode_flags length " +
+      "after.globals.config_movement_schemes length " +
         moveModes.length +
         " does not match after.players length " +
         afterPlayers.length,
@@ -1652,7 +1652,7 @@ function replayInputIntentFromTick(tickObj) {
   }
   if (aimSchemes.length !== afterPlayers.length) {
     failCaptureContract(
-      "after.globals.config_aim_scheme length " +
+      "after.globals.config_aim_schemes length " +
         aimSchemes.length +
         " does not match after.players length " +
         afterPlayers.length,
@@ -1668,8 +1668,8 @@ function replayInputIntentFromTick(tickObj) {
   for (let i = 0; i < afterPlayers.length; i++) {
     const player = requireObject(afterPlayers[i], "after.players[" + i + "]");
     const keyRow = requireObject(keyRows[i], "input_player_keys[" + i + "]");
-    const moveMode = requireInt(moveModes[i], "after.globals.config_player_mode_flags[" + i + "]");
-    const aimScheme = requireInt(aimSchemes[i], "after.globals.config_aim_scheme[" + i + "]");
+    const moveMode = requireInt(moveModes[i], "after.globals.config_movement_schemes[" + i + "]");
+    const aimScheme = requireInt(aimSchemes[i], "after.globals.config_aim_schemes[" + i + "]");
     let moveForwardPressed = null;
     let moveBackwardPressed = null;
     let turnLeftPressed = null;
@@ -1697,7 +1697,7 @@ function replayInputIntentFromTick(tickObj) {
       moveY = _digitalMoveAxis(moveBackwardPressed, moveForwardPressed);
     } else if (moveMode === MOVE_MODE_UNKNOWN) {
       failCaptureContract(
-        "after.globals.config_player_mode_flags[" + i + "] must not be UNKNOWN for replay_input_intent",
+        "after.globals.config_movement_schemes[" + i + "] must not be UNKNOWN for replay_input_intent",
       );
     } else if (
       moveMode === MOVE_MODE_DUAL_ACTION_PAD ||
@@ -1705,14 +1705,14 @@ function replayInputIntentFromTick(tickObj) {
       moveMode === MOVE_MODE_COMPUTER
     ) {
       failCaptureContract(
-        "after.globals.config_player_mode_flags[" +
+        "after.globals.config_movement_schemes[" +
           i +
           "]=" +
           moveMode +
           " is unsupported by replay_input_intent without raw move capture",
       );
     } else {
-      failCaptureContract("after.globals.config_player_mode_flags[" + i + "] has unsupported value " + moveMode);
+      failCaptureContract("after.globals.config_movement_schemes[" + i + "] has unsupported value " + moveMode);
     }
 
     out.push({
@@ -3072,8 +3072,8 @@ function readGameplayGlobalsCompact() {
     config_hardcore: readDataU8("config_hardcore"),
     config_violence_disabled: readDataU8("config_violence_disabled"),
     config_detail_preset: readDataI32("config_detail_preset"),
-    config_player_mode_flags: readConfigPerPlayerI32("config_player_mode_flags"),
-    config_aim_scheme: readConfigPerPlayerI32("config_aim_scheme"),
+    config_movement_schemes: readConfigPerPlayerI32("config_movement_schemes"),
+    config_aim_schemes: readConfigPerPlayerI32("config_aim_schemes"),
     game_state_prev: readDataI32("game_state_prev"),
     game_state_id: readDataI32("game_state_id"),
     game_state_pending: readDataI32("game_state_pending"),
@@ -4983,8 +4983,8 @@ function buildInputApprox(afterPlayers, tick) {
       aim_x: p.aim_x,
       aim_y: p.aim_y,
       aim_heading: p.aim_heading,
-      move_mode: readDataI32Stride("config_player_mode_flags", i, 4),
-      aim_scheme: readDataI32Stride("config_aim_scheme", i, 4),
+      move_mode: readDataI32Stride("config_movement_schemes", i, 4),
+      aim_scheme: readDataI32Stride("config_aim_schemes", i, 4),
       fired_events: fired,
       moving: !!moving,
       reload_active: p.reload_active_i32 != null ? p.reload_active_i32 !== 0 : null,

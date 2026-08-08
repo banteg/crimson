@@ -48,7 +48,7 @@ pub const DrawCtx = struct {
     assets: *const window_assets.RuntimeAssets,
     render_time_s: f32 = 0.0,
     entity_alpha: f32 = 1.0,
-    fx_detail_1: bool = true,
+    flame_glow_enabled: bool = true,
 };
 
 pub fn drawMainProjectile(
@@ -134,7 +134,7 @@ fn drawPlasmaParticles(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool
 
     rl.beginBlendMode(.additive);
     if (projectile.life_timer >= 0.4) {
-        if (ctx.fx_detail_1) {
+        if (ctx.flame_glow_enabled) {
             var seg_count = @as(i32, @intFromFloat(projectile.travel_budget));
             if (seg_count < 0) seg_count = 0;
             seg_count = @divTrunc(seg_count, 5);
@@ -164,7 +164,7 @@ fn drawPlasmaParticles(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool
             0.0,
             rgbfColor(cfg.rgb, alpha * cfg.head_alpha_mul * ctx.entity_alpha),
         );
-        if (ctx.fx_detail_1) {
+        if (ctx.flame_glow_enabled) {
             drawTextureRegionCenteredRotated(
                 ctx.assets.texture(.particles),
                 src_rect,
@@ -419,7 +419,7 @@ fn drawSecondaryRocket(
     if (!(cell_w > 1e-6)) return true;
 
     const alpha = secondaryAlpha(projectile);
-    if (ctx.fx_detail_1) drawSecondaryRocketGlow(projectile, style, alpha * ctx.entity_alpha, ctx);
+    if (ctx.flame_glow_enabled) drawSecondaryRocketGlow(projectile, style, alpha * ctx.entity_alpha, ctx);
     drawAtlasFrameCenteredRotated(
         texture,
         4,
@@ -489,7 +489,7 @@ fn drawSecondaryDetonation(
             0.0,
             rgbfColor(.{ .r = 1.0, .g = 0.6, .b = 0.1 }, fade * ctx.entity_alpha),
         );
-        if (ctx.fx_detail_1) {
+        if (ctx.flame_glow_enabled) {
             drawTextureRegionCenteredRotated(
                 ctx.assets.texture(.particles),
                 src_rect,

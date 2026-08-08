@@ -800,7 +800,7 @@ fn drawPerks(
         const left_rect = animatedLeftPanelRect(left_panel_rect, timeline_ms);
         const right_rect = animatedRightPanelRect(right_panel_rect, timeline_ms);
         drawSplitPanelShell(assets, timeline_ms);
-        drawPerksPanels(state, assets, status, config.gore_disabled, config.hardcore_flag != 0, preserve_bugs, left_rect, right_rect, config.screen_width);
+        drawPerksPanels(state, assets, status, config.violence_disabled, config.hardcore_flag != 0, preserve_bugs, left_rect, right_rect, config.screen_width);
         return;
     }
     rl.clearBackground(panel_color);
@@ -965,7 +965,7 @@ fn drawHighScoreRightPanel(
     }
 
     const options_rect = highScoreRightOptionsRect(right_rect, config.screen_width);
-    const check_tex = if (config.score_load_gate != 0) assets.texture(.ui_check_on) else assets.texture(.ui_check_off);
+    const check_tex = if (config.show_online_scores != 0) assets.texture(.ui_check_on) else assets.texture(.ui_check_off);
     window_ui.drawTextureFit(check_tex, rl.Rectangle.init(options_rect.x + 44.0, options_rect.y + 44.0, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
     window_ui.drawSmallText(assets, "Show internet scores", options_rect.x + 66.0, options_rect.y + 45.0, text_color);
     window_ui.drawSmallText(assets, "Number of players", options_rect.x + 46.0, options_rect.y + 64.0, text_color);
@@ -1877,7 +1877,7 @@ fn updateHighScoreWidgets(
 
     const internet_rect = rl.Rectangle.init(right_rect.x + 44.0, right_rect.y + 44.0, 180.0, 16.0);
     if (click and state.dropdown_open == .none and rectContains(internet_rect, mouse)) {
-        config.score_load_gate = if (config.score_load_gate == 0) 1 else 0;
+        config.show_online_scores = if (config.show_online_scores == 0) 1 else 0;
         loadHighScores(state, allocator, base_dir, config.*, status);
         return .{ .config_dirty = true, .play_button_click = true };
     }

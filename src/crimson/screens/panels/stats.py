@@ -305,8 +305,8 @@ class StatisticsMenuView:
         dst = rl.Rectangle(
             panel_top_left.x, panel_top_left.y, panel_w, STATISTICS_PANEL_HEIGHT * scale,
         )
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=fx_detail)
+        shadows_enabled = self.state.config.display.shadows_enabled
+        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
 
         # Title: full-size row from ui_itemTexts.jaz (128x32).
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
@@ -378,8 +378,8 @@ class StatisticsMenuView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),

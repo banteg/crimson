@@ -311,7 +311,7 @@ class PauseMenuView:
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         item_w = float(item.width)
         item_h = float(item.height)
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
+        shadows_enabled = self.state.config.display.shadows_enabled
         for idx in range(len(self._menu_entries) - 1, -1, -1):
             entry = self._menu_entries[idx]
             pos = Vec2(MenuView._menu_slot_pos_x(entry.slot), entry.y)
@@ -333,7 +333,7 @@ class PauseMenuView:
             )
             origin = rl.Vector2(-offset_x, -offset_y)
             rotation_deg = math.degrees(angle_rad)
-            if fx_detail:
+            if shadows_enabled:
                 MenuView._draw_ui_quad_shadow(
                     texture=item,
                     src=rl.Rectangle(0.0, 0.0, item_w, item_h),
@@ -414,8 +414,8 @@ class PauseMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),

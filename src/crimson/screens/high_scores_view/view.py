@@ -379,7 +379,7 @@ class HighScoresView:
         small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
         shifted_right_top_left = right_top_left + Vec2(small_width_shift_x * scale, 0.0)
 
-        # Checkbox: "Show internet scores" (config.score_load_gate).
+        # Checkbox: "Show internet scores" (config.show_online_scores).
         if not dropdown_blocked:
             check_tex = (
                 resources.texture(TextureId.UI_CHECK_ON)
@@ -614,7 +614,7 @@ class HighScoresView:
 
         screen_width = float(self.state.config.display.width)
         scale = 1.0
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
+        shadows_enabled = self.state.config.display.shadows_enabled
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
             self,
@@ -644,13 +644,13 @@ class HighScoresView:
             resources.texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, HS_LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
         )
         draw_classic_menu_panel(
             resources.texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
             flip_x=True,
         )
 
@@ -690,8 +690,8 @@ class HighScoresView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),

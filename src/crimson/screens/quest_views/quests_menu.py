@@ -602,8 +602,8 @@ class QuestsMenuView:
             _ = slide_x
             rotation_deg = math.degrees(angle_rad)
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
@@ -628,7 +628,7 @@ class QuestsMenuView:
             end_ms=PANEL_TIMELINE_END_MS,
             width=MENU_PANEL_WIDTH,
         )
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
+        shadows_enabled = self.state.config.display.shadows_enabled
         draw_classic_menu_panel(
             require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(
@@ -637,7 +637,7 @@ class QuestsMenuView:
                 float(MENU_PANEL_WIDTH),
                 float(QUEST_PANEL_HEIGHT),
             ),
-            shadow=fx_detail,
+            shadow=shadows_enabled,
         )
 
     def _begin_close_transition(self, action: str) -> None:

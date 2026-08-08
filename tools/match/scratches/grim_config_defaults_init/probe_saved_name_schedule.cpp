@@ -32,14 +32,14 @@ extern "C" void grim_config_defaults_init(void)
         &grim_config_blob.ui_info_texts,
         1,
         sizeof(grim_config_blob.ui_info_texts));
-    grim_config_blob.perk_prompt_counter = 0;
+    grim_config_blob.level_up_count = 0;
     grim_config_blob.mouse_sensitivity = 0.5f;
-    *(int *)&grim_config_blob.reserved6_450[0] = 1;
+    grim_config_blob.ten_tons_logging_completed = 1;
     grim_config_blob.key_pick_perk = 0x101;
     grim_config_blob.key_reload = 0x102;
     grim_config_blob.safe_mode_backend_enabled = 0;
     grim_config_blob.texture_scale = 1.0f;
-    grim_config_blob.score_load_gate = 0;
+    grim_config_blob.show_online_scores = 0;
     memset(grim_config_blob.player_name_buf, 0, 9);
 
 #if CRIMSON_SAVED_NAME_SCHEDULE == 1
@@ -162,19 +162,19 @@ extern "C" void grim_config_defaults_init(void)
     grim_config_blob.sound_frequency_adjustment = 1;
     *(int *)&grim_config_blob.reserved1_1a4[4] = 0;
     *(int *)&grim_config_blob.reserved1_1a4[8] = 0;
-    grim_config_blob.reserved0_6c = 0;
+    grim_config_blob.config_for = 0;
 
     grim_config_blob.display_bpp = 32;
     grim_config_blob.windowed = 0;
     grim_config_blob.game_mode = GAME_MODE_SURVIVAL;
-    grim_config_blob.fx_detail_flag0 = 1;
-    grim_config_blob.reserved0_0f = 0;
-    grim_config_blob.fx_detail_flag1 = 1;
+    grim_config_blob.shadows_enabled = 1;
+    grim_config_blob.sharp_ground_enabled = 0;
+    grim_config_blob.flame_glow_enabled = 1;
     grim_config_blob.movement_schemes[0] = 2;
     grim_config_blob.movement_schemes[1] = 2;
     grim_config_blob.aim_schemes[0] = 0;
     grim_config_blob.aim_schemes[1] = 0;
-    grim_config_blob.fx_detail_flag2 = 1;
+    grim_config_blob.smoke_enabled = 1;
     grim_config_blob.player_count = 1;
     grim_config_blob.input_config[0].turn_key_right = 32;
     grim_config_blob.detail_preset = 5;

@@ -30,8 +30,8 @@ extern int perk_id_angry_reloader;
 extern int perk_id_long_distance_runner;
 extern int perk_id_hot_tempered;
 extern int perk_id_fastshot;
-extern int config_player_mode_flags[];
-extern int config_aim_scheme[];
+extern int config_movement_schemes[];
+extern int config_aim_schemes[];
 extern int config_player_count;
 extern int config_key_reload;
 extern int player_alt_move_key_forward;
@@ -368,8 +368,8 @@ extern "C" void player_update(void)
     }
 
     if (demo_mode_active != 0
-        || config_player_mode_flags[render_overlay_player_index] == 5
-        || config_aim_scheme[render_overlay_player_index] == 5) {
+        || config_movement_schemes[render_overlay_player_index] == 5
+        || config_aim_schemes[render_overlay_player_index] == 5) {
         if (player->auto_target < 0) {
             player->auto_target = 0;
         }
@@ -411,8 +411,8 @@ extern "C" void player_update(void)
     }
 
     if (demo_mode_active == 0
-        && config_player_mode_flags[render_overlay_player_index] != 5) {
-        int move_mode = config_player_mode_flags[render_overlay_player_index];
+        && config_movement_schemes[render_overlay_player_index] != 5) {
+        int move_mode = config_movement_schemes[render_overlay_player_index];
         if (move_mode == 4) {
             if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {
                 scratch_pos.y =
@@ -870,7 +870,7 @@ extern "C" void player_update(void)
 
     if (demo_mode_active == 0
         && perk_count_get(perk_id_alternate_weapon) == 0
-        && config_player_mode_flags[render_overlay_player_index] != 4
+        && config_movement_schemes[render_overlay_player_index] != 4
         && grim_interface_ptr->grim_is_key_active(config_key_reload)
         && player->reload_timer == 0.0f
         && config_player_count == 1) {
@@ -879,8 +879,8 @@ extern "C" void player_update(void)
 
     auto_fire = false;
     if (demo_mode_active == 0
-        && config_aim_scheme[render_overlay_player_index] != 5) {
-        int aim_scheme = config_aim_scheme[render_overlay_player_index];
+        && config_aim_schemes[render_overlay_player_index] != 5) {
+        int aim_scheme = config_aim_schemes[render_overlay_player_index];
         if (aim_scheme == 0) {
             scratch_pos.y =
                 player_aim_screen_x[render_overlay_player_index * 2 + 1]
@@ -945,7 +945,7 @@ extern "C" void player_update(void)
             }
         } else if (aim_scheme == 1) {
             int move_mode =
-                config_player_mode_flags[render_overlay_player_index];
+                config_movement_schemes[render_overlay_player_index];
             if (move_mode == 1 || move_mode == 2) {
                 if (grim_interface_ptr->grim_is_key_active(
                         player->input.aim_key_right)) {

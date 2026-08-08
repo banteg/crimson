@@ -427,9 +427,9 @@ Defaults are set in `config_load_presets`.
 
 Key info overlay (`ui_render_keybind_help`) indexes the block at `DAT_00480510`
 with a five-dword player stride (Up/Down/Left/Right/Fire). The exact recovered
-source confirms that both columns come from `config_blob.keybinds_p1`: Player 1
+source confirms that both columns come from the flat `config_blob.player_keys` array: Player 1
 uses slots 0..4 and Player 2 uses slots 5..9. It does not step to the separate
-`keybinds_p2` block at `DAT_00480550`; this appears to be stale native layout
+second key block at `config_blob.input_config[1]`; this appears to be stale native layout
 behavior and should not be silently corrected in parity work.
 
 ### Analog axis bindings (per-player, stride `0x360` bytes / `0xd8` dwords)
@@ -498,31 +498,34 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x1bc` | `DAT_00480504` | `u32` | `800` | Screen width. |
 | `0x1c0` | `DAT_00480508` | `u32` | `600` | Screen height. |
 | `0x1c4` | `DAT_0048050c` | `u8` | `0` | Windowed flag (`0` = fullscreen). |
-| `0x1c8` | `DAT_00480510` | `u32[0x20]` | see below | Keybind blocks (2 × 16 dwords; indices `0..12` copied). |
-| `0x1f8` | `DAT_00480540` | `u32*` | alias | Points at `&DAT_00480510[12]` (used for the copy loop). |
-| `0x440` | `DAT_00480788` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
-| `0x444` | `DAT_0048078c` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
-| `0x448` | `DAT_00480790` | `u8` | `0` | Hardcore flag (`0` normal, `1` hardcore). |
-| `0x449` | `DAT_00480791` | `u8` | `1` | UI info texts toggle (options checkbox; gates perk-prompt info text). `game_is_full_version()` is hardcoded to return 1 in this build - there is no full-version config byte. |
-| `0x44c` | `DAT_00480794` | `u32` | `0` | Perk prompt counter (`0..0x32`, increments on each prompt). |
-| `0x450` | `DAT_00480798` | `u32` | `1` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
-| `0x460` | `DAT_004807a8` | `u32` | `1` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
-| `0x464` | `DAT_004807ac` | `float` | `?` | SFX volume multiplier. |
-| `0x468` | `DAT_004807b0` | `float` | `?` | Music volume multiplier. |
-| `0x46c` | `DAT_004807b4` | `u8` | `0` | FX toggle (gore/particle path; copied from config; config_ensure_file (`FUN_0041f130`) forces `1` when cfg missing). |
-| `0x46d` | `DAT_004807b5` | `u8` | `0` | Score load gating flag (used with `DAT_0048034a`). |
-| `0x46e` | `DAT_004807b6` | `u8` | `?` | Config bool applied via Grim id `0x54` (unknown). |
-| `0x470` | `DAT_004807b8` | `u32` | `?` | Detail preset (drives `DAT_00480356/58/59`). |
+| `0x1c8` | `config_blob.input_config` | `player_input_config_t[10]` | see below | Ten source-defined 16-dword keybind blocks; this build actively copies the first two. |
+| `0x1f8` | `config_blob.input_config[0].axis_move_x` | `u32*` | alias | Interior cursor used by the P1/P2 copy loop. |
+| `0x440` | `config_blob.input_config[9].reserved[1]` | `u32` | `0` | Final source-defined keybind block, currently unused. |
+| `0x444` | `config_blob.input_config[9].reserved[2]` | `u32` | `0` | Final source-defined keybind block, currently unused. |
+| `0x448` | `config_hardcore` | `u8` | `0` | Hardcore flag (`0` normal, `1` hardcore). |
+| `0x449` | `config_ui_info_texts` | `u8` | `1` | UI info-text toggle (options checkbox; gates perk-prompt info text). `game_is_full_version()` is hardcoded to return 1 in this build; there is no full-version config byte. |
+| `0x44c` | `config_level_up_count` | `u32` | `0` | Source `numLevelUps`; increments when perk selection becomes pending. |
+| `0x450` | `config_ten_tons_logging_completed` | `u32` | `1` | Source-identified 10tons logging completion flag. |
+| `0x454` | `config_unique_id_1` | `u32` | `0` | Source-identified installation ID. |
+| `0x458` | `config_unique_id_2` | `u32` | `0` | Source-identified installation ID. |
+| `0x45c` | `config_blob.reserved_identity_word` | `u32` | `0` | Later-version word with no native reads; absent from the recovered source layout. |
+| `0x460` | `config_sound_frequency_adjustment` | `u8` | `1` | Sound-frequency adjustment toggle. |
+| `0x464` | `config_sfx_volume` | `float` | `?` | SFX volume multiplier. |
+| `0x468` | `config_music_volume` | `float` | `?` | Music volume multiplier. |
+| `0x46c` | `config_violence_disabled` | `u8` | `0` | Gates blood/particle paths and alternate perk text. |
+| `0x46d` | `config_show_online_scores` | `u8` | `0` | Source `showOnlineScores`; controls remote-score loading and its checkbox. |
+| `0x46e` | `config_safe_mode_backend_enabled` | `u8` | `?` | Safe-mode backend flag mirrored through Grim id `0x54`. |
+| `0x470` | `config_detail_preset` | `u32` | `?` | Detail preset; drives `config_shadows_enabled`, `config_flame_glow_enabled`, and `config_smoke_enabled`. |
 
 Runtime note (2026-01-19 quest-build capture, 1.1 runs):
 
 - Bytes at `DAT_00480790..93` were `[1, 1, 0, 0]` for hardcore and `[0, 1, 0, 0]`
   for normal (both 1P/2P). This confirms:
 
-  - `DAT_00480790` toggles with hardcore (`0` normal, `1` hardcore).
-  - `DAT_00480791` is the full‑version flag (stayed `1` in all runs).
-- `DAT_00480794` increments on perk prompt opens (observed `0x1a..0x1d`).
-- Forcing `DAT_00480791 = 0` at runtime showed no visible change (likely read on load).
+  - `config_hardcore` toggles with hardcore (`0` normal, `1` hardcore).
+  - `config_ui_info_texts` stayed `1` in all runs; later source recovery identifies it as the info-text toggle, not a full-version flag.
+- `config_level_up_count` increments on perk prompt opens (observed `0x1a..0x1d`).
+- Forcing `config_ui_info_texts = 0` at runtime showed no immediate visible change in that capture; its gating behavior occurs in the perk-prompt flow.
 | `0x478` | `DAT_004807c0` | `u32` | `?` | Keybind: pick perk (Level‑up prompt). |
 | `0x47c` | `DAT_004807c4` | `u32` | `?` | Keybind: reload. |
 
@@ -619,7 +622,7 @@ tail bytes are validated against the current date and the full‑version flag.
 
 High score validation (`highscore_load_table`):
 
-- Records only proceed to date checks if `config_score_load_gate` is set, or the record flags
+- Records only proceed to date checks if `config_show_online_scores` is set, or the record flags
   have bit 0 clear, or bit 1 set.
 
 - Mode 3: day + month + year must match (`local_system_day`, `local_system_time`).

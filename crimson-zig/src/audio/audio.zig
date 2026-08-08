@@ -72,8 +72,8 @@ pub fn loadRuntimeAudio(
 
 pub fn audioConfigFromCrimsonCfg(cfg: formats.crimson_cfg.CrimsonCfg) AudioConfig {
     return .{
-        .music_enabled = cfg.music_disable == 0,
-        .sfx_enabled = cfg.sound_disable == 0,
+        .music_enabled = cfg.music_disabled == 0,
+        .sfx_enabled = cfg.sound_disabled == 0,
         .music_volume = clampVolume(cfg.music_volume),
         .sfx_volume = clampVolume(cfg.sfx_volume),
     };

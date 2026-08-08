@@ -80,7 +80,7 @@ extern "C" void ui_render_keybind_help(float *xy, float alpha)
             position.x + 64.0f,
             position.y,
             "%s",
-            input_key_name(config_blob.keybinds_p1[key_index++]));
+            input_key_name(config_blob.player_keys[key_index++]));
 
         position.y += 16.0f;
         grim_interface_ptr->grim_draw_text_small_fmt(
@@ -89,7 +89,7 @@ extern "C" void ui_render_keybind_help(float *xy, float alpha)
             position.x + 64.0f,
             position.y,
             "%s",
-            input_key_name(config_blob.keybinds_p1[key_index++]));
+            input_key_name(config_blob.player_keys[key_index++]));
 
         position.y += 16.0f;
         grim_interface_ptr->grim_draw_text_small_fmt(
@@ -98,7 +98,7 @@ extern "C" void ui_render_keybind_help(float *xy, float alpha)
             position.x + 64.0f,
             position.y,
             "%s",
-            input_key_name(config_blob.keybinds_p1[key_index++]));
+            input_key_name(config_blob.player_keys[key_index++]));
 
         position.y += 16.0f;
         grim_interface_ptr->grim_draw_text_small_fmt(
@@ -107,12 +107,12 @@ extern "C" void ui_render_keybind_help(float *xy, float alpha)
             position.x + 64.0f,
             position.y,
             "%s",
-            input_key_name(config_blob.keybinds_p1[key_index++]));
+            input_key_name(config_blob.player_keys[key_index++]));
 
         position.y += 16.0f;
         grim_interface_ptr->grim_draw_text_small_fmt(
             position.x, position.y, "Fire:");
-        int fire_key = config_blob.keybinds_p1[key_index];
+        int fire_key = config_blob.player_keys[key_index];
         grim_interface_ptr->grim_draw_text_small_fmt(
             position.x + 64.0f,
             position.y,

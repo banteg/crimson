@@ -7,7 +7,7 @@
 
 extern char default_player_name[];
 extern SYSTEMTIME local_system_time;
-extern unsigned char config_score_load_gate;
+extern unsigned char config_show_online_scores;
 extern unsigned char config_highscore_date_mode;
 extern unsigned char config_highscore_duplicate_mode;
 extern unsigned char config_hardcore;
@@ -85,7 +85,7 @@ void highscore_load_table(void)
             }
         }
 
-        if (!config_score_load_gate &&
+        if (!config_show_online_scores &&
             (stored.flags & 1) != 0 &&
             (stored.flags & 2) == 0) {
             continue;

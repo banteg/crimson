@@ -9,14 +9,10 @@ pub const saved_name_entry_size: usize = 0x1B;
 pub const saved_names_blob_size: usize = saved_name_slot_count * saved_name_entry_size;
 pub const player_bind_block_dwords: usize = 0x10;
 pub const player_bind_block_size: usize = player_bind_block_dwords * 4;
-pub const player_bind_block_count_primary: usize = 2;
-pub const player_bind_block_count_total: usize = 4;
+pub const config_player_slot_count: usize = 10;
+pub const port_player_slot_count: usize = 4;
 pub const reserved_keybind_slot_count: usize = 2;
 pub const padding_keybind_slot_count: usize = 3;
-pub const extended_direction_arrow_flag_count: usize = 2;
-pub const ext_direction_arrow_unset: u8 = 0;
-pub const ext_direction_arrow_off: u8 = 1;
-pub const ext_direction_arrow_on: u8 = 2;
 pub const keybind_unbound_code: i32 = 0x17E;
 
 pub const CrimsonCfgError = binary.BinaryError || error{
@@ -40,36 +36,25 @@ pub const PlayerBindBlock = struct {
 };
 
 pub const CrimsonCfg = struct {
-    sound_disable: u8,
-    music_disable: u8,
+    sound_disabled: u8,
+    music_disabled: u8,
     highscore_date_mode: u8,
     highscore_duplicate_mode: u8,
-    hud_indicators: [2]u8,
-    unknown_06: [2]u8,
-    unknown_08: u32,
-    unknown_0c: [2]u8,
-    fx_detail_0: u8,
-    unknown_0f: u8,
-    fx_detail_1: u8,
-    fx_detail_2: u8,
-    unknown_12: [2]u8,
+    direction_arrow_flags: [config_player_slot_count]u8,
+    shadows_enabled: u8,
+    sharp_ground_enabled: u8,
+    flame_glow_enabled: u8,
+    smoke_enabled: u8,
+    padding_12: [2]u8,
     player_count: u32,
     game_mode: u32,
-    player_mode_flag_p1: u32,
-    player_mode_flag_p2: u32,
-    player_mode_flag_p3: u32,
-    player_mode_flag_p4: u32,
-    player_mode_flags_reserved: [0x18]u8,
-    aim_scheme_p1: u32,
-    aim_scheme_p2: u32,
-    aim_scheme_p3: u32,
-    aim_scheme_p4: u32,
-    aim_schemes_reserved: [0x18]u8,
-    unknown_6c: u32,
+    movement_schemes: [config_player_slot_count]u32,
+    aim_schemes: [config_player_slot_count]u32,
+    config_for: u32,
     texture_scale: f32,
-    name_tag: [12]u8,
-    selected_name_slot: u32,
-    saved_name_index: u32,
+    player_name_buf: [12]u8,
+    selected_saved_name_slot: u32,
+    saved_name_count: u32,
     saved_name_order: [0x20]u8,
     saved_names: [0xD8]u8,
     player_name: [0x20]u8,
@@ -83,24 +68,24 @@ pub const CrimsonCfg = struct {
     screen_width: u32,
     screen_height: u32,
     windowed_flag: u8,
-    unknown_1c5: [3]u8,
-    keybinds: [0x80]u8,
-    unknown_248: [0x1F8]u8,
-    unknown_440: u32,
-    unknown_444: u32,
+    windowed_padding: [3]u8,
+    input_config_storage: [config_player_slot_count * player_bind_block_size]u8,
     hardcore_flag: u8,
     ui_info_texts: u8,
-    unknown_44a: [2]u8,
-    perk_prompt_counter: u32,
-    unknown_450: u32,
-    unknown_454: [0x0C]u8,
-    unknown_460: u32,
+    hardcore_info_padding: [2]u8,
+    level_up_count: u32,
+    ten_tons_logging_completed: u32,
+    unique_id_1: u32,
+    unique_id_2: u32,
+    reserved_identity_word: u32,
+    sound_frequency_adjustment_enabled: u8,
+    sound_frequency_padding: [3]u8,
     sfx_volume: f32,
     music_volume: f32,
-    gore_disabled: u8,
-    score_load_gate: u8,
-    unknown_46e: u8,
-    unknown_46f: u8,
+    violence_disabled: u8,
+    show_online_scores: u8,
+    safe_mode_backend_enabled: u8,
+    detail_padding: u8,
     detail_preset: u32,
     mouse_sensitivity: f32,
     keybind_pick_perk: u32,
@@ -227,24 +212,15 @@ pub fn defaultPlayerBindBlock(player_index: usize) PlayerBindBlock {
     };
 }
 
-fn playerBindBlockOffsets(player_index: usize) struct { start: usize, extended: bool } {
-    return switch (player_index) {
-        0 => .{ .start = 0, .extended = false },
-        1 => .{ .start = player_bind_block_size, .extended = false },
-        2 => .{ .start = 0, .extended = true },
-        3 => .{ .start = player_bind_block_size, .extended = true },
-        else => unreachable,
-    };
+fn playerBindBlockOffset(player_index: usize) usize {
+    std.debug.assert(player_index < port_player_slot_count);
+    return player_index * player_bind_block_size;
 }
 
 fn playerBindBlockBytes(cfg: *const CrimsonCfg, player_index: usize) [player_bind_block_size]u8 {
-    const offsets = playerBindBlockOffsets(player_index);
+    const start = playerBindBlockOffset(player_index);
     var bytes: [player_bind_block_size]u8 = undefined;
-    if (offsets.extended) {
-        @memcpy(bytes[0..], cfg.unknown_248[offsets.start .. offsets.start + player_bind_block_size]);
-    } else {
-        @memcpy(bytes[0..], cfg.keybinds[offsets.start .. offsets.start + player_bind_block_size]);
-    }
+    @memcpy(bytes[0..], cfg.input_config_storage[start .. start + player_bind_block_size]);
     return bytes;
 }
 
@@ -264,74 +240,39 @@ pub fn playerBindBlock(cfg: *const CrimsonCfg, player_index: usize) PlayerBindBl
 }
 
 pub fn setPlayerBindBlock(cfg: *CrimsonCfg, player_index: usize, block: PlayerBindBlock) void {
-    const offsets = playerBindBlockOffsets(player_index);
+    const start = playerBindBlockOffset(player_index);
     const bytes = encodePlayerBindBlock(block);
-    if (offsets.extended) {
-        @memcpy(cfg.unknown_248[offsets.start .. offsets.start + player_bind_block_size], bytes[0..]);
-    } else {
-        @memcpy(cfg.keybinds[offsets.start .. offsets.start + player_bind_block_size], bytes[0..]);
-    }
+    @memcpy(cfg.input_config_storage[start .. start + player_bind_block_size], bytes[0..]);
 }
 
 pub fn playerMovement(cfg: *const CrimsonCfg, player_index: usize) u32 {
-    return switch (player_index) {
-        0 => cfg.player_mode_flag_p1,
-        1 => cfg.player_mode_flag_p2,
-        2 => cfg.player_mode_flag_p3,
-        3 => cfg.player_mode_flag_p4,
-        else => unreachable,
-    };
+    std.debug.assert(player_index < port_player_slot_count);
+    return cfg.movement_schemes[player_index];
 }
 
 pub fn playerAimScheme(cfg: *const CrimsonCfg, player_index: usize) u32 {
-    return switch (player_index) {
-        0 => cfg.aim_scheme_p1,
-        1 => cfg.aim_scheme_p2,
-        2 => cfg.aim_scheme_p3,
-        3 => cfg.aim_scheme_p4,
-        else => unreachable,
-    };
+    std.debug.assert(player_index < port_player_slot_count);
+    return cfg.aim_schemes[player_index];
 }
 
 pub fn playerShowDirectionArrow(cfg: *const CrimsonCfg, player_index: usize) bool {
-    return switch (player_index) {
-        0 => cfg.hud_indicators[0] != 0,
-        1 => cfg.hud_indicators[1] != 0,
-        2 => cfg.unknown_248[player_bind_block_size * 2] != ext_direction_arrow_off,
-        3 => cfg.unknown_248[player_bind_block_size * 2 + 1] != ext_direction_arrow_off,
-        else => unreachable,
-    };
+    std.debug.assert(player_index < port_player_slot_count);
+    return cfg.direction_arrow_flags[player_index] != 0;
 }
 
 pub fn setPlayerMovement(cfg: *CrimsonCfg, player_index: usize, value: u32) void {
-    switch (player_index) {
-        0 => cfg.player_mode_flag_p1 = value,
-        1 => cfg.player_mode_flag_p2 = value,
-        2 => cfg.player_mode_flag_p3 = value,
-        3 => cfg.player_mode_flag_p4 = value,
-        else => unreachable,
-    }
+    std.debug.assert(player_index < port_player_slot_count);
+    cfg.movement_schemes[player_index] = value;
 }
 
 pub fn setPlayerAimScheme(cfg: *CrimsonCfg, player_index: usize, value: u32) void {
-    switch (player_index) {
-        0 => cfg.aim_scheme_p1 = value,
-        1 => cfg.aim_scheme_p2 = value,
-        2 => cfg.aim_scheme_p3 = value,
-        3 => cfg.aim_scheme_p4 = value,
-        else => unreachable,
-    }
+    std.debug.assert(player_index < port_player_slot_count);
+    cfg.aim_schemes[player_index] = value;
 }
 
 pub fn setPlayerShowDirectionArrow(cfg: *CrimsonCfg, player_index: usize, enabled: bool) void {
-    const raw: u8 = if (enabled) ext_direction_arrow_on else ext_direction_arrow_off;
-    switch (player_index) {
-        0 => cfg.hud_indicators[0] = @intFromBool(enabled),
-        1 => cfg.hud_indicators[1] = @intFromBool(enabled),
-        2 => cfg.unknown_248[player_bind_block_size * 2] = raw,
-        3 => cfg.unknown_248[player_bind_block_size * 2 + 1] = raw,
-        else => unreachable,
-    }
+    std.debug.assert(player_index < port_player_slot_count);
+    cfg.direction_arrow_flags[player_index] = @intFromBool(enabled);
 }
 
 pub fn applyDetailPreset(cfg: *CrimsonCfg, preset: i32) u32 {
@@ -339,36 +280,33 @@ pub fn applyDetailPreset(cfg: *CrimsonCfg, preset: i32) u32 {
     const selected: u32 = @intCast(selected_i32);
     cfg.detail_preset = selected;
     if (selected <= 1) {
-        cfg.fx_detail_0 = 0;
-        cfg.fx_detail_1 = 0;
-        cfg.fx_detail_2 = 0;
+        cfg.shadows_enabled = 0;
+        cfg.flame_glow_enabled = 0;
+        cfg.smoke_enabled = 0;
     } else if (selected == 2) {
-        cfg.fx_detail_0 = 0;
-        cfg.fx_detail_1 = 0;
-        cfg.fx_detail_2 = 1;
+        cfg.shadows_enabled = 0;
+        cfg.flame_glow_enabled = 0;
+        cfg.smoke_enabled = 1;
     } else {
-        cfg.fx_detail_0 = 1;
-        cfg.fx_detail_1 = 1;
-        cfg.fx_detail_2 = 1;
+        cfg.shadows_enabled = 1;
+        cfg.flame_glow_enabled = 1;
+        cfg.smoke_enabled = 1;
     }
     return selected;
 }
 
 pub fn defaultConfig() CrimsonCfg {
     var cfg = std.mem.zeroes(CrimsonCfg);
-    cfg.hud_indicators = [_]u8{ 1, 1 };
-    cfg.fx_detail_0 = 1;
-    cfg.fx_detail_1 = 1;
-    cfg.fx_detail_2 = 1;
+    for (cfg.direction_arrow_flags[0..port_player_slot_count]) |*flag| flag.* = 1;
+    cfg.shadows_enabled = 1;
+    cfg.flame_glow_enabled = 1;
+    cfg.smoke_enabled = 1;
     cfg.player_count = 1;
     cfg.game_mode = 1;
-    cfg.player_mode_flag_p1 = 2;
-    cfg.player_mode_flag_p2 = 2;
-    cfg.player_mode_flag_p3 = 2;
-    cfg.player_mode_flag_p4 = 2;
+    for (cfg.movement_schemes[0..port_player_slot_count]) |*scheme| scheme.* = 2;
     cfg.texture_scale = 1.0;
-    cfg.selected_name_slot = 0;
-    cfg.saved_name_index = 1;
+    cfg.selected_saved_name_slot = 0;
+    cfg.saved_name_count = 1;
     cfg.player_name_len = 0;
     cfg.unknown_1a4 = 100;
     cfg.aim_pov_right = 9000;
@@ -379,12 +317,12 @@ pub fn defaultConfig() CrimsonCfg {
     cfg.windowed_flag = 1;
     cfg.hardcore_flag = 0;
     cfg.ui_info_texts = 1;
-    cfg.unknown_450 = 1;
-    cfg.unknown_460 = 1;
+    cfg.ten_tons_logging_completed = 1;
+    cfg.sound_frequency_adjustment_enabled = 1;
     cfg.sfx_volume = 1.0;
     cfg.music_volume = 1.0;
-    cfg.gore_disabled = 0;
-    cfg.score_load_gate = 0;
+    cfg.violence_disabled = 0;
+    cfg.show_online_scores = 0;
     cfg.detail_preset = 5;
     cfg.mouse_sensitivity = 0.5;
     cfg.keybind_pick_perk = 0x101;
@@ -400,10 +338,7 @@ pub fn defaultConfig() CrimsonCfg {
     @memset(cfg.player_name[0..], 0);
     @memcpy(cfg.player_name[0.."10tons".len], "10tons");
 
-    cfg.unknown_248[player_bind_block_size * 2] = ext_direction_arrow_on;
-    cfg.unknown_248[player_bind_block_size * 2 + 1] = ext_direction_arrow_on;
-
-    inline for (0..player_bind_block_count_total) |idx| {
+    inline for (0..port_player_slot_count) |idx| {
         setPlayerBindBlock(&cfg, idx, defaultPlayerBindBlock(idx));
     }
 
@@ -431,17 +366,17 @@ pub fn setPlayerNameInput(cfg: *CrimsonCfg, name: []const u8) void {
 }
 
 pub fn savedNameCount(cfg: *const CrimsonCfg) usize {
-    const count: usize = @intCast(cfg.saved_name_index);
+    const count: usize = @intCast(cfg.saved_name_count);
     return @min(@max(count, 1), saved_name_slot_count);
 }
 
 pub fn selectedSavedNameSlot(cfg: *const CrimsonCfg) usize {
-    const selected: usize = @intCast(cfg.selected_name_slot);
+    const selected: usize = @intCast(cfg.selected_saved_name_slot);
     return @min(selected, savedNameCount(cfg) - 1);
 }
 
 pub fn setSelectedSavedNameSlot(cfg: *CrimsonCfg, slot_index: usize) void {
-    cfg.selected_name_slot = @intCast(@min(slot_index, saved_name_slot_count - 1));
+    cfg.selected_saved_name_slot = @intCast(@min(slot_index, saved_name_slot_count - 1));
 }
 
 pub fn savedNameLabel(cfg: *const CrimsonCfg, slot_index: usize) []const u8 {
@@ -454,42 +389,37 @@ pub fn savedNameLabel(cfg: *const CrimsonCfg, slot_index: usize) []const u8 {
     return std.mem.sliceTo(bytes, 0);
 }
 
+fn readU32Array(comptime count: usize, reader: *binary.Reader) binary.BinaryError![count]u32 {
+    var values: [count]u32 = undefined;
+    for (&values) |*value| value.* = try reader.readU32Le();
+    return values;
+}
+
 pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
     if (bytes.len != file_size) return error.InvalidSize;
 
     var reader = binary.Reader.init(bytes);
 
     var cfg: CrimsonCfg = .{
-        .sound_disable = try reader.readU8(),
-        .music_disable = try reader.readU8(),
+        .sound_disabled = try reader.readU8(),
+        .music_disabled = try reader.readU8(),
         .highscore_date_mode = try reader.readU8(),
         .highscore_duplicate_mode = try reader.readU8(),
-        .hud_indicators = try reader.readArray(2),
-        .unknown_06 = try reader.readArray(2),
-        .unknown_08 = try reader.readU32Le(),
-        .unknown_0c = try reader.readArray(2),
-        .fx_detail_0 = try reader.readU8(),
-        .unknown_0f = try reader.readU8(),
-        .fx_detail_1 = try reader.readU8(),
-        .fx_detail_2 = try reader.readU8(),
-        .unknown_12 = try reader.readArray(2),
+        .direction_arrow_flags = try reader.readArray(config_player_slot_count),
+        .shadows_enabled = try reader.readU8(),
+        .sharp_ground_enabled = try reader.readU8(),
+        .flame_glow_enabled = try reader.readU8(),
+        .smoke_enabled = try reader.readU8(),
+        .padding_12 = try reader.readArray(2),
         .player_count = try reader.readU32Le(),
         .game_mode = try reader.readU32Le(),
-        .player_mode_flag_p1 = try reader.readU32Le(),
-        .player_mode_flag_p2 = try reader.readU32Le(),
-        .player_mode_flag_p3 = try reader.readU32Le(),
-        .player_mode_flag_p4 = try reader.readU32Le(),
-        .player_mode_flags_reserved = try reader.readArray(0x18),
-        .aim_scheme_p1 = try reader.readU32Le(),
-        .aim_scheme_p2 = try reader.readU32Le(),
-        .aim_scheme_p3 = try reader.readU32Le(),
-        .aim_scheme_p4 = try reader.readU32Le(),
-        .aim_schemes_reserved = try reader.readArray(0x18),
-        .unknown_6c = try reader.readU32Le(),
+        .movement_schemes = try readU32Array(config_player_slot_count, &reader),
+        .aim_schemes = try readU32Array(config_player_slot_count, &reader),
+        .config_for = try reader.readU32Le(),
         .texture_scale = try reader.readF32Le(),
-        .name_tag = try reader.readArray(12),
-        .selected_name_slot = try reader.readU32Le(),
-        .saved_name_index = try reader.readU32Le(),
+        .player_name_buf = try reader.readArray(12),
+        .selected_saved_name_slot = try reader.readU32Le(),
+        .saved_name_count = try reader.readU32Le(),
         .saved_name_order = try reader.readArray(0x20),
         .saved_names = try reader.readArray(0xD8),
         .player_name = try reader.readArray(0x20),
@@ -503,30 +433,30 @@ pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
         .screen_width = try reader.readU32Le(),
         .screen_height = try reader.readU32Le(),
         .windowed_flag = try reader.readU8(),
-        .unknown_1c5 = try reader.readArray(3),
-        .keybinds = try reader.readArray(0x80),
-        .unknown_248 = try reader.readArray(0x1F8),
-        .unknown_440 = try reader.readU32Le(),
-        .unknown_444 = try reader.readU32Le(),
+        .windowed_padding = try reader.readArray(3),
+        .input_config_storage = try reader.readArray(config_player_slot_count * player_bind_block_size),
         .hardcore_flag = try reader.readU8(),
         .ui_info_texts = try reader.readU8(),
-        .unknown_44a = try reader.readArray(2),
-        .perk_prompt_counter = try reader.readU32Le(),
-        .unknown_450 = try reader.readU32Le(),
-        .unknown_454 = try reader.readArray(0x0C),
-        .unknown_460 = try reader.readU32Le(),
+        .hardcore_info_padding = try reader.readArray(2),
+        .level_up_count = try reader.readU32Le(),
+        .ten_tons_logging_completed = try reader.readU32Le(),
+        .unique_id_1 = try reader.readU32Le(),
+        .unique_id_2 = try reader.readU32Le(),
+        .reserved_identity_word = try reader.readU32Le(),
+        .sound_frequency_adjustment_enabled = try reader.readU8(),
+        .sound_frequency_padding = try reader.readArray(3),
         .sfx_volume = try reader.readF32Le(),
         .music_volume = try reader.readF32Le(),
-        .gore_disabled = try reader.readU8(),
-        .score_load_gate = try reader.readU8(),
-        .unknown_46e = try reader.readU8(),
-        .unknown_46f = try reader.readU8(),
+        .violence_disabled = try reader.readU8(),
+        .show_online_scores = try reader.readU8(),
+        .safe_mode_backend_enabled = try reader.readU8(),
+        .detail_padding = try reader.readU8(),
         .detail_preset = try reader.readU32Le(),
         .mouse_sensitivity = try reader.readF32Le(),
         .keybind_pick_perk = try reader.readU32Le(),
         .keybind_reload = try reader.readU32Le(),
     };
-    if (cfg.detail_preset == 0 and cfg.fx_detail_0 == 0 and cfg.fx_detail_1 == 0 and cfg.fx_detail_2 == 0) {
+    if (cfg.detail_preset == 0 and cfg.shadows_enabled == 0 and cfg.flame_glow_enabled == 0 and cfg.smoke_enabled == 0) {
         _ = applyDetailPreset(&cfg, 5);
     }
     return cfg;
@@ -536,36 +466,25 @@ pub fn encode(cfg: CrimsonCfg) [file_size]u8 {
     var bytes: [file_size]u8 = undefined;
     var writer = binary.Writer.init(bytes[0..]);
 
-    writer.writeU8(cfg.sound_disable) catch unreachable;
-    writer.writeU8(cfg.music_disable) catch unreachable;
+    writer.writeU8(cfg.sound_disabled) catch unreachable;
+    writer.writeU8(cfg.music_disabled) catch unreachable;
     writer.writeU8(cfg.highscore_date_mode) catch unreachable;
     writer.writeU8(cfg.highscore_duplicate_mode) catch unreachable;
-    writer.writeBytes(&cfg.hud_indicators) catch unreachable;
-    writer.writeBytes(&cfg.unknown_06) catch unreachable;
-    writer.writeU32Le(cfg.unknown_08) catch unreachable;
-    writer.writeBytes(&cfg.unknown_0c) catch unreachable;
-    writer.writeU8(cfg.fx_detail_0) catch unreachable;
-    writer.writeU8(cfg.unknown_0f) catch unreachable;
-    writer.writeU8(cfg.fx_detail_1) catch unreachable;
-    writer.writeU8(cfg.fx_detail_2) catch unreachable;
-    writer.writeBytes(&cfg.unknown_12) catch unreachable;
+    writer.writeBytes(&cfg.direction_arrow_flags) catch unreachable;
+    writer.writeU8(cfg.shadows_enabled) catch unreachable;
+    writer.writeU8(cfg.sharp_ground_enabled) catch unreachable;
+    writer.writeU8(cfg.flame_glow_enabled) catch unreachable;
+    writer.writeU8(cfg.smoke_enabled) catch unreachable;
+    writer.writeBytes(&cfg.padding_12) catch unreachable;
     writer.writeU32Le(cfg.player_count) catch unreachable;
     writer.writeU32Le(cfg.game_mode) catch unreachable;
-    writer.writeU32Le(cfg.player_mode_flag_p1) catch unreachable;
-    writer.writeU32Le(cfg.player_mode_flag_p2) catch unreachable;
-    writer.writeU32Le(cfg.player_mode_flag_p3) catch unreachable;
-    writer.writeU32Le(cfg.player_mode_flag_p4) catch unreachable;
-    writer.writeBytes(&cfg.player_mode_flags_reserved) catch unreachable;
-    writer.writeU32Le(cfg.aim_scheme_p1) catch unreachable;
-    writer.writeU32Le(cfg.aim_scheme_p2) catch unreachable;
-    writer.writeU32Le(cfg.aim_scheme_p3) catch unreachable;
-    writer.writeU32Le(cfg.aim_scheme_p4) catch unreachable;
-    writer.writeBytes(&cfg.aim_schemes_reserved) catch unreachable;
-    writer.writeU32Le(cfg.unknown_6c) catch unreachable;
+    for (cfg.movement_schemes) |value| writer.writeU32Le(value) catch unreachable;
+    for (cfg.aim_schemes) |value| writer.writeU32Le(value) catch unreachable;
+    writer.writeU32Le(cfg.config_for) catch unreachable;
     writer.writeF32Le(cfg.texture_scale) catch unreachable;
-    writer.writeBytes(&cfg.name_tag) catch unreachable;
-    writer.writeU32Le(cfg.selected_name_slot) catch unreachable;
-    writer.writeU32Le(cfg.saved_name_index) catch unreachable;
+    writer.writeBytes(&cfg.player_name_buf) catch unreachable;
+    writer.writeU32Le(cfg.selected_saved_name_slot) catch unreachable;
+    writer.writeU32Le(cfg.saved_name_count) catch unreachable;
     writer.writeBytes(&cfg.saved_name_order) catch unreachable;
     writer.writeBytes(&cfg.saved_names) catch unreachable;
     writer.writeBytes(&cfg.player_name) catch unreachable;
@@ -579,24 +498,24 @@ pub fn encode(cfg: CrimsonCfg) [file_size]u8 {
     writer.writeU32Le(cfg.screen_width) catch unreachable;
     writer.writeU32Le(cfg.screen_height) catch unreachable;
     writer.writeU8(cfg.windowed_flag) catch unreachable;
-    writer.writeBytes(&cfg.unknown_1c5) catch unreachable;
-    writer.writeBytes(&cfg.keybinds) catch unreachable;
-    writer.writeBytes(&cfg.unknown_248) catch unreachable;
-    writer.writeU32Le(cfg.unknown_440) catch unreachable;
-    writer.writeU32Le(cfg.unknown_444) catch unreachable;
+    writer.writeBytes(&cfg.windowed_padding) catch unreachable;
+    writer.writeBytes(&cfg.input_config_storage) catch unreachable;
     writer.writeU8(cfg.hardcore_flag) catch unreachable;
     writer.writeU8(cfg.ui_info_texts) catch unreachable;
-    writer.writeBytes(&cfg.unknown_44a) catch unreachable;
-    writer.writeU32Le(cfg.perk_prompt_counter) catch unreachable;
-    writer.writeU32Le(cfg.unknown_450) catch unreachable;
-    writer.writeBytes(&cfg.unknown_454) catch unreachable;
-    writer.writeU32Le(cfg.unknown_460) catch unreachable;
+    writer.writeBytes(&cfg.hardcore_info_padding) catch unreachable;
+    writer.writeU32Le(cfg.level_up_count) catch unreachable;
+    writer.writeU32Le(cfg.ten_tons_logging_completed) catch unreachable;
+    writer.writeU32Le(cfg.unique_id_1) catch unreachable;
+    writer.writeU32Le(cfg.unique_id_2) catch unreachable;
+    writer.writeU32Le(cfg.reserved_identity_word) catch unreachable;
+    writer.writeU8(cfg.sound_frequency_adjustment_enabled) catch unreachable;
+    writer.writeBytes(&cfg.sound_frequency_padding) catch unreachable;
     writer.writeF32Le(cfg.sfx_volume) catch unreachable;
     writer.writeF32Le(cfg.music_volume) catch unreachable;
-    writer.writeU8(cfg.gore_disabled) catch unreachable;
-    writer.writeU8(cfg.score_load_gate) catch unreachable;
-    writer.writeU8(cfg.unknown_46e) catch unreachable;
-    writer.writeU8(cfg.unknown_46f) catch unreachable;
+    writer.writeU8(cfg.violence_disabled) catch unreachable;
+    writer.writeU8(cfg.show_online_scores) catch unreachable;
+    writer.writeU8(cfg.safe_mode_backend_enabled) catch unreachable;
+    writer.writeU8(cfg.detail_padding) catch unreachable;
     writer.writeU32Le(cfg.detail_preset) catch unreachable;
     writer.writeF32Le(cfg.mouse_sensitivity) catch unreachable;
     writer.writeU32Le(cfg.keybind_pick_perk) catch unreachable;
@@ -698,14 +617,14 @@ test "crimson.cfg saved name count clamps the visible slot prefix" {
     var cfg = defaultConfig();
 
     try std.testing.expectEqual(@as(usize, 1), savedNameCount(&cfg));
-    cfg.saved_name_index = 3;
+    cfg.saved_name_count = 3;
     try std.testing.expectEqual(@as(usize, 3), savedNameCount(&cfg));
-    cfg.selected_name_slot = 7;
+    cfg.selected_saved_name_slot = 7;
     try std.testing.expectEqual(@as(usize, 2), selectedSavedNameSlot(&cfg));
-    cfg.saved_name_index = 0;
+    cfg.saved_name_count = 0;
     try std.testing.expectEqual(@as(usize, 1), savedNameCount(&cfg));
     try std.testing.expectEqual(@as(usize, 0), selectedSavedNameSlot(&cfg));
-    cfg.saved_name_index = 99;
+    cfg.saved_name_count = 99;
     try std.testing.expectEqual(saved_name_slot_count, savedNameCount(&cfg));
 }
 
@@ -713,35 +632,35 @@ test "crimson.cfg detail presets update fx detail flags" {
     var cfg = defaultConfig();
 
     try std.testing.expectEqual(@as(u32, 1), applyDetailPreset(&cfg, 0));
-    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_0);
-    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_1);
-    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_2);
+    try std.testing.expectEqual(@as(u8, 0), cfg.shadows_enabled);
+    try std.testing.expectEqual(@as(u8, 0), cfg.flame_glow_enabled);
+    try std.testing.expectEqual(@as(u8, 0), cfg.smoke_enabled);
 
     try std.testing.expectEqual(@as(u32, 2), applyDetailPreset(&cfg, 2));
-    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_0);
-    try std.testing.expectEqual(@as(u8, 0), cfg.fx_detail_1);
-    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_2);
+    try std.testing.expectEqual(@as(u8, 0), cfg.shadows_enabled);
+    try std.testing.expectEqual(@as(u8, 0), cfg.flame_glow_enabled);
+    try std.testing.expectEqual(@as(u8, 1), cfg.smoke_enabled);
 
     try std.testing.expectEqual(@as(u32, 5), applyDetailPreset(&cfg, 9));
-    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_0);
-    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_1);
-    try std.testing.expectEqual(@as(u8, 1), cfg.fx_detail_2);
+    try std.testing.expectEqual(@as(u8, 1), cfg.shadows_enabled);
+    try std.testing.expectEqual(@as(u8, 1), cfg.flame_glow_enabled);
+    try std.testing.expectEqual(@as(u8, 1), cfg.smoke_enabled);
 }
 
 test "crimson.cfg decode normalizes legacy empty detail preset" {
     var cfg = defaultConfig();
     cfg.detail_preset = 0;
-    cfg.fx_detail_0 = 0;
-    cfg.fx_detail_1 = 0;
-    cfg.fx_detail_2 = 0;
+    cfg.shadows_enabled = 0;
+    cfg.flame_glow_enabled = 0;
+    cfg.smoke_enabled = 0;
 
     const encoded = encode(cfg);
     const parsed = try decode(encoded[0..]);
 
     try std.testing.expectEqual(@as(u32, 5), parsed.detail_preset);
-    try std.testing.expectEqual(@as(u8, 1), parsed.fx_detail_0);
-    try std.testing.expectEqual(@as(u8, 1), parsed.fx_detail_1);
-    try std.testing.expectEqual(@as(u8, 1), parsed.fx_detail_2);
+    try std.testing.expectEqual(@as(u8, 1), parsed.shadows_enabled);
+    try std.testing.expectEqual(@as(u8, 1), parsed.flame_glow_enabled);
+    try std.testing.expectEqual(@as(u8, 1), parsed.smoke_enabled);
 }
 
 test "crimson.cfg bind block helpers roundtrip" {

@@ -2480,16 +2480,16 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1827
+    assert payload["summary"]["source_entry_count"] == 1832
     assert payload["summary"]["code_label_entries"] == 54
-    assert payload["summary"]["entry_count"] == 1773
-    assert payload["summary"]["typed_entries"] == 1773
+    assert payload["summary"]["entry_count"] == 1778
+    assert payload["summary"]["typed_entries"] == 1778
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1773
-    assert payload["summary"]["explicit_alignment_entries"] == 1773
-    assert payload["summary"]["explicit_initializer_entries"] == 1773
-    assert payload["summary"]["fully_specified_entries"] == 1773
-    assert payload["summary"]["definition_group_entries"] == 1664
+    assert payload["summary"]["explicit_size_entries"] == 1778
+    assert payload["summary"]["explicit_alignment_entries"] == 1778
+    assert payload["summary"]["explicit_initializer_entries"] == 1778
+    assert payload["summary"]["fully_specified_entries"] == 1778
+    assert payload["summary"]["definition_group_entries"] == 1669
     assert payload["summary"]["definition_groups"] == 175
     assert {
         entry["name"]
@@ -2529,8 +2529,8 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["d3dx_sse_rsqrt_init_guard"]["alignment"] == 1
     assert defined["config_blob"]["size"] == 0x480
     assert defined["config_blob"]["initializer_fill"] == "00"
-    assert defined["config_direction_arrow_flags"]["size"] == 2
-    assert defined["config_player_mode_flags"]["size"] == 4 * 4
+    assert defined["config_direction_arrow_flags"]["size"] == 10
+    assert defined["config_movement_schemes"]["size"] == 10 * 4
     assert defined["config_saved_name_0"]["size"] == 27
     assert defined["config_key_reload"]["definition_group"] == (
         "mapped-bss-zero-int32"

@@ -244,8 +244,8 @@ class PanelMenuView:
             + self._panel_offset * item_scale
         )
         dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, float(panel_w), float(panel_h))
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
+        shadows_enabled = self.state.config.display.shadows_enabled
+        draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
 
     def _draw_entry(self, entry: MenuEntry) -> None:
         resources = require_runtime_resources(self.state)
@@ -271,8 +271,8 @@ class PanelMenuView:
             item_h * item_scale,
         )
         origin = rl.Vector2(-offset_x, -offset_y)
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=item,
                 src=rl.Rectangle(0.0, 0.0, item_w, item_h),
@@ -340,8 +340,8 @@ class PanelMenuView:
         # so the sign is already locked in place. Keep it static here.
         rotation_deg = 0.0
         sign = require_runtime_resources(self.state).texture(TextureId.UI_SIGN_CRIMSON)
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),

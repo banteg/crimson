@@ -65,7 +65,7 @@ def test_zig_config_json_output_reports_summary_and_raw_fields(tmp_path: Path) -
         "sfx_volume": 1,
         "music_volume": 1,
     }
-    assert payload["fields"]["sound_disable"] == 1
+    assert payload["fields"]["sound_disabled"] == 1
     assert payload["fields"]["player_count"] == 2
     assert payload["fields"]["screen_width"] == 1280
     assert payload["fields"]["screen_height"] == 720

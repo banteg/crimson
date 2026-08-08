@@ -26,7 +26,7 @@ tags:
   - `key_rows_with_any_signal=7217`,
   - `perk_apply_in_tick_entries=0`,
   - `perk_apply_outside_calls=8`,
-  - `config_aim_scheme` and `input_approx.aim_scheme` both present for all ticks.
+  - `config_aim_schemes` and `input_approx.aim_scheme` both present for all ticks.
 - `focus-trace --tick 570` shows RNG values align (`capture_calls=36`, `rewrite_calls=36`, `prefix_match=36`), while `divergence-report` still reports `rand_calls(e/a)=36/0` at the same tick and marks `rng_stream_mismatch`.
   - This indicates an accounting/attribution mismatch in divergence reporting around `world_step_tail` rather than a direct replay RNG-value mismatch at the focus tick.
 - Capture compatibility gap discovered and fixed:

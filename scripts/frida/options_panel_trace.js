@@ -50,7 +50,7 @@ const DATA_RVAS = {
     game_state_id: 0x87270,
     game_state_pending: 0x87274,
     ui_element_table_base: 0x8f168,
-    config_fx_detail_flag0: 0x480356,
+    config_shadows_enabled: 0x480356,
     config_screen_width: 0x480504,
     config_screen_height: 0x480508,
     screen_width_f: 0x471140,
@@ -310,7 +310,7 @@ function readGlobals(exeBase) {
     out.dir = safeReadU8(exeBase.add(DATA_RVAS.ui_transition_direction));
     out.state_id = safeReadI32(exeBase.add(DATA_RVAS.game_state_id));
     out.state_pending = safeReadI32(exeBase.add(DATA_RVAS.game_state_pending));
-    out.fx_detail = safeReadU8(exeBase.add(DATA_RVAS.config_fx_detail_flag0));
+    out.shadows_enabled = safeReadU8(exeBase.add(DATA_RVAS.config_shadows_enabled));
     out.config_screen_width = safeReadI32(exeBase.add(DATA_RVAS.config_screen_width));
     out.config_screen_height = safeReadI32(exeBase.add(DATA_RVAS.config_screen_height));
     out.screen_width_f = safeReadFloat(exeBase.add(DATA_RVAS.screen_width_f));

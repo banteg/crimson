@@ -326,10 +326,10 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         tint = tint_rgba.scaled_alpha(ctx.entity_alpha).clamped().to_rl()
 
         size_scale = clamp(float(creature.size) / 64.0, 0.25, 2.0)
-        fx_detail = frame.config.display.fx_detail_enabled(level=0, default=True) if frame.config is not None else True
-        # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
+        shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
+        # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by shadows_enabled
         # and is disabled when the Monster Vision perk is active.
-        shadow = fx_detail and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
+        shadow = shadows_enabled and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
             creature.flags & CreatureFlags.ANIM_LONG_STRIP
         ) != 0

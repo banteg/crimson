@@ -47,7 +47,7 @@ These are the **world dimensions** used everywhere (spawns, camera clamp, UV sca
 
 ### Terrain resolution scaling (important)
 
-Config float: `config_blob.reserved0._112_4_` (I’ll call it `terrain_scale`).
+Config float: `config_blob.texture_scale` (the terrain scale used by the native build).
 
 * Clamped to **[0.5, 4.0]**
 * Render target size is:

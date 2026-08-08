@@ -5014,7 +5014,7 @@
     "address": "0x00447580",
     "name": "config_apply_detail_preset",
     "signature": "void config_apply_detail_preset(void)",
-    "comment": "Applies config_detail_preset (\"Graphics detail\" 1..5) to the config_fx_detail_flag0/1/2 bytes."
+    "comment": "Applies config_detail_preset (\"Graphics detail\" 1..5) to the source-identified shadows, flame-glow, and smoke toggles."
   },
   {
     "program": "crimsonland.exe",

@@ -92,11 +92,11 @@ def draw_secondary_projectile_bloom(ctx: SecondaryProjectileDrawCtx) -> None:
 
     renderer = ctx.renderer
     render_frame = renderer.frame
-    fx_detail_1 = (
-        render_frame.config.display.fx_detail_enabled(level=1, default=True) if render_frame.config is not None else True
+    flame_glow_enabled = (
+        render_frame.config.display.flame_glow_enabled if render_frame.config is not None else True
     )
     particles_texture = render_frame.resources.texture(TextureId.PARTICLES)
-    if not fx_detail_1 or particles_texture is None:
+    if not flame_glow_enabled or particles_texture is None:
         return
 
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
@@ -133,11 +133,11 @@ def draw_secondary_projectile_bloom(ctx: SecondaryProjectileDrawCtx) -> None:
 def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: SecondaryRocketStyle) -> None:
     renderer = ctx.renderer
     render_frame = renderer.frame
-    fx_detail_1 = (
-        render_frame.config.display.fx_detail_enabled(level=1, default=True) if render_frame.config is not None else True
+    flame_glow_enabled = (
+        render_frame.config.display.flame_glow_enabled if render_frame.config is not None else True
     )
     particles_texture = render_frame.resources.texture(TextureId.PARTICLES)
-    if not fx_detail_1 or particles_texture is None:
+    if not flame_glow_enabled or particles_texture is None:
         return
 
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))

@@ -21,10 +21,10 @@ tags:
 
 - This capture family has partial input/config telemetry:
   - `input_approx.aim_scheme` is always `null`,
-  - snapshot `config_aim_scheme` is absent,
+  - snapshot `config_aim_schemes` is absent,
   - `input_player_keys.fire_down/fire_pressed` is often `null`/`false`,
   - `fired_events` is always `0`.
-- The run is known to use sidecar-configured `config_aim_scheme=5` (Computer), but that value is not encoded in this artifact.
+- The run is known to use sidecar-configured `config_aim_schemes=5` (Computer), but that value is not encoded in this artifact.
 - At the current frontier (`tick 4227`), rewrite awards one extra kill (`+40 XP`):
   - native capture debug at XP-onset shows one death (`creature_index=21`, `xp_awarded=43`),
   - rewrite at the same tick reports two deaths (`idx=52 xp=40`, `idx=21 xp=43`).
@@ -42,7 +42,7 @@ tags:
   - `tests/test_local_input.py`
   - `tests/test_multiplayer_wiring.py`
 - Added capture-script mode telemetry:
-  - `scripts/frida/gameplay_diff_capture.js` now emits per-player `config_player_mode_flags` and `config_aim_scheme` in globals and `input_approx`.
+  - `scripts/frida/gameplay_diff_capture.js` now emits per-player `config_movement_schemes` and `config_aim_schemes` in globals and `input_approx`.
 - Added mode-5 parity in controls UI:
   - `src/crimson/screens/panels/controls_labels.py`
   - `src/crimson/screens/panels/controls.py`

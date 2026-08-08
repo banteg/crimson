@@ -25,8 +25,8 @@ def _test_config(**updates: object) -> CrimsonConfig:
     cfg = default_crimson_cfg(Path("<memory>"))
     for key, value in updates.items():
         match str(key):
-            case "fx_detail_0":
-                cfg.display.set_fx_detail(0, bool(value))
+            case "shadows_enabled":
+                cfg.display.shadows_enabled = bool(value)
             case "game_mode":
                 cfg.gameplay.mode = GameMode(int(cast(Any, value)))
             case _:
@@ -217,7 +217,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     ui = GameOverUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=_test_config(fx_detail_0=0),
+        config=_test_config(shadows_enabled=0),
     )
     ui.phase = 1
     ui.rank = 0
@@ -276,7 +276,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     ui = GameOverUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=_test_config(fx_detail_0=0, game_mode=1),
+        config=_test_config(shadows_enabled=0, game_mode=1),
         preserve_bugs=preserve_bugs,
     )
     ui.rank = 0

@@ -197,8 +197,8 @@ class QuestFailedView:
             float(QUEST_FAILED_PANEL_W),
             float(QUEST_FAILED_PANEL_H),
         )
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=fx_detail)
+        shadows_enabled = self.state.config.display.shadows_enabled
+        draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=shadows_enabled)
 
         reaper_tex = resources.texture(TextureId.UI_TEXT_REAPER)
         src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))

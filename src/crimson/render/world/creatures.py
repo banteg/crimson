@@ -53,7 +53,7 @@ def draw_creature_sprite(
     rotation_deg = float(rotation_rad * _RAD_TO_DEG)
 
     if shadow:
-        # In the original exe this is a "darken" blend pass gated by fx_detail_0
+        # In the original exe this is a "darken" blend pass gated by shadows_enabled
         # (creature_render_type). We approximate it with a black silhouette draw.
         # The observed pass is slightly bigger than the main sprite and offset
         # down-right by ~1px at default sizes.

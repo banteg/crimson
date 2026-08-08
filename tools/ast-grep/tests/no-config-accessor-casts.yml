@@ -16,7 +16,7 @@ invalid:
   - |
     hardcore = bool(self._state.config.hardcore)
   - |
-    detail = bool(self._state.config.fx_detail(level=0, default=False))
+    shadows_enabled = bool(self._state.config.display.shadows_enabled)
   - |
     arrow = bool(self._state.config.hud_indicator_enabled_for_player(player_index=1))
   - |

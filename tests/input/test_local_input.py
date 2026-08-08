@@ -31,8 +31,8 @@ def _test_config(**updates: object) -> CrimsonConfig:
                 cfg.gameplay.player_count = int(cast(Any, value))
             case "game_mode":
                 cfg.gameplay.mode = GameMode(int(cast(Any, value)))
-            case "fx_detail_0":
-                cfg.display.set_fx_detail(0, bool(value))
+            case "shadows_enabled":
+                cfg.display.shadows_enabled = bool(value)
             case _:
                 raise KeyError(f"unsupported config update: {key}")
     return cfg

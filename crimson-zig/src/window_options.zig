@@ -318,14 +318,14 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
 
     if (updateOptionSlider(state, .sfx, optionSliderRect(panel_rect, 265.0, 82.0, 10), 0, 10, mouse, click, mouse_down)) |value| {
         config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
-        config.sound_disable = @intFromBool(value == 0);
+        config.sound_disabled = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
     }
     if (updateOptionSlider(state, .music, optionSliderRect(panel_rect, 265.0, 116.0, 10), 0, 10, mouse, click, mouse_down)) |value| {
         config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
-        config.music_disable = @intFromBool(value == 0);
+        config.music_disabled = @intFromBool(value == 0);
         result.config_dirty = true;
         result.reload_audio = true;
         result.play_button_click = true;
@@ -484,18 +484,18 @@ fn applyGameplayKeyboardOption(config: *formats.crimson_cfg.CrimsonCfg, selectio
     switch (selection) {
         gameplay_selection_sfx => {
             if (delta == 0) return result;
-            const value = adjustOptionSliderValue(if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume), 0, 10, delta);
+            const value = adjustOptionSliderValue(if (config.sound_disabled != 0) 0 else audioSliderValue(config.sfx_volume), 0, 10, delta);
             config.sfx_volume = @as(f32, @floatFromInt(value)) * 0.1;
-            config.sound_disable = @intFromBool(value == 0);
+            config.sound_disabled = @intFromBool(value == 0);
             result.config_dirty = true;
             result.reload_audio = true;
             result.play_button_click = true;
         },
         gameplay_selection_music => {
             if (delta == 0) return result;
-            const value = adjustOptionSliderValue(if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume), 0, 10, delta);
+            const value = adjustOptionSliderValue(if (config.music_disabled != 0) 0 else audioSliderValue(config.music_volume), 0, 10, delta);
             config.music_volume = @as(f32, @floatFromInt(value)) * 0.1;
-            config.music_disable = @intFromBool(value == 0);
+            config.music_disabled = @intFromBool(value == 0);
             result.config_dirty = true;
             result.reload_audio = true;
             result.play_button_click = true;
@@ -737,8 +737,8 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
         window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + 84.0 + @as(f32, @floatFromInt(idx)) * 34.0, if (hovered or state.panel.selection == idx) text_color else muted_text);
     }
 
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 82.0), 10, if (config.sound_disable != 0) 0 else audioSliderValue(config.sfx_volume));
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 116.0), 10, if (config.music_disable != 0) 0 else audioSliderValue(config.music_volume));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 82.0), 10, if (config.sound_disabled != 0) 0 else audioSliderValue(config.sfx_volume));
+    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 116.0), 10, if (config.music_disabled != 0) 0 else audioSliderValue(config.music_volume));
     drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 150.0), 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
     drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 184.0), 10, sensitivitySliderValue(config.mouse_sensitivity));
 
@@ -1715,7 +1715,7 @@ test "controls panel timeline gates input and dispatches after close" {
 test "gameplay options keyboard adjustment updates config" {
     var cfg = formats.crimson_cfg.defaultConfig();
     cfg.sfx_volume = 1.0;
-    cfg.sound_disable = 0;
+    cfg.sound_disabled = 0;
 
     const update = applyGameplayKeyboardOption(&cfg, gameplay_selection_sfx, -1, false);
 
@@ -1723,7 +1723,7 @@ test "gameplay options keyboard adjustment updates config" {
     try std.testing.expect(update.reload_audio);
     try std.testing.expect(update.play_button_click);
     try std.testing.expectApproxEqAbs(@as(f32, 0.9), cfg.sfx_volume, 1e-6);
-    try std.testing.expectEqual(@as(u8, 0), cfg.sound_disable);
+    try std.testing.expectEqual(@as(u8, 0), cfg.sound_disabled);
 }
 
 test "gameplay options keyboard confirm opens controls or toggles checkbox" {

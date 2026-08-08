@@ -125,8 +125,8 @@ class _DatabaseBaseView:
         offset_x = MENU_SIGN_OFFSET_X * sign_scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * sign_scale
         rotation_deg = 0.0
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        if fx_detail:
+        shadows_enabled = self.state.config.display.shadows_enabled
+        if shadows_enabled:
             MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
@@ -210,7 +210,7 @@ class _DatabaseBaseView:
 
         screen_width = float(self.state.config.display.width)
         scale = 1.0
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
+        shadows_enabled = self.state.config.display.shadows_enabled
 
         panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = MenuView._ui_element_anim(
@@ -241,13 +241,13 @@ class _DatabaseBaseView:
             require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, LEFT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
         )
         draw_classic_menu_panel(
             require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
             dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, RIGHT_PANEL_HEIGHT * scale),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
             flip_x=True,
         )
 

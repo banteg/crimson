@@ -199,8 +199,8 @@ class EndNoteView:
             float(END_NOTE_PANEL_H * scale),
         )
 
-        fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)
-        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=panel, tint=rl.WHITE, shadow=fx_detail)
+        shadows_enabled = self.state.config.display.shadows_enabled
+        draw_classic_menu_panel(resources.texture(TextureId.UI_MENU_PANEL), dst=panel, tint=rl.WHITE, shadow=shadows_enabled)
 
         font = resources.small_font
         hardcore = self.state.config.gameplay.hardcore

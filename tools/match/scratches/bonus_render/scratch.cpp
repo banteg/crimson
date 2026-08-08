@@ -26,8 +26,8 @@ extern float camera_offset_x;
 extern float camera_offset_y;
 extern int config_player_count;
 extern int config_screen_width;
-extern unsigned char config_fx_detail_flag1;
-extern unsigned char config_fx_detail_flag2;
+extern unsigned char config_flame_glow_enabled;
+extern unsigned char config_smoke_enabled;
 extern int frame_dt_ms;
 extern int perk_id_telekinetic;
 extern int telekinetic_bonus_hover_timer_ms[];
@@ -299,7 +299,7 @@ extern "C" void bonus_render(void)
     }
 
     particle_t *particle = particle_pool;
-    if (config_fx_detail_flag1) {
+    if (config_flame_glow_enabled) {
         grim_interface_ptr->grim_set_config_var(0x13, 5u);
         grim_interface_ptr->grim_set_config_var(0x14, 2u);
         grim_interface_ptr->grim_bind_texture(particles_texture, 0);
@@ -455,7 +455,7 @@ extern "C" void bonus_render(void)
     grim_interface_ptr->grim_end_batch();
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
 
-    if (config_fx_detail_flag2) {
+    if (config_smoke_enabled) {
         grim_interface_ptr->grim_set_config_var(0x13, 5u);
         grim_interface_ptr->grim_set_config_var(0x14, 6u);
         grim_interface_ptr->grim_bind_texture(particles_texture, 0);

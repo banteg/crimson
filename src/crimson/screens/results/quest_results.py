@@ -640,12 +640,12 @@ class QuestResultsUi(msgspec.Struct):
         panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
         panel = panel_layout.panel
 
-        fx_detail = self.config.display.fx_detail_enabled(level=0, default=False)
+        shadows_enabled = self.config.display.shadows_enabled
         draw_classic_menu_panel(
             resources.texture(TextureId.UI_MENU_PANEL),
             dst=panel.to_rl(),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
         )
 
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)

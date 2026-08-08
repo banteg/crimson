@@ -41,9 +41,9 @@ Known behaviors (medium confidence):
 - For long-strip corpses (`lifecycle_stage < 0.0`): `frame = base_frame + 0x0f` (static corpse frame).
 - Rotation: `grim_set_rotation(creature_heading - pi/2)`; creatures visually face along their movement heading.
 
-## Shadow/outline pass (fx_detail_0)
+## Shadow/outline pass (shadows_enabled)
 
-When `crimson.cfg` `fx_detail_0` is enabled (`config_fx_detail_flag0`) and the **Monster Vision** perk is *not* active,
+When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and the **Monster Vision** perk is *not* active,
 `creature_render_type` runs an extra pre-pass that darkens behind each creature sprite:
 
 - alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)

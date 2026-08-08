@@ -4,7 +4,7 @@ from enum import IntEnum
 
 
 class AimScheme(IntEnum):
-    """Aiming scheme ids from `config_aim_scheme`."""
+    """Aiming scheme ids from `config_aim_schemes`."""
 
     UNKNOWN = -1
     MOUSE = 0

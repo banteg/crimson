@@ -56,7 +56,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
         creature_type_table[type_id].texture_handle, 0);
     grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
 
-    if (config_blob.fx_detail_flag0
+    if (config_blob.shadows_enabled
         && perk_count_get(perk_id_monster_vision) == 0) {
         grim_interface_ptr->grim_set_config_var(0x13, 1u);
         grim_interface_ptr->grim_set_config_var(0x14, 6u);

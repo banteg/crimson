@@ -3717,29 +3717,36 @@
     },
     {
       "address": "0x0048034c",
-      "comment": "Config: per-player direction-arrow flags (u8[2], gates the world-arrow pass).",
+      "comment": "Config: ten legacy per-player direction-arrow flags; the classic executable actively indexes the leading player slots.",
       "name": "config_direction_arrow_flags",
       "program": "crimsonland.exe",
-      "type": "unsigned char[2]"
+      "type": "unsigned char[10]"
     },
     {
       "address": "0x00480356",
-      "comment": "Config: FX detail flag0 (enables extra shadow-ish passes; e.g. ui_element_render + creature_render_type). Set by config_apply_detail_preset.",
-      "name": "config_fx_detail_flag0",
+      "comment": "Config: source-identified shadows toggle; gates UI and creature shadow passes and is set by config_apply_detail_preset.",
+      "name": "config_shadows_enabled",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
+      "address": "0x00480357",
+      "comment": "Config: source-identified sharp-ground toggle; initialized by config_init_defaults but otherwise unused in this build.",
+      "name": "config_sharp_ground_enabled",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
     {
       "address": "0x00480358",
-      "comment": "Config: FX detail flag1 (enables heavier FX in some render paths; e.g. projectile_render/bonus_render). Set by config_apply_detail_preset.",
-      "name": "config_fx_detail_flag1",
+      "comment": "Config: source-identified flame-glow toggle; gates heavier projectile and bonus glow passes and is set by config_apply_detail_preset.",
+      "name": "config_flame_glow_enabled",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
     {
       "address": "0x00480359",
-      "comment": "Config: FX detail flag2 (additional FX tier toggle; observed gating an extra sprite_effect_pool render pass in bonus_render). Set by config_apply_detail_preset.",
-      "name": "config_fx_detail_flag2",
+      "comment": "Config: source-identified smoke toggle; gates an extra sprite-effect pass and is set by config_apply_detail_preset.",
+      "name": "config_smoke_enabled",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
@@ -3759,17 +3766,24 @@
     },
     {
       "address": "0x00480364",
-      "comment": "Config: per-player mode flags; value 4 triggers alternate HUD draw and movement scheme checks.",
-      "name": "config_player_mode_flags",
+      "comment": "Config: ten source-identified movement/control schemes; the classic executable actively indexes the leading player slots.",
+      "name": "config_movement_schemes",
       "program": "crimsonland.exe",
-      "type": "int[4]"
+      "type": "int[10]"
     },
     {
       "address": "0x0048038c",
-      "comment": "Config: aim scheme selector (value 4 enables analog aim axis).",
-      "name": "config_aim_scheme",
+      "comment": "Config: ten source-identified aiming-device schemes; value 4 enables analog aim axes.",
+      "name": "config_aim_schemes",
       "program": "crimsonland.exe",
-      "type": "int[4]"
+      "type": "int[10]"
+    },
+    {
+      "address": "0x004803b4",
+      "comment": "Config: source-identified config_for selector; initialized to zero and otherwise unused in this build.",
+      "name": "config_for",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004803b8",
@@ -4144,8 +4158,29 @@
     },
     {
       "address": "0x00480794",
-      "comment": "Config: perk prompt counter (0..0x32, increments on each prompt).",
-      "name": "config_perk_prompt_counter",
+      "comment": "Config: source-identified level-up count (0..0x32; increments when a perk selection becomes pending).",
+      "name": "config_level_up_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x00480798",
+      "comment": "Config: source-identified 10tons logging completion flag.",
+      "name": "config_ten_tons_logging_completed",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x0048079c",
+      "comment": "Config: source-identified first persisted installation identifier.",
+      "name": "config_unique_id_1",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004807a0",
+      "comment": "Config: source-identified second persisted installation identifier.",
+      "name": "config_unique_id_2",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -4179,8 +4214,8 @@
     },
     {
       "address": "0x004807b5",
-      "comment": "Config: score-load gating flag (used with config_highscore_date_mode).",
-      "name": "config_score_load_gate",
+      "comment": "Config: source-identified online-score visibility flag; also gates remote score records during table loading.",
+      "name": "config_show_online_scores",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
@@ -4193,7 +4228,7 @@
     },
     {
       "address": "0x004807b8",
-      "comment": "Config: Graphics detail preset (1..5); applied by config_apply_detail_preset to config_fx_detail_flag0/1/2.",
+      "comment": "Config: Graphics detail preset (1..5); applied by config_apply_detail_preset to the shadows, flame-glow, and smoke toggles.",
       "name": "config_detail_preset",
       "program": "crimsonland.exe",
       "type": "int"

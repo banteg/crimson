@@ -14,8 +14,8 @@ pub const DrawCtx = struct {
     session: *const runtime_session.DeterministicSession,
     assets: *const window_assets.RuntimeAssets,
     entity_alpha: f32 = 1.0,
-    fx_detail_1: bool = true,
-    fx_detail_2: bool = true,
+    flame_glow_enabled: bool = true,
+    smoke_enabled: bool = true,
 };
 
 pub fn drawParticlePool(ctx: DrawCtx) void {
@@ -25,7 +25,7 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
     const src_style_8 = window_atlas.effectRectById(texture.width, texture.height, @intFromEnum(window_atlas.EffectId.shield_ring)) orelse return;
 
     rl.beginBlendMode(.additive);
-    if (ctx.fx_detail_1) {
+    if (ctx.flame_glow_enabled) {
         for (ctx.session.particles.entries, 0..) |entry, idx| {
             if (!entry.active or entry.style_id == .bubblegun or (idx & 1) != 0) continue;
             const radius = @max((std.math.sin((1.0 - entry.intensity) * std.math.pi / 2.0) + 0.1) * 55.0 + 4.0, 16.0);
@@ -76,7 +76,7 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
 }
 
 pub fn drawSpriteEffectPool(ctx: DrawCtx) void {
-    if (!ctx.fx_detail_2) return;
+    if (!ctx.smoke_enabled) return;
     const texture = ctx.assets.texture(.particles);
     const src = window_atlas.atlasRect(texture.width, texture.height, 4, 7);
 

@@ -18,9 +18,9 @@ references `80/0/0`, using Microsoft Visual C++ 6.5 with
 - The title uses the variadic mono formatter at vtable slot `0x140`, even
   though the literal has no formatting directives.
 - Each player column walks five consecutive integers from
-  `config_blob.keybinds_p1` using `player * 5` as its base. Consequently, the
+  the source-shaped `config_blob.player_keys` array using `player * 5` as its base. Consequently, the
   second column reads slots 5 through 9 of that block rather than the distinct
-  `keybinds_p2` block. This surprising layout is native behavior, not a port
+  second source key block. This surprising layout is native behavior, not a port
   correction.
 - Naming the final binding `fire_key` lets VC6 naturally reuse the dead index
   register before the nested key-name/virtual-format calls. No register or

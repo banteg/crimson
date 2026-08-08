@@ -186,7 +186,7 @@ For non-clickable elements it uses a constant alpha (`200`).
 
 ### Shadow and glow passes (`ui_element_render`)
 
-When `config_blob.reserved0[0x0e]` (aka `fx_detail_0`) is nonzero:
+When `config_blob.shadows_enabled` (`0x00480356`) is nonzero:
 
 - A shadow copy of the main quad is drawn at `(pos_x+7, pos_y+7)` with tint
   `0x44444444`.

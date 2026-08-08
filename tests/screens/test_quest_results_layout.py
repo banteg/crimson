@@ -28,8 +28,8 @@ def _test_config(**updates: object) -> CrimsonConfig:
     cfg = default_crimson_cfg(Path("<memory>"))
     for key, value in updates.items():
         match str(key):
-            case "fx_detail_0":
-                cfg.display.set_fx_detail(0, bool(value))
+            case "shadows_enabled":
+                cfg.display.shadows_enabled = bool(value)
             case "game_mode":
                 cfg.gameplay.mode = GameMode(int(cast(Any, value)))
             case _:
@@ -70,7 +70,7 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     ui = QuestResultsUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=_test_config(fx_detail_0=0),
+        config=_test_config(shadows_enabled=0),
     )
     ui.phase = int(phase)
     ui.rank = 0
@@ -207,7 +207,7 @@ def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) 
     ui = QuestResultsUi(
         assets_root=tmp_path,
         base_dir=tmp_path,
-        config=_test_config(fx_detail_0=0),
+        config=_test_config(shadows_enabled=0),
     )
 
     ui._closing = True

@@ -3,21 +3,21 @@
   "sites": [
     {
       "name": "transform-shadow-declaration",
-      "find": "        if (element->use_offset_render == 0) {\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                ui_render_vec2_t shadow_pos;",
+      "find": "        if (element->use_offset_render == 0) {\n            if (config_blob.shadows_enabled) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                ui_render_vec2_t shadow_pos;",
       "replacements": [
         {
           "name": "mode-scope",
-          "text": "        if (element->use_offset_render == 0) {\n            ui_render_vec2_t shadow_pos;\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();"
+          "text": "        if (element->use_offset_render == 0) {\n            ui_render_vec2_t shadow_pos;\n            if (config_blob.shadows_enabled) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();"
         }
       ]
     },
     {
       "name": "offset-shadow-declaration",
-      "find": "        } else if (element->use_offset_render == 1) {\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                ui_render_vec2_t shadow_pos;",
+      "find": "        } else if (element->use_offset_render == 1) {\n            if (config_blob.shadows_enabled) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                ui_render_vec2_t shadow_pos;",
       "replacements": [
         {
           "name": "mode-scope",
-          "text": "        } else if (element->use_offset_render == 1) {\n            ui_render_vec2_t shadow_pos;\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();"
+          "text": "        } else if (element->use_offset_render == 1) {\n            ui_render_vec2_t shadow_pos;\n            if (config_blob.shadows_enabled) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();"
         }
       ]
     },

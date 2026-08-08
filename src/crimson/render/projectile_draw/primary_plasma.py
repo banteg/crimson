@@ -74,8 +74,8 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     )
 
     speed_scale = float(ctx.proj.speed_scale)
-    fx_detail_1 = (
-        render_frame.config.display.fx_detail_enabled(level=1, default=True) if render_frame.config is not None else True
+    flame_glow_enabled = (
+        render_frame.config.display.flame_glow_enabled if render_frame.config is not None else True
     )
 
     plasma_cfg = plasma_projectile_render_config(type_id)
@@ -125,7 +125,7 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
         dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, float(size), float(size))
         rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, head_tint)
 
-        if fx_detail_1:
+        if flame_glow_enabled:
             size = float(aura_size) * ctx.scale
             origin = rl.Vector2(size * 0.5, size * 0.5)
             dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, float(size), float(size))

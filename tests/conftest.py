@@ -56,9 +56,9 @@ def _apply_config_updates(cfg: CrimsonConfig, updates: Mapping[str, object]) -> 
                 cfg.display.violence_disabled = _as_int(value)
             case "mouse_sensitivity":
                 cfg.display.mouse_sensitivity = _as_float(value)
-            case "sound_disable":
+            case "sound_disabled":
                 cfg.audio.sound_disabled = bool(value)
-            case "music_disable":
+            case "music_disabled":
                 cfg.audio.music_disabled = bool(value)
             case "sfx_volume":
                 cfg.audio.sfx_volume = _as_float(value)
@@ -74,7 +74,7 @@ def _apply_config_updates(cfg: CrimsonConfig, updates: Mapping[str, object]) -> 
                 cfg.profile.selected_saved_name_slot = _as_int(value)
             case "saved_name_count":
                 cfg.profile.saved_name_count = _as_int(value)
-            case "score_load_gate":
+            case "show_online_scores":
                 cfg.profile.show_internet_scores = bool(value)
             case "highscore_date_mode":
                 cfg.profile.score_date_mode = HighScoreDateMode(_as_int(value))

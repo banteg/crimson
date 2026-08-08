@@ -466,9 +466,9 @@ def test_data_map_preserves_recovered_aggregate_alias_types():
         if row.get("program") == "crimsonland.exe" and row.get("name")
     }
 
-    assert types_by_name["config_direction_arrow_flags"] == "unsigned char[2]"
-    assert types_by_name["config_player_mode_flags"] == "int[4]"
-    assert types_by_name["config_aim_scheme"] == "int[4]"
+    assert types_by_name["config_direction_arrow_flags"] == "unsigned char[10]"
+    assert types_by_name["config_movement_schemes"] == "int[10]"
+    assert types_by_name["config_aim_schemes"] == "int[10]"
     assert types_by_name["config_player_name_buf"] == "char[12]"
     assert types_by_name["config_saved_name_order"] == "int[8]"
     assert types_by_name["config_saved_name_7"] == "char[27]"

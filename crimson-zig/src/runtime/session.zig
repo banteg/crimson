@@ -30,7 +30,7 @@ pub const SessionConfig = struct {
     world_size: f32,
     tick_rate: i32,
     detail_preset: i32 = 5,
-    gore_disabled: i32 = 0,
+    violence_disabled: i32 = 0,
     hardcore: bool = false,
     preserve_bugs: bool = false,
     quest_fail_retry_count: i32 = 0,
@@ -54,7 +54,7 @@ pub const SessionConfig = struct {
             .world_size = header.world_size,
             .tick_rate = header.tick_rate,
             .detail_preset = header.detail_preset,
-            .gore_disabled = header.violence_disabled,
+            .violence_disabled = header.violence_disabled,
             .hardcore = header.hardcore,
             .preserve_bugs = header.preserve_bugs,
             .quest_fail_retry_count = header.quest_fail_retry_count,
@@ -192,7 +192,7 @@ pub const DeterministicSession = struct {
             .perk_progression_enabled = config.game_mode != .rush and config.game_mode != .typo,
             .world_size = config.world_size,
             .detail_preset = config.detail_preset,
-            .gore_disabled = config.gore_disabled,
+            .gore_disabled = config.violence_disabled,
             .terrain_size = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor))),
             .dt_nominal = 1.0 / @as(f32, @floatFromInt(config.tick_rate)),
             .strict_events = options.strict_events,
@@ -205,7 +205,7 @@ pub const DeterministicSession = struct {
 
         session.quest_spawn_entries = session.quest_spawn_entries_storage[0..0];
 
-        session.state.gore_disabled = config.gore_disabled;
+        session.state.gore_disabled = config.violence_disabled;
         session.state.game_mode = config.game_mode;
         session.state.hardcore = config.hardcore;
         session.state.preserve_bugs = config.preserve_bugs;

@@ -18,14 +18,14 @@ extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
         &CRIMSON_CONFIG_DEFAULTS_BLOB.ui_info_texts,
         1,
         sizeof(CRIMSON_CONFIG_DEFAULTS_BLOB.ui_info_texts));
-    CRIMSON_CONFIG_DEFAULTS_BLOB.perk_prompt_counter = 0;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.level_up_count = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.mouse_sensitivity = 0.5f;
-    *(int *)&CRIMSON_CONFIG_DEFAULTS_BLOB.reserved6_450[0] = 1;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.ten_tons_logging_completed = 1;
     CRIMSON_CONFIG_DEFAULTS_BLOB.key_pick_perk = 0x101;
     CRIMSON_CONFIG_DEFAULTS_BLOB.key_reload = 0x102;
     CRIMSON_CONFIG_DEFAULTS_BLOB.safe_mode_backend_enabled = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.texture_scale = 1.0f;
-    CRIMSON_CONFIG_DEFAULTS_BLOB.score_load_gate = 0;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.show_online_scores = 0;
     memset(CRIMSON_CONFIG_DEFAULTS_BLOB.player_name_buf, 0, 9);
 
     i = 0;
@@ -53,19 +53,19 @@ extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
     CRIMSON_CONFIG_DEFAULTS_BLOB.sound_frequency_adjustment = 1;
     *(int *)&CRIMSON_CONFIG_DEFAULTS_BLOB.reserved1_1a4[4] = 0;
     *(int *)&CRIMSON_CONFIG_DEFAULTS_BLOB.reserved1_1a4[8] = 0;
-    CRIMSON_CONFIG_DEFAULTS_BLOB.reserved0_6c = 0;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.config_for = 0;
 
     CRIMSON_CONFIG_DEFAULTS_BLOB.display_bpp = 32;
     CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.game_mode = GAME_MODE_SURVIVAL;
-    CRIMSON_CONFIG_DEFAULTS_BLOB.fx_detail_flag0 = 1;
-    CRIMSON_CONFIG_DEFAULTS_BLOB.reserved0_0f = 0;
-    CRIMSON_CONFIG_DEFAULTS_BLOB.fx_detail_flag1 = 1;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.shadows_enabled = 1;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.sharp_ground_enabled = 0;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.flame_glow_enabled = 1;
     CRIMSON_CONFIG_DEFAULTS_BLOB.movement_schemes[0] = 2;
     CRIMSON_CONFIG_DEFAULTS_BLOB.movement_schemes[1] = 2;
     CRIMSON_CONFIG_DEFAULTS_BLOB.aim_schemes[0] = 0;
     CRIMSON_CONFIG_DEFAULTS_BLOB.aim_schemes[1] = 0;
-    CRIMSON_CONFIG_DEFAULTS_BLOB.fx_detail_flag2 = 1;
+    CRIMSON_CONFIG_DEFAULTS_BLOB.smoke_enabled = 1;
     CRIMSON_CONFIG_DEFAULTS_BLOB.player_count = 1;
     CRIMSON_CONFIG_DEFAULTS_BLOB.input_config[0].turn_key_right = 32;
     CRIMSON_CONFIG_DEFAULTS_BLOB.detail_preset = 5;

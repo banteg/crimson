@@ -20,14 +20,10 @@ PLAYER_NAME_MAX_BYTES = PLAYER_NAME_SIZE - 1
 SAVED_NAME_SLOT_COUNT = 8
 SAVED_NAME_ENTRY_SIZE = 0x1B
 SAVED_NAMES_BLOB_SIZE = SAVED_NAME_SLOT_COUNT * SAVED_NAME_ENTRY_SIZE
-UNKNOWN_248_SIZE = 0x1F8
 PLAYER_BIND_BLOCK_DWORDS = 0x10
 PLAYER_BIND_BLOCK_SIZE = PLAYER_BIND_BLOCK_DWORDS * 4
-EXT_DIRECTION_ARROW_FLAG_COUNT = 2
-EXTENDED_RESERVED_GAP_SIZE = UNKNOWN_248_SIZE - 2 * PLAYER_BIND_BLOCK_SIZE - EXT_DIRECTION_ARROW_FLAG_COUNT
-EXT_DIRECTION_ARROW_UNSET = 0
-EXT_DIRECTION_ARROW_OFF = 1
-EXT_DIRECTION_ARROW_ON = 2
+CONFIG_PLAYER_SLOT_COUNT = 10
+PORT_PLAYER_SLOT_COUNT = 4
 KEYBIND_UNBOUND_CODE = 0x17E
 RESERVED_KEYBIND_SLOT_COUNT = 2
 PADDING_KEYBIND_SLOT_COUNT = 3
@@ -51,26 +47,21 @@ PLAYER_BIND_BLOCK_STRUCT = Struct(
 )
 
 CRIMSON_CFG_STRUCT = Struct(
-    "sound_disable" / Byte,
-    "music_disable" / Byte,
+    "sound_disabled" / Byte,
+    "music_disabled" / Byte,
     "highscore_date_mode" / Byte,
     "highscore_duplicate_mode" / Byte,
-    "direction_arrow_flags" / Array(2, Byte),
-    "unknown_06" / Bytes(2),
-    "unknown_08" / Int32sl,
-    "unknown_0c" / Bytes(2),
-    "fx_detail_0" / Byte,
-    "unknown_0f" / Byte,
-    "fx_detail_1" / Byte,
-    "fx_detail_2" / Byte,
-    "unknown_12" / Bytes(2),
+    "direction_arrow_flags" / Array(CONFIG_PLAYER_SLOT_COUNT, Byte),
+    "shadows_enabled" / Byte,
+    "sharp_ground_enabled" / Byte,
+    "flame_glow_enabled" / Byte,
+    "smoke_enabled" / Byte,
+    "padding_12" / Bytes(2),
     "player_count" / Int32sl,
     "game_mode" / Int32sl,
-    "player_mode_flags" / Array(4, Int32sl),
-    "player_mode_flags_reserved" / Bytes(0x18),
-    "aim_schemes" / Array(4, Int32sl),
-    "aim_schemes_reserved" / Bytes(0x18),
-    "unknown_6c" / Int32sl,
+    "movement_schemes" / Array(CONFIG_PLAYER_SLOT_COUNT, Int32sl),
+    "aim_schemes" / Array(CONFIG_PLAYER_SLOT_COUNT, Int32sl),
+    "config_for" / Int32sl,
     "texture_scale" / Float32l,
     "player_name_buf" / Bytes(12),
     "selected_saved_name_slot" / Int32sl,
@@ -88,30 +79,24 @@ CRIMSON_CFG_STRUCT = Struct(
     "screen_width" / Int32sl,
     "screen_height" / Int32sl,
     "windowed_flag" / Byte,
-    "unknown_1c5" / Bytes(3),
-    "keybinds_p1_p2" / Array(2, PLAYER_BIND_BLOCK_STRUCT),
-    # The original wire format leaves this 0x1F8-byte gap uninterpreted.
-    # The Python port uses the front of it for P3/P4 control bindings and
-    # their direction-arrow flags, while preserving the remaining bytes.
-    "extended_keybinds_p3_p4" / Array(2, PLAYER_BIND_BLOCK_STRUCT),
-    "extended_direction_arrow_flags" / Array(EXT_DIRECTION_ARROW_FLAG_COUNT, Byte),
-    "extended_reserved_gap" / Bytes(EXTENDED_RESERVED_GAP_SIZE),
-    "unknown_440" / Int32sl,
-    "unknown_444" / Int32sl,
+    "windowed_padding" / Bytes(3),
+    "input_config" / Array(CONFIG_PLAYER_SLOT_COUNT, PLAYER_BIND_BLOCK_STRUCT),
     "hardcore_flag" / Byte,
     "ui_info_texts" / Byte,
-    "unknown_44a" / Bytes(2),
-    "perk_prompt_counter" / Int32sl,
-    "unknown_450" / Int32sl,
-    "unknown_454" / Bytes(0x0C),
+    "hardcore_info_padding" / Bytes(2),
+    "level_up_count" / Int32sl,
+    "ten_tons_logging_completed" / Int32sl,
+    "unique_id_1" / Int32sl,
+    "unique_id_2" / Int32sl,
+    "reserved_identity_word" / Int32sl,
     "sound_freq_adjustment_enabled" / Byte,
-    "unknown_461" / Bytes(3),
+    "sound_frequency_padding" / Bytes(3),
     "sfx_volume" / Float32l,
     "music_volume" / Float32l,
     "violence_disabled" / Byte,
-    "score_load_gate" / Byte,
+    "show_online_scores" / Byte,
     "safe_mode_backend_enabled" / Byte,
-    "unknown_46f" / Byte,
+    "detail_padding" / Byte,
     "detail_preset" / Int32sl,
     "mouse_sensitivity" / Float32l,
     "keybind_pick_perk" / Int32sl,
@@ -146,18 +131,10 @@ class CrimsonDisplayConfig(msgspec.Struct):
     texture_scale: float
     mouse_sensitivity: float
     detail_preset: int
-    fx_detail: tuple[bool, bool, bool]
+    shadows_enabled: bool
+    flame_glow_enabled: bool
+    smoke_enabled: bool
     violence_disabled: int
-
-    def fx_detail_enabled(self, level: int, default: bool = False) -> bool:
-        _ = default
-        return bool(self.fx_detail[int(level)])
-
-    def set_fx_detail(self, level: int, enabled: bool) -> None:
-        idx = int(level)
-        values = list(self.fx_detail)
-        values[idx] = bool(enabled)
-        self.fx_detail = (bool(values[0]), bool(values[1]), bool(values[2]))
 
 
 class CrimsonAudioConfig(msgspec.Struct):
@@ -303,9 +280,7 @@ def _require_range(value: int, *, minimum: int, maximum: int, field: str) -> int
 
 def _parsed_player_bind_block(raw: dict[str, Any], *, player_index: int) -> dict[str, Any]:
     idx = _player_index(player_index)
-    if idx < 2:
-        return raw["keybinds_p1_p2"][idx]
-    return raw["extended_keybinds_p3_p4"][idx - 2]
+    return raw["input_config"][idx]
 
 
 def _parsed_player_bind_block_is_uninitialized(raw_block: dict[str, Any]) -> bool:
@@ -382,35 +357,16 @@ def _encode_player_bind_block(player: CrimsonPlayerControls) -> dict[str, object
     }
 
 
-def _encode_primary_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[dict[str, object]]:
-    return [_encode_player_bind_block(players[idx]) for idx in range(2)]
-
-
-def _encode_extended_keybinds(players: Sequence[CrimsonPlayerControls]) -> list[dict[str, object]]:
-    return [_encode_player_bind_block(players[idx]) for idx in range(2, 4)]
-
-
 def _decode_direction_arrow(raw: dict, *, player_index: int) -> bool:
     idx = _player_index(player_index)
-    if idx < 2:
-        return bool(int(raw["direction_arrow_flags"][idx]))
-
-    value = int(raw["extended_direction_arrow_flags"][idx - 2])
-    if value == EXT_DIRECTION_ARROW_OFF:
-        return False
-    if value in (EXT_DIRECTION_ARROW_UNSET, EXT_DIRECTION_ARROW_ON):
-        return True
-    raise ValueError(f"unsupported extended direction arrow flag value: {value}")
+    return bool(int(raw["direction_arrow_flags"][idx]))
 
 
-def _encode_direction_arrow_flags(players: Sequence[CrimsonPlayerControls]) -> tuple[list[int], tuple[int, int]]:
-    primary = [1, 1]
-    for idx in range(2):
-        primary[idx] = 1 if bool(players[idx].show_direction_arrow) else 0
-    extended: list[int] = []
-    for idx in range(2, 4):
-        extended.append(EXT_DIRECTION_ARROW_ON if bool(players[idx].show_direction_arrow) else EXT_DIRECTION_ARROW_OFF)
-    return primary, (extended[0], extended[1])
+def _encode_direction_arrow_flags(players: Sequence[CrimsonPlayerControls]) -> list[int]:
+    values = [0] * CONFIG_PLAYER_SLOT_COUNT
+    for idx in range(PORT_PLAYER_SLOT_COUNT):
+        values[idx] = 1 if bool(players[idx].show_direction_arrow) else 0
+    return values
 
 
 def _decode_movement(value: int) -> MovementControlType:
@@ -505,7 +461,9 @@ def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
             texture_scale=1.0,
             mouse_sensitivity=0.5,
             detail_preset=5,
-            fx_detail=(True, True, True),
+            shadows_enabled=True,
+            flame_glow_enabled=True,
+            smoke_enabled=True,
             violence_disabled=0,
         ),
         audio=CrimsonAudioConfig(
@@ -540,15 +498,15 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
         raise ValueError(f"{path} has unexpected size {len(blob)} (expected {CRIMSON_CFG_SIZE})")
     raw = CRIMSON_CFG_STRUCT.parse(blob)
 
-    fx_detail = (
-        bool(raw["fx_detail_0"]),
-        bool(raw["fx_detail_1"]),
-        bool(raw["fx_detail_2"]),
-    )
+    shadows_enabled = bool(raw["shadows_enabled"])
+    flame_glow_enabled = bool(raw["flame_glow_enabled"])
+    smoke_enabled = bool(raw["smoke_enabled"])
     detail_preset = int(raw["detail_preset"])
-    if detail_preset == 0 and not any(fx_detail):
+    if detail_preset == 0 and not (shadows_enabled or flame_glow_enabled or smoke_enabled):
         detail_preset = 5
-        fx_detail = (True, True, True)
+        shadows_enabled = True
+        flame_glow_enabled = True
+        smoke_enabled = True
     else:
         detail_preset = _require_range(detail_preset, minimum=1, maximum=5, field="detail_preset")
 
@@ -556,7 +514,7 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
         _player_controls_from_parsed_bind_block(
             _parsed_player_bind_block(raw, player_index=idx),
             player_index=idx,
-            movement=_decode_movement(raw["player_mode_flags"][idx]),
+            movement=_decode_movement(raw["movement_schemes"][idx]),
             aim_scheme=_decode_aim_scheme(raw["aim_schemes"][idx]),
             show_direction_arrow=_decode_direction_arrow(raw, player_index=idx),
         )
@@ -573,12 +531,14 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
             texture_scale=float(raw["texture_scale"]),
             mouse_sensitivity=float(raw["mouse_sensitivity"]),
             detail_preset=detail_preset,
-            fx_detail=fx_detail,
+            shadows_enabled=shadows_enabled,
+            flame_glow_enabled=flame_glow_enabled,
+            smoke_enabled=smoke_enabled,
             violence_disabled=int(raw["violence_disabled"]),
         ),
         audio=CrimsonAudioConfig(
-            sound_disabled=bool(raw["sound_disable"]),
-            music_disabled=bool(raw["music_disable"]),
+            sound_disabled=bool(raw["sound_disabled"]),
+            music_disabled=bool(raw["music_disabled"]),
             sfx_volume=float(raw["sfx_volume"]),
             music_volume=float(raw["music_volume"]),
         ),
@@ -610,7 +570,7 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
                 field="selected_saved_name_slot",
             ),
             saved_names=_decode_saved_names(raw["saved_names"]),
-            show_internet_scores=bool(raw["score_load_gate"]),
+            show_internet_scores=bool(raw["show_online_scores"]),
             score_date_mode=_decode_high_score_date_mode(raw["highscore_date_mode"]),
         ),
         controls=CrimsonControlsConfig(
@@ -630,16 +590,14 @@ def _canonical_wire_data() -> dict:
 
 def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
     data = _canonical_wire_data()
-    primary_direction_arrows, extended_direction_arrows = _encode_direction_arrow_flags(config.controls.players)
 
-    data["sound_disable"] = 1 if config.audio.sound_disabled else 0
-    data["music_disable"] = 1 if config.audio.music_disabled else 0
+    data["sound_disabled"] = 1 if config.audio.sound_disabled else 0
+    data["music_disabled"] = 1 if config.audio.music_disabled else 0
     data["highscore_date_mode"] = int(config.profile.score_date_mode)
-    data["direction_arrow_flags"] = primary_direction_arrows
-    data["unknown_08"] = 0
-    data["fx_detail_0"] = 1 if config.display.fx_detail_enabled(0) else 0
-    data["fx_detail_1"] = 1 if config.display.fx_detail_enabled(1) else 0
-    data["fx_detail_2"] = 1 if config.display.fx_detail_enabled(2) else 0
+    data["direction_arrow_flags"] = _encode_direction_arrow_flags(config.controls.players)
+    data["shadows_enabled"] = 1 if config.display.shadows_enabled else 0
+    data["flame_glow_enabled"] = 1 if config.display.flame_glow_enabled else 0
+    data["smoke_enabled"] = 1 if config.display.smoke_enabled else 0
     data["player_count"] = _require_range(
         int(config.gameplay.player_count),
         minimum=1,
@@ -647,8 +605,8 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
         field="player_count",
     )
     data["game_mode"] = int(config.gameplay.mode)
-    data["player_mode_flags"] = [int(player.movement) for player in config.controls.players]
-    data["aim_schemes"] = [int(player.aim_scheme) for player in config.controls.players]
+    data["movement_schemes"][:PORT_PLAYER_SLOT_COUNT] = [int(player.movement) for player in config.controls.players]
+    data["aim_schemes"][:PORT_PLAYER_SLOT_COUNT] = [int(player.aim_scheme) for player in config.controls.players]
     data["texture_scale"] = float(config.display.texture_scale)
     data["selected_saved_name_slot"] = _require_range(
         int(config.profile.selected_saved_name_slot),
@@ -678,17 +636,17 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
     data["screen_width"] = int(config.display.width)
     data["screen_height"] = int(config.display.height)
     data["windowed_flag"] = 1 if config.display.windowed else 0
-    data["keybinds_p1_p2"] = _encode_primary_keybinds(config.controls.players)
-    data["extended_keybinds_p3_p4"] = _encode_extended_keybinds(config.controls.players)
-    data["extended_direction_arrow_flags"] = [int(extended_direction_arrows[0]), int(extended_direction_arrows[1])]
+    data["input_config"][:PORT_PLAYER_SLOT_COUNT] = [
+        _encode_player_bind_block(player) for player in config.controls.players
+    ]
     data["hardcore_flag"] = 1 if config.gameplay.hardcore else 0
     data["ui_info_texts"] = 1 if config.gameplay.show_info_texts else 0
-    data["unknown_450"] = 1
+    data["ten_tons_logging_completed"] = 1
     data["sound_freq_adjustment_enabled"] = 1
     data["sfx_volume"] = float(config.audio.sfx_volume)
     data["music_volume"] = float(config.audio.music_volume)
     data["violence_disabled"] = int(config.display.violence_disabled)
-    data["score_load_gate"] = 1 if config.profile.show_internet_scores else 0
+    data["show_online_scores"] = 1 if config.profile.show_internet_scores else 0
     data["detail_preset"] = _require_range(
         int(config.display.detail_preset),
         minimum=1,
@@ -719,9 +677,15 @@ def apply_detail_preset(config: CrimsonConfig, preset: int | None = None) -> int
     selected = _require_range(selected, minimum=1, maximum=5, field="detail_preset")
     config.display.detail_preset = selected
     if selected <= 1:
-        config.display.fx_detail = (False, False, False)
+        config.display.shadows_enabled = False
+        config.display.flame_glow_enabled = False
+        config.display.smoke_enabled = False
     elif selected == 2:
-        config.display.fx_detail = (False, False, True)
+        config.display.shadows_enabled = False
+        config.display.flame_glow_enabled = False
+        config.display.smoke_enabled = True
     else:
-        config.display.fx_detail = (True, True, True)
+        config.display.shadows_enabled = True
+        config.display.flame_glow_enabled = True
+        config.display.smoke_enabled = True
     return selected

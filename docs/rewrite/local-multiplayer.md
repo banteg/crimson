@@ -11,9 +11,8 @@
 ## Implemented wiring
 
 - Config persistence:
-  - P1/P2 keybind blocks stay in `keybinds` (`0x80` bytes).
-  - P3/P4 keybind blocks are stored in reserved `unknown_248` bytes.
-  - per-player HUD direction-arrow toggles use reserved extension bytes for P3/P4.
+  - P1-P4 keybind blocks use source-defined `input_config[0..3]`; the on-disk array has ten slots.
+  - per-player HUD direction-arrow toggles use source-defined `direction_arrow_flags[0..3]`; that array also has ten slots.
   - Code: `src/grim/config.py`
 - Input backend:
   - per-player `is_down`/`is_pressed` and axis reads (keyboard/mouse/joy/RIM code families).
@@ -36,4 +35,3 @@
   - life bonus aggregation supports N-player health values for 3/4-player runs.
   - 1/2-player scoring behavior is preserved.
   - Code: `src/crimson/quests/results.py`, `src/crimson/game/__init__.py`, `src/crimson/modes/quest_mode.py`
-

@@ -210,8 +210,8 @@ extern "C" void gameplay_update_and_render(void)
                     * -1000.0f);
         if (player_state_table[0].experience > level_threshold) {
             ++perk_pending_count;
-            if (++config_blob.perk_prompt_counter > 50) {
-                config_blob.perk_prompt_counter = 0;
+            if (++config_blob.level_up_count > 50) {
+                config_blob.level_up_count = 0;
                 config_blob.ui_info_texts = 0;
             }
             sfx_play(sfx_ui_levelup, 1.0f);

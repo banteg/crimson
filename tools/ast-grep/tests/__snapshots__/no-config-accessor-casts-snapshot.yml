@@ -57,6 +57,13 @@ snapshots:
       start: 8
       end: 41
   ? |
+    shadows_enabled = bool(self._state.config.display.shadows_enabled)
+  : labels:
+    - source: bool(self._state.config.display.shadows_enabled)
+      style: primary
+      start: 18
+      end: 66
+  ? |
     volume = float(config.music_volume)
   : labels:
     - source: float(config.music_volume)

@@ -641,12 +641,12 @@ class GameOverUi(msgspec.Struct):
         panel_top_left = panel_layout.top_left
 
         # Panel background
-        fx_detail = self.config.display.fx_detail_enabled(level=0, default=False)
+        shadows_enabled = self.config.display.shadows_enabled
         draw_classic_menu_panel(
             resources.texture(TextureId.UI_MENU_PANEL),
             dst=panel.to_rl(),
             tint=rl.WHITE,
-            shadow=fx_detail,
+            shadow=shadows_enabled,
         )
 
         # Banner (Reaper / Well done)

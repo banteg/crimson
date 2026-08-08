@@ -105,7 +105,7 @@ Animation note:
 - The quit callback (`ui_menu_main_click_quit @ 0x00447450`) clears `0x00487292` back to `0`, allowing the sign to pivot out during the last
   `300ms` of the close.
 
-- When `fx_detail` is enabled (`config_blob.reserved0[0xe] != 0`), `ui_element_render` also draws a
+- When `config_blob.shadows_enabled` (`0x00480356`) is enabled, `ui_element_render` also draws a
   shadow pass with `+7,+7` offset and tint `0x44444444` using the same transform (rotation matrix).
 
 Runtime verification (Frida):
@@ -347,7 +347,7 @@ Then:
 
 The element renderer draws, in order:
 
-1. Optional **shadow** pass (when `fx_detail_0 != 0`):
+1. Optional **shadow** pass (when `shadows_enabled != 0`):
    - draw at `(pos_x + 7, pos_y + 7)` with tint `0x44444444`
 2. Main quad(s)
 3. Overlay label quad

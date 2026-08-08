@@ -3,23 +3,23 @@
   "sites": [
     {
       "name": "player-selection-publication-order",
-      "find": "    if (selected >= 0) {\n        controls_aim_method_list.selected_index =\n            config_aim_scheme[selected];\n        controls_move_method_list.selected_index =\n            config_player_mode_flags[selected] - 1;\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n    }\n",
+      "find": "    if (selected >= 0) {\n        controls_aim_method_list.selected_index =\n            config_aim_schemes[selected];\n        controls_move_method_list.selected_index =\n            config_movement_schemes[selected] - 1;\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n    }\n",
       "replacements": [
         {
           "name": "profile-player-aim-move",
-          "text": "    if (selected >= 0) {\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n        controls_aim_method_list.selected_index =\n            config_aim_scheme[selected];\n        controls_move_method_list.selected_index =\n            config_player_mode_flags[selected] - 1;\n    }\n"
+          "text": "    if (selected >= 0) {\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n        controls_aim_method_list.selected_index =\n            config_aim_schemes[selected];\n        controls_move_method_list.selected_index =\n            config_movement_schemes[selected] - 1;\n    }\n"
         },
         {
           "name": "player-profile-aim-move",
-          "text": "    if (selected >= 0) {\n        controls_rebind_player_index = selected;\n        controls_player_profile_list.selected_index = selected;\n        controls_aim_method_list.selected_index =\n            config_aim_scheme[selected];\n        controls_move_method_list.selected_index =\n            config_player_mode_flags[selected] - 1;\n    }\n"
+          "text": "    if (selected >= 0) {\n        controls_rebind_player_index = selected;\n        controls_player_profile_list.selected_index = selected;\n        controls_aim_method_list.selected_index =\n            config_aim_schemes[selected];\n        controls_move_method_list.selected_index =\n            config_movement_schemes[selected] - 1;\n    }\n"
         },
         {
           "name": "staged-derived-profile-player",
-          "text": "    if (selected >= 0) {\n        int selected_aim = config_aim_scheme[selected];\n        int selected_move = config_player_mode_flags[selected] - 1;\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n        controls_aim_method_list.selected_index = selected_aim;\n        controls_move_method_list.selected_index = selected_move;\n    }\n"
+          "text": "    if (selected >= 0) {\n        int selected_aim = config_aim_schemes[selected];\n        int selected_move = config_movement_schemes[selected] - 1;\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n        controls_aim_method_list.selected_index = selected_aim;\n        controls_move_method_list.selected_index = selected_move;\n    }\n"
         },
         {
           "name": "profile-player-move-aim",
-          "text": "    if (selected >= 0) {\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n        controls_move_method_list.selected_index =\n            config_player_mode_flags[selected] - 1;\n        controls_aim_method_list.selected_index =\n            config_aim_scheme[selected];\n    }\n"
+          "text": "    if (selected >= 0) {\n        controls_player_profile_list.selected_index = selected;\n        controls_rebind_player_index = selected;\n        controls_move_method_list.selected_index =\n            config_movement_schemes[selected] - 1;\n        controls_aim_method_list.selected_index =\n            config_aim_schemes[selected];\n    }\n"
         }
       ]
     }

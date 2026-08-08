@@ -6,7 +6,7 @@
 #include "crimsonland_highscore.h"
 
 extern unsigned char config_highscore_date_mode;
-extern unsigned char config_score_load_gate;
+extern unsigned char config_show_online_scores;
 extern int config_selected_saved_name_slot;
 extern char config_saved_name_0[][27];
 extern unsigned char config_hardcore;
@@ -62,9 +62,9 @@ extern "C" void highscore_sync_worker(void *)
 
     char *data = new char[0x8000];
     config_highscore_date_mode = 0;
-    config_score_load_gate = 0;
+    config_show_online_scores = 0;
     j_highscore_load_table();
-    config_score_load_gate = 1;
+    config_show_online_scores = 1;
 
     memset(data, 0, 0x8000);
     data[0] = 0x42;

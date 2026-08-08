@@ -4,7 +4,7 @@ from enum import IntEnum
 
 
 class MovementControlType(IntEnum):
-    """Movement control mode ids from `config_player_mode_flags`."""
+    """Movement control mode ids from `config_movement_schemes`."""
 
     UNKNOWN = 0
     RELATIVE = 1

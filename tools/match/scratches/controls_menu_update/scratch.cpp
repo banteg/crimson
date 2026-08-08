@@ -56,9 +56,9 @@ extern float controls_rebind_axis_peak_abs_154;
 extern float controls_rebind_axis_peak_abs_155;
 extern unsigned char ui_focus_input_locked;
 
-extern int config_aim_scheme[4];
-extern int config_player_mode_flags[4];
-extern unsigned char config_direction_arrow_flags[4];
+extern int config_aim_schemes[10];
+extern int config_movement_schemes[10];
+extern unsigned char config_direction_arrow_flags[10];
 extern int config_p1_move_forward[64];
 extern int config_key_pick_perk;
 extern int config_key_reload;
@@ -282,9 +282,9 @@ extern "C" void controls_menu_update(void)
     if (controls_menu_selection_refresh_latch) {
         controls_menu_selection_refresh_latch = 0;
         controls_aim_method_list.selected_index =
-            config_aim_scheme[controls_rebind_player_index];
+            config_aim_schemes[controls_rebind_player_index];
         controls_move_method_list.selected_index =
-            config_player_mode_flags[controls_rebind_player_index] - 1;
+            config_movement_schemes[controls_rebind_player_index] - 1;
     }
 
     char *aim_items[7];
@@ -507,11 +507,11 @@ extern "C" void controls_menu_update(void)
     controls_color_t section_tint = render_tint;
 
     draw_rebind_heading(draw_position, "Aiming", section_tint);
-    if (config_aim_scheme[controls_rebind_player_index] == 1) {
+    if (config_aim_schemes[controls_rebind_player_index] == 1) {
         draw_rebind_row(draw_position, "Torso left:", 7);
         draw_rebind_row(draw_position, "Torso right:", 8);
     }
-    if (config_aim_scheme[controls_rebind_player_index] == 4) {
+    if (config_aim_schemes[controls_rebind_player_index] == 4) {
         draw_rebind_row(draw_position, "Aim Up/Down Axis:", 9);
         draw_rebind_row(draw_position, "Aim Left/Right Axis:", 10);
     }
@@ -521,22 +521,22 @@ extern "C" void controls_menu_update(void)
     draw_position.x -= 8.0f;
     draw_rebind_heading_specialized(
         draw_position, "Moving", section_tint);
-    if (config_player_mode_flags[controls_rebind_player_index] == 2) {
+    if (config_movement_schemes[controls_rebind_player_index] == 2) {
         draw_rebind_row(draw_position, "Move Up:", 0);
         draw_rebind_row(draw_position, "Move Down:", 1);
         draw_rebind_row(draw_position, "Move Left:", 2);
         draw_rebind_row(draw_position, "Move Right:", 3);
     }
-    if (config_player_mode_flags[controls_rebind_player_index] == 1) {
+    if (config_movement_schemes[controls_rebind_player_index] == 1) {
         draw_rebind_row(draw_position, "Forward:", 0);
         draw_rebind_row(draw_position, "Backwards:", 1);
         draw_rebind_row(draw_position, "Turn left:", 2);
         draw_rebind_row(draw_position, "Turn right:", 3);
     }
-    if (config_player_mode_flags[controls_rebind_player_index] == 4) {
+    if (config_movement_schemes[controls_rebind_player_index] == 4) {
         draw_rebind_row(draw_position, "Move to cursor:", 14);
     }
-    if (config_player_mode_flags[controls_rebind_player_index] == 3) {
+    if (config_movement_schemes[controls_rebind_player_index] == 3) {
         draw_rebind_row(draw_position, "Up/Down Axis:", 11);
         draw_rebind_row(draw_position, "Left/Right Axis:", 12);
     }
@@ -547,7 +547,7 @@ extern "C" void controls_menu_update(void)
         draw_rebind_heading_misc(
             draw_position, "Misc", section_tint);
         draw_rebind_row(draw_position, "Level Up:", 13);
-        if (config_player_mode_flags[controls_rebind_player_index] != 4) {
+        if (config_movement_schemes[controls_rebind_player_index] != 4) {
             draw_rebind_row(draw_position, "Reload:", 14);
         }
         draw_position.y += 8.0f;
@@ -743,7 +743,7 @@ extern "C" void controls_menu_update(void)
         controls_move_method_list);
     if (selected >= 0) {
         controls_move_method_list.selected_index = selected;
-        config_player_mode_flags[controls_rebind_player_index] = selected + 1;
+        config_movement_schemes[controls_rebind_player_index] = selected + 1;
     }
     selected = activate_list(
         left_base,
@@ -751,7 +751,7 @@ extern "C" void controls_menu_update(void)
         controls_aim_method_list);
     if (selected >= 0) {
         controls_aim_method_list.selected_index = selected;
-        config_aim_scheme[controls_rebind_player_index] = selected;
+        config_aim_schemes[controls_rebind_player_index] = selected;
     }
     selected = activate_list(
         left_base,
@@ -761,8 +761,8 @@ extern "C" void controls_menu_update(void)
         controls_player_profile_list.selected_index = selected;
         controls_rebind_player_index = selected;
         controls_aim_method_list.selected_index =
-            config_aim_scheme[selected];
+            config_aim_schemes[selected];
         controls_move_method_list.selected_index =
-            config_player_mode_flags[selected] - 1;
+            config_movement_schemes[selected] - 1;
     }
 }

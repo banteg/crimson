@@ -577,11 +577,11 @@ play_game_done:
             static highscore_checkbox_t online_scores_checkbox;
             highscore_vec2_t widget_position(right_panel.x, right_panel.y);
             online_scores_checkbox.label = "Show internet scores";
-            online_scores_checkbox.checked = config_blob.score_load_gate;
+            online_scores_checkbox.checked = config_blob.show_online_scores;
             if (ui_checkbox_update(
                     (float *)&widget_position,
                     (ui_checkbox_t *)&online_scores_checkbox)) {
-                config_blob.score_load_gate = online_scores_checkbox.checked;
+                config_blob.show_online_scores = online_scores_checkbox.checked;
                 j_highscore_load_table();
             }
         }

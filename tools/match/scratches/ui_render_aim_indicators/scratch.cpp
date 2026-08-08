@@ -42,7 +42,7 @@ struct aim_static_lifetime_t {
 extern "C" {
 extern int config_player_count;
 extern unsigned char config_direction_arrow_flags[];
-extern int config_player_mode_flags[];
+extern int config_movement_schemes[];
 extern aim_vec2_t camera_offset;
 extern int bullet_trail_texture;
 extern int world_arrow_marker_texture;
@@ -136,7 +136,7 @@ extern "C" void ui_render_aim_indicators(void)
             }
 
             grim_interface_ptr->grim_begin_batch();
-            if (config_player_mode_flags[render_overlay_player_index] == 4) {
+            if (config_movement_schemes[render_overlay_player_index] == 4) {
                 aim_vec2_t inset(16.0f, 16.0f);
                 aim_screen =
                     camera_offset

@@ -46,7 +46,7 @@ class PerkMenuUiContext(msgspec.Struct, frozen=True):
     preserve_bugs: bool
     resources: RuntimeResources
     mouse: rl.Vector2
-    fx_detail: bool = False
+    shadows_enabled: bool = False
 
 
 class PerkMenuController:
@@ -289,7 +289,7 @@ class PerkMenuController:
         )
 
         panel_tex = ctx.resources.texture(TextureId.UI_MENU_PANEL)
-        draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl(), shadow=bool(ctx.fx_detail))
+        draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl(), shadow=bool(ctx.shadows_enabled))
 
         title_tex = ctx.resources.texture(TextureId.UI_TEXT_PICK_A_PERK)
         src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))

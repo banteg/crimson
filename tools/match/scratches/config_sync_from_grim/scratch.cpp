@@ -43,14 +43,14 @@ extern "C" bool config_sync_from_grim(void)
     if (grim_config_invoked) {
         defaults.hardcore = 0;
         defaults.ui_info_texts = 1;
-        defaults.perk_prompt_counter = 0;
+        defaults.level_up_count = 0;
         defaults.mouse_sensitivity = 0.5f;
-        *(int *)&defaults.reserved6_450[0] = 1;
+        defaults.ten_tons_logging_completed = 1;
         defaults.key_pick_perk = 0x101;
         defaults.key_reload = 0x102;
         defaults.safe_mode_backend_enabled = 0;
         defaults.texture_scale = 1.0f;
-        defaults.score_load_gate = 0;
+        defaults.show_online_scores = 0;
         memset(defaults.player_name_buf, 0, 9);
 
         for (i = 0; i < 8; ++i) {
@@ -66,9 +66,9 @@ extern "C" bool config_sync_from_grim(void)
         defaults.sound_frequency_adjustment = 1;
         defaults.display_bpp = 32;
         defaults.game_mode = GAME_MODE_SURVIVAL;
-        defaults.fx_detail_flag0 = 1;
-        defaults.fx_detail_flag1 = 1;
-        defaults.fx_detail_flag2 = 1;
+        defaults.shadows_enabled = 1;
+        defaults.flame_glow_enabled = 1;
+        defaults.smoke_enabled = 1;
         defaults.player_count = 1;
         defaults.input_config[0].turn_key_right = 32;
         defaults.selected_saved_name_slot = 0;
@@ -81,11 +81,11 @@ extern "C" bool config_sync_from_grim(void)
         defaults.aim_pov_right = 9000;
         defaults.aim_pov_left = 27000;
         *(int *)&defaults.reserved1_1a4[0] = 100;
-        defaults.reserved0_6c = 0;
+        defaults.config_for = 0;
         defaults.screen_width = 800;
         defaults.screen_height = 600;
         defaults.windowed = 0;
-        defaults.reserved0_0f = 0;
+        defaults.sharp_ground_enabled = 0;
         defaults.movement_schemes[0] = 2;
         defaults.movement_schemes[1] = 2;
         defaults.aim_schemes[0] = 0;
