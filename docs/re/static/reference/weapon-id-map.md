@@ -19,9 +19,9 @@ Notes:
   0x0047933a + 2 → **Lighting Rifle**). These are resolved by reading the
   executable bytes at the exact address, matching the `weapon_table_init` copies.
 
-- IDs 34–40 and 46–49 are left **Unknown / unlabelled** because
-  `weapon_table_init` never copies a name into those entries and there are no
-  direct callsite references to those ids. They are likely unused/reserved.
+- IDs 34–40 and 46–49 are **unused slots**. `weapon_table_init` leaves their
+  runtime rows zeroed, never assigns names or stats, and no direct callsite
+  references those ids.
 
 ## IDs
 
@@ -61,22 +61,22 @@ Notes:
 | 31 | 0x1f | Ion Shotgun |
 | 32 | 0x20 | Flameburst |
 | 33 | 0x21 | RayGun |
-| 34 | 0x22 | Unknown / unlabelled |
-| 35 | 0x23 | Unknown / unlabelled |
-| 36 | 0x24 | Unknown / unlabelled |
-| 37 | 0x25 | Unknown / unlabelled |
-| 38 | 0x26 | Unknown / unlabelled |
-| 39 | 0x27 | Unknown / unlabelled |
-| 40 | 0x28 | Unknown / unlabelled |
+| 34 | 0x22 | Unused slot |
+| 35 | 0x23 | Unused slot |
+| 36 | 0x24 | Unused slot |
+| 37 | 0x25 | Unused slot |
+| 38 | 0x26 | Unused slot |
+| 39 | 0x27 | Unused slot |
+| 40 | 0x28 | Unused slot |
 | 41 | 0x29 | Plague Sphreader Gun |
 | 42 | 0x2a | Bubblegun |
 | 43 | 0x2b | Rainbow Gun |
 | 44 | 0x2c | Grim Weapon |
 | 45 | 0x2d | Fire bullets |
-| 46 | 0x2e | Unknown / unlabelled |
-| 47 | 0x2f | Unknown / unlabelled |
-| 48 | 0x30 | Unknown / unlabelled |
-| 49 | 0x31 | Unknown / unlabelled |
+| 46 | 0x2e | Unused slot |
+| 47 | 0x2f | Unused slot |
+| 48 | 0x30 | Unused slot |
+| 49 | 0x31 | Unused slot |
 | 50 | 0x32 | Transmutator |
 | 51 | 0x33 | Blaster R-300 |
 | 52 | 0x34 | Lighting Rifle |

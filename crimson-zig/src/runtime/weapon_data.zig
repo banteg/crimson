@@ -52,22 +52,22 @@ pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
     .ion_shotgun = .{ .clip_size = 10, .reload_time = 1.9, .shot_cooldown = 0.85, .pellet_count = 8, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 1, .spread_heat_inc = 0.27 },
     .flameburst = .{ .clip_size = 60, .reload_time = 3.0, .shot_cooldown = 0.02, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 0, .spread_heat_inc = 0.18 },
     .raygun = .{ .clip_size = 12, .reload_time = 2.0, .shot_cooldown = 0.7, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 0, .spread_heat_inc = 0.38 },
-    .unknown_34 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_35 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_36 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_37 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_38 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_39 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_40 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_34 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_35 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_36 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_37 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_38 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_39 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_40 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
     .plague_spreader_gun = .{ .clip_size = 5, .reload_time = 1.2, .shot_cooldown = 0.2, .pellet_count = 1, .travel_budget = 15.0, .damage_scale = 0.0, .flags = 8, .spread_heat_inc = 0.04 },
     .bubblegun = .{ .clip_size = 15, .reload_time = 1.2, .shot_cooldown = 0.1613, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 0.05 },
     .rainbow_gun = .{ .clip_size = 10, .reload_time = 1.2, .shot_cooldown = 0.2, .pellet_count = 1, .travel_budget = 10.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 0.09 },
     .grim_weapon = .{ .clip_size = 3, .reload_time = 1.2, .shot_cooldown = 0.5, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 0, .spread_heat_inc = 0.4 },
     .fire_bullets = .{ .clip_size = 112, .reload_time = 1.2, .shot_cooldown = 0.14, .pellet_count = 1, .travel_budget = 60.0, .damage_scale = 0.25, .flags = 1, .spread_heat_inc = 0.22 },
-    .unknown_46 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_47 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_48 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .unknown_49 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_46 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_47 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_48 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
+    .unused_49 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
     .transmutator = .{ .clip_size = 50, .reload_time = 5.0, .shot_cooldown = 0.04, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 9, .spread_heat_inc = 0.04 },
     .blaster_r_300 = .{ .clip_size = 20, .reload_time = 2.0, .shot_cooldown = 0.08, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 9, .spread_heat_inc = 0.05 },
     .lightning_rifle = .{ .clip_size = 500, .reload_time = 8.0, .shot_cooldown = 4.0, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 1.0 },
@@ -276,7 +276,7 @@ test "weapon icon indices mirror runtime ui wicon metadata" {
     try std.testing.expectEqual(@as(i32, 25), weaponIconIndex(.evil_scythe));
     try std.testing.expectEqual(@as(i32, 30), weaponIconIndex(.raygun));
     try std.testing.expectEqual(@as(i32, 52), weaponIconIndex(.nuke_launcher));
-    try std.testing.expectEqual(@as(i32, -1), weaponIconIndex(.unknown_34));
+    try std.testing.expectEqual(@as(i32, -1), weaponIconIndex(.unused_34));
 }
 
 test "non-damaging weapon templates preserve native damage scales" {
