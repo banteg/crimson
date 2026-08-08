@@ -15,19 +15,20 @@ and `i * 300 + 20000`.
 
 The continuous append-count candidate resolves all five audited references,
 preserves the recovered loop bounds, x87 trigonometric sequence, final entries,
-and trigger arithmetic, and scores 85.08%. It currently emits 87 of the 94
-native instructions: direct scalar tail positions omit seven stack-temporary
-instructions, while the semantically equivalent aggregate form restores 94
-instructions but scores 76.60%. The remaining differences are VC6 scheduling
-across the loop advances and tail materialization.
+and trigger arithmetic, and scores 91.49%. It emits the exact 94 native
+instructions. Advancing the semantic spiral step after deriving its angle and
+radius recovers the native early integer update and spill, while constructing
+the first tail position before deriving its trigger offset recovers the native
+overlapped two-position materialization. The remaining differences are one
+independent loop cursor/step swap and an ESI/EDI allocation swap across the two
+tail entries.
 
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. All masked
-references resolve, and the aggregate-tail check accounts for the current
-seven-instruction deficit. Classification remains `RECOVERY=semantic-complete`,
-`RESIDUAL=compiler`.
+references resolve and candidate and target both contain 94 instructions.
+Classification remains `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
 
 ## 2026-07-27 focused profile and mutation pass
 
@@ -115,3 +116,25 @@ references 5/0/0. Moving the spiral step increment to the native-looking early
 position changed the frame and regressed sharply, so the loop and tail remain
 unchanged. The retained source SHA-256 is
 `510738dcc239b2d48066760f0737360340ce0f10ce13a56cb8707c9a2fdd22e8`.
+
+## 2026-08-08 induction and tail-construction recovery
+
+The append-count source removes the former dependency between `step_index`
+and entry selection, making a previously harmful publication boundary useful.
+The retained loop derives `angle` and `radius`, advances `step_index`, and then
+publishes the complete current record. VC6 now emits the native early `inc` and
+updated-index spill, raising the score from 85.08% to 86.19%.
+
+Restoring aggregate construction for both tail positions initially recovered
+94/94 instructions but scored 82.98%. Moving the semantic
+`trigger_offset_ms = step_index * 300` derivation after the first tail position
+lets VC6 overlap the two position temporaries with the trigger arithmetic in
+the native order. The retained combination reaches 357.72340425531917/391
+weighted bytes, or 91.49%, with a 31-instruction prefix and references 5/0/0.
+
+The remaining diff is bounded to `inc step_index` versus the carried entry
+cursor advance in the loop and an ESI/EDI swap for the shared tail template
+and second position. Pointer, reference, preadvanced-index, named-position,
+direct-metadata, declaration-order, and VC6 profile spellings were neutral or
+regressed. Retained source SHA-256:
+`d0df7cd3f15a4207be87fa7c6f0f874e6cc6833cf938e2741110f7eb5378c5e7`.

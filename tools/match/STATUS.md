@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **709/810** functions matched exactly, **134819/341970** code bytes (**39.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304225/341970** code bytes (**89.0%**).
+Fuzzy-weighted alignment is **304250/341970** code bytes (**89.0%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 576/671 | 119875/320805 | 37.4% | 283418/320805 | 88.3% | 671/671 | 320805/320805 | 100.0% | 576/671 |
+| crimsonland.exe | 576/671 | 119875/320805 | 37.4% | 283443/320805 | 88.4% | 671/671 | 320805/320805 | 100.0% | 576/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**576/671** functions, **119875/320805** bytes (**37.4%**), **283418/320805** fuzzy-weighted bytes (**88.3%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **576/671** scratches verified.
+**576/671** functions, **119875/320805** bytes (**37.4%**), **283443/320805** fuzzy-weighted bytes (**88.4%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **576/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -530,7 +530,7 @@ Artifact freshness issues:
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 421/429 | 8 | 102/102 | 98.04% | 70/102 | 8/0/0 |  | quest-fortress-append-count-grid |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 318/390 | 72 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
 | wip | quest_build_the_beating | 0x00435610 | 649 | 504/649 | 145 | 166/166 | 77.71% | 39/166 | 7/0/0 |  | quest-the-beating-append-count |
-| wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 333/391 | 58 | 87/94 | 85.08% | 32/94 | 5/0/0 |  | quest-spanking-of-the-dead-direct-opening |
+| wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 358/391 | 33 | 94/94 | 91.49% | 31/94 | 5/0/0 |  | quest-spanking-of-the-dead-tail-construction |
 | match | quest_build_hidden_evil | 0x00435a30 | 407 | 407/407 | 0 | 101/101 | 100.00% | 101/101 | 10/0/0 |  | quest-hidden-evil-append-count |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
 | match | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 466/466 | 0 | 135/135 | 100.00% | 135/135 | 7/0/0 |  | quest-minor-alien-breach-append-count |

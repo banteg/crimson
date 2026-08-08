@@ -49,9 +49,9 @@ extern "C" void quest_build_the_spanking_of_the_dead(
     int step_index = 0;
     int trigger_time_ms = 5000;
     while (trigger_time_ms < 0xA988) {
-        float step = (float)step_index;
-        float angle = step * 0.333333343f;
-        float radius = 512.0f - step * 3.79999995f;
+        float angle = (float)step_index * 0.333333343f;
+        float radius = 512.0f - (float)step_index * 3.79999995f;
+        ++step_index;
 
         spawns[entry_count].pos = quest_vec2_t(
             (float)cos(angle) * radius + 512.0f,
@@ -63,20 +63,17 @@ extern "C" void quest_build_the_spanking_of_the_dead(
 
         ++entry_count;
         trigger_time_ms += 300;
-        ++step_index;
     }
 
+    spawns[entry_count].pos = quest_vec2_t(1280.0f, 512.0f);
     int trigger_offset_ms = step_index * 300;
-    spawns[entry_count].pos.x = 1280.0f;
-    spawns[entry_count].pos.y = 512.0f;
     spawns[entry_count].set_spawn(
         SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
         trigger_offset_ms + 10000,
         16);
     ++entry_count;
 
-    spawns[entry_count].pos.x = -256.0f;
-    spawns[entry_count].pos.y = 512.0f;
+    spawns[entry_count].pos = quest_vec2_t(-256.0f, 512.0f);
     spawns[entry_count].set_spawn(
         SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
         trigger_offset_ms + 20000,
