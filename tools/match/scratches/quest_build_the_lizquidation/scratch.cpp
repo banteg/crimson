@@ -17,6 +17,7 @@ struct quest_entry_original_t {
         trigger_time_ms = time_ms;
         count = spawn_count;
     }
+
 };
 
 struct quest_spawn_builder_t {
@@ -30,26 +31,28 @@ struct quest_spawn_builder_t {
 extern "C" void quest_build_the_lizquidation(
     quest_spawn_entry_t *entries, int *count)
 {
-    int wave = 0;
     quest_spawn_builder_t builder((quest_entry_original_t *)entries);
+    int wave = 0;
 
     for (; wave < 10; ++wave) {
-        int spawn_count = wave + 6;
         quest_entry_original_t *spawn = &builder.spawns[builder.count];
-        int trigger_time_ms = wave * 8000 + 1500;
 
+        spawn->set_spawn(
+            SPAWN_ID_LIZARD_RANDOM_2E,
+            wave * 8000 + 1500,
+            wave + 6);
         spawn->pos.x = (float)(terrain_texture_width + 64);
         spawn->pos.y = (float)(terrain_texture_width / 2);
         ++builder.count;
-        spawn->set_spawn(
-            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);
 
         spawn = &builder.spawns[builder.count];
         spawn->pos.x = -64.0f;
         spawn->pos.y = (float)(terrain_texture_width / 2);
-        ++builder.count;
         spawn->set_spawn(
-            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);
+            SPAWN_ID_LIZARD_RANDOM_2E,
+            wave * 8000 + 1500,
+            wave + 6);
+        ++builder.count;
 
         if (wave == 4) {
             builder.spawns[builder.count].pos.x =

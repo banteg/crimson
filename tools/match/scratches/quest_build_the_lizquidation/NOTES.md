@@ -78,3 +78,29 @@ registers. The validated source SHA-256 is
 It now scores 136.45569620253164/245 weighted bytes, or
 55.69620253164557%, with a 108.54430379746836-byte gap, 79/79 instructions,
 prefix four, and references 3/0/0.
+
+## 2026-08-08 house-style recovery
+
+The recovered builder family style resolves most of the former whole-loop
+allocation residual. Repeating the two derived expressions at their semantic
+publication sites, rather than retaining named wave locals, assigns the native
+roles naturally: EDI is the wave index, EBX is the trigger time, EBP is the
+spawn count, ECX is the append count, and ESI is the current record. That step
+alone raises the match to 74.68% without changing the 79-instruction shape.
+
+The opening entry is the allocation boundary for the entire loop. Publishing
+its metadata before its independent position fields makes VC6 establish the
+shared trigger/count values before the two position walks; later entries keep
+the usual complete-entry-then-append form. Declaring the zero-count builder
+before the wave induction variable then reproduces the native initialization
+order. Together these source-level boundaries raise the candidate from 55.70%
+to 88.61%, extend the exact prefix from four to seven instructions, retain
+79/79 instructions, and resolve references 5/0/0.
+
+Scalar and vector full-entry helpers, a shared metadata aggregate, an indexed
+post-advance publication, and alternate helper store orders were rejected.
+They either introduced stack temporaries, changed the record cursor, or lost
+the native register roles. The remaining delta is confined to independent
+opening metadata/position scheduling and the second entry's x87 latency slots.
+Source SHA-256:
+`b15cc30638c7f58de6058962ce2af57458c63b956c5e95069f389534abd5a98a`.
