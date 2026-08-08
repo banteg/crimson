@@ -87,3 +87,20 @@ regresses to 61.69% and loses one resolved reference. All five variants are
 recorded under spec SHA-256
 `3670bec0873e59fdc94f445a9460db318ae5216700b581ea533caef6c2a6d298`.
 The early `ESI` save is not controlled by the entry/scan declaration lifetime.
+
+## Inline valid-body recovery
+
+The surviving 2003 SDK source establishes that small gameplay helpers are
+written as ordinary `inline` functions. Applying that source boundary to the
+post-guard allocation, spacing scan, and entry initialization recovers the
+native shrink-wrapped register lifetime: `bonus_spawn_at_pos` saves only
+`EDI` while checking the bounds and Rush-mode guard, then the inlined valid
+body introduces the native delayed `push esi` immediately before
+`bonus_alloc_slot()`.
+
+This is an exact recovery, not a scheduling tradeoff. The candidate improves
+from **88.44%**, 100/99 instructions, prefix zero, and references `14/0/0` to
+**100.00%**, 99/99 instructions, prefix 99, and references `15/0/0`. The
+helper preserves every previously recovered side effect and return path; its
+retained source SHA-256 is
+`4045aff58eef0864cc8ca90662c2971582b3d7c05b823c6af3176bdeb97d8e1f`.

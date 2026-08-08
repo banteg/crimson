@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**715/810** functions matched exactly, **137076/341970** code bytes (**40.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**716/810** functions matched exactly, **137385/341970** code bytes (**40.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304753/341970** code bytes (**89.1%**).
+Fuzzy-weighted alignment is **304789/341970** code bytes (**89.1%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 60 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 61 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 582/671 | 122132/320805 | 38.1% | 283947/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 582/671 |
+| crimsonland.exe | 583/671 | 122441/320805 | 38.2% | 283983/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 583/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**582/671** functions, **122132/320805** bytes (**38.1%**), **283947/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **582/671** scratches verified.
+**583/671** functions, **122441/320805** bytes (**38.2%**), **283983/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **583/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -428,7 +428,7 @@ Artifact freshness issues:
 | match | bonus_pool_sentinel_global_init | 0x0041f570 | 11 | 11/11 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | bonus-pool-sentinel-global-initialization |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 46/46 | 0 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | bonus_spawn_at | 0x0041f5b0 | 479 | 479/479 | 0 | 128/128 | 100.00% | 128/128 | 28/0/0 |  | gameplay-bonus-spawn |
-| wip | bonus_spawn_at_pos | 0x0041f790 | 309 | 273/309 | 36 | 100/99 | 88.44% | 0/99 | 14/0/0 |  | gameplay-bonus-spawn |
+| match | bonus_spawn_at_pos | 0x0041f790 | 309 | 309/309 | 0 | 99/99 | 100.00% | 99/99 | 15/0/0 |  | gameplay-bonus-spawn |
 | match | bonus_try_spawn_on_kill | 0x0041f8d0 | 730 | 730/730 | 0 | 207/207 | 100.00% | 207/207 | 47/0/0 |  | gameplay-bonus-drop |
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 175/175 | 0 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 19/19 | 0 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
