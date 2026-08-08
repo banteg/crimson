@@ -33,7 +33,10 @@ extern "C" void quest_build_cross_fire(
     spawns[0].pos = quest_vec2_t(
         1074.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[0].set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 100, 6);
+    int *first_trigger = &spawns[0].trigger_time_ms;
+    first_trigger[-1] = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+    first_trigger[0] = 100;
+    first_trigger[1] = 6;
 
     spawns[1].pos = quest_vec2_t(-40.0f, 512.0f);
     spawns[1].set_spawn(

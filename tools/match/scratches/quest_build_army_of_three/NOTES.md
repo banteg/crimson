@@ -57,3 +57,18 @@ preserves 116/116 instructions and the ten-instruction prefix but loses 68.14
 fuzzy-weighted bytes, falling from 86.21% to 75.00%. The native overlap between
 neighboring vector temporaries and complete metadata stores requires the
 three-argument helper boundary here, so the canonical source is unchanged.
+
+## 2026-08-08 first-entry publication pass
+
+The fixed-table house style from neighboring builders transfers at the opening
+boundary: publishing entry zero through its trigger-field cursor raises the
+score from 86.21% to 91.38% while retaining 116/116 instructions, the ten-
+instruction prefix, and 0/0/0 references. The cursor changes VC6 allocation
+for the complete unrolled table even though equivalent cursor forms at entries
+one through ten are individually byte-neutral.
+
+`trigger-cursor-mutations.json` (SHA-256
+`5e2080a013d0197b44a2ae10de14b95ffd9c866256fa0c8cdd596fc3d3f03b35`)
+bounds those ten remaining sites, and the complete result is recorded in
+`experiments.jsonl`. The residual remains independent vector-temporary and
+metadata scheduling rather than missing recovered behavior.

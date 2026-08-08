@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-1-metadata",
+      "find": "    spawns[1].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 5500, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_1_trigger = &spawns[1].trigger_time_ms;\n    entry_1_trigger[-1] = SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;\n    entry_1_trigger[0] = 5500;\n    entry_1_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-2-metadata",
+      "find": "    spawns[2].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 15000, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_2_trigger = &spawns[2].trigger_time_ms;\n    entry_2_trigger[-1] = SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;\n    entry_2_trigger[0] = 15000;\n    entry_2_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-3-metadata",
+      "find": "    spawns[3].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 19500, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_3_trigger = &spawns[3].trigger_time_ms;\n    entry_3_trigger[-1] = SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;\n    entry_3_trigger[0] = 19500;\n    entry_3_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-4-metadata",
+      "find": "    spawns[4].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 22500, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_4_trigger = &spawns[4].trigger_time_ms;\n    entry_4_trigger[-1] = SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;\n    entry_4_trigger[0] = 22500;\n    entry_4_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-5-metadata",
+      "find": "    spawns[5].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 26500, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_5_trigger = &spawns[5].trigger_time_ms;\n    entry_5_trigger[-1] = SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;\n    entry_5_trigger[0] = 26500;\n    entry_5_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-6-metadata",
+      "find": "    spawns[6].set_spawn(SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 35500, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_6_trigger = &spawns[6].trigger_time_ms;\n    entry_6_trigger[-1] = SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16;\n    entry_6_trigger[0] = 35500;\n    entry_6_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-7-metadata",
+      "find": "    spawns[7].set_spawn(SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 39500, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_7_trigger = &spawns[7].trigger_time_ms;\n    entry_7_trigger[-1] = SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16;\n    entry_7_trigger[0] = 39500;\n    entry_7_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-8-metadata",
+      "find": "    spawns[8].set_spawn(SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 42500, 1);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_8_trigger = &spawns[8].trigger_time_ms;\n    entry_8_trigger[-1] = SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16;\n    entry_8_trigger[0] = 42500;\n    entry_8_trigger[1] = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-9-metadata",
+      "find": "    spawns[9].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 52500, 3);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_9_trigger = &spawns[9].trigger_time_ms;\n    entry_9_trigger[-1] = SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;\n    entry_9_trigger[0] = 52500;\n    entry_9_trigger[1] = 3;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-10-metadata",
+      "find": "    spawns[10].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 56500, 3);\n",
+      "replacements": [
+        {
+          "name": "trigger-cursor",
+          "text": "    int *entry_10_trigger = &spawns[10].trigger_time_ms;\n    entry_10_trigger[-1] = SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;\n    entry_10_trigger[0] = 56500;\n    entry_10_trigger[1] = 3;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -43,3 +43,18 @@ alone loses 10 fuzzy-weighted bytes. The fixed table values, offsets, and
 setter semantics are therefore not hiding the remaining schedule difference;
 the complete 11-variant record is retained in `experiments.jsonl`, and no
 source mutation is kept.
+
+## 2026-08-08 staged-constant pass
+
+The native opening introduces the shared 128 coordinate, template, trigger,
+count, and 896 coordinate at successive semantic publication points rather
+than hoisting all five before the table stores. Staging those values as named
+locals and directly publishing the first four repeated entries raises the
+score from 87.67% to 89.04% and extends the prefix from two to six
+instructions, with 73/73 instructions and 0/0/0 references preserved.
+
+The remaining opening residual comes from VC6 grouping the two later 128
+stores before reusing that register for 512. The only other differences are
+the early loads of the shared 448 and 576 coordinates. Cursor and scalar
+position-helper variants regress, so the stronger staged-constant form is
+retained without barriers or forced registers.

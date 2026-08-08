@@ -31,7 +31,10 @@ extern "C" void quest_build_army_of_three(
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
 
     spawns[0].pos = quest_vec2_t(-64.0f, 256.0f);
-    spawns[0].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 500, 1);
+    int *first_trigger = &spawns[0].trigger_time_ms;
+    first_trigger[-1] = SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;
+    first_trigger[0] = 500;
+    first_trigger[1] = 1;
 
     spawns[1].pos = quest_vec2_t(-64.0f, 512.0f);
     spawns[1].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 5500, 1);

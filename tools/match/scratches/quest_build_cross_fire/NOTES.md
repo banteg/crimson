@@ -48,3 +48,14 @@ every helper-order, other metadata, or direct-position variant regresses by
 native vector temporary. No source change is retained. Validation remains
 318.1578947368421/390 weighted bytes, a 71.84210526315792 gap, 76/76
 instructions, prefix ten, and references 2/0/0.
+
+## 2026-08-08 first-entry publication pass
+
+Publishing the first entry through a trigger-field cursor preserves the exact
+seven-entry table while changing the lifetime of its initial metadata owner.
+That single source-level boundary moves the first mismatch from instruction 10
+to instruction 24 and raises the score from 81.58% to 93.42%, with the native
+76/76 instruction count and 2/0/0 references unchanged. The residual is now
+three localized independent-store schedules: entry-one metadata against the
+next vector temporary, then two template stores against the following x
+coordinate construction.
