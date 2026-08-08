@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **714/810** functions matched exactly, **136452/341970** code bytes (**39.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304605/341970** code bytes (**89.1%**).
+Fuzzy-weighted alignment is **304651/341970** code bytes (**89.1%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 52 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 56 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 581/671 | 121508/320805 | 37.9% | 283799/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 581/671 |
+| crimsonland.exe | 581/671 | 121508/320805 | 37.9% | 283845/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 581/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**581/671** functions, **121508/320805** bytes (**37.9%**), **283799/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **581/671** scratches verified.
+**581/671** functions, **121508/320805** bytes (**37.9%**), **283845/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **581/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -526,7 +526,7 @@ Artifact freshness issues:
 | wip | quest_build_the_gathering | 0x004349c0 | 725 | 649/725 | 76 | 134/134 | 89.55% | 12/134 | 0/0/0 |  | quest-the-gathering-fixed-table |
 | wip | quest_build_army_of_three | 0x00434ca0 | 608 | 603/608 | 5 | 116/116 | 99.14% | 13/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |
 | wip | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 537/541 | 4 | 141/141 | 99.29% | 20/141 | 18/0/0 |  | quest-knee-deep-direct-opening |
-| wip | quest_build_the_gang_wars | 0x00435120 | 424 | 378/424 | 46 | 92/92 | 89.13% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
+| wip | quest_build_the_gang_wars | 0x00435120 | 424 | 401/424 | 23 | 92/92 | 94.57% | 33/92 | 8/0/0 |  | quest-gang-wars-append-prefix |
 | match | quest_build_the_fortress | 0x004352d0 | 429 | 429/429 | 0 | 102/102 | 100.00% | 102/102 | 8/0/0 |  | quest-fortress-field-cursor-grid |
 | match | quest_build_cross_fire | 0x00435480 | 390 | 390/390 | 0 | 76/76 | 100.00% | 76/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
 | wip | quest_build_the_beating | 0x00435610 | 649 | 504/649 | 145 | 166/166 | 77.71% | 39/166 | 7/0/0 |  | quest-the-beating-append-count |
@@ -551,7 +551,7 @@ Artifact freshness issues:
 | wip | quest_build_spideroids | 0x004373c0 | 224 | 220/224 | 4 | 62/62 | 98.39% | 5/62 | 3/0/0 |  | quest-spideroids-builder |
 | match | quest_build_evil_zombies_at_large | 0x004374a0 | 244 | 244/244 | 0 | 81/81 | 100.00% | 81/81 | 6/0/0 |  | quest-evil-zombies-at-large-builder |
 | wip | quest_build_everred_pastures | 0x004375a0 | 367 | 341/367 | 26 | 114/114 | 92.98% | 30/114 | 7/0/0 |  | quest-everred-pastures-cardinal-waves |
-| wip | quest_build_lizard_kings | 0x00437710 | 254 | 200/254 | 54 | 66/66 | 78.79% | 7/66 | 6/0/0 |  | quest-lizard-kings-builder |
+| wip | quest_build_lizard_kings | 0x00437710 | 254 | 223/254 | 31 | 66/66 | 87.88% | 13/66 | 6/0/0 |  | quest-lizard-kings-staged-prefix |
 | wip | quest_build_sweep_stakes | 0x00437810 | 258 | 238/258 | 20 | 76/76 | 92.11% | 30/76 | 7/0/0 |  | quest-sweep-stakes-append-count |
 | match | quest_build_deja_vu | 0x00437920 | 209 | 209/209 | 0 | 63/63 | 100.00% | 63/63 | 4/0/0 |  | quest-deja-vu-split-publication |
 | match | quest_build_target_practice | 0x00437a00 | 240 | 240/240 | 0 | 69/69 | 100.00% | 69/69 | 8/0/0 |  | quest-target-practice-indexed-builder |

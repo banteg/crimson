@@ -48,26 +48,34 @@ extern "C" void quest_build_lizard_kings(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].set(
-        quest_vec2_t(1152.0f, 512.0f),
-        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,
-        1500,
-        1);
-    spawns[1].set(
-        quest_vec2_t(-128.0f, 512.0f),
-        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,
-        1500,
-        1);
-    spawns[2].set(
-        quest_vec2_t(1152.0f, 896.0f),
-        SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11,
-        1500,
-        1);
-
-    int *template_cursor = &spawns[3].template_id;
+    spawns[entry_count].pos = quest_vec2_t(1152.0f, 512.0f);
+    int chain_template_id = SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11;
+    spawns[entry_count].template_id = chain_template_id;
     int trigger_time_ms = 1500;
-    for (int angle_index = 0; angle_index < 28; ++angle_index) {
+    int one = 1;
+    quest_vec2_t next_position_1(-128.0f, 512.0f);
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = one;
+    ++entry_count;
+
+    spawns[entry_count].pos = next_position_1;
+    spawns[entry_count].template_id = chain_template_id;
+    quest_vec2_t next_position_2(1152.0f, 896.0f);
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = one;
+    ++entry_count;
+
+    spawns[entry_count].pos = next_position_2;
+    spawns[entry_count].template_id = chain_template_id;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    int angle_index = 0;
+    spawns[entry_count].count = one;
+    ++entry_count;
+
+    int *template_cursor = &spawns[entry_count].template_id;
+    for (; angle_index < 28; ++angle_index) {
         float angle = (float)angle_index * 0.34906587f;
         float *record_fields = (float *)template_cursor;
         record_fields[-3] =

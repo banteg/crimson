@@ -12,15 +12,18 @@ recomputed negative ring angle. The final count is 31.
 The candidate reproduces the fixed-entry vector temporaries and the complete
 native x87 ring stack: the integer index remains live below the positive angle,
 cosine and sine consume the duplicated angle, and the original index is then
-multiplied by the negative step for heading. The retained source models the
-native template-field induction pointer directly and emits the same 66
-instructions, with all six constant references resolved. Its current weighted
-match is 78.79%.
+multiplied by the negative step for heading. The three fixed entries now publish
+through one append count. Each following position is constructed while the
+current entry's metadata remains live, and the ring index begins before the
+third count is published. The retained source models the native template-field
+induction pointer directly and emits the same 66 instructions, with all six
+constant references resolved. Its current weighted match is 87.88% with a
+13-instruction exact prefix.
 
-The remaining residual is independent-store scheduling across the three fixed
-entries and the x87 ring body. The template cursor removes the former
-loop-invariant `mov edi, 0x31`, but VC6 still schedules fixed-entry saves and
-ring metadata around the x87 work differently. Direct position fields,
+The fixed prefix now differs by only one independent load placement. The larger
+remaining residual is the x87 ring body: the template cursor removes the former
+loop-invariant `mov edi, 0x31`, but VC6 still schedules ring metadata and loop
+updates around the trigonometric stack differently. Direct position fields,
 all-fields and metadata-only setters, compiler profiles, cursor views, member
 access, pointer-advance placements, fixed-value lifetimes, and helper orders
 are bounded without artificial dependencies, so this remains an honest WIP.
@@ -87,3 +90,14 @@ instructions, a seven-instruction prefix, and references 6/0/0. Source
 SHA-256: `fb6a655e181465a4cdb07211f7c558e387190c2b193e75de987d95c4e8273a55`.
 Experiment ledger SHA-256:
 `ea064d53f789c16d9ec1f0004dacc24221941c739b32341c1284cbebfaec5d29`.
+
+## Staged-prefix recovery (2026-08-08)
+
+Replaying the fixed-table publication style recovered in adjacent quest
+builders improves the score from 78.79% to 87.88%. One continuous append count
+owns the three fixed entries; the next named position is constructed before the
+current trigger/count publication; and the zero ring index is introduced before
+the third fixed count. The change preserves 66/66 instructions and `6/0/0`
+references while extending the exact prefix from seven to 13 instructions.
+Split-component positions and typed count pointers are byte-neutral, and a full
+aggregate ring setter regresses, so only the staged prefix is retained.

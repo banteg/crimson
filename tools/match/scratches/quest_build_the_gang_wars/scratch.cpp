@@ -29,24 +29,25 @@ extern "C" void quest_build_the_gang_wars(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int spawn_index = 0;
 
-    spawns[0].pos = quest_vec2_t(
+    spawns[spawn_index].pos = quest_vec2_t(
         -150.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[0].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-        100,
-        1);
+    spawns[spawn_index].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    int one = 1;
+    spawns[spawn_index].trigger_time_ms = 100;
+    spawns[spawn_index].count = one;
+    ++spawn_index;
 
-    spawns[1].pos = quest_vec2_t(
+    spawns[spawn_index].pos = quest_vec2_t(
         1174.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[1].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-        2500,
-        1);
+    spawns[spawn_index].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[spawn_index].trigger_time_ms = 2500;
+    spawns[spawn_index].count = one;
+    ++spawn_index;
 
-    int spawn_index = 2;
     int trigger_time_ms = 5500;
     int waves_remaining = 10;
     do {

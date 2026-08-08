@@ -17,15 +17,16 @@ fractional half-height rather than using integer floor division. Python and
 Zig now share an explicitly exact-position append path for this proven
 exception to the usual native quest-coordinate truncation.
 
-The candidate reproduces the exact 92-instruction body and all seven audited
-references, scoring 89.13%. An integer spawn index is strength-reduced into the
-same native pointer anchors and improves substantially over an explicit cursor
-(70.65%). Whole-function direct metadata stores regress, but expanding exactly
-the two repeated side-wave setters into direct fields improves both loop
-regions while leaving the fixed-entry setters intact. Residuals are instruction
-scheduling around constant loads, independent fixed-entry stores, and epilogue
-pops. VC6.5pp and VC6.6 produce the same result as the default profile, so no
-override is justified.
+The candidate reproduces the exact 92-instruction body and all eight audited
+references, scoring 94.57%. A continuous append index now publishes the two
+opening records. Their metadata is written directly, with a shared count-one
+lifetime carried across the boundary. This recovers the complete prologue and
+opening table through instruction 33. The integer index is then strength-
+reduced into the same native loop pointer anchors and remains substantially
+stronger than an explicit cursor. Residuals are three independent scheduling
+clusters around the two loop anchors, the later fixed entry, and epilogue pops.
+VC6.5pp and VC6.6 produce the same result as the default profile, so no override
+is justified.
 
 ## Recovery classification audit
 
@@ -44,5 +45,16 @@ each repeated loop setter; retaining both raises weighted bytes from
 `368.69565217391306` to `377.9130434782609` and reduces the gap from
 `55.30434782608694` to `46.086956521739125`. A 12-variant retained-source
 follow-up and five helper-store permutations find no further gain. The final
-candidate remains 92/92 instructions with a four-instruction prefix and
-`7/0/0` references.
+candidate at that checkpoint remained 92/92 instructions with a four-
+instruction prefix and `7/0/0` references.
+
+## Append-prefix recovery (2026-08-08)
+
+Publishing the two opening records through the loop's append index, spelling
+their metadata directly, and sharing the count-one value improves the score
+from 89.13% to 94.57%. It extends the exact prefix from four to 33 instructions
+while preserving 92/92 instructions and resolving `8/0/0` references.
+Replaying explicit record and trigger-field cursors against this stronger
+prefix regresses the already correct loop, while direct later metadata and
+staged left-wave position variants are byte-neutral. Only the opening
+publication shape is retained.
