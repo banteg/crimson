@@ -38,34 +38,46 @@ extern "C" void quest_build_the_blighting(
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
     int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;
+    int entry_count = 0;
 
-    spawns[0].pos.x = (float)(terrain_texture_width + 128);
-    spawns[0].pos.y = (float)(terrain_texture_width / 2);
-    spawns[0].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+    spawns[entry_count].pos.x = (float)(terrain_texture_width + 128);
+    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+    ++entry_count;
 
-    spawns[1].pos.x = -128.0f;
-    spawns[1].pos.y = (float)(terrain_texture_width / 2);
-    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+    spawns[entry_count].pos.x = -128.0f;
+    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+    ++entry_count;
 
-    spawns[2].pos.y = 128.0f;
-    spawns[2].pos.x = 896.0f;
-    spawns[2].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
+    spawns[entry_count].pos.y = 128.0f;
+    spawns[entry_count].pos.x = 896.0f;
+    spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+    int one = 1;
+    spawns[entry_count].trigger_time_ms = 2000;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    spawns[3].pos.y = 128.0f;
-    spawns[3].pos.x = 128.0f;
-    spawns[3].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
+    spawns[entry_count].pos.y = 128.0f;
+    spawns[entry_count].pos.x = 128.0f;
+    spawns[entry_count].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, one);
+    ++entry_count;
 
-    spawns[4].pos.y = 896.0f;
-    spawns[4].pos.x = 128.0f;
-    spawns[4].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
+    spawns[entry_count].pos.y = 896.0f;
+    spawns[entry_count].pos.x = 128.0f;
+    spawns[entry_count].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, one);
+    ++entry_count;
 
-    spawns[5].pos.y = 896.0f;
-    spawns[5].pos.x = 896.0f;
-    spawns[5].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
+    spawns[entry_count].pos.y = 896.0f;
+    spawns[entry_count].pos.x = 896.0f;
+    spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+    spawns[entry_count].trigger_time_ms = 2000;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
     int wave = 0;
-    quest_spawn_builder_t builder(&spawns[6], 6);
     int trigger_time_ms = 4000;
+    quest_spawn_builder_t builder(&spawns[entry_count], entry_count);
     while (wave < 8) {
         int parity = wave % 2;
 

@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **703/810** functions matched exactly, **133367/341970** code bytes (**39.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303907/341970** code bytes (**88.9%**).
+Fuzzy-weighted alignment is **303937/341970** code bytes (**88.9%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 26 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 28 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 570/671 | 118423/320805 | 36.9% | 283101/320805 | 88.2% | 671/671 | 320805/320805 | 100.0% | 570/671 |
+| crimsonland.exe | 570/671 | 118423/320805 | 36.9% | 283130/320805 | 88.3% | 671/671 | 320805/320805 | 100.0% | 570/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**570/671** functions, **118423/320805** bytes (**36.9%**), **283101/320805** fuzzy-weighted bytes (**88.2%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **570/671** scratches verified.
+**570/671** functions, **118423/320805** bytes (**36.9%**), **283130/320805** fuzzy-weighted bytes (**88.3%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **570/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -561,7 +561,7 @@ Artifact freshness issues:
 | wip | quest_build_zombie_time | 0x00437d70 | 152 | 125/152 | 27 | 50/50 | 82.00% | 16/50 | 3/0/0 |  | quest-zombie-time-builder |
 | wip | quest_build_frontline_assault | 0x00437e10 | 285 | 240/285 | 45 | 82/84 | 84.34% | 18/84 | 1/0/0 |  | quest-frontline-assault-builder |
 | wip | quest_build_the_collaboration | 0x00437f30 | 286 | 246/286 | 40 | 86/86 | 86.05% | 22/86 | 7/0/0 |  | quest-the-collaboration-builder |
-| wip | quest_build_the_blighting | 0x00438050 | 624 | 591/624 | 33 | 190/190 | 94.74% | 17/190 | 11/0/0 |  | quest-the-blighting-fixed-spawners |
+| wip | quest_build_the_blighting | 0x00438050 | 624 | 621/624 | 3 | 190/190 | 99.47% | 62/190 | 11/0/0 |  | quest-the-blighting-append-prefix |
 | match | quest_build_the_annihilation | 0x004382c0 | 278 | 278/278 | 0 | 77/77 | 100.00% | 77/77 | 1/0/0 |  | quest-the-annihilation-builder |
 | match | quest_build_the_massacre | 0x004383e0 | 184 | 184/184 | 0 | 61/61 | 100.00% | 61/61 | 4/0/0 |  | quest-the-massacre-builder |
 | match | quest_build_the_killing | 0x004384a0 | 602 | 602/602 | 0 | 173/173 | 100.00% | 173/173 | 14/0/0 |  | quest-the-killing-discarded-rng-cycle |
