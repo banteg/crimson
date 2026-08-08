@@ -15,11 +15,11 @@ and `i * 300 + 20000`.
 
 The continuous append-count candidate resolves all five audited references,
 preserves the recovered loop bounds, x87 trigonometric sequence, final entries,
-and trigger arithmetic, and scores 79.56%. It currently emits 87 of the 94
+and trigger arithmetic, and scores 85.08%. It currently emits 87 of the 94
 native instructions: direct scalar tail positions omit seven stack-temporary
 instructions, while the semantically equivalent aggregate form restores 94
 instructions but scores 76.60%. The remaining differences are VC6 scheduling
-across the opening stores, loop advances, and tail materialization.
+across the loop advances and tail materialization.
 
 ## Recovery classification audit
 
@@ -104,3 +104,14 @@ four to six instructions, and preserves references 5/0/0. The direct tail
 field form remains the higher-scoring semantic spelling; the aggregate form
 was rechecked at 76.60% and 94/94 instructions. The retained source SHA-256 is
 `0695f3c179201fb1dd37e7c14eb952b4aca14f4eb2ebe2094bbc677d5556356a`.
+
+## Direct opening metadata
+
+Writing the template, trigger, and count fields explicitly for the two fixed
+opening entries matches the native publication schedule through the first 32
+instructions. The candidate improves from 79.56% to 85.08%, extends the exact
+prefix from six to 32 instructions, and remains 87/94 instructions with
+references 5/0/0. Moving the spiral step increment to the native-looking early
+position changed the frame and regressed sharply, so the loop and tail remain
+unchanged. The retained source SHA-256 is
+`510738dcc239b2d48066760f0737360340ce0f10ce13a56cb8707c9a2fdd22e8`.

@@ -14,26 +14,22 @@ for the native 1024-square quest terrain.
 The retained append-count source form reproduces the native biased ESI
 induction pointer, signed `% 2` lowering, alternating immediate stores, signed
 width halving, x87 conversions, loop variables, tail multiplication chains,
-constant output count, and all five references. It compiles to the same 90
-instructions, preserves a 36-instruction prefix, and scores 86.67%.
+constant output count, and all five references. It matches all 90 native
+instructions exactly.
 
-The residual is independent VC6 scheduling. Native advances the induction
-pointer and wave before the midpoint conversion completes, then stores the
-loop metadata through negative offsets; the candidate schedules those stores
-before the x87 result. The tail count-one stores and epilogue arithmetic are
-likewise reordered. A direct cursor, a post-incremented cursor, ternary float
-selection, direct metadata fields, and explicit count-one lifetime were
-checked. `msvc6.5pp` and `msvc6.6` are identical; `msvc7.0` regresses to 85
-instructions. This remains an honest WIP without volatile or dependency-only
-scheduler steering.
+The decisive house-style boundary is separate indexed publication: position
+and metadata both use `spawns[entry_count]` expressions rather than sharing a
+record pointer. VC6 strength-reduces those repeated expressions into the native
+biased induction pointer, advances it before the midpoint conversion finishes,
+and publishes metadata through negative offsets. Direct metadata on the two
+tail entries likewise preserves their native arithmetic and epilogue schedule.
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, constants,
+record stores, induction policy, and output count. The candidate is an exact
+normalized instruction and reference match, so no recovery or compiler
+residual remains.
 
 ## Exact-tail follow-up (2026-07-27)
 
@@ -72,3 +68,12 @@ and introduced explicit tail-trigger locals. None exceeded 86.67%; split
 cursors also changed register allocation and instruction count. The remaining
 three regions are still honest VC6 scheduling residuals, so no negative-field
 cursor or dependency-only steering is retained.
+
+## 2026-08-08 exact indexed-publication recovery
+
+Direct metadata for both tail entries first raises the post-append candidate
+from 86.67% to 92.22%. Replacing the loop's shared record pointer with separate
+`spawns[entry_count]` position and metadata expressions then recovers the exact
+native induction schedule and produces a 100% match: 90/90 instructions and
+references `5/0/0`. Retained source SHA-256:
+`75d1df00a1ce362ab80271f3830c1f11671f1e3e628dff4987aedeb5b79839b4`.

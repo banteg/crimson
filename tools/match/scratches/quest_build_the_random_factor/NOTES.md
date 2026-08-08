@@ -10,10 +10,10 @@ midpoint with the current trigger and player count.
 
 Keeping the entries base and emitted count in a builder object recovers the
 native base-plus-scaled-index addressing and register allocation instead of
-VC6 strength-reducing the loop to a cursor. The candidate has the same 74
-instructions and scores 90.54%. Residuals are independent template/trigger
-stores moving around `pos.y` conversions and analogous scheduling in the
-optional AlienBigGray entry. No ordering-only dependency is added.
+VC6 strength-reducing the loop to a cursor. Each entry is addressed separately
+as `builder.spawns[builder.count]`, completed in position/metadata order, and
+then published by incrementing the count. That house-style ownership matches
+all 74 native instructions and all seven audited references exactly.
 
 ## Recorded entry-order search
 
@@ -27,8 +27,15 @@ The stock VC6 profiles tie and VC7 is worse. The complete matrix is recorded in
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, constants,
+record stores, induction policy, and output count. The candidate is an exact
+normalized instruction and reference match, so no recovery or compiler
+residual remains.
+
+## 2026-08-08 exact indexed-publication recovery
+
+Replacing each captured record pointer and pre-metadata count increment with
+repeated indexed entry expressions and post-entry publication raises the
+candidate from 90.54% to 100%. The retained source matches 74/74 instructions
+with references `7/0/0`. Source SHA-256:
+`f75bc10430eacc4fef2b1e881693b6bfad80247400c3d0b3abf8804895e7f034`.

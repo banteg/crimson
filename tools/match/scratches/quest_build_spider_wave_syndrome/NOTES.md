@@ -6,20 +6,16 @@ Recovered Tier 1 Quest 7's loop policy: 18 left-edge spider waves from 1500
 through 95000 ms in 5500 ms steps, at `(-64, terrain_width / 2)`, using spawn
 template `0x40` and `player_count * 2 + 6` creatures per wave.
 
-The count-bearing local builder is the simplest source-shaped model found that
-preserves the native independent base, entry-index, and trigger-time induction
-variables. Native writes the fixed template and trigger before loading the
-dynamic configured-player count. A two-argument metadata setter followed by a
-separate count assignment recovers that distinction, matching the source shape
-also evidenced in `quest_build_nesting_grounds`.
+The count-bearing local builder preserves the native independent base,
+entry-index, and trigger-time induction variables. Each record is addressed
+separately as `builder.spawns[builder.count]`, completed through position,
+two-field metadata, and dynamic count, then published by incrementing the
+builder count. This is the same indexed-publication house style recovered in
+the exact neighboring quest builders.
 
-The canonical source completes `pos.y` before publishing template and trigger,
-matching native's visible record-store order. VC6 still hoists those independent
-metadata stores into the signed terrain-width conversion, leaving an honest
-83.87% WIP with a 12-instruction exact prefix. The candidate produces the same
-31 instructions and resolves both audited global references. The recovered
-loop, constants, arithmetic, record stride, and output count agree, with no
-volatile state, dummy dependency, or forced register/address construct.
+That ownership boundary prevents VC6 from hoisting metadata into the signed
+terrain-width conversion and matches all 31 native instructions plus both
+audited references exactly.
 
 ## Recorded scheduling search
 
@@ -44,8 +40,15 @@ alias reproduces the restored 83.87% schedule. The plan SHA-256 is
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, constants,
+record stores, induction policy, and output count. The candidate is an exact
+normalized instruction and reference match, so no recovery or compiler
+residual remains.
+
+## 2026-08-08 exact indexed-publication recovery
+
+Replacing the captured record pointer and pre-count publication with repeated
+indexed entry expressions and a post-entry increment raises the candidate from
+83.87% to 100%. The retained source matches 31/31 instructions with references
+`2/0/0`. Source SHA-256:
+`267fa4a552a9777a2b94d4ac6fbac332a5582f9bd2e023b6d52680ddbfde345d`.

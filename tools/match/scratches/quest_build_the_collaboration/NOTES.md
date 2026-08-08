@@ -11,27 +11,22 @@ template `0x41` zombie at `(512, -64)`. The final count is 64.
 
 The candidate reproduces the native indexed builder, count and wave induction,
 all integer-to-float coordinate conversions, count conversion, four templates,
-loop bound, and trigger arithmetic. It has the same 86 instructions, resolves
-all seven references, and preserves a 22-instruction prefix at 86.05%.
+loop bound, and trigger arithmetic. It matches all 86 native instructions and
+all eight audited references exactly.
 
-The residual is independent scheduling after the first x coordinate: VC6
-interleaves metadata stores, later coordinate conversions, count increments,
-wave bookkeeping, and the final fixed entry differently. A bounded sweep found
-that spelling the independent update as `++wave` before the trigger increment,
-then moving the bottom entry's builder-count increment between its x and y
-assignments, reproduces more of the native latency-filling schedule. Reversing
-other assignments, changing helper store order, and moving the other count
-increments do not improve that result. The direct 86-instruction candidate
-remains an honest WIP without dependencies added solely to fill conversion
-latency.
+The decisive house style completes each record through repeated
+`builder.spawns[builder.count]` expressions before publishing the count. The
+bottom entry writes its terrain-derived y coordinate before x, and the final
+fixed-position zombie uses direct metadata fields. Together those ordinary
+source boundaries reproduce the native latency-filling schedule without a
+captured record pointer or dependency-only constraint.
 
 ## Recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The preceding BN recovery accounts for the complete control-flow, constants,
+record stores, induction policy, and output count. The candidate is an exact
+normalized instruction and reference match, so no recovery or compiler
+residual remains.
 
 ## Exact-tail follow-up (2026-07-27)
 
@@ -64,3 +59,14 @@ baseline gap and one reference. The spec SHA-256 is
 `7d176dadb49614a566fe21e64b02c7894488c9de2865edaa1b65e8d645cb12e6`.
 This falsifies the apparent source-order clue and leaves the current
 X/count/Y spelling as the evidence-backed best form.
+
+## 2026-08-08 exact indexed-publication recovery
+
+The earlier Y-before-X and direct-metadata probes were evaluated while each
+entry still shared a captured record pointer and published its count early.
+Replacing all four entries with complete indexed publication raises the score
+from 86.05% to 90.70%. Under that recovered ownership, Y-before-X for the
+bottom entry reaches 97.67%, and direct metadata on the final zombie removes
+the last schedule cluster. The result is exact at 86/86 instructions with
+references `8/0/0`. Retained source SHA-256:
+`36315f1f1b29c7703bad2c63e0eea082fc8551db8510ebea830b18fe412e471c`.

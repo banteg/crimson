@@ -35,13 +35,15 @@ extern "C" void quest_build_the_spanking_of_the_dead(
     int entry_count = 0;
 
     spawns[entry_count].pos = quest_vec2_t(256.0f, 512.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_BONUS_CARRIER_27;
+    spawns[entry_count].trigger_time_ms = 500;
+    spawns[entry_count].count = 1;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(768.0f, 512.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_BONUS_CARRIER_27;
+    spawns[entry_count].trigger_time_ms = 500;
+    spawns[entry_count].count = 1;
     ++entry_count;
 
     int step_index = 0;

@@ -41,41 +41,41 @@ extern "C" void quest_build_the_collaboration(
     while (trigger_time_ms < 177500) {
         int spawn_count = (int)((float)wave * 0.8f + 7.0f);
 
-        quest_entry_original_t *spawn = &builder.spawns[builder.count];
-        spawn->pos.x = (float)(terrain_texture_width + 64);
-        spawn->pos.y = (float)(terrain_texture_width / 2);
-        ++builder.count;
-        spawn->set_spawn(
+        builder.spawns[builder.count].pos.x =
+            (float)(terrain_texture_width + 64);
+        builder.spawns[builder.count].pos.y =
+            (float)(terrain_texture_width / 2);
+        builder.spawns[builder.count].set_spawn(
             SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A,
             trigger_time_ms,
             spawn_count);
-
-        spawn = &builder.spawns[builder.count];
-        spawn->pos.x = (float)(terrain_texture_width / 2);
         ++builder.count;
-        spawn->pos.y = (float)(terrain_texture_width + 64);
-        spawn->set_spawn(
+
+        builder.spawns[builder.count].pos.y =
+            (float)(terrain_texture_width + 64);
+        builder.spawns[builder.count].pos.x =
+            (float)(terrain_texture_width / 2);
+        builder.spawns[builder.count].set_spawn(
             SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B,
             trigger_time_ms,
             spawn_count);
-
-        spawn = &builder.spawns[builder.count];
-        spawn->pos.x = -64.0f;
-        spawn->pos.y = (float)(terrain_texture_width / 2);
         ++builder.count;
-        spawn->set_spawn(
+
+        builder.spawns[builder.count].pos.x = -64.0f;
+        builder.spawns[builder.count].pos.y =
+            (float)(terrain_texture_width / 2);
+        builder.spawns[builder.count].set_spawn(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
             trigger_time_ms,
             spawn_count);
-
-        spawn = &builder.spawns[builder.count];
-        spawn->pos.x = 512.0f;
-        spawn->pos.y = -64.0f;
         ++builder.count;
-        spawn->set_spawn(
-            SPAWN_ID_ZOMBIE_RANDOM_41,
-            trigger_time_ms,
-            spawn_count);
+
+        builder.spawns[builder.count].pos.x = 512.0f;
+        builder.spawns[builder.count].pos.y = -64.0f;
+        builder.spawns[builder.count].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;
+        builder.spawns[builder.count].count = spawn_count;
+        ++builder.count;
 
         ++wave;
         trigger_time_ms += 11000;
