@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **697/810** functions matched exactly, **131190/341970** code bytes (**38.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303326/341970** code bytes (**88.7%**).
+Fuzzy-weighted alignment is **303344/341970** code bytes (**88.7%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -16,13 +16,16 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
+| crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
 | grim.dll | current | 139 | 133 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1788 | 1788 | 1788 | 1788 | 1788 |
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
+
+Artifact freshness issues:
+- `crimsonland.exe`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -92,12 +95,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 564/671 | 116246/320805 | 36.2% | 282519/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 564/671 |
+| crimsonland.exe | 564/671 | 116246/320805 | 36.2% | 282538/320805 | 88.1% | 671/671 | 320805/320805 | 100.0% | 564/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**564/671** functions, **116246/320805** bytes (**36.2%**), **282519/320805** fuzzy-weighted bytes (**88.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **564/671** scratches verified.
+**564/671** functions, **116246/320805** bytes (**36.2%**), **282538/320805** fuzzy-weighted bytes (**88.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **564/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -534,7 +537,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | quest_build_alien_squads | 0x00435ea0 | 507 | 455/507 | 52 | 108/108 | 89.81% | 10/108 | 0/0/0 |  | quest-alien-squads-fixed-corners |
 | match | quest_build_zombie_masters | 0x004360a0 | 128 | 128/128 | 0 | 31/31 | 100.00% | 31/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 204/213 | 9 | 68/68 | 95.59% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
-| wip | quest_build_ghost_patrols | 0x00436200 | 334 | 271/334 | 63 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
+| wip | quest_build_ghost_patrols | 0x00436200 | 334 | 289/334 | 45 | 90/90 | 86.67% | 36/90 | 5/0/0 |  | quest-ghost-patrols-append-count |
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 215/237 | 22 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
 | wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 80/95 | 15 | 31/31 | 83.87% | 12/31 | 2/0/0 |  | quest-spider-wave-syndrome |
 | wip | quest_build_nesting_grounds | 0x004364a0 | 626 | 621/626 | 5 | 138/138 | 99.28% | 10/138 | 15/0/0 |  | quest-nesting-grounds-fixed-nests |

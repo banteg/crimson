@@ -28,19 +28,21 @@ extern "C" void quest_build_ghost_patrols(
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
     int one = 1;
+    int entry_count = 0;
 
-    spawns[0].pos.x = (float)(terrain_texture_width + 128);
-    spawns[0].pos.y = (float)(terrain_texture_width / 2);
-    spawns[0].set_spawn(
+    spawns[entry_count].pos.x = (float)(terrain_texture_width + 128);
+    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_DEADLY_FAST_2B,
         1500,
         2);
+    ++entry_count;
 
     int trigger_time_ms = 2500;
     int wave = 0;
 
     do {
-        quest_entry_original_t *spawn = &spawns[wave + 1];
+        quest_entry_original_t *spawn = &spawns[entry_count];
         if (wave % 2 == 0) {
             spawn->pos.x = -128.0f;
         } else {
@@ -52,20 +54,22 @@ extern "C" void quest_build_ghost_patrols(
             trigger_time_ms,
             one);
 
+        ++entry_count;
         ++wave;
         trigger_time_ms += 2500;
     } while (trigger_time_ms < 32500);
 
-    spawns[13].pos.x = -264.0f;
-    spawns[13].pos.y = (float)(terrain_texture_width / 2);
-    spawns[13].set_spawn(
+    spawns[entry_count].pos.x = -264.0f;
+    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_DEADLY_FAST_2B,
         (wave - 1) * 2500,
         one);
+    ++entry_count;
 
-    spawns[14].pos.x = -128.0f;
-    spawns[14].pos.y = (float)(terrain_texture_width / 2);
-    spawns[14].set_spawn(
+    spawns[entry_count].pos.x = -128.0f;
+    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+    spawns[entry_count].set_spawn(
         SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18,
         (wave * 5 + 15) * 500,
         one);

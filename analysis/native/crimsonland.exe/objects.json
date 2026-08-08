@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "e36907835d87c1fb3441813f9b462e8d87de6714f30f519c9c5297e206c7b98b",
+  "audit_digest": "bea2e66fe547f4b718eb5026ecb9cd39ec746c4ca7996d6bfd6e5ece529103cf",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -64341,12 +64341,12 @@
         {
           "path": "tools/match/scratches/quest_build_ghost_patrols/scratch.cpp",
           "repository_relative": true,
-          "sha256": "be828b109488f7cbdeccbdb56540a015847550719a4fffb8eeb57f4975b09eb7"
+          "sha256": "161c996f3bb1cf2333b5a76eefb6789f55ab0dabe970deedb432280624c58c25"
         },
         {
           "path": "tools/match/scratches/quest_build_ghost_patrols/scratch.conf",
           "repository_relative": true,
-          "sha256": "748881d25ad7cc343d2fe1aeebf5a77e32489312a10ca62ae2caeec651ed9277"
+          "sha256": "2e8b5d45e53044bbf385bcdab772ab1a02a064fc612a349c0208b312d72c52d3"
         },
         {
           "path": "tools/match/cl.sh",
@@ -64376,7 +64376,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_ghost_patrols/scratch.conf",
-      "config_sha256": "748881d25ad7cc343d2fe1aeebf5a77e32489312a10ca62ae2caeec651ed9277",
+      "config_sha256": "2e8b5d45e53044bbf385bcdab772ab1a02a064fc612a349c0208b312d72c52d3",
       "effective_end": 4416334,
       "end": 4416334,
       "function": "quest_build_ghost_patrols",
@@ -64384,10 +64384,10 @@
         {
           "address": 4416000,
           "canonical_config": "tools/match/scratches/quest_build_ghost_patrols/scratch.conf",
-          "canonical_config_sha256": "748881d25ad7cc343d2fe1aeebf5a77e32489312a10ca62ae2caeec651ed9277",
+          "canonical_config_sha256": "2e8b5d45e53044bbf385bcdab772ab1a02a064fc612a349c0208b312d72c52d3",
           "canonical_scratch": "tools/match/scratches/quest_build_ghost_patrols",
           "canonical_source": "tools/match/scratches/quest_build_ghost_patrols/scratch.cpp",
-          "canonical_source_sha256": "be828b109488f7cbdeccbdb56540a015847550719a4fffb8eeb57f4975b09eb7",
+          "canonical_source_sha256": "161c996f3bb1cf2333b5a76eefb6789f55ab0dabe970deedb432280624c58c25",
           "effective_end": 4416334,
           "end": 4416334,
           "function": "quest_build_ghost_patrols",
@@ -64396,8 +64396,8 @@
             "masked_mismatches": 0,
             "masked_ok": 5,
             "masked_unresolved": 0,
-            "prefix_instructions": 14,
-            "ratio": 0.8111111111111111,
+            "prefix_instructions": 36,
+            "ratio": 0.8666666666666667,
             "state": "wip",
             "target_instructions": 90
           },
@@ -64410,17 +64410,17 @@
         "masked_mismatches": 0,
         "masked_ok": 5,
         "masked_unresolved": 0,
-        "prefix_instructions": 14,
-        "ratio": 0.8111111111111111,
+        "prefix_instructions": 36,
+        "ratio": 0.8666666666666667,
         "state": "wip",
         "target_instructions": 90
       },
       "object": "tools/match/scratches/quest_build_ghost_patrols/build/msvc6.5/39ecc7ee42117d6e/scratch.obj",
       "object_function_symbol": "_quest_build_ghost_patrols",
-      "object_sha256": "f6600edd9767437b09bc65ec44cb35aa6e40b35a211b187e20ce6273e6cb8293",
+      "object_sha256": "a7542722d3ba7108f6b481e5a9d07c839eaa2d3fbf0ef446f331840d4ef21042",
       "scratch": "tools/match/scratches/quest_build_ghost_patrols",
       "source": "tools/match/scratches/quest_build_ghost_patrols/scratch.cpp",
-      "source_sha256": "be828b109488f7cbdeccbdb56540a015847550719a4fffb8eeb57f4975b09eb7",
+      "source_sha256": "161c996f3bb1cf2333b5a76eefb6789f55ab0dabe970deedb432280624c58c25",
       "target_size": 334,
       "translation_unit": {
         "kind": "isolated",

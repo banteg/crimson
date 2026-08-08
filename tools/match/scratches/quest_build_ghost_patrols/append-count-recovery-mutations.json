@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "append-count-initial-entry",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int one = 1;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].set_spawn(\n        SPAWN_ID_ALIEN_DEADLY_FAST_2B,\n        1500,\n        2);\n",
+      "replacements": [
+        {
+          "name": "counted-initial-entry",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int one = 1;\n    int entry_count = 0;\n\n    spawns[entry_count].pos.x = (float)(terrain_texture_width + 128);\n    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);\n    spawns[entry_count].set_spawn(\n        SPAWN_ID_ALIEN_DEADLY_FAST_2B,\n        1500,\n        2);\n    ++entry_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "append-count-ring-loop",
+      "find": "    do {\n        quest_entry_original_t *spawn = &spawns[wave + 1];\n        if (wave % 2 == 0) {\n            spawn->pos.x = -128.0f;\n        } else {\n            spawn->pos.x = 1152.0f;\n        }\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->set_spawn(\n            SPAWN_ID_FORMATION_RING_ALIEN_5_19,\n            trigger_time_ms,\n            one);\n\n        ++wave;\n        trigger_time_ms += 2500;\n    } while (trigger_time_ms < 32500);\n",
+      "replacements": [
+        {
+          "name": "counted-ring-loop",
+          "text": "    do {\n        quest_entry_original_t *spawn = &spawns[entry_count];\n        if (wave % 2 == 0) {\n            spawn->pos.x = -128.0f;\n        } else {\n            spawn->pos.x = 1152.0f;\n        }\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->set_spawn(\n            SPAWN_ID_FORMATION_RING_ALIEN_5_19,\n            trigger_time_ms,\n            one);\n\n        ++entry_count;\n        ++wave;\n        trigger_time_ms += 2500;\n    } while (trigger_time_ms < 32500);\n"
+        }
+      ]
+    },
+    {
+      "name": "append-count-tail",
+      "find": "    spawns[13].pos.x = -264.0f;\n    spawns[13].pos.y = (float)(terrain_texture_width / 2);\n    spawns[13].set_spawn(\n        SPAWN_ID_ALIEN_DEADLY_FAST_2B,\n        (wave - 1) * 2500,\n        one);\n\n    spawns[14].pos.x = -128.0f;\n    spawns[14].pos.y = (float)(terrain_texture_width / 2);\n    spawns[14].set_spawn(\n        SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18,\n        (wave * 5 + 15) * 500,\n        one);\n",
+      "replacements": [
+        {
+          "name": "counted-tail",
+          "text": "    spawns[entry_count].pos.x = -264.0f;\n    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);\n    spawns[entry_count].set_spawn(\n        SPAWN_ID_ALIEN_DEADLY_FAST_2B,\n        (wave - 1) * 2500,\n        one);\n    ++entry_count;\n\n    spawns[entry_count].pos.x = -128.0f;\n    spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);\n    spawns[entry_count].set_spawn(\n        SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18,\n        (wave * 5 + 15) * 500,\n        one);\n"
+        }
+      ]
+    }
+  ]
+}
