@@ -554,6 +554,25 @@ uv run crimson match profiles tools/match/scratches/creature_spawn \
   --cflags "/O2 /G6 /W3 /GR-" --json
 ```
 
+Scan every canonical WIP across the installed compiler corpus when a backend
+split is a live hypothesis:
+
+```sh
+uv run crimson match compiler-scan --scope port --state wip \
+  --compiler msvc6.0 --compiler msvc6.5 --compiler msvc6.5pp \
+  --compiler msvc6.6 --check
+```
+
+The scan keeps each scratch's canonical flags, compiles selected profiles in
+parallel, and prints only exact or improved leads by default; pass `--all` to
+include ties. Its summary still counts every selected target and evaluation.
+An alternate compiler win is deliberately labeled search evidence rather than
+provenance: confirm the image's PE/Rich records or object-local COFF/archive
+evidence before changing a canonical `COMPILER` value.
+Use `--json` when scanning experimental or cross-generation profiles such as
+MSVC 7; failed evaluations are returned individually in `evaluation_errors`,
+and `--check` deliberately fails if any requested profile cannot compile.
+
 Localized mismatch regions include normalized instruction spans, native and
 candidate byte ranges, native VAs, local fuzzy-weighted bytes, scoped reference
 counts, and cautious diagnostic hints:

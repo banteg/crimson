@@ -3405,6 +3405,25 @@ class ProbeResult:
         return self.probe.ratio - self.baseline.ratio
 
 
+@dataclass(frozen=True, slots=True)
+class CompilerScanRow:
+    baseline: ScratchStatus
+    best: ScratchStatus
+    evaluated_profiles: int
+
+    @property
+    def classification(self) -> str:
+        if self.best.state == "match" and self.baseline.state != "match":
+            return "exact"
+        if _status_rank(self.best) > _status_rank(self.baseline):
+            return "improved"
+        return "tied"
+
+    @property
+    def fuzzy_delta_bytes(self) -> float:
+        return self.best.fuzzy_weighted_bytes - self.baseline.fuzzy_weighted_bytes
+
+
 def load_scratch_config(directory: Path) -> ScratchConfig:
     values: dict[str, str] = {}
     for token in shlex.split((directory / "scratch.conf").read_text(encoding="utf-8"), comments=True):
@@ -7034,6 +7053,118 @@ def render_probe_result(result: ProbeResult) -> str:
 
 def sort_profile_statuses(statuses: list[ScratchStatus]) -> list[ScratchStatus]:
     return sorted(statuses, key=_status_rank, reverse=True)
+
+
+def build_compiler_scan_rows(
+    baselines: Collection[ScratchStatus],
+    profiles: Collection[ScratchStatus],
+) -> list[CompilerScanRow]:
+    """Select the strongest compiler result for each canonical scratch baseline."""
+
+    profiles_by_directory: dict[Path, list[ScratchStatus]] = defaultdict(list)
+    for status in profiles:
+        profiles_by_directory[status.config.directory.resolve()].append(status)
+
+    rows: list[CompilerScanRow] = []
+    seen_directories: set[Path] = set()
+    for baseline in baselines:
+        directory = baseline.config.directory.resolve()
+        if directory in seen_directories:
+            raise ValueError(f"duplicate compiler-scan baseline: {directory}")
+        seen_directories.add(directory)
+        evaluated = profiles_by_directory.get(directory, [])
+        candidates = [baseline, *evaluated]
+        best = max(
+            candidates,
+            key=lambda status: (
+                _status_rank(status),
+                status.config.compiler == baseline.config.compiler
+                and status.config.cflags == baseline.config.cflags,
+            ),
+        )
+        rows.append(
+            CompilerScanRow(
+                baseline=baseline,
+                best=best,
+                evaluated_profiles=len(evaluated),
+            ),
+        )
+
+    classification_rank = {"exact": 0, "improved": 1, "tied": 2}
+    return sorted(
+        rows,
+        key=lambda row: (
+            classification_rank[row.classification],
+            -row.fuzzy_delta_bytes,
+            row.baseline.config.image,
+            row.baseline.address,
+            row.baseline.config.function,
+        ),
+    )
+
+
+def compiler_scan_row_payload(row: CompilerScanRow) -> dict[str, Any]:
+    return {
+        "classification": row.classification,
+        "image": row.baseline.config.image,
+        "function": row.baseline.config.function,
+        "address": row.baseline.address,
+        "evaluated_profiles": row.evaluated_profiles,
+        "fuzzy_delta_bytes": row.fuzzy_delta_bytes,
+        "baseline": scratch_status_payload(row.baseline),
+        "best": scratch_status_payload(row.best),
+    }
+
+
+def compiler_scan_summary(
+    rows: Collection[CompilerScanRow],
+    profiles: Collection[ScratchStatus],
+) -> dict[str, int]:
+    classifications = Counter(row.classification for row in rows)
+    return {
+        "targets": len(rows),
+        "profiles": len(profiles),
+        "exact": classifications["exact"],
+        "improved": classifications["improved"],
+        "tied": classifications["tied"],
+        "errors": sum(status.state == "error" for status in profiles),
+    }
+
+
+def render_compiler_scan_rows(rows: Collection[CompilerScanRow]) -> str:
+    header = (
+        "kind",
+        "image",
+        "function",
+        "baseline",
+        "best",
+        "base match",
+        "best match",
+        "fuzzy delta",
+        "refs",
+    )
+    rendered: list[tuple[str, ...]] = [header]
+    for row in rows:
+        baseline = row.baseline
+        best = row.best
+        rendered.append(
+            (
+                row.classification,
+                baseline.config.image,
+                baseline.config.function,
+                baseline.config.compiler,
+                best.config.compiler,
+                f"{baseline.ratio:.2%}" if baseline.ratio is not None else "-",
+                f"{best.ratio:.2%}" if best.ratio is not None else "-",
+                f"{row.fuzzy_delta_bytes:+.1f}",
+                f"{best.masked_ok}/{best.masked_unresolved}/{best.masked_mismatches}",
+            ),
+        )
+    widths = [max(len(row[column]) for row in rendered) for column in range(len(header))]
+    return "\n".join(
+        "  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip()
+        for row in rendered
+    )
 
 
 def render_profile_table(statuses: list[ScratchStatus]) -> str:

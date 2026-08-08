@@ -826,6 +826,138 @@ def cmd_match_profiles(
         raise typer.Exit(code=1)
 
 
+@match_app.command("compiler-scan")
+def cmd_match_compiler_scan(
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    compiler: list[str] | None = typer.Option(
+        None,
+        "--compiler",
+        help="compiler to compare; repeat for a corpus matrix",
+    ),
+    jobs: int = typer.Option(
+        matchlib.DEFAULT_MATCH_JOBS,
+        "--jobs",
+        "-j",
+        min=1,
+        help="parallel scratch jobs per compiler",
+    ),
+    image: str | None = typer.Option(None, "--image", help="restrict to one tracked image"),
+    state: str = typer.Option("wip", "--state", help="comma-separated canonical baseline states"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
+    show_all: bool = typer.Option(False, "--all", help="include compiler ties"),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail when any requested profile cannot be evaluated"),
+) -> None:
+    """Compare canonical scratches across installed compiler profiles."""
+
+    states = _parse_csv(state) or {"wip"}
+    unknown_states = states - {"match", "audit", "wip", "error"}
+    if unknown_states:
+        raise typer.BadParameter(
+            f"unknown states: {', '.join(sorted(unknown_states))}",
+            param_hint="--state",
+        )
+
+    baselines = matchlib.collect_scratch_statuses(
+        match_root,
+        jobs=jobs,
+        scope=scope,
+    )
+    selected = [
+        status
+        for status in baselines
+        if status.state in states
+        and (image is None or status.config.image == image)
+        and status.config.archive is None
+        and status.config.import_thunk is None
+    ]
+    directories = [status.config.directory for status in selected]
+    compilers = tuple(
+        dict.fromkeys(
+            compiler
+            or matchlib.available_scratch_compilers(match_root)
+            or (status.config.compiler for status in selected),
+        ),
+    )
+    profiles: list[matchlib.ScratchStatus] = []
+    for profile_compiler in compilers:
+        profiles.extend(
+            matchlib.collect_scratch_statuses(
+                match_root,
+                compiler=profile_compiler,
+                jobs=jobs,
+                scope=scope,
+                directories=directories,
+            ),
+        )
+
+    rows = matchlib.build_compiler_scan_rows(selected, profiles)
+    summary = matchlib.compiler_scan_summary(rows, profiles)
+    evaluation_errors = [
+        {
+            "image": status.config.image,
+            "function": status.config.function,
+            "compiler": status.config.compiler,
+            "cflags": status.config.cflags,
+            "error": status.error,
+        }
+        for status in profiles
+        if status.state == "error"
+    ]
+    visible_rows = rows if show_all else [row for row in rows if row.classification != "tied"]
+    if limit is not None:
+        visible_rows = visible_rows[:limit]
+    provenance_note = (
+        "Alternate compiler wins are source-shape search evidence, not object provenance; "
+        "verify PE, Rich, COFF, archive, or translation-unit evidence before changing a scratch compiler."
+    )
+
+    if as_json:
+        typer.echo(
+            json.dumps(
+                {
+                    "scope": scope,
+                    "states": sorted(states),
+                    "compilers": list(compilers),
+                    "summary": summary,
+                    "rows": [matchlib.compiler_scan_row_payload(row) for row in visible_rows],
+                    "evaluation_errors": evaluation_errors,
+                    "provenance_note": provenance_note,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
+    else:
+        if visible_rows:
+            typer.echo(matchlib.render_compiler_scan_rows(visible_rows))
+        else:
+            typer.echo("no exact or improved compiler profiles")
+        typer.echo(
+            "targets={targets} profiles={profiles} exact={exact} improved={improved} "
+            "tied={tied} errors={errors} compilers={compilers}".format(
+                **summary,
+                compilers=",".join(compilers) or "-",
+            ),
+        )
+        if evaluation_errors:
+            typer.echo("profile evaluation errors:")
+            for error in evaluation_errors[:20]:
+                typer.echo(
+                    f"- {error['image']} {error['function']} {error['compiler']}: {error['error']}",
+                )
+            if len(evaluation_errors) > 20:
+                typer.echo(f"- ... and {len(evaluation_errors) - 20} more")
+        typer.echo(provenance_note)
+    if check and summary["errors"]:
+        raise typer.Exit(code=1)
+
+
 @match_app.command("status")
 def cmd_match_status(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),

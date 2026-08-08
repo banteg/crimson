@@ -55,6 +55,7 @@ from crimson.match import (
     _ScratchIncludeResolver,
     address_in_matching_scope,
     apply_naming_suggestions,
+    build_compiler_scan_rows,
     build_match_shard_plan,
     claimed_scratch_paths,
     collect_image_totals,
@@ -64,6 +65,8 @@ from crimson.match import (
     collect_triage_rows,
     common_prefix_length,
     compile_scratch,
+    compiler_scan_row_payload,
+    compiler_scan_summary,
     diff_region_payload,
     diff_regions,
     disassemble_normalized_function,
@@ -88,6 +91,7 @@ from crimson.match import (
     normalize_function,
     parse_coff_object,
     prune_placeholder_aliases,
+    render_compiler_scan_rows,
     render_image_total_rows,
     render_naming_debt_summary,
     render_naming_debt_table,
@@ -5142,6 +5146,148 @@ def test_profile_matrix_deduplicates_and_ranks_honest_matches(
         "match",
     )
     assert "msvc6.5pp" in render_profile_table(statuses)
+
+
+def test_compiler_scan_prefers_exact_wins_and_canonical_ties(tmp_path: Path) -> None:
+    foo_config = ScratchConfig(
+        directory=tmp_path / "foo",
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    bar_config = replace(foo_config, directory=tmp_path / "bar", function="bar")
+    foo_baseline = ScratchStatus(
+        config=foo_config,
+        address=0x401000,
+        target_size=20,
+        ratio=0.75,
+        prefix_instructions=2,
+        target_instructions=5,
+        candidate_instructions=5,
+        error=None,
+        masked_ok=1,
+    )
+    bar_baseline = replace(
+        foo_baseline,
+        config=bar_config,
+        address=0x401020,
+        ratio=0.9,
+        prefix_instructions=4,
+    )
+    foo_exact = replace(
+        foo_baseline,
+        config=replace(foo_config, compiler="msvc6.5pp"),
+        ratio=1.0,
+        prefix_instructions=5,
+        masked_ok=2,
+    )
+    bar_tie = replace(
+        bar_baseline,
+        config=replace(bar_config, compiler="msvc6.6"),
+    )
+    bar_error = replace(
+        bar_baseline,
+        config=replace(bar_config, compiler="msvc7.0"),
+        target_size=0,
+        ratio=None,
+        prefix_instructions=0,
+        target_instructions=0,
+        candidate_instructions=0,
+        error="compiler unavailable",
+    )
+
+    rows = build_compiler_scan_rows(
+        [foo_baseline, bar_baseline],
+        [foo_exact, bar_tie, bar_error],
+    )
+
+    assert [row.classification for row in rows] == ["exact", "tied"]
+    assert rows[0].best.config.compiler == "msvc6.5pp"
+    assert rows[1].best is bar_baseline
+    assert compiler_scan_summary(rows, [foo_exact, bar_tie, bar_error]) == {
+        "targets": 2,
+        "profiles": 3,
+        "exact": 1,
+        "improved": 0,
+        "tied": 1,
+        "errors": 1,
+    }
+    assert compiler_scan_row_payload(rows[0])["fuzzy_delta_bytes"] == 5.0
+    rendered = render_compiler_scan_rows(rows)
+    assert "msvc6.5pp" in rendered
+    assert "exact" in rendered
+
+
+def test_compiler_scan_cli_reports_only_leads_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = ScratchConfig(
+        directory=tmp_path / "foo",
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    baseline = ScratchStatus(
+        config=config,
+        address=0x401000,
+        target_size=20,
+        ratio=0.75,
+        prefix_instructions=2,
+        target_instructions=5,
+        candidate_instructions=5,
+        error=None,
+        masked_ok=1,
+    )
+
+    def fake_collect(*args: object, **kwargs: object) -> list[ScratchStatus]:
+        del args
+        compiler = kwargs.get("compiler")
+        if compiler == "msvc6.5pp":
+            return [
+                replace(
+                    baseline,
+                    config=replace(config, compiler="msvc6.5pp"),
+                    ratio=1.0,
+                    prefix_instructions=5,
+                    masked_ok=2,
+                ),
+            ]
+        return [baseline]
+
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", fake_collect)
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.available_scratch_compilers",
+        lambda match_root: ("msvc6.5", "msvc6.5pp"),
+    )
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["compiler-scan", "--match-root", str(tmp_path), "--jobs", "1", "--json", "--check"],
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    assert payload["summary"] == {
+        "targets": 1,
+        "profiles": 2,
+        "exact": 1,
+        "improved": 0,
+        "tied": 0,
+        "errors": 0,
+    }
+    assert payload["rows"][0]["classification"] == "exact"
+    assert payload["rows"][0]["best"]["compiler"] == "msvc6.5pp"
 
 
 def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
