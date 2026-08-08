@@ -11,15 +11,15 @@ struct quest_spawn_builder_t {
 extern "C" void quest_build_8_legged_terror(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_spawn_entry_t *cursor = entries;
+    quest_spawn_builder_t builder(entries, 0);
     float near_edge = -25.0f;
     int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;
     float far_edge = 1049.0f;
 
-    cursor->pos_x = (float)(terrain_texture_width - 256);
-    cursor->pos_y = (float)(terrain_texture_width / 2);
-    quest_spawn_entry_t *opening = cursor++;
-    quest_spawn_builder_t builder(cursor, 1);
+    builder.cursor->pos_x = (float)(terrain_texture_width - 256);
+    builder.cursor->pos_y = (float)(terrain_texture_width / 2);
+    quest_spawn_entry_t *opening = builder.cursor++;
+    ++builder.count;
     opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;
     opening->trigger_time_ms = 1000;
     opening->count = 1;

@@ -44,33 +44,39 @@ extern "C" void quest_build_alien_dens(
     int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;
     int one = 1;
     int trigger_time_ms = 1500;
+    int entry_count = 0;
 
-    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);
-    spawns[0].template_id = spawn_template_id;
-    spawns[0].trigger_time_ms = trigger_time_ms;
-    spawns[0].count = one;
+    spawns[entry_count].pos = quest_vec2_t(256.0f, 256.0f);
+    spawns[entry_count].template_id = spawn_template_id;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    quest_vec2_t *entry_one_pos = &spawns[1].pos;
+    quest_vec2_t *entry_one_pos = &spawns[entry_count].pos;
     *entry_one_pos = quest_vec2_t(768.0f, 768.0f);
-    spawns[1].template_id = spawn_template_id;
-    spawns[1].trigger_time_ms = trigger_time_ms;
-    spawns[1].count = one;
+    spawns[entry_count].template_id = spawn_template_id;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    quest_vec2_t *entry_two_pos = &spawns[2].pos;
+    quest_vec2_t *entry_two_pos = &spawns[entry_count].pos;
     *entry_two_pos = quest_vec2_t(512.0f, 512.0f);
-    spawns[2].template_id = spawn_template_id;
-    spawns[2].trigger_time_ms = 23500;
-    spawns[2].count = config_blob.player_count;
+    spawns[entry_count].template_id = spawn_template_id;
+    spawns[entry_count].trigger_time_ms = 23500;
+    spawns[entry_count].count = config_blob.player_count;
+    ++entry_count;
 
     trigger_time_ms = 38500;
-    quest_entry_original_t *entry_three = &spawns[3];
+    quest_entry_original_t *entry_three = &spawns[entry_count];
     entry_three->pos = quest_vec2_t(256.0f, 768.0f);
     entry_three->template_id = spawn_template_id;
     entry_three->trigger_time_ms = trigger_time_ms;
     entry_three->count = one;
+    ++entry_count;
 
-    spawns[4].pos = quest_vec2_t(768.0f, 256.0f);
-    spawns[4].set_spawn(spawn_template_id, trigger_time_ms, one);
+    spawns[entry_count].pos = quest_vec2_t(768.0f, 256.0f);
+    spawns[entry_count].set_spawn(spawn_template_id, trigger_time_ms, one);
+    ++entry_count;
 
-    *count = 5;
+    *count = entry_count;
 }

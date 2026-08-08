@@ -9,26 +9,12 @@ corners `(256, 768)` and `(768, 256)` spawn at 38500 ms. All other counts are
 one, and the function returns five entries.
 
 The native reuses one eight-byte stack temporary while copying each pair of
-float constants into the 24-byte records. The retained candidate models the
+float constants into the 24-byte records. The retained source models the
 compiler-facing lifetime boundaries separately: entry one and the center use
 typed position pointers, entry three uses a typed record pointer, and the last
-entry uses the shared inlined metadata setter. Together with the small
-`quest_vec2_t` constructor, that shape emits the same 60 instructions, keeps
-template `8`, count `1`, and the active trigger in the same registers, and
-resolves the player-count reference.
-
-The remaining residual is four independent VC6 scheduling positions. Three
-are in the opening entry's position/register setup and one delays entry one's
-template store across the following trigger/position work. The candidate
-scores 93.33% without artificial dependencies or register forcing.
-
-## Recovery classification audit
-
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+entry uses the shared inlined metadata setter. Publishing all five through one
+append count completes that shape: the candidate matches all 249 bytes and all
+60 instructions, including the full prefix and the player-count reference.
 
 ## 2026-07-27 focused family pass
 
@@ -87,3 +73,12 @@ MSVC 6.0, 6.5, and 6.6 tie at the retained 232.4/249 weighted bytes;
 `/Ob1`, and `/Ot` are byte-neutral while `/G6` regresses to 61.67%. The final
 gap is 16.6 weighted bytes with 60/60 instructions, prefix eight, and
 references 1/0/0.
+
+## 2026-08-08 exact recovery
+
+Replacing the five fixed indices and fixed output assignment with one append
+count resolves all four former scheduling positions. The candidate improves
+from 232.4/249 weighted bytes (93.33%) and an eight-instruction prefix to exact
+249/249 bytes and a 60-instruction prefix. The player-count reference remains
+resolved at 1/0/0. The exact source SHA-256 is
+`67cc8d4c718211909b08d1e040ff164c995f80c43c45e2b5d31f42a9cd5c5252`.

@@ -1,16 +1,10 @@
 # `quest_build_fallback`
 
-High-confidence 150-byte WIP with the same 32-instruction multiset as the
-native, all seven masked references aligned, and an 87.50% order-sensitive
-score. Modeling the three integer metadata fields with the same inline
-`set_spawn` member shape recovered in the staged quest builders keeps the
-entire second entry in native order and improves the prior 78.12% candidate.
-
-The remaining difference is confined to the first entry. VC6 moves its
-template, trigger, and count stores through the still-live x87 height result,
-where native finishes the two-float position copy first; it also swaps the
-independent second height load and cached `-50.0f` load. The source retains the
-ordinary member call rather than adding an artificial ordering dependency.
+The recovered source matches all 150 native bytes and all 32 instructions,
+including the full prefix and all seven masked references. Modeling the three
+metadata fields with the inline `set_spawn` member and publishing both entries
+through one append count gives VC6 the native position/metadata schedule
+without an artificial ordering dependency.
 
 Live Binary Ninja shows the fallback selected by `quest_start_selected` when a
 quest has no builder. It logs the fallback, then creates two template `0x40`
@@ -44,10 +38,11 @@ and second-entry setup. None improved the 87.50% baseline (spec
 `061931b9ed1e1a2923722c113d4892f9c79da7a8dfe7c144b1b6bacda59d58b5`).
 The complete negative matrix is recorded in `experiments.jsonl`.
 
-## Recovery classification audit
+## 2026-08-08 exact recovery
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+Replacing the two fixed indices and fixed output assignment with one append
+count resolves the former first-entry scheduling residual. The candidate
+improves from 131/150 fuzzy-weighted bytes (87.50%) and a 12-instruction prefix
+to exact 150/150 bytes and a 32-instruction prefix. References remain 7/0/0.
+The exact source SHA-256 is
+`9c2e6491b1fd56e89ce3bb6e7885e5ff0f097af3be1ca113e38dd9c71ee1669e`.

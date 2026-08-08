@@ -9,15 +9,12 @@ using template `0x3d`. Triggers run from 6000 while below 36800 in steps of
 2200. The top-left and bottom-left entries use the player count; the other two
 use count 1. The builder therefore emits 57 entries.
 
-Keeping the cursor and emitted count together in the builder object prevents
-VC6 from folding the final count and recovers the native count-register
-increments. The entire repeated-wave loop matches instruction-for-instruction.
-Constructing the advancing builder cursor before the opening entry's independent
-metadata stores raises the candidate from 92.65% to 95.59% (203.60/213 weighted
-bytes). It has the same 68 instructions; all residuals remain confined to
-scheduling in the one-time opening entry, where the far-edge constant and
-three independent metadata stores move around the integer-to-float `pos.y`
-conversion. No dependency is introduced to force that ordering.
+Keeping the cursor and emitted count together in a builder initialized at the
+first entry prevents VC6 from folding the final count and recovers both the
+opening schedule and native loop increments. The recovered source matches all
+213 bytes and all 68 instructions, including the full prefix and all four
+audited references. The opening advances the builder cursor and count before
+publishing its independent metadata; no ordering dependency is introduced.
 
 Binary Ninja now gives the four-corner loop cursor a two-entry presentation
 view. Two consecutive pairs expose all four waves as named
@@ -55,10 +52,11 @@ stores. All four compile byte-identically at 95.59%, 68/68 instructions, and
 SHA-256 is
 `f7d3b25583d2a12fb0431fbca775618bb2f919f5eede9f595f83bbf1d1b781af`.
 
-## Recovery classification audit
+## 2026-08-08 exact recovery
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+Initializing the builder with `(entries, 0)` and publishing the opening entry
+through that same cursor/count pair resolves the former one-time scheduling
+residual. The candidate improves from 203.60/213 weighted bytes (95.59%) and a
+14-instruction prefix to exact 213/213 bytes and a 68-instruction prefix.
+References remain 4/0/0. The exact source SHA-256 is
+`75be5146e1b57a9b2e74f2c8e098f966051480899f2278fe65c55180198619e3`.
