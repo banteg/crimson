@@ -63,17 +63,21 @@ extern "C" void quest_build_the_fortress(
     while (x_seed <= 0x900) {
         trigger_time_ms = entry_count * 600 + 0x157C;
         int row = 1;
+        int *grid_trigger = &spawns[entry_count].trigger_time_ms;
         while (row <= 6) {
             if (row != 1 || (x_seed != 0x480 && x_seed != 0x600)) {
-                spawns[entry_count].pos = quest_vec2_t(
+                quest_entry_original_t *grid_entry =
+                    (quest_entry_original_t *)(grid_trigger - 4);
+                grid_entry->pos = quest_vec2_t(
                     (float)x_seed * 0.166666672f + 256.0f,
                     512.0f - (float)(row * 0x180) * 0.166666672f);
-                spawns[entry_count].template_id =
-                    SPAWN_ID_DEN_SPIDER_BASIC_0A;
-                spawns[entry_count].trigger_time_ms = trigger_time_ms;
-                spawns[entry_count].count = 1;
-                trigger_time_ms += 600;
                 ++entry_count;
+                int *grid_template = grid_trigger - 1;
+                *grid_template = SPAWN_ID_DEN_SPIDER_BASIC_0A;
+                grid_trigger[0] = trigger_time_ms;
+                grid_trigger[1] = 1;
+                trigger_time_ms += 600;
+                grid_trigger += 6;
             }
             ++row;
         }

@@ -25,13 +25,14 @@ restores y values 448/384/320/256 and preserves the native fractional
 preserves `.5` for odd terrain heights. The refreshed quest snapshot is
 therefore evidence-backed rather than a replay fakematch.
 
-The append-count candidate reproduces the exact 102-instruction body and all
-eight audited references, scoring 98.04% with a 70-instruction exact prefix.
-One count now publishes entry zero and the seven-entry opening walk, identifies
-the dead entry-8 write without advancing past it, drives the overwritten grid,
-and supplies the output count. Direct dead-entry metadata places the x-seed
-initialization at the native boundary. The remaining two differences are the
-independent grid entry-count and trigger-time increment placements.
+The append count publishes entry zero and the seven-entry opening walk,
+identifies the dead entry-8 write without advancing past it, drives the
+overwritten grid, and supplies the output count. Direct dead-entry metadata
+places the x-seed initialization at the native boundary. The grid then uses a
+trigger-field cursor, a temporary record view for position, and a distinct
+template-field owner. Advancing the logical count after position construction
+but before metadata publication reproduces its native x87-gap placement. The
+result matches all 102 instructions and all eight audited references exactly.
 
 All six natural declaration orders for `spawn_index`, `trigger_time_ms`, and
 `entry_count` were also compiled. They are fuzzy-byte neutral at 96.08%;
@@ -71,3 +72,14 @@ metadata stores makes the entire 70-instruction opening exact. The remaining
 8.4117647058824 weighted-byte gap consists only of the two independent grid
 increment placements. The retained source SHA-256 is
 `f7590cfaa68ff55aa016c85818519de6ca2154c3e7a161e142205b6a08d607dd`.
+
+## 2026-08-08 field-cursor exact recovery
+
+The native grid keeps a trigger-field-biased cursor across each column. Each
+accepted row constructs position through a record view, advances the logical
+append count, publishes template through its own field pointer, then publishes
+trigger and count through the trigger cursor before advancing it by six words.
+This source shape resolves both residual increment placements and the final
+template/trigger scheduling swap without dependencies or layout changes.
+Retained source SHA-256:
+`0719dece3767726effe140acd07a8810c69d96a0bcadab6063aae63979d3f219`.
