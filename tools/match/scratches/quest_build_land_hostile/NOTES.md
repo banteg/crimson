@@ -10,10 +10,11 @@ positions are `(-64, 1088)`, `(-64, -64)`, and `(1088, -64)`.
 
 An inlined two-float constructor plus entry `set` method reproduces the
 native's 12-byte local frame, integer-to-float conversions, float-word copies,
-and shared template register. The candidate has the same 53 instructions and
-scores 92.45%. The remaining differences are three independent scheduling
-choices between metadata stores for one entry and construction of the next
-entry's position. They are left unconstrained.
+and shared template register. Publishing the first and fourth entries through
+their trigger-field cursors recovers two of the three cross-entry scheduling
+boundaries. The candidate has the same 53 instructions, scores 98.11%, and
+matches the first 37 instructions exactly. The sole residual is entry two's
+template store crossing construction of entry three's x-coordinate temporary.
 
 `entry-boundary-mutations.json` records four complete whole-builder
 alternatives: aggregate and scalar direct metadata, a shared-template direct
@@ -46,4 +47,16 @@ SHA-256 is
 `bffc23aaee38cb1510a07dc7588abe647e22e381e0b0bc0a827da3d7e10516b6`.
 Combined with the earlier whole-entry audit, this bounds the natural
 temporary, aggregate-copy, and metadata-order source families. The canonical
-92.45% candidate remains unchanged.
+all-setter candidate remained unchanged at that point.
+
+## Split-publication improvement (2026-08-08)
+
+The whole-entry sweeps changed every boundary together. Replaying the
+quest-builder house style one entry at a time shows that entries zero and
+three instead publish position through the record view and metadata through a
+trigger-field cursor. Retaining those two boundaries improves the candidate
+from 92.45% to 98.11%, extends the exact prefix from 19 to 37 instructions,
+and preserves 53/53 instructions and references `2/0/0`. Applying the same
+form to entry two is byte-neutral; direct metadata and named next-position
+forms regress. Retained source SHA-256:
+`b2ff49d64f7550fbbcb552022d4baeaaf9f237ff4c3bfbc90a7e627fc86df4b8`.

@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **712/810** functions matched exactly, **135697/341970** code bytes (**39.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304316/341970** code bytes (**89.0%**).
+Fuzzy-weighted alignment is **304329/341970** code bytes (**89.0%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 44 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 46 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 579/671 | 120753/320805 | 37.6% | 283509/320805 | 88.4% | 671/671 | 320805/320805 | 100.0% | 579/671 |
+| crimsonland.exe | 579/671 | 120753/320805 | 37.6% | 283523/320805 | 88.4% | 671/671 | 320805/320805 | 100.0% | 579/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**579/671** functions, **120753/320805** bytes (**37.6%**), **283509/320805** fuzzy-weighted bytes (**88.4%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **579/671** scratches verified.
+**579/671** functions, **120753/320805** bytes (**37.6%**), **283523/320805** fuzzy-weighted bytes (**88.4%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **579/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -532,7 +532,7 @@ Artifact freshness issues:
 | wip | quest_build_the_beating | 0x00435610 | 649 | 504/649 | 145 | 166/166 | 77.71% | 39/166 | 7/0/0 |  | quest-the-beating-append-count |
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 358/391 | 33 | 94/94 | 91.49% | 31/94 | 5/0/0 |  | quest-spanking-of-the-dead-tail-construction |
 | match | quest_build_hidden_evil | 0x00435a30 | 407 | 407/407 | 0 | 101/101 | 100.00% | 101/101 | 10/0/0 |  | quest-hidden-evil-append-count |
-| wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
+| wip | quest_build_land_hostile | 0x00435bd0 | 239 | 234/239 | 5 | 53/53 | 98.11% | 37/53 | 2/0/0 |  | quest-land-hostile-split-publication |
 | match | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 466/466 | 0 | 135/135 | 100.00% | 135/135 | 7/0/0 |  | quest-minor-alien-breach-append-count |
 | wip | quest_build_alien_squads | 0x00435ea0 | 507 | 502/507 | 5 | 108/108 | 99.07% | 80/108 | 0/0/0 |  | quest-alien-squads-alternating-metadata |
 | match | quest_build_zombie_masters | 0x004360a0 | 128 | 128/128 | 0 | 31/31 | 100.00% | 31/31 | 2/0/0 |  | quest-zombie-masters |
