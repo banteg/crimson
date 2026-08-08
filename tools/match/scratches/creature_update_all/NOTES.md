@@ -514,3 +514,24 @@ lifetime hypotheses in those two regions and leave the larger `0x7c` native
 versus `0x6c` candidate frame allocation and scaled-index scheduling as
 compiler/TU constraints rather than justification for another ordering-only
 rewrite.
+
+## SDK vector-expression style
+
+The 2003 mod SDK provides direct source evidence for the original vector
+idiom: `vec2_t::operator-` returns a temporary and `VEC2_Length(vec2_t &)`
+accepts that result as a non-const reference. Its implementation computes a
+reciprocal square root and returns the reciprocal, while optimized VC6 emits
+the native inline `fsqrt` sequence.
+
+Replaying that exact `VEC2_Length(player.position - creature.position)`
+boundary for the first, long-lived current-player distance improves the
+candidate from 2,891.808510638298/5,330 (54.255319148936%) to
+2,908.743833017078/5,330 (54.573055028463%), a gain of
+16.935322378789 weighted bytes. Candidate instructions move from 1,294 to
+1,297 against 1,338 native instructions; references remain `225/0/2`.
+
+The same boundary was tested independently at the alternate-player, solo
+fallback, auto-target, forced-target, tethered-target, and later interaction
+distance sites. Every additional application regressed alignment and several
+lost resolved references, so only the first site is retained. This confirms a
+specific native temporary-lifetime boundary rather than a type-wide rewrite.

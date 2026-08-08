@@ -19,7 +19,19 @@ struct creature_vec2_t {
         : x(x_value), y(y_value)
     {
     }
+
+    creature_vec2_t operator-(const creature_vec2_t &other)
+    {
+        return creature_vec2_t(x - other.x, y - other.y);
+    }
 };
+
+inline float creature_vec2_length(creature_vec2_t &value)
+{
+    float reciprocal = 1.0f / (float)sqrt(
+        value.x * value.x + value.y * value.y);
+    return 1.0f / reciprocal;
+}
 
 extern "C" {
 extern int creature_update_tick;
@@ -144,9 +156,13 @@ extern "C" void creature_update_all(void)
                     int current_player_index = (int)current_player;
                     vec2f_t *position =
                         &creature_pool[creature_index].position;
-                    float dx = player_state_table[current_player_index].position.x - position->x;
-                    float dy = player_state_table[current_player_index].position.y - position->y;
-                    distance = (float)sqrt(dx * dx + dy * dy);
+                    distance = creature_vec2_length(
+                        *(creature_vec2_t *)&player_state_table[
+                            current_player_index
+                        ].position
+                        - *(creature_vec2_t *)position);
+                    float dx;
+                    float dy;
 
                     if (creature_update_tick % 70 != 0) {
                         if (config_player_count == 2) {
