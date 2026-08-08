@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "bafb04dfb771583cf32c5e1e358f27715b6c57c96eca70ebd874603703209bb0",
+  "audit_digest": "4074e18bde9e927ed2bcbc507906888029ed63fa21fdf28f583730b9ef0b49f4",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -2344,7 +2344,7 @@
       "definitions": {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55"
+        "sha256": "6c46e99acd09ae95e11a1861c7d4291d7bab816606cfef8b4a8495e7a0cf3054"
       },
       "emitted_symbol_count": 149,
       "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
@@ -17258,7 +17258,7 @@
           "program": "grim.dll"
         },
         "repository_relative": true,
-        "sha256": "3d8500401f83ff7f27bee77284c3724ae8e4c5d44f52d7d13d6641ecdd98069d"
+        "sha256": "77650e3a1256d81e5b2297e48c0bbdf730c577c423645fff65040055a3cfee35"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -17273,7 +17273,7 @@
       {
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
-        "sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55"
+        "sha256": "6c46e99acd09ae95e11a1861c7d4291d7bab816606cfef8b4a8495e7a0cf3054"
       },
       {
         "path": "tools/native/linker_aliases/grim.dll.json",

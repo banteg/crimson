@@ -1,5 +1,5 @@
 {
-  "audit_digest": "bafb04dfb771583cf32c5e1e358f27715b6c57c96eca70ebd874603703209bb0",
+  "audit_digest": "4074e18bde9e927ed2bcbc507906888029ed63fa21fdf28f583730b9ef0b49f4",
   "entries": [
     {
       "address": 268747320,
@@ -6288,12 +6288,10 @@
     },
     {
       "address": 268803576,
-      "aliases": [
-        "grim_present_parameters"
-      ],
+      "aliases": [],
       "alignment": 4,
       "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_present_parameters_alignment_is_four",
-      "comment": "D3DPRESENT_PARAMETERS block; this address is its BackBufferWidth field.",
+      "comment": "Canonical aggregate overlay for the D3DPRESENT_PARAMETERS block.",
       "definition_group": "zero-present-parameters-00034",
       "definition_state": "fully-specified",
       "initializer_fill": "00",
@@ -6301,13 +6299,33 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10059df8",
       "initializer_target": null,
       "linker_reference_count": 0,
-      "name": "grim_present_width",
+      "name": "grim_present_parameters",
       "section": ".data",
       "section_offset": 28152,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 52,
       "size_source": "analysis/ghidra/maps/data_map.json: D3DPRESENT_PARAMETERS; tools/native/abi/grim.dll/abi_assertions.cpp: present_parameters_is_0x34",
       "type": "D3DPRESENT_PARAMETERS"
+    },
+    {
+      "address": 268803576,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_int_alignment_is_four",
+      "comment": "D3D present parameters BackBufferWidth field.",
+      "definition_group": "literal-int32",
+      "definition_state": "fully-specified",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "grim_present_width",
+      "section": ".data",
+      "section_offset": 28152,
+      "section_source": "analysis/ida/raw/grim.dll/segments.json",
+      "size": 4,
+      "size_source": "tools/match/scratches: recovered 32-bit integer declarations; tools/native/abi/grim.dll/abi_assertions.cpp: int and unsigned integer width assertions",
+      "type": "UINT"
     },
     {
       "address": 268803580,
@@ -10214,7 +10232,15 @@
   "image": "grim.dll",
   "kind": "crimson-native-data-manifest",
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program.",
-  "overlays": [],
+  "overlays": [
+    {
+      "address": 268803576,
+      "names": [
+        "grim_present_parameters",
+        "grim_present_width"
+      ]
+    }
+  ],
   "priorities": [],
   "schema": 1,
   "source": {
@@ -10223,9 +10249,9 @@
       "kind": "json-program-v1",
       "program": "grim.dll"
     },
-    "data_map_sha256": "7ca65f4ad10d69e632b0b4239d66e3adadd3f9a1b06a5fb95713dc0639086220",
+    "data_map_sha256": "44c921f9055a19b99270c94e8bead8c1a9e3d13fe6620274b5165fd37d931bc0",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "ab954f9b2b0f007297b2295ae69e60d1dd7a031eda157657aa74236894fa0c55",
+    "definitions_sha256": "6c46e99acd09ae95e11a1861c7d4291d7bab816606cfef8b4a8495e7a0cf3054",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
@@ -10234,30 +10260,30 @@
     "segments_sha256": "b4eaf746f0d6cf80791efef6dd39cf97cad0e1e17bc46de5c7343042d1c82b1a"
   },
   "summary": {
-    "alias_names": 81,
-    "alias_rows": 76,
+    "alias_names": 80,
+    "alias_rows": 75,
     "code_label_entries": 6,
-    "definition_group_entries": 215,
+    "definition_group_entries": 216,
     "definition_groups": 57,
-    "entry_count": 441,
-    "explicit_alignment_entries": 349,
-    "explicit_initializer_entries": 349,
-    "explicit_size_entries": 349,
+    "entry_count": 442,
+    "explicit_alignment_entries": 350,
+    "explicit_initializer_entries": 350,
+    "explicit_size_entries": 350,
     "fixed_array_types": 167,
-    "fully_specified_entries": 349,
+    "fully_specified_entries": 350,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 3,
-    "overlay_addresses": 0,
+    "overlay_addresses": 1,
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 291,
+      ".data": 292,
       ".data1": 6,
       ".rdata": 144
     },
-    "source_entry_count": 447,
-    "typed_entries": 391,
+    "source_entry_count": 448,
+    "typed_entries": 392,
     "unique_addresses": 441,
     "untyped_entries": 50
   }

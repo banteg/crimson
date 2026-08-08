@@ -1636,7 +1636,7 @@
         ["0x004c3ff8", "sfx_questhit"],
         ["0x004c3ffc", "sfx_ui_bonus"],
         ["0x004c4000", "sfx_trooper_inpain_01_alias_0"],
-        ["0x004c4004", "sfx_trooper_inpain_01_alias_1"],
+        ["0x004c4004", "sfx_jinxed_kill"],
         ["0x004c4008", "sfx_trooper_inpain_01_alias_2"],
         ["0x004c400c", "sfx_ui_buttonclick"],
         ["0x004c4010", "sfx_ui_panelclick"],
@@ -1709,6 +1709,7 @@
         ["0x00486ff0", "survival_recent_death_pos_1"],
         ["0x00486ff8", "survival_recent_death_pos_2"],
         ["0x004871d0", "player_aux_timer"],
+        ["0x004871d8", "camera_shake_offset"],
         ["0x00490418", "unused_fx_queue_random_prefix_vec2"],
         ["0x00490f78", "unused_effect_uv_strip16_prefix_vec2"],
         ["0x00491090", "player_overlay_torso_uv8"],
@@ -2088,6 +2089,19 @@
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
         ["0x004912b8", "fx_queue"]
+      ]
+    },
+    {
+      "name": "zero-abi-0014c",
+      "types": ["int[83]"],
+      "size": 332,
+      "size_source": "tools/match/include/crimsonland_audio.h: audio_asset_id_table has 83 int entries; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_int_alignment_is_four",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004c3f00..0x004c404c",
+      "members": [
+        ["0x004c3f00", "audio_asset_id_table"]
       ]
     },
     {
@@ -2630,6 +2644,7 @@
         ["0x004854d4", "bonus_label_speed"],
         ["0x004854e8", "bonus_label_fire_bullets"],
         ["0x0048723c", "ui_element_hover_focus_ptr"],
+        ["0x0048f168", "ui_element_table_end"],
         ["0x0048f16c", "ui_element_table_slot_01_main_menu_aux"],
         ["0x0048f170", "ui_element_table_slot_02_main_menu_primary"],
         ["0x0048f174", "ui_element_table_slot_03_main_menu_play_game"],
@@ -4987,7 +5002,7 @@
     },
     {
       "address": "0x0048f168",
-      "name": "ui_element_table_end",
+      "name": "ui_element_table",
       "size": 164,
       "size_source": "analysis/ghidra/maps/data_map.json: ui_element_t *[41]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_pointer_table_is_0xa4",
       "alignment": 4,

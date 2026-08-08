@@ -447,7 +447,8 @@ def test_data_map_preserves_recovered_pool_extents():
         types_by_name["tutorial_hint_bonus_ptr"]
         == "tutorial_bonus_carrier_binja_t *"
     )
-    assert types_by_name["ui_element_table_end"] == "ui_element_t *[41]"
+    assert types_by_name["ui_element_table"] == "ui_element_t *[41]"
+    assert types_by_name["ui_element_table_end"] == "ui_element_t *"
 
 
 def test_data_map_preserves_recovered_aggregate_alias_types():
@@ -710,7 +711,7 @@ def test_importer_preserves_ui_element_pointer_table_aggregate():
     importer = _load_importer()
 
     assert importer._FORCED_DATA_AGGREGATES == frozenset(
-        {"ui_element_table_end"},
+        {"ui_element_table"},
     )
 
 

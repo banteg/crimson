@@ -2408,9 +2408,67 @@ def test_is_analyzer_placeholder_rejects_only_weak_generated_names() -> None:
     assert is_analyzer_placeholder("sub_1000ABCD")
     assert is_analyzer_placeholder("unknown_libname_7")
     assert is_analyzer_placeholder("j_nullsub_11")
+    assert is_analyzer_placeholder("DAT_10050550")
+    assert is_analyzer_placeholder("LAB_10001000")
+    assert is_analyzer_placeholder("lookup_table_4044b0")
     assert not is_analyzer_placeholder("crt_array_unwind_filter")
     assert not is_analyzer_placeholder("j_config_init_defaults")
     assert not is_analyzer_placeholder("?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z")
+
+
+def test_collect_naming_debt_covers_curated_maps_without_exact_scratches(tmp_path: Path) -> None:
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        '[{"program":"grim.dll","address":"0x10001000",'
+        '"name":"known_function","aliases":["sub_10001000","?Known@@YAXXZ"],'
+        '"comment":"formerly FUN_10001000"}]\n',
+        encoding="utf-8",
+    )
+    data_map = tmp_path / "data_map.json"
+    data_map.write_text(
+        '{"entries":[{"program":"grim.dll","address":"0x10050000",'
+        '"name":"known_table","aliases":["DAT_10050000","provider_table"],'
+        '"comment":"switchD_10050000 loads PTR_10050004"}]}\n',
+        encoding="utf-8",
+    )
+
+    rows = collect_naming_debt(
+        [],
+        name_map_path=name_map,
+        data_map_path=data_map,
+    )
+
+    assert [
+        (row.map_kind, row.function, row.issues, row.placeholder_aliases)
+        for row in rows
+    ] == [
+        (
+            "function",
+            "known_function",
+            ("placeholder-alias", "placeholder-comment"),
+            ("sub_10001000",),
+        ),
+        (
+            "data",
+            "known_table",
+            ("placeholder-alias", "placeholder-comment"),
+            ("DAT_10050000",),
+        ),
+    ]
+    assert rows[0].placeholder_comment_tokens == ("FUN_10001000",)
+    assert rows[1].placeholder_comment_tokens == ("switchD_10050000", "PTR_10050004")
+    assert naming_debt_payload(rows[1])["map_kind"] == "data"
+
+    pruned = prune_placeholder_aliases(
+        rows,
+        name_map_path=name_map,
+        data_map_path=data_map,
+    )
+
+    assert pruned == {"aliases_removed": 2, "rows_pruned": 2}
+    assert load_name_map_rows(name_map)[0]["aliases"] == ["?Known@@YAXXZ"]
+    data_payload = json.loads(data_map.read_text(encoding="utf-8"))
+    assert data_payload["entries"][0]["aliases"] == ["provider_table"]
 
 
 def test_collect_naming_debt_suggests_unique_exact_provider_peer(tmp_path: Path) -> None:

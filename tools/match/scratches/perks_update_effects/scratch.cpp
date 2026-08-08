@@ -21,7 +21,7 @@ extern int perk_id_jinxed;
 extern float perk_lean_mean_exp_tick_timer_s;
 extern int perk_doctor_target_creature_id;
 extern float perk_jinxed_proc_timer_s;
-extern int sfx_trooper_inpain_01_alias_1;
+extern int sfx_jinxed_kill;
 
 int creature_find_in_radius(
     const vec2f_t *pos,
@@ -203,7 +203,7 @@ extern "C" void perks_update_effects(void)
         (int)((float)player_state_table[0].experience
             + creature_pool[creature_id].reward_value);
     sfx_play_panned(
-        sfx_trooper_inpain_01_alias_1,
+        sfx_jinxed_kill,
         &creature_pool[creature_id].position,
         1.0f);
 }

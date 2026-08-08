@@ -619,9 +619,9 @@ search evidence, not per-object provenance. Establish toolchain ancestry from
 PE/COFF records or identified archive members; for link-sensitive code, check
 `/MD` vs `/MT` first.
 
-Audit exact recoveries whose current presentation still exposes analyzer
-placeholders in canonical names, scratch directories, curated aliases,
-reference aliases, or notes:
+Audit recovered identities whose current presentation still exposes analyzer
+placeholders in canonical names, scratch directories, curated function/data
+aliases, reference aliases, or notes:
 
 ```sh
 uv run crimson match naming-audit --summary-only
@@ -670,7 +670,12 @@ It removes superseded
 analyzer aliases and gives a renamed scratch an image prefix when the canonical
 directory is already occupied by the cross-image provider peer.
 `--prune-placeholder-aliases` removes only the generated aliases reported on
-the selected exact rows; decorated provider and linkage aliases are retained.
+the selected function and data rows; decorated provider and linkage aliases
+are retained. Curated-map aliases are audited even when no exact scratch owns
+the row, so resolved `DAT_*`, `LAB_*`, and address-derived table labels cannot
+hide outside the exact scratch corpus. Curated comments are checked for stale
+`DAT_*`, `FUN_*`, `LAB_*`, `PTR_*`, `sub_*`, switch/case/table labels,
+`unknown_libname_*`, and `nullsub_*` references too.
 `--rewrite-placeholder-references` replaces an analyzer target only when its
 encoded address or unique raw identity resolves to one non-placeholder name in
 the curated map. It updates every scratch for that image which uses the audited

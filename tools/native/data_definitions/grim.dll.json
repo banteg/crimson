@@ -1707,6 +1707,7 @@
         ["0x10053058", "grim_config_selected_height", "e0010000"],
         ["0x1005305c", "grim_texture_slot_max_index", "ffffffff"],
         ["0x10059dc4", "grim_tick_prev_ms", "00000000"],
+        ["0x10059df8", "grim_present_width", "00000000"],
         ["0x10059dfc", "grim_present_height", "00000000"],
         ["0x10059e00", "grim_present_backbuffer_format", "00000000"],
         ["0x10059e04", "grim_present_backbuffer_count", "00000000"],
@@ -2094,7 +2095,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: mapped .data bytes at VA 0x10059df8",
       "members": [
-        ["0x10059df8", "grim_present_width"]
+        ["0x10059df8", "grim_present_parameters"]
       ]
     },
     {

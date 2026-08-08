@@ -31,10 +31,19 @@ DEFAULT_NATIVE_ANALYSIS_ROOT = REPO_ROOT / "analysis" / "native"
 DEFAULT_MATCH_SCOPE = "port"
 ANALYZER_PLACEHOLDER_RE = re.compile(
     r"^(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|unknown(?:_libname)?(?:_[0-9]+)?|"
-    r"nullsub_[0-9]+|j_(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|nullsub_[0-9]+))$",
+    r"nullsub_[0-9]+|j_(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|nullsub_[0-9]+)|"
+    r"DAT_[0-9a-f]+|LAB_[0-9a-f]+|PTR_[0-9a-f]+|"
+    r"(?:switchD|caseD|lookup_table)_[0-9a-f]+)$",
     re.IGNORECASE,
 )
 ANALYZER_ADDRESS_NAME_RE = re.compile(r"^(?:j_)?(?:FUN_|sub_)([0-9a-f]+)$", re.IGNORECASE)
+ANALYZER_PLACEHOLDER_TOKEN_RE = re.compile(
+    r"(?<![0-9a-z])(?:j_(?:FUN_[0-9a-f]+|sub_[0-9a-f]+|nullsub_[0-9]+)|"
+    r"_?(?:DAT_|FUN_|LAB_|PTR_|sub_)[0-9a-f]+|"
+    r"(?:switchD|caseD|lookup_table)_[0-9a-f]+|"
+    r"unknown_libname(?:_[0-9]+)?|unknown_[0-9]+|nullsub_[0-9]+)(?![0-9a-z])",
+    re.IGNORECASE,
+)
 MATCH_SCOPE_SCHEMA = 2
 MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset(
     {
@@ -3214,6 +3223,8 @@ class NamingDebtRow:
     suggestion: str | None
     suggestion_sources: tuple[str, ...]
     suggestion_comment: str | None = None
+    map_kind: str = "function"
+    placeholder_comment_tokens: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -5368,13 +5379,15 @@ def collect_naming_debt(
     *,
     name_map_path: Path = DEFAULT_NAME_MAP_PATH,
     naming_hints_path: Path = DEFAULT_NAMING_HINTS_PATH,
+    data_map_path: Path | None = None,
 ) -> list[NamingDebtRow]:
-    """Find exact recoveries whose presentation still exposes weaker analyzer names.
+    """Find recovered identities and curated maps that expose weaker analyzer names.
 
     Suggestions are deliberately conservative: an exact archive scratch receives a
     proposed name when another exact scratch from the same hash-pinned archive symbol
     has one unique canonical identity, or when a recognized D3DX helper's decorated
-    COFF symbol directly encodes the repository's canonical helper name.
+    COFF symbol directly encodes the repository's canonical helper name. Placeholder
+    aliases in either curated map are reported even when no exact scratch owns the row.
     """
 
     exact_statuses = [status for status in statuses if status.state == "match"]
@@ -5408,9 +5421,14 @@ def collect_naming_debt(
             provider_peers[key].append(status)
 
     rows: list[NamingDebtRow] = []
+    audited_function_rows: set[tuple[str, int, str]] = set()
     for status in exact_statuses:
         canonical = canonical_names[id(status)]
         map_row = name_rows.get((status.config.image, status.address), {})
+        if map_row:
+            audited_function_rows.add(
+                (status.config.image, status.address, str(map_row.get("name", canonical))),
+            )
         archive_symbol_suggestion = (
             _d3dx_provider_symbol_suggestion(status)
             or _crt_provider_symbol_suggestion(status)
@@ -5439,6 +5457,11 @@ def collect_naming_debt(
             target
             for _, target in status.config.reference_aliases
             if is_analyzer_placeholder(target)
+        )
+        placeholder_comment_tokens = tuple(
+            dict.fromkeys(
+                ANALYZER_PLACEHOLDER_TOKEN_RE.findall(str(map_row.get("comment", ""))),
+            ),
         )
         reference_suggestions: list[tuple[str, str, str]] = []
         for object_symbol, target in status.config.reference_aliases:
@@ -5481,6 +5504,8 @@ def collect_naming_debt(
             issues.append("placeholder-reference")
         if _is_placeholder_note(status.config.note):
             issues.append("placeholder-note")
+        if placeholder_comment_tokens:
+            issues.append("placeholder-comment")
         if (
             identity_suggestion is not None
             and not is_analyzer_placeholder(canonical)
@@ -5564,9 +5589,114 @@ def collect_naming_debt(
                 suggestion=suggestion,
                 suggestion_sources=suggestion_sources,
                 suggestion_comment=suggestion_comment,
+                placeholder_comment_tokens=placeholder_comment_tokens,
             ),
         )
-    return sorted(rows, key=lambda row: (row.image, row.address, row.scratch))
+
+    try:
+        name_map_display = name_map_path.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        name_map_display = name_map_path.as_posix()
+    for map_row in name_rows.values():
+        image = str(map_row.get("program", ""))
+        address = parse_int(map_row["address"])
+        canonical = str(map_row.get("name", ""))
+        key = (image, address, canonical)
+        if key in audited_function_rows:
+            continue
+        placeholder_aliases = tuple(
+            str(alias)
+            for alias in map_row.get("aliases", ())
+            if is_analyzer_placeholder(str(alias))
+        )
+        placeholder_comment_tokens = tuple(
+            dict.fromkeys(
+                ANALYZER_PLACEHOLDER_TOKEN_RE.findall(str(map_row.get("comment", ""))),
+            ),
+        )
+        map_issues = tuple(
+            issue
+            for issue, present in (
+                ("placeholder-alias", bool(placeholder_aliases)),
+                ("placeholder-comment", bool(placeholder_comment_tokens)),
+            )
+            if present
+        )
+        if not map_issues:
+            continue
+        rows.append(
+            NamingDebtRow(
+                image=image,
+                address=address,
+                function=canonical,
+                configured_function=canonical,
+                scratch=name_map_display,
+                issues=map_issues,
+                placeholder_aliases=placeholder_aliases,
+                placeholder_references=(),
+                reference_suggestions=(),
+                provider_symbol=None,
+                provider_member=None,
+                suggestion=None,
+                suggestion_sources=(),
+                placeholder_comment_tokens=placeholder_comment_tokens,
+            ),
+        )
+
+    if data_map_path is not None and data_map_path.exists():
+        payload = json.loads(data_map_path.read_text(encoding="utf-8"))
+        raw_entries = payload.get("entries") if isinstance(payload, dict) else None
+        if not isinstance(raw_entries, list):
+            raise TypeError(f"{data_map_path}: data map must contain an entries array")
+        try:
+            data_map_display = data_map_path.resolve().relative_to(REPO_ROOT).as_posix()
+        except ValueError:
+            data_map_display = data_map_path.as_posix()
+        for index, raw_entry in enumerate(raw_entries):
+            if not isinstance(raw_entry, dict):
+                raise TypeError(f"{data_map_path}: data-map row {index} must be an object")
+            map_row = cast(dict[str, Any], raw_entry)
+            placeholder_aliases = tuple(
+                str(alias)
+                for alias in map_row.get("aliases", ())
+                if is_analyzer_placeholder(str(alias))
+            )
+            placeholder_comment_tokens = tuple(
+                dict.fromkeys(
+                    ANALYZER_PLACEHOLDER_TOKEN_RE.findall(str(map_row.get("comment", ""))),
+                ),
+            )
+            map_issues = tuple(
+                issue
+                for issue, present in (
+                    ("placeholder-alias", bool(placeholder_aliases)),
+                    ("placeholder-comment", bool(placeholder_comment_tokens)),
+                )
+                if present
+            )
+            if not map_issues:
+                continue
+            canonical = str(map_row.get("name", ""))
+            rows.append(
+                NamingDebtRow(
+                    image=str(map_row.get("program", "")),
+                    address=parse_int(map_row["address"]),
+                    function=canonical,
+                    configured_function=canonical,
+                    scratch=data_map_display,
+                    issues=map_issues,
+                    placeholder_aliases=placeholder_aliases,
+                    placeholder_references=(),
+                    reference_suggestions=(),
+                    provider_symbol=None,
+                    provider_member=None,
+                    suggestion=None,
+                    suggestion_sources=(),
+                    map_kind="data",
+                    placeholder_comment_tokens=placeholder_comment_tokens,
+                ),
+            )
+    return sorted(rows, key=lambda row: (row.image, row.address, row.map_kind, row.scratch))
 
 
 def apply_naming_suggestions(
@@ -6066,50 +6196,107 @@ def prune_placeholder_aliases(
     rows: Collection[NamingDebtRow],
     *,
     name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+    data_map_path: Path = DEFAULT_DATA_MAP_PATH,
 ) -> dict[str, Any]:
-    """Remove audited analyzer aliases while retaining canonical/linkage names."""
+    """Remove audited analyzer aliases from curated maps, retaining linkage names."""
 
-    aliases_by_key = {
-        (row.image, row.address): {alias.casefold() for alias in row.placeholder_aliases}
-        for row in rows
-        if row.placeholder_aliases
+    aliases_by_kind = {
+        map_kind: {
+            (row.image, row.address, row.function): {
+                alias.casefold() for alias in row.placeholder_aliases
+            }
+            for row in rows
+            if row.map_kind == map_kind and row.placeholder_aliases
+        }
+        for map_kind in ("function", "data")
     }
-    if not aliases_by_key:
+    if not any(aliases_by_kind.values()):
         return {"aliases_removed": 0, "rows_pruned": 0}
 
-    map_rows = [dict(row) for row in load_name_map_rows(name_map_path)]
-    aliases_removed = 0
-    rows_pruned = 0
-    found: set[tuple[str, int]] = set()
-    for map_row in map_rows:
-        key = (str(map_row.get("program", "")), parse_int(map_row["address"]))
-        stale_aliases = aliases_by_key.get(key)
-        if stale_aliases is None:
-            continue
-        found.add(key)
-        aliases = map_row.get("aliases")
-        if not isinstance(aliases, list):
-            continue
-        filtered = [alias for alias in aliases if str(alias).casefold() not in stale_aliases]
-        removed = len(aliases) - len(filtered)
-        if not removed:
-            continue
-        aliases_removed += removed
-        rows_pruned += 1
-        if filtered:
-            map_row["aliases"] = filtered
-        else:
-            map_row.pop("aliases", None)
-    missing = sorted(set(aliases_by_key) - found)
-    if missing:
-        rendered = ", ".join(f"{image}:0x{address:08x}" for image, address in missing)
-        raise ValueError(f"audited placeholder aliases disappeared from the name map: {rendered}")
-    name_map_path.write_text(json.dumps(map_rows, indent=2) + "\n", encoding="utf-8")
-    return {"aliases_removed": aliases_removed, "rows_pruned": rows_pruned}
+    def prune_rows(
+        map_rows: list[dict[str, Any]],
+        *,
+        map_kind: str,
+        map_path: Path,
+    ) -> tuple[int, int]:
+        aliases_by_key = aliases_by_kind[map_kind]
+        if not aliases_by_key:
+            return (0, 0)
+        aliases_removed = 0
+        rows_pruned = 0
+        found: set[tuple[str, int, str]] = set()
+        for map_row in map_rows:
+            key = (
+                str(map_row.get("program", "")),
+                parse_int(map_row["address"]),
+                str(map_row.get("name", "")),
+            )
+            stale_aliases = aliases_by_key.get(key)
+            if stale_aliases is None:
+                continue
+            found.add(key)
+            aliases = map_row.get("aliases")
+            if not isinstance(aliases, list):
+                continue
+            filtered = [alias for alias in aliases if str(alias).casefold() not in stale_aliases]
+            removed = len(aliases) - len(filtered)
+            if not removed:
+                continue
+            aliases_removed += removed
+            rows_pruned += 1
+            if filtered:
+                map_row["aliases"] = filtered
+            else:
+                map_row.pop("aliases", None)
+        missing = sorted(set(aliases_by_key) - found)
+        if missing:
+            rendered = ", ".join(
+                f"{image}:0x{address:08x}:{name}" for image, address, name in missing
+            )
+            raise ValueError(
+                f"audited placeholder aliases disappeared from {map_path}: {rendered}",
+            )
+        return (aliases_removed, rows_pruned)
+
+    function_rows = [dict(row) for row in load_name_map_rows(name_map_path)]
+    function_removed, function_pruned = prune_rows(
+        function_rows,
+        map_kind="function",
+        map_path=name_map_path,
+    )
+    if function_pruned:
+        name_map_path.write_text(json.dumps(function_rows, indent=2) + "\n", encoding="utf-8")
+
+    data_payload: dict[str, Any] | None = None
+    data_removed = 0
+    data_pruned = 0
+    if aliases_by_kind["data"]:
+        raw_payload = json.loads(data_map_path.read_text(encoding="utf-8"))
+        if not isinstance(raw_payload, dict) or not isinstance(raw_payload.get("entries"), list):
+            raise TypeError(f"{data_map_path}: data map must contain an entries array")
+        data_payload = cast(dict[str, Any], raw_payload)
+        data_rows = [dict(row) for row in data_payload["entries"]]
+        data_removed, data_pruned = prune_rows(
+            data_rows,
+            map_kind="data",
+            map_path=data_map_path,
+        )
+        if data_pruned:
+            data_payload["entries"] = data_rows
+            data_map_path.write_text(
+                json.dumps(data_payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+    return {
+        "aliases_removed": function_removed + data_removed,
+        "rows_pruned": function_pruned + data_pruned,
+    }
 
 
 def naming_debt_payload(row: NamingDebtRow) -> dict[str, Any]:
     return {
+        "map_kind": row.map_kind,
         "image": row.image,
         "address": row.address,
         "function": row.function,
@@ -6117,6 +6304,7 @@ def naming_debt_payload(row: NamingDebtRow) -> dict[str, Any]:
         "scratch": row.scratch,
         "issues": list(row.issues),
         "placeholder_aliases": list(row.placeholder_aliases),
+        "placeholder_comment_tokens": list(row.placeholder_comment_tokens),
         "placeholder_references": list(row.placeholder_references),
         "reference_suggestions": [
             {

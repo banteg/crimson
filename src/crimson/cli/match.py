@@ -1079,6 +1079,11 @@ def cmd_match_naming_audit(
         "--name-map",
         help="curated function-name map",
     ),
+    data_map: Path = typer.Option(
+        matchlib.DEFAULT_DATA_MAP_PATH,
+        "--data-map",
+        help="curated data-name map",
+    ),
     naming_hints: Path = typer.Option(
         matchlib.DEFAULT_NAMING_HINTS_PATH,
         "--naming-hints",
@@ -1104,7 +1109,7 @@ def cmd_match_naming_audit(
     prune_aliases: bool = typer.Option(
         False,
         "--prune-placeholder-aliases",
-        help="remove audited analyzer aliases from selected exact name-map rows",
+        help="remove audited analyzer aliases from selected curated-map rows",
     ),
     rewrite_references: bool = typer.Option(
         False,
@@ -1126,13 +1131,14 @@ def cmd_match_naming_audit(
         help="matching ownership scope",
     ),
 ) -> None:
-    """Report exact recoveries that still expose weaker analyzer names."""
+    """Report recovered identities and curated maps with weaker analyzer names."""
 
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
     rows = matchlib.collect_naming_debt(
         statuses,
         name_map_path=name_map,
         naming_hints_path=naming_hints,
+        data_map_path=data_map,
     )
     provider_members = _parse_csv(provider_member)
     selected_statuses = [
@@ -1204,7 +1210,11 @@ def cmd_match_naming_audit(
                 "alias pruning cannot be combined with suggestion, limit, summary, or check filters",
                 param_hint="--prune-placeholder-aliases",
             )
-        result = matchlib.prune_placeholder_aliases(selected_rows, name_map_path=name_map)
+        result = matchlib.prune_placeholder_aliases(
+            selected_rows,
+            name_map_path=name_map,
+            data_map_path=data_map,
+        )
         if as_json:
             typer.echo(json.dumps(result, indent=2, sort_keys=True))
         else:

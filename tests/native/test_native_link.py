@@ -2238,15 +2238,15 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
 def test_grim_data_manifest_applies_typed_data_tranche() -> None:
     payload = data_manifest_payload("grim.dll")
 
-    assert payload["summary"]["source_entry_count"] == 447
+    assert payload["summary"]["source_entry_count"] == 448
     assert payload["summary"]["code_label_entries"] == 6
-    assert payload["summary"]["entry_count"] == 441
-    assert payload["summary"]["typed_entries"] == 391
-    assert payload["summary"]["explicit_size_entries"] == 349
-    assert payload["summary"]["explicit_alignment_entries"] == 349
-    assert payload["summary"]["explicit_initializer_entries"] == 349
-    assert payload["summary"]["fully_specified_entries"] == 349
-    assert payload["summary"]["definition_group_entries"] == 215
+    assert payload["summary"]["entry_count"] == 442
+    assert payload["summary"]["typed_entries"] == 392
+    assert payload["summary"]["explicit_size_entries"] == 350
+    assert payload["summary"]["explicit_alignment_entries"] == 350
+    assert payload["summary"]["explicit_initializer_entries"] == 350
+    assert payload["summary"]["fully_specified_entries"] == 350
+    assert payload["summary"]["definition_group_entries"] == 216
     assert payload["summary"]["definition_groups"] == 57
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/grim.dll.json"
@@ -2262,6 +2262,8 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
         )
     )
     observed = {entry["name"]: entry for entry in payload["entries"]}
+    assert observed["grim_present_parameters"]["type"] == "D3DPRESENT_PARAMETERS"
+    assert observed["grim_present_width"]["type"] == "UINT"
     assert observed["d3dx_format_conversion_matrix"]["type"] == "const int[5][5]"
     assert observed["grim_dxt1_optimize_epsilon"]["type"] == "const float"
     assert observed["grim_dxt_luminance_weights"]["type"] == "const float[3]"
@@ -2379,7 +2381,8 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
         (0x8, 0x10016CDC),
         (0xC, 0x1001AF00),
     ]
-    assert defined["grim_present_width"]["size"] == 0x34
+    assert defined["grim_present_parameters"]["size"] == 0x34
+    assert defined["grim_present_width"]["size"] == 4
     assert defined["grim_app"]["size"] == 0x2C
     assert defined["grim_client_rect"]["size"] == 0x10
     assert defined["grim_joystick_buttons"]["size"] == 0x80
@@ -2477,17 +2480,17 @@ def test_grim_data_manifest_applies_typed_data_tranche() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["source_entry_count"] == 1824
+    assert payload["summary"]["source_entry_count"] == 1827
     assert payload["summary"]["code_label_entries"] == 54
-    assert payload["summary"]["entry_count"] == 1770
-    assert payload["summary"]["typed_entries"] == 1770
+    assert payload["summary"]["entry_count"] == 1773
+    assert payload["summary"]["typed_entries"] == 1773
     assert payload["summary"]["untyped_entries"] == 0
-    assert payload["summary"]["explicit_size_entries"] == 1770
-    assert payload["summary"]["explicit_alignment_entries"] == 1770
-    assert payload["summary"]["explicit_initializer_entries"] == 1770
-    assert payload["summary"]["fully_specified_entries"] == 1770
-    assert payload["summary"]["definition_group_entries"] == 1661
-    assert payload["summary"]["definition_groups"] == 174
+    assert payload["summary"]["explicit_size_entries"] == 1773
+    assert payload["summary"]["explicit_alignment_entries"] == 1773
+    assert payload["summary"]["explicit_initializer_entries"] == 1773
+    assert payload["summary"]["fully_specified_entries"] == 1773
+    assert payload["summary"]["definition_group_entries"] == 1664
+    assert payload["summary"]["definition_groups"] == 175
     assert {
         entry["name"]
         for entry in payload["entries"]
@@ -2506,6 +2509,9 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
         for entry in payload["entries"]
         if entry["definition_state"] == "fully-specified"
     }
+    assert defined["camera_shake_offset"]["type"] == "vec2f_t"
+    assert defined["ui_element_table"]["type"] == "ui_element_t *[41]"
+    assert defined["audio_asset_id_table"]["type"] == "int[83]"
     for scope_table in (
         "crt_calloc_scope_table",
         "crt_free_scope_table",
@@ -2575,7 +2581,8 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
         "creature-type-zero-record-00044"
     )
     assert defined["highscore_table"]["size"] == 0x1C20
-    assert defined["ui_element_table_end"]["size"] == 0xA4
+    assert defined["ui_element_table"]["size"] == 0xA4
+    assert defined["ui_element_table_end"]["size"] == 4
     assert defined["ui_element_table_slot_01_main_menu_aux"]["size"] == 4
     assert defined["ui_element_table_start"]["definition_group"] == "zero-pointer32"
     assert defined["bonus_state"]["size"] == 1

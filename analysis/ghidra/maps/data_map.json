@@ -2,9 +2,6 @@
   "entries": [
     {
       "address": "0x004044b0",
-      "aliases": [
-        "lookup_table_4044b0"
-      ],
       "comment": "Compiler-generated 237-byte case-id map for input_key_name's sparse DirectInput fallback switch.",
       "name": "input_key_name_dik_dispatch_map",
       "program": "crimsonland.exe",
@@ -6236,9 +6233,13 @@
     },
     {
       "address": "0x004871d8",
-      "aliases": [
-        "camera_shake_offset"
-      ],
+      "comment": "Camera shake offset vector applied to the camera center; aggregate overlay of camera_shake_offset_x and camera_shake_offset_y.",
+      "name": "camera_shake_offset",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
+    },
+    {
+      "address": "0x004871d8",
       "comment": "Camera shake offset X (applied to camera center).",
       "name": "camera_shake_offset_x",
       "program": "crimsonland.exe",
@@ -6771,12 +6772,16 @@
     },
     {
       "address": "0x0048f168",
-      "aliases": [
-        "ui_element_table"
-      ],
-      "comment": "41-entry UI element pointer table; slot 0 is the logo sign root and low/end anchor used by ui_elements_update_and_render.",
+      "comment": "Canonical aggregate overlay for the 41-entry UI element pointer table.",
+      "name": "ui_element_table",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t *[41]"
+    },
+    {
+      "address": "0x0048f168",
+      "comment": "UI element pointer table slot 0: the logo sign root and low/end anchor used by ui_elements_update_and_render.",
       "name": "ui_element_table_end",
-      "type": "ui_element_t *[41]",
+      "type": "ui_element_t *",
       "program": "crimsonland.exe"
     },
     {
@@ -8394,28 +8399,28 @@
     },
     {
       "address": "0x00490f3c",
-      "comment": "Alternate forward move key (used when _DAT_0048035c == 1)",
+      "comment": "Alternate forward move key used when config_player_count == 1.",
       "name": "player_alt_move_key_forward",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f40",
-      "comment": "Alternate backward move key (used when _DAT_0048035c == 1)",
+      "comment": "Alternate backward move key used when config_player_count == 1.",
       "name": "player_alt_move_key_backward",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f44",
-      "comment": "Alternate turn-left key (used when _DAT_0048035c == 1)",
+      "comment": "Alternate turn-left key used when config_player_count == 1.",
       "name": "player_alt_turn_key_left",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f48",
-      "comment": "Alternate turn-right key (used when _DAT_0048035c == 1)",
+      "comment": "Alternate turn-right key used when config_player_count == 1.",
       "name": "player_alt_turn_key_right",
       "program": "crimsonland.exe",
       "type": "int"
@@ -10570,9 +10575,13 @@
     },
     {
       "address": "0x004c3f00",
-      "aliases": [
-        "audio_asset_id_table"
-      ],
+      "comment": "Canonical aggregate overlay for the contiguous 83-entry SFX and music asset-id table.",
+      "name": "audio_asset_id_table",
+      "program": "crimsonland.exe",
+      "type": "int[83]"
+    },
+    {
+      "address": "0x004c3f00",
       "comment": "SFX id for trooper_inPain_01.ogg",
       "name": "sfx_trooper_inpain_01",
       "program": "crimsonland.exe",
@@ -11014,21 +11023,21 @@
     },
     {
       "address": "0x004c4000",
-      "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)",
+      "comment": "Audio asset slot 64; initialized as a copy of sfx_trooper_inpain_01.",
       "name": "sfx_trooper_inpain_01_alias_0",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x004c4004",
-      "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)",
-      "name": "sfx_trooper_inpain_01_alias_1",
+      "comment": "Jinxed random-kill SFX slot; initialized as a copy of sfx_trooper_inpain_01.",
+      "name": "sfx_jinxed_kill",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x004c4008",
-      "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)",
+      "comment": "Audio asset slot 66; initialized as a copy of sfx_trooper_inpain_01.",
       "name": "sfx_trooper_inpain_01_alias_2",
       "program": "crimsonland.exe",
       "type": "int"
@@ -13317,7 +13326,9 @@
     },
     {
       "address": "0x1004e55c",
-      "aliases": ["?pD8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
+      "aliases": [
+        "?pD8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "comment": "DXT5 alpha optimization: max-endpoint weights for 8-alpha mode.",
       "name": "grim_dxt5_alpha_weights_max_8",
       "program": "grim.dll",
@@ -13325,7 +13336,9 @@
     },
     {
       "address": "0x1004e57c",
-      "aliases": ["?pC8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
+      "aliases": [
+        "?pC8@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "comment": "DXT5 alpha optimization: min-endpoint weights for 8-alpha mode.",
       "name": "grim_dxt5_alpha_weights_min_8",
       "program": "grim.dll",
@@ -13333,7 +13346,9 @@
     },
     {
       "address": "0x1004e59c",
-      "aliases": ["?pD6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
+      "aliases": [
+        "?pD6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "comment": "DXT5 alpha optimization: max-endpoint weights for 6-alpha mode.",
       "name": "grim_dxt5_alpha_weights_max_6",
       "program": "grim.dll",
@@ -13341,7 +13356,9 @@
     },
     {
       "address": "0x1004e5b4",
-      "aliases": ["?pC6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"],
+      "aliases": [
+        "?pC6@?1??OptimizeAlpha@@YAXPAM0PBMI@Z@4QBMB"
+      ],
       "comment": "DXT5 alpha optimization: min-endpoint weights for 6-alpha mode.",
       "name": "grim_dxt5_alpha_weights_min_6",
       "program": "grim.dll",
@@ -13349,7 +13366,9 @@
     },
     {
       "address": "0x1004e5cc",
-      "aliases": ["?fEpsilon@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4MB"],
+      "aliases": [
+        "?fEpsilon@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4MB"
+      ],
       "comment": "DirectX 8.1 OptimizeRGB convergence epsilon.",
       "name": "grim_dxt1_optimize_epsilon",
       "program": "grim.dll",
@@ -13357,7 +13376,9 @@
     },
     {
       "address": "0x1004e5d4",
-      "aliases": ["?pD4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
+      "aliases": [
+        "?pD4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "comment": "DXT1 color optimization: max-endpoint weights for 4-color mode.",
       "name": "grim_dxt1_color_weights_max_4",
       "program": "grim.dll",
@@ -13365,7 +13386,9 @@
     },
     {
       "address": "0x1004e5e4",
-      "aliases": ["?pC4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
+      "aliases": [
+        "?pC4@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "comment": "DXT1 color optimization: min-endpoint weights for 4-color mode.",
       "name": "grim_dxt1_color_weights_min_4",
       "program": "grim.dll",
@@ -13373,7 +13396,9 @@
     },
     {
       "address": "0x1004e5f4",
-      "aliases": ["?pD3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
+      "aliases": [
+        "?pD3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "comment": "DXT1 color optimization: max-endpoint weights for 3-color mode.",
       "name": "grim_dxt1_color_weights_max_3",
       "program": "grim.dll",
@@ -13381,7 +13406,9 @@
     },
     {
       "address": "0x1004e600",
-      "aliases": ["?pC3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"],
+      "aliases": [
+        "?pC3@?1??OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU2@I@Z@4QBMB"
+      ],
       "comment": "DXT1 color optimization: min-endpoint weights for 3-color mode.",
       "name": "grim_dxt1_color_weights_min_3",
       "program": "grim.dll",
@@ -13389,7 +13416,9 @@
     },
     {
       "address": "0x1004e610",
-      "aliases": ["?pSteps4@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"],
+      "aliases": [
+        "?pSteps4@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"
+      ],
       "comment": "DXT1 index mapping table for 4-color mode.",
       "name": "grim_dxt1_index_map_4color",
       "program": "grim.dll",
@@ -13397,7 +13426,9 @@
     },
     {
       "address": "0x1004e620",
-      "aliases": ["?pSteps3@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"],
+      "aliases": [
+        "?pSteps3@?CE@??EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z@4QBIB"
+      ],
       "comment": "DXT1 index mapping table for 3-color mode.",
       "name": "grim_dxt1_index_map_3color",
       "program": "grim.dll",
@@ -13405,7 +13436,9 @@
     },
     {
       "address": "0x1004e63c",
-      "aliases": ["?pSteps8@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"],
+      "aliases": [
+        "?pSteps8@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"
+      ],
       "comment": "DXT5 alpha index mapping table for 8-alpha mode.",
       "name": "grim_dxt5_alpha_index_map_8",
       "program": "grim.dll",
@@ -13413,7 +13446,9 @@
     },
     {
       "address": "0x1004e65c",
-      "aliases": ["?pSteps6@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"],
+      "aliases": [
+        "?pSteps6@?BK@??D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z@4QBIB"
+      ],
       "comment": "DXT5 alpha index mapping table for 6-alpha mode.",
       "name": "grim_dxt5_alpha_index_map_6",
       "program": "grim.dll",
@@ -13421,7 +13456,9 @@
     },
     {
       "address": "0x100544c0",
-      "aliases": ["_g_Luminance"],
+      "aliases": [
+        "_g_Luminance"
+      ],
       "comment": "DirectX 8.1 DXT luminance weights used while optimizing and encoding color endpoints.",
       "name": "grim_dxt_luminance_weights",
       "program": "grim.dll",
@@ -13429,7 +13466,9 @@
     },
     {
       "address": "0x100544d0",
-      "aliases": ["_g_LuminanceInv"],
+      "aliases": [
+        "_g_LuminanceInv"
+      ],
       "comment": "DirectX 8.1 reciprocal DXT luminance weights used to reconstruct optimized RGB endpoints.",
       "name": "grim_dxt_luminance_inverse",
       "program": "grim.dll",
@@ -13637,7 +13676,9 @@
     },
     {
       "address": "0x10054390",
-      "aliases": ["?g_pBoxFilter2D_A8R8G8B8@@3P6AJPAI0IIII@ZA"],
+      "aliases": [
+        "?g_pBoxFilter2D_A8R8G8B8@@3P6AJPAI0IIII@ZA"
+      ],
       "comment": "DirectX 8.1 runtime-selected A8R8G8B8 box-filter implementation pointer.",
       "name": "d3dx_box_filter_2d_a8r8g8b8_impl",
       "program": "grim.dll",
@@ -13645,7 +13686,9 @@
     },
     {
       "address": "0x10054394",
-      "aliases": ["?g_pBoxFilter2D_X8R8G8B8@@3P6AJPAI0IIII@ZA"],
+      "aliases": [
+        "?g_pBoxFilter2D_X8R8G8B8@@3P6AJPAI0IIII@ZA"
+      ],
       "comment": "DirectX 8.1 runtime-selected X8R8G8B8 box-filter implementation pointer.",
       "name": "d3dx_box_filter_2d_x8r8g8b8_impl",
       "program": "grim.dll",
@@ -13653,7 +13696,9 @@
     },
     {
       "address": "0x10054398",
-      "aliases": ["_g_fDitherOff"],
+      "aliases": [
+        "_g_fDitherOff"
+      ],
       "comment": "Neutral 32-entry dither pattern whose entries are all 0.5.",
       "name": "grim_dither_half_pattern",
       "program": "grim.dll",
@@ -13661,7 +13706,9 @@
     },
     {
       "address": "0x10054418",
-      "aliases": ["_g_fDitherOn"],
+      "aliases": [
+        "_g_fDitherOn"
+      ],
       "comment": "DirectX 8.1 32-entry ordered dither pattern selected when pixel-format dithering is enabled.",
       "name": "grim_dither_bayer_pattern",
       "program": "grim.dll",
@@ -13669,7 +13716,9 @@
     },
     {
       "address": "0x100544a0",
-      "aliases": ["_png_gamma_shift"],
+      "aliases": [
+        "_png_gamma_shift"
+      ],
       "comment": "Eight-entry libpng 1.0.5 shift-mask table used while building 16-bit gamma lookup tables.",
       "name": "png_gamma_shift",
       "program": "grim.dll",
@@ -13810,13 +13859,17 @@
     },
     {
       "address": "0x10059df8",
-      "aliases": [
-        "grim_present_parameters"
-      ],
-      "comment": "D3DPRESENT_PARAMETERS block; this address is its BackBufferWidth field.",
-      "name": "grim_present_width",
+      "comment": "Canonical aggregate overlay for the D3DPRESENT_PARAMETERS block.",
+      "name": "grim_present_parameters",
       "program": "grim.dll",
       "type": "D3DPRESENT_PARAMETERS"
+    },
+    {
+      "address": "0x10059df8",
+      "comment": "D3D present parameters BackBufferWidth field.",
+      "name": "grim_present_width",
+      "program": "grim.dll",
+      "type": "UINT"
     },
     {
       "address": "0x10059dfc",
@@ -14977,7 +15030,9 @@
     },
     {
       "address": "0x1005db70",
-      "aliases": ["_g_ulFPU"],
+      "aliases": [
+        "_g_ulFPU"
+      ],
       "comment": "Four-byte DirectX 8.1 g_ulFPU slot whose low word stores the x87 control word used by DXT encode helpers.",
       "name": "fpu_control_word_saved_dxt",
       "program": "grim.dll",
@@ -15006,7 +15061,9 @@
     },
     {
       "address": "0x1004c9c0",
-      "aliases": ["?bConversion@?1??D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z@4QAY04$$CBHA"],
+      "aliases": [
+        "?bConversion@?1??D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z@4QAY04$$CBHA"
+      ],
       "comment": "DirectX 8.1 D3DXScoreFormat conversion-compatibility matrix.",
       "name": "d3dx_format_conversion_matrix",
       "program": "grim.dll",
@@ -15406,7 +15463,9 @@
     },
     {
       "address": "0x1004c388",
-      "aliases": ["_g_D3DXFormatUnknown"],
+      "aliases": [
+        "_g_D3DXFormatUnknown"
+      ],
       "comment": "Fallback 36-byte descriptor returned when a D3D pixel format is not registered.",
       "name": "grim_format_info_default",
       "program": "grim.dll",
@@ -15414,7 +15473,9 @@
     },
     {
       "address": "0x1004c3b0",
-      "aliases": ["_g_pD3DXFormatInfo"],
+      "aliases": [
+        "_g_pD3DXFormatInfo"
+      ],
       "comment": "Start of the 36-byte D3D pixel-format descriptor table.",
       "name": "grim_format_info_entries",
       "program": "grim.dll",
@@ -15422,7 +15483,9 @@
     },
     {
       "address": "0x10053c50",
-      "aliases": ["_g_pD3DXFormatInfoLim"],
+      "aliases": [
+        "_g_pD3DXFormatInfoLim"
+      ],
       "comment": "One-past-the-end pointer for the registered D3D pixel-format descriptor table.",
       "name": "grim_format_info_end",
       "program": "grim.dll",
@@ -15430,7 +15493,10 @@
     },
     {
       "address": "0x10053c58",
-      "aliases": ["?g_D3DXFastTable@@3UD3DXFASTTABLE@@A", "g_D3DXFastTable"],
+      "aliases": [
+        "?g_D3DXFastTable@@3UD3DXFASTTABLE@@A",
+        "g_D3DXFastTable"
+      ],
       "comment": "Active 57-entry D3DX vector and matrix dispatch table; reset and patched by D3DXCpuOptimizations for the selected CPU backend.",
       "name": "d3dx_fast_table",
       "program": "grim.dll",
@@ -15438,7 +15504,10 @@
     },
     {
       "address": "0x10053d40",
-      "aliases": ["?g_D3DXFastTableC@@3UD3DXFASTTABLE@@A", "g_D3DXFastTableC"],
+      "aliases": [
+        "?g_D3DXFastTableC@@3UD3DXFASTTABLE@@A",
+        "g_D3DXFastTableC"
+      ],
       "comment": "Default 57-entry C D3DX dispatch table copied into the active table before CPU-specific overrides.",
       "name": "d3dx_fast_table_c",
       "program": "grim.dll",
@@ -15446,7 +15515,9 @@
     },
     {
       "address": "0x10053ec8",
-      "aliases": ["_g_pDDSFormatDDPF"],
+      "aliases": [
+        "_g_pDDSFormatDDPF"
+      ],
       "comment": "Archive-confirmed 34-entry DirectX 8.1 table mapping D3DFORMAT values to DDS pixel-format descriptors.",
       "name": "d3dx_dds_pixel_format_table",
       "program": "grim.dll",
@@ -15454,7 +15525,10 @@
     },
     {
       "address": "0x10054498",
-      "aliases": ["_isMMX", "isMMX"],
+      "aliases": [
+        "_isMMX",
+        "isMMX"
+      ],
       "comment": "Cached MMX capability result used by the DirectX 8.1 CPU-detection helpers.",
       "name": "d3dx_is_mmx",
       "program": "grim.dll",
@@ -15462,7 +15536,10 @@
     },
     {
       "address": "0x1005449c",
-      "aliases": ["?g_CpuOptimization@@3W4_D3DX_CPU_OPTIMIZATION@@A", "g_CpuOptimization"],
+      "aliases": [
+        "?g_CpuOptimization@@3W4_D3DX_CPU_OPTIMIZATION@@A",
+        "g_CpuOptimization"
+      ],
       "comment": "Selected DirectX 8.1 D3DX CPU optimization mode.",
       "name": "d3dx_cpu_optimization",
       "program": "grim.dll",
@@ -15470,7 +15547,10 @@
     },
     {
       "address": "0x100544e0",
-      "aliases": ["_invSqrtTab", "invSqrtTab"],
+      "aliases": [
+        "_invSqrtTab",
+        "invSqrtTab"
+      ],
       "comment": "1024-entry inverse-square-root lookup table used by the optimized D3DX vector normalizers.",
       "name": "d3dx_inverse_sqrt_table",
       "program": "grim.dll",
@@ -15499,7 +15579,9 @@
     },
     {
       "address": "0x0046f880",
-      "aliases": ["?const3dn_0_1@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_0_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.0, 1.0] used by the x3d matrix kernels.",
       "name": "x3d_const3dn_0_1",
       "program": "crimsonland.exe",
@@ -15507,7 +15589,9 @@
     },
     {
       "address": "0x0046f890",
-      "aliases": ["?const3dn_1_N1@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_1_N1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, -1.0] used by the x3d matrix kernels.",
       "name": "x3d_const3dn_1_n1",
       "program": "crimsonland.exe",
@@ -15515,7 +15599,9 @@
     },
     {
       "address": "0x0046f8a0",
-      "aliases": ["?const3dn_1_1@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_1_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, 1.0] used by the x3d matrix kernels.",
       "name": "x3d_const3dn_1_1",
       "program": "crimsonland.exe",
@@ -15523,7 +15609,9 @@
     },
     {
       "address": "0x0046f8a8",
-      "aliases": ["?const3dn_2_2@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_2_2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [2.0, 2.0] used by the x3d quaternion kernels.",
       "name": "x3d_const3dn_2_2",
       "program": "crimsonland.exe",
@@ -15531,7 +15619,9 @@
     },
     {
       "address": "0x0046f8b0",
-      "aliases": ["?const3dn_3_2@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_3_2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [3.0, 2.0] used by the x3d vector kernels.",
       "name": "x3d_const3dn_3_2",
       "program": "crimsonland.exe",
@@ -15539,7 +15629,9 @@
     },
     {
       "address": "0x0046f8b8",
-      "aliases": ["?const3dn_SignBitLo@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignBitLo@@3T__m64@@B"
+      ],
       "comment": "Packed low-lane sign-bit mask used by the x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_bit_lo",
       "program": "crimsonland.exe",
@@ -15547,7 +15639,9 @@
     },
     {
       "address": "0x0046f8c0",
-      "aliases": ["?const3dn_SignBitHi@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignBitHi@@3T__m64@@B"
+      ],
       "comment": "Packed high-lane sign-bit mask used by the x3d matrix kernels.",
       "name": "x3d_const3dn_sign_bit_hi",
       "program": "crimsonland.exe",
@@ -15555,7 +15649,9 @@
     },
     {
       "address": "0x0046f8c8",
-      "aliases": ["?const3dn_SignBits@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignBits@@3T__m64@@B"
+      ],
       "comment": "Packed two-lane sign-bit mask used by the x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_bits",
       "program": "crimsonland.exe",
@@ -15563,7 +15659,9 @@
     },
     {
       "address": "0x0046f8d8",
-      "aliases": ["?const3dn_SignMaskHi@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignMaskHi@@3T__m64@@B"
+      ],
       "comment": "Packed high-lane absolute-value mask used by the x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_mask_hi",
       "program": "crimsonland.exe",
@@ -15571,7 +15669,9 @@
     },
     {
       "address": "0x0046f8e0",
-      "aliases": ["?const3dn_SignMasks@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignMasks@@3T__m64@@B"
+      ],
       "comment": "Packed two-lane absolute-value mask used by the x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_masks",
       "program": "crimsonland.exe",
@@ -15579,7 +15679,9 @@
     },
     {
       "address": "0x0046f8e8",
-      "aliases": ["?const3dn_epsilon@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_epsilon@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float-epsilon pair used by the x3d quaternion kernels.",
       "name": "x3d_const3dn_epsilon",
       "program": "crimsonland.exe",
@@ -15587,7 +15689,9 @@
     },
     {
       "address": "0x0046f8f0",
-      "aliases": ["?const3dn_dwordLo@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_dwordLo@@3T__m64@@B"
+      ],
       "comment": "Packed low-dword mask used by the x3d matrix kernels.",
       "name": "x3d_const3dn_dword_lo",
       "program": "crimsonland.exe",
@@ -15595,7 +15699,9 @@
     },
     {
       "address": "0x0046f908",
-      "aliases": ["?const3dn_halves@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_halves@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.5, 0.5] used by the x3d quaternion kernels.",
       "name": "x3d_const3dn_halves",
       "program": "crimsonland.exe",
@@ -15603,7 +15709,9 @@
     },
     {
       "address": "0x0046f910",
-      "aliases": ["?const3dn_FltMin@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_FltMin@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow FLT_MIN pair used as a normalization threshold by the x3d kernels.",
       "name": "x3d_const3dn_flt_min",
       "program": "crimsonland.exe",
@@ -15611,7 +15719,9 @@
     },
     {
       "address": "0x0046f918",
-      "aliases": ["?g_negate_low@@3T__m64@@B"],
+      "aliases": [
+        "?g_negate_low@@3T__m64@@B"
+      ],
       "comment": "Packed low-lane sign-bit mask used by the x3d matrix kernels.",
       "name": "x3d_negate_low",
       "program": "crimsonland.exe",
@@ -15619,7 +15729,9 @@
     },
     {
       "address": "0x0046f920",
-      "aliases": ["?g_negate_high@@3T__m64@@B"],
+      "aliases": [
+        "?g_negate_high@@3T__m64@@B"
+      ],
       "comment": "Packed high-lane sign-bit mask used by the x3d quaternion and vector kernels.",
       "name": "x3d_negate_high",
       "program": "crimsonland.exe",
@@ -15627,7 +15739,9 @@
     },
     {
       "address": "0x0046f928",
-      "aliases": ["?g_const_1@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, 1.0] used by the x3d quaternion and vector kernels.",
       "name": "x3d_const_1",
       "program": "crimsonland.exe",
@@ -15635,7 +15749,9 @@
     },
     {
       "address": "0x0046f930",
-      "aliases": ["?g_const_half@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_half@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.5, 0.5] used by the x3d rotation kernels.",
       "name": "x3d_const_half",
       "program": "crimsonland.exe",
@@ -15643,7 +15759,9 @@
     },
     {
       "address": "0x0046f938",
-      "aliases": ["?g_const_2@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [2.0, 2.0] used by the x3d vector kernels.",
       "name": "x3d_const_2",
       "program": "crimsonland.exe",
@@ -15651,7 +15769,9 @@
     },
     {
       "address": "0x0046f940",
-      "aliases": ["?g_const_3@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_3@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [3.0, 3.0] used by the x3d vector kernels.",
       "name": "x3d_const_3",
       "program": "crimsonland.exe",
@@ -15659,7 +15779,9 @@
     },
     {
       "address": "0x0046f960",
-      "aliases": ["?g_const_0_1@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_0_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.0, 1.0] used by the x3d matrix kernels.",
       "name": "x3d_const_0_1",
       "program": "crimsonland.exe",
@@ -15667,7 +15789,9 @@
     },
     {
       "address": "0x0046f968",
-      "aliases": ["?g_const_1_0@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_1_0@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, 0.0] used by the x3d matrix kernels.",
       "name": "x3d_const_1_0",
       "program": "crimsonland.exe",
@@ -15675,7 +15799,9 @@
     },
     {
       "address": "0x0046f970",
-      "aliases": ["?g_const_nh_nl@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_nh_nl@@3T__m64@@B"
+      ],
       "comment": "Packed two-lane sign-bit mask used by the x3d rotation kernels.",
       "name": "x3d_const_negate_high_low",
       "program": "crimsonland.exe",
@@ -15683,7 +15809,9 @@
     },
     {
       "address": "0x0046f978",
-      "aliases": ["?g_const_n2@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_n2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [-2.0, -2.0] used by the x3d reflection kernel.",
       "name": "x3d_const_n2",
       "program": "crimsonland.exe",
@@ -15691,7 +15819,9 @@
     },
     {
       "address": "0x0046f980",
-      "aliases": ["?g_const_n2_1@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_n2_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [-2.0, 1.0] used by the x3d reflection kernel.",
       "name": "x3d_const_n2_1",
       "program": "crimsonland.exe",
@@ -15699,7 +15829,9 @@
     },
     {
       "address": "0x0046f988",
-      "aliases": ["?g_const_niner@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_niner@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow near-one clamp pair used by the x3d quaternion slerp kernel.",
       "name": "x3d_const_niner",
       "program": "crimsonland.exe",
@@ -15707,7 +15839,10 @@
     },
     {
       "address": "0x004795a0",
-      "aliases": ["?g_D3DXFastTable@@3UD3DXFASTTABLE@@A", "g_D3DXFastTable"],
+      "aliases": [
+        "?g_D3DXFastTable@@3UD3DXFASTTABLE@@A",
+        "g_D3DXFastTable"
+      ],
       "comment": "Active 57-entry vector and matrix dispatch table; reset from renderer_dispatch_defaults and patched for the selected CPU backend.",
       "name": "renderer_dispatch_table",
       "program": "crimsonland.exe",
@@ -15715,7 +15850,10 @@
     },
     {
       "address": "0x00479688",
-      "aliases": ["?g_D3DXFastTableC@@3UD3DXFASTTABLE@@A", "g_D3DXFastTableC"],
+      "aliases": [
+        "?g_D3DXFastTableC@@3UD3DXFASTTABLE@@A",
+        "g_D3DXFastTableC"
+      ],
       "comment": "Default 57-entry vector and matrix dispatch table copied into renderer_dispatch_table during reset and lazy initialization.",
       "name": "renderer_dispatch_defaults",
       "program": "crimsonland.exe",
@@ -15887,7 +16025,9 @@
     },
     {
       "address": "0x1004e680",
-      "aliases": ["?const3dn_0_1@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_0_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.0, 1.0] used by the debug x3d matrix kernels.",
       "name": "x3d_const3dn_0_1",
       "program": "grim.dll",
@@ -15895,7 +16035,9 @@
     },
     {
       "address": "0x1004e690",
-      "aliases": ["?const3dn_1_N1@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_1_N1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, -1.0] used by the debug x3d matrix kernels.",
       "name": "x3d_const3dn_1_n1",
       "program": "grim.dll",
@@ -15903,7 +16045,9 @@
     },
     {
       "address": "0x1004e6a0",
-      "aliases": ["?const3dn_1_1@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_1_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, 1.0] used by the debug x3d matrix kernels.",
       "name": "x3d_const3dn_1_1",
       "program": "grim.dll",
@@ -15911,7 +16055,9 @@
     },
     {
       "address": "0x1004e6a8",
-      "aliases": ["?const3dn_2_2@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_2_2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [2.0, 2.0] used by the debug x3d quaternion kernels.",
       "name": "x3d_const3dn_2_2",
       "program": "grim.dll",
@@ -15919,7 +16065,9 @@
     },
     {
       "address": "0x1004e6b0",
-      "aliases": ["?const3dn_3_2@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_3_2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [3.0, 2.0] used by the debug x3d vector kernels.",
       "name": "x3d_const3dn_3_2",
       "program": "grim.dll",
@@ -15927,7 +16075,9 @@
     },
     {
       "address": "0x1004e6b8",
-      "aliases": ["?const3dn_SignBitLo@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignBitLo@@3T__m64@@B"
+      ],
       "comment": "Packed low-lane sign-bit mask used by the debug x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_bit_lo",
       "program": "grim.dll",
@@ -15935,7 +16085,9 @@
     },
     {
       "address": "0x1004e6c0",
-      "aliases": ["?const3dn_SignBitHi@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignBitHi@@3T__m64@@B"
+      ],
       "comment": "Packed high-lane sign-bit mask used by the debug x3d matrix kernels.",
       "name": "x3d_const3dn_sign_bit_hi",
       "program": "grim.dll",
@@ -15943,7 +16095,9 @@
     },
     {
       "address": "0x1004e6c8",
-      "aliases": ["?const3dn_SignBits@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignBits@@3T__m64@@B"
+      ],
       "comment": "Packed two-lane sign-bit mask used by the debug x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_bits",
       "program": "grim.dll",
@@ -15951,7 +16105,9 @@
     },
     {
       "address": "0x1004e6d8",
-      "aliases": ["?const3dn_SignMaskHi@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignMaskHi@@3T__m64@@B"
+      ],
       "comment": "Packed high-lane absolute-value mask used by the debug x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_mask_hi",
       "program": "grim.dll",
@@ -15959,7 +16115,9 @@
     },
     {
       "address": "0x1004e6e0",
-      "aliases": ["?const3dn_SignMasks@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_SignMasks@@3T__m64@@B"
+      ],
       "comment": "Packed two-lane absolute-value mask used by the debug x3d quaternion kernels.",
       "name": "x3d_const3dn_sign_masks",
       "program": "grim.dll",
@@ -15967,7 +16125,9 @@
     },
     {
       "address": "0x1004e6e8",
-      "aliases": ["?const3dn_epsilon@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_epsilon@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float-epsilon pair used by the debug x3d quaternion kernels.",
       "name": "x3d_const3dn_epsilon",
       "program": "grim.dll",
@@ -15975,7 +16135,9 @@
     },
     {
       "address": "0x1004e6f0",
-      "aliases": ["?const3dn_dwordLo@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_dwordLo@@3T__m64@@B"
+      ],
       "comment": "Packed low-dword mask used by the debug x3d matrix kernels.",
       "name": "x3d_const3dn_dword_lo",
       "program": "grim.dll",
@@ -15983,7 +16145,9 @@
     },
     {
       "address": "0x1004e708",
-      "aliases": ["?const3dn_halves@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_halves@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.5, 0.5] used by the debug x3d quaternion kernels.",
       "name": "x3d_const3dn_halves",
       "program": "grim.dll",
@@ -15991,7 +16155,9 @@
     },
     {
       "address": "0x1004e710",
-      "aliases": ["?const3dn_FltMin@@3T__m64@@B"],
+      "aliases": [
+        "?const3dn_FltMin@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow FLT_MIN pair used as a normalization threshold by the debug x3d kernels.",
       "name": "x3d_const3dn_flt_min",
       "program": "grim.dll",
@@ -15999,7 +16165,9 @@
     },
     {
       "address": "0x1004e718",
-      "aliases": ["?g_negate_low@@3T__m64@@B"],
+      "aliases": [
+        "?g_negate_low@@3T__m64@@B"
+      ],
       "comment": "Packed low-lane sign-bit mask used by the debug x3d matrix kernels.",
       "name": "x3d_negate_low",
       "program": "grim.dll",
@@ -16007,7 +16175,9 @@
     },
     {
       "address": "0x1004e720",
-      "aliases": ["?g_negate_high@@3T__m64@@B"],
+      "aliases": [
+        "?g_negate_high@@3T__m64@@B"
+      ],
       "comment": "Packed high-lane sign-bit mask used by the debug x3d quaternion and vector kernels.",
       "name": "x3d_negate_high",
       "program": "grim.dll",
@@ -16015,7 +16185,9 @@
     },
     {
       "address": "0x1004e728",
-      "aliases": ["?g_const_1@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, 1.0] used by the debug x3d quaternion and vector kernels.",
       "name": "x3d_const_1",
       "program": "grim.dll",
@@ -16023,7 +16195,9 @@
     },
     {
       "address": "0x1004e730",
-      "aliases": ["?g_const_half@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_half@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.5, 0.5] used by the debug x3d rotation kernels.",
       "name": "x3d_const_half",
       "program": "grim.dll",
@@ -16031,7 +16205,9 @@
     },
     {
       "address": "0x1004e738",
-      "aliases": ["?g_const_2@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [2.0, 2.0] used by the debug x3d vector kernels.",
       "name": "x3d_const_2",
       "program": "grim.dll",
@@ -16039,7 +16215,9 @@
     },
     {
       "address": "0x1004e740",
-      "aliases": ["?g_const_3@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_3@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [3.0, 3.0] used by the debug x3d vector kernels.",
       "name": "x3d_const_3",
       "program": "grim.dll",
@@ -16047,7 +16225,9 @@
     },
     {
       "address": "0x1004e760",
-      "aliases": ["?g_const_0_1@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_0_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [0.0, 1.0] used by the debug x3d matrix kernels.",
       "name": "x3d_const_0_1",
       "program": "grim.dll",
@@ -16055,7 +16235,9 @@
     },
     {
       "address": "0x1004e768",
-      "aliases": ["?g_const_1_0@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_1_0@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [1.0, 0.0] used by the debug x3d matrix kernels.",
       "name": "x3d_const_1_0",
       "program": "grim.dll",
@@ -16063,7 +16245,9 @@
     },
     {
       "address": "0x1004e770",
-      "aliases": ["?g_const_nh_nl@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_nh_nl@@3T__m64@@B"
+      ],
       "comment": "Packed two-lane sign-bit mask used by the debug x3d rotation kernels.",
       "name": "x3d_const_negate_high_low",
       "program": "grim.dll",
@@ -16071,7 +16255,9 @@
     },
     {
       "address": "0x1004e778",
-      "aliases": ["?g_const_n2@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_n2@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [-2.0, -2.0] used by the debug x3d reflection kernel.",
       "name": "x3d_const_n2",
       "program": "grim.dll",
@@ -16079,7 +16265,9 @@
     },
     {
       "address": "0x1004e780",
-      "aliases": ["?g_const_n2_1@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_n2_1@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow float pair [-2.0, 1.0] used by the debug x3d reflection kernel.",
       "name": "x3d_const_n2_1",
       "program": "grim.dll",
@@ -16087,7 +16275,9 @@
     },
     {
       "address": "0x1004e788",
-      "aliases": ["?g_const_niner@@3T__m64@@B"],
+      "aliases": [
+        "?g_const_niner@@3T__m64@@B"
+      ],
       "comment": "Packed 3DNow near-one clamp pair used by the debug x3d quaternion slerp kernel.",
       "name": "x3d_const_niner",
       "program": "grim.dll",
@@ -16140,7 +16330,9 @@
     },
     {
       "address": "0x1004f3a0",
-      "aliases": ["_const3dn_NegQuarters"],
+      "aliases": [
+        "_const3dn_NegQuarters"
+      ],
       "comment": "Packed 3DNow float pair [-0.25, -0.25] used by the debug x3d quaternion squad setup kernel.",
       "name": "x3d_const3dn_neg_quarters",
       "program": "grim.dll",
@@ -16388,7 +16580,9 @@
     },
     {
       "address": "0x1005db60",
-      "aliases": ["?pDSM_D3D8D@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"],
+      "aliases": [
+        "?pDSM_D3D8D@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"
+      ],
       "comment": "Zero-initialized DirectX 8.1 debug-runtime D3DXDebugMute callback cache.",
       "name": "d3dx_debug_mute_d3d8d_callback",
       "program": "grim.dll",
@@ -16396,7 +16590,9 @@
     },
     {
       "address": "0x1005db64",
-      "aliases": ["?pDSM_D3D8@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"],
+      "aliases": [
+        "?pDSM_D3D8@?1??D3DXDebugMute@@YAXH@Z@4P6AXH@ZA"
+      ],
       "comment": "Zero-initialized DirectX 8.1 retail-runtime D3DXDebugMute callback cache.",
       "name": "d3dx_debug_mute_d3d8_callback",
       "program": "grim.dll",
@@ -16446,7 +16642,9 @@
     },
     {
       "address": "0x1005dbd0",
-      "aliases": ["?fvecf0pt5@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"],
+      "aliases": [
+        "?fvecf0pt5@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"
+      ],
       "comment": "Four-lane 0.5 initializer used by the DirectX 8.1 SSE reciprocal-square-root helper; linked image storage is zero-initialized before guarded setup.",
       "name": "d3dx_rsqrt_half_vector",
       "program": "grim.dll",
@@ -16454,7 +16652,9 @@
     },
     {
       "address": "0x1005dbe0",
-      "aliases": ["?fvecf3pt0@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"],
+      "aliases": [
+        "?fvecf3pt0@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B"
+      ],
       "comment": "Four-lane 3.0 initializer used by the DirectX 8.1 SSE reciprocal-square-root helper; linked image storage is zero-initialized before guarded setup.",
       "name": "d3dx_rsqrt_three_vector",
       "program": "grim.dll",
@@ -16462,7 +16662,9 @@
     },
     {
       "address": "0x1005dbf0",
-      "aliases": ["??_B?1??rsqrt_nr@@YA?AVF32vec1@@ABV1@@Z@51"],
+      "aliases": [
+        "??_B?1??rsqrt_nr@@YA?AVF32vec1@@ABV1@@Z@51"
+      ],
       "comment": "One-time initialization guard for the DirectX 8.1 SSE reciprocal-square-root constants.",
       "name": "d3dx_rsqrt_init_guard",
       "program": "grim.dll",

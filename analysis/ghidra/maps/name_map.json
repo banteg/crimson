@@ -83,8 +83,7 @@
     "address": "0x004011f0",
     "name": "console_log_node_free",
     "aliases": [
-      "?release@console_log_node_t@@QAEPAU1@E@Z",
-      "?release@console_history_entry_t@@QAEPAU1@E@Z"
+      "?release@console_log_node_t@@QAEPAU1@E@Z"
     ],
     "signature": "void console_log_node_free(char free_self)",
     "comment": "frees a console log node (text + next chain) and optionally frees the node"
@@ -163,7 +162,7 @@
       "??1console_queue_t@@QAE@XZ"
     ],
     "signature": "void console_destroy(int *arg1)",
-    "comment": "[binja] void __fastcall sub_4016e0(int32_t* arg1)"
+    "comment": "destroys the console queue and releases its owned log and command/cvar nodes"
   },
   {
     "program": "crimsonland.exe",
@@ -354,7 +353,7 @@
     "address": "0x004030f0",
     "name": "demo_setup_variant_1",
     "signature": "void demo_setup_variant_1(void)",
-    "comment": "demo setup 1: 2P, terrain preset DAT_00484914, templates 0x34/0x35, weapon 5, power-up timer"
+    "comment": "demo setup 1: 2P, terrain preset quest_meta_terrain_desc_unlock_gt_0x13, templates 0x34/0x35, weapon 5, power-up timer"
   },
   {
     "program": "crimsonland.exe",
@@ -629,7 +628,7 @@
     "name": "survival_spawn_creature",
     "signature": "void survival_spawn_creature(const vec2f_t *pos)",
     "analysis_skip_override": "never_skip",
-    "comment": "spawns a creature at the given position, selecting type/stats based on DAT_0049095c"
+    "comment": "spawns a creature at the given position, selecting type/stats based on player_experience"
   },
   {
     "program": "crimsonland.exe",
@@ -818,7 +817,7 @@
     "address": "0x0040d800",
     "name": "credits_screen_update",
     "signature": "void credits_screen_update(void)",
-    "comment": "credits screen update/render loop; clicks flag lines containing 'o' (lowercase) and misclicks clear the last flagged line; when all 'o' lines are flagged, sets DAT_004811c4 and injects secret lines at DAT_004811bc; Secret button sets game_state_pending=0x1a (AlienZooKeeper)"
+    "comment": "credits screen update/render loop; clicks flag lines containing 'o' (lowercase) and misclicks clear the last flagged line; when all 'o' lines are flagged, sets credits_secret_unlock_flag and injects secret lines at credits_secret_line_base_index; Secret button sets game_state_pending=0x1a (AlienZooKeeper)"
   },
   {
     "program": "crimsonland.exe",
@@ -1148,7 +1147,7 @@
     "address": "0x0040e700",
     "name": "mod_load_info",
     "signature": "void * mod_load_info(void)",
-    "comment": "loads mods\\%s, calls CMOD_GetInfo, copies the info struct to DAT_00481c88, and returns it"
+    "comment": "loads mods\\%s, calls CMOD_GetInfo, copies the info struct to mod_info_block, and returns it"
   },
   {
     "program": "crimsonland.exe",
@@ -1417,7 +1416,7 @@
     "address": "0x00412190",
     "name": "quest_meta_init",
     "signature": "int quest_meta_init(void)",
-    "comment": "[binja] int32_t sub_412190()"
+    "comment": "initializes the global quest metadata table"
   },
   {
     "program": "crimsonland.exe",
@@ -1503,7 +1502,7 @@
     "name": "highscore_init_sentinels",
     "signature": "int highscore_init_sentinels(void)",
     "analysis_skip_override": "never_skip",
-    "comment": "[binja] int32_t sub_412360()"
+    "comment": "initializes the highscore sentinel records"
   },
   {
     "program": "crimsonland.exe",
@@ -2466,7 +2465,7 @@
     "address": "0x0041e840",
     "name": "fx_queue_add",
     "signature": "unsigned char fx_queue_add(int effect_id, vec2f_t *pos, float w, float h, float rotation, effect_color_t *color)",
-    "comment": "pushes a quad entry into DAT_004aaf18 (capped at 0x80); returns 1 on success"
+    "comment": "pushes an FX quad entry, with fx_queue_count capped at 0x80; returns 1 on success"
   },
   {
     "program": "crimsonland.exe",
@@ -2543,7 +2542,7 @@
     "address": "0x0041f580",
     "name": "bonus_alloc_slot",
     "signature": "bonus_entry_t * bonus_alloc_slot(void)",
-    "comment": "returns a free bonus slot in DAT_00482948 (or DAT_00490630 sentinel)"
+    "comment": "returns a free slot in bonus_pool or bonus_pool_sentinel when none is available"
   },
   {
     "program": "crimsonland.exe",
@@ -2571,14 +2570,14 @@
     "address": "0x0041fbb0",
     "name": "fx_spawn_sprite",
     "signature": "int fx_spawn_sprite(const vec2f_t *pos, const vec2f_t *vel, float scale)",
-    "comment": "spawns a sprite effect entry in DAT_00496820"
+    "comment": "spawns an entry in sprite_effect_pool"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041fc60",
     "name": "weapon_table_entry",
     "signature": "char * weapon_table_entry(int weapon_id)",
-    "comment": "returns the entry base (&DAT_004d7a2c + weapon_id * 0x1f)"
+    "comment": "returns the entry base (&weapon_table + weapon_id * 0x1f)"
   },
   {
     "program": "crimsonland.exe",
@@ -2606,21 +2605,21 @@
     "address": "0x00420130",
     "name": "fx_spawn_particle",
     "signature": "int fx_spawn_particle(const vec2f_t *pos, float angle, const vec2f_t *unused, float intensity)",
-    "comment": "spawns a fast particle entry in DAT_00493eb8"
+    "comment": "spawns a fast entry in particle_pool"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00420240",
     "name": "fx_spawn_particle_slow",
     "signature": "int fx_spawn_particle_slow(const vec2f_t *pos, float angle)",
-    "comment": "spawns a slow particle entry in DAT_00493eb8"
+    "comment": "spawns a slow entry in particle_pool"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00420360",
     "name": "fx_spawn_secondary_projectile",
     "signature": "int fx_spawn_secondary_projectile(const vec2f_t *pos, float angle, secondary_projectile_type_id_t type_id)",
-    "comment": "spawns a typed entry in DAT_00495ad8 (secondary projectile pool)"
+    "comment": "spawns a typed entry in secondary_projectile_pool"
   },
   {
     "program": "crimsonland.exe",
@@ -2634,7 +2633,7 @@
     "address": "0x004205d0",
     "name": "projectile_reset_pools",
     "signature": "void projectile_reset_pools(void)",
-    "comment": "clears projectile and effect pools (DAT_004926b8, DAT_00493eb8)"
+    "comment": "clears projectile_pool and particle_pool"
   },
   {
     "program": "crimsonland.exe",
@@ -2792,14 +2791,14 @@
     "address": "0x00427920",
     "name": "fx_queue_render",
     "signature": "void fx_queue_render(void)",
-    "comment": "bakes FX queues (DAT_004aaf18/DAT_004aaf3c) into the ground render target (terrain_render_target) and clears them"
+    "comment": "bakes the fx_queue_count/fx_queue_rotated queues into terrain_render_target and clears them"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00428140",
     "name": "creature_alloc_slot",
     "signature": "int creature_alloc_slot(void)",
-    "comment": "finds a free creature entry in DAT_0049bf38 and seeds defaults"
+    "comment": "finds a free entry in creature_pool and seeds defaults"
   },
   {
     "program": "crimsonland.exe",
@@ -2813,7 +2812,7 @@
     "address": "0x00428210",
     "name": "creatures_none_active",
     "signature": "uint creatures_none_active(void)",
-    "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets DAT_0048700c"
+    "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets creatures_any_active_flag"
   },
   {
     "program": "crimsonland.exe",
@@ -2945,7 +2944,7 @@
     "address": "0x0042abd0",
     "name": "load_textures_step",
     "signature": "int load_textures_step(void)",
-    "comment": "stage-based texture loading (advances DAT_004aaf88)"
+    "comment": "stage-based texture loading that advances startup_texture_load_stage"
   },
   {
     "program": "crimsonland.exe",
@@ -3258,7 +3257,7 @@
     "address": "0x0042fcf0",
     "name": "perk_count_get",
     "signature": "int perk_count_get(int perk_id)",
-    "comment": "returns perk count from DAT_00490968"
+    "comment": "returns a perk count from player_perk_counts"
   },
   {
     "program": "crimsonland.exe",
@@ -4027,7 +4026,7 @@
     "address": "0x0043b940",
     "name": "resource_pack_read_cstring",
     "signature": "int resource_pack_read_cstring(FILE *fp)",
-    "comment": "reads a NUL-terminated pack entry name into DAT_004c3a68"
+    "comment": "reads a NUL-terminated pack entry name into resource_pack_entry_name_buf"
   },
   {
     "program": "crimsonland.exe",
@@ -4854,7 +4853,7 @@
     "address": "0x00446150",
     "name": "ui_get_element_index",
     "signature": "int ui_get_element_index(ui_element_t *element)",
-    "comment": "returns index of element in ui_element_table_end list, or -1"
+    "comment": "returns index of element in ui_element_table, or -1"
   },
   {
     "program": "crimsonland.exe",
@@ -5388,7 +5387,7 @@
     "address": "0x004519b0",
     "name": "weapon_table_init",
     "signature": "void weapon_table_init(void)",
-    "comment": "initializes the weapon stats table at DAT_004d7a28"
+    "comment": "initializes the weapon table beginning at its weapon_ammo_class field"
   },
   {
     "program": "crimsonland.exe",
@@ -5423,7 +5422,7 @@
     "address": "0x00452f1d",
     "name": "d3dx_init_vec2_normalize",
     "signature": "vec2f_t * __stdcall d3dx_init_vec2_normalize(vec2f_t *dst, const vec2f_t *src)",
-    "comment": "dispatch initializer: calls renderer_select_backend(1), then tail-jumps via DAT_00479658; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0",
+    "comment": "dispatch initializer: calls renderer_select_backend(1), then tail-jumps via vec2_normalize_impl; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0",
     "aliases": [
       "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     ],
@@ -5434,7 +5433,7 @@
     "address": "0x00452f2a",
     "name": "vec2_normalize_dispatch",
     "signature": "vec2f_t * __stdcall vec2_normalize_dispatch(vec2f_t *dst, const vec2f_t *src)",
-    "comment": "hot-path thunk: jmp [DAT_00479658] after lazy init; used by player_update, projectile_update, and creature_update_all callsites"
+    "comment": "hot-path thunk: jmp [vec2_normalize_impl] after lazy init; used by player_update, projectile_update, and creature_update_all callsites"
   },
   {
     "program": "crimsonland.exe",
@@ -6390,7 +6389,7 @@
     "address": "0x00455587",
     "name": "d3dx_c_vec2_normalize",
     "signature": "vec2f_t * __stdcall d3dx_c_vec2_normalize(vec2f_t *dst, const vec2f_t *src)",
-    "comment": "normalizes src into dst, preserves near-unit vectors, and writes zero vector when length <= FLT_MIN; observed as DAT_00479658 target after d3dx_init_vec2_normalize (2026-02-18 capture)",
+    "comment": "normalizes src into dst, preserves near-unit vectors, and writes zero vector when length <= FLT_MIN; observed as vec2_normalize_impl target after d3dx_init_vec2_normalize (2026-02-18 capture)",
     "aliases": [
       "?c_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     ],
@@ -11430,22 +11429,19 @@
     "address": "0x10005c90",
     "name": "grim_set_paused",
     "signature": "void grim_set_paused(int paused)",
-    "comment": "Grim2D vtable 0x4 (provisional): pause game tick update"
+    "comment": "Grim2D vtable 0x4: pause game tick update"
   },
   {
     "program": "grim.dll",
     "address": "0x10005ca0",
     "name": "grim_get_version",
     "signature": "float grim_get_version(void)",
-    "comment": "Grim2D vtable 0x8 (provisional): engine version constant"
+    "comment": "Grim2D vtable 0x8: engine version constant"
   },
   {
     "program": "grim.dll",
     "address": "0x10005cb0",
     "name": "grim_save_screenshot",
-    "aliases": [
-      "grim_check_device"
-    ],
     "signature": "bool grim_save_screenshot(char *path)",
     "comment": "Grim2D vtable 0xc: captures the front buffer and saves it as a BMP"
   },
@@ -11594,28 +11590,28 @@
     "address": "0x100072c0",
     "name": "grim_get_slot_float",
     "signature": "float grim_get_slot_float(int index)",
-    "comment": "Grim2D vtable 0x88 (provisional): float slot accessor"
+    "comment": "Grim2D vtable 0x88: float slot accessor"
   },
   {
     "program": "grim.dll",
     "address": "0x100072d0",
     "name": "grim_get_slot_int",
     "signature": "int grim_get_slot_int(int index)",
-    "comment": "Grim2D vtable 0x8c (provisional): int slot accessor"
+    "comment": "Grim2D vtable 0x8c: int slot accessor"
   },
   {
     "program": "grim.dll",
     "address": "0x100072e0",
     "name": "grim_set_slot_float",
     "signature": "void grim_set_slot_float(int index, float value)",
-    "comment": "Grim2D vtable 0x90 (provisional): float slot setter"
+    "comment": "Grim2D vtable 0x90: float slot setter"
   },
   {
     "program": "grim.dll",
     "address": "0x10007300",
     "name": "grim_set_slot_int",
     "signature": "void grim_set_slot_int(int index, int value)",
-    "comment": "Grim2D vtable 0x94 (provisional): int slot setter"
+    "comment": "Grim2D vtable 0x94: int slot setter"
   },
   {
     "program": "grim.dll",
@@ -11706,35 +11702,35 @@
     "address": "0x10007560",
     "name": "grim_get_mouse_wheel_delta",
     "signature": "float grim_get_mouse_wheel_delta(void)",
-    "comment": "Grim2D vtable 0x60 (provisional)"
+    "comment": "Grim2D vtable 0x60: mouse-wheel delta accessor"
   },
   {
     "program": "grim.dll",
     "address": "0x10007580",
     "name": "grim_get_joystick_x",
     "signature": "int grim_get_joystick_x(void)",
-    "comment": "Grim2D vtable 0x98 (provisional): joystick axis X"
+    "comment": "Grim2D vtable 0x98: joystick axis X"
   },
   {
     "program": "grim.dll",
     "address": "0x10007590",
     "name": "grim_get_joystick_y",
     "signature": "int grim_get_joystick_y(void)",
-    "comment": "Grim2D vtable 0x9c (provisional): joystick axis Y"
+    "comment": "Grim2D vtable 0x9c: joystick axis Y"
   },
   {
     "program": "grim.dll",
     "address": "0x100075a0",
     "name": "grim_get_joystick_z",
     "signature": "int grim_get_joystick_z(void)",
-    "comment": "Grim2D vtable 0xa0 (provisional): joystick axis Z"
+    "comment": "Grim2D vtable 0xa0: joystick axis Z"
   },
   {
     "program": "grim.dll",
     "address": "0x100075b0",
     "name": "grim_get_joystick_pov",
     "signature": "int grim_get_joystick_pov(int index)",
-    "comment": "Grim2D vtable 0xa4 (provisional): joystick POV hat value"
+    "comment": "Grim2D vtable 0xa4: joystick POV hat value"
   },
   {
     "program": "grim.dll",
@@ -11762,7 +11758,7 @@
     "address": "0x10007700",
     "name": "grim_destroy_texture",
     "signature": "void grim_destroy_texture(int handle)",
-    "comment": "Grim2D vtable 0xbc (provisional): release texture handle"
+    "comment": "Grim2D vtable 0xbc: release texture handle"
   },
   {
     "program": "grim.dll",
@@ -11818,14 +11814,14 @@
     "address": "0x10007ac0",
     "name": "grim_begin_batch",
     "signature": "void grim_begin_batch(void)",
-    "comment": "Grim2D vtable 0xe8 (provisional): begin draw batch"
+    "comment": "Grim2D vtable 0xe8: begin draw batch"
   },
   {
     "program": "grim.dll",
     "address": "0x10007b20",
     "name": "grim_end_batch",
     "signature": "void grim_end_batch(void)",
-    "comment": "Grim2D vtable 0xf0 (provisional): end draw batch/flush"
+    "comment": "Grim2D vtable 0xf0: end draw batch/flush"
   },
   {
     "program": "grim.dll",
@@ -11867,7 +11863,7 @@
     "address": "0x10007f90",
     "name": "grim_set_color",
     "signature": "void grim_set_color(float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0x114 (provisional)"
+    "comment": "Grim2D vtable 0x114: set packed draw color"
   },
   {
     "program": "grim.dll",
@@ -11905,14 +11901,14 @@
     "address": "0x100081c0",
     "name": "grim_set_color_slot",
     "signature": "void grim_set_color_slot(int index, float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0x118 (provisional): set color slot"
+    "comment": "Grim2D vtable 0x118: set color slot"
   },
   {
     "program": "grim.dll",
     "address": "0x10008230",
     "name": "grim_set_atlas_frame",
     "signature": "void grim_set_atlas_frame(int atlas_size, int frame)",
-    "comment": "Grim2D vtable 0x104 (provisional)"
+    "comment": "Grim2D vtable 0x104: set atlas frame"
   },
   {
     "program": "grim.dll",
@@ -11926,7 +11922,7 @@
     "address": "0x10008350",
     "name": "grim_set_uv",
     "signature": "void grim_set_uv(float u0, float v0, float u1, float v1)",
-    "comment": "Grim2D vtable 0x100 (provisional)"
+    "comment": "Grim2D vtable 0x100: set UV rectangle"
   },
   {
     "program": "grim.dll",
@@ -11989,7 +11985,7 @@
     "address": "0x10008b10",
     "name": "grim_draw_quad",
     "signature": "void grim_draw_quad(float x, float y, float w, float h)",
-    "comment": "Grim2D vtable 0x11c (provisional)"
+    "comment": "Grim2D vtable 0x11c: batch a textured quad"
   },
   {
     "program": "grim.dll",
@@ -12017,7 +12013,7 @@
     "address": "0x10009080",
     "name": "grim_draw_quad_points",
     "signature": "void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)",
-    "comment": "Grim2D vtable 0x138 (provisional): push quad using 4 points"
+    "comment": "Grim2D vtable 0x138: push quad using 4 points"
   },
   {
     "program": "grim.dll",
@@ -13582,7 +13578,6 @@
     "address": "0x10012881",
     "name": "d3dx_tf_row_dtor",
     "aliases": [
-      "??1SchedulerPolicy@Concurrency@@QAE@XZ",
       "??1TF_Row@@QAE@XZ"
     ],
     "signature": "void d3dx_tf_row_dtor(void *this)",
@@ -14076,7 +14071,7 @@
     "address": "0x100170d6",
     "name": "fpu_set_round_trunc",
     "signature": "void fpu_set_round_trunc(void)",
-    "comment": "sets x87 rounding mode to truncate; saves control word in DAT_1005db6c"
+    "comment": "sets x87 rounding mode to truncate; saves the control word in fpu_control_word_saved_ftol"
   },
   {
     "program": "grim.dll",
@@ -15141,7 +15136,6 @@
     "address": "0x1001c188",
     "name": "D3DXCpuOptimizations",
     "aliases": [
-      "grim_select_renderer_backend",
       "_D3DXCpuOptimizations@4"
     ],
     "signature": "int D3DXCpuOptimizations(int force)",
@@ -15786,7 +15780,6 @@
     "address": "0x1002057e",
     "name": "png_zfree",
     "aliases": [
-      "png_free_thunk",
       "?png_zfree@D3DX@@YAXPAX0@Z"
     ],
     "signature": "void png_zfree(void * png_ptr, void * ptr)",
@@ -15996,7 +15989,6 @@
     "address": "0x100224c5",
     "name": "d3dx_x3d_init_fast_table",
     "aliases": [
-      "grim_init_mmx_sse_functions",
       "?x3d_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ],
     "signature": "void d3dx_x3d_init_fast_table(void *table)",
@@ -16376,7 +16368,6 @@
     "address": "0x10024734",
     "name": "png_destroy_struct",
     "aliases": [
-      "png_free_ptr",
       "?png_destroy_struct@D3DX@@YAXPAX@Z"
     ],
     "signature": "void png_destroy_struct(void * ptr)",
@@ -16485,9 +16476,6 @@
     "program": "grim.dll",
     "address": "0x10025163",
     "name": "png_handle_IHDR",
-    "aliases": [
-      "grim_png_read_IHDR"
-    ],
     "signature": "void png_handle_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
     "comment": "Archive-confirmed libpng 1.0.5 IHDR parser and validator"
   },
@@ -16496,7 +16484,6 @@
     "address": "0x10025359",
     "name": "d3dx_png_handle_plte",
     "aliases": [
-      "grim_png_read_PLTE",
       "?png_handle_PLTE@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@K@Z"
     ],
     "signature": "void d3dx_png_handle_plte(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
@@ -17991,9 +17978,6 @@
     "program": "grim.dll",
     "address": "0x10050550",
     "name": "grim_jpeg_natural_order",
-    "aliases": [
-      "DAT_10050550"
-    ],
     "signature": "const int grim_jpeg_natural_order[80]",
     "comment": "JAZ IJG 6a zigzag-to-natural coefficient order with safety tail",
     "create": false
@@ -18002,9 +17986,6 @@
     "program": "grim.dll",
     "address": "0x10050690",
     "name": "grim_jpeg_huff_extend_test",
-    "aliases": [
-      "DAT_10050690"
-    ],
     "signature": "const int grim_jpeg_huff_extend_test[16]",
     "comment": "JAZ IJG 6a baseline Huffman sign-extension thresholds",
     "create": false
@@ -18013,9 +17994,6 @@
     "program": "grim.dll",
     "address": "0x100506d0",
     "name": "grim_jpeg_huff_extend_offset",
-    "aliases": [
-      "DAT_100506D0"
-    ],
     "signature": "const int grim_jpeg_huff_extend_offset[16]",
     "comment": "JAZ IJG 6a baseline Huffman sign-extension offsets",
     "create": false
@@ -18024,9 +18002,6 @@
     "program": "grim.dll",
     "address": "0x10050710",
     "name": "grim_jpeg_phuff_extend_test",
-    "aliases": [
-      "DAT_10050710"
-    ],
     "signature": "const int grim_jpeg_phuff_extend_test[16]",
     "comment": "JAZ IJG 6a progressive Huffman sign-extension thresholds",
     "create": false
@@ -18035,9 +18010,6 @@
     "program": "grim.dll",
     "address": "0x10050750",
     "name": "grim_jpeg_phuff_extend_offset",
-    "aliases": [
-      "DAT_10050750"
-    ],
     "signature": "const int grim_jpeg_phuff_extend_offset[16]",
     "comment": "JAZ IJG 6a progressive Huffman sign-extension offsets",
     "create": false
@@ -18046,9 +18018,6 @@
     "program": "grim.dll",
     "address": "0x10050790",
     "name": "grim_jpeg_idct_aanscales",
-    "aliases": [
-      "DAT_10050790"
-    ],
     "signature": "const INT16 grim_jpeg_idct_aanscales[DCTSIZE2]",
     "comment": "JAZ IJG 6a fixed-point AA&N inverse-DCT scale table",
     "create": false
@@ -18057,9 +18026,6 @@
     "program": "grim.dll",
     "address": "0x10050810",
     "name": "grim_jpeg_idct_aanscalefactor",
-    "aliases": [
-      "DAT_10050810"
-    ],
     "signature": "const double grim_jpeg_idct_aanscalefactor[DCTSIZE]",
     "comment": "JAZ IJG 6a floating-point AA&N inverse-DCT scale factors",
     "create": false
@@ -18068,9 +18034,6 @@
     "program": "grim.dll",
     "address": "0x1005035c",
     "name": "grim_jpeg_std_message_table",
-    "aliases": [
-      "DAT_1005035C"
-    ],
     "signature": "const char * const grim_jpeg_std_message_table[]",
     "comment": "JAZ IJG 6a standard diagnostic-message table",
     "create": false
@@ -19250,9 +19213,6 @@
     "program": "grim.dll",
     "address": "0x10059608",
     "name": "zlib_inflate_mask",
-    "aliases": [
-      "DAT_10059608"
-    ],
     "signature": "const uInt zlib_inflate_mask[17]",
     "comment": "Plain-C zlib 1.1.3 low-bit masks used by the inflate decoders",
     "create": false
@@ -19261,9 +19221,6 @@
     "program": "grim.dll",
     "address": "0x10051454",
     "name": "zlib_inflate_border",
-    "aliases": [
-      "DAT_10051454"
-    ],
     "signature": "const uInt zlib_inflate_border[19]",
     "comment": "Plain-C zlib 1.1.3 bit-length code ordering table",
     "create": false
@@ -19272,9 +19229,6 @@
     "program": "grim.dll",
     "address": "0x10050a24",
     "name": "zlib_extra_literal_bits",
-    "aliases": [
-      "DAT_10050A24"
-    ],
     "signature": "const int zlib_extra_literal_bits[29]",
     "comment": "Plain-C zlib 1.1.3 literal-length extra-bit counts",
     "create": false
@@ -19283,9 +19237,6 @@
     "program": "grim.dll",
     "address": "0x10050a98",
     "name": "zlib_extra_distance_bits",
-    "aliases": [
-      "DAT_10050A98"
-    ],
     "signature": "const int zlib_extra_distance_bits[30]",
     "comment": "Plain-C zlib 1.1.3 distance extra-bit counts",
     "create": false
@@ -19306,7 +19257,6 @@
     "address": "0x10051068",
     "name": "zlib_distance_code",
     "aliases": [
-      "DAT_10051068",
       "dist_code"
     ],
     "signature": "const uch zlib_distance_code[512]",
@@ -19318,7 +19268,6 @@
     "address": "0x10051268",
     "name": "zlib_length_code",
     "aliases": [
-      "DAT_10051268",
       "length_code"
     ],
     "signature": "const uch zlib_length_code[256]",
@@ -19329,9 +19278,6 @@
     "program": "grim.dll",
     "address": "0x10051368",
     "name": "zlib_base_length",
-    "aliases": [
-      "DAT_10051368"
-    ],
     "signature": "const int zlib_base_length[29]",
     "comment": "Plain-C zlib 1.1.3 normalized length-code bases",
     "create": false
@@ -19340,9 +19286,6 @@
     "program": "grim.dll",
     "address": "0x100513dc",
     "name": "zlib_base_distance",
-    "aliases": [
-      "DAT_100513DC"
-    ],
     "signature": "const int zlib_base_distance[30]",
     "comment": "Plain-C zlib 1.1.3 normalized distance-code bases",
     "create": false
@@ -19351,9 +19294,6 @@
     "program": "grim.dll",
     "address": "0x100514d0",
     "name": "zlib_cplens",
-    "aliases": [
-      "DAT_100514D0"
-    ],
     "signature": "const uInt zlib_cplens[31]",
     "comment": "Plain-C zlib 1.1.3 literal code copy-length bases",
     "create": false
@@ -19362,9 +19302,6 @@
     "program": "grim.dll",
     "address": "0x1005154c",
     "name": "zlib_cplext",
-    "aliases": [
-      "DAT_1005154C"
-    ],
     "signature": "const uInt zlib_cplext[31]",
     "comment": "Plain-C zlib 1.1.3 literal code extra-bit counts",
     "create": false
@@ -19373,9 +19310,6 @@
     "program": "grim.dll",
     "address": "0x100515c8",
     "name": "zlib_cpdist",
-    "aliases": [
-      "DAT_100515C8"
-    ],
     "signature": "const uInt zlib_cpdist[30]",
     "comment": "Plain-C zlib 1.1.3 distance code bases",
     "create": false
@@ -19384,9 +19318,6 @@
     "program": "grim.dll",
     "address": "0x10051640",
     "name": "zlib_cpdext",
-    "aliases": [
-      "DAT_10051640"
-    ],
     "signature": "const uInt zlib_cpdext[30]",
     "comment": "Plain-C zlib 1.1.3 distance code extra-bit counts",
     "create": false
@@ -19395,9 +19326,6 @@
     "program": "grim.dll",
     "address": "0x10058410",
     "name": "zlib_fixed_literal_bits",
-    "aliases": [
-      "DAT_10058410"
-    ],
     "signature": "uInt zlib_fixed_literal_bits",
     "comment": "Plain-C zlib 1.1.3 fixed literal-tree bit depth",
     "create": false
@@ -19406,9 +19334,6 @@
     "program": "grim.dll",
     "address": "0x10058414",
     "name": "zlib_fixed_distance_bits",
-    "aliases": [
-      "DAT_10058414"
-    ],
     "signature": "uInt zlib_fixed_distance_bits",
     "comment": "Plain-C zlib 1.1.3 fixed distance-tree bit depth",
     "create": false
@@ -19417,9 +19342,6 @@
     "program": "grim.dll",
     "address": "0x10058418",
     "name": "zlib_fixed_literal_tree",
-    "aliases": [
-      "DAT_10058418"
-    ],
     "signature": "inflate_huft zlib_fixed_literal_tree[512]",
     "comment": "Plain-C zlib 1.1.3 prebuilt fixed literal tree",
     "create": false
@@ -19428,9 +19350,6 @@
     "program": "grim.dll",
     "address": "0x10059418",
     "name": "zlib_fixed_distance_tree",
-    "aliases": [
-      "DAT_10059418"
-    ],
     "signature": "inflate_huft zlib_fixed_distance_tree[32]",
     "comment": "Plain-C zlib 1.1.3 prebuilt fixed distance tree",
     "create": false
@@ -20450,7 +20369,6 @@
     "address": "0x10022789",
     "name": "d3dx_x86_vec3_transform",
     "aliases": [
-      "sub_10022789",
       "?x86_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "x86 vector-transform helper from the pinned DirectX 8.1 d3dxmathx86.obj archive member."
@@ -20460,7 +20378,6 @@
     "address": "0x10022814",
     "name": "d3dx_x86_vec3_transform_normal",
     "aliases": [
-      "sub_10022814",
       "?x86_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "x86 normal-transform helper from the pinned DirectX 8.1 d3dxmathx86.obj archive member."
@@ -20470,7 +20387,6 @@
     "address": "0x10022873",
     "name": "d3dx_x86_vec4_transform",
     "aliases": [
-      "sub_10022873",
       "?x86_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "x86 vector-transform helper from the pinned DirectX 8.1 d3dxmathx86.obj archive member."
@@ -20480,7 +20396,6 @@
     "address": "0x10027ed0",
     "name": "x3d_quaternion_multiply",
     "aliases": [
-      "sub_10027ED0",
       "?x3d_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
     ],
     "comment": "3DNow quaternion helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20490,7 +20405,6 @@
     "address": "0x10027f69",
     "name": "x3d_quaternion_normalize",
     "aliases": [
-      "sub_10027F69",
       "?x3d_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "3DNow quaternion helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20500,7 +20414,6 @@
     "address": "0x1002d1ea",
     "name": "x3d_vec3_transform",
     "aliases": [
-      "sub_1002D1EA",
       "?x3d_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "3DNow vector-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20510,7 +20423,6 @@
     "address": "0x1002d25b",
     "name": "x3d_vec3_transform_normal",
     "aliases": [
-      "sub_1002D25B",
       "?x3d_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "3DNow normal-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20529,7 +20441,6 @@
     "address": "0x1002dca8",
     "name": "x3d_vec2_transform",
     "aliases": [
-      "sub_1002DCA8",
       "?x3d_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "3DNow vector-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20539,7 +20450,6 @@
     "address": "0x1002dcfd",
     "name": "x3d_vec2_transform_normal",
     "aliases": [
-      "sub_1002DCFD",
       "?x3d_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "3DNow normal-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20549,7 +20459,6 @@
     "address": "0x1002dd36",
     "name": "x3d_vec2_transform_coord",
     "aliases": [
-      "sub_1002DD36",
       "?x3d_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "3DNow coordinate-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20559,7 +20468,6 @@
     "address": "0x1002dd9a",
     "name": "x3d_vec2_hermite",
     "aliases": [
-      "sub_1002DD9A",
       "?x3d_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
     ],
     "comment": "3DNow interpolation helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20569,7 +20477,6 @@
     "address": "0x1002de32",
     "name": "x3d_vec2_barycentric",
     "aliases": [
-      "sub_1002DE32",
       "?x3d_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
     ],
     "comment": "3DNow interpolation helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20579,7 +20486,6 @@
     "address": "0x1002de7b",
     "name": "x3d_vec2_normalize",
     "aliases": [
-      "sub_1002DE7B",
       "?x3d_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     ],
     "comment": "3DNow normalization helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20589,7 +20495,6 @@
     "address": "0x1002debe",
     "name": "x3d_vec2_catmull_rom",
     "aliases": [
-      "sub_1002DEBE",
       "?x3d_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
     ],
     "comment": "3DNow interpolation helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20599,7 +20504,6 @@
     "address": "0x1002df69",
     "name": "x3d_vec4_transform",
     "aliases": [
-      "sub_1002DF69",
       "?x3d_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
     "comment": "3DNow vector-transform helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20609,7 +20513,6 @@
     "address": "0x1002dfeb",
     "name": "x3d_vec4_normalize",
     "aliases": [
-      "sub_1002DFEB",
       "?x3d_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
     ],
     "comment": "3DNow normalization helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20619,7 +20522,6 @@
     "address": "0x1002e393",
     "name": "x3d_plane_from_point_normal",
     "aliases": [
-      "sub_1002E393",
       "?x3d_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
     ],
     "comment": "3DNow plane-construction helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20629,7 +20531,6 @@
     "address": "0x1002e3d6",
     "name": "x3d_plane_from_points",
     "aliases": [
-      "sub_1002E3D6",
       "?x3d_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
     ],
     "comment": "3DNow plane-construction helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20639,7 +20540,6 @@
     "address": "0x1002e4ba",
     "name": "x3d_plane_intersect_line",
     "aliases": [
-      "sub_1002E4BA",
       "?x3d_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
     ],
     "comment": "3DNow plane-intersection helper from the pinned DirectX 8.1 d3dxmathx3d.obj archive member."
@@ -20667,7 +20567,6 @@
     "address": "0x10025ce0",
     "name": "d3dx_sse_matrix_multiply",
     "aliases": [
-      "sub_10025CE0",
       "?sse2_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
       "?sse_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
@@ -20688,7 +20587,6 @@
     "address": "0x10025e30",
     "name": "d3dx_sse_vec3_normalize",
     "aliases": [
-      "sub_10025E30",
       "?sse_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20708,7 +20606,6 @@
     "address": "0x10025f00",
     "name": "d3dx_sse_plane_normalize",
     "aliases": [
-      "sub_10025F00",
       "?sse_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20728,7 +20625,6 @@
     "address": "0x10025fe0",
     "name": "d3dx_sse_vec4_cross",
     "aliases": [
-      "sub_10025FE0",
       "?sse_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20847,7 +20743,6 @@
     "address": "0x100266f0",
     "name": "d3dx_sse_plane_from_points",
     "aliases": [
-      "sub_100266F0",
       "?sse_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20867,7 +20762,6 @@
     "address": "0x100267e0",
     "name": "d3dx_sse_matrix_shadow",
     "aliases": [
-      "sub_100267E0",
       "?sse_D3DXMatrixShadow@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20887,7 +20781,6 @@
     "address": "0x10026970",
     "name": "d3dx_sse_matrix_reflect",
     "aliases": [
-      "sub_10026970",
       "?sse_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20925,7 +20818,6 @@
     "address": "0x10026b80",
     "name": "d3dx_sse_quaternion_inverse",
     "aliases": [
-      "sub_10026B80",
       "?sse_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20954,7 +20846,6 @@
     "address": "0x10026d10",
     "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll",
     "aliases": [
-      "sub_10026D10",
       "?sse_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -20974,7 +20865,6 @@
     "address": "0x10026de0",
     "name": "d3dx_sse_vec3_transform_normal",
     "aliases": [
-      "sub_10026DE0",
       "?sse2_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
       "?sse_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
@@ -20995,7 +20885,6 @@
     "address": "0x10026ea0",
     "name": "d3dx_sse_vec3_transform",
     "aliases": [
-      "sub_10026EA0",
       "?sse2_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z",
       "?sse_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
     ],
@@ -21016,7 +20905,6 @@
     "address": "0x10026f60",
     "name": "d3dx_sse_vec3_transform_coord",
     "aliases": [
-      "sub_10026F60",
       "?sse2_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
       "?sse_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
@@ -21037,7 +20925,6 @@
     "address": "0x10027060",
     "name": "d3dx_sse_vec4_transform",
     "aliases": [
-      "sub_10027060",
       "?sse2_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
       "?sse_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
@@ -21058,7 +20945,6 @@
     "address": "0x10027120",
     "name": "d3dx_sse2_vec3_normalize",
     "aliases": [
-      "sub_10027120",
       "?sse2_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21078,7 +20964,6 @@
     "address": "0x100271f0",
     "name": "d3dx_sse2_plane_normalize",
     "aliases": [
-      "sub_100271F0",
       "?sse2_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21098,7 +20983,6 @@
     "address": "0x100272d0",
     "name": "d3dx_sse_matrix_inverse",
     "aliases": [
-      "sub_100272D0",
       "?sse2_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z",
       "?sse_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
     ],
@@ -21119,7 +21003,6 @@
     "address": "0x10027590",
     "name": "d3dx_sse_matrix_multiply_transpose",
     "aliases": [
-      "sub_10027590",
       "?sse2_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
       "?sse_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ],
@@ -21140,7 +21023,6 @@
     "address": "0x100276f0",
     "name": "d3dx_sse2_vec4_cross",
     "aliases": [
-      "sub_100276F0",
       "?sse2_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21160,7 +21042,6 @@
     "address": "0x100277a0",
     "name": "d3dx_sse2_matrix_rotation_x",
     "aliases": [
-      "sub_100277A0",
       "?sse2_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21180,7 +21061,6 @@
     "address": "0x10027820",
     "name": "d3dx_sse2_matrix_rotation_y",
     "aliases": [
-      "sub_10027820",
       "?sse2_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21200,7 +21080,6 @@
     "address": "0x100278b0",
     "name": "d3dx_sse_matrix_determinant",
     "aliases": [
-      "sub_100278B0",
       "?sse2_D3DXMatrixDeterminant@@YGMPBUD3DXMATRIX@@@Z",
       "?sse_D3DXMatrixDeterminant@@YGMPBUD3DXMATRIX@@@Z"
     ],
@@ -21221,7 +21100,6 @@
     "address": "0x10027980",
     "name": "d3dx_sse2_plane_from_points",
     "aliases": [
-      "sub_10027980",
       "?sse2_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21241,7 +21119,6 @@
     "address": "0x10027a70",
     "name": "d3dx_sse2_matrix_shadow",
     "aliases": [
-      "sub_10027A70",
       "?sse2_D3DXMatrixShadow@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21261,7 +21138,6 @@
     "address": "0x10027c00",
     "name": "d3dx_sse2_matrix_reflect",
     "aliases": [
-      "sub_10027C00",
       "?sse2_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."
@@ -21290,7 +21166,6 @@
     "address": "0x10027e00",
     "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll",
     "aliases": [
-      "sub_10027E00",
       "?sse2_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
     ],
     "comment": "DirectX 8.1 optimized dispatch entry identified by exact SSE and SSE2 fast-table relocations."

@@ -139,7 +139,7 @@ _REPO_TYPE_ARRAY_VIEW_OVERRIDES = {
 # while still applying the 41 interior symbols and comments.
 _FORCED_DATA_AGGREGATES = frozenset(
     {
-        "ui_element_table_end",
+        "ui_element_table",
     },
 )
 
