@@ -126,3 +126,22 @@ sweep. All four variants compile byte-identically. Together these sweeps add
 variants and four consecutive non-improving sweeps. The scratch is now
 formally stalled: its residual is independent-store scheduling, not the shared
 builder ABI or a missing coordinate lifetime.
+
+## 2026-08-09 single-field helper recovery
+
+The surviving SDK's small inline-member style exposes a narrower metadata
+boundary than the earlier two-field helper. Each perimeter entry now publishes
+its alternating template through `set_template`, then writes trigger and count
+explicitly before advancing the offset and trigger state. The center entry
+likewise finishes its trigger before the template helper. For the opening
+sweep, staging the chosen template and advancing the append count before the
+record stores reproduces the native instruction order exactly.
+
+The retained source improves the match from 75.95% to 79.73%, extends the exact
+prefix from 16 to 41 instructions, and preserves the exact 291/291 instruction
+count with no static-reference debt. The first ten-entry perimeter sweep is now
+exact. Replaying explicit template-field cursors and post-incremented record
+cursors regressed sharply, while named coordinate and template temporaries
+were byte-neutral, so the ordinary record pointer and the smaller helper
+boundary are retained. The retained source SHA-256 is
+`c8e38ad16a82435cf18b52baa00da28d1b5826d48735df81dcac6725e6ea5016`.

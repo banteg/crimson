@@ -12,13 +12,11 @@ struct quest_entry_original_t {
     int trigger_time_ms;
     int count;
 
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms)
+    void set_template(int spawn_template_id)
     {
         template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
     }
+
 };
 
 extern "C" void quest_build_the_unblitzkrieg(
@@ -33,15 +31,15 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = 824.0f;
         spawn->pos.y = (float)(offset / 10 + 200);
-        offset += 0x270;
-        spawn->set_spawn(
-            (entry_count & 1)
-                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
-        spawn->count = 1;
-        trigger_time_ms += 1800;
+        int template_id = (entry_count & 1)
+            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+            : SPAWN_ID_DEN_ALIEN_BASIC_07;
         ++entry_count;
+        spawn->set_template(template_id);
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = 1;
+        offset += 0x270;
+        trigger_time_ms += 1800;
         ++spawn;
     }
 
@@ -52,13 +50,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = (float)(0x338 - offset / 10);
         spawn->pos.y = 824.0f;
-        offset += 0x270;
-        spawn->set_spawn(
+        spawn->set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
+                : SPAWN_ID_DEN_ALIEN_BASIC_07);
+        spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
+        offset += 0x270;
         trigger_time_ms += 1500;
         ++toggle;
         ++spawn;
@@ -67,9 +65,8 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     spawn->pos.x = 512.0f;
     spawn->pos.y = 512.0f;
-    spawn->set_spawn(
-        SPAWN_ID_DEN_ALIEN_BASIC_07,
-        trigger_time_ms);
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->set_template(SPAWN_ID_DEN_ALIEN_BASIC_07);
     spawn->count = 1;
     ++entry_count;
 
@@ -80,13 +77,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = 200.0f;
         spawn->pos.y = (float)(0x338 - offset / 10);
-        offset += 0x270;
-        spawn->set_spawn(
+        spawn->set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
+                : SPAWN_ID_DEN_ALIEN_BASIC_07);
+        spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
+        offset += 0x270;
         trigger_time_ms += 1200;
         ++toggle;
         ++spawn;
@@ -99,13 +96,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = (float)(offset / 10 + 200);
         spawn->pos.y = 200.0f;
-        offset += 0x270;
-        spawn->set_spawn(
+        spawn->set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
+                : SPAWN_ID_DEN_ALIEN_BASIC_07);
+        spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
+        offset += 0x270;
         trigger_time_ms += 800;
         ++toggle;
         ++spawn;
@@ -118,13 +115,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = 824.0f;
         spawn->pos.y = (float)(offset / 10 + 200);
-        offset += 0x270;
-        spawn->set_spawn(
+        spawn->set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
+                : SPAWN_ID_DEN_ALIEN_BASIC_07);
+        spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
+        offset += 0x270;
         trigger_time_ms += 800;
         ++toggle;
         ++spawn;
@@ -137,13 +134,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = (float)(0x338 - offset / 10);
         spawn->pos.y = 824.0f;
-        offset += 0x270;
-        spawn->set_spawn(
+        spawn->set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
+                : SPAWN_ID_DEN_ALIEN_BASIC_07);
+        spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
+        offset += 0x270;
         trigger_time_ms += 700;
         ++toggle;
         ++spawn;
@@ -156,13 +153,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = 200.0f;
         spawn->pos.y = (float)(0x338 - offset / 10);
-        offset += 0x270;
-        spawn->set_spawn(
+        spawn->set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
+                : SPAWN_ID_DEN_ALIEN_BASIC_07);
+        spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
+        offset += 0x270;
         trigger_time_ms += 700;
         ++toggle;
         ++spawn;
@@ -175,13 +172,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = (float)(offset / 10 + 200);
         spawn->pos.y = 200.0f;
-        offset += 0x270;
-        spawn->set_spawn(
+        spawn->set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms);
+                : SPAWN_ID_DEN_ALIEN_BASIC_07);
+        spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
+        offset += 0x270;
         trigger_time_ms += 800;
         ++toggle;
         ++spawn;
