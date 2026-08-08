@@ -13,24 +13,21 @@ sin(angle) * radius + 512)`. Each spiral entry uses heading `angle`, template
 `(1280, 512)` and `(-256, 512)`, with count 16 and triggers `i * 300 + 10000`
 and `i * 300 + 20000`.
 
-The candidate reproduces the exact 94-instruction length, all five audited
-references, the loop bounds, x87 trigonometric sequence, final indices, and
-trigger arithmetic. It scores 60.64%. Residuals are unconstrained VC6
-scheduling: the candidate hoists independent loop metadata stores and trigger
-updates ahead of the trigonometry, and schedules parts of the opening/final
-fixed entries differently. Raw indexed access kept the metadata after the
-math, but regressed the register allocation and score to 57.45%; a local spawn
-pointer is the strongest plausible source shape. VC6.5pp and VC6.6 reproduce
-the default result, while VC7 regresses sharply, so no compiler override is
-warranted.
+The continuous append-count candidate resolves all five audited references,
+preserves the recovered loop bounds, x87 trigonometric sequence, final entries,
+and trigger arithmetic, and scores 79.56%. It currently emits 87 of the 94
+native instructions: direct scalar tail positions omit seven stack-temporary
+instructions, while the semantically equivalent aggregate form restores 94
+instructions but scores 76.60%. The remaining differences are VC6 scheduling
+across the opening stores, loop advances, and tail materialization.
 
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+present), constant, record-store, and output-count policy. All masked
+references resolve, and the aggregate-tail check accounts for the current
+seven-instruction deficit. Classification remains `RECOVERY=semantic-complete`,
+`RESIDUAL=compiler`.
 
 ## 2026-07-27 focused profile and mutation pass
 
@@ -95,3 +92,15 @@ raw indexing; every aggregate-tail interaction regressed. The retained
 64.08839779005525% source is therefore a bounded compiler fixed point for the
 recovered loop ownership, publication, induction lifetime, and fixed-position
 boundaries.
+
+## 2026-08-08 append-count recovery
+
+One append count now drives both opening entries, all 128 spiral entries, the
+two tail waves, and the returned count. This removes the `step_index + 2`,
+indices 130/131, and fixed 132 assignment without changing the recovered
+script. The retained candidate improves from 250.58563535911603/391 weighted
+bytes (64.09%) to 311.0718232044199/391 (79.56%), extends the exact prefix from
+four to six instructions, and preserves references 5/0/0. The direct tail
+field form remains the higher-scoring semantic spelling; the aggregate form
+was rechecked at 76.60% and 94/94 instructions. The retained source SHA-256 is
+`0695f3c179201fb1dd37e7c14eb952b4aca14f4eb2ebe2094bbc677d5556356a`.

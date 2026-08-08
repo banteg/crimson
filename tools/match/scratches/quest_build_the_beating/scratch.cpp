@@ -29,90 +29,90 @@ extern "C" void quest_build_the_beating(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);
-    spawns[0].set_spawn(
+    spawns[entry_count].pos = quest_vec2_t(256.0f, 256.0f);
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_BONUS_CARRIER_27,
         500,
         1);
+    ++entry_count;
 
-    spawns[1].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         (float)(terrain_texture_width + 32),
         (float)(terrain_texture_height / 2));
-    spawns[1].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_BIG_GRAY_29,
         8000,
         3);
+    ++entry_count;
 
     int trigger_time_ms = 10000;
     int x_offset = 64;
     int remaining = 8;
-    quest_entry_original_t *spawn = &spawns[2];
     do {
-        spawn->pos = quest_vec2_t(
+        spawns[entry_count].pos = quest_vec2_t(
             (float)(terrain_texture_width + x_offset),
             (float)(terrain_texture_height / 2));
         x_offset += 32;
-        ++spawn;
-        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
-        spawn[-1].trigger_time_ms = trigger_time_ms;
-        spawn[-1].count = 8;
+        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = 8;
+        ++entry_count;
         trigger_time_ms += 100;
         --remaining;
     } while (remaining != 0);
 
-    spawns[10].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         -32.0f,
         (float)(terrain_texture_height / 2));
-    spawns[10].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_BIG_GRAY_29,
         18000,
         3);
+    ++entry_count;
 
     int x = -64;
     trigger_time_ms = 20000;
-    spawn = &spawns[11];
     do {
-        spawn->pos = quest_vec2_t(
+        spawns[entry_count].pos = quest_vec2_t(
             (float)x,
             (float)(terrain_texture_height / 2));
-        ++spawn;
-        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
-        spawn[-1].trigger_time_ms = trigger_time_ms;
-        spawn[-1].count = 8;
+        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = 8;
+        ++entry_count;
         trigger_time_ms += 100;
         x -= 32;
     } while (x > -320);
 
     int y = -64;
     trigger_time_ms = 40000;
-    spawn = &spawns[19];
     do {
-        spawn->pos = quest_vec2_t(
+        spawns[entry_count].pos = quest_vec2_t(
             (float)(terrain_texture_width / 2),
             (float)y);
-        ++spawn;
-        spawn[-1].template_id = SPAWN_ID_ALIEN_GHOST_0F;
-        spawn[-1].trigger_time_ms = trigger_time_ms;
-        spawn[-1].count = 4;
+        spawns[entry_count].template_id = SPAWN_ID_ALIEN_GHOST_0F;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = 4;
+        ++entry_count;
         trigger_time_ms += 100;
         y -= 42;
     } while (y > -316);
 
     int y_offset = 0;
     trigger_time_ms = 40000;
-    spawn = &spawns[25];
     do {
-        spawn->pos = quest_vec2_t(
+        spawns[entry_count].pos = quest_vec2_t(
             (float)(terrain_texture_width / 2),
             (float)(terrain_texture_width + y_offset + 44));
-        ++spawn;
-        spawn[-1].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
-        spawn[-1].trigger_time_ms = trigger_time_ms;
-        spawn[-1].count = 2;
+        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = 2;
+        ++entry_count;
         y_offset += 32;
         trigger_time_ms += 100;
     } while (trigger_time_ms < 40600);
 
-    *count = 31;
+    *count = entry_count;
 }

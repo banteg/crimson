@@ -25,13 +25,13 @@ The final phase deliberately derives both coordinates from terrain width. This
 native detail also corrected the Zig quest port, whose prior y coordinate used
 height and only happened to agree on square maps. Heading remains untouched.
 
-The candidate represents all 166 native instructions and resolves all seven
-audited global references. The residual is VC6 scheduling and register
-allocation: native keeps the entry base in ESI, trigger time in EBX, and the
-coordinate offset in EDI; advances a cursor before storing through negative
-offsets; and waits to write metadata until both coordinates are converted.
-No artificial dependencies, volatile state, or register-forcing constructs
-are used.
+The append-count candidate represents all 166 native instructions and resolves
+all seven audited global references. It scores 77.71% with a 39-instruction
+exact prefix. One continuous count now publishes all 31 entries and supplies
+the returned count, replacing four phase-specific cursor starts and the fixed
+final assignment. The remaining gap is VC6 scheduling and register allocation
+within otherwise aligned position-conversion loops; no artificial
+dependencies, volatile state, or register-forcing constructs are used.
 
 The opening eight-entry walk now advances its X offset immediately after
 constructing the current position and before storing spawn metadata. Live
@@ -122,3 +122,15 @@ The initial authoring record failed because it also removed the later-used
 `spawn` declaration; the corrected complete three-variant run has SHA-256
 `18b8e2ab967f8e022e9bce831e17e83d21184d17e5b22ebc0932031220e8752b`.
 No variant changes the compiler's chosen entry-base induction register.
+
+## 2026-08-08 append-count recovery
+
+Replacing the four hardcoded repeated-walk cursors and fixed output count with
+one continuous append count improves the retained candidate from
+441.789156626506/649 weighted bytes (68.07%) to
+504.3433734939759/649 (77.71%). It also extends the exact prefix from 37 to 39
+instructions while preserving 166/166 instructions and references 7/0/0.
+The source remains a direct expression of the recovered 31-entry script; the
+remaining differences are localized load, x87-store, and cursor-advance
+scheduling. The retained source SHA-256 is
+`22d545378aee4fd749fed2b132033db2f34f1659411f46c677ffba56a6b2797e`.
