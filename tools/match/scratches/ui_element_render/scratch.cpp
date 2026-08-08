@@ -1,3 +1,4 @@
+#include "crimsonland_console.h"
 #include "crimsonland_gameplay.h"
 #include "crimsonland_ui.h"
 #include "grim2d_cpp.h"
@@ -14,16 +15,9 @@ struct ui_render_matrix_t {
     float m11;
 };
 
-struct ui_point_filter_cvar_t {
-    char *name;
-    ui_point_filter_cvar_t *next;
-    int unknown_08;
-    float value;
-};
-
 extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr;
-extern ui_point_filter_cvar_t *cv_uiPointFilterPanels;
+extern console_cvar_entry_t *cv_uiPointFilterPanels;
 extern unsigned char console_open_flag;
 
 unsigned char ui_focus_update(int id);

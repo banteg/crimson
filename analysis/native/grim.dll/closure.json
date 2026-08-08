@@ -1,5 +1,5 @@
 {
-  "audit_digest": "824bbc755c6aa740afd5fd67eaca46b91cb24da0fa0f34fb4d7b7844e71ffccc",
+  "audit_digest": "8376f8bad812744c1ce32f140b9a97f97b0a7cccb2c72ccb2bf9ad0df830c09a",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -5755,30 +5755,6 @@
         }
       ],
       "name": "?grim_texture_slots@@3PAPAUGrimTexture@@A"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268817412,
-          "data_binding_kind": "definition",
-          "data_name": "grim_texture_slots",
-          "data_storage_address": 268817412,
-          "data_storage_name": "grim_texture_slots",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 1024,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 1024,
-          "weak": false
-        }
-      ],
-      "name": "?grim_texture_slots@@3PAPAUGrimTextureSlot@@A"
     },
     {
       "definitions": [
@@ -16317,6 +16293,11 @@
       "name": "?grim_texture_slots@@3PAPAUGrimTexture@@A",
       "referenced_by": [
         {
+          "function": "grim_bind_texture",
+          "object": "tools/match/scratches/grim_bind_texture/build/msvc6.5/459ad4a6fafa437f/scratch.obj",
+          "weak": false
+        },
+        {
           "function": "grim_create_texture",
           "object": "tools/match/scratches/grim_create_texture/build/msvc6.5/1938b9f65efbfb9e/scratch.obj",
           "weak": false
@@ -16344,37 +16325,6 @@
         {
           "function": "grim_set_render_target",
           "object": "tools/match/scratches/grim_set_render_target/build/msvc6.5/9cb487a80de6d579/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 268817412,
-          "data_binding_kind": "definition",
-          "data_name": "grim_texture_slots",
-          "data_storage_address": 268817412,
-          "data_storage_name": "grim_texture_slots",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 1024,
-          "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-          "section": ".data",
-          "size": 1024,
-          "weak": false
-        }
-      ],
-      "name": "?grim_texture_slots@@3PAPAUGrimTextureSlot@@A",
-      "referenced_by": [
-        {
-          "function": "grim_bind_texture",
-          "object": "tools/match/scratches/grim_bind_texture/build/msvc6.5/459ad4a6fafa437f/scratch.obj",
           "weak": false
         }
       ]
@@ -18421,7 +18371,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 12,
-    "defined_symbols": 333,
+    "defined_symbols": 332,
     "function_closure": true,
     "function_count": 139,
     "game_function_debt": {},
@@ -18430,7 +18380,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 133,
     "reference_exports_closed": true,
-    "resolved_symbols": 269,
+    "resolved_symbols": 268,
     "unresolved_by_category": {
       "excluded_function": 39,
       "import": 13,

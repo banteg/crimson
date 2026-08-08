@@ -12,9 +12,10 @@ normalized instructions, full prefix, and masked references `3/0/0`.
   state or the current bound-handle global.
 - A valid slot calls `IDirect3DDevice8::SetTexture(stage, texture)` through
   D3D8 vtable offset `0xf4`, then records the handle as currently bound.
-- The local `GrimTextureSlot` definition intentionally names only an
-  unidentified leading dword and the observed texture pointer; later fields
-  remain unknown.
+- The slot uses the canonical recovered `GrimTexture` layout. Its leading
+  dword is the texture name pointer, followed by the observed D3D texture
+  pointer; ownership, dimensions, and backup-surface fields are recovered by
+  the related texture lifecycle functions.
 - The checked-in UI trace contains 44,536 binds, and the EXE has 66 static
   callsites across 22 functions.
 

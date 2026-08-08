@@ -2,6 +2,7 @@
 #define CRIMSONLAND_GAMEPLAY_H
 
 #include "crimsonland_types.h"
+#include "crimsonland_console.h"
 
 typedef enum creature_type_id_t {
     CREATURE_TYPE_ZOMBIE = 0,
@@ -282,7 +283,6 @@ bonus_entry_t *bonus_spawn_at(
 bonus_entry_t *bonus_spawn_at_pos(const vec2f_t *pos);
 bonus_id_t bonus_pick_random_type(void);
 int weapon_pick_random_available(void);
-void console_printf(char *queue, char *fmt, ...);
 int crt_sprintf(char *dst, const char *fmt, ...);
 unsigned char game_is_full_version(void);
 void quest_database_init(void);
@@ -397,7 +397,6 @@ extern float fx_rotated_rotation[];
 extern int fx_rotated_effect_id[];
 extern effect_color_t fx_rotated_color_r[];
 
-extern char console_log_queue;
 extern char s_unhandled_creature_type[];
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "014c997dd5cb0af2537e6cc0bd98b622f3ccbef2e817350f0cd46c69f59b2a14",
+  "audit_digest": "fb42373fc01a9c1d118c8d69a3578542d72db8d6d74669738ed3984756e91d28",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -115424,13 +115424,28 @@
           "weak": false
         },
         {
+          "function": "creature_spawn_template",
+          "object": "tools/match/scratches/creature_spawn_template/build/msvc6.5/5e4a09ff02f61a15/scratch.obj",
+          "weak": false
+        },
+        {
           "function": "crimsonland_main",
           "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/3e5614d69733bd9d/scratch.obj",
           "weak": false
         },
         {
+          "function": "game_core_init",
+          "object": "tools/match/scratches/game_core_init/build/msvc6.5/ac683481a625f51f/scratch.obj",
+          "weak": false
+        },
+        {
           "function": "game_frame_update",
           "object": "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_load_status",
+          "object": "tools/match/scratches/game_load_status/build/msvc6.5/0da3053e4464575b/scratch.obj",
           "weak": false
         },
         {
@@ -115514,6 +115529,26 @@
           "weak": false
         },
         {
+          "function": "player_reset_all",
+          "object": "tools/match/scratches/player_reset_all/build/msvc6.5/538e7cc0532e7c9b/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "quest_build_fallback",
+          "object": "tools/match/scratches/quest_build_fallback/build/msvc6.5/2abb02336ca1d69e/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "quest_meta_init_entry",
+          "object": "tools/match/scratches/quest_meta_init_entry/build/msvc6.5/c82b083e311726ae/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "quest_start_selected",
+          "object": "tools/match/scratches/quest_start_selected/build/msvc6.5/cfed3d459a417416/scratch.obj",
+          "weak": false
+        },
+        {
           "function": "register_core_cvars",
           "object": "tools/match/scratches/register_core_cvars/build/msvc6.5/dd6a035812ab29a0/scratch.obj",
           "weak": false
@@ -115549,6 +115584,11 @@
           "weak": false
         },
         {
+          "function": "terrain_generate_random",
+          "object": "tools/match/scratches/terrain_generate_random/build/msvc6.5/e19bd193f442a006/scratch.obj",
+          "weak": false
+        },
+        {
           "function": "texture_get_or_load",
           "object": "tools/match/scratches/texture_get_or_load/build/msvc6.5/9e03943727ec3ae5/scratch.obj",
           "weak": false
@@ -115556,6 +115596,11 @@
         {
           "function": "texture_get_or_load_alt",
           "object": "tools/match/scratches/texture_get_or_load_alt/build/msvc6.5/7e30a545d215c67d/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "typo_word_pick_highscore_name",
+          "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
           "weak": false
         },
         {
@@ -124643,21 +124688,6 @@
           "weak": false
         },
         {
-          "function": "creature_spawn_template",
-          "object": "tools/match/scratches/creature_spawn_template/build/msvc6.5/5e4a09ff02f61a15/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_core_init",
-          "object": "tools/match/scratches/game_core_init/build/msvc6.5/ac683481a625f51f/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_load_status",
-          "object": "tools/match/scratches/game_load_status/build/msvc6.5/0da3053e4464575b/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "game_save_status",
           "object": "tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.obj",
           "weak": false
@@ -124685,36 +124715,6 @@
         {
           "function": "perks_generate_choices",
           "object": "tools/match/scratches/perks_generate_choices/build/msvc6.5/b3866a1244d097a4/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "player_reset_all",
-          "object": "tools/match/scratches/player_reset_all/build/msvc6.5/538e7cc0532e7c9b/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "quest_build_fallback",
-          "object": "tools/match/scratches/quest_build_fallback/build/msvc6.5/2abb02336ca1d69e/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "quest_meta_init_entry",
-          "object": "tools/match/scratches/quest_meta_init_entry/build/msvc6.5/c82b083e311726ae/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "quest_start_selected",
-          "object": "tools/match/scratches/quest_start_selected/build/msvc6.5/cfed3d459a417416/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "terrain_generate_random",
-          "object": "tools/match/scratches/terrain_generate_random/build/msvc6.5/e19bd193f442a006/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "typo_word_pick_highscore_name",
-          "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/2f41e9430fa39cfe/scratch.obj",
           "weak": false
         }
       ]

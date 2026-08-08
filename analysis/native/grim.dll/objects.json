@@ -33,7 +33,7 @@
       {
         "path": "third_party/headers/crimsonland_types.h",
         "repository_relative": true,
-        "sha256": "11b397c945742123316752ee8d1b3f1640b25240464dcdfa208791854c25f419"
+        "sha256": "471e0fe9f6ce3bed2d8ce2e34342a7131e1262b528fe666c3ebb706b182bc111"
       },
       {
         "path": "tools/match/include/grim2d_abi.h",
@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "824bbc755c6aa740afd5fd67eaca46b91cb24da0fa0f34fb4d7b7844e71ffccc",
+  "audit_digest": "8376f8bad812744c1ce32f140b9a97f97b0a7cccb2c72ccb2bf9ad0df830c09a",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -2125,7 +2125,6 @@
           "storage_name": "grim_texture_slots",
           "symbols": [
             "?grim_texture_slots@@3PAPAUGrimTexture@@A",
-            "?grim_texture_slots@@3PAPAUGrimTextureSlot@@A",
             "?grim_texture_slots@@3PAXA"
           ]
         },
@@ -2346,9 +2345,9 @@
         "repository_relative": true,
         "sha256": "4b1a9f7f47790572e8b121029cb7bef1b5d28c07549c5cb1098851ed0b7c5204"
       },
-      "emitted_symbol_count": 149,
+      "emitted_symbol_count": 148,
       "object": "tools/native/data_definitions/build/grim.dll/definitions.obj",
-      "object_sha256": "19e109400ab6cdc1f9881ce752a9f1d2548dbc8afbf003ae41037eb5fd4e3d52",
+      "object_sha256": "a899c1ef592a956d0eb093020e756f6bd4c4cc8c0abd935b57d9363e849b0c68",
       "regions": [
         {
           "address": 268747320,
@@ -6514,7 +6513,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "11b397c945742123316752ee8d1b3f1640b25240464dcdfa208791854c25f419"
+          "sha256": "471e0fe9f6ce3bed2d8ce2e34342a7131e1262b528fe666c3ebb706b182bc111"
         },
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
@@ -6522,9 +6521,14 @@
           "sha256": "ce827a09d1e18c529faa081e70063b3321caacdaccdb09a20b1d5ec6e6a6f98b"
         },
         {
+          "path": "tools/match/include/crimsonland_console.h",
+          "repository_relative": true,
+          "sha256": "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
+        },
+        {
           "path": "tools/match/include/crimsonland_gameplay.h",
           "repository_relative": true,
-          "sha256": "86d4392dc58df7c16c9fa9e21303a3dda60e82ea7b8c6b37e1bf535e5782524f"
+          "sha256": "415c113fbb8171f8fc768e035a2dc92089a219b28b3dde7f03e06af826679eb0"
         }
       ],
       "compiler": "msvc6.5",
@@ -13322,7 +13326,7 @@
         {
           "path": "tools/match/scratches/grim_bind_texture/scratch.cpp",
           "repository_relative": true,
-          "sha256": "c70aa21f70041f8ddc32b4c6884a38ba9005aa6bc2851c1cacb16a809cbfc98d"
+          "sha256": "96e1d3c07b1876c0774b62b08ff66c9955928034f6180b000e3e6fa19e67f6bf"
         },
         {
           "path": "tools/match/scratches/grim_bind_texture/scratch.conf",
@@ -13348,6 +13352,11 @@
           "path": "tools/match/include/grim_d3d8.h",
           "repository_relative": true,
           "sha256": "6732d55da92dfb16b3b251faed82393a6f000ea48cbf51efa6a8150a8997842a"
+        },
+        {
+          "path": "tools/match/include/grim_texture.h",
+          "repository_relative": true,
+          "sha256": "1880985853f4859a4ded888083866bda9f3cda872e85a26185f7d5c13e7e2b02"
         }
       ],
       "compiler": "msvc6.5",
@@ -13363,7 +13372,7 @@
           "canonical_config_sha256": "c5aef045ea9bfd4f5686ee13d28c1012a25b2d220b11f0e8e332b0c7744df89b",
           "canonical_scratch": "tools/match/scratches/grim_bind_texture",
           "canonical_source": "tools/match/scratches/grim_bind_texture/scratch.cpp",
-          "canonical_source_sha256": "c70aa21f70041f8ddc32b4c6884a38ba9005aa6bc2851c1cacb16a809cbfc98d",
+          "canonical_source_sha256": "96e1d3c07b1876c0774b62b08ff66c9955928034f6180b000e3e6fa19e67f6bf",
           "effective_end": 268466282,
           "end": 268466282,
           "function": "grim_bind_texture",
@@ -13393,10 +13402,10 @@
       },
       "object": "tools/match/scratches/grim_bind_texture/build/msvc6.5/459ad4a6fafa437f/scratch.obj",
       "object_function_symbol": "?grim_bind_texture@IGrim2D_cpp@@UAEXHH@Z",
-      "object_sha256": "55eb0a2df8380e72f578c5f13163532b5762ba51ee63ea49f66a615139ad9dfe",
+      "object_sha256": "6efc5f4bc64f41752c260b76d1024718ede71d1895a1a4ede440d04af3412fcc",
       "scratch": "tools/match/scratches/grim_bind_texture",
       "source": "tools/match/scratches/grim_bind_texture/scratch.cpp",
-      "source_sha256": "c70aa21f70041f8ddc32b4c6884a38ba9005aa6bc2851c1cacb16a809cbfc98d",
+      "source_sha256": "96e1d3c07b1876c0774b62b08ff66c9955928034f6180b000e3e6fa19e67f6bf",
       "target_size": 58,
       "translation_unit": {
         "kind": "isolated",
