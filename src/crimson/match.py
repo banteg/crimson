@@ -51,7 +51,7 @@ ADDRESS_DERIVED_IDENTITY_RE = re.compile(
     re.IGNORECASE,
 )
 ADDRESS_DERIVED_REFERENCE_RE = re.compile(
-    r"(?<![0-9a-z_])(?P<token>(?P<prefix>j_FUN|j_sub|FUN|sub|DAT|data|LAB|loc|PTR|"
+    r"(?<![0-9a-z_])(?P<token>_?(?P<prefix>j_FUN|j_sub|FUN|sub|DAT|data|LAB|loc|PTR|"
     r"switchD|caseD|lookup_table|byte|word|dword|qword|off|unk|field)_"
     r"(?P<address>[0-9a-f]{6,16}))(?![0-9a-z_])",
     re.IGNORECASE,
@@ -5823,7 +5823,7 @@ def collect_naming_debt(
 
 def _resolved_name_audit_files(repo_root: Path) -> tuple[Path, ...]:
     files: list[Path] = []
-    for relative_root in ("src", "scripts", "tools"):
+    for relative_root in ("docs", "src", "scripts", "tools"):
         source_root = repo_root / relative_root
         if not source_root.is_dir():
             continue
@@ -6010,6 +6010,93 @@ def collect_resolved_name_references(
                     )
 
     return sorted(rows, key=lambda row: (row.path, row.line, row.token, row.image, row.address))
+
+
+def rewrite_resolved_name_references(
+    rows: Collection[ResolvedNameReferenceRow],
+    *,
+    repo_root: Path = REPO_ROOT,
+) -> dict[str, int]:
+    """Replace unambiguous analyzer labels with their curated identities.
+
+    When the canonical identity is already present on the same line, retain the
+    useful address as a plain hexadecimal literal instead of duplicating the
+    name. Rows with multiple curated identities are left for manual review.
+    """
+
+    rows_by_path: dict[str, list[ResolvedNameReferenceRow]] = defaultdict(list)
+    for row in rows:
+        rows_by_path[row.path].append(row)
+
+    files_updated = 0
+    references_updated = 0
+    rows_skipped = 0
+    for display_path, path_rows in sorted(rows_by_path.items()):
+        path = Path(display_path)
+        if not path.is_absolute():
+            path = repo_root / path
+        lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+        rows_by_line: dict[int, list[ResolvedNameReferenceRow]] = defaultdict(list)
+        native_rows: list[ResolvedNameReferenceRow] = []
+        for row in path_rows:
+            if row.source == "native-initializer":
+                native_rows.append(row)
+            else:
+                rows_by_line[row.line].append(row)
+
+        file_updated = False
+        for line_number, line_rows in sorted(rows_by_line.items()):
+            if line_number < 1 or line_number > len(lines):
+                rows_skipped += len(line_rows)
+                continue
+            original_line = lines[line_number - 1]
+            rewritten_line = original_line
+            for row in sorted(line_rows, key=lambda candidate: candidate.token):
+                if len(row.canonical_names) != 1:
+                    rows_skipped += 1
+                    continue
+                canonical = row.canonical_names[0]
+                canonical_pattern = re.compile(
+                    rf"(?<![0-9A-Za-z_]){re.escape(canonical)}(?![0-9A-Za-z_])",
+                )
+                replacement = (
+                    f"0x{row.address:08x}"
+                    if canonical_pattern.search(original_line) is not None
+                    else canonical
+                )
+                token_pattern = re.compile(
+                    rf"(?<![0-9A-Za-z_]){re.escape(row.token)}(?![0-9A-Za-z_])",
+                )
+                rewritten_line, replacement_count = token_pattern.subn(replacement, rewritten_line)
+                if replacement_count == 0:
+                    rows_skipped += 1
+                    continue
+                references_updated += replacement_count
+                file_updated = True
+            lines[line_number - 1] = rewritten_line
+        rewritten_contents = "".join(lines)
+        for row in native_rows:
+            if len(row.canonical_names) != 1:
+                rows_skipped += 1
+                continue
+            quoted_token = json.dumps(row.token)
+            quoted_canonical = json.dumps(row.canonical_names[0])
+            replacement_count = rewritten_contents.count(quoted_token)
+            if replacement_count == 0:
+                rows_skipped += 1
+                continue
+            rewritten_contents = rewritten_contents.replace(quoted_token, quoted_canonical)
+            references_updated += replacement_count
+            file_updated = True
+        if file_updated:
+            path.write_text(rewritten_contents, encoding="utf-8")
+            files_updated += 1
+
+    return {
+        "files_updated": files_updated,
+        "references_updated": references_updated,
+        "rows_skipped": rows_skipped,
+    }
 
 
 def apply_naming_suggestions(

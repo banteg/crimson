@@ -3,7 +3,7 @@ tags:
   - status-analysis
 ---
 
-# Player struct (player_health / DAT_004908d4)
+# Player struct (player_health / 0x004908d4)
 
 This page tracks the per-player runtime struct stored in `player_health`
 (table base).
@@ -11,14 +11,14 @@ This page tracks the per-player runtime struct stored in `player_health`
 Pool facts:
 
 - Entry size: `0x360` bytes per player (`0xd8` dwords/floats).
-- Base address: `player_health` (`DAT_004908d4`).
+- Base address: `player_health` (`0x004908d4`).
 - Access pattern: `field_base + player_index * 0x360` (disassembly often shows
   `player_index * 0xd8` because the base pointer is typed as `float*`/`u32*`).
 
 - Input bindings (keys + axes) live in a `player_input_t` sub-struct at offset
   `0x308` (13 dwords / 0x34 bytes).
 
-- Player 2 constants appear as base + `0x360` (e.g. `player2_health` at `DAT_00490c34`).
+- Player 2 constants appear as base + `0x360` (e.g. `player2_health` at `0x00490c34`).
 - Some high-confidence fields live before `player_health` (negative offsets).
 
 ## Runtime probe notes (2026-01-18)
@@ -85,7 +85,7 @@ High-confidence fields (partial):
 | `0x2d8` | muzzle flash intensity | `player_muzzle_flash_alpha` | Decays each frame; accumulates on fire and drives weapon glow. |
 | `0x2dc` | aim heading (radians) | `player_aim_heading` | Used for projectile direction and overlay rendering. |
 | `0x2e0` | turn speed accumulator | `player_turn_speed` | Turn speed/accel when using keyboard/tank controls. |
-| `0x2e4` | aux state | `player_state_aux` | Zeroed in `FUN_0041fc80` (player reset); no read sites found yet. |
+| `0x2e4` | aux state | `player_state_aux` | Zeroed in `player_reset_all` (player reset); no read sites found yet. |
 | `0x2ec` | low-health timer | `player_low_health_timer` | Counts down to play low-health cues when HP is low. |
 | `0x2f0` | speed bonus timer | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
 | `0x2f4` | shield timer | `player_shield_timer` | Bonus id 10 (Shield). |
@@ -130,10 +130,10 @@ they are no longer considered unknown.
 
 ## Control schemes (summary)
 
-- Movement scheme `DAT_00480364 == 3` reads analog inputs from
+- Movement scheme `config_movement_schemes == 3` reads analog inputs from
   `player_axis_move_x` / `player_axis_move_y`.
 
-- Aim scheme `DAT_0048038c == 4` reads analog inputs from
+- Aim scheme `config_aim_schemes == 4` reads analog inputs from
   `player_axis_aim_x` / `player_axis_aim_y`.
 
 Related docs:

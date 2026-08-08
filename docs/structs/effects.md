@@ -7,7 +7,7 @@ tags:
 
 This page tracks the smaller effect pools used for weapon and perk visuals.
 
-## Particle pool (`particle_pool` / `DAT_00493eb8`)
+## Particle pool (`particle_pool` / `0x00493eb8`)
 
 Entry size: `0x38` bytes. Pool size: `0x80` entries (looping to `0x495ab8`).
 
@@ -16,8 +16,8 @@ Field arrays are labeled in the data map (e.g. `particle_pos_x`, `particle_vel_y
 
 Spawn helpers:
 
-- `FUN_00420130` -> `fx_spawn_particle` (fast variant, speed ~90)
-- `FUN_00420240` -> `fx_spawn_particle_slow` (slow variant, speed ~30)
+- `0x00420130` -> `fx_spawn_particle` (fast variant, speed ~90)
+- `0x00420240` -> `fx_spawn_particle_slow` (slow variant, speed ~30)
 
 ### Struct view (particle_t)
 
@@ -67,11 +67,11 @@ Layout (partial):
 | style id | Source | Notes |
 | --- | --- | --- |
 | `0` | Flamethrower (weapon id `0x08`) | Default fast particle from `fx_spawn_particle`. |
-| `1` | Blow Torch (weapon id `0x0f`) | `fx_spawn_particle` plus `DAT_00493ee8 = 1`. |
-| `2` | HR Flamer (weapon id `0x10`) | `fx_spawn_particle` plus `DAT_00493ee8 = 2`. |
+| `1` | Blow Torch (weapon id `0x0f`) | `fx_spawn_particle` plus `particle_style_id = 1`. |
+| `2` | HR Flamer (weapon id `0x10`) | `fx_spawn_particle` plus `particle_style_id = 2`. |
 | `8` | Bubblegun (weapon id `0x2a`) | Slow particle (`fx_spawn_particle_slow`). |
 
-## Secondary projectile pool (`secondary_projectile_pool` / `DAT_00495ad8`)
+## Secondary projectile pool (`secondary_projectile_pool` / `0x00495ad8`)
 
 Entry size: `0x2c` bytes. Pool size: `0x40` entries (looping to `0x4965d8`).
 
@@ -80,7 +80,7 @@ Field arrays are labeled in the data map (e.g. `secondary_proj_pos_x`,
 
 Spawn helper:
 
-- `FUN_00420360` -> `fx_spawn_secondary_projectile`
+- `0x00420360` -> `fx_spawn_secondary_projectile`
 
 ### Struct view (secondary_projectile_t)
 
@@ -115,7 +115,7 @@ Layout (partial):
 | 0x20 | lifetime | Zeroed on spawn; decremented in update. |
 | 0x24 | target id | Set to nearest creature when `type_id == 2`. |
 
-`projectile_update` (`FUN_00420b90`) advances and damages creatures for this pool, and the render path
+`projectile_update` (`0x00420b90`) advances and damages creatures for this pool, and the render path
 in the same function draws the sprite variants based on `type id`.
 
 ### Type id behaviors (secondary pool)
@@ -132,14 +132,14 @@ Render notes:
 - Base pass sizes in `projectile_render`: type `1` draws `14x14`, type `2` draws `10x10`,
   type `4` draws `8x8` (all from `projs.png`, atlas frame `4,3`).
 
-## FX queue (`fx_queue` / `DAT_004912b8`)
+## FX queue (`fx_queue` / `0x004912b8`)
 
 Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `fx_queue_count`).
 
 Field arrays are labeled in the data map (e.g. `fx_queue_pos_x`, `fx_queue_color_a`)
 at `fx_queue` + offsets.
 
-This queue is written by `fx_queue_add` (`FUN_0041e840`) and rendered (then
+This queue is written by `fx_queue_add` (`0x0041e840`) and rendered (then
 cleared) by `fx_queue_render` once per frame.
 
 See also: [Terrain pipeline](../crimsonland-exe/terrain.md) for the render-target
@@ -189,7 +189,7 @@ Notes:
 
 - `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
 
-## Sprite effect pool (`sprite_effect_pool` / `DAT_00496820`)
+## Sprite effect pool (`sprite_effect_pool` / `0x00496820`)
 
 Entry size: `0x2c` bytes. Pool size: `0x180` entries (looping to `0x49aa20`).
 
@@ -214,9 +214,9 @@ typedef struct sprite_effect_t {
 Field arrays are labeled in the data map (e.g. `sprite_effect_color_r`,
 `sprite_effect_pos_x`, `sprite_effect_scale`) at `sprite_effect_pool` + offsets.
 
-## Rotated FX queue (`fx_queue_rotated` / `DAT_004aaf3c`)
+## Rotated FX queue (`fx_queue_rotated` / `0x004aaf3c`)
 
-Queue size: `0x40` entries. Written by `fx_queue_add_rotated` (`FUN_00427840`)
+Queue size: `0x40` entries. Written by `fx_queue_add_rotated` (`0x00427840`)
 and rendered by `fx_queue_render`.
 
 Backing arrays are labeled in the data map (e.g. `fx_rotated_pos_x`, `fx_rotated_color_a`,
@@ -226,27 +226,27 @@ Layout (structure-of-arrays):
 
 | Array base | Field | Notes |
 | --- | --- | --- |
-| `DAT_00490430` | pos_x | Stride 2 floats. |
-| `DAT_00490434` | pos_y | Stride 2 floats. |
-| `DAT_0049bb38` | color_r | Stride 4 floats. |
-| `DAT_0049bb3c` | color_g | Stride 4 floats. |
-| `DAT_0049bb40` | color_b | Stride 4 floats. |
-| `DAT_0049bb44` | color_a | Stride 4 floats; scaled by view factor in `fx_queue_add_rotated`. |
-| `DAT_0049669c` | rotation | Stored from `rotation` in `fx_queue_add_rotated`. |
-| `DAT_004906a8` | scale | Stored from `scale` in `fx_queue_add_rotated`. |
-| `DAT_0049ba30` | effect_id | Used to index the atlas table in `fx_queue_render`. |
+| `fx_rotated_pos_x` | pos_x | Stride 2 floats. |
+| `fx_rotated_pos_y` | pos_y | Stride 2 floats. |
+| `fx_rotated_color_r` | color_r | Stride 4 floats. |
+| `fx_rotated_color_g` | color_g | Stride 4 floats. |
+| `fx_rotated_color_b` | color_b | Stride 4 floats. |
+| `fx_rotated_color_a` | color_a | Stride 4 floats; scaled by view factor in `fx_queue_add_rotated`. |
+| `fx_rotated_rotation` | rotation | Stored from `rotation` in `fx_queue_add_rotated`. |
+| `fx_rotated_scale` | scale | Stored from `scale` in `fx_queue_add_rotated`. |
+| `fx_rotated_effect_id` | effect_id | Used to index the atlas table in `fx_queue_render`. |
 
 Notes:
 
-- `fx_queue_render` binds `bodyset_texture` (`DAT_0048f7dc`) and maps `effect_id`
-  through the creature type table: `frame = *(int *)(&DAT_00482764 + effect_id * 0x44)`.
+- `fx_queue_render` binds `bodyset_texture` (`0x0048f7dc`) and maps `effect_id`
+  through the creature type table: `frame = *(int *)(&creature_type_corpse_frame + effect_id * 0x44)`.
   That offset is the per‑type `corpse frame` (see `creature.md`),
   and the frame is converted to UVs via the 4x atlas table (`effect_uv4`, `u/v`).
 
 - The rotated queue is drawn in two passes: the first uses half alpha and a
   slightly inflated size (`scale * 1.064`), the second uses full alpha/size.
 
-- `fx_queue_add_rotated` skips enqueuing when `DAT_004871c8 != 0` or the queue is full.
+- `fx_queue_add_rotated` skips enqueuing when `terrain_texture_failed != 0` or the queue is full.
 
 ## Effect entries (`effect_pool_pos_x` pool)
 
@@ -255,11 +255,11 @@ with next pointer at offset `0xb8`.
 
 Spawn/update helpers:
 
-- `effect_spawn` (`FUN_0042e120`) allocates an entry and seeds UVs for the
+- `effect_spawn` (`0x0042e120`) allocates an entry and seeds UVs for the
   selected atlas frame.
 
-- `effects_update` (`FUN_0042e710`) advances timers/velocities and frees expired entries.
-- `effects_render` (`FUN_0042e820`) draws active entries.
+- `effects_update` (`0x0042e710`) advances timers/velocities and frees expired entries.
+- `effects_render` (`0x0042e820`) draws active entries.
 
 ### Struct view (effect_entry_t)
 
@@ -343,11 +343,11 @@ Notes:
   rotation/scale matrix from `rotation` + `scale` and draw the quad data starting
   at `0x48`.
 
-- `effect_free` (`FUN_0042e080`) clears `flags` to `0` and pushes the entry back
+- `effect_free` (`0x0042e080`) clears `flags` to `0` and pushes the entry back
   onto the free list; the flag presets always include bit `0x1` to keep `flags`
   nonzero while active.
 
-Common flag presets (from the template helpers that seed `DAT_004ab1dc`):
+Common flag presets (from the template helpers that seed `effect_template_flags`):
 
 | Flags | Bits present | Notes |
 | --- | --- | --- |
@@ -404,7 +404,7 @@ the effect entry (offsets `0x0c..0x44`) before the UVs are assigned.
 
 Entry size: `0x08` bytes. Indexed by `effect_id`.
 
-`effect_select_texture` (`FUN_0042e0a0`) reads this table and calls the renderer
+`effect_select_texture` (`0x0042e0a0`) reads this table and calls the renderer
 with grid sizes `16/8/4/2` depending on the size code (`0x10/0x20/0x40/0x80`).
 
 Runtime capture confirms Grim’s `set_atlas_frame` uses **full‑cell UVs** for
@@ -444,14 +444,14 @@ Known entries (extracted from `crimsonland.exe` at `effect_id_table`):
 
 | effect_id | Call sites | Notes |
 | --- | --- | --- |
-| `0` | `bonus_spawn_at`, `effect_spawn_burst` (`FUN_0042ef60`), `FUN_0042f080`, `FUN_0042f3f0`, `FUN_0042f540`, `effect_spawn_explosion_burst`, `creature_apply_damage` (`FUN_004207c0`) | Generic burst/spark effects (used for bonus pickup and explosions). |
-| `1` | `bonus_apply` (Reflex Boost/Freeze), `FUN_0042f080`, `FUN_0042f270`, `FUN_0042f330`, `effect_spawn_explosion_burst` | Power-up ring/halo style effects. |
+| `0` | `bonus_spawn_at`, `effect_spawn_burst` (`0x0042ef60`), `effect_spawn_shrinkifier_hit`, `effect_spawn_splitter_hit_burst`, `effect_spawn_ion_hit_sparks`, `effect_spawn_explosion_burst`, `creature_apply_damage` (`0x004207c0`) | Generic burst/spark effects (used for bonus pickup and explosions). |
+| `1` | `bonus_apply` (Reflex Boost/Freeze), `effect_spawn_shrinkifier_hit`, `effect_spawn_ion_hit_core`, `effect_spawn_plasma_hit_core`, `effect_spawn_explosion_burst` | Power-up ring/halo style effects. |
 | `7` | `effect_spawn_blood_splatter` | Blood splatter burst used by hit effects. |
 | `8..10` | `effect_spawn_freeze_shard` | Randomized variant picks (`iVar3 % 3 + 8`). |
 | `0xc` | `effect_spawn_explosion_burst` | Used during large explosion sequences. |
 | `0xe` | `effect_spawn_freeze_shatter` | Four-way burst helper. |
 | `0x11` | `effect_spawn_explosion_burst` | Extra burst when difficulty is high. |
-| `0x12` | `player_update` (`FUN_004136b0`) | Muzzle flash path when weapon flag `0x1` is set (grid 16, frame `0x26` in `particles.png`; sprite resembles a shell casing). |
+| `0x12` | `player_update` (`0x004136b0`) | Muzzle flash path when weapon flag `0x1` is set (grid 16, frame `0x26` in `particles.png`; sprite resembles a shell casing). |
 
 ### Effect template helpers (partial)
 
@@ -462,16 +462,16 @@ These helpers primarily configure `effect_template_vel_x` and then call `effect_
 | `effect_spawn_blood_splatter` | `7` | Spawns two bursts with randomized direction/size; used in projectile/chain effects. |
 | `effect_spawn_freeze_shard` | `8..10` | Picks a random variant (`iVar3 % 3 + 8`); used by freeze/shatter logic. |
 | `effect_spawn_freeze_shatter` | `0xe`, `8..10` | Four-way burst (`0xe`) plus additional `effect_spawn_freeze_shard` calls. |
-| `effect_spawn_burst` (`FUN_0042ef60`) | `0` | Generic burst loop with randomized velocity. |
-| `FUN_0042f080` | `1`, `0` | Ring + burst combo used for power-up visuals. |
-| `FUN_0042f270` | `1` | Single ring burst. |
-| `FUN_0042f330` | `1` | Single ring burst with different color/alpha defaults. |
-| `FUN_0042f3f0` | `0` | Radial scatter of bursts (count parameter). |
-| `FUN_0042f540` | `0` | Scaled burst loop used for explosions. |
+| `effect_spawn_burst` (`0x0042ef60`) | `0` | Generic burst loop with randomized velocity. |
+| `effect_spawn_shrinkifier_hit` | `1`, `0` | Ring + burst combo used for power-up visuals. |
+| `effect_spawn_ion_hit_core` | `1` | Single ring burst. |
+| `effect_spawn_plasma_hit_core` | `1` | Single ring burst with different color/alpha defaults. |
+| `effect_spawn_splitter_hit_burst` | `0` | Radial scatter of bursts (count parameter). |
+| `effect_spawn_ion_hit_sparks` | `0` | Scaled burst loop used for explosions. |
 | `effect_spawn_explosion_burst` | `1`, `0x11`, `0`, `0xc` | Large multi-stage explosion effect. |
 
 
-## Sprite effect pool (`sprite_effect_pool` / `DAT_00496820`)
+## Sprite effect pool (`sprite_effect_pool` / `0x00496820`)
 
 Entry size: `0x2c` bytes. Pool size: `0x180` entries (looping to `0x49aa20`).
 
@@ -480,7 +480,7 @@ Field arrays are labeled in the data map (e.g. `sprite_effect_pos_x`,
 
 Spawn helper:
 
-- `fx_spawn_sprite` (`FUN_0041fbb0`)
+- `fx_spawn_sprite` (`0x0041fbb0`)
 
 Layout (partial):
 
@@ -494,13 +494,13 @@ Layout (partial):
 | 0x14 | rotation | Seeded from `rand`, incremented by `dt * 3.0`, passed into `grim_set_rotation`. |
 | 0x18 | pos_x | Written from `param_1[0]`; advanced by `vel_x` each tick. |
 | 0x1c | pos_y | Written from `param_1[1]`; advanced by `vel_y` each tick. |
-| 0x20 | vel_x | Written from `param_2[0]`; scaled by `DAT_00480840` in update. |
-| 0x24 | vel_y | Written from `param_2[1]`; scaled by `DAT_00480840` in update. |
+| 0x20 | vel_x | Written from `param_2[0]`; scaled by `frame_dt` in update. |
+| 0x24 | vel_y | Written from `param_2[1]`; scaled by `frame_dt` in update. |
 | 0x28 | scale / size | Written from `param_3`; incremented by `dt * 60.0` before render, but not referenced in the current render path. |
 
 Notes:
 
-- Render is gated by `DAT_00480359` and binds `particles_texture` (`DAT_0048f7ec`)
+- Render is gated by `config_smoke_enabled` and binds `particles_texture` (`0x0048f7ec`)
   with fixed UV globals `sprite_effect_uv_u` / `sprite_effect_uv_v`
   (`0x00491248` / `0x0049124c`, equal to `effect_uv4` + `0x38`), then draws each active entry
   with the per-entry rotation and RGBA.
@@ -509,6 +509,6 @@ Common color overrides (callers mutate the RGBA fields after spawning):
 
 | Override | Fields | Notes |
 | --- | --- | --- |
-| dim spark | `color_r/g/b = 0.5`, `color_a = 0.25` | Used by projectile detonation sparks (`projectile_update`, `FUN_00420b90`). |
-| soft burst | `color_a = 0.37` | Used by radial burst loops (`projectile_update`, `FUN_00420b90`). |
-| mid alpha | `color_a = 0.7` | Used by periodic spark spawns (`projectile_update`, `FUN_00420b90`). |
+| dim spark | `color_r/g/b = 0.5`, `color_a = 0.25` | Used by projectile detonation sparks (`projectile_update`, `0x00420b90`). |
+| soft burst | `color_a = 0.37` | Used by radial burst loops (`projectile_update`, `0x00420b90`). |
+| mid alpha | `color_a = 0.7` | Used by periodic spark spawns (`projectile_update`, `0x00420b90`). |

@@ -49,7 +49,7 @@ https://www.dafont.com/pixel-arial-11.font
 
 ### Rendering hooks (grim.dll)
 
-- `grim_init_system` (`FUN_10005eb0`) loads `load\smallFnt.dat` and copies 0x100 bytes into `grim_font2_glyph_widths`.
+- `grim_init_system` (`0x10005eb0`) loads `load\smallFnt.dat` and copies 0x100 bytes into `grim_font2_glyph_widths`.
 - `grim_measure_text_width` (vtable offset `0x14c`) sums widths and returns the widest line.
 - `grim_draw_text_small` (vtable offset `0x144`) binds `GRIM_Font2` and emits quads using the UV math above.
 - `grim_font2_char_map` is initialized as an identity lookup table, so glyph index

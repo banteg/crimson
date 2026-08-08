@@ -11,15 +11,15 @@ See also: [Creature pool struct](struct.md), [Atlas notes](../formats/atlas.md).
 
 ## Animation phase (creature_anim_phase / offset 0x94)
 
-- `creature_anim_phase` (float) is advanced in `creature_update_all` (`FUN_00426220`) using the per-type
-  rate stored in the type table (`DAT_00482728`).
+- `creature_anim_phase` (float) is advanced in `creature_update_all` (`0x00426220`) using the per-type
+  rate stored in the type table (`creature_type_table`).
 
 - The phase wraps at **31** for the long strip or **15** for the short ping‑pong strip.
 - Evidence: `analysis/frida/creature_anim_trace_summary.json` (captured via `scripts/frida/creature_anim_trace.js`).
 
 ## Strip selection and frame mapping
 
-The renderer (`creature_render_type`, `FUN_00418b60`) selects an atlas frame based on:
+The renderer (`creature_render_type`, `0x00418b60`) selects an atlas frame based on:
 
 - the type table `base_frame`
 - the per-creature flags (`creature_flags`)
@@ -59,7 +59,7 @@ The `creature_flags` bitfield is consulted in `creature_update_all` and related 
 - **0x10** — ranged attack variant; also selects the `+0x20` strip offset in rendering.
 - **0x40** — force long animation strip even if `0x4` is set.
 
-## Creature type table (`creature_type_texture` / `DAT_00482728`)
+## Creature type table (`creature_type_texture` / `creature_type_table`)
 
 Stride: `0x44` bytes (`0x11` floats). Indexed by `type_id`.
 

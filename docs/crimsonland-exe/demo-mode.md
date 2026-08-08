@@ -109,7 +109,7 @@ switch (demo_variant_index) {
 }
 
 quest_spawn_timeline = 0;
-screen_fade_ramp_flag = 0; // DAT_0048702c
+screen_fade_ramp_flag = 0; // 0x0048702c
 demo_variant_index = (demo_variant_index + 1) % 6;
 ```
 
@@ -135,7 +135,7 @@ The variants are small, deterministic setup functions that:
 ### Variant 1 — `demo_setup_variant_1` (`0x004030f0`)
 
 - `player_count = 2`
-- `terrain_generate(&DAT_00484914)` (this points into the quest metadata table; see `docs/crimsonland-exe/terrain.md`).
+- `terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13)` (this points into the quest metadata table; see `docs/crimsonland-exe/terrain.md`).
 - `demo_time_limit_ms = 5000`
 - Spawns 20× template `0x34` plus ~13× template `0x35` at random positions:
   - `x = rand()%200 + 32` (or `%30 + 32` for template `0x35`)

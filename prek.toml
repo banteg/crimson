@@ -7,6 +7,7 @@ hooks = [
     { id = "py-import-lints", name = "py-import-lints", entry = "uv run lint-imports", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|pyproject\\.toml|uv\\.lock|justfile)" },
     { id = "py-types", name = "py-types", entry = "uv run ty check src tests", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|tests/|pyproject\\.toml|uv\\.lock|justfile)" },
     { id = "docs-check", name = "docs-check", entry = "uv run scripts/check_docs.py", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(docs/|readme\\.md|zensical\\.toml|scripts/check_docs\\.py|justfile)" },
+    { id = "resolved-name-audit", name = "resolved-name-audit", entry = "uv run crimson match resolved-name-audit --check", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(analysis/ghidra/maps/(data_map|name_map)\\.json|docs/|src/|scripts/|tools/)" },
     { id = "sg-scan", name = "sg-scan", entry = "sg scan", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|tests/|tools/ast-grep/|sgconfig.*\\.yml|justfile)" },
     { id = "sg-test", name = "sg-test", entry = "sg test", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(tools/ast-grep/|sgconfig.*\\.yml|justfile)" },
     { id = "zig-lint", name = "zig-lint", entry = "ziglint", language = "system", stages = ["pre-commit"], files = "^crimson-zig/(src/.*\\.zig|build\\.zig)$", priority = 260 },

@@ -5,7 +5,7 @@ tags:
 
 # Creature AI (creature_update_all)
 
-This page tracks the AI-mode behavior in `creature_update_all` (`FUN_00426220`).
+This page tracks the AI-mode behavior in `creature_update_all` (`0x00426220`).
 
 Related fields live in `creature_t`:
 
@@ -16,7 +16,7 @@ Related fields live in `creature_t`:
 
 See also: [Creature pool struct](struct.md), [Spawning](spawning.md).
 
-## AI mode behaviors (DAT_0049bfc8 / offset 0x90)
+## AI mode behaviors (creature_ai_mode / offset 0x90)
 
 The AI mode selects how the target position (`target_x/target_y`) is computed
 inside `creature_update_all`. These notes are medium-confidence.
@@ -27,7 +27,7 @@ inside `creature_update_all`. These notes are medium-confidence.
 | `1` | Tight orbit toward player; same as mode 0 but scale `0.55`. | Same logic with scale 0.55. |
 | `2` | Force direct chase; target is forced to player when mode == 2. | `mode == 2` triggers target override to player. |
 | `3` | Linked follower; target = linked creature position + per-creature offset. | Uses `link_index` as link; clears mode if target dead. |
-| `4` | Linked guard; if link alive, target around player like mode 0; if link dead, mode clears and a damage helper is called. | Clears mode and calls `creature_apply_damage` (`FUN_004207c0`) when link is dead. |
+| `4` | Linked guard; if link alive, target around player like mode 0; if link dead, mode clears and a damage helper is called. | Clears mode and calls `creature_apply_damage` (`0x004207c0`) when link is dead. |
 | `5` | Tethered follower; target = link + offset; movement scale shrinks when very close (`dist * 0.015625`). If link dies, mode clears and a damage helper is called. | Computes a local scale from distance to target and clamps it; calls `creature_apply_damage(..., 1000.0, ...)` when link is dead. |
 | `6` | Orbit around linked creature; target = link + `cos/sin(angle + heading) * radius`. | Uses per-creature orbit angle/radius fields. |
 | `7` | Hold/linger; target = current position while a timer runs. | Two variants: with flag `0x80` uses `link_index` as a countdown; otherwise uses `orbit_radius` as a float countdown. When the timer expires, mode resets to `0`. |

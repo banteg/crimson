@@ -8,9 +8,9 @@ This page maps numeric `game_state_id` values in `crimsonland.exe` (v1.9.93).
 
 Primary static anchors:
 
-- `game_state_set` (`FUN_004461c0`, `0x004461c0`)
+- `game_state_set` (`0x004461c0`, `0x004461c0`)
 - Main frame dispatch in `grim_update` (`0x0040c840` region)
-- `ui_elements_update_and_render` (`FUN_0041a530`, `0x0041a530`)
+- `ui_elements_update_and_render` (`0x0041a530`, `0x0041a530`)
 
 Runtime cross-check:
 

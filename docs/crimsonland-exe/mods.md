@@ -35,7 +35,7 @@ and expects two exports: `CMOD_GetInfo` and `CMOD_GetMod`.
 
 - Builds a path `mods\%s` and calls `LoadLibraryA`.
 - Resolves `CMOD_GetInfo` via `GetProcAddress`.
-- Calls it and copies the returned struct into `DAT_00481c88` (0x12 dwords).
+- Calls it and copies the returned struct into `mod_info_block` (0x12 dwords).
 - Logs either the info or an error string to the console.
 
 ### Mod info layout (CMOD_GetInfo)
@@ -71,7 +71,7 @@ interface + a 0x400-byte parms block).
 | Offset | Field | Meaning | Evidence |
 | --- | --- | --- | --- |
 | `0x00` | `vtable` | Function table (3 slots used) | Exe calls `(*vtable)[0]`, `(*vtable)[1]`, `(*vtable)[2](frame_dt_ms)`. |
-| `0x04` | `cl` | Mod API context pointer | Exe writes `&DAT_00481a80` at `+4` after `CMOD_GetMod`. |
+| `0x04` | `cl` | Mod API context pointer | Exe writes `&mod_api_context` at `+4` after `CMOD_GetMod`. |
 | `0x08` | `parms.drawMouseCursor` | Draw the standard cursor | Mods set this to `1`; exe checks `(char)plugin_interface_ptr[2]` to decide whether to draw the cursor. |
 | `0x09` | `parms.onPause` | Pause hint from the engine | `cl_crimsonroks` gates updates on `parms.onPause`; exe sets `*(plugin_interface_ptr + 9) = 1` when pausing. |
 | `0x24` | `parms.request_exit` | Exit/request flag byte | Exe sets byte `+0x24` when leaving or pausing the plugin flow (part of the reserved parms block). |
@@ -87,7 +87,7 @@ drives whether the exe keeps the mod active.
 | `1` | `Shutdown()` | Both mods call internal cleanup helpers and `delete this`. |
 | `2` | `Frame(frame_dt_ms)` | Returns `0` to exit (exe closes the plugin). Used to poll keys and issue `"game_pause"`. |
 
-### Mod API context (DAT_00481a80)
+### Mod API context (mod_api_context)
 
 The context pointer passed at `+0x04` is treated as a vtable-based API from
 within the mod DLLs. The layout matches `clAPI_t` in `cl_mod_sdk_v1/ClMod.h`

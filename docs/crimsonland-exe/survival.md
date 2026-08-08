@@ -22,7 +22,7 @@ Key functions:
 Survival-specific state referenced by `survival_update` / death handling:
 
 - `survival_elapsed_ms` (ms): used to scale wave spawn cadence. In Binja it is accessed as
-  `highscore_active_record + 0x20` and in other docs as `DAT_00487060`.
+  `highscore_active_record + 0x20` and in other docs as `survival_elapsed_ms`.
 
 - `survival_spawn_cooldown` (ms): countdown accumulator for wave spawns (decremented by `player_count * frame_dt_ms`).
 - `survival_spawn_stage` (0..10): scripted stage index that gates milestone spawns by `player_level`.

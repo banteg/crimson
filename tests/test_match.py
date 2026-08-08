@@ -109,6 +109,7 @@ from crimson.match import (
     resolve_function,
     resolve_function_with_scope_hint,
     rewrite_placeholder_references,
+    rewrite_resolved_name_references,
     run_match,
     sort_profile_statuses,
     sort_triage_rows,
@@ -2630,10 +2631,17 @@ def test_render_naming_debt_table_handles_clean_result() -> None:
 def test_collect_resolved_name_references_covers_text_and_native_initializers(
     tmp_path: Path,
 ) -> None:
+    docs_root = tmp_path / "docs"
+    docs_root.mkdir()
+    docs_root.joinpath("recovered.md").write_text(
+        "`known_function` (`FUN_00401000`) reads `known_table` (`DAT_00405000`).\n",
+        encoding="utf-8",
+    )
     source_root = tmp_path / "src"
     source_root.mkdir()
     source_root.joinpath("notes.py").write_text(
         "# FUN_00401000 reads DAT_00405000\n"
+        "# _DAT_00405000 is the same recovered table\n"
         "# data_406000 and sub_00409999 remain unresolved\n",
         encoding="utf-8",
     )
@@ -2709,10 +2717,15 @@ def test_collect_resolved_name_references_covers_text_and_native_initializers(
     } == {
         ("text", "FUN_00401000", "crimsonland.exe", 0x00401000, ("known_function",)),
         ("text", "DAT_00405000", "crimsonland.exe", 0x00405000, ("known_table",)),
+        ("text", "_DAT_00405000", "crimsonland.exe", 0x00405000, ("known_table",)),
         ("native-initializer", "nullsub_3", "grim.dll", 0x10002000, ("known_noop",)),
     }
+    assert [row.path for row in rows if row.path.startswith("docs/")] == [
+        "docs/recovered.md",
+        "docs/recovered.md",
+    ]
     assert render_resolved_name_reference_summary(rows) == (
-        "rows=3; sources=native-initializer:1,text:2"
+        "rows=6; sources=native-initializer:1,text:5"
     )
 
     completed = CliRunner().invoke(
@@ -2733,9 +2746,34 @@ def test_collect_resolved_name_references_covers_text_and_native_initializers(
     assert completed.exit_code == 1
     payload = json.loads(completed.output)
     assert payload["summary"] == {
-        "row_count": 3,
-        "sources": {"native-initializer": 1, "text": 2},
+        "row_count": 6,
+        "sources": {"native-initializer": 1, "text": 5},
     }
+
+    rewrite_result = rewrite_resolved_name_references(rows, repo_root=tmp_path)
+
+    assert rewrite_result == {
+        "files_updated": 3,
+        "references_updated": 6,
+        "rows_skipped": 0,
+    }
+    assert docs_root.joinpath("recovered.md").read_text(encoding="utf-8") == (
+        "`known_function` (`0x00401000`) reads `known_table` (`0x00405000`).\n"
+    )
+    assert source_root.joinpath("notes.py").read_text(encoding="utf-8") == (
+        "# known_function reads known_table\n"
+        "# known_table is the same recovered table\n"
+        "# data_406000 and sub_00409999 remain unresolved\n"
+    )
+    rewritten_payload = json.loads(
+        definitions_root.joinpath("grim.dll.json").read_text(encoding="utf-8"),
+    )
+    assert rewritten_payload["entries"][0]["initializer_symbols"][0][2] == "known_noop"
+    assert collect_resolved_name_references(
+        repo_root=tmp_path,
+        name_map_path=name_map,
+        data_map_path=data_map,
+    ) == []
 
 
 def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path) -> None:

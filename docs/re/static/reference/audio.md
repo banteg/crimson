@@ -83,7 +83,7 @@ Vorbis headers have been consumed.
 
 ## SFX ID map
 
-Derived from `audio_init_sfx` (`FUN_0043caa0`). `sfx_load_sample` (`FUN_0043c740`)
+Derived from `audio_init_sfx` (`0x0043caa0`). `sfx_load_sample` (`0x0043c740`)
 returns the SFX id for each `.ogg` file and stores it in a global variable.
 
 Labels are mirrored into `analysis/ghidra/maps/data_map.json` and applied with
@@ -92,78 +92,78 @@ same `.ogg` file use `_alt` suffixes to keep names unique.
 
 | Var | File | Label | Refs |
 | --- | --- | --- | --- |
-| DAT_004c3f00 | trooper_inPain_01.ogg | sfx_trooper_inpain_01 | 6 |
-| DAT_004c3f04 | trooper_inPain_02.ogg | sfx_trooper_inpain_02 | |
-| _DAT_004c3f08 | trooper_inPain_03.ogg | sfx_trooper_inpain_03 | |
-| DAT_004c3f0c | trooper_die_01.ogg | sfx_trooper_die_01 | 3 |
-| DAT_004c3f10 | trooper_die_02.ogg | sfx_trooper_die_02 | |
-| DAT_004c3f14 | trooper_die_03.ogg | sfx_trooper_die_03 | |
-| DAT_004c3f18 | zombie_die_01.ogg | sfx_zombie_die_01 | |
-| DAT_004c3f1c | zombie_die_02.ogg | sfx_zombie_die_02 | |
-| DAT_004c3f20 | zombie_die_03.ogg | sfx_zombie_die_03 | |
-| DAT_004c3f24 | zombie_die_04.ogg | sfx_zombie_die_04 | |
-| DAT_004c3f28 | zombie_attack_01.ogg | sfx_zombie_attack_01 | |
-| DAT_004c3f2c | zombie_attack_02.ogg | sfx_zombie_attack_02 | |
-| DAT_004c3f30 | alien_die_01.ogg | sfx_alien_die_01 | |
-| DAT_004c3f34 | alien_die_02.ogg | sfx_alien_die_02 | |
-| DAT_004c3f38 | alien_die_03.ogg | sfx_alien_die_03 | |
-| DAT_004c3f3c | alien_die_04.ogg | sfx_alien_die_04 | |
-| DAT_004c3f40 | alien_attack_01.ogg | sfx_alien_attack_01 | |
-| DAT_004c3f44 | alien_attack_02.ogg | sfx_alien_attack_02 | |
-| DAT_004c3f48 | lizard_die_01.ogg | sfx_lizard_die_01 | |
-| DAT_004c3f4c | lizard_die_02.ogg | sfx_lizard_die_02 | |
-| DAT_004c3f50 | lizard_die_03.ogg | sfx_lizard_die_03 | |
-| DAT_004c3f54 | lizard_die_04.ogg | sfx_lizard_die_04 | |
-| DAT_004c3f58 | lizard_attack_01.ogg | sfx_lizard_attack_01 | |
-| DAT_004c3f5c | lizard_attack_02.ogg | sfx_lizard_attack_02 | |
-| DAT_004c3f60 | spider_die_01.ogg | sfx_spider_die_01 | 3 |
-| DAT_004c3f64 | spider_die_02.ogg | sfx_spider_die_02 | 3 |
-| DAT_004c3f68 | spider_die_03.ogg | sfx_spider_die_03 | 3 |
-| DAT_004c3f6c | spider_die_04.ogg | sfx_spider_die_04 | 3 |
-| DAT_004c3f70 | spider_attack_01.ogg | sfx_spider_attack_01 | 3 |
-| DAT_004c3f74 | spider_attack_02.ogg | sfx_spider_attack_02 | 3 |
-| DAT_004c3f78 | pistol_fire.ogg | sfx_pistol_fire | |
-| DAT_004c3f7c | pistol_reload.ogg | sfx_pistol_reload | 3 |
-| DAT_004c3f80 | shotgun_fire.ogg | sfx_shotgun_fire | 3 |
-| DAT_004c3f84 | shotgun_reload.ogg | sfx_shotgun_reload | |
-| DAT_004c3f88 | autorifle_fire.ogg | sfx_autorifle_fire | 3 |
-| DAT_004c3f8c | autorifle_reload.ogg | sfx_autorifle_reload | 3 |
-| DAT_004c3f90 | gauss_fire.ogg | sfx_gauss_fire | 3 |
-| DAT_004c3f98 | hrpm_fire.ogg | sfx_hrpm_fire | |
-| DAT_004c3f9c | shock_fire.ogg | sfx_shock_fire | 6 |
-| DAT_004c3fa0 | plasmaMinigun_fire.ogg | sfx_plasmaminigun_fire | 3 |
-| DAT_004c3fa4 | plasmaShotgun_fire.ogg | sfx_plasmashotgun_fire | 2 |
-| DAT_004c3fa8 | pulse_fire.ogg | sfx_pulse_fire | 2 |
-| DAT_004c3fac | flamer_fire_01.ogg | sfx_flamer_fire_01 | 7 |
-| DAT_004c3fb0 | flamer_fire_02.ogg | sfx_flamer_fire_02 | 3 |
-| DAT_004c3fb4 | shock_fire.ogg | sfx_shock_fire_alt | 9 |
-| DAT_004c3fb8 | shockMinigun_fire.ogg | sfx_shockminigun_fire | 2 |
-| DAT_004c3fbc | shock_reload.ogg | sfx_shock_reload | 2 |
-| DAT_004c3fc0 | rocket_fire.ogg | sfx_rocket_fire | 4 |
-| DAT_004c3fc4 | rocketmini_fire.ogg | sfx_rocketmini_fire | 2 |
-| DAT_004c3fc8 | autorifle_reload.ogg | sfx_autorifle_reload_alt | 5 |
-| DAT_004c3fcc | bullet_hit_01.ogg | sfx_bullet_hit_01 | 2 |
-| _DAT_004c3fd0 | bullet_hit_02.ogg | sfx_bullet_hit_02 | |
-| _DAT_004c3fd4 | bullet_hit_03.ogg | sfx_bullet_hit_03 | |
-| _DAT_004c3fd8 | bullet_hit_04.ogg | sfx_bullet_hit_04 | |
-| _DAT_004c3fdc | bullet_hit_05.ogg | sfx_bullet_hit_05 | |
-| _DAT_004c3fe0 | bullet_hit_06.ogg | sfx_bullet_hit_06 | |
-| DAT_004c3fe4 | shock_hit_01.ogg | sfx_shock_hit_01 | 5 |
-| DAT_004c3fe8 | explosion_small.ogg | sfx_explosion_small | |
-| DAT_004c3fec | explosion_medium.ogg | sfx_explosion_medium | 4 |
-| DAT_004c3ff0 | explosion_large.ogg | sfx_explosion_large | 4 |
-| DAT_004c3ff4 | shockwave.ogg | sfx_shockwave | 6 |
-| DAT_004c3ff8 | questHit.ogg | sfx_questhit | 2 |
-| DAT_004c3ffc | ui_bonus.ogg | sfx_ui_bonus | 4 |
-| DAT_004c400c | ui_buttonClick.ogg | sfx_ui_buttonclick | 5 |
-| DAT_004c4010 | ui_panelClick.ogg | sfx_ui_panelclick | 2 |
-| DAT_004c4014 | ui_levelUp.ogg | sfx_ui_levelup | 2 |
-| _DAT_004c4018 | ui_typeClick_01.ogg | sfx_ui_typeclick_01 | 4 |
-| _DAT_004c401c | ui_typeClick_02.ogg | sfx_ui_typeclick_02 | |
-| DAT_004c4020 | ui_typeEnter.ogg | sfx_ui_typeenter | 5 |
-| DAT_004c4024 | ui_clink_01.ogg | sfx_ui_clink_01 | 4 |
-| DAT_004c4028 | bloodSpill_01.ogg | sfx_bloodspill_01 | 3 |
-| _DAT_004c402c | bloodSpill_02.ogg | sfx_bloodspill_02 | |
+| 0x004c3f00 | trooper_inPain_01.ogg | sfx_trooper_inpain_01 | 6 |
+| 0x004c3f04 | trooper_inPain_02.ogg | sfx_trooper_inpain_02 | |
+| 0x004c3f08 | trooper_inPain_03.ogg | sfx_trooper_inpain_03 | |
+| 0x004c3f0c | trooper_die_01.ogg | sfx_trooper_die_01 | 3 |
+| 0x004c3f10 | trooper_die_02.ogg | sfx_trooper_die_02 | |
+| 0x004c3f14 | trooper_die_03.ogg | sfx_trooper_die_03 | |
+| 0x004c3f18 | zombie_die_01.ogg | sfx_zombie_die_01 | |
+| 0x004c3f1c | zombie_die_02.ogg | sfx_zombie_die_02 | |
+| 0x004c3f20 | zombie_die_03.ogg | sfx_zombie_die_03 | |
+| 0x004c3f24 | zombie_die_04.ogg | sfx_zombie_die_04 | |
+| 0x004c3f28 | zombie_attack_01.ogg | sfx_zombie_attack_01 | |
+| 0x004c3f2c | zombie_attack_02.ogg | sfx_zombie_attack_02 | |
+| 0x004c3f30 | alien_die_01.ogg | sfx_alien_die_01 | |
+| 0x004c3f34 | alien_die_02.ogg | sfx_alien_die_02 | |
+| 0x004c3f38 | alien_die_03.ogg | sfx_alien_die_03 | |
+| 0x004c3f3c | alien_die_04.ogg | sfx_alien_die_04 | |
+| 0x004c3f40 | alien_attack_01.ogg | sfx_alien_attack_01 | |
+| 0x004c3f44 | alien_attack_02.ogg | sfx_alien_attack_02 | |
+| 0x004c3f48 | lizard_die_01.ogg | sfx_lizard_die_01 | |
+| 0x004c3f4c | lizard_die_02.ogg | sfx_lizard_die_02 | |
+| 0x004c3f50 | lizard_die_03.ogg | sfx_lizard_die_03 | |
+| 0x004c3f54 | lizard_die_04.ogg | sfx_lizard_die_04 | |
+| 0x004c3f58 | lizard_attack_01.ogg | sfx_lizard_attack_01 | |
+| 0x004c3f5c | lizard_attack_02.ogg | sfx_lizard_attack_02 | |
+| 0x004c3f60 | spider_die_01.ogg | sfx_spider_die_01 | 3 |
+| 0x004c3f64 | spider_die_02.ogg | sfx_spider_die_02 | 3 |
+| 0x004c3f68 | spider_die_03.ogg | sfx_spider_die_03 | 3 |
+| 0x004c3f6c | spider_die_04.ogg | sfx_spider_die_04 | 3 |
+| 0x004c3f70 | spider_attack_01.ogg | sfx_spider_attack_01 | 3 |
+| 0x004c3f74 | spider_attack_02.ogg | sfx_spider_attack_02 | 3 |
+| 0x004c3f78 | pistol_fire.ogg | sfx_pistol_fire | |
+| 0x004c3f7c | pistol_reload.ogg | sfx_pistol_reload | 3 |
+| 0x004c3f80 | shotgun_fire.ogg | sfx_shotgun_fire | 3 |
+| 0x004c3f84 | shotgun_reload.ogg | sfx_shotgun_reload | |
+| 0x004c3f88 | autorifle_fire.ogg | sfx_autorifle_fire | 3 |
+| 0x004c3f8c | autorifle_reload.ogg | sfx_autorifle_reload | 3 |
+| 0x004c3f90 | gauss_fire.ogg | sfx_gauss_fire | 3 |
+| 0x004c3f98 | hrpm_fire.ogg | sfx_hrpm_fire | |
+| 0x004c3f9c | shock_fire.ogg | sfx_shock_fire | 6 |
+| 0x004c3fa0 | plasmaMinigun_fire.ogg | sfx_plasmaminigun_fire | 3 |
+| 0x004c3fa4 | plasmaShotgun_fire.ogg | sfx_plasmashotgun_fire | 2 |
+| 0x004c3fa8 | pulse_fire.ogg | sfx_pulse_fire | 2 |
+| 0x004c3fac | flamer_fire_01.ogg | sfx_flamer_fire_01 | 7 |
+| 0x004c3fb0 | flamer_fire_02.ogg | sfx_flamer_fire_02 | 3 |
+| 0x004c3fb4 | shock_fire.ogg | sfx_shock_fire_alt | 9 |
+| 0x004c3fb8 | shockMinigun_fire.ogg | sfx_shockminigun_fire | 2 |
+| 0x004c3fbc | shock_reload.ogg | sfx_shock_reload | 2 |
+| 0x004c3fc0 | rocket_fire.ogg | sfx_rocket_fire | 4 |
+| 0x004c3fc4 | rocketmini_fire.ogg | sfx_rocketmini_fire | 2 |
+| 0x004c3fc8 | autorifle_reload.ogg | sfx_autorifle_reload_alt | 5 |
+| 0x004c3fcc | bullet_hit_01.ogg | sfx_bullet_hit_01 | 2 |
+| 0x004c3fd0 | bullet_hit_02.ogg | sfx_bullet_hit_02 | |
+| 0x004c3fd4 | bullet_hit_03.ogg | sfx_bullet_hit_03 | |
+| 0x004c3fd8 | bullet_hit_04.ogg | sfx_bullet_hit_04 | |
+| 0x004c3fdc | bullet_hit_05.ogg | sfx_bullet_hit_05 | |
+| 0x004c3fe0 | bullet_hit_06.ogg | sfx_bullet_hit_06 | |
+| 0x004c3fe4 | shock_hit_01.ogg | sfx_shock_hit_01 | 5 |
+| 0x004c3fe8 | explosion_small.ogg | sfx_explosion_small | |
+| 0x004c3fec | explosion_medium.ogg | sfx_explosion_medium | 4 |
+| 0x004c3ff0 | explosion_large.ogg | sfx_explosion_large | 4 |
+| 0x004c3ff4 | shockwave.ogg | sfx_shockwave | 6 |
+| 0x004c3ff8 | questHit.ogg | sfx_questhit | 2 |
+| 0x004c3ffc | ui_bonus.ogg | sfx_ui_bonus | 4 |
+| 0x004c400c | ui_buttonClick.ogg | sfx_ui_buttonclick | 5 |
+| 0x004c4010 | ui_panelClick.ogg | sfx_ui_panelclick | 2 |
+| 0x004c4014 | ui_levelUp.ogg | sfx_ui_levelup | 2 |
+| 0x004c4018 | ui_typeClick_01.ogg | sfx_ui_typeclick_01 | 4 |
+| 0x004c401c | ui_typeClick_02.ogg | sfx_ui_typeclick_02 | |
+| 0x004c4020 | ui_typeEnter.ogg | sfx_ui_typeenter | 5 |
+| 0x004c4024 | ui_clink_01.ogg | sfx_ui_clink_01 | 4 |
+| 0x004c4028 | bloodSpill_01.ogg | sfx_bloodspill_01 | 3 |
+| 0x004c402c | bloodSpill_02.ogg | sfx_bloodspill_02 | |
 
 ## Aliases
 
@@ -171,9 +171,9 @@ Alias entries are direct copies of another id in the init function.
 
 | Var | Copies | Label |
 | --- | --- | --- |
-| _DAT_004c4000 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_0 |
-| DAT_004c4004 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_1 |
-| _DAT_004c4008 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_2 |
+| 0x004c4000 | sfx_trooper_inpain_01 | sfx_trooper_inpain_01_alias_0 |
+| sfx_jinxed_kill | sfx_trooper_inpain_01 | sfx_trooper_inpain_01_alias_1 |
+| 0x004c4008 | sfx_trooper_inpain_01 | sfx_trooper_inpain_01_alias_2 |
 
 ## Playlist/runtime globals
 

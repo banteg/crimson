@@ -23,7 +23,7 @@ For a high-level summary, see [Grim2D overview](index.md).
 
 ## Extraction artifact
 
-We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
+We extracted all `(*grim_interface_ptr + offset)` callsites and wrote them to:
 
 - `analysis/ghidra/derived/grim2d_vtable_calls.json`
 
@@ -276,7 +276,7 @@ state names (partial list):
 
 | ID | Label (proposed) | Behavior (grim.dll) | Notes |
 | --- | --- | --- | --- |
-| `0x10` | `GRIM_CFG_RESOURCE_PAQ` | Stores a string path, validates with `FUN_10005a40`, updates config table | Used by `setresourcepaq` console command. |
+| `0x10` | `GRIM_CFG_RESOURCE_PAQ` | Stores a string path, validates with `grim_lookup_blob_load`, updates config table | Used by `setresourcepaq` console command. |
 | `0x12` | `GRIM_CFG_ALPHABLEND_ENABLE` | `SetRenderState(D3DRS_ALPHABLENDENABLE, value & 0xff)` | Toggles alpha blending. |
 | `0x13` | `GRIM_CFG_SRC_BLEND` | `SetRenderState(D3DRS_SRCBLEND, value)` | UI uses `5` (SRCALPHA). |
 | `0x14` | `GRIM_CFG_DEST_BLEND` | `SetRenderState(D3DRS_DESTBLEND, value)` | UI uses `6` (INVSRCALPHA). |
@@ -367,13 +367,13 @@ Runtime validation notes live in `runtime-validation.md`.
 These offsets appear with keycodes or input-related values:
 
 - `0x44` / `0x48` used with keycodes like `0x1d`, `0x9d`, `0xd0`, `200`
-  in `console_update` (`FUN_00401a40`) (likely key down / key pressed checks).
+  in `console_update` (`0x00401a40`) (likely key down / key pressed checks).
 
-- `0x50` is a zero-arg call in `console_input_poll` (`FUN_00401060`)
+- `0x50` is a zero-arg call in `console_input_poll` (`0x00401060`)
   (likely a per-frame poll).
 
 - `0x58` / `0x80` appear in input handling loops in
-  `input_primary_just_pressed` (`FUN_00446030`).
+  `input_primary_just_pressed` (`0x00446030`).
 
 - `0x80` routes raw keys, five mouse buttons, twelve joystick buttons, four
   joystick directions, six thresholded axes, and three groups of five RIM

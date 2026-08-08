@@ -68,7 +68,7 @@ Crucial: when sampling the texture on screen, UV math uses **1024** (world size)
 
 ## 3) Asset mapping: terrain texture handles array
 
-There is a contiguous array of 8 terrain stamp textures at `DAT_0048f548`:
+There is a contiguous array of 8 terrain stamp textures at `terrain_texture_handles`:
 
 Index → texture name loaded in stage 5:
 
@@ -102,7 +102,7 @@ Fallback mode loads **different** textures:
 
 These indices select entries from the terrain texture handle array above.
 
-In the quest database init helper (`FUN_00430a20`), for tier `t = arg2` and quest-in-tier `q = arg3`:
+In the quest database init helper (`quest_meta_init_entry`), for tier `t = arg2` and quest-in-tier `q = arg3`:
 
 ```c
 base = t*2 - 2;   // 0,2,4,6 for t=1..4

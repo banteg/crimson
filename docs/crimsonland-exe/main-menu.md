@@ -92,7 +92,7 @@ The quad lives mostly in **negative X**, so placing the element at
 
 Animation note:
 
-- The logo sign is UI element table index `0` (`sub_446150` returns 0), so `ui_element_update`
+- The logo sign is UI element table index `0` (`ui_get_element_index` returns 0), so `ui_element_update`
   forces its rotation angle negative (clockwise) during timeline transitions.
 
 - It uses the same default `start_time_ms=300` / `end_time_ms=0` window as other UI elements,
@@ -178,14 +178,14 @@ The relevant table indices are:
 
 | Table idx | Element | Role |
 | ---: | --- | --- |
-| 0 | `DAT_00487290` | Logo sign (`ui_signCrimson`) |
-| 1 | `DAT_004875a8` | Unused/mystery (participates in layout adjustments) |
-| 2 | `DAT_00488208` | Top item: `BUY NOW` (demo) or `MODS` (full). **Rewrite note:** `BUY NOW` is out of scope. |
-| 3 | `DAT_004878c0` | `PLAY GAME` |
-| 4 | `DAT_00487bd8` | `OPTIONS` |
-| 5 | `DAT_00487ef0` | `STATISTICS` |
-| 6 | `DAT_00488520` / `DAT_00488838` | `OTHER GAMES` or `QUIT` depending on config var 100 |
-| 7 | `DAT_00488838` / `DAT_00488520` | `QUIT` or inactive placeholder |
+| 0 | `ui_sign_crimson` | Logo sign (`ui_signCrimson`) |
+| 1 | `ui_element_slot_01_main_menu_aux` | Unused/mystery (participates in layout adjustments) |
+| 2 | `ui_element_slot_02_main_menu_primary` | Top item: `BUY NOW` (demo) or `MODS` (full). **Rewrite note:** `BUY NOW` is out of scope. |
+| 3 | `ui_element_slot_03_main_menu_play_game` | `PLAY GAME` |
+| 4 | `ui_element_slot_04_main_menu_options` | `OPTIONS` |
+| 5 | `ui_element_slot_05_main_menu_statistics` | `STATISTICS` |
+| 6 | `ui_element_slot_footer_variant_a` / `ui_element_slot_footer_variant_b` | `OTHER GAMES` or `QUIT` depending on config var 100 |
+| 7 | `ui_element_slot_footer_variant_b` / `ui_element_slot_footer_variant_a` | `QUIT` or inactive placeholder |
 
 Notes:
 
@@ -329,7 +329,7 @@ m11 = cos(angle)
 `render_mode == 1` (element+0x4 == 1, "offset"). For main menu items (`render_mode == 0`) it is
 ignored by the render path.
 
-## Hit testing bounds (`FUN_0044fb50 @ 0x0044fb50`)
+## Hit testing bounds (`ui_element_layout_calc @ 0x0044fb50`)
 
 Bounds are derived from quad0 v0/v2 and `pos_x/pos_y`:
 

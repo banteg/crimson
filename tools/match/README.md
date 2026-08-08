@@ -636,6 +636,7 @@ uv run crimson match naming-audit --rewrite-placeholder-references
 uv run crimson match naming-audit --repair-provider-comments
 uv run crimson match naming-audit --json --check
 uv run crimson match resolved-name-audit --check
+uv run crimson match resolved-name-audit --rewrite
 ```
 
 Suggestions are intentionally narrow. The command proposes a canonical name
@@ -689,11 +690,16 @@ an older bulk rename rewrote an auto-generated provider comment to the new
 canonical identity.
 
 `resolved-name-audit` is the repository-wide companion to the scratch/map
-audit. It scans maintained source, scripts, matching notes, and native data
+audit. It scans maintained documentation, source, scripts, matching notes, and native data
 initializers for address-derived labels whose address already has a stronger
 curated identity. Build artifacts, experiment logs, and genuinely unresolved
 address-named fields are excluded, while vtable slots such as a stale
-`nullsub_*` are checked against their explicit target address.
+`nullsub_*` are checked against their explicit target address. `--rewrite`
+replaces unambiguous labels with their curated identity; when that identity is
+already present on the line, it keeps the useful address as a plain hexadecimal
+literal instead of repeating the name. Ambiguous multi-name addresses remain
+reported for manual review. The same check runs as a pre-commit gate whenever
+maintained maps, documentation, source, scripts, or tools change.
 
 ## No Fakematching
 

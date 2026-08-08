@@ -1114,6 +1114,11 @@ def cmd_match_resolved_name_audit(
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
     summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate debt only"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    rewrite: bool = typer.Option(
+        False,
+        "--rewrite",
+        help="replace unambiguous analyzer labels with curated names or explicit addresses",
+    ),
     check: bool = typer.Option(False, "--check", help="fail when resolved labels remain"),
 ) -> None:
     """Find address-derived references whose curated identity is already stronger."""
@@ -1123,6 +1128,22 @@ def cmd_match_resolved_name_audit(
         name_map_path=name_map,
         data_map_path=data_map,
     )
+    if rewrite:
+        if limit is not None or summary_only or check:
+            raise typer.BadParameter(
+                "rewriting cannot be combined with limit, summary, or check filters",
+                param_hint="--rewrite",
+            )
+        result = matchlib.rewrite_resolved_name_references(rows, repo_root=root)
+        if as_json:
+            typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        else:
+            typer.echo(
+                f"files_updated={result['files_updated']} "
+                f"references_updated={result['references_updated']} "
+                f"rows_skipped={result['rows_skipped']}",
+            )
+        return
     displayed_rows = rows[:limit] if limit is not None else rows
     if as_json:
         typer.echo(

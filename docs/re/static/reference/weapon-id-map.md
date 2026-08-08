@@ -5,7 +5,7 @@ tags:
 
 # Weapon ID map
 
-**Source:** `weapon_table_init` (`FUN_004519b0`) copies weapon display names into
+**Source:** `weapon_table_init` (`0x004519b0`) copies weapon display names into
 `weapon_table` entries. Weapon ids index the table as
 `weapon_table + weapon_id * 0x1f` (stride `0x7c`).
 

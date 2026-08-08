@@ -5,7 +5,7 @@ tags:
 
 # Quest builders
 This document lists the quest builder pointer assigned to each quest in
-`quest_database_init` (`FUN_00439230`). Builder symbols are defined in
+`quest_database_init` (`0x00439230`). Builder symbols are defined in
 `analysis/ghidra/maps/name_map.json`.
 
 Notes:
@@ -15,14 +15,14 @@ Notes:
 - `Builder` is the named function symbol used for the quest spawn script.
 - `Terrain A/B/C` are the quest metadata terrain texture indices at offsets
   `0x10`, `0x14`, `0x18`. `terrain_generate` samples three texture layers using
-  these ids. `FUN_00430a20` sets them as:
+  these ids. `quest_meta_init_entry` sets them as:
 
   - Tiers 1–4: `A = 2*(tier-1)`, `B/C` swap between the odd/even pair after quest 5.
   - Tier 5: `A = quest_index & 0x3`, `B = 1`, `C = 3`.
 
 ### Terrain texture indices
 
-The indices below are used by `terrain_generate` to index `DAT_0048f548`, which
+The indices below are used by `terrain_generate` to index `terrain_texture_handles`, which
 is populated by `init_audio_and_terrain`:
 
 | Index | Texture asset |
@@ -145,7 +145,7 @@ including creature labels from `src/crimson/creatures/spawn.py`.
   do not explicitly write headings, so treat heading as undefined unless the quest
   explicitly sets it.
 
-- Quest spawn ids (`spawn_id`) are interpreted by `creature_spawn_template` (`FUN_00430af0`), which is
+- Quest spawn ids (`spawn_id`) are interpreted by `creature_spawn_template` (`0x00430af0`), which is
   an algorithm (it can spawn formations, configure spawn slots, and applies difficulty/hardcore tail
   modifiers). For human-readable labels we use the partial index in `src/crimson/creatures/spawn.py`.
 

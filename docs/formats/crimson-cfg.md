@@ -138,7 +138,7 @@ This means the file is treated as a **fixed struct** and rewritten wholesale.
 
 ## Field layout
 
-Base address in the decompile is `DAT_00480348`. Offsets below are relative to
+Base address in the decompile is `config_blob`. Offsets below are relative to
 the blob start.
 
 | Offset | Size | Default | Name | Description |

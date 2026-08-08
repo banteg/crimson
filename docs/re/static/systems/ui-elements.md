@@ -146,14 +146,14 @@ Offsets below are relative to the UI element base pointer.
 
 ## Related functions
 
-- `ui_element_render` (`FUN_00446c40`) — focus + render path.
+- `ui_element_render` (`0x00446c40`) — focus + render path.
 - `ui_focus_update` — focus navigation for the active element.
 - `ui_focus_draw` — focus highlight rendering.
 - `ui_button_update` — button helper that wraps element state and rendering.
 
 ## Key behaviors (decompiled)
 
-### Bounds calculation (`FUN_0044fb50`)
+### Bounds calculation (`ui_element_layout_calc`)
 
 Buttons use an inset rectangle derived from the element's *local* quad and its
 `pos_x/pos_y`:

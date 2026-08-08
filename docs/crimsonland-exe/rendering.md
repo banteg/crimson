@@ -6,35 +6,35 @@ tags:
 # Rendering pipeline
 This page summarizes the primary render paths in `crimsonland.exe`.
 
-## Render dispatcher (FUN_00406af0)
+## Render dispatcher (game_update_generic_menu)
 
-- If `render_pass_mode` (`DAT_00487240`) == `0` and `game_state_id` (`DAT_00487270`) != `5`, it draws terrain only via
-  `terrain_render` (`FUN_004188a0`).
+- If `render_pass_mode` (`0x00487240`) == `0` and `game_state_id` (`0x00487270`) != `5`, it draws terrain only via
+  `terrain_render` (`0x004188a0`).
 
-- Otherwise it runs the full gameplay render pass `gameplay_render_world` (`FUN_00405960`).
-- After either branch it applies a fullscreen fade (`DAT_00487264`), runs
-  `ui_elements_update_and_render`, calls `perk_prompt_update_and_render` (`FUN_00403550`) (perk prompt), and
+- Otherwise it runs the full gameplay render pass `gameplay_render_world` (`0x00405960`).
+- After either branch it applies a fullscreen fade (`screen_fade_alpha`), runs
+  `ui_elements_update_and_render`, calls `perk_prompt_update_and_render` (`0x00403550`) (perk prompt), and
   renders the UI cursor.
 
-## Gameplay render pass (gameplay_render_world / FUN_00405960)
+## Gameplay render pass (gameplay_render_world / 0x00405960)
 
 Order of major passes:
 
-1) `fx_queue_render` (`FUN_00427920`)
-2) `terrain_render` (`FUN_004188a0`) (terrain/backbuffer blit)
-3) `player_render_overlays` (`FUN_00428390`) for players with
-   `player_health` (`DAT_004908d4`) <= 0
+1) `fx_queue_render` (`0x00427920`)
+2) `terrain_render` (`0x004188a0`) (terrain/backbuffer blit)
+3) `player_render_overlays` (`0x00428390`) for players with
+   `player_health` (`0x004908d4`) <= 0
 
-4) `creature_render_all` (`FUN_00419680`)
-5) `player_render_overlays` for players with `player_health` (`DAT_004908d4`) > 0
-6) `projectile_render` (`FUN_00422c70`)
-7) `bonus_render` (`FUN_004295f0`)
-8) `grim_draw_fullscreen_color` fade when `DAT_00487264 > 0`
+4) `creature_render_all` (`0x00419680`)
+5) `player_render_overlays` for players with `player_health` (`0x004908d4`) > 0
+6) `projectile_render` (`0x00422c70`)
+7) `bonus_render` (`0x004295f0`)
+8) `grim_draw_fullscreen_color` fade when `screen_fade_alpha > 0`
 
 Notes:
 
-- `DAT_004aaf0c` is used as the player index during the two overlay passes.
-- `ui_transition_alpha` (`DAT_00487278`) is the frame alpha used by multiple render paths.
+- `render_overlay_player_index` is used as the player index during the two overlay passes.
+- `ui_transition_alpha` (`0x00487278`) is the frame alpha used by multiple render paths.
 - `projectile_render` binds both `projectile_texture` (`0x0048f7d4`) and
   `projectile_bullet_texture` (`0x0049bb30`, `bullet_i`) for distinct projectile sprite passes.
 - `gameplay_transition_latch` (`0x00487241`) is set on gameplay/Typ-o gameplay
@@ -44,9 +44,9 @@ Notes:
 - `player_overlay_suppressed_latch` (`0x0048727c`) is an additional hard gate
   for `player_render_overlays` during highscore-return/result-flow transitions.
 
-## HUD render (ui_render_hud / FUN_0041aed0)
+## HUD render (ui_render_hud / 0x0041aed0)
 
-The in-game HUD render is gated by `demo_mode_active` (`DAT_0048700d`) and is called from the main
+The in-game HUD render is gated by `demo_mode_active` (`0x0048700d`) and is called from the main
 UI pass (`hud_update_and_render`). It binds `ui_wicons` and uses `grim_set_sub_rect` for
 weapon icons, along with health/score overlays.
 
@@ -74,7 +74,7 @@ High-score card divider rendering uses a second RGBA block:
   `ui_text_input_render`, then consumed by `highscore_card_draw_horizontal_divider`
   and `highscore_card_draw_vertical_divider`.
 
-## Terrain generation (terrain_generate / FUN_00417b80)
+## Terrain generation (terrain_generate / 0x00417b80)
 
 `terrain_generate` renders the terrain texture into a render target and selects
 its base texture index from a per-level descriptor.
@@ -104,8 +104,8 @@ matching the quest metadata and `terrain_ids_for` logic.
 ## UI overlays
 
 `player_render_overlays` draws per-player indicators (aim reticles, shields,
-weapon indicators). It is gated by `game_state_id` (`DAT_00487270`) values (not drawn in modal
-states like `0x14/0x16`), `ui_transition_alpha` (`DAT_00487278`) (transition alpha),
+weapon indicators). It is gated by `game_state_id` (`0x00487270`) values (not drawn in modal
+states like `0x14/0x16`), `ui_transition_alpha` (`0x00487278`) (transition alpha),
 and `player_overlay_suppressed_latch` (`0x0048727c`).
 
 The same function also checks `player_overlay_auto_target_line_perk_id` (`0x004c2bcc`) via
@@ -127,7 +127,7 @@ current `player_state.auto_target`. In `perk_metadata_init`, this selector defau
 - Torso: `player_overlay_torso_uv8`, which is **`effect_uv8 + 16`** (frames `16–30`, empty `31`)
 
 This table is not filled separately; it aliases into `effect_uv8`, which is populated by
-`effect_uv_tables_init` (`FUN_0041fed0`), called during `game_startup_init_prelude` (`FUN_0042b090`).
+`effect_uv_tables_init` (`0x0041fed0`), called during `game_startup_init_prelude` (`0x0042b090`).
 
 Runtime trace (`artifacts/frida/share/player_sprite_trace.jsonl`) shows paired draw calls with indices
 `(0,16) … (14,30)`, and the trooper atlas (`game/trooper.png`) has fully empty frames at 15 and 31,

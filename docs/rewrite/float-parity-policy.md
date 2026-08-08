@@ -50,10 +50,10 @@ newly-ported expression.
 - CRT startup explicitly sets x87 precision-control to 53-bit (`PC_53`):
   - `_start` at `0x00463026` calls `crt_run_initializers` at instruction
     `0x004630cb`.
-  - `crt_run_initializers` at `0x00462eb0` invokes `FUN_00460cb8` through
-    `data_47b160` at `0x0047b160`.
-  - `FUN_00460cb8` calls `sub_4636e7`, which returns
-    `sub_469e81(0x10000, 0x30000)` (`0x00460cb8`, `0x00460cc7`, and
+  - `crt_run_initializers` at `0x00462eb0` invokes `crt_fpmath` through
+    `crt_fp_init_hook` at `0x0047b160`.
+  - `crt_fpmath` calls `crt_set_default_precision`, which returns
+    `crt_controlfp(0x10000, 0x30000)` (`0x00460cb8`, `0x00460cc7`, and
     `0x004636f8`).
   - In the CRT mapping helper, `arg1 & 0x30000 == 0x10000` sets CW precision
     bits to `0x200` (53-bit mode) around `0x00469f8e`–`0x00469f9e`.

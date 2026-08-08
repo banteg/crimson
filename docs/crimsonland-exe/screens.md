@@ -8,10 +8,10 @@ This page groups full-screen or modal flows that have their own update loops.
 
 ## Game over / high score entry (game_over_screen_update)
 
-- Used for non-quest modes (state `game_state_id` (`DAT_00487270`) == `7`).
+- Used for non-quest modes (state `game_state_id` (`0x00487270`) == `7`).
 - Handles high score entry, shows stats, and routes back to menu.
-- Plays exclusive SFX on entry when `game_state_pending` (`DAT_00487274`) == `0x19` and transition flag
-  `ui_transition_direction` (`DAT_0048724c`) is set.
+- Plays exclusive SFX on entry when `game_state_pending` (`0x00487274`) == `0x19` and transition flag
+  `ui_transition_direction` (`0x0048724c`) is set.
 - Uses `game_over_name_input_buffer` (`0x0048256c`) as the editable player-name
   buffer for `ui_text_input_update`.
 - Companion text-input state globals:
@@ -33,7 +33,7 @@ This page groups full-screen or modal flows that have their own update loops.
   `game_over_main_menu_button` (`0x00482538`), and
   `game_over_name_submit_button` (`0x004825a8`).
 
-## Quest results (quest_results_screen_update / FUN_00410d20)
+## Quest results (quest_results_screen_update / 0x00410d20)
 
 Renders the post-mission summary and buttons:
 
@@ -44,22 +44,22 @@ Renders the post-mission summary and buttons:
 
 Recovered staged-reveal globals:
 
-- `quest_results_final_time_ms` (`DAT_0048270c`) is computed as
+- `quest_results_final_time_ms` (`0x0048270c`) is computed as
   `quest_spawn_timeline + perk_pending_count * -1000 - quest_results_health_bonus_ms`.
 - `quest_results_health_bonus_ms` truncates player 0's health, stores the
   truncated float back to player 0, and contributes `trunc(health) * 50` ms.
   When `config_player_count == 2`, player 1 additionally contributes
   `trunc(health * 50)` ms; its health is not rewritten.
-- `quest_results_reveal_base_time_ms` (`DAT_00482710`) animates up to `quest_spawn_timeline`.
-- `quest_results_reveal_health_bonus_ms` (`DAT_00482714`) animates up to
+- `quest_results_reveal_base_time_ms` (`0x00482710`) animates up to `quest_spawn_timeline`.
+- `quest_results_reveal_health_bonus_ms` (`0x00482714`) animates up to
   `quest_results_health_bonus_ms` (displayed as a subtraction).
-- `quest_results_reveal_perk_bonus_s` (`DAT_00482718`) animates per-second bonus count from
+- `quest_results_reveal_perk_bonus_s` (`0x00482718`) animates per-second bonus count from
   `perk_pending_count`.
-- `quest_results_reveal_total_time_ms` (`DAT_00482720`) is the running total shown on the final line.
-- `quest_results_reveal_step_timer_ms` (`DAT_00482724`) drives reveal pacing (`700`, `40`, `150`,
+- `quest_results_reveal_total_time_ms` (`0x00482720`) is the running total shown on the final line.
+- `quest_results_reveal_step_timer_ms` (`0x00482724`) drives reveal pacing (`700`, `40`, `150`,
   `300`, `1000`, `50` ms windows).
 - `quest_results_unlock_weapon_id` / `quest_results_unlock_perk_id`
-  (`DAT_00482700` / `DAT_00482704`) gate the unlock text rows.
+  (`quest_results_unlock_weapon_id` / `quest_results_unlock_perk_id`) gate the unlock text rows.
 - Name entry uses `quest_results_name_input_buffer` (`0x004825dc`) as the
   temporary UI text-input storage before writing `highscore_active_record`.
 - Companion text-input state globals:
@@ -81,7 +81,7 @@ Recovered staged-reveal globals:
 
 ## Quest failed screen (quest_failed_screen_update)
 
-- Used when the player fails a quest (state `game_state_id` (`DAT_00487270`) == `0xc`).
+- Used when the player fails a quest (state `game_state_id` (`0x00487270`) == `0xc`).
 - Renders failure text and retry options.
 - Note: the original string list includes a typo ("Persistence will be rewared.").
   The rewrite shows "rewarded" by default and keeps native wording when
@@ -95,7 +95,7 @@ Recovered staged-reveal globals:
 - `quest_failed_highscore_rank_index` (`0x00482604`) snapshots
   `highscore_rank_index()` on entry for top-100 flow gating.
 
-## Game completed screen (game_update_victory_screen / FUN_00406350)
+## Game completed screen (game_update_victory_screen / 0x00406350)
 
 - Post-completion routing screen that offers mode shortcuts and a return to main
   menu.
@@ -135,7 +135,7 @@ Recovered staged-reveal globals:
 - `credits_scroll_line_start_index` / `credits_scroll_line_end_index`
   (`0x00481184` / `0x00481180`) define the visible line window each frame.
 
-## Demo purchase screen (demo_purchase_screen_update / FUN_0040b740)
+## Demo purchase screen (demo_purchase_screen_update / 0x0040b740)
 
 - Full-screen upsell flow.
 - Renders the feature list, shows the logo/mockup, and opens the purchase URL
@@ -149,7 +149,7 @@ Recovered staged-reveal globals:
 - **Rewrite note:** implemented in the Python rewrite for parity (the purchase
   URL is legacy).
 
-## Demo trial overlay (demo_trial_overlay_render / FUN_004047c0)
+## Demo trial overlay (demo_trial_overlay_render / 0x004047c0)
 
 - Draws the demo warning panel with remaining trial time and upgrade copy.
 - Updated from the main frame loop when the demo timer is active.
@@ -181,7 +181,7 @@ Use Frida to log whenever the overlay is actually rendered:
 - State `0x14` is the mods browser/menu flow (launch list + fallback target).
   The state callback in `game_state_set` is `mods_menu_update`.
 - State `0x16` is the active plugin runtime flow driven by `plugin_interface_ptr`
-  (`DAT_004824d4`).
+  (`plugin_interface_ptr`).
 - `plugin_runtime_update_and_render` owns the frame dispatch for `0x16` and
   routes back to `0x14` when the plugin exits or is unavailable.
 - Runtime latches: `plugin_runtime_needs_init` gates one-shot plugin `Init()`,

@@ -38,7 +38,7 @@ u poi(@esp) L20
 ```
 
 3) Inspect the arguments (board pointer + outputs)
-The signature looks like: credits_secret_match3_find (`FUN_0040f400`) (int *board, int *out_idx, char *out_dir)
+The signature looks like: credits_secret_match3_find (`0x0040f400`) (int *board, int *out_idx, char *out_dir)
 
 ```
 dd @esp+4 L3      ; args
@@ -221,7 +221,7 @@ secret lines.
 One-shot write watch on the unlock flag:
 
 ```
-ba w1 crimsonland+0x811c4 ".printf \"[credits] Secret unlock write (DAT_004811c4)\\n\"; k; r; dd crimsonland+0x811c4 L1; dd crimsonland+0x811bc L1; dd crimsonland+0x80980 L40; gc"
+ba w1 crimsonland+0x811c4 ".printf \"[credits] Secret unlock write (credits_secret_unlock_flag)\\n\"; k; r; dd crimsonland+0x811c4 L1; dd crimsonland+0x811bc L1; dd crimsonland+0x80980 L40; gc"
 ```
 
 ### Captured
@@ -229,8 +229,8 @@ ba w1 crimsonland+0x811c4 ".printf \"[credits] Secret unlock write (DAT_004811c4
 - **Hit location:** `EIP=0x0040dda7` (`credits_screen_update` + `0x5a7`)
 - **Instruction:** `mov edx, dword ptr [crimsonland+0x80984 + eax*8]`
 - **Registers:** `EAX=0x54` (line index)
-- **Unlock flag:** `DAT_004811c4 = 1`
-- **Secret base index:** `DAT_004811bc = 0x54`
+- **Unlock flag:** `credits_secret_unlock_flag = 1`
+- **Secret base index:** `credits_secret_line_base_index = 0x54`
 
 ### Secret line table dump
 
@@ -258,7 +258,7 @@ lines beyond `0x5D`.
 ### Interpretation
 
 - The Secret button unlock is driven by the **credits line scan** in `credits_screen_update`, not by
-  a separate hidden state. Once all required lines are flagged, `DAT_004811c4` is set and the secret
+  a separate hidden state. Once all required lines are flagged, `credits_secret_unlock_flag` is set and the secret
   lines are injected at index `0x54`.
 
 ## Session 4 (2026-01-19) - console tilde hotkey

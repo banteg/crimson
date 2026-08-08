@@ -216,14 +216,14 @@ Measured timing from the same trace:
 - Intro starts ~20.4s after process start and plays for ~12.7s.
 - Theme starts immediately after intro mute (same frame).
 
-Additional `sfx_mute_all` calls with return addresses in `FUN_00447420`
+Additional `sfx_mute_all` calls with return addresses in `ui_menu_click_back_contextual`
 (`0x00447420`) occur later during UI transitions (menu flow), not the boot
 sequence.
 
 ## 8. Main Loop
 
 The game enters the main loop with `game_state_id = 0` (Main Menu). The per-frame
-input/hotkey pass here is `game_frame_update` (`FUN_0040c1c0`).
+input/hotkey pass here is `game_frame_update` (`0x0040c1c0`).
 
 ## Decompile Notes: Post-logo render setup (early draw pipeline)
 

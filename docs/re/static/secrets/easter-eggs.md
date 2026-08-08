@@ -96,15 +96,15 @@ loads a hidden texture pair:
   - `11/8` (November 8)
   - `12/18` (December 18)
 - on match:
-  - set `DAT_004aaed8 = 1`
+  - set `seasonal_balloon_load_active = 1`
   - call `texture_get_or_load("balloon", "balloon.tga")`
-- then clear `DAT_004aaed8 = 0`
+- then clear `seasonal_balloon_load_active = 0`
 
 Evidence anchor: `game_startup_init_prelude` at `0x0042b090`, instruction
 `0x0042b10a`.
 
 Cross-reference result (v1.9.93): all in-binary references to the `balloon`
-string literals and `DAT_004aaed8` resolve back to `game_startup_init_prelude`
+string literals and `seasonal_balloon_load_active` resolve back to `game_startup_init_prelude`
 only. No other decompiled function in this build references `"balloon"` as a
 texture lookup key.
 
@@ -134,8 +134,8 @@ not a mapped in-binary runtime draw/use path.
   until the puzzle is solved.
 
 - **Runtime capture (2026-01-19)**: when the last required line is flagged, the unlock flag
-  `DAT_004811c4` is set and the secret lines are injected into the credits line table at base index
-  `DAT_004811bc = 0x54`. The injected lines (all flags `0x4`) are:
+  `credits_secret_unlock_flag` is set and the secret lines are injected into the credits line table at base index
+  `credits_secret_line_base_index = 0x54`. The injected lines (all flags `0x4`) are:
 
   - "Inside Dead Let Mighty Blood"
   - "Do Firepower See Mark Of"
@@ -279,7 +279,7 @@ All of the hint strings in the cluster are printed from a single guarded block i
   - "First Blood" is still interpretive wording; runtime logic is
     `survival_recent_death_count == 3` using the first three stored positions.
 - Are secret weapon unlocks stored in `game.cfg`, or derived from other state (weapon table flags, globals)?
-  - **Partial Answer:** `quest_database_init` initializes the `quest_unlock_weapon_id` array with static values (e.g., `quest_unlock_weapon_id = 2` for the shotgun). A "secret weapon" unlock would likely require writing to this array (`DAT_00484754`) or the `weapon_table` availability flags directly.
+  - **Partial Answer:** `quest_database_init` initializes the `quest_unlock_weapon_id` array with static values (e.g., `quest_unlock_weapon_id = 2` for the shotgun). A "secret weapon" unlock would likely require writing to this array (`0x00484754`) or the `weapon_table` availability flags directly.
 - Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
 - Are there any **out-of-main-exe** consumers (e.g., other modules/builds) for the startup `balloon.tga` preload gate?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?

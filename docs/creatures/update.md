@@ -6,7 +6,7 @@ tags:
 # Creature runtime contract (creature_update_all)
 
 This page defines the **minimum runtime contract** we need from `creature_update_all`
-(`crimsonland.exe` `FUN_00426220`) to unblock **Survival** in the rewrite.
+(`crimsonland.exe` `creature_update_all`) to unblock **Survival** in the rewrite.
 
 **Source of truth:** the decompiles (Ghidra/IDA/Binary Ninja). Code under `src/` is our
 reimplementation and may be wrong; use it as a porting aid, not an authority.

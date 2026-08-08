@@ -3,7 +3,7 @@ tags:
   - status-analysis
 ---
 
-# Creature spawning (creature_spawn_template / FUN_00430af0)
+# Creature spawning (creature_spawn_template / 0x00430af0)
 
 `creature_spawn_template(template_id, pos_xy, heading)` is the primary translation layer from
 "spawn ids" (quests, tutorial timelines, and other scripted spawners) to initialized `creature_t`
@@ -64,7 +64,7 @@ claim that the records are byte-for-byte identical:
   - RNG stream: `crt_rand()` (MSVCRT `rand()`).
   - `demo_mode_active`: skips the spawn burst effect when nonzero.
   - `terrain_texture_width/terrain_texture_height`: bounds check for the burst effect.
-  - `config_blob.hardcore` and `DAT_00487194` (difficulty level): final stat modifiers.
+  - `config_blob.hardcore` and `quest_fail_retry_count` (difficulty level): final stat modifiers.
 
 ## Outputs and side effects
 
@@ -98,7 +98,7 @@ Large switch/if-chain on `template_id` assigns template-specific constants and b
 - Formation spawners: allocate N linked children and arrange them using circular offsets
   (`cos/sin`) and AI link modes (e.g. `ai_mode = 3` with `link_index = parent`).
 
-- Spawn-slot spawners: allocate a slot (`FUN_00430ad0()`), store the slot index in `link_index`,
+- Spawn-slot spawners: allocate a slot (`creature_spawn_slot_alloc()`), store the slot index in `link_index`,
   and configure `creature_spawn_slot_*` arrays (timer/count/limit/interval/template/owner).
 
 ### 3) Tail modifiers (shared end-of-function)
@@ -118,11 +118,11 @@ Applied after the template switch to the returned creature:
 - Difficulty / hardcore scaling:
   - Non-hardcore:
     - For flag `0x4` spawners: `spawn_slot_interval += 0.2`.
-    - If `DAT_00487194 > 0`, scales reward/speed/contact/health, and for flag `0x4` spawners
+    - If `quest_fail_retry_count > 0`, scales reward/speed/contact/health, and for flag `0x4` spawners
       adds `min(3.0, difficulty * 0.35)` to `spawn_slot_interval`.
 
   - Hardcore:
-    - Clears difficulty (`DAT_00487194 = 0`).
+    - Clears difficulty (`quest_fail_retry_count = 0`).
     - Buffs speed/contact/health.
     - For flag `0x4` spawners: `spawn_slot_interval -= 0.2` clamped to `>= 0.1`.
 
@@ -299,38 +299,38 @@ Notes:
 
 `template_id` is supplied by a mix of scripted spawners and data tables:
 
-- `demo_setup_variant_0` (`FUN_00402ed0`), `demo_setup_variant_2` (`FUN_00402fe0`),
-  `demo_setup_variant_1` (`FUN_004030f0`), `demo_setup_variant_3` (`FUN_00403250`):
-  mode setup helpers called from `demo_mode_start` (`FUN_00403390`) (hard‑coded spawn ids like `0x34`, `0x35`,
+- `demo_setup_variant_0` (`0x00402ed0`), `demo_setup_variant_2` (`0x00402fe0`),
+  `demo_setup_variant_1` (`0x004030f0`), `demo_setup_variant_3` (`0x00403250`):
+  mode setup helpers called from `demo_mode_start` (`0x00403390`) (hard‑coded spawn ids like `0x34`, `0x35`,
   `0x38`, `0x41`, `0x24`, `0x25`).
 
-- `survival_update` (`FUN_00407cd0`): milestone spawns using `0x12`, `0x2b`,
+- `survival_update` (`0x00407cd0`): milestone spawns using `0x12`, `0x2b`,
   `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`. Regular enemy waves are spawned via
-  `survival_spawn_creature` (`FUN_00407510`), which selects type/stats based on
+  `survival_spawn_creature` (`0x00407510`), which selects type/stats based on
   `player_experience` (not a spawn id). Python models: `advance_survival_spawn_stage`,
   `tick_survival_wave_spawns`, `build_survival_spawn_creature`.
 
-- Rush mode (`rush_mode_update`, `FUN_004072b0`): spawns edge waves via `creature_spawn`
+- Rush mode (`rush_mode_update`, `0x004072b0`): spawns edge waves via `creature_spawn`
   (type ids `2`/`3`), not `creature_spawn_template`. Python models: `tick_rush_mode_spawns`,
   `build_rush_mode_spawn_creature`.
 
-- Tutorial timeline (`tutorial_timeline_update`, `FUN_00408990`): scripted spawns using `0x24`, `0x26`,
+- Tutorial timeline (`tutorial_timeline_update`, `0x00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`. Python models: `build_tutorial_stage3_fire_spawns`,
   `build_tutorial_stage4_clear_spawns`, `build_tutorial_stage5_repeat_spawns`,
   `build_tutorial_stage6_perks_done_spawns`.
 
-- Quest/timeline spawner (`quest_spawn_timeline_update`, `FUN_00434250`): pulls spawn ids from the
-  table at `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`. Python model:
+- Quest/timeline spawner (`quest_spawn_timeline_update`, `0x00434250`): pulls spawn ids from the
+  table at `quest_spawn_table` (`pfVar4[3]`) with counts in `pfVar4[5]`. Python model:
   `crimson.quests.timeline.tick_quest_spawn_timeline` (see also `tick_quest_mode_spawns` for the
   `quest_mode_update` gating).
 
-- AI subspawns (`creature_update_all`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
-  which is seeded for some template ids inside `creature_spawn_template` (`FUN_00430af0`).
+- AI subspawns (`creature_update_all`): periodic spawns using `&creature_spawn_slot_template + iVar6 * 0x18`,
+  which is seeded for some template ids inside `creature_spawn_template` (`0x00430af0`).
 
-## Quest spawn table (DAT_004857a8)
+## Quest spawn table (quest_spawn_table)
 
-Quests populate a fixed table at `DAT_004857a8` (entry size `0x18`, count in
-`DAT_00482b08`). `quest_spawn_timeline_update` (`FUN_00434250`) walks the table and
+Quests populate a fixed table at `quest_spawn_table` (entry size `0x18`, count in
+`quest_spawn_count`). `quest_spawn_timeline_update` (`0x00434250`) walks the table and
 spawns entries whose trigger time has elapsed.
 
 Entry layout (dwords):
@@ -341,20 +341,20 @@ Entry layout (dwords):
 | 0x04 | y | base spawn Y. |
 | 0x08 | heading | passed as `heading` to `creature_spawn_template`. |
 | 0x0c | spawn id | cast to int and passed as `template_id` to `creature_spawn_template`. |
-| 0x10 | trigger time | compared against `DAT_00486fd0` (quest clock). |
+| 0x10 | trigger time | compared against `quest_spawn_timeline` (quest clock). |
 | 0x14 | count | number of spawns in the group; decremented to 0 after firing. |
 
 Notes:
 
-- `quest_start_selected` (`FUN_0043a790`) chooses a quest builder from the table at
-  `DAT_00484730`. The function pointer lives at `&DAT_0048474c`; when null, it
-  falls back to `quest_build_fallback` (`FUN_004343e0`) (two entries with spawn id
+- `quest_start_selected` (`0x0043a790`) chooses a quest builder from the table at
+  `quest_selected_meta`. The function pointer lives at `&quest_selected_builder`; when null, it
+  falls back to `quest_build_fallback` (`0x004343e0`) (two entries with spawn id
   `0x40`, counts 10/0x14, trigger times
   500/5000).
 
 - `quest_build_zombie_time` (`0x00437d70`), `quest_build_lizard_raze` (`0x00438840`), and
   `quest_build_surrounded_by_reptiles` (`0x00438940`) are examples of quest builders that write
-  multiple `DAT_004857a8` entries with varying spawn ids and timings.
+  multiple `quest_spawn_table` entries with varying spawn ids and timings.
 
 ## Repo references
 

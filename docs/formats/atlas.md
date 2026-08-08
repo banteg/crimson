@@ -37,7 +37,7 @@ The renderer later uses these tables to build quads:
 - `u1 = u0 + step`, `v1 = v0 + step`
 ## Sprite table (engine‑hardcoded)
 
-`effect_select_texture` (`FUN_0042e0a0`) reads a table at **VA 0x004755F0**.
+`effect_select_texture` (`0x0042e0a0`) reads a table at **VA 0x004755F0**.
 Each entry is `(cell_code, group_id)`; `cell_code` maps to grid size:
 
 - `0x80 → 2`, `0x40 → 4`, `0x20 → 8`, `0x10 → 16`.
@@ -107,12 +107,12 @@ The engine uses **two patterns**:
 1) **Direct grid selection**: calls the renderer with an explicit grid size
    (`+0x104` with first arg = 2/4/8) and a frame index.
 
-2) **Sprite table selection**: calls `effect_select_texture` (`FUN_0042e0a0`, `index`) which looks up the
+2) **Sprite table selection**: calls `effect_select_texture` (`0x0042e0a0`, `index`) which looks up the
    grid size from the table above and passes that to the renderer.
 
 ### Known assets and grids
 
-- `artifacts/assets/crimson/game/projs.png` (`projectile_texture` / `DAT_0048f7d4`)
+- `artifacts/assets/crimson/game/projs.png` (`projectile_texture` / `0x0048f7d4`)
   - Uses **grid=4** for frames `2`, `3`, and `6`.
   - Uses **grid=2** frame `0` for some effects.
   - Several projectile/beam effects draw **repeated quads** along a vector
@@ -121,11 +121,11 @@ The engine uses **two patterns**:
   - One beam path calls `set_atlas_frame(4,2,<dir>,<dir>)` with extra vector
     pointers; this likely orients the UVs for directional beam segments.
 
-- `artifacts/assets/crimson/game/bonuses.png` (DAT_0048f7f0)
+- `artifacts/assets/crimson/game/bonuses.png` (bonus_texture)
   - Uses **sprite table index 0x10** (call at `:18550`), which maps to **grid=4**.
   - Sheet is 128×128 → 32×32 cells.
 
-- `artifacts/assets/crimson/game/particles.png` (DAT_0048f7ec)
+- `artifacts/assets/crimson/game/particles.png` (particles_texture)
   - Uses **grid=8** for the main particle system (see `+0x104(8, …)` at `:9704`).
   - Uses **sprite table indices 0x10, 0x0e, 0x0d, 0x0c** for UI/overlay effects
     (calls at `:996?`, `:16217`, `:16854`, `:18788`, `:18824`). These indices map to **grid=4**.
@@ -134,7 +134,7 @@ The engine uses **two patterns**:
     (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`
     (the sprite itself resembles a shell casing).
 
-- `artifacts/assets/crimson/ui/ui_wicons.png` (`ui_weapon_icons_texture` / `DAT_0048f7e4`)
+- `artifacts/assets/crimson/ui/ui_wicons.png` (`ui_weapon_icons_texture` / `0x0048f7e4`)
   - Uses **grid=8**, but rendered via `grim_set_sub_rect(8, 2, 1, frame)`.
   - This implies each weapon icon spans **2×1 cells** (wider than a single cell).
 
@@ -165,7 +165,7 @@ the exact grid2 index is still unclear from the decompile.
 
   - Drawn via **grid=8** (`+0x104(8, …)` in the enemy render path around `:9704`).
   - Per‑enemy base frame offsets are stored in the enemy data struct
-    (e.g. `_DAT_00482760 = 0x20`, `_DAT_004827a4 = 0x10`, etc).
+    (e.g. `creature_type_base_frame = 0x20`, `_DAT_004827a4 = 0x10`, etc).
 ## Replicating the atlas cutting
 
 `src/crimson/atlas.py` provides the same slicing math used by the engine:
@@ -249,18 +249,18 @@ each frame.
 ## Enemy animation slices (grid 8)
 
 Enemies are rendered from 8×8 sheets (`+0x104(8, frame)`) with two selection
-paths in `creature_render_type` (`FUN_00418b60`):
+paths in `creature_render_type` (`0x00418b60`):
 
 - **32‑frame strip**: `frame = floor(anim_phase)` (0..31), optionally mirrored
-  if the type table flag `(&DAT_00482768)[type * 0x44] & 1` is set. If the
+  if the type table flag `(&creature_type_anim_flags)[type * 0x44] & 1` is set. If the
   per‑creature flags include `0x10`, the frame offset shifts by `+0x20`
   (indices 32..63).
 
 - **8‑frame ping‑pong strip**: `frame = base + 0x10 + pingpong(floor(anim_phase))`
-  where `base = *(int *)(&DAT_00482760 + type * 0x44)` and ping‑pong folds a
+  where `base = *(int *)(&creature_type_base_frame + type * 0x44)` and ping‑pong folds a
   0..15 phase into 0..7..0.
 
-Examples from the type init table (`gameplay_reset_state`, `FUN_00412dc0`):
+Examples from the type init table (`gameplay_reset_state`, `0x00412dc0`):
 
 - Zombie: base `0x20`
 - Lizard: base `0x10`
@@ -268,16 +268,16 @@ Examples from the type init table (`gameplay_reset_state`, `FUN_00412dc0`):
 - Alien: base `0x20`
 
 The animation phase itself lives at creature offset `0x94` and is advanced in
-`creature_update_all` (`FUN_00426220`) using a per‑type rate (`&DAT_0048275c + type * 0x44`).
+`creature_update_all` (`0x00426220`) using a per‑type rate (`&creature_type_anim_rate + type * 0x44`).
 
 These sheets often pack **multiple animations** for the same type (long strip
 plus short ping‑pong strip), and in some cases **multiple type variants** share
 one sheet by selecting different base offsets.
 
-### Enemy type table (DAT_00482728)
+### Enemy type table (creature_type_table)
 
-The render helper indexes a 0x44‑byte type table starting at `DAT_00482728`.
-Known entries from `gameplay_reset_state` (`FUN_00412dc0`):
+The render helper indexes a 0x44‑byte type table starting at `creature_type_table`.
+Known entries from `gameplay_reset_state` (`0x00412dc0`):
 
 | Type id | Texture | Base (short strip) | Anim rate (hex) | Mirror flag | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -286,16 +286,16 @@ Known entries from `gameplay_reset_state` (`FUN_00412dc0`):
 | 2 | `alien.png` | `0x20` | `0x3faccccd` | 0 | alt strip via creature flag `0x10` |
 | 3 | `spider_sp1.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482834 = 1`) |
 | 4 | `spider_sp2.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482878 = 1`) |
-| 5 | `trooper.png` | unknown | unknown | unknown | not initialized in `gameplay_reset_state` (`FUN_00412dc0`) |
+| 5 | `trooper.png` | unknown | unknown | unknown | not initialized in `gameplay_reset_state` (`0x00412dc0`) |
 
 ### Creature flags that select animation strips
 
-Creature flags are written in the spawn helper `creature_spawn_template` (`FUN_00430af0`) and control which
-strip is used in `creature_render_type` (`FUN_00418b60`).
+Creature flags are written in the spawn helper `creature_spawn_template` (`0x00430af0`) and control which
+strip is used in `creature_render_type` (`0x00418b60`).
 
 Examples:
 
-- `param_1 == 0x3a` sets `DAT_0049bfc4 = 0x10` (forces the `+0x20` strip).
-- Many IDs (e.g. `0x7`, `0x8`, `0x9`, `0x0b`) set `DAT_0049bfc4 = 0x4` (short strip).
-- `param_1 == 0` sets `DAT_0049bfc4 = 0x44`, which still uses the long strip
+- `param_1 == 0x3a` sets `creature_flags = 0x10` (forces the `+0x20` strip).
+- Many IDs (e.g. `0x7`, `0x8`, `0x9`, `0x0b`) set `creature_flags = 0x4` (short strip).
+- `param_1 == 0` sets `creature_flags = 0x44`, which still uses the long strip
   because bit `0x40` overrides the short‑strip branch.

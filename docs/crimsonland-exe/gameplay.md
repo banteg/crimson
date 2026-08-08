@@ -7,10 +7,10 @@ tags:
 This page captures high-level gameplay glue that is not already covered by the
 standalone data tables.
 
-## Player update (player_update / FUN_004136b0)
+## Player update (player_update / 0x004136b0)
 
 `player_update` runs once per player during the main gameplay loop when
-`game_state_id` (`DAT_00487270`) == `9`. It handles:
+`game_state_id` (`0x00487270`) == `9`. It handles:
 
 - Per-player movement and aim updates.
 - Weapon firing and reload timers.
@@ -20,7 +20,7 @@ standalone data tables.
 ### Per-player runtime fields (partial)
 
 These are the most important per-player arrays that bridge weapons, perks, and
-bonuses (stride `0xd8`, base `player_health` / `DAT_004908d4`). See
+bonuses (stride `0xd8`, base `player_health` / `0x004908d4`). See
 [Player struct](../structs/player.md) for offsets and related fields.
 
 | Offset | Symbol | Meaning | Source / Notes |
@@ -53,36 +53,36 @@ Global bonus timers used by `player_update` and the main loop:
 
 ### Recovered gameplay helper globals
 
-- `player_alt_weapon_swap_cooldown_ms` (`DAT_0048719c`)
+- `player_alt_weapon_swap_cooldown_ms` (`0x0048719c`)
   - Reload-key debounce for Alternate Weapon swapping (`200ms` lockout per swap).
-- `perk_jinxed_proc_timer_s` (`_DAT_004aaf1c`)
+- `perk_jinxed_proc_timer_s` (`0x004aaf1c`)
   - Jinxed perk proc timer reseeded in `perks_update_effects`.
 - `perk_man_bomb_trigger_interval_s` / `perk_fire_cough_trigger_interval_s` /
-  `perk_hot_tempered_trigger_interval_s` (`_DAT_00473310/14/18`)
+  `perk_hot_tempered_trigger_interval_s` (`perk_man_bomb_trigger_interval_s/14/18`)
   - Trigger thresholds used against `player_man_bomb_timer`, `player_fire_cough_timer`,
     and `player_hot_tempered_timer`.
-- `survival_reward_weapon_guard_id` (`DAT_00486fb8`)
+- `survival_reward_weapon_guard_id` (`0x00486fb8`)
   - Guard id used by Survival handout logic (`0x18`/`0x19`) and checked during world render to
     revoke temporary handout weapons.
-- `quest_spawn_stall_timer_ms` (`DAT_004c3654`)
+- `quest_spawn_stall_timer_ms` (`0x004c3654`)
   - Quest fallback timer in `quest_spawn_timeline_update` when creatures remain active.
-- `perk_lean_mean_exp_tick_timer_s` (`_DAT_004808a4`)
+- `perk_lean_mean_exp_tick_timer_s` (`0x004808a4`)
   - Lean Mean Exp Machine cadence timer; `perks_update_effects` resets it to `0.25s` on each tick.
-- `perk_doctor_target_creature_id` (`DAT_00487268`)
+- `perk_doctor_target_creature_id` (`0x00487268`)
   - Cached Doctor target creature id for the HUD target-health overlay (`-1` when inactive).
-- `quest_stage_banner_timer_ms` (`DAT_00487244`)
+- `quest_stage_banner_timer_ms` (`0x00487244`)
   - Quest stage title-card fade timer (incremented in `quest_mode_update`, reset on quest start).
 - `player_spread_damping_scalar` (`0x00473a40`)
   - Shared spread-recovery multiplier used by both `player_update` and
     `player_fire_weapon` (eased/clamped between `0.3` and `1.0`).
-- `demo_trial_overlay_active` / `demo_trial_overlay_alpha_ms` (`DAT_00480850` / `DAT_00480898`)
+- `demo_trial_overlay_active` / `demo_trial_overlay_alpha_ms` (`0x00480850` / `0x00480898`)
   - Demo trial warning overlay latch + fade accumulator (`0..1000`) around `demo_trial_overlay_render`.
-- `pause_keybind_help_alpha_ms` (`DAT_00487284`)
+- `pause_keybind_help_alpha_ms` (`0x00487284`)
   - Pause keybind-help overlay fade accumulator (`0..1000`) used by `ui_render_keybind_help`.
 - `player_overlay_suppressed_latch` (`0x0048727c`)
   - Overlay suppression gate checked by `player_render_overlays`; set on
     highscore-return path and cleared by `gameplay_reset_state`.
-- `time_played_ms` (`DAT_0048718c`)
+- `time_played_ms` (`0x0048718c`)
   - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
 - `bonus_render_anim_phase` (`0x004aaf5c`)
   - Phase accumulator advanced by `frame_dt * 1.3` in `bonus_render`; drives pickup icon pulse/rotation modulation.
@@ -146,22 +146,22 @@ Recovered bonus label/icon globals used by `bonus_apply`:
 `player_update` owns several perk timers that spawn projectiles or FX when the
 timer crosses its threshold:
 
-- **Man Bomb** (`DAT_004c2c24`): uses `player_man_bomb_timer` (`DAT_00490950`) as a charge timer, then spawns
+- **Man Bomb** (`perk_id_man_bomb`): uses `player_man_bomb_timer` (`0x00490950`) as a charge timer, then spawns
   8 projectiles in a ring (types `0x15/0x16`) and plays a burst SFX.
 
-- **Fire Cough** (`DAT_004c2c2c`): uses `player_fire_cough_timer` (`DAT_00490958`) to periodically spawn a
+- **Fire Cough** (`perk_id_fire_caugh`): uses `player_fire_cough_timer` (`0x00490958`) to periodically spawn a
   `0x2d` fire projectile from the muzzle and a small sprite burst.
 
-- **Hot Tempered** (`DAT_004c2bfc`): uses `player_hot_tempered_timer` (`DAT_0049094c`) to periodically spawn a
+- **Hot Tempered** (`perk_id_hot_tempered`): uses `player_hot_tempered_timer` (`0x0049094c`) to periodically spawn a
   ring of projectiles (`0xb` and `9`).
 
-- **Living Fortress** (`DAT_004c2c28`): increments `player_living_fortress_timer` (`DAT_00490954`) while stationary
+- **Living Fortress** (`perk_id_living_fortress`): increments `player_living_fortress_timer` (`0x00490954`) while stationary
   (clamped to ~30s); likely consumed by damage scaling elsewhere.
 
 ### Weapon spread ("heat") and accuracy recovery
 
 The game models continuous-fire inaccuracy as a per-player "heat" value stored in
-`player_spread_heat` (`DAT_00490b68`, offset `0x294`). [static]
+`player_spread_heat` (`0x00490b68`, offset `0x294`). [static]
 
 - **Decay (recovery):** `player_spread_heat = max(0.01, player_spread_heat - frame_dt * 0.4)`. [static]
   - When Reflex Boost time scaling is active, `frame_dt` is pre-scaled by
@@ -237,38 +237,38 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
 
 ### Reload + spread interactions
 
-- **Sharpshooter** (`DAT_004c2b48`) modifies `player_spread_heat` decay and disables the per-shot heat
+- **Sharpshooter** (`perk_id_sharpshooter`) modifies `player_spread_heat` decay and disables the per-shot heat
   increment (accuracy bloom). [static]
 
-- **Anxious Loader** (`DAT_004c2b90`) reduces the reload timer by `0.05` on each
+- **Anxious Loader** (`perk_id_anxious_loader`) reduces the reload timer by `0.05` on each
   primary press while reloading.
 
-- **Stationary Reloader** (`DAT_004c2c10`) triples reload decay when stationary.
-- **Angry Reloader** (`DAT_004c2c20`) triggers a projectile ring (`0xb`) when the
+- **Stationary Reloader** (`perk_id_stationary_reloader`) triples reload decay when stationary.
+- **Angry Reloader** (`perk_id_angry_reloader`) triggers a projectile ring (`0xb`) when the
   reload timer crosses the 50% mark.
 
-- **Tough Reloader** (`DAT_004c2c30`) halves incoming damage while
-  `player_reload_active` (`DAT_00490b78`) is set.
+- **Tough Reloader** (`perk_id_tough_reloader`) halves incoming damage while
+  `player_reload_active` (`0x00490b78`) is set.
 
 ### Regeneration tick (perks_update_effects)
 
-When the Regeneration perk (`DAT_004c2bb0`) is active, `perks_update_effects` slowly
+When the Regeneration perk (`perk_id_regeneration`) is active, `perks_update_effects` slowly
 increments player health while in the main loop. This is decoupled from
 `player_update` and is skipped in some demo-gated paths.
 
-While Evil Eyes (`DAT_004c2b88`) is active, `perks_update_effects` picks the nearest
+While Evil Eyes (`perk_id_evil_eyes`) is active, `perks_update_effects` picks the nearest
 creature within `12.0` units of `player_aim_x` and stores the index in
-`evil_eyes_target_creature` (`DAT_00490bbc`); `creature_update_all` uses this
+`evil_eyes_target_creature` (`0x00490bbc`); `creature_update_all` uses this
 index to special-case the target.
 
 ### Weapon Power Up cooldown scaling
 
 While `bonus_weapon_power_up_timer > 0` (Weapon Power Up active), `player_update` decays the
-shot cooldown (`player_shot_cooldown` / `DAT_00490b84`) at 1.5x speed.
+shot cooldown (`player_shot_cooldown` / `0x00490b84`) at 1.5x speed.
 
 ### Bonus overrides
 
-- **Fire Bullets** (bonus id 14): while `player_fire_bullets_timer` (`DAT_00490bcc`) > 0, `projectile_spawn`
+- **Fire Bullets** (bonus id 14): while `player_fire_bullets_timer` (`0x00490bcc`) > 0, `projectile_spawn`
   forces player-owned projectiles to type `0x2d` and uses the pellet count from
   the weapon table (`weapon_projectile_pellet_count[weapon_id]`).
   Fire cadence/spread fallback and paired SFX come from:
@@ -291,9 +291,9 @@ See the data tables for concrete values:
 
 Mode-specific updates are dispatched from the main frame loop:
 
-- Survival: `survival_update` (`FUN_00407cd0`)
+- Survival: `survival_update` (`0x00407cd0`)
 - Rush: `rush_mode_update`
 - Quests: `quest_mode_update`
-- Typ-o-Shooter: separate loop (`typo_gameplay_update_and_render`, `FUN_004457c0`, state `0x12`)
+- Typ-o-Shooter: separate loop (`typo_gameplay_update_and_render`, `0x004457c0`, state `0x12`)
 
 See [Game mode map](../re/static/modes/game-mode-map.md) for mode ids.

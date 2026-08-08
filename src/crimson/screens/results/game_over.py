@@ -62,7 +62,7 @@ TEXTURE_TOP_BANNER_H = 64.0
 # so banner/content anchor is +214 from the panel-left edge in steady state.
 GAME_OVER_BANNER_X_OFFSET = 214.0
 
-INPUT_BOX_W = 166.0  # `_DAT_0048259c = 0xa6` before `ui_text_input_update`
+INPUT_BOX_W = 166.0  # `game_over_name_input_state_width_px = 0xa6` before `ui_text_input_update`
 INPUT_BOX_H = 18.0
 
 PANEL_SLIDE_DURATION_MS = 250.0

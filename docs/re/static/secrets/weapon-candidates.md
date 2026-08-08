@@ -13,15 +13,15 @@ progression, making them candidates for "Secret Weapons" or unfinished content.
 1. **Full Weapon List**: Derived from [weapon-id-map](../../../re/static/reference/weapon-id-map.md) (1-based ids 1-53;
    id 0 is the dummy/none entry).
 
-2. **Quest Unlocks**: Analyzed `quest_database_init` (`FUN_00439230`) in
+2. **Quest Unlocks**: Analyzed `quest_database_init` (`0x00439230`) in
    `crimsonland.exe`.
 
-   - Each quest entry is initialized via `FUN_00430a20`.
+   - Each quest entry is initialized via `quest_meta_init_entry`.
    - `quest_unlock_weapon_id` is at offset `0x24` (set by
      `*(undefined4 *)(quest_meta_cursor + 0x24) = ...`).
 
-   - `FUN_00430a20` sets the tier, index, and name; it does not set unlock IDs.
-   - The unlock IDs are set after the `FUN_00430a20` call in
+   - `quest_meta_init_entry` sets the tier, index, and name; it does not set unlock IDs.
+   - The unlock IDs are set after the `quest_meta_init_entry` call in
      `quest_database_init`.
 
    - Many quests store `0` in the unlock slot; with the 1-based ID scheme,

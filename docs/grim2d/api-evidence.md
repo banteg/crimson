@@ -24,7 +24,7 @@ supports them.
 
 
 ```c
-    (**(code **)*DAT_0048083c)();
+    (**(code **)*grim_interface_ptr)();
     return 0;
 ```
 
@@ -101,26 +101,26 @@ grim.dll body:
 - Confirmed C++ signature: `bool grim_apply_config(void)`
 - Notes: creates the D3D8 interface and shows the config dialog
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: crimsonland_main (`FUN_0042c450`):L19443
-- First callsite: crimsonland_main (`FUN_0042c450`) (line 21580)
+- Sample calls: crimsonland_main (`0x0042c450`):L19443
+- First callsite: crimsonland_main (`0x0042c450`) (line 21580)
 
 
 ```c
-  FUN_00401870(&DAT_0047eea0,(byte *)s____invoking_grim_config_00474aa0);
-  FUN_00402860(0x47eea0);
-  cVar1 = (**(code **)(*DAT_0048083c + 0x10))();
-  DAT_004aaf45 = 1;
+  console_printf(&console_log_queue,(byte *)s____invoking_grim_config_00474aa0);
+  console_flush_log(0x47eea0);
+  cVar1 = (**(code **)(*grim_interface_ptr + 0x10))();
+  grim_config_invoked = 1;
   if (cVar1 == '\0') {
 ```
 
 grim.dll body:
 
 ```c
-  DAT_1005b2c4 = (int *)Direct3DCreate8(0xdc);
-  DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x74,(HWND)0x0,(DLGPROC)&LAB_10002120,0);
-  (**(code **)(*DAT_1005b2c4 + 8))(DAT_1005b2c4);
+  grim_d3d8_probe = (int *)Direct3DCreate8(0xdc);
+  DialogBoxParamA(grim_module_handle,(LPCSTR)0x74,(HWND)0x0,(DLGPROC)&LAB_10002120,0);
+  (**(code **)(*grim_d3d8_probe + 8))(grim_d3d8_probe);
   if (grim_config_dialog_canceled == '\0') {
-    (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
+    (**(code **)(*in_ECX + 0x20))(0x54,grim_config_option_54_value);
 ```
 
 The recovered method lazily loads icon resource `0x72`, probes Direct3D8 and
@@ -137,16 +137,16 @@ references under MSVC 6.5 `/O2 /GB`.
 - Confirmed C++ signature: `bool grim_init_system(void)`
 - Notes: initializes D3D + input devices and loads `smallFnt.dat`
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: crimsonland_main (`FUN_0042c450`):L19504
-- First callsite: crimsonland_main (`FUN_0042c450`) (line 21641)
+- Sample calls: crimsonland_main (`0x0042c450`):L19504
+- First callsite: crimsonland_main (`0x0042c450`) (line 21641)
 
 
 ```c
-  FUN_00401870(&DAT_0047eea0,(byte *)s____using_joystick_00474998);
-  FUN_00401870(&DAT_0047eea0,(byte *)s____initiating_Grim_system_0047497c);
-  cVar1 = (**(code **)(*DAT_0048083c + 0x14))();
+  console_printf(&console_log_queue,(byte *)s____using_joystick_00474998);
+  console_printf(&console_log_queue,(byte *)s____initiating_Grim_system_0047497c);
+  cVar1 = (**(code **)(*grim_interface_ptr + 0x14))();
   if (cVar1 == '\0') {
-    FUN_00401870(&DAT_0047eea0,(byte *)s_Critical_failure__00474968);
+    console_printf(&console_log_queue,(byte *)s_Critical_failure__00474968);
 ```
 
 The recovered grim.dll method records the current directory, initializes D3D,
@@ -169,16 +169,16 @@ instructions and all 32 references under MSVC 6.5 `/O2 /GB`.
 - Notes: exact-matched teardown of the optional lookup blob, mouse, keyboard,
   joystick, Direct3D resources, and window, in that order
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: crimsonland_main (`FUN_0042c450`):L19599
-- First callsite: crimsonland_main (`FUN_0042c450`) (line 21736)
+- Sample calls: crimsonland_main (`0x0042c450`):L19599
+- First callsite: crimsonland_main (`0x0042c450`) (line 21736)
 
 
 ```c
-  FUN_0043d110();
-  FUN_00401870(&DAT_0047eea0,(byte *)s_Shutdown_Grim___00474848);
-  (**(code **)(*DAT_0048083c + 0x18))();
-  FUN_00402860(0x47eea0);
-  (**(code **)*DAT_0048083c)();
+  audio_shutdown_all();
+  console_printf(&console_log_queue,(byte *)s_Shutdown_Grim___00474848);
+  (**(code **)(*grim_interface_ptr + 0x18))();
+  console_flush_log(0x47eea0);
+  (**(code **)*grim_interface_ptr)();
 ```
 
 grim.dll body:
@@ -200,14 +200,14 @@ grim.dll body:
 - Notes: exact-matched wrapper enters `grim_run_loop` (`0x10003c00`) and
   returns `true` after the loop exits; the sole call site ignores the result
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: crimsonland_main (`FUN_0042c450`):L19581
-- First callsite: crimsonland_main (`FUN_0042c450`) (line 21718)
+- Sample calls: crimsonland_main (`0x0042c450`):L19581
+- First callsite: crimsonland_main (`0x0042c450`) (line 21718)
 
 
 ```c
     puVar9 = puVar10;
   } while ((int)puVar10 < 0x4805c0);
-  (**(code **)(*DAT_0048083c + 0x1c))();
+  (**(code **)(*grim_interface_ptr + 0x1c))();
   LVar11 = RegCreateKeyExA((HKEY)0x80000001,s_Software_10tons_entertainment_Cr_00474604,0,(LPSTR)0x0
                            ,0,0xf003f,(LPSECURITY_ATTRIBUTES)0x0,&pHStack_5c4,(LPDWORD)0x0);
 ```
@@ -228,16 +228,16 @@ grim.dll body:
 - Notes: config/state dispatcher; some IDs map to D3D render/texture stage
   state, while others update the table or consume pointer/callback fields.
 - Call sites: 206 (unique funcs: 35)
-- Sample calls: FUN_00401dd0:L754; FUN_00401dd0:L755; FUN_00401dd0:L847; FUN_00402d50:L1438; FUN_00402d50:L1460; demo_trial_overlay_render (`FUN_004047c0`):L3147; ui_render_keybind_help:L3373; ui_render_keybind_help:L3377
-- First callsite: FUN_00401dd0 (line 754)
+- Sample calls: console_render:L754; console_render:L755; console_render:L847; ui_render_loading:L1438; ui_render_loading:L1460; demo_trial_overlay_render (`0x004047c0`):L3147; ui_render_keybind_help:L3373; ui_render_keybind_help:L3377
+- First callsite: console_render (line 754)
 
 
 ```c
-    (**(code **)(*DAT_0048083c + 0xd0))(&fStack_4c,DAT_00471140,0x40800000,&puStack_44);
-    (**(code **)(*DAT_0048083c + 0xf0))();
-    (**(code **)(*DAT_0048083c + 0x20))(0x15,2);
-    (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);
-    (**(code **)(*DAT_0048083c + 0x114))
+    (**(code **)(*grim_interface_ptr + 0xd0))(&fStack_4c,screen_width_f,0x40800000,&puStack_44);
+    (**(code **)(*grim_interface_ptr + 0xf0))();
+    (**(code **)(*grim_interface_ptr + 0x20))(0x15,2);
+    (**(code **)(*grim_interface_ptr + 0x20))(0x18,0x3f000000);
+    (**(code **)(*grim_interface_ptr + 0x114))
 ```
 
 The vtable entry is exactly `0x10006580`. Live Binary Ninja shows five stack
@@ -257,8 +257,8 @@ MSVC's ordinary by-value aggregate ABI, not a variadic two-word API.
 - Notes: grim.dll returns one 16-byte record from `grim_config_values` for IDs
   in `0..127`; all other IDs return the zero-filled `grim_config_default`.
 - Call sites: 17 (unique funcs: 4)
-- Sample calls: config_sync_from_grim (`FUN_0041ec60`):L13402; config_sync_from_grim (`FUN_0041ec60`):L13410; config_sync_from_grim (`FUN_0041ec60`):L13413; config_sync_from_grim (`FUN_0041ec60`):L13415; config_sync_from_grim (`FUN_0041ec60`):L13417; config_sync_from_grim (`FUN_0041ec60`):L13419; crimsonland_main (`FUN_0042c450`):L19456; crimsonland_main (`FUN_0042c450`):L19458
-- First callsite: config_sync_from_grim (`FUN_0041ec60`) (line 15539)
+- Sample calls: config_sync_from_grim (`0x0041ec60`):L13402; config_sync_from_grim (`0x0041ec60`):L13410; config_sync_from_grim (`0x0041ec60`):L13413; config_sync_from_grim (`0x0041ec60`):L13415; config_sync_from_grim (`0x0041ec60`):L13417; config_sync_from_grim (`0x0041ec60`):L13419; crimsonland_main (`0x0042c450`):L19456; crimsonland_main (`0x0042c450`):L19458
+- First callsite: config_sync_from_grim (`0x0041ec60`) (line 15539)
 
 
 ```c
@@ -266,12 +266,12 @@ MSVC's ordinary by-value aggregate ABI, not a variadic two-word API.
   acStack_4b0[1] = -0x14;
   acStack_4b0[2] = 'A';
   acStack_4b0[3] = '\0';
-  puVar2 = (undefined1 *)(**(code **)(*DAT_0048083c + 0x24))();
-  DAT_0048050c = *puVar2;
-  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(&stack0xfffffb60);
-  DAT_00480504 = *puVar3;
-  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(&uStack_4a8,0x2a);
-  DAT_00480508 = *puVar3;
+  puVar2 = (undefined1 *)(**(code **)(*grim_interface_ptr + 0x24))();
+  config_windowed = *puVar2;
+  puVar3 = (undefined4 *)(**(code **)(*grim_interface_ptr + 0x24))(&stack0xfffffb60);
+  config_screen_width = *puVar3;
+  puVar3 = (undefined4 *)(**(code **)(*grim_interface_ptr + 0x24))(&uStack_4a8,0x2a);
+  config_screen_height = *puVar3;
 ```
 
 Live Binary Ninja resolves the apparent `out` argument as MSVC's hidden
@@ -287,16 +287,16 @@ base-plus-offset reads from the fallback record.
 - Ghidra signature: `char * grim_get_error_text(void)`
 - Suggested signature: `const char * grim_get_error_text(void)`
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: crimsonland_main (`FUN_0042c450`):L19509
-- First callsite: crimsonland_main (`FUN_0042c450`) (line 21646)
+- Sample calls: crimsonland_main (`0x0042c450`):L19509
+- First callsite: crimsonland_main (`0x0042c450`) (line 21646)
 
 
 ```c
     uType = 0;
     pcVar6 = s_Crimsonland__00474958;
-    lpText = (LPCSTR)(**(code **)(*DAT_0048083c + 0x28))();
+    lpText = (LPCSTR)(**(code **)(*grim_interface_ptr + 0x28))();
     MessageBoxA((HWND)0x0,lpText,pcVar6,uType);
-    (**(code **)*DAT_0048083c)();
+    (**(code **)*grim_interface_ptr)();
 ```
 
 grim.dll body:
@@ -312,14 +312,14 @@ grim.dll body:
 - Notes: exact-matched `IDirect3DDevice8::Clear` call guarded by render-disabled
   and device-ready flags; uses `D3DCOLOR_COLORVALUE(r, g, b, a)`
 - Call sites: 5 (unique funcs: 3)
-- Sample calls: FUN_00417b80:L9215; terrain_generate_random:L9452; crimsonland_main (`FUN_0042c450`):L19534; crimsonland_main (`FUN_0042c450`):L19538; crimsonland_main (`FUN_0042c450`):L19547
-- First callsite: terrain_generate (`FUN_00417b80`) (line 11352)
+- Sample calls: terrain_generate:L9215; terrain_generate_random:L9452; crimsonland_main (`0x0042c450`):L19534; crimsonland_main (`0x0042c450`):L19538; crimsonland_main (`0x0042c450`):L19547
+- First callsite: terrain_generate (`0x00417b80`) (line 11352)
 
 
 ```c
   fStack_98 = 0.24705882;
   uStack_9c = 0x417c89;
-  (**(code **)(*DAT_0048083c + 0x2c))();
+  (**(code **)(*grim_interface_ptr + 0x2c))();
   iVar3 = iStack_70;
   uStack_9c = 0;
 ```
@@ -340,14 +340,14 @@ grim.dll body:
 - Recovered signature: `bool grim_set_render_target(int target_index)`
 - Notes: called with `-1` to restore the backbuffer
 - Call sites: 6 (unique funcs: 3)
-- Sample calls: FUN_00417b80:L9209; FUN_00417b80:L9333; terrain_generate_random:L9446; terrain_generate_random:L9563; fx_queue_render (`FUN_00427920`):L17949; fx_queue_render (`FUN_00427920`):L18035
-- First callsite: terrain_generate (`FUN_00417b80`) (line 11346)
+- Sample calls: terrain_generate:L9209; terrain_generate:L9333; terrain_generate_random:L9446; terrain_generate_random:L9563; fx_queue_render (`0x00427920`):L17949; fx_queue_render (`0x00427920`):L18035
+- First callsite: terrain_generate (`0x00417b80`) (line 11346)
 
 
 ```c
-  fStack_88 = DAT_0048f530;
+  fStack_88 = terrain_render_target;
   iStack_8c = 0x417c6a;
-  (**(code **)(*DAT_0048083c + 0x30))();
+  (**(code **)(*grim_interface_ptr + 0x30))();
   iStack_8c = 0x3f800000;
   uStack_90 = 0x3dc8c8c9;
 ```
@@ -381,7 +381,7 @@ references under MSVC 6.5 `/O2 /GB`.
 grim.dll body:
 
 ```c
-  return DAT_1005a054;
+  return grim_time_ms;
 ```
 
 
@@ -397,7 +397,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  DAT_1005a054 = ms;
+  grim_time_ms = ms;
 ```
 
 
@@ -413,10 +413,10 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  if (0.1 < _DAT_10059768) {
+  if (0.1 < grim_frame_dt) {
     return 0.1;
   }
-  return _DAT_10059768;
+  return grim_frame_dt;
 ```
 
 
@@ -432,7 +432,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return _DAT_1005b2bc;
+  return grim_fps;
 ```
 
 
@@ -444,16 +444,16 @@ grim.dll body:
 - Notes: byte-sized 0/1 predicate; the underlying helper aliases keys by their
   low byte before reading the 256-byte keyboard state.
 - Call sites: 6 (unique funcs: 2)
-- Sample calls: console_update (`FUN_00401a40`):L509; console_update (`FUN_00401a40`):L511; console_update (`FUN_00401a40`):L526; console_update (`FUN_00401a40`):L528; ui_focus_update (`FUN_0043d830`):L26638; ui_focus_update (`FUN_0043d830`):L26639
-- First callsite: console_update (`FUN_00401a40`) (line 509)
+- Sample calls: console_update (`0x00401a40`):L509; console_update (`0x00401a40`):L511; console_update (`0x00401a40`):L526; console_update (`0x00401a40`):L528; ui_focus_update (`0x0043d830`):L26638; ui_focus_update (`0x0043d830`):L26639
+- First callsite: console_update (`0x00401a40`) (line 509)
 
 
 ```c
               (float10)*(int *)((int)param_1 + 0x18));
-  FUN_00401060();
-  cVar2 = (**(code **)(*DAT_0048083c + 0x44))(0x1d);
+  console_input_poll();
+  cVar2 = (**(code **)(*grim_interface_ptr + 0x44))(0x1d);
   if (cVar2 == '\0') {
-    cVar2 = (**(code **)(*DAT_0048083c + 0x44))(0x9d);
+    cVar2 = (**(code **)(*grim_interface_ptr + 0x44))(0x9d);
 ```
 
 Live callers load `ECX=this`, push one key, call vtable slot `+0x44`, and test
@@ -471,14 +471,14 @@ wrapper as `int` or native C++ `bool` adds a widening/normalization sequence.
 - Notes: press/repeat query with a 0.5-second initial delay and 0.1-second
   held-repeat interval.
 - Call sites: 39 (unique funcs: 16)
-- Sample calls: console_update (`FUN_00401a40`):L514; console_update (`FUN_00401a40`):L522; console_update (`FUN_00401a40`):L531; console_update (`FUN_00401a40`):L543; console_update (`FUN_00401a40`):L547; console_update (`FUN_00401a40`):L551; console_update (`FUN_00401a40`):L574; console_update (`FUN_00401a40`):L578
-- First callsite: console_update (`FUN_00401a40`) (line 514)
+- Sample calls: console_update (`0x00401a40`):L514; console_update (`0x00401a40`):L522; console_update (`0x00401a40`):L531; console_update (`0x00401a40`):L543; console_update (`0x00401a40`):L547; console_update (`0x00401a40`):L551; console_update (`0x00401a40`):L574; console_update (`0x00401a40`):L578
+- First callsite: console_update (`0x00401a40`) (line 514)
 
 
 ```c
     if (cVar2 != '\0') goto LAB_00401ac4;
 LAB_00401add:
-    cVar2 = (**(code **)(*DAT_0048083c + 0x48))(200);
+    cVar2 = (**(code **)(*grim_interface_ptr + 0x48))(200);
     if (cVar2 != '\0') {
       *(int *)((int)param_1 + 0x14) = *(int *)((int)param_1 + 0x14) + 1;
 ```
@@ -504,14 +504,14 @@ byte-sized result.
 - Notes: clears the 256-byte keyboard state, drains queued DirectInput events,
   clears the state again, and empties the key-char FIFO.
 - Call sites: 12 (unique funcs: 10)
-- Sample calls: console_set_open (`FUN_004018b0`):L346; quest_mode_update:L4357; tutorial_prompt_dialog (`FUN_00408530`):L5083; tutorial_prompt_dialog (`FUN_00408530`):L5104; gameplay_update_and_render:L5879; game_over_screen_update:L7055; quest_failed_screen_update:L7326; quest_results_screen_update (`FUN_00410d20`):L7702
-- First callsite: console_set_open (`FUN_004018b0`) (line 346)
+- Sample calls: console_set_open (`0x004018b0`):L346; quest_mode_update:L4357; tutorial_prompt_dialog (`0x00408530`):L5083; tutorial_prompt_dialog (`0x00408530`):L5104; gameplay_update_and_render:L5879; game_over_screen_update:L7055; quest_failed_screen_update:L7326; quest_results_screen_update (`0x00410d20`):L7702
+- First callsite: console_set_open (`0x004018b0`) (line 346)
 
 
 ```c
   *(undefined1 *)((int)this + 0x28) = param_1;
-  DAT_0047f4d4 = param_1;
-  (**(code **)(*DAT_0048083c + 0x4c))();
+  console_input_enabled = param_1;
+  (**(code **)(*grim_interface_ptr + 0x4c))();
   return;
 }
 ```
@@ -536,16 +536,16 @@ the keyboard device, event buffer, keyboard state (twice), and key-char count.
 - Notes: pops the oldest entry from the internal eight-int key-character FIFO,
   shifts the remaining entries down, and returns zero when empty.
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: console_input_poll (`FUN_00401060`):L33
-- First callsite: console_input_poll (`FUN_00401060`) (line 33)
+- Sample calls: console_input_poll (`0x00401060`):L33
+- First callsite: console_input_poll (`0x00401060`) (line 33)
 
 
 ```c
   int iVar1;
   
-  iVar1 = (**(code **)(*DAT_0048083c + 0x50))();
-  if (DAT_0047f4d4 != '\0') {
-    if ((iVar1 != 0) && (DAT_0047ea58 == '\0')) {
+  iVar1 = (**(code **)(*grim_interface_ptr + 0x50))();
+  if (console_input_enabled != '\0') {
+    if ((iVar1 != 0) && (console_input_ready == '\0')) {
 ```
 
 Live Binary Ninja shows `grim_key_char_queue[8]` at `0x1005d3c4` and its count
@@ -563,16 +563,16 @@ source compiles to all 22 native instructions, full prefix, and references
 - Notes: installs a caller-owned text buffer, its count pointer, and capacity;
   native code performs no null or size validation here.
 - Call sites: 2 (unique funcs: 2)
-- Sample calls: crimsonland_main (`FUN_0042c450`):L19559; ui_text_input_update (`FUN_0043ecf0`):L27394
-- First callsite: crimsonland_main (`FUN_0042c450`) (line 21696)
+- Sample calls: crimsonland_main (`0x0042c450`):L19559; ui_text_input_update (`0x0043ecf0`):L27394
+- First callsite: crimsonland_main (`0x0042c450`) (line 21696)
 
 
 ```c
     puVar9 = (undefined4 *)((int)puVar9 + 1);
   }
-  (**(code **)(*DAT_0048083c + 0x54))(&DAT_004aacd8,&DAT_004aaedc,uVar14);
-  FUN_0041ec60();
-  puVar13 = &DAT_00490be0;
+  (**(code **)(*grim_interface_ptr + 0x54))(&key_char_buffer,&key_char_count,uVar14);
+  config_sync_from_grim();
+  puVar13 = &player_move_key_backward;
 ```
 
 The three arguments are stored verbatim at `0x10053048`, `0x1005304c`, and
@@ -589,25 +589,25 @@ references `3/0/0`; the member ignores `this` and removes 12 argument bytes.
 - Notes: button 0 is observed; cached mode returns the saved byte directly,
   otherwise the helper extracts bit 7 from `DIMOUSESTATE2.rgbButtons[button]`.
 - Call sites: 4 (unique funcs: 3)
-- Sample calls: gameplay_update_and_render:L6349; input_primary_just_pressed (`FUN_00446030`):L31421; input_primary_just_pressed (`FUN_00446030`):L31439; input_primary_is_down (`FUN_004460f0`):L31467
+- Sample calls: gameplay_update_and_render:L6349; input_primary_just_pressed (`0x00446030`):L31421; input_primary_just_pressed (`0x00446030`):L31439; input_primary_is_down (`0x004460f0`):L31467
 - First callsite: gameplay_update_and_render (line 6349)
 
 
 ```c
     }
   }
-  cVar3 = (**(code **)(*DAT_0048083c + 0x58))(0);
-  DAT_004808b9 = cVar3 != '\0';
-  FUN_0040a320();
+  cVar3 = (**(code **)(*grim_interface_ptr + 0x58))(0);
+  mouse_button_down = cVar3 != '\0';
+  bonus_update();
 ```
 
 grim.dll body:
 
 ```c
   if (grim_input_cached != '\0') {
-    return CONCAT31((int3)((uint)button >> 8),(&DAT_1005a044)[button]);
+    return CONCAT31((int3)((uint)button >> 8),(&grim_mouse_button_cache)[button]);
   }
-  bVar1 = FUN_1000a590(button);
+  bVar1 = grim_mouse_button_down(button);
   return CONCAT31(extraout_var,bVar1);
 ```
 
@@ -657,14 +657,14 @@ all 51 native instructions, full prefix, and masked references `7/0/0`.
 - Notes: positive/negative scroll used to change selection
 - Ghidra signature: `float grim_get_mouse_wheel_delta(void)`
 - Call sites: 2 (unique funcs: 1)
-- Sample calls: ui_scrollbar_update (`FUN_0043def0`):L26948; ui_scrollbar_update (`FUN_0043def0`):L26952
-- First callsite: ui_scrollbar_update (`FUN_0043def0`) (line 29084)
+- Sample calls: ui_scrollbar_update (`0x0043def0`):L26948; ui_scrollbar_update (`0x0043def0`):L26952
+- First callsite: ui_scrollbar_update (`0x0043def0`) (line 29084)
 
 
 ```c
-    (**(code **)(*DAT_0048083c + 0xd0))(&stack0xffffffb0,0x3f800000,fVar1,&local_30);
+    (**(code **)(*grim_interface_ptr + 0xd0))(&stack0xffffffb0,0x3f800000,fVar1,&local_30);
   }
-  fVar8 = (float10)(**(code **)(*DAT_0048083c + 0x60))();
+  fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x60))();
   if ((float10)0.0 < fVar8) {
     *param_2 = *param_2 - 1.0;
 ```
@@ -685,8 +685,8 @@ grim.dll body:
 ```c
   grim_mouse_x = x;
   grim_mouse_y = y;
-  _DAT_1005b278 = x;
-  _DAT_1005b27c = y;
+  grim_mouse_x_cached = x;
+  grim_mouse_y_cached = y;
 ```
 
 
@@ -703,7 +703,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return _DAT_1005b278;
+  return grim_mouse_x_cached;
 ```
 
 
@@ -720,7 +720,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return _DAT_1005b27c;
+  return grim_mouse_y_cached;
 ```
 
 
@@ -823,16 +823,16 @@ prefixes and aggregate references `12/0/0`.
 - Recovered signature: `unsigned char grim_is_key_active(int key)`
 - Ghidra signature: `int grim_is_key_active(int key)` (stale width)
 - Call sites: 6 (unique funcs: 4)
-- Sample calls: gameplay_update_and_render:L5929; input_any_key_pressed (`FUN_00446000`):L29232; input_primary_just_pressed (`FUN_00446030`):L29266; input_primary_just_pressed (`FUN_00446030`):L29282; input_primary_is_down (`FUN_004460f0`):L29308; input_primary_is_down (`FUN_004460f0`):L29310
-- First callsite: tutorial_timeline_update (`FUN_00408990`) (line 5277)
+- Sample calls: gameplay_update_and_render:L5929; input_any_key_pressed (`0x00446000`):L29232; input_primary_just_pressed (`0x00446030`):L29266; input_primary_just_pressed (`0x00446030`):L29282; input_primary_is_down (`0x004460f0`):L29308; input_primary_is_down (`0x004460f0`):L29310
+- First callsite: tutorial_timeline_update (`0x00408990`) (line 5277)
 
 
 ```c
-    if (DAT_00486fd8 == 1) {
-      puVar6 = &DAT_00490be0;
-      while ((((cVar2 = (**(code **)(*DAT_0048083c + 0x80))(puVar6[-1]), cVar2 == '\0' &&
-               (cVar2 = (**(code **)(*DAT_0048083c + 0x80))(*puVar6), cVar2 == '\0')) &&
-              ((cVar2 = (**(code **)(*DAT_0048083c + 0x80))(puVar6[1]), cVar2 == '\0' &&
+    if (tutorial_stage_index == 1) {
+      puVar6 = &player_move_key_backward;
+      while ((((cVar2 = (**(code **)(*grim_interface_ptr + 0x80))(puVar6[-1]), cVar2 == '\0' &&
+               (cVar2 = (**(code **)(*grim_interface_ptr + 0x80))(*puVar6), cVar2 == '\0')) &&
+              ((cVar2 = (**(code **)(*grim_interface_ptr + 0x80))(puVar6[1]), cVar2 == '\0' &&
 ```
 
 The live grim.dll body and its natural VC6.5 WIP recover the complete routing:
@@ -865,23 +865,23 @@ X load; all six axis globals are present, and no semantic branch is unresolved.
 - Ghidra signature: `float grim_get_config_float(int id)`
 - Suggested signature: `float grim_get_config_float(int id)` (special-cases `0x15f` to return `grim_get_mouse_dx`)
 - Call sites: 6 (unique funcs: 1)
-- Sample calls: FUN_00448b50:L30229; FUN_00448b50:L30233; FUN_00448b50:L30237; FUN_00448b50:L30241; FUN_00448b50:L30245; FUN_00448b50:L30249
-- First callsite: player_update (`FUN_004136b0`) (line 9703)
+- Sample calls: input_detect_active_analog_axis:L30229; input_detect_active_analog_axis:L30233; input_detect_active_analog_axis:L30237; input_detect_active_analog_axis:L30241; input_detect_active_analog_axis:L30245; input_detect_active_analog_axis:L30249
+- First callsite: player_update (`0x004136b0`) (line 9703)
 
 
 ```c
     }
     if (iVar10 == 3) {
-      fVar19 = (float10)(**(code **)(*DAT_0048083c + 0x84))((&DAT_00490c0c)[iVar6 * 0xd8]);
-      pfVar12 = (float *)(&DAT_00490c08)[iVar6 * 0xd8];
-      fVar20 = (float10)(**(code **)(*DAT_0048083c + 0x84))();
+      fVar19 = (float10)(**(code **)(*grim_interface_ptr + 0x84))((&player_axis_move_y)[iVar6 * 0xd8]);
+      pfVar12 = (float *)(&player_axis_move_x)[iVar6 * 0xd8];
+      fVar20 = (float10)(**(code **)(*grim_interface_ptr + 0x84))();
 ```
 
 grim.dll mapping:
 
 ```c
   if (id == 0x13f) {
-    return (float)DAT_1005d830 * 0.001;
+    return (float)grim_joystick_state * 0.001;
   }
   if (id == 0x140) {
     return (float)grim_joystick_axis_y * 0.001;
@@ -912,7 +912,7 @@ all 88 instructions, full prefix, and references `13/0/0`.
 grim.dll body:
 
 ```c
-  return *(float *)(&DAT_1005c100 + index * 4);
+  return *(float *)(&grim_slot_floats + index * 4);
 ```
 
 
@@ -928,7 +928,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return *(int *)(&DAT_1005bf00 + index * 4);
+  return *(int *)(&grim_slot_ints + index * 4);
 ```
 
 
@@ -944,7 +944,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  *(float *)(&DAT_1005c100 + index * 4) = value;
+  *(float *)(&grim_slot_floats + index * 4) = value;
 ```
 
 
@@ -960,7 +960,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  *(int *)(&DAT_1005bf00 + index * 4) = value;
+  *(int *)(&grim_slot_ints + index * 4) = value;
 ```
 
 Live Binary Ninja names the two backing arrays `grim_slot_ints` and
@@ -982,7 +982,7 @@ float load/store required by the ABI.
 grim.dll body:
 
 ```c
-  return DAT_1005d830;
+  return grim_joystick_state;
 ```
 
 
@@ -1029,7 +1029,7 @@ grim.dll body:
 ```c
   int iVar1;
   
-  iVar1 = (**(code **)(*DAT_0048083c + 0xa4))(0);
+  iVar1 = (**(code **)(*grim_interface_ptr + 0xa4))(0);
   return iVar1 == DAT_004804fc;
 }
 ```
@@ -1047,7 +1047,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  bVar1 = FUN_1000a310(button);
+  bVar1 = grim_joystick_button_down(button);
   return CONCAT31(extraout_var,bVar1);
 ```
 
@@ -1068,14 +1068,14 @@ match 2/2 instructions, and the unchecked POV array accessor matches 3/3.
 - Previous Ghidra signature: `int grim_create_texture(char *name, int width, int height)`
 - Call sites: 2 (unique funcs: 1)
 - Sample calls: init_audio_and_terrain:L21242; init_audio_and_terrain:L21250
-- First callsite: init_audio_and_terrain (`FUN_0042a9f0`) (line 21221)
+- First callsite: init_audio_and_terrain (`0x0042a9f0`) (line 21221)
 
 
 ```c
-  if (DAT_004871c8 == '\0') {
+  if (terrain_texture_failed == '\0') {
     lVar5 = __ftol();
-    cVar3 = (**(code **)(*DAT_0048083c + 0xac))(s_ground_004740c4,(int)lVar5,(int)lVar5);
-    fVar2 = DAT_004803b8;
+    cVar3 = (**(code **)(*grim_interface_ptr + 0xac))(s_ground_004740c4,(int)lVar5,(int)lVar5);
+    fVar2 = config_texture_scale;
     if (cVar3 == '\0') {
 ```
 
@@ -1083,10 +1083,10 @@ grim.dll body:
 
 ```c
   uVar1 = grim_find_free_texture_slot();
-  uVar2 = (**(code **)(*DAT_10059dbc + 0x50))(DAT_10059dbc,width,height,1,1,DAT_1005a488,0,local_10);
+  uVar2 = (**(code **)(*grim_d3d_device + 0x50))(grim_d3d_device,width,height,1,1,grim_texture_format,0,local_10);
   pvVar3 = operator_new(0x18);
   pvVar3 = grim_texture_init(pvVar3,unaff_EDI,(char *)name_00);
-  (&DAT_1005d404)[uVar1] = pvVar3;
+  (&grim_texture_slots)[uVar1] = pvVar3;
 ```
 
 The recovered VC6.5 source matches all 81 native instructions (257 bytes;
@@ -1160,14 +1160,14 @@ released on failure.
 - Notes: name + filename
 - Previous Ghidra signature: `int grim_load_texture(char *name, char *path)`
 - Call sites: 3 (unique funcs: 3)
-- Sample calls: ui_element_load:L10132; texture_get_or_load (`FUN_0042a670`):L18970; texture_get_or_load_alt (`FUN_0042a700`):L18996
+- Sample calls: ui_element_load:L10132; texture_get_or_load (`0x0042a670`):L18970; texture_get_or_load_alt (`0x0042a700`):L18996
 - First callsite: ui_element_load (line 12269)
 
 ```c
-    FUN_00401870(&DAT_0047eea0,(byte *)s_Loading_uiElement__s_004737b4);
+    console_printf(&console_log_queue,(byte *)s_Loading_uiElement__s_004737b4);
   }
-  (**(code **)(*DAT_0048083c + 0xb4))(local_100,param_2);
-  iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(&stack0xfffffef8);
+  (**(code **)(*grim_interface_ptr + 0xb4))(local_100,param_2);
+  iVar2 = (**(code **)(*grim_interface_ptr + 0xc0))(&stack0xfffffef8);
   *(int *)(iStack_8 + 0xe0) = iVar2;
 ```
 
@@ -1213,11 +1213,11 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  texture = (void *)(&DAT_1005d404)[handle];
+  texture = (void *)(&grim_texture_slots)[handle];
   if (texture != (void *)0x0) {
     grim_texture_release(texture);
     operator_delete(texture);
-    (&DAT_1005d404)[handle] = 0;
+    (&grim_texture_slots)[handle] = 0;
   }
 ```
 
@@ -1230,16 +1230,16 @@ grim.dll body:
 - Ghidra signature: `int grim_get_texture_handle(char *name)`
 - Suggested signature: `int grim_get_texture_handle(const char *name)`
 - Call sites: 22 (unique funcs: 8)
-- Sample calls: demo_purchase_screen_update (`FUN_0040b740`):L6362; demo_purchase_screen_update (`FUN_0040b740`):L6374; gameplay_reset_state (`FUN_00412dc0`):L8687; gameplay_reset_state (`FUN_00412dc0`):L8698; gameplay_reset_state (`FUN_00412dc0`):L8710; gameplay_reset_state (`FUN_00412dc0`):L8722; gameplay_reset_state (`FUN_00412dc0`):L8734; gameplay_reset_state (`FUN_00412dc0`):L8750
-- First callsite: demo_purchase_screen_update (`FUN_0040b740`) (line 6749)
+- Sample calls: demo_purchase_screen_update (`0x0040b740`):L6362; demo_purchase_screen_update (`0x0040b740`):L6374; gameplay_reset_state (`0x00412dc0`):L8687; gameplay_reset_state (`0x00412dc0`):L8698; gameplay_reset_state (`0x00412dc0`):L8710; gameplay_reset_state (`0x00412dc0`):L8722; gameplay_reset_state (`0x00412dc0`):L8734; gameplay_reset_state (`0x00412dc0`):L8750
+- First callsite: demo_purchase_screen_update (`0x0040b740`) (line 6749)
 
 
 ```c
     pcStack_f4 = s_mockup_00472964;
     pcStack_f8 = (char *)0x40bb08;
-    pcStack_f8 = (char *)(**(code **)(*DAT_0048083c + 0xc0))();
+    pcStack_f8 = (char *)(**(code **)(*grim_interface_ptr + 0xc0))();
     fStack_fc = 3.58732e-43;
-    iStack_104 = DAT_00480508 / 2 + -0x8c;
+    iStack_104 = config_screen_height / 2 + -0x8c;
 ```
 
 
@@ -1254,7 +1254,7 @@ grim.dll body:
   returns with `retn 0x8`.
 - Ghidra signature: `void grim_bind_texture(int handle, int stage)`
 - Call sites: 66 (unique funcs: 22)
-- Sample calls: ui_draw_clock_gauge:L3882; ui_draw_clock_gauge:L3891; ui_render_aim_indicators:L5641; ui_render_aim_indicators:L5663; ui_draw_textured_quad:L9120; terrain_generate (`FUN_00417b80`):L9220; terrain_generate (`FUN_00417b80`):L9265; terrain_generate (`FUN_00417b80`):L9296
+- Sample calls: ui_draw_clock_gauge:L3882; ui_draw_clock_gauge:L3891; ui_render_aim_indicators:L5641; ui_render_aim_indicators:L5663; ui_draw_textured_quad:L9120; terrain_generate (`0x00417b80`):L9220; terrain_generate (`0x00417b80`):L9265; terrain_generate (`0x00417b80`):L9296
 - First callsite: ui_draw_clock_gauge (line 3882)
 - Runtime evidence: the checked-in `ui_render_trace.jsonl` contains 44,536
   `grim_bind_texture` events.
@@ -1262,19 +1262,19 @@ grim.dll body:
 
 ```c
   iVar2 = 1;
-  (**(code **)(*DAT_0048083c + 0x20))(0x15,1);
-  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7c8,0);
+  (**(code **)(*grim_interface_ptr + 0x20))(0x15,1);
+  (**(code **)(*grim_interface_ptr + 0xc4))(ui_clock_table_texture,0);
   iVar1 = 0;
-  (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);
+  (**(code **)(*grim_interface_ptr + 0x100))(0,0,0x3f800000,0x3f800000);
 ```
 
 grim.dll body:
 
 ```c
-  if (((-1 < handle) && ((&DAT_1005d404)[handle] != 0)) &&
-     (iVar1 = *(int *)((&DAT_1005d404)[handle] + 4), iVar1 != 0)) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,stage,iVar1);
-    _DAT_10053060 = handle;
+  if (((-1 < handle) && ((&grim_texture_slots)[handle] != 0)) &&
+     (iVar1 = *(int *)((&grim_texture_slots)[handle] + 4), iVar1 != 0)) {
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,stage,iVar1);
+    grim_bound_texture_handle = handle;
   }
 ```
 
@@ -1293,14 +1293,14 @@ references. A minimal two-field texture-slot view recovers the validated
   current-texture quad from the origin to the unsigned-at-use backbuffer
   dimensions, and ends the batch.
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: terrain_render (`FUN_004188a0`):L11783
-- First callsite: terrain_render (`FUN_004188a0`) (line 11783)
+- Sample calls: terrain_render (`0x004188a0`):L11783
+- First callsite: terrain_render (`0x004188a0`) (line 11783)
 - Runtime evidence: `evidence_summary.json` records 6,902 entry/exit events and
   3,451 `begin_batch`/`end_batch` pairs.
 
 
 ```c
-  (**(code **)(*DAT_0048083c + 200))(0);
+  (**(code **)(*grim_interface_ptr + 200))(0);
 ```
 
 grim.dll body:
@@ -1308,7 +1308,7 @@ grim.dll body:
 ```c
   (**(code **)(*in_ECX + 0xfc))(0);
   (**(code **)(*in_ECX + 0xe8))();
-  (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
+  (**(code **)(*in_ECX + 0x11c))(0,0,(float)grim_backbuffer_width,(float)grim_backbuffer_height);
   (**(code **)(*in_ECX + 0xf0))();
 ```
 
@@ -1328,16 +1328,16 @@ accounts for the native stack cleanup without an ABI shim.
   origin to the unsigned backbuffer dimensions. Non-positive alpha returns
   before changing state; the normal modulate state is restored after drawing.
 - Call sites: 2 (unique funcs: 2)
-- Sample calls: gameplay_render_world (`FUN_00405960`):L3696; FUN_00406af0:L4120
-- First callsite: gameplay_render_world (`FUN_00405960`) (line 3696)
+- Sample calls: gameplay_render_world (`0x00405960`):L3696; game_update_generic_menu:L4120
+- First callsite: gameplay_render_world (`0x00405960`) (line 3696)
 - Runtime evidence: `evidence_summary.json` records 60 calls, of which 30
   positive-alpha paths begin and end a batch.
 
 
 ```c
-  FUN_004295f0();
-  if (0.0 < DAT_00487264) {
-    (**(code **)(*DAT_0048083c + 0xcc))(0,0,0,DAT_00487264);
+  bonus_render();
+  if (0.0 < screen_fade_alpha) {
+    (**(code **)(*grim_interface_ptr + 0xcc))(0,0,0,screen_fade_alpha);
   }
   return;
 ```
@@ -1346,11 +1346,11 @@ grim.dll body:
 
 ```c
   if (0.0 < a) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
     (**(code **)(*in_ECX + 0x114))(piVar1,uVar2,uVar3,uVar4);
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
-    (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
+    (**(code **)(*in_ECX + 0x11c))(0,0,(float)grim_backbuffer_width,(float)grim_backbuffer_height);
     (**(code **)(*in_ECX + 0xf0))();
   }
 ```
@@ -1371,15 +1371,15 @@ member ABI and `retn 0x10`.
   three-argument Ghidra prototype.
 - Ghidra signature (missing fourth argument): `void grim_draw_rect_filled(float *xy, float w, float h)`
 - Call sites: 24 (unique funcs: 14)
-- Sample calls: FUN_00401dd0:L740; FUN_00401dd0:L752; FUN_00402d50:L1448; demo_trial_overlay_render (`FUN_004047c0`):L3096; ui_render_keybind_help:L3369; tutorial_prompt_dialog (`FUN_00408530`):L5029; demo_purchase_screen_update (`FUN_0040b740`):L6476; demo_purchase_screen_update (`FUN_0040b740`):L6480
-- First callsite: FUN_00401dd0 (line 740)
+- Sample calls: console_render:L740; console_render:L752; ui_render_loading:L1448; demo_trial_overlay_render (`0x004047c0`):L3096; ui_render_keybind_help:L3369; tutorial_prompt_dialog (`0x00408530`):L5029; demo_purchase_screen_update (`0x0040b740`):L6476; demo_purchase_screen_update (`0x0040b740`):L6480
+- First callsite: console_render (line 740)
 
 
 ```c
     fStack_48 = (float)*(int *)(param_1 + 0x18);
-    fStack_4c = DAT_00471140;
-    (**(code **)(*DAT_0048083c + 0xd0))(&stack0xffffffd4);
-    (**(code **)(*DAT_0048083c + 0x114))
+    fStack_4c = screen_width_f;
+    (**(code **)(*grim_interface_ptr + 0xd0))(&stack0xffffffd4);
+    (**(code **)(*grim_interface_ptr + 0x114))
               (0x3dcccccd,0x3f19999a,0x3f800000,
 ```
 
@@ -1387,7 +1387,7 @@ grim.dll body:
 
 ```c
   if (0.0 < *(float *)(in_stack_00000010 + 0xc)) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
     (**(code **)(*in_ECX + 0x11c))(*puVar1,puVar1[1],uVar2,uVar3);
@@ -1412,17 +1412,17 @@ forwards `rgba` to `set_color_ptr`, clears rotation, brackets one quad with
   state is restored.
 - Ghidra signature: `void grim_draw_rect_outline(float *xy, float w, float h)`
 - Call sites: 12 (unique funcs: 11)
-- Sample calls: FUN_00402d50:L1454; demo_trial_overlay_render (`FUN_004047c0`):L3107; ui_render_keybind_help:L3372; tutorial_prompt_dialog (`FUN_00408530`):L5031; quest_results_screen_update (`FUN_00410d20`):L7694; ui_menu_item_update:L27177; ui_text_input_update (`FUN_0043ecf0`):L27413; ui_text_input_update (`FUN_0043ecf0`):L27448
-- First callsite: FUN_00402d50 (line 1454)
+- Sample calls: ui_render_loading:L1454; demo_trial_overlay_render (`0x004047c0`):L3107; ui_render_keybind_help:L3372; tutorial_prompt_dialog (`0x00408530`):L5031; quest_results_screen_update (`0x00410d20`):L7694; ui_menu_item_update:L27177; ui_text_input_update (`0x0043ecf0`):L27413; ui_text_input_update (`0x0043ecf0`):L27448
+- First callsite: ui_render_loading (line 1454)
 - Runtime evidence: the checked-in `ui_render_trace_summary.json` contains
   3,132 `grim_draw_rect_outline` events.
 
 
 ```c
-  fStack_4c = (float)(DAT_00480504 / 2 + -0x6e);
-  fStack_48 = (float)(DAT_00480508 / 2 + -0x1e);
-  (**(code **)(*DAT_0048083c + 0xd4))(&fStack_4c,0x435c0000,0x42700000);
-  iVar1 = *DAT_0048083c;
+  fStack_4c = (float)(config_screen_width / 2 + -0x6e);
+  fStack_48 = (float)(config_screen_height / 2 + -0x1e);
+  (**(code **)(*grim_interface_ptr + 0xd4))(&fStack_4c,0x435c0000,0x42700000);
+  iVar1 = *grim_interface_ptr;
   iVar2 = (**(code **)(iVar1 + 0x14c))
 ```
 
@@ -1456,11 +1456,11 @@ documented D3D8 calls, comparison branches, four vtable `draw_quad` calls, and
 
 
 ```c
-          DAT_004802a8 = _DAT_00484fc8 + (float)(&DAT_00490900)[DAT_004aaf0c * 0xd8];
-          DAT_004802ac = _DAT_00484fcc + (float)(&DAT_00490904)[DAT_004aaf0c * 0xd8];
-          (**(code **)(*DAT_0048083c + 0xd8))(DAT_004802a8,DAT_004802ac,uVar7);
-          (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7e8,0);
-          (**(code **)(*DAT_0048083c + 0x100))(0x3f000000,0,0x3f000000,0x3f800000);
+          aim_screen_x = camera_offset_x + (float)(&player_aim_x)[render_overlay_player_index * 0xd8];
+          aim_screen_y = camera_offset_y + (float)(&player_aim_y)[render_overlay_player_index * 0xd8];
+          (**(code **)(*grim_interface_ptr + 0xd8))(aim_screen_x,aim_screen_y,uVar7);
+          (**(code **)(*grim_interface_ptr + 0xc4))(bullet_trail_texture,0);
+          (**(code **)(*grim_interface_ptr + 0x100))(0x3f000000,0,0x3f000000,0x3f800000);
 ```
 
 The recovered source matches all 115 native instructions (432 bytes;
@@ -1484,11 +1484,11 @@ depth, RHW, color, and UV values are copied into every generated point.
 
 
 ```c
-          (**(code **)(*DAT_0048083c + 0x100))(0x3f000000,0,0x3f000000,0x3f800000);
-          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f0ccccd);
-          (**(code **)(*DAT_0048083c + 0xdc))(DAT_004802a8,DAT_004802ac,uVar7);
-          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f333333,0x3dcccccd,0x3f4ccccd);
-          DAT_004802a8 = _DAT_00484fc8 + (float)(&DAT_00490900)[DAT_004aaf0c * 0xd8];
+          (**(code **)(*grim_interface_ptr + 0x100))(0x3f000000,0,0x3f000000,0x3f800000);
+          (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f0ccccd);
+          (**(code **)(*grim_interface_ptr + 0xdc))(aim_screen_x,aim_screen_y,uVar7);
+          (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f333333,0x3dcccccd,0x3f4ccccd);
+          aim_screen_x = camera_offset_x + (float)(&player_aim_x)[render_overlay_player_index * 0xd8];
 ```
 
 The recovered source matches all 120 native instructions (462 bytes;
@@ -1561,16 +1561,16 @@ corners and calls vtable slot `0x138` (`grim_draw_quad_points`).
   failure clears the device-ready byte.
 - Ghidra signature: `void grim_begin_batch(void)`
 - Call sites: 79 (unique funcs: 23)
-- Sample calls: ui_draw_clock_gauge:L3887; ui_draw_clock_gauge:L3892; ui_render_aim_indicators:L5683; FUN_00417b80:L9228; FUN_00417b80:L9271; FUN_00417b80:L9299; terrain_generate_random:L9464; terrain_generate_random:L9506
+- Sample calls: ui_draw_clock_gauge:L3887; ui_draw_clock_gauge:L3892; ui_render_aim_indicators:L5683; terrain_generate:L9228; terrain_generate:L9271; terrain_generate:L9299; terrain_generate_random:L9464; terrain_generate_random:L9506
 - First callsite: ui_draw_clock_gauge (line 3887)
 
 
 ```c
-  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,iVar2);
-  (**(code **)(*DAT_0048083c + 0xfc))(0);
-  (**(code **)(*DAT_0048083c + 0xe8))();
-  (**(code **)(*DAT_0048083c + 0x11c))((float)iVar2,(float)iVar1,0x42000000,0x42000000);
-  (**(code **)(*DAT_0048083c + 0xf0))();
+  (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,iVar2);
+  (**(code **)(*grim_interface_ptr + 0xfc))(0);
+  (**(code **)(*grim_interface_ptr + 0xe8))();
+  (**(code **)(*grim_interface_ptr + 0x11c))((float)iVar2,(float)iVar1,0x42000000,0x42000000);
+  (**(code **)(*grim_interface_ptr + 0xf0))();
 ```
 
 The recovered VC6.5 source matches all 27 instructions and all 9 masked
@@ -1594,10 +1594,10 @@ grim.dll body:
 
 ```c
   if ((grim_render_disabled == '\0') && (grim_batch_active != '\0')) {
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
-    (**(code **)(*DAT_10059dbc + 0x11c))
-              (DAT_10059dbc,4,0,grim_vertex_count & 0xffff,0,(grim_vertex_count & 0xffff) >> 1);
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
+    (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
+    (**(code **)(*grim_d3d_device + 0x11c))
+              (grim_d3d_device,4,0,grim_vertex_count & 0xffff,0,(grim_vertex_count & 0xffff) >> 1);
+    iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))(grim_vertex_buffer,0,0,&grim_vertex_write_ptr,0x2800);
     if (-1 < iVar1) {
       grim_vertex_count = grim_vertex_count & 0xffff0000;
     }
@@ -1618,16 +1618,16 @@ calls; native code submits even when the current count is zero.
   lost after unlock, native code returns without clearing the active flag.
 - Ghidra signature: `void grim_end_batch(void)`
 - Call sites: 86 (unique funcs: 28)
-- Sample calls: FUN_00401dd0:L753; demo_trial_overlay_render (`FUN_004047c0`):L3134; ui_draw_clock_gauge:L3889; ui_draw_clock_gauge:L3895; ui_render_aim_indicators:L5702; demo_purchase_screen_update (`FUN_0040b740`):L6346; ui_draw_textured_quad:L9125; terrain_generate (`FUN_00417b80`):L9261
-- First callsite: FUN_00401dd0 (line 753)
+- Sample calls: console_render:L753; demo_trial_overlay_render (`0x004047c0`):L3134; ui_draw_clock_gauge:L3889; ui_draw_clock_gauge:L3895; ui_render_aim_indicators:L5702; demo_purchase_screen_update (`0x0040b740`):L6346; ui_draw_textured_quad:L9125; terrain_generate (`0x00417b80`):L9261
+- First callsite: console_render (line 753)
 
 
 ```c
     fStack_48 = fStack_48 - 4.0;
-    (**(code **)(*DAT_0048083c + 0xd0))(&fStack_4c,DAT_00471140,0x40800000,&puStack_44);
-    (**(code **)(*DAT_0048083c + 0xf0))();
-    (**(code **)(*DAT_0048083c + 0x20))(0x15,2);
-    (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);
+    (**(code **)(*grim_interface_ptr + 0xd0))(&fStack_4c,screen_width_f,0x40800000,&puStack_44);
+    (**(code **)(*grim_interface_ptr + 0xf0))();
+    (**(code **)(*grim_interface_ptr + 0x20))(0x15,2);
+    (**(code **)(*grim_interface_ptr + 0x20))(0x18,0x3f000000);
 ```
 
 The recovered VC6.5 source matches all 36 instructions and all 8 masked
@@ -1658,7 +1658,7 @@ grim.dll body:
     pfVar2 = pfVar2 + 1;
   }
   grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 1;
-  if (DAT_1005976c <= (ushort)grim_vertex_count) {
+  if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
     (**(code **)(*in_ECX + 0xec))();
   }
 ```
@@ -1689,7 +1689,7 @@ grim.dll body:
     pfVar2 = pfVar2 + 1;
   }
   grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
-  if (DAT_1005976c <= (ushort)grim_vertex_count) {
+  if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
     (**(code **)(*in_ECX + 0xec))();
   }
 ```
@@ -1710,8 +1710,8 @@ flushes at capacity.
   x87 `fcos`/`fsin`, seven scalar global writes, and `retn 0x4`.
 - Ghidra signature: `void grim_set_rotation(float radians)`
 - Call sites: 65 (unique funcs: 17)
-- Sample calls: FUN_00401dd0:L736; ui_draw_clock_gauge:L3886; ui_draw_clock_gauge:L3893; ui_render_aim_indicators:L5662; demo_purchase_screen_update (`FUN_0040b740`):L6325; terrain_render (`FUN_004188a0`):L9599; terrain_render (`FUN_004188a0`):L9630; creature_render_type (`FUN_00418b60`):L9718
-- First callsite: FUN_00401dd0 (line 736)
+- Sample calls: console_render:L736; ui_draw_clock_gauge:L3886; ui_draw_clock_gauge:L3893; ui_render_aim_indicators:L5662; demo_purchase_screen_update (`0x0040b740`):L6325; terrain_render (`0x004188a0`):L9599; terrain_render (`0x004188a0`):L9630; creature_render_type (`0x00418b60`):L9718
+- First callsite: console_render (line 736)
 - Runtime evidence: the checked-in `ui_render_trace_summary.json` contains
   53,352 `grim_set_rotation` events.
 
@@ -1719,7 +1719,7 @@ flushes at capacity.
 ```c
     uStack_40 = 0;
     puStack_44 = (undefined1 *)0x401e8d;
-    (**(code **)(*DAT_0048083c + 0xfc))();
+    (**(code **)(*grim_interface_ptr + 0xfc))();
     puStack_44 = &stack0xffffffdc;
     fStack_48 = (float)*(int *)(param_1 + 0x18);
 ```
@@ -1727,7 +1727,7 @@ flushes at capacity.
 grim.dll precompute:
 
 ```c
-  _DAT_10059e30 = radians;
+  grim_rotation_radians = radians;
   fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
   grim_rotation_cos = (float)fVar1;
 ```
@@ -1747,14 +1747,14 @@ state, copies, or layout-only expressions.
   though the body does not otherwise read `this`.
 - Ghidra signature: `void grim_set_uv(float u0, float v0, float u1, float v1)`
 - Call sites: 59 (unique funcs: 23)
-- Sample calls: demo_trial_overlay_render (`FUN_004047c0`):L3126; ui_draw_clock_gauge:L3884; ui_render_aim_indicators:L5635; ui_render_aim_indicators:L5642; ui_render_aim_indicators:L5664; demo_purchase_screen_update (`FUN_0040b740`):L6331; ui_draw_textured_quad:L9121; terrain_generate (`FUN_00417b80`):L9206
-- First callsite: demo_trial_overlay_render (`FUN_004047c0`) (line 3126)
+- Sample calls: demo_trial_overlay_render (`0x004047c0`):L3126; ui_draw_clock_gauge:L3884; ui_render_aim_indicators:L5635; ui_render_aim_indicators:L5642; ui_render_aim_indicators:L5664; demo_purchase_screen_update (`0x0040b740`):L6331; ui_draw_textured_quad:L9121; terrain_generate (`0x00417b80`):L9206
+- First callsite: demo_trial_overlay_render (`0x004047c0`) (line 3126)
 
 
 ```c
   uStack_18c = 0;
   uStack_190 = 0x4048bd;
-  (**(code **)(*DAT_0048083c + 0x100))();
+  (**(code **)(*grim_interface_ptr + 0x100))();
   uStack_190 = 0x4239999a;
   fStack_198 = param_1[1] + 22.0;
 ```
@@ -1762,10 +1762,10 @@ state, copies, or layout-only expressions.
 grim.dll UV assignment:
 
 ```c
-  DAT_1005b290 = u0;
-  DAT_1005b294 = v0;
-  DAT_1005b298 = u1;
-  DAT_1005b29c = v0;
+  grim_uv_u0 = u0;
+  grim_uv_v0 = v0;
+  grim_uv_u1 = u1;
+  grim_uv_v1 = v0;
 ```
 
 The recovered VC6.5 source matches all 17 instructions and all 8 masked
@@ -1780,14 +1780,14 @@ four-element UV array recovered independently in the exact quad renderers.
 - Notes: atlas size (cells per side) + frame index
 - Ghidra signature: `void grim_set_atlas_frame(int atlas_size, int frame)`
 - Call sites: 25 (unique funcs: 6)
-- Sample calls: creature_render_type (`FUN_00418b60`):L9704; creature_render_type (`FUN_00418b60`):L9715; creature_render_type (`FUN_00418b60`):L9759; creature_render_type (`FUN_00418b60`):L9770; creature_render_type (`FUN_00418b60`):L9819; creature_render_type (`FUN_00418b60`):L9830; bonus_hud_slot_update_and_render:L10630; projectile_render (`FUN_00422c70`):L16482
-- First callsite: creature_render_type (`FUN_00418b60`) (line 11841)
+- Sample calls: creature_render_type (`0x00418b60`):L9704; creature_render_type (`0x00418b60`):L9715; creature_render_type (`0x00418b60`):L9759; creature_render_type (`0x00418b60`):L9770; creature_render_type (`0x00418b60`):L9819; creature_render_type (`0x00418b60`):L9830; bonus_hud_slot_update_and_render:L10630; projectile_render (`0x00422c70`):L16482
+- First callsite: creature_render_type (`0x00418b60`) (line 11841)
 
 
 ```c
               iVar2 = iVar2 + 0x20;
             }
-            (**(code **)(*DAT_0048083c + 0x104))(8,iVar2);
+            (**(code **)(*grim_interface_ptr + 0x104))(8,iVar2);
           }
           else {
 ```
@@ -1806,24 +1806,24 @@ scaffolding.
 - Notes: atlas grid sub-rect; `atlas_size` indexes a pointer table with entries at 2/4/8/16; explicit call uses `(8, 2, 1, frame<<1)`
 - Ghidra signature: `void grim_set_sub_rect(int atlas_size, int width, int height, int frame)`
 - Call sites: 6 (unique funcs: 3)
-- Sample calls: ui_render_hud (`FUN_0041aed0`):L10950; ui_render_hud (`FUN_0041aed0`):L10961; ui_render_hud (`FUN_0041aed0`):L10964; ui_render_hud (`FUN_0041aed0`):L11488; bonus_render (`FUN_004295f0`):L18733; ui_text_input_render (`FUN_004413a0`):L27845
-- First callsite: ui_render_hud (`FUN_0041aed0`) (line 13087)
+- Sample calls: ui_render_hud (`0x0041aed0`):L10950; ui_render_hud (`0x0041aed0`):L10961; ui_render_hud (`0x0041aed0`):L10964; ui_render_hud (`0x0041aed0`):L11488; bonus_render (`0x004295f0`):L18733; ui_text_input_render (`0x004413a0`):L27845
+- First callsite: ui_render_hud (`0x0041aed0`) (line 13087)
 
 
 ```c
       fStack_f8 = 1.12104e-44;
       fStack_fc = 6.033625e-39;
-      (**(code **)(*DAT_0048083c + 0x108))();
+      (**(code **)(*grim_interface_ptr + 0x108))();
       fStack_fc = 32.0;
       fStack_100 = 64.0;
 ```
 
-Explicit parameterized call (bonus_render (`FUN_004295f0`)):
+Explicit parameterized call (bonus_render (`0x004295f0`)):
 
 ```c
-        (**(code **)(*DAT_0048083c + 0x108))
-                  (8,2,1,(&DAT_004d7a90)[(int)pfVar7[4] * 0x1f] << 1);
-        (**(code **)(*DAT_0048083c + 0x11c))();
+        (**(code **)(*grim_interface_ptr + 0x108))
+                  (8,2,1,(&weapon_hud_icon_id)[(int)pfVar7[4] * 0x1f] << 1);
+        (**(code **)(*grim_interface_ptr + 0x11c))();
 ```
 
 Live Binary Ninja shows `ECX=this`, four stack parameters, and `retn 0x10`.
@@ -1835,15 +1835,15 @@ all 15 masked references without codegen scaffolding.
 Atlas pointer table setup (grim.dll init):
 
 ```c
-  puVar9 = &DAT_1005bc78;
+  puVar9 = &grim_subrect_ptr_table;
   for (iVar7 = 0x10; iVar7 != 0; iVar7 = iVar7 + -1) {
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
   }
-  _DAT_1005bc80 = &grim_subrect_table_0;
-  _DAT_1005bc88 = &grim_subrect_table_1;
-  _DAT_1005bc98 = &grim_subrect_table_2;
-  _DAT_1005bcb8 = &DAT_1005a678;
+  grim_subrect_ptr0 = &grim_subrect_table_0;
+  grim_subrect_ptr1 = &grim_subrect_table_1;
+  grim_subrect_ptr2 = &grim_subrect_table_2;
+  grim_subrect_ptr3 = &grim_subrect_table;
 ```
 
 
@@ -1856,22 +1856,22 @@ Atlas pointer table setup (grim.dll init):
   override per-corner UVs; u=0.625, v in {0, 0.25}. The native method performs
   no bounds check. Its vtable slot and `retn 0xc` establish the member ABI.
 - Call sites: 4 (unique funcs: 1)
-- Sample calls: projectile_render (`FUN_00422c70`):L16721; projectile_render (`FUN_00422c70`):L16725; projectile_render (`FUN_00422c70`):L16728; projectile_render (`FUN_00422c70`):L16729
-- First callsite: projectile_render (`FUN_00422c70`) (line 18858)
+- Sample calls: projectile_render (`0x00422c70`):L16721; projectile_render (`0x00422c70`):L16725; projectile_render (`0x00422c70`):L16728; projectile_render (`0x00422c70`):L16729
+- First callsite: projectile_render (`0x00422c70`) (line 18858)
 
 
 ```c
             fVar14 = fVar32;
             do {
-              (**(code **)(*DAT_0048083c + 0x10c))(0,0x3f200000,0);
+              (**(code **)(*grim_interface_ptr + 0x10c))(0,0x3f200000,0);
               fVar26 = 0.25;
               fVar24 = 0.625;
               fVar21 = 1.4013e-45;
-              (**(code **)(*DAT_0048083c + 0x10c))(1,0x3f200000,0x3e800000);
+              (**(code **)(*grim_interface_ptr + 0x10c))(1,0x3f200000,0x3e800000);
               fVar19 = 0.25;
               in_stack_fffffd48 = 0.625;
-              (**(code **)(*DAT_0048083c + 0x10c))(2,0x3f200000,0x3e800000);
-              (**(code **)(*DAT_0048083c + 0x10c))(3,0x3f200000,0);
+              (**(code **)(*grim_interface_ptr + 0x10c))(2,0x3f200000,0x3e800000);
+              (**(code **)(*grim_interface_ptr + 0x10c))(3,0x3f200000,0);
               pfVar7 = &fStack_274;
 ```
 
@@ -1890,21 +1890,21 @@ same eight-byte UV array recovered by `grim_set_uv`.
   ABI even though the body does not otherwise read `this`.
 - Ghidra signature: `void grim_set_color_ptr(float *rgba)`
 - Call sites: 20 (unique funcs: 10)
-- Sample calls: game_over_screen_update:L7098; game_over_screen_update:L7171; quest_results_screen_update (`FUN_00410d20`):L7782; quest_results_screen_update (`FUN_00410d20`):L7851; creature_render_type (`FUN_00418b60`):L9717; creature_render_type (`FUN_00418b60`):L9772; creature_render_type (`FUN_00418b60`):L9832; creature_render_type (`FUN_00418b60`):L9894
+- Sample calls: game_over_screen_update:L7098; game_over_screen_update:L7171; quest_results_screen_update (`0x00410d20`):L7782; quest_results_screen_update (`0x00410d20`):L7851; creature_render_type (`0x00418b60`):L9717; creature_render_type (`0x00418b60`):L9772; creature_render_type (`0x00418b60`):L9832; creature_render_type (`0x00418b60`):L9894
 - First callsite: game_over_screen_update (line 7485)
 
 
 ```c
-            (**(code **)(*DAT_0048083c + 0x104))(8,iVar2);
+            (**(code **)(*grim_interface_ptr + 0x104))(8,iVar2);
           }
-          (**(code **)(*DAT_0048083c + 0x110))(&fStack_58);
-          (**(code **)(*DAT_0048083c + 0xfc))(pfVar5[7] - 1.5707964);
-          (**(code **)(*DAT_0048083c + 0x11c))
-                    ((_DAT_00484fc8 + pfVar5[1]) - fVar10,(_DAT_00484fcc + pfVar5[2]) - fVar10,
+          (**(code **)(*grim_interface_ptr + 0x110))(&fStack_58);
+          (**(code **)(*grim_interface_ptr + 0xfc))(pfVar5[7] - 1.5707964);
+          (**(code **)(*grim_interface_ptr + 0x11c))
+                    ((camera_offset_x + pfVar5[1]) - fVar10,(camera_offset_y + pfVar5[2]) - fVar10,
                      pfVar5[9] * 1.07,pfVar5[9] * 1.07);
 ```
 
-Clamped RGBA example (input_primary_just_pressed (`FUN_00446030`)):
+Clamped RGBA example (input_primary_just_pressed (`0x00446030`)):
 
 ```c
         if (0.0 <= afStack_8c[2]) {
@@ -1923,7 +1923,7 @@ Clamped RGBA example (input_primary_just_pressed (`FUN_00446030`)):
         else {
           afStack_8c[3] = 0.0;
         }
-        (**(code **)(*DAT_0048083c + 0x110))(afStack_8c + 2);
+        (**(code **)(*grim_interface_ptr + 0x110))(afStack_8c + 2);
 ```
 
 The recovered VC6.5 source matches all 25 instructions and all 12 masked
@@ -1943,14 +1943,14 @@ input pointer in `ESI`.
   `this`.
 - Ghidra signature: `void grim_set_color(float r, float g, float b, float a)`
 - Call sites: 203 (unique funcs: 37)
-- Sample calls: FUN_00401dd0:L733; FUN_00401dd0:L741; FUN_00401dd0:L756; FUN_00401dd0:L764; FUN_00401dd0:L769; FUN_00401dd0:L787; FUN_00401dd0:L833; FUN_00402d50:L1451
-- First callsite: FUN_00401dd0 (line 733)
+- Sample calls: console_render:L733; console_render:L741; console_render:L756; console_render:L764; console_render:L769; console_render:L787; console_render:L833; ui_render_loading:L1451
+- First callsite: console_render (line 733)
 
 
 ```c
     uStack_3c = 0x3f19999a;
     uStack_40 = 0x401e7d;
-    (**(code **)(*DAT_0048083c + 0x114))();
+    (**(code **)(*grim_interface_ptr + 0x114))();
     uStack_40 = 0;
     puStack_44 = (undefined1 *)0x401e8d;
 ```
@@ -1958,8 +1958,8 @@ input pointer in `ESI`.
 grim.dll packing:
 
 ```c
-  DAT_1005bc04 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
-  DAT_1005bc10 = DAT_1005bc04;
+  grim_color_slot0 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
+  grim_color_slot3 = grim_color_slot0;
 ```
 
 The recovered VC6.5 source matches all 42 instructions and all 16 masked
@@ -1978,14 +1978,14 @@ order without matching-only constructs.
   does not otherwise read `this`.
 - Ghidra signature: `void grim_set_color_slot(int index, float r, float g, float b, float a)`
 - Call sites: 12 (unique funcs: 2)
-- Sample calls: demo_purchase_screen_update (`FUN_0040b740`):L6302; demo_purchase_screen_update (`FUN_0040b740`):L6308; demo_purchase_screen_update (`FUN_0040b740`):L6315; demo_purchase_screen_update (`FUN_0040b740`):L6322; projectile_render (`FUN_00422c70`):L15993; projectile_render (`FUN_00422c70`):L16000; projectile_render (`FUN_00422c70`):L16068; projectile_render (`FUN_00422c70`):L16075
-- First callsite: demo_purchase_screen_update (`FUN_0040b740`) (line 6689)
+- Sample calls: demo_purchase_screen_update (`0x0040b740`):L6302; demo_purchase_screen_update (`0x0040b740`):L6308; demo_purchase_screen_update (`0x0040b740`):L6315; demo_purchase_screen_update (`0x0040b740`):L6322; projectile_render (`0x00422c70`):L15993; projectile_render (`0x00422c70`):L16000; projectile_render (`0x00422c70`):L16068; projectile_render (`0x00422c70`):L16075
+- First callsite: demo_purchase_screen_update (`0x0040b740`) (line 6689)
 
 
 ```c
     fVar10 = 0.0;
-    fsin((float10)(DAT_004808c0 % 1000) * (float10)6.2831855);
-    (**(code **)(*DAT_0048083c + 0x118))();
+    fsin((float10)(ui_pulse_timer_ms % 1000) * (float10)6.2831855);
+    (**(code **)(*grim_interface_ptr + 0x118))();
     uStack_7c = 0x3e99999a;
     puStack_80 = (undefined1 *)0x0;
 ```
@@ -1993,7 +1993,7 @@ order without matching-only constructs.
 grim.dll slot write:
 
 ```c
-  (&DAT_1005bc04)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
+  (&grim_color_slot0)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
 ```
 
 The recovered VC6.5 source matches all 27 instructions and all 9 masked
@@ -2009,24 +2009,24 @@ setter, then writes the result through the caller-provided array index.
   pass the interface in `ECX`, and the implementation returns with `retn 0x10`.
 - Ghidra signature: `void grim_draw_quad(float x, float y, float w, float h)`
 - Call sites: 100 (unique funcs: 21)
-- Sample calls: demo_trial_overlay_render (`FUN_004047c0`):L3132; ui_draw_clock_gauge:L3888; ui_draw_clock_gauge:L3894; ui_render_aim_indicators:L5701; demo_purchase_screen_update (`FUN_0040b740`):L6344; ui_draw_textured_quad:L9124; terrain_render (`FUN_004188a0`):L9613; creature_render_type (`FUN_00418b60`):L9720
-- First callsite: demo_trial_overlay_render (`FUN_004047c0`) (line 3132)
+- Sample calls: demo_trial_overlay_render (`0x004047c0`):L3132; ui_draw_clock_gauge:L3888; ui_draw_clock_gauge:L3894; ui_render_aim_indicators:L5701; demo_purchase_screen_update (`0x0040b740`):L6344; ui_draw_textured_quad:L9124; terrain_render (`0x004188a0`):L9613; creature_render_type (`0x00418b60`):L9720
+- First callsite: demo_trial_overlay_render (`0x004047c0`) (line 3132)
 
 
 ```c
   fStack_19c = *param_1 + 72.0;
   pcStack_1a0 = (char *)0x4048ee;
-  (**(code **)(*DAT_0048083c + 0x11c))();
+  (**(code **)(*grim_interface_ptr + 0x11c))();
   pcStack_1a0 = (char *)0x4048fc;
-  (**(code **)(*DAT_0048083c + 0xf0))();
+  (**(code **)(*grim_interface_ptr + 0xf0))();
 ```
 
 grim.dll vertex fill (color + UV):
 
 ```c
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
+    grim_vertex_write_ptr[4] = grim_color_slot0;
+    grim_vertex_write_ptr[5] = grim_uv_u0;
+    grim_vertex_write_ptr[6] = grim_uv_v0;
 ```
 
 The recovered VC6.5 source matches all 195 instructions and all 68 masked
@@ -2044,16 +2044,16 @@ approximation of `0.5 * sqrt(length_sq)`, not a CRT `sqrt` call.
   returns with `retn 0xc`.
 - Ghidra signature: `void grim_draw_quad_xy(float *xy, float w, float h)`
 - Call sites: 6 (unique funcs: 2)
-- Sample calls: FUN_00417b80:L9255; FUN_00417b80:L9289; FUN_00417b80:L9317; terrain_generate_random:L9491; terrain_generate_random:L9524; terrain_generate_random:L9547
-- First callsite: terrain_generate (`FUN_00417b80`) (line 11392)
+- Sample calls: terrain_generate:L9255; terrain_generate:L9289; terrain_generate:L9317; terrain_generate_random:L9491; terrain_generate_random:L9524; terrain_generate_random:L9547
+- First callsite: terrain_generate (`0x00417b80`) (line 11392)
 
 
 ```c
       fStack_bc = fVar6;
       fStack_b8 = fVar6;
-      (**(code **)(*DAT_0048083c + 0x120))();
+      (**(code **)(*grim_interface_ptr + 0x120))();
       iVar4 = iVar4 + 1;
-      iVar1 = DAT_0048f538 * DAT_0048f534 * 800;
+      iVar1 = terrain_texture_height * terrain_texture_width * 800;
 ```
 
 grim.dll body:
@@ -2080,7 +2080,7 @@ debt. Its body is exactly `draw_quad(xy[0], xy[1], w, h)`.
 grim.dll body:
 
 ```c
-  if (_DAT_10059e30 == 0.0) {
+  if (grim_rotation_radians == 0.0) {
     local_18 = x + w;
     local_20 = x;
     local_1c = y;
@@ -2103,8 +2103,8 @@ grim.dll body:
   `count` to the counter's low word and calls virtual slot `0xec` at capacity;
   `retn 0x10` confirms the four-argument member ABI.
 - Call sites: 5 (unique funcs: 1)
-- Sample calls: ui_element_render (`FUN_00446c40`):L29980; ui_element_render (`FUN_00446c40`):L29985; ui_element_render (`FUN_00446c40`):L29986; ui_element_render (`FUN_00446c40`):L30065; ui_element_render (`FUN_00446c40`):L30107
-- First callsite: ui_element_render (`FUN_00446c40`) (line 32116)
+- Sample calls: ui_element_render (`0x00446c40`):L29980; ui_element_render (`0x00446c40`):L29985; ui_element_render (`0x00446c40`):L29986; ui_element_render (`0x00446c40`):L30065; ui_element_render (`0x00446c40`):L30107
+- First callsite: ui_element_render (`0x00446c40`) (line 32116)
 - Runtime evidence: the checked-in `ui_render_trace.jsonl` contains 13,940
   `grim_submit_vertices` events with `kind: transform`.
 
@@ -2112,7 +2112,7 @@ grim.dll body:
 ```c
       pppcStack_84 = (char ***)pppfVar1;
       ppfStack_80 = (float **)pppcVar2;
-      (**(code **)(*DAT_0048083c + 0x128))();
+      (**(code **)(*grim_interface_ptr + 0x128))();
       if (*(int *)(param_1 + 0x120) == 8) {
         pppcStack_98 = (char ***)0x4;
 ```
@@ -2140,23 +2140,23 @@ branches are used.
   emits decimal vtable offset `+ 300` (0x12c). Live disassembly receives `this`
   in `ECX` and returns with `retn 0xc`.
 - Call sites: 4 (unique funcs: 1)
-- Sample calls: ui_element_render (`FUN_00446c40`):L30035; ui_element_render (`FUN_00446c40`):L30042; ui_element_render (`FUN_00446c40`):L30045; ui_element_render (`FUN_00446c40`):L30074
-- First callsite: ui_element_render (`FUN_00446c40`) (line 32196)
+- Sample calls: ui_element_render (`0x00446c40`):L30035; ui_element_render (`0x00446c40`):L30042; ui_element_render (`0x00446c40`):L30045; ui_element_render (`0x00446c40`):L30074
+- First callsite: ui_element_render (`0x00446c40`) (line 32196)
 
 
 ```c
-      (**(code **)(*DAT_0048083c + 300))();
+      (**(code **)(*grim_interface_ptr + 300))();
       if (*(int *)(param_1 + 0x120) == 8) {
-        (**(code **)(*DAT_0048083c + 300))();
+        (**(code **)(*grim_interface_ptr + 300))();
 ```
 
 grim.dll body:
 
 ```c
-  *DAT_10059e34 = *DAT_10059e34 + *offset;
-  DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
+  *grim_vertex_write_ptr = *grim_vertex_write_ptr + *offset;
+  grim_vertex_write_ptr[1] = offset[1] + grim_vertex_write_ptr[1];
   grim_vertex_count._0_2_ = (ushort)grim_vertex_count + (short)count;
-  if (DAT_1005976c <= (ushort)grim_vertex_count) {
+  if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
     (**(code **)(*in_ECX + 0xec))();
 }
 ```
@@ -2189,14 +2189,14 @@ vertex struct.
   field 4 with `*color` as packed ARGB. Live integer loads/stores establish the
   corrected color-pointer type; `retn 0x10` establishes the member ABI.
 - Call sites: 3 (unique funcs: 1)
-- Sample calls: ui_element_render (`FUN_00446c40`):L30006; ui_element_render (`FUN_00446c40`):L30014; ui_element_render (`FUN_00446c40`):L30018
-- First callsite: ui_element_render (`FUN_00446c40`) (line 32142)
+- Sample calls: ui_element_render (`0x00446c40`):L30006; ui_element_render (`0x00446c40`):L30014; ui_element_render (`0x00446c40`):L30018
+- First callsite: ui_element_render (`0x00446c40`) (line 32142)
 
 
 ```c
         fStack_6c = fStack_64 + *(float *)(param_1 + 0xc);
         pppcStack_90 = (char ***)0x446fe3;
-        (**(code **)(*DAT_0048083c + 0x130))();
+        (**(code **)(*grim_interface_ptr + 0x130))();
         if (*(int *)(param_1 + 0x120) == 8) {
           pfStack_74 = (float *)(*(float *)(param_1 + 0x1c) + 7.0);
 ```
@@ -2204,9 +2204,9 @@ vertex struct.
 grim.dll body:
 
 ```c
-  *DAT_10059e34 = *offset + *DAT_10059e34;
-  DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
-  DAT_10059e34[4] = *color;
+  *grim_vertex_write_ptr = *offset + *grim_vertex_write_ptr;
+  grim_vertex_write_ptr[1] = offset[1] + grim_vertex_write_ptr[1];
+  grim_vertex_write_ptr[4] = *color;
 ```
 
 The recovered VC6.5 source matches all 54 instructions and all 9 masked
@@ -2225,8 +2225,8 @@ native loop.
   ARGB. The integer operation corrects the stale color-pointer prototype;
   `retn 0x14` confirms the five-argument member ABI.
 - Call sites: 5 (unique funcs: 2)
-- Sample calls: effects_render (`FUN_0042e820`):L20025; effects_render (`FUN_0042e820`):L20053; ui_element_render (`FUN_00446c40`):L29953; ui_element_render (`FUN_00446c40`):L29959; ui_element_render (`FUN_00446c40`):L29962
-- First callsite: effects_render (`FUN_0042e820`) (line 22162)
+- Sample calls: effects_render (`0x0042e820`):L20025; effects_render (`0x0042e820`):L20053; ui_element_render (`0x00446c40`):L29953; ui_element_render (`0x00446c40`):L29959; ui_element_render (`0x00446c40`):L29962
+- First callsite: effects_render (`0x0042e820`) (line 22162)
 - Runtime evidence: the checked-in `ui_render_trace.jsonl` contains 7,202
   `grim_submit_vertices` events with `kind: transform_color`.
 
@@ -2234,7 +2234,7 @@ native loop.
 ```c
       pfStack_60 = &fStack_40;
       pfStack_64 = &fStack_48;
-      (**(code **)(*DAT_0048083c + 0x134))(puVar2 + 5,4);
+      (**(code **)(*grim_interface_ptr + 0x134))(puVar2 + 5,4);
     }
     puVar2 = puVar2 + 0x2f;
 ```
@@ -2242,11 +2242,11 @@ native loop.
 grim.dll body:
 
 ```c
-  DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
-  *DAT_10059e34 = *DAT_10059e34 * *matrix + DAT_10059e34[1] * matrix[1];
-  *DAT_10059e34 = *offset + *DAT_10059e34;
-  DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
-  DAT_10059e34[4] = *color;
+  grim_vertex_write_ptr[1] = *grim_vertex_write_ptr * matrix[2] + grim_vertex_write_ptr[1] * matrix[3];
+  *grim_vertex_write_ptr = *grim_vertex_write_ptr * *matrix + grim_vertex_write_ptr[1] * matrix[1];
+  *grim_vertex_write_ptr = *offset + *grim_vertex_write_ptr;
+  grim_vertex_write_ptr[1] = offset[1] + grim_vertex_write_ptr[1];
+  grim_vertex_write_ptr[4] = *color;
 ```
 
 The recovered VC6.5 source matches all 72 instructions and all 10 masked
@@ -2264,26 +2264,26 @@ inline assembly, dummy references, or layout-only branches.
   `retn 0x20`, and dispatches batch begin/flush through slots `0xe8`/`0xec`.
 - Ghidra signature: `void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)`
 - Call sites: 4 (unique funcs: 1)
-- Sample calls: projectile_render (`FUN_00422c70`):L16048; projectile_render (`FUN_00422c70`):L16204; projectile_render (`FUN_00422c70`):L16755; projectile_render (`FUN_00422c70`):L16768
-- First callsite: projectile_render (`FUN_00422c70`) (line 18185)
+- Sample calls: projectile_render (`0x00422c70`):L16048; projectile_render (`0x00422c70`):L16204; projectile_render (`0x00422c70`):L16755; projectile_render (`0x00422c70`):L16768
+- First callsite: projectile_render (`0x00422c70`) (line 18185)
 
 
 ```c
           fStack_224 = (float)((float10)(float)(fVar9 * (float10)512.0 + (float10)fVar31) + fVar8 +
                               fVar11 * (float10)1.1);
-          (**(code **)(*DAT_0048083c + 0x138))();
+          (**(code **)(*grim_interface_ptr + 0x138))();
           fStack_244 = 6.07815e-39;
-          (**(code **)(*DAT_0048083c + 0xf0))();
+          (**(code **)(*grim_interface_ptr + 0xf0))();
 ```
 
 grim.dll vertex fill (color + UV slots):
 
 ```c
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = x1;
+    grim_vertex_write_ptr[4] = grim_color_slot0;
+    grim_vertex_write_ptr[5] = grim_uv_u0;
+    grim_vertex_write_ptr[6] = grim_uv_v0;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = x1;
 ```
 
 The recovered VC6.5 source matches all 130 instructions and all 59 masked
@@ -2302,8 +2302,8 @@ count/capacity check.
 - Ghidra signature: `void grim_draw_text_mono(float x, float y, char *text)`
 - Suggested signature: `void grim_draw_text_mono(float x, float y, const char *text)`
 - Call sites: 5 (unique funcs: 3)
-- Sample calls: FUN_00401dd0:L781; FUN_00401dd0:L804; FUN_00401dd0:L843; demo_purchase_screen_update (`FUN_0040b740`):L6491; ui_render_hud (`FUN_0041aed0`):L11263
-- First callsite: FUN_00401dd0 (line 781)
+- Sample calls: console_render:L781; console_render:L804; console_render:L843; demo_purchase_screen_update (`0x0040b740`):L6491; ui_render_hud (`0x0041aed0`):L11263
+- First callsite: console_render (line 781)
 
 The recovered VC6 source shape identifies `grim_font_scale` at `0x1005cd08`,
 the shared two-float atlas temporary, and the native composite construction:
@@ -2316,16 +2316,16 @@ deduplicates ten native instructions shared by the `0xe4` and `0xf6` suffixes.
 ```c
     }
     else {
-      (**(code **)(*DAT_0048083c + 0x13c))
-                (0x41200000,(float)((iVar1 + 1) * 0x10) + *(float *)(param_1 + 0x1c),&DAT_004712c0);
-      iVar3 = *DAT_0048083c;
+      (**(code **)(*grim_interface_ptr + 0x13c))
+                (0x41200000,(float)((iVar1 + 1) * 0x10) + *(float *)(param_1 + 0x1c),&console_prompt_string);
+      iVar3 = *grim_interface_ptr;
 ```
 
 grim.dll body:
 
 ```c
   if (grim_font_texture_bound == '\0') {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,grim_font_texture);
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,grim_font_texture);
   }
   (**(code **)(*in_ECX + 0xfc))(0);
   (**(code **)(*in_ECX + 0xe8))();
@@ -2342,23 +2342,23 @@ grim.dll body:
   Ninja disassembly confirms the explicit stack `self` and plain `ret`.
 - Ghidra signature: `void grim_draw_text_mono_fmt(IGrim2D *self, float x, float y, char *fmt, ...)`
 - Call sites: 3 (unique funcs: 3)
-- Sample calls: ui_render_keybind_help:L3374; FUN_00406350:L3950; ui_render_hud (`FUN_0041aed0`):L11281
+- Sample calls: ui_render_keybind_help:L3374; game_update_victory_screen:L3950; ui_render_hud (`0x0041aed0`):L11281
 - First callsite: ui_render_keybind_help (line 3374)
 
 
 ```c
-  (**(code **)(*DAT_0048083c + 0xd4))(param_1,0x44000000,0x43800000);
-  (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f4ccccd);
-  (**(code **)(*DAT_0048083c + 0x140))
-            (DAT_0048083c,*param_1 + 16.0,param_1[1] + 16.0,s_key_info_00471ffc);
-  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,uVar4);
+  (**(code **)(*grim_interface_ptr + 0xd4))(param_1,0x44000000,0x43800000);
+  (**(code **)(*grim_interface_ptr + 0x20))(0x18,0x3f4ccccd);
+  (**(code **)(*grim_interface_ptr + 0x140))
+            (grim_interface_ptr,*param_1 + 16.0,param_1[1] + 16.0,s_key_info_00471ffc);
+  (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,uVar4);
 ```
 
 grim.dll body:
 
 ```c
-  vsprintf(&DAT_1005ae78,fmt,&stack0x00000014);
-  (**(code **)(*self + 0x13c))(x,y,&DAT_1005ae78);
+  vsprintf(&grim_printf_buffer,fmt,&stack0x00000014);
+  (**(code **)(*self + 0x13c))(x,y,&grim_printf_buffer);
 ```
 
 The recovered VC6.5 source matches all 16 instructions and all 3 masked
@@ -2372,15 +2372,15 @@ references, including both `grim_printf_buffer` operands and the imported
 - Confirmed C++ signature: `void grim_draw_text_small(float x, float y, char *text)`
 - Atlas: `GRIM_Font2`, with the `smallFnt.dat` byte map and glyph widths
 - Call sites: 20 (unique funcs: 9)
-- Sample calls: FUN_00401dd0:L760; FUN_00401dd0:L800; perk_selection_screen_update:L3808; demo_purchase_screen_update (`FUN_0040b740`):L6398; demo_purchase_screen_update (`FUN_0040b740`):L6401; demo_purchase_screen_update (`FUN_0040b740`):L6409; demo_purchase_screen_update (`FUN_0040b740`):L6426; demo_purchase_screen_update (`FUN_0040b740`):L6428
-- First callsite: FUN_00401dd0 (line 760)
+- Sample calls: console_render:L760; console_render:L800; perk_selection_screen_update:L3808; demo_purchase_screen_update (`0x0040b740`):L6398; demo_purchase_screen_update (`0x0040b740`):L6401; demo_purchase_screen_update (`0x0040b740`):L6409; demo_purchase_screen_update (`0x0040b740`):L6426; demo_purchase_screen_update (`0x0040b740`):L6428
+- First callsite: console_render (line 760)
 
 
 ```c
                (((float)*(int *)(param_1 + 0x18) + *(float *)(param_1 + 0x1c)) /
                (float)*(int *)(param_1 + 0x18)) * 0.3);
-    (**(code **)(*DAT_0048083c + 0x144))
-              (DAT_00471140 - 210.0,
+    (**(code **)(*grim_interface_ptr + 0x144))
+              (screen_width_f - 210.0,
                ((float)*(int *)(param_1 + 0x18) + *(float *)(param_1 + 0x1c)) - 18.0,
 ```
 
@@ -2400,16 +2400,16 @@ unused state.
 grim.dll body:
 
 ```c
-  if ((DAT_10053070 != -1) ||
-     (DAT_10053070 = (**(code **)(*in_ECX + 0xc0))(s_GRIM_Font2_10053c3c), DAT_10053070 != -1)) {
-    (**(code **)(*in_ECX + 0xc4))(DAT_10053070,0);
-    uVar3 = (uint)(byte)(&DAT_1005a570)[(byte)text[iVar5]];
+  if ((grim_font2_texture_handle != -1) ||
+     (grim_font2_texture_handle = (**(code **)(*in_ECX + 0xc0))(s_GRIM_Font2_10053c3c), grim_font2_texture_handle != -1)) {
+    (**(code **)(*in_ECX + 0xc4))(grim_font2_texture_handle,0);
+    uVar3 = (uint)(byte)(&grim_font2_char_map)[(byte)text[iVar5]];
     (**(code **)(*in_ECX + 0x100))
-              ((float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125,
-               (float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125,
-               ((float)*(byte *)((int)&DAT_1005bad8 + uVar3) * 0.00390625 +
-               (float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125) - 0.001953125,
-               ((float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125 + 0.0625) - 0.001953125);
+              ((float)(&grim_font2_uv_u)[uVar3 * 2] + 0.001953125,
+               (float)(&grim_font2_uv_v)[uVar3 * 2] + 0.001953125,
+               ((float)*(byte *)((int)&grim_font2_glyph_widths + uVar3) * 0.00390625 +
+               (float)(&grim_font2_uv_u)[uVar3 * 2] + 0.001953125) - 0.001953125,
+               ((float)(&grim_font2_uv_v)[uVar3 * 2] + 0.001953125 + 0.0625) - 0.001953125);
 ```
 
 
@@ -2424,14 +2424,14 @@ grim.dll body:
   slot `0x144`.
 - Ghidra signature: `void grim_draw_text_small_fmt(IGrim2D *self, float x, float y, char *fmt, ...)`
 - Call sites: 86 (unique funcs: 15)
-- Sample calls: demo_trial_overlay_render (`FUN_004047c0`):L3140; demo_trial_overlay_render (`FUN_004047c0`):L3193; demo_trial_overlay_render (`FUN_004047c0`):L3197; demo_trial_overlay_render (`FUN_004047c0`):L3201; demo_trial_overlay_render (`FUN_004047c0`):L3206; demo_trial_overlay_render (`FUN_004047c0`):L3211; demo_trial_overlay_render (`FUN_004047c0`):L3214; demo_trial_overlay_render (`FUN_004047c0`):L3217
-- First callsite: demo_trial_overlay_render (`FUN_004047c0`) (line 3140)
+- Sample calls: demo_trial_overlay_render (`0x004047c0`):L3140; demo_trial_overlay_render (`0x004047c0`):L3193; demo_trial_overlay_render (`0x004047c0`):L3197; demo_trial_overlay_render (`0x004047c0`):L3201; demo_trial_overlay_render (`0x004047c0`):L3206; demo_trial_overlay_render (`0x004047c0`):L3211; demo_trial_overlay_render (`0x004047c0`):L3214; demo_trial_overlay_render (`0x004047c0`):L3217
+- First callsite: demo_trial_overlay_render (`0x004047c0`) (line 3140)
 
 
 ```c
-  piStack_1ac = DAT_0048083c;
+  piStack_1ac = grim_interface_ptr;
   fStack_1b0 = 5.903715e-39;
-  (**(code **)(*DAT_0048083c + 0x148))();
+  (**(code **)(*grim_interface_ptr + 0x148))();
   pcStack_1a0 = (char *)uStack_8;
   fStack_1a4 = 1.0;
 ```
@@ -2439,8 +2439,8 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  vsprintf(&DAT_1005b078,in_stack_00000010,&stack0x00000014);
-  (**(code **)(*(int *)x + 0x144))(y,fmt,&DAT_1005b078);
+  vsprintf(&grim_printf_buffer_alt,in_stack_00000010,&stack0x00000014);
+  (**(code **)(*(int *)x + 0x144))(y,fmt,&grim_printf_buffer_alt);
 ```
 
 The recovered VC6.5 source matches all 16 instructions and all 3 masked
@@ -2455,14 +2455,14 @@ address-only placeholder is accepted.
 - Confirmed C++ signature: `int grim_measure_text_width(char *text)`
 - Result: maximum line width, or zero for a null pointer
 - Call sites: 14 (unique funcs: 10)
-- Sample calls: tutorial_prompt_dialog (`FUN_00408530`):L5007; bonus_render (`FUN_004295f0`):L18761; FUN_0042fd00:L20753; ui_checkbox_update (`FUN_0043dc80`):L26810; ui_menu_item_update:L27164; ui_button_update (`FUN_0043e830`):L27225; ui_text_input_update (`FUN_0043ecf0`):L27429; ui_list_widget_update (`FUN_0043efc0`):L27482
-- First callsite: tutorial_prompt_dialog (`FUN_00408530`) (line 5007)
+- Sample calls: tutorial_prompt_dialog (`0x00408530`):L5007; bonus_render (`0x004295f0`):L18761; wrap_text_to_width_alloc:L20753; ui_checkbox_update (`0x0043dc80`):L26810; ui_menu_item_update:L27164; ui_button_update (`0x0043e830`):L27225; ui_text_input_update (`0x0043ecf0`):L27429; ui_list_widget_update (`0x0043efc0`):L27482
+- First callsite: tutorial_prompt_dialog (`0x00408530`) (line 5007)
 
 
 ```c
   float fStack_8;
   
-  iVar3 = (**(code **)(*DAT_0048083c + 0x14c))();
+  iVar3 = (**(code **)(*grim_interface_ptr + 0x14c))();
   iVar6 = 1;
   fStack_4c = 5.925313e-39;
 ```
@@ -2482,8 +2482,8 @@ grim.dll body:
     iVar4 = 0;
   }
   else {
-    iVar4 = iVar4 + (uint)*(byte *)((int)&DAT_1005bad8 +
-                                   (uint)(byte)(&DAT_1005a570)[(byte)text[iVar6]]);
+    iVar4 = iVar4 + (uint)*(byte *)((int)&grim_font2_glyph_widths +
+                                   (uint)(byte)(&grim_font2_char_map)[(byte)text[iVar6]]);
   }
 ```
 

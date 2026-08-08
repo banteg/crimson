@@ -25,7 +25,7 @@ Runtime assumption for this map:
 - CRT startup sets x87 precision-control to 53-bit (`__controlfp(_PC_53,
   _MCW_PC)` equivalent path), so “x87 intermediate” here means x87-shaped
   evaluation under `PC_53` unless a function locally overrides CW.
-  Evidence: `sub_4636e7` returns the control-word mapping call at
+  Evidence: `crt_set_default_precision` returns the control-word mapping call at
   `0x004636f8`; the helper applies the `0x10000` precision selector around
   `0x00469f8e`–`0x00469f9e`.
 

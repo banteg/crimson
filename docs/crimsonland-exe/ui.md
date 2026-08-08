@@ -6,30 +6,30 @@ tags:
 # UI and menus
 This page groups UI element logic, menu loops, and transition helpers.
 
-## UI element timeline (ui_elements_update_and_render / FUN_0041a530)
+## UI element timeline (ui_elements_update_and_render / 0x0041a530)
 
 Responsibilities:
 
-- Updates the global transition timeline `ui_elements_timeline` (`DAT_00487248`) using `DAT_00480844`.
-  Direction is controlled by `ui_transition_direction` (`DAT_0048724c`) (0 = countdown, nonzero = count up).
+- Updates the global transition timeline `ui_elements_timeline` (`0x00487248`) using `frame_dt_ms`.
+  Direction is controlled by `ui_transition_direction` (`0x0048724c`) (0 = countdown, nonzero = count up).
 
-- When the timeline goes below zero, it calls `game_state_set` (`FUN_004461c0`) with `game_state_pending` (`DAT_00487274`) to
-  switch state and then sets `game_state_pending` (`DAT_00487274`) = `0x19` (idle).
+- When the timeline goes below zero, it calls `game_state_set` (`0x004461c0`) with `game_state_pending` (`0x00487274`) to
+  switch state and then sets `game_state_pending` (`0x00487274`) = `0x19` (idle).
 
 - Clamps the timeline to the maximum active element value
   (`ui_elements_max_timeline`).
 
 - Iterates the UI element pointer table (`0x0048f168 .. 0x0048f20b`, 41 pointers)
   **in reverse order** (from `ui_element_table_start` down to
-  `ui_element_table_end`), calling `ui_element_update` (`FUN_00446900`) and
+  `ui_element_table_end`), calling `ui_element_update` (`0x00446900`) and
   `ui_element_render` for each entry.
 
 Helpers:
 
-- `ui_elements_reset_state` (`FUN_00446170`) clears element active flags,
+- `ui_elements_reset_state` (`0x00446170`) clears element active flags,
   hover timers, and per-element callbacks (`on_activate` / `on_update`).
 
-- `ui_elements_max_timeline` (`FUN_00446190`) returns the max timeline value
+- `ui_elements_max_timeline` (`0x00446190`) returns the max timeline value
   among active elements.
 
 ## Recovered menu init bitfields
@@ -173,7 +173,7 @@ Additional controls-rebind runtime globals:
 
 A common menu loop that:
 
-1) Calls the gameplay render pass (`gameplay_render_world`, `FUN_00405960`).
+1) Calls the gameplay render pass (`gameplay_render_world`, `0x00405960`).
 2) Runs `ui_elements_update_and_render`.
 3) Draws menu content and buttons (`ui_button_update`).
 
@@ -225,7 +225,7 @@ For deeper carving of `ui_menu_item_element` subtemplate blocks
 Goal: promote block-local `_pad*` fields to named slot fields (position,
 mode/timeline, UV/color tuples) with confidence across menu variants.
 
-## UI element render (ui_element_render / FUN_00446c40)
+## UI element render (ui_element_render / 0x00446c40)
 
 `ui_element_render` updates focus/click handling and draws a UI element's quads,
 colors, and textures. See [UI elements](../re/static/systems/ui-elements.md) for struct details.

@@ -3,7 +3,7 @@ tags:
   - status-analysis
 ---
 
-# Creature struct (creature_pool / DAT_0049bf38)
+# Creature struct (creature_pool / 0x0049bf38)
 
 This document tracks the main creature pool used by `crimsonland.exe`.
 
@@ -11,7 +11,7 @@ Pool facts:
 
 - Entry size: `0x98` bytes.
 - Pool size: `0x180` entries.
-- Base address: `creature_pool` (`DAT_0049bf38`).
+- Base address: `creature_pool` (`0x0049bf38`).
 
 ## Struct view (creature_t)
 
@@ -75,10 +75,10 @@ typedef struct creature_t {
 
 Key helpers:
 
-- `creature_alloc_slot` (`FUN_00428140`) finds a free slot and seeds defaults.
-- `creature_spawn` (`FUN_00428240`) spawns a creature and writes position/type/heading.
-- `creature_update_all` (`FUN_00426220`) is the primary update loop (movement, targeting, AI, attacks).
-- `creatures_none_active` (`FUN_00428210`) scans the pool and returns nonzero when empty.
+- `creature_alloc_slot` (`0x00428140`) finds a free slot and seeds defaults.
+- `creature_spawn` (`0x00428240`) spawns a creature and writes position/type/heading.
+- `creature_update_all` (`0x00426220`) is the primary update loop (movement, targeting, AI, attacks).
+- `creatures_none_active` (`0x00428210`) scans the pool and returns nonzero when empty.
 
 Field map (medium confidence):
 
@@ -90,16 +90,16 @@ Field map (medium confidence):
 | `0x09` | collision flag | `creature_collision_flag` | set when two creatures are within 45 units; drives periodic contact damage ticks. |
 | `0x0c` | collision timer | `creature_collision_timer` | decremented when collision flag is set; when it wraps, applies damage. |
 | `0x10` | lifecycle stage | `creature_lifecycle_stage` | set to `16.0` on spawn, decremented through death/corpse rendering, and used as the AoE eligibility gate (`lifecycle_stage > 5.0`). |
-| `0x14` | pos_x | `creature_pos_x` | written by `creature_spawn` (`FUN_00428240`); used in distance tests/targeting. |
-| `0x18` | pos_y | `creature_pos_y` | written by `creature_spawn` (`FUN_00428240`); used in distance tests/targeting. |
-| `0x1c` | vel_x | `creature_vel_x` | computed from heading/speed and passed to `vec2_add_inplace` (`FUN_0041e400`). |
-| `0x20` | vel_y | `creature_vel_y` | computed from heading/speed and passed to `vec2_add_inplace` (`FUN_0041e400`). |
+| `0x14` | pos_x | `creature_pos_x` | written by `creature_spawn` (`0x00428240`); used in distance tests/targeting. |
+| `0x18` | pos_y | `creature_pos_y` | written by `creature_spawn` (`0x00428240`); used in distance tests/targeting. |
+| `0x1c` | vel_x | `creature_vel_x` | computed from heading/speed and passed to `vec2_add_inplace` (`0x0041e400`). |
+| `0x20` | vel_y | `creature_vel_y` | computed from heading/speed and passed to `vec2_add_inplace` (`0x0041e400`). |
 | `0x24` | health | `creature_health` | used as alive check (`> 0`) and perk kill logic. |
 | `0x28` | max_health | `creature_max_health` | set from health on spawn; clones use `max_health * 0.25`. |
 | `0x2c` | heading (radians) | `creature_heading` | set on spawn; eased toward desired heading each frame. |
 | `0x30` | desired heading | `creature_target_heading` | computed from target position each frame. |
-| `0x34` | size/radius | `creature_size` | used in collision tests (`creatures_apply_radius_damage`, `FUN_00420600`) and speed scaling. |
-| `0x38` | hit flash timer | `creature_hit_flash_timer` | decremented each frame; set by `creature_apply_damage` (`FUN_004207c0`) on damage. |
+| `0x34` | size/radius | `creature_size` | used in collision tests (`creatures_apply_radius_damage`, `0x00420600`) and speed scaling. |
+| `0x38` | hit flash timer | `creature_hit_flash_timer` | decremented each frame; set by `creature_apply_damage` (`0x004207c0`) on damage. |
 | `0x3c` | tint_r | `creature_tint_r` | set from spawn color parameter; modified by difficulty scaling. |
 | `0x40` | tint_g | `creature_tint_g` | set from spawn color parameter; modified by difficulty scaling. |
 | `0x44` | tint_b | `creature_tint_b` | set from spawn color parameter; modified by difficulty scaling. |
@@ -107,7 +107,7 @@ Field map (medium confidence):
 | `0x4c` | force-target flag | `creature_force_target` | set when target is too near/far; snaps target position to player. |
 | `0x50` | target_x | `creature_target_x` | derived from player/formation/linked enemy. |
 | `0x54` | target_y | `creature_target_y` | derived from player/formation/linked enemy. |
-| `0x58` | contact damage | `creature_contact_damage` | Passed to `player_take_damage` (`FUN_00425e50`) on player contact; seeded as `size * 0.0952381` in `FUN_00407611`. |
+| `0x58` | contact damage | `creature_contact_damage` | Passed to `player_take_damage` (`0x00425e50`) on player contact; seeded as `size * 0.0952381` in `FUN_00407611`. |
 | `0x5c` | move speed | `creature_move_speed` | Per-type speed scalar used to compute velocity; seeded to `0.9..` range in `FUN_00407611`. |
 | `0x60` | attack cooldown | `creature_attack_cooldown` | Decremented each frame; gates projectile spawns. |
 | `0x64` | reward value | `creature_reward_value` | Seeded from health/contact/speed (`health * 0.4 + contact * 0.8 + speed * 5 + rand(10..19)`), then scaled by `0.8` in the spawner. |

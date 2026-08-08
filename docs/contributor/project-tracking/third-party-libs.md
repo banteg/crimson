@@ -178,7 +178,7 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 ```
 
 ### libpng (version 1.0.5)
-- Evidence: Grim function `FUN_100103d6` at `0x100103d6` calls
+- Evidence: Grim function `d3dx_image_load_dib` at `0x100103d6` calls
   `png_create_read_struct("1.0.5", ...)`.
 
 - Status: headers imported (`third_party/headers/png_struct_stub.h`).
@@ -190,7 +190,7 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 - Status: png_* signatures mapped (name map).
 
 ### zlib (version 1.1.3)
-- Evidence: Grim function `FUN_1001c82f` at `0x1001c82f` initializes zlib with
+- Evidence: Grim function `d3dx_jpeg_get_soi` at `0x1001c82f` initializes zlib with
   `"1.1.3"`.
 
 - Evidence: zlib strings report "deflate 1.1.3" and "inflate 1.1.3" at
@@ -515,7 +515,7 @@ Statically linked SDK utility code is tracked above and requires archive-member
 matching.
 
 ### DirectX SDK version (8.1, exact release archive confirmed)
-- Evidence: Grim functions including `FUN_10003090` at `0x10003090` call
+- Evidence: Grim functions including `grim_app_pump` at `0x10003090` call
   `Direct3DCreate8(0xDC)` (`D3D_SDK_VERSION = 220`).
 
 - Evidence: the executable imports and calls `Direct3DCreate8` with the same

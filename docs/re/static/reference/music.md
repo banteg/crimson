@@ -17,7 +17,7 @@ projectile hit on a creature** (the impact SFX is suppressed for that hit).
 - `console_cmd_snd_add_game_tune` (`0x0042c360`) handles `snd_addGameTune` by
   loading `music\\<name>.ogg` and calling `music_queue_track` (`0x0043c960`),
   which appends the loaded track id into `music_playlist[]` and increments the
-  count `DAT_004cc8d0`.
+  count `music_playlist_entry_count`.
 
 ## "First hit starts the tune" gate
 
@@ -25,16 +25,16 @@ projectile hit on a creature** (the impact SFX is suppressed for that hit).
   music_track_crimsonquest_id + 1`.
 
 - `sfx_play_exclusive` (`0x0043d460`) treats `music_track_extra_0` specially:
-  when called with the sentinel and the gate `DAT_004cc8d4 == 0`, it picks a
-  random id from `music_playlist[]`, sets `DAT_004cc8d4 = 1`, and starts playback
+  when called with the sentinel and the gate `music_playlist_randomized_latch == 0`, it picks a
+  random id from `music_playlist[]`, sets `music_playlist_randomized_latch = 1`, and starts playback
   exclusively.
 
 - `projectile_update` (`0x00420b90`) uses this gate: on the first creature
-  impact (bullet/explosion path), if `demo_mode_active == 0`, `DAT_004cc8d4 == 0`
+  impact (bullet/explosion path), if `demo_mode_active == 0`, `music_playlist_randomized_latch == 0`
   and `game_mode != 2` (rush), it calls `sfx_play_exclusive(music_track_extra_0)`
   *instead of* playing the normal impact sound.
 
-- `sfx_mute_all` (`0x0043d550`) resets the gate (`DAT_004cc8d4 = 0`), allowing
+- `sfx_mute_all` (`0x0043d550`) resets the gate (`music_playlist_randomized_latch = 0`), allowing
   the first-hit trigger to happen again next round.
 
 ## Menu -> gameplay transition

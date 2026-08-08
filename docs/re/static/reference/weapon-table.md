@@ -4,19 +4,19 @@ tags:
 ---
 
 # Weapon table (weapon_table_init)
-Weapon stats are initialized in `weapon_table_init` (`FUN_004519b0`) and stored
-in a fixed‑stride table. The accessor `weapon_table_entry` (`FUN_0041fc60`)
+Weapon stats are initialized in `weapon_table_init` (`0x004519b0`) and stored
+in a fixed‑stride table. The accessor `weapon_table_entry` (`0x0041fc60`)
 returns a pointer to the name buffer at the start of each entry:
 
 ```
-weapon_table (`DAT_004d7a2c`) + weapon_id * 0x1f
+weapon_table (`0x004d7a2c`) + weapon_id * 0x1f
 ```
 
 `0x1f` is a count of `u32` slots, so the stride is **0x7c bytes** per entry.
 Entry `0` is a dummy (none); weapon id `1` (Pistol) starts at entry `1`.
 
 Note: the returned pointer is **not** the first field of the entry.
-There is a 4‑byte field at offset `-0x04` (`weapon_ammo_class` / `DAT_004d7a28`)
+There is a 4‑byte field at offset `-0x04` (`weapon_ammo_class` / `0x004d7a28`)
 that is indexed with the same stride.
 
 ## Struct view (weapon_stats_t)
@@ -50,17 +50,17 @@ typedef struct weapon_stats_t {
 ## Offsets (relative to entry base)
 
 All offsets below are in **bytes**, relative to the pointer returned by
-`weapon_table_entry` (`FUN_0041fc60`).
+`weapon_table_entry` (`0x0041fc60`).
 
 | Offset | Type  | Meaning | Evidence |
 | ------ | ----- | ------- | -------- |
 | `-0x04` | int | Ammo class / HUD indicator | Used to choose `ui_ui_ind*` icons in the HUD: `0=bullet`, `1=fire`, `2=rocket`, else electric. |
 | `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and rendered in the HUD weapon list via `FUN_0041c4b0`. |
-| `0x40` | byte | Unlocked/available flag | `weapon_refresh_available` (`FUN_00452e40`) clears the table then marks unlocked weapons; `weapon_pick_random_available` (`FUN_00452cd0`) skips entries with `0`. |
-| `0x44` | int | Clip size | Copied into `player_clip_size` (`DAT_00490b74`) on weapon swap and used to reset `player_ammo` (`DAT_00490b7c`). In player storage these land in float-typed slots (for example `10.0`, `12.0`, `25.0`). |
-| `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`DAT_00490b84`) after firing in `player_fire_weapon`. |
-| `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`DAT_00490b80`) in `player_start_reload` (scaled by perks). |
-| `0x50` | float | Spread / heat increment | Added to `player_spread_heat` (`DAT_00490b68`) after each shot (scaled by perks). |
+| `0x40` | byte | Unlocked/available flag | `weapon_refresh_available` (`0x00452e40`) clears the table then marks unlocked weapons; `weapon_pick_random_available` (`0x00452cd0`) skips entries with `0`. |
+| `0x44` | int | Clip size | Copied into `player_clip_size` (`0x00490b74`) on weapon swap and used to reset `player_ammo` (`0x00490b7c`). In player storage these land in float-typed slots (for example `10.0`, `12.0`, `25.0`). |
+| `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`0x00490b84`) after firing in `player_fire_weapon`. |
+| `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`0x00490b80`) in `player_start_reload` (scaled by perks). |
+| `0x50` | float | Spread / heat increment | Added to `player_spread_heat` (`0x00490b68`) after each shot (scaled by perks). |
 | `0x58` | int | Shot SFX base id | Used with `0x5c` to pick a random fire SFX. |
 | `0x5c` | int | Shot SFX variant count | `rand % count + base` in `player_fire_weapon`. |
 | `0x60` | int | Reload / equip SFX id | Played when a reload starts and when swapping to the weapon. |
@@ -96,7 +96,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   (`ui_ui_indElectric.jaz`).
 
 - Flag bits (offset `0x68`): `0x1` spawn muzzle flash / shot burst effect
-  (`effect_spawn`, `FUN_0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
+  (`effect_spawn`, `0x0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
   the crosshair entirely.
 
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
@@ -117,14 +117,14 @@ All offsets below are in **bytes**, relative to the pointer returned by
   [Effects pools](../../../structs/effects.md).
 
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
-  `player_alt_weapon_id` (`DAT_00490b8c`), `player_alt_clip_size` (`DAT_00490b90`),
-  `player_alt_reload_active` (`DAT_00490b94`), `player_alt_ammo` (`DAT_00490b98`),
-  `player_alt_reload_timer` (`DAT_00490b9c`), `player_alt_shot_cooldown`
-  (`DAT_00490ba0`), and `player_alt_reload_timer_max` (`DAT_00490ba4`).
+  `player_alt_weapon_id` (`0x00490b8c`), `player_alt_clip_size` (`0x00490b90`),
+  `player_alt_reload_active` (`0x00490b94`), `player_alt_ammo` (`0x00490b98`),
+  `player_alt_reload_timer` (`0x00490b9c`), `player_alt_shot_cooldown`
+  (`player_alt_shot_cooldown`), and `player_alt_reload_timer_max` (`0x00490ba4`).
 
 - The same stride is used by projectile metadata lookups (`weapon_projectile_travel_budget`,
   `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.
 
-- Many fields are only written in `weapon_table_init` (`FUN_004519b0`); only a subset are referenced
+- Many fields are only written in `weapon_table_init` (`0x004519b0`); only a subset are referenced
   by symbol elsewhere (reload/spread/sfx/flags/damage).
