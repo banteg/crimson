@@ -13,13 +13,11 @@ every entry. Heading is left untouched. The waves are:
 - template `0x23`, trigger 30000, count 30;
 - template `0x22`, trigger 35000, count 30.
 
-The candidate reproduces the exact 101-instruction body and all ten audited
-global references, scoring 97.03%. Every instruction after entry zero matches.
-The sole residual is VC6 scheduling of its three independent metadata stores:
-the candidate fills x87 conversion latency with them, while the native body
-emits them after both position stores. A combined position-and-metadata setter
-produces the same candidate, so the simpler repeated vector assignment remains
-the strongest plausible source shape.
+The recovered source matches all 407 native bytes and all 101 instructions,
+including the full instruction prefix and all ten audited global references.
+One continuous append count publishes the five entries and supplies the output
+count. That source shape keeps the first entry's three metadata stores after
+both position stores, resolving the former 97.03% scheduling residual.
 
 `first-position-lifetime-mutations.json` evaluated four aggregate, staged,
 and scalar materializations of the first wave position. None improved the
@@ -38,3 +36,11 @@ and
 `caabc677c87c39821efd82d268e8fb051cb0829252c1604fe4c9d78318efcaaa`.
 MSVC 6.0/6.5/6.5 Processor Pack/6.6 tie, MSVC 7.0 regresses, and `/G5`,
 `/G7`, `/Ox`, and `/Ob1` are neutral while `/G6` regresses.
+
+## 2026-08-08 exact recovery
+
+Replacing five fixed indices and the fixed output assignment with one append
+count improves the candidate from 395/407 fuzzy-weighted bytes (97.03%), a
+ten-instruction prefix, to an exact 407/407 bytes and 101/101-instruction
+prefix. References remain 10/0/0. The exact source SHA-256 is
+`9b360e8ef5961f3c589d2506294b757cc301c09609f3bd089b54243b7228acb0`.

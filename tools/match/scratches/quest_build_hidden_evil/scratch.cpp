@@ -29,46 +29,52 @@ extern "C" void quest_build_hidden_evil(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
-    spawns[0].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_HIDDEN_1_21,
         500,
         50);
+    ++entry_count;
 
-    spawns[1].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
-    spawns[1].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_HIDDEN_2_22,
         15000,
         30);
+    ++entry_count;
 
-    spawns[2].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
-    spawns[2].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_HIDDEN_3_23,
         25000,
         20);
+    ++entry_count;
 
-    spawns[3].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
-    spawns[3].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_HIDDEN_3_23,
         30000,
         30);
+    ++entry_count;
 
-    spawns[4].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
-    spawns[4].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_ALIEN_HIDDEN_2_22,
         35000,
         30);
+    ++entry_count;
 
-    *count = 5;
+    *count = entry_count;
 }

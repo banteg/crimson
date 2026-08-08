@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**698/810** functions matched exactly, **131882/341970** code bytes (**38.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**700/810** functions matched exactly, **132755/341970** code bytes (**38.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303740/341970** code bytes (**88.8%**).
+Fuzzy-weighted alignment is **303798/341970** code bytes (**88.8%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 8 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 14 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 565/671 | 116938/320805 | 36.5% | 282933/320805 | 88.2% | 671/671 | 320805/320805 | 100.0% | 565/671 |
+| crimsonland.exe | 567/671 | 117811/320805 | 36.7% | 282992/320805 | 88.2% | 671/671 | 320805/320805 | 100.0% | 567/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**565/671** functions, **116938/320805** bytes (**36.5%**), **282933/320805** fuzzy-weighted bytes (**88.2%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **565/671** scratches verified.
+**567/671** functions, **117811/320805** bytes (**36.7%**), **282992/320805** fuzzy-weighted bytes (**88.2%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **567/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -527,13 +527,13 @@ Artifact freshness issues:
 | wip | quest_build_army_of_three | 0x00434ca0 | 608 | 524/608 | 84 | 116/116 | 86.21% | 10/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |
 | wip | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 518/541 | 23 | 141/141 | 95.74% | 3/141 | 17/0/0 |  | quest-knee-deep-escalating-zombies |
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 378/424 | 46 | 92/92 | 89.13% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
-| wip | quest_build_the_fortress | 0x004352d0 | 429 | 412/429 | 17 | 102/102 | 96.08% | 21/102 | 8/0/0 |  | quest-fortress-overwritten-grid-seed |
+| wip | quest_build_the_fortress | 0x004352d0 | 429 | 421/429 | 8 | 102/102 | 98.04% | 70/102 | 8/0/0 |  | quest-fortress-append-count-grid |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 318/390 | 72 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
 | wip | quest_build_the_beating | 0x00435610 | 649 | 504/649 | 145 | 166/166 | 77.71% | 39/166 | 7/0/0 |  | quest-the-beating-append-count |
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 311/391 | 80 | 87/94 | 79.56% | 6/94 | 5/0/0 |  | quest-spanking-of-the-dead-append-count |
-| wip | quest_build_hidden_evil | 0x00435a30 | 407 | 395/407 | 12 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
+| match | quest_build_hidden_evil | 0x00435a30 | 407 | 407/407 | 0 | 101/101 | 100.00% | 101/101 | 10/0/0 |  | quest-hidden-evil-append-count |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
-| wip | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 428/466 | 38 | 135/135 | 91.85% | 2/135 | 7/0/0 |  | quest-minor-alien-breach-escalating-edges |
+| match | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 466/466 | 0 | 135/135 | 100.00% | 135/135 | 7/0/0 |  | quest-minor-alien-breach-append-count |
 | wip | quest_build_alien_squads | 0x00435ea0 | 507 | 455/507 | 52 | 108/108 | 89.81% | 10/108 | 0/0/0 |  | quest-alien-squads-fixed-corners |
 | match | quest_build_zombie_masters | 0x004360a0 | 128 | 128/128 | 0 | 31/31 | 100.00% | 31/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 204/213 | 9 | 68/68 | 95.59% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |

@@ -29,38 +29,36 @@ extern "C" void quest_build_the_fortress(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].pos = quest_vec2_t(
+    spawns[entry_count].pos = quest_vec2_t(
         -50.0f,
         (float)terrain_texture_height * 0.5f);
     int y_seed = 0x200;
-    spawns[0].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_SPIDER_SMALL_BLUE_40,
         100,
         6);
+    ++entry_count;
 
-    int spawn_index = 1;
     int trigger_time_ms = 1100;
-    int entry_count = 8;
     while (trigger_time_ms < 0x14B4) {
-        spawns[spawn_index].pos = quest_vec2_t(
+        spawns[entry_count].pos = quest_vec2_t(
             768.0f,
             (float)y_seed * 0.125f + 256.0f);
-        spawns[spawn_index].template_id =
+        spawns[entry_count].template_id =
             SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;
-        spawns[spawn_index].trigger_time_ms = trigger_time_ms;
-        spawns[spawn_index].count = 1;
-        ++spawn_index;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = 1;
+        ++entry_count;
         trigger_time_ms += 600;
         y_seed += 0x200;
     }
 
-    spawns[8].pos = quest_vec2_t(128.0f, 512.0f);
-    spawns[8].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,
-        6500,
-        1);
-
+    spawns[entry_count].pos = quest_vec2_t(128.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;
+    spawns[entry_count].trigger_time_ms = 6500;
+    spawns[entry_count].count = 1;
     int x_seed = 0x180;
     while (x_seed <= 0x900) {
         trigger_time_ms = entry_count * 600 + 0x157C;

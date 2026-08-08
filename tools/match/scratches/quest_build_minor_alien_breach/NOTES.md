@@ -17,15 +17,14 @@ The decisive source clue is statement order in the mandatory wave entry. The
 native body stores position and template before calculating the trigger; that
 calculation reuses the template register and therefore emits a template reload
 on the loop backedge. Expressing those fields directly reproduces the target's
-two extra instructions. The shared opening `entry_count = 2` also explains why
-native reuses the same register for both initial counts and seeds `wave` from
-it.
+two extra instructions. Starting the append count at zero and incrementing it
+after the two opening entries lets VC6 derive the native wave seed of two while
+retaining the same opening-count constants.
 
-The candidate has the exact 135-instruction length and all seven audited
-references, scoring 91.85%. Every instruction after the two opening entries
-matches. Their remaining 11 mismatches are unconstrained VC6 scheduling of
-four identical vector constants, callee-save pushes, and independent metadata
-stores; direct fields and an inlined setter produce the same opening body.
+The recovered source matches all 466 native bytes and all 135 instructions,
+including the full instruction prefix and all seven audited references. One
+continuous append count now publishes the opening pair and every conditional
+wave entry before supplying the output count.
 
 ## Recorded opening audit
 
@@ -45,10 +44,11 @@ variants; the preprocessor build, VC7, and `/G6` regress. Together with the
 exact post-opening body, this bounds the remaining mismatch as compiler
 scheduling rather than unrecovered quest policy.
 
-## Recovery classification audit
+## 2026-08-08 exact recovery
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+Replacing the opening `entry_count = 2` shortcut and fixed indices with an
+append count starting at zero resolves the complete former opening residual.
+The candidate improves from 428/466 fuzzy-weighted bytes (91.85%) and a
+two-instruction prefix to exact 466/466 bytes, 135/135 instructions, and a
+135-instruction prefix. References remain 7/0/0. The exact source SHA-256 is
+`daf96e86d1dda7d7464cb2370fa5ec3a23628ce7c2ab55cd3a60a673b0432aa5`.

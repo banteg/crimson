@@ -25,14 +25,13 @@ restores y values 448/384/320/256 and preserves the native fractional
 preserves `.5` for odd terrain heights. The refreshed quest snapshot is
 therefore evidence-backed rather than a replay fakematch.
 
-The candidate reproduces the exact 102-instruction body and all eight audited
-references, scoring 96.08% with a 21-instruction prefix. Moving `y_seed` to
-its evidenced initialization point, keeping `entry_count` live before the
-first loop, writing grid metadata directly, and incrementing trigger before
-entry count account for the strong shape. Residuals are four unconstrained
-placements of the independent entry-count/x-seed initializations and final
-grid count/trigger increments. Explicit cursor and post-increment pointer
-forms regress the register allocation and were rejected.
+The append-count candidate reproduces the exact 102-instruction body and all
+eight audited references, scoring 98.04% with a 70-instruction exact prefix.
+One count now publishes entry zero and the seven-entry opening walk, identifies
+the dead entry-8 write without advancing past it, drives the overwritten grid,
+and supplies the output count. Direct dead-entry metadata places the x-seed
+initialization at the native boundary. The remaining two differences are the
+independent grid entry-count and trigger-time increment placements.
 
 All six natural declaration orders for `spawn_index`, `trigger_time_ms`, and
 `entry_count` were also compiled. They are fuzzy-byte neutral at 96.08%;
@@ -61,3 +60,14 @@ and
 `3345a931147cba67328d3a8fa60d9ada42e5b5669cba0e3c77ce624535bf1f30`.
 MSVC 6.0/6.5/6.6 tie, Processor Pack and MSVC 7.0 regress, and `/G5`, `/G7`,
 `/Ox`, and `/Ob1` are neutral while `/G6` regresses.
+
+## 2026-08-08 append-count recovery
+
+Replacing the separate opening index and preseeded count with continuous
+publication improves the candidate from 96.08% to 98.04%, extends the exact
+prefix from 21 to 70 instructions, and preserves 102/102 instructions and
+references 8/0/0. Moving the x-seed declaration after the direct dead-entry
+metadata stores makes the entire 70-instruction opening exact. The remaining
+8.4117647058824 weighted-byte gap consists only of the two independent grid
+increment placements. The retained source SHA-256 is
+`f7590cfaa68ff55aa016c85818519de6ca2154c3e7a161e142205b6a08d607dd`.
