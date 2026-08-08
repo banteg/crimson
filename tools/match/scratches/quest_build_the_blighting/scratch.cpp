@@ -23,16 +23,6 @@ struct quest_entry_original_t {
     }
 };
 
-struct quest_spawn_builder_t {
-    quest_entry_original_t *cursor;
-    int count;
-
-    quest_spawn_builder_t(
-        quest_entry_original_t *spawn_cursor,
-        int spawn_count)
-        : cursor(spawn_cursor), count(spawn_count) {}
-};
-
 extern "C" void quest_build_the_blighting(
     quest_spawn_entry_t *entries, int *count)
 {
@@ -75,32 +65,29 @@ extern "C" void quest_build_the_blighting(
     spawns[entry_count].count = one;
     ++entry_count;
 
-    int wave = 0;
     int trigger_time_ms = 4000;
-    quest_spawn_builder_t builder(&spawns[entry_count], entry_count);
+    int wave = 0;
     while (wave < 8) {
         int parity = wave % 2;
 
         if (wave == 2 || wave == 4) {
-            builder.cursor->pos.x = -128.0f;
-            builder.cursor->pos.y = (float)(terrain_texture_width / 2);
-            builder.cursor->set_spawn(
+            spawns[entry_count].pos.x = -128.0f;
+            spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 SPAWN_ID_ALIEN_DEADLY_FAST_2B,
                 trigger_time_ms,
                 4);
-            ++builder.count;
-            ++builder.cursor;
+            ++entry_count;
         }
 
         if (wave == 3 || wave == 5) {
-            builder.cursor->pos.x = 1152.0f;
-            builder.cursor->pos.y = (float)(terrain_texture_width / 2);
-            builder.cursor->set_spawn(
+            spawns[entry_count].pos.x = 1152.0f;
+            spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 SPAWN_ID_ALIEN_DEADLY_FAST_2B,
                 trigger_time_ms,
                 4);
-            ++builder.count;
-            ++builder.cursor;
+            ++entry_count;
         }
 
         if (parity == 0) {
@@ -111,44 +98,40 @@ extern "C" void quest_build_the_blighting(
 
         int layout = wave % 5;
         if (layout == 0) {
-            builder.cursor->pos.x = (float)(terrain_texture_width + 64);
-            builder.cursor->pos.y = (float)(terrain_texture_width / 2);
-            builder.cursor->set_spawn(
+            spawns[entry_count].pos.x = (float)(terrain_texture_width + 64);
+            spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 spawn_template_id,
                 trigger_time_ms,
                 12);
-            ++builder.count;
-            ++builder.cursor;
+            ++entry_count;
             trigger_time_ms += 15000;
         } else if (layout == 1) {
-            builder.cursor->pos.x = -64.0f;
-            builder.cursor->pos.y = (float)(terrain_texture_width / 2);
-            builder.cursor->set_spawn(
+            spawns[entry_count].pos.x = -64.0f;
+            spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 spawn_template_id,
                 trigger_time_ms,
                 12);
-            ++builder.count;
-            ++builder.cursor;
+            ++entry_count;
             trigger_time_ms += 15000;
         } else if (layout == 2) {
-            builder.cursor->pos.y = (float)(terrain_texture_width + 64);
-            builder.cursor->pos.x = (float)(terrain_texture_width / 2);
-            builder.cursor->set_spawn(
+            spawns[entry_count].pos.y = (float)(terrain_texture_width + 64);
+            spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 spawn_template_id,
                 trigger_time_ms,
                 12);
-            ++builder.count;
-            ++builder.cursor;
+            ++entry_count;
             trigger_time_ms += 15000;
         } else if (layout == 3) {
-            builder.cursor->pos.y = -64.0f;
-            builder.cursor->pos.x = (float)(terrain_texture_width / 2);
-            builder.cursor->set_spawn(
+            spawns[entry_count].pos.y = -64.0f;
+            spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
+            spawns[entry_count].set_spawn(
                 spawn_template_id,
                 trigger_time_ms,
                 12);
-            ++builder.count;
-            ++builder.cursor;
+            ++entry_count;
             trigger_time_ms += 15000;
         }
 
@@ -156,5 +139,5 @@ extern "C" void quest_build_the_blighting(
         ++wave;
     }
 
-    *count = builder.count;
+    *count = entry_count;
 }

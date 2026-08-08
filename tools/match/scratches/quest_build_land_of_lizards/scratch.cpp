@@ -25,33 +25,43 @@ struct quest_entry_original_t {
         trigger_time_ms = spawn_trigger_time_ms;
         count = spawn_count;
     }
+
 };
 
 extern "C" void quest_build_land_of_lizards(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].set(
-        quest_vec2_t(256.0f, 256.0f),
-        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,
-        2000,
-        1);
-    spawns[1].set(
-        quest_vec2_t(768.0f, 256.0f),
-        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,
-        12000,
-        1);
-    spawns[2].set(
-        quest_vec2_t(256.0f, 768.0f),
-        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,
-        22000,
-        1);
-    spawns[3].set(
-        quest_vec2_t(768.0f, 768.0f),
+    spawns[entry_count].pos = quest_vec2_t(256.0f, 256.0f);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;
+    int one = 1;
+    quest_vec2_t next_position_1(768.0f, 256.0f);
+    spawns[entry_count].trigger_time_ms = 2000;
+    spawns[entry_count].count = one;
+    ++entry_count;
+
+    spawns[entry_count].pos = next_position_1;
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;
+    quest_vec2_t next_position_2(256.0f, 768.0f);
+    spawns[entry_count].trigger_time_ms = 12000;
+    spawns[entry_count].count = one;
+    ++entry_count;
+
+    spawns[entry_count].pos = next_position_2;
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;
+    quest_vec2_t next_position_3(768.0f, 768.0f);
+    spawns[entry_count].trigger_time_ms = 22000;
+    spawns[entry_count].count = one;
+    ++entry_count;
+
+    spawns[entry_count].set(
+        next_position_3,
         SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,
         32000,
-        1);
+        one);
+    ++entry_count;
 
-    *count = 4;
+    *count = entry_count;
 }

@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**714/810** functions matched exactly, **136452/341970** code bytes (**39.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**715/810** functions matched exactly, **137076/341970** code bytes (**40.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **304668/341970** code bytes (**89.1%**).
+Fuzzy-weighted alignment is **304680/341970** code bytes (**89.1%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 56 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 57 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 581/671 | 121508/320805 | 37.9% | 283861/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 581/671 |
+| crimsonland.exe | 582/671 | 122132/320805 | 38.1% | 283874/320805 | 88.5% | 671/671 | 320805/320805 | 100.0% | 582/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**581/671** functions, **121508/320805** bytes (**37.9%**), **283861/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **581/671** scratches verified.
+**582/671** functions, **122132/320805** bytes (**38.1%**), **283874/320805** fuzzy-weighted bytes (**88.5%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **582/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -556,12 +556,12 @@ Artifact freshness issues:
 | match | quest_build_deja_vu | 0x00437920 | 209 | 209/209 | 0 | 63/63 | 100.00% | 63/63 | 4/0/0 |  | quest-deja-vu-split-publication |
 | match | quest_build_target_practice | 0x00437a00 | 240 | 240/240 | 0 | 69/69 | 100.00% | 69/69 | 8/0/0 |  | quest-target-practice-indexed-builder |
 | wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 164/167 | 3 | 48/48 | 97.92% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
-| wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 191/204 | 13 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
+| wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 200/204 | 4 | 46/46 | 97.83% | 11/46 | 0/0/0 |  | quest-land-of-lizards |
 | wip | quest_build_the_lizquidation | 0x00437c70 | 245 | 217/245 | 28 | 79/79 | 88.61% | 7/79 | 5/0/0 | msvc6.5 /O2 /G6 /W3 /GR- | quest-the-lizquidation-builder |
 | match | quest_build_zombie_time | 0x00437d70 | 152 | 152/152 | 0 | 50/50 | 100.00% | 50/50 | 3/0/0 |  | quest-zombie-time-indexed-publication |
 | wip | quest_build_frontline_assault | 0x00437e10 | 285 | 240/285 | 45 | 82/84 | 84.34% | 18/84 | 1/0/0 |  | quest-frontline-assault-builder |
 | match | quest_build_the_collaboration | 0x00437f30 | 286 | 286/286 | 0 | 86/86 | 100.00% | 86/86 | 8/0/0 |  | quest-the-collaboration-indexed-publication |
-| wip | quest_build_the_blighting | 0x00438050 | 624 | 621/624 | 3 | 190/190 | 99.47% | 62/190 | 11/0/0 |  | quest-the-blighting-append-prefix |
+| match | quest_build_the_blighting | 0x00438050 | 624 | 624/624 | 0 | 190/190 | 100.00% | 190/190 | 11/0/0 |  | quest-the-blighting-append-prefix |
 | match | quest_build_the_annihilation | 0x004382c0 | 278 | 278/278 | 0 | 77/77 | 100.00% | 77/77 | 1/0/0 |  | quest-the-annihilation-builder |
 | match | quest_build_the_massacre | 0x004383e0 | 184 | 184/184 | 0 | 61/61 | 100.00% | 61/61 | 4/0/0 |  | quest-the-massacre-builder |
 | match | quest_build_the_killing | 0x004384a0 | 602 | 602/602 | 0 | 173/173 | 100.00% | 173/173 | 14/0/0 |  | quest-the-killing-discarded-rng-cycle |

@@ -7,11 +7,14 @@ Recovered Tier 2 Quest 8's complete four-entry spawn policy. Spawn template
 `(768, 768)` at 2000, 12000, 22000, and 32000 ms respectively, one creature per
 entry.
 
-The candidate has the same 46 instructions and scores 93.48%. The remaining
-differences are three independent VC6 scheduling choices around the inlined
-position constructor/setter and the saved `esi` register. No dummy dependency
-or synthetic control flow is used to reorder them, so this is intentionally
-kept as a WIP.
+The candidate has the same 46 instructions and scores 97.83%. One continuous
+append count owns all four entries and the final output. The first three
+records publish their template, construct the following position, and then
+publish trigger/count; the last record retains the shared full-entry setter.
+This reproduces the native saved-`ESI`, template, position-temporary, and
+epilogue schedule. The sole remaining difference is one independent placement
+of the shared count-one load. No dummy dependency or synthetic control flow is
+used to reorder it, so this remains a WIP.
 
 `entry-shape-mutations.json` records six aggregate, direct-field, and shared
 constant spellings. Shared constants are byte-neutral and every structural
@@ -30,3 +33,15 @@ and
 `eb39de2a7c7c7a5a1ef3edb0db7393935c21bbfc0a45cf3188f91742b6d25829`.
 MSVC 6.0/6.5/6.5 Processor Pack/6.6 tie, MSVC 7.0 regresses, and `/G5`,
 `/G7`, `/Ox`, and `/Ob1` are neutral while `/G6` regresses.
+
+## 2026-08-08 append and publication-boundary recovery
+
+Applying the fixed-table house style recovered in Cross Fire and The Blighting
+raises the result from 93.48% to 97.83% and extends the exact prefix from eight
+to eleven instructions. Fixed indices and the literal output count become one
+continuous append count. At each of the first three boundaries, the current
+template is published before constructing the following position; the current
+trigger and count follow that construction. The candidate remains 46/46
+instructions with no reference debt. The one residual instruction is the
+shared `mov ecx, 1` on the opposite side of the first following-position
+construction.
