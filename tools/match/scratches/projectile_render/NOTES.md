@@ -876,3 +876,24 @@ No source change is retained. The scratch remains at 57.4334633%,
 2,878/3,021 instructions, and `442/0/10` references. The complete record brings
 `experiments.jsonl` to 52 sweeps and 1,677 evaluated variants with SHA-256
 `05cfef9a2396ffc6b12ad05a4fa9027061b403fa5d0885277a96e278ba4096d6`.
+
+## Plague heading operand order
+
+The original SDK and native renderer agree on a narrower source-style rule:
+coordinate arithmetic is written in the order it is conceptually assembled,
+and VC6 preserves that left-associative x87 lifetime. In the Plague Spreader
+heading quad, native `0x004250b7..0x0042510d` computes the centered
+camera-plus-projectile base first and adds the sine or cosine displacement
+afterward. The previous source added the displacement before subtracting the
+30-pixel half-size.
+
+Writing each coordinate as `camera + position - 30 + displacement` reproduces
+the native base-first `fld`/`fadd`/`fsub` followed by `faddp` schedule. A named
+aggregate position instead regresses, so this is an operand-order recovery,
+not a general request for more vector temporaries. The change adds 10.318
+fuzzy-weighted bytes, raises the ratio from 57.4334633% to 57.5156753%, and
+improves the reference audit from `442/0/10` to `444/0/10`. Candidate
+instructions move from 2,878 to 2,880 against 3,021 native instructions.
+
+The retained source has SHA-256
+`064300adaa4c79f175dd6e578dfe7fce3088c16a92474b63e78b85b2b70296fc`.

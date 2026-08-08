@@ -968,11 +968,11 @@ extern "C" void projectile_render(float transition_alpha)
             float heading = projectile->angle + 1.5707964f;
             grim_interface_ptr->grim_draw_quad(
                 camera_offset_x + projectile->pos_x
-                    + (float)cos(heading) * 15.0f
-                    - 30.0f,
+                    - 30.0f
+                    + (float)cos(heading) * 15.0f,
                 camera_offset_y + projectile->pos.pos_y
-                    + (float)sin(heading) * 15.0f
-                    - 30.0f,
+                    - 30.0f
+                    + (float)sin(heading) * 15.0f,
                 60.0f,
                 60.0f);
 
