@@ -15,10 +15,11 @@ The candidate preserves the native fixed three-entry prefix, base-plus-count
 builder, signed width halving, x87 integer-to-float conversions, 24-byte entry
 stride, paired loop, trigger and count recurrences, and all eight references.
 Each fixed record is completed through the indexed builder before its count is
-advanced. In the loop, a record pointer owns the coordinate stores while the
-metadata is published through the current indexed builder entry. It compiles
-to 106 instructions versus the native 105, preserves a nine-instruction
-prefix, and scores 84.36%.
+advanced. The first and third fixed records publish metadata directly, while
+the second retains the shared setter boundary. In the loop, a record pointer
+owns the coordinate stores while metadata is published through the current
+indexed builder entry. It compiles to 106 instructions versus the native 105,
+preserves a 17-instruction prefix, and scores 89.10%.
 
 The residual is VC6 allocation and independent-store scheduling. Native reuses
 EBX for the loop trigger, keeps the wave count in EBP and the entry pointer in
@@ -86,3 +87,17 @@ localized EBX/EBP trigger and wave-count allocation swap, one extra candidate
 instruction, and the associated prologue/store scheduling. The retained source
 SHA-256 is
 `6f7d78a2bc1afdfaf4ad8bbdb084327161bd6f29e95ff6ab6a0883749270d19e`.
+
+## Staged-publication follow-up (2026-08-08)
+
+Replaying individual publication boundaries against the stronger complete-
+record source raises the score from 84.36% to 89.10%. Direct metadata for the
+first fixed record moves the shared template load ahead of the final callee-
+save push and extends the exact prefix from nine to 17 instructions. Direct
+metadata for the third fixed record restores its native template/trigger/count
+order. Finally, advancing the loop step before its trigger in source improves
+the loop-bottom spill schedule; the compiler still emits the native trigger
+advance first. The second fixed record remains on the shared setter because its
+direct form is byte-neutral. The retained result remains 106/105 instructions
+with `8/0/0` references; the residual is the bounded EBX/EBP trigger and wave-
+count allocation swap plus its one extra half-step copy.

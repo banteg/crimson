@@ -40,10 +40,10 @@ extern "C" void quest_build_spiders_inc(
         (float)(terrain_texture_width + 64);
     builder.spawns[builder.count].pos.x =
         (float)(terrain_texture_width / 2);
-    builder.spawns[builder.count].set_spawn(
-        SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
-        500,
-        1);
+    builder.spawns[builder.count].template_id =
+        SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;
+    builder.spawns[builder.count].trigger_time_ms = 500;
+    builder.spawns[builder.count].count = 1;
     ++builder.count;
 
     builder.spawns[builder.count].pos.y =
@@ -59,15 +59,14 @@ extern "C" void quest_build_spiders_inc(
     builder.spawns[builder.count].pos.y = -64.0f;
     builder.spawns[builder.count].pos.x =
         (float)(terrain_texture_width / 2);
-    builder.spawns[builder.count].set_spawn(
-        SPAWN_ID_SPIDER_SMALL_BLUE_40,
-        500,
-        4);
+    builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+    builder.spawns[builder.count].trigger_time_ms = 500;
+    builder.spawns[builder.count].count = 4;
     ++builder.count;
 
     for (int trigger_time_ms = 17000, step_count = 0;
          trigger_time_ms < 107000;
-         trigger_time_ms += 6000, ++step_count) {
+         ++step_count, trigger_time_ms += 6000) {
         quest_entry_original_t *wave_spawn =
             &builder.spawns[builder.count];
         int wave_count = step_count / 2 + 3;
