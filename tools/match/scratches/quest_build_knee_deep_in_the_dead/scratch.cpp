@@ -34,10 +34,9 @@ extern "C" void quest_build_knee_deep_in_the_dead(
     spawns[entry_count].pos = quest_vec2_t(
         -50.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,
-        100,
-        1);
+    spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43;
+    spawns[entry_count].trigger_time_ms = 100;
+    spawns[entry_count].count = 1;
     ++entry_count;
 
     int wave = 0;

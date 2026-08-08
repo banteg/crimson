@@ -32,32 +32,36 @@ extern "C" void quest_build_alien_squads(
     int entry_count = 0;
 
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 256.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 1500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 1500;
+    spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 768.0f);
     spawns[entry_count].set_spawn(
         SPAWN_ID_FORMATION_RING_ALIEN_8_12, 2500, 1);
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(768.0f, -256.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 5500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 5500;
+    spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(768.0f, 1280.0f);
     spawns[entry_count].set_spawn(
         SPAWN_ID_FORMATION_RING_ALIEN_8_12, 8500, 1);
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(1280.0f, 1280.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 14500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 14500;
+    spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(1280.0f, 768.0f);
     spawns[entry_count].set_spawn(
         SPAWN_ID_FORMATION_RING_ALIEN_8_12, 18500, 1);
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 256.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 25000, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 25000;
+    spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 768.0f);
     spawns[entry_count].set_spawn(

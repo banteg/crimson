@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **704/810** functions matched exactly, **133715/341970** code bytes (**39.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **303962/341970** code bytes (**88.9%**).
+Fuzzy-weighted alignment is **304001/341970** code bytes (**88.9%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 571/671 | 118771/320805 | 37.0% | 283156/320805 | 88.3% | 671/671 | 320805/320805 | 100.0% | 571/671 |
+| crimsonland.exe | 571/671 | 118771/320805 | 37.0% | 283195/320805 | 88.3% | 671/671 | 320805/320805 | 100.0% | 571/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**571/671** functions, **118771/320805** bytes (**37.0%**), **283156/320805** fuzzy-weighted bytes (**88.3%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **571/671** scratches verified.
+**571/671** functions, **118771/320805** bytes (**37.0%**), **283195/320805** fuzzy-weighted bytes (**88.3%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **571/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -525,7 +525,7 @@ Artifact freshness issues:
 | match | quest_build_monster_blues | 0x00434860 | 348 | 348/348 | 0 | 95/95 | 100.00% | 95/95 | 4/0/0 |  | quest-monster-blues-append-prefix |
 | wip | quest_build_the_gathering | 0x004349c0 | 725 | 649/725 | 76 | 134/134 | 89.55% | 12/134 | 0/0/0 |  | quest-the-gathering-fixed-table |
 | wip | quest_build_army_of_three | 0x00434ca0 | 608 | 524/608 | 84 | 116/116 | 86.21% | 10/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |
-| wip | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 522/541 | 19 | 141/141 | 96.45% | 3/141 | 18/0/0 |  | quest-knee-deep-append-opening |
+| wip | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 537/541 | 4 | 141/141 | 99.29% | 20/141 | 18/0/0 |  | quest-knee-deep-direct-opening |
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 378/424 | 46 | 92/92 | 89.13% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 421/429 | 8 | 102/102 | 98.04% | 70/102 | 8/0/0 |  | quest-fortress-append-count-grid |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 318/390 | 72 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
@@ -534,7 +534,7 @@ Artifact freshness issues:
 | match | quest_build_hidden_evil | 0x00435a30 | 407 | 407/407 | 0 | 101/101 | 100.00% | 101/101 | 10/0/0 |  | quest-hidden-evil-append-count |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
 | match | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 466/466 | 0 | 135/135 | 100.00% | 135/135 | 7/0/0 |  | quest-minor-alien-breach-append-count |
-| wip | quest_build_alien_squads | 0x00435ea0 | 507 | 479/507 | 28 | 108/108 | 94.44% | 10/108 | 0/0/0 |  | quest-alien-squads-append-count |
+| wip | quest_build_alien_squads | 0x00435ea0 | 507 | 502/507 | 5 | 108/108 | 99.07% | 80/108 | 0/0/0 |  | quest-alien-squads-alternating-metadata |
 | match | quest_build_zombie_masters | 0x004360a0 | 128 | 128/128 | 0 | 31/31 | 100.00% | 31/31 | 2/0/0 |  | quest-zombie-masters |
 | match | quest_build_8_legged_terror | 0x00436120 | 213 | 213/213 | 0 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-eight-legged-terror-append-builder |
 | wip | quest_build_ghost_patrols | 0x00436200 | 334 | 289/334 | 45 | 90/90 | 86.67% | 36/90 | 5/0/0 |  | quest-ghost-patrols-append-count |

@@ -26,12 +26,12 @@ schedule. Signed `wave % 8` is required for the target's correction sequence,
 even though the runtime wave never becomes negative. The opening count is also
 the initial logical entry count, explaining the shared `edi` value.
 
-The append-count candidate has the exact 141-instruction length, resolves 18
-audited references, and scores 96.45%. The complete loop body and backedge
-match. Starting the count at zero and publishing the opening brute through it
-narrows the residual to independent opening vector work, callee-save pushes,
-and the initial trigger load. The decompiler-aligned `while` remains free of
-artificial ordering dependencies.
+The candidate has the exact 141-instruction length, resolves all 18 audited
+references, and scores 99.29% with a 20-instruction exact prefix. The complete
+loop body and backedge match. Publishing the opening brute through the append
+count and spelling its metadata directly recovers the native opening vector,
+callee-save, and metadata schedule. The sole residual is one independent swap
+between the initial trigger load and the hoisted loop-position setup.
 
 ## Recorded opening-lifetime search
 
@@ -59,6 +59,15 @@ Replacing the preseeded opening count with zero-based publication improves the
 candidate from 95.74% to 96.45% while preserving 141/141 instructions and the
 exact loop body. The retained source SHA-256 is
 `4b8c28bcc0838ca0c9dcf673bc42044ad32e0d4957aee0007bedece2b4efcc70`.
+
+## 2026-08-08 direct-opening improvement
+
+Direct opening metadata was byte-neutral before the append-count recovery but
+becomes decisive afterward. It improves the candidate from 96.45% to 99.29%
+and extends the exact prefix from three to 20 instructions while preserving
+141/141 instructions, references `18/0/0`, and the exact loop. Retained source
+SHA-256:
+`c4e32ace06f3df88560dae220780ffca00246e690d43a721ff31940a2aa464b6`.
 
 ## Recovery classification audit
 

@@ -21,19 +21,19 @@ at the native fixed corner `(1088, 1088)` with the unadjusted trigger. This is
 not derived from the terrain dimensions; recovering the hardcoded corner also
 revealed and fixed a port-parity bug separately.
 
-The fixed entries require whole-vector construction plus the shared inlined
-metadata setter. Replacing their setters with direct fields makes VC6 batch all
-24 metadata stores and drops the score sharply. The loop has the opposite
-shape: native emits immediate coordinate stores, and direct metadata fields
-preserve template-before-trigger ordering. Using vector constructors there
-hoists four constants, saves an extra register, and adds 11 instructions.
+The fixed entries require whole-vector construction. After the append-count
+recovery, alternating metadata boundaries reproduce the native schedule:
+entries zero, two, four, and six use direct fields, while the intervening
+entries retain the shared inlined setter. Replacing all setters at once makes
+VC6 batch the metadata stores and drops the score sharply. The loop has the
+opposite shape: immediate coordinate and metadata fields preserve its exact
+template-before-trigger ordering.
 
-The append-count candidate has the exact 108-instruction length and scores
-94.44%. The entire repeated loop body matches. Publishing the eight fixed
-entries through the same count used by the loop removes nearly half of the
-former fixed-prefix gap while preserving the indexed source and native count
-register. The remaining differences are independent fixed-entry vector and
-metadata scheduling plus the loop cursor adjustment and trigger load.
+The candidate has the exact 108-instruction length and scores 99.07% with an
+80-instruction exact prefix. The entire fixed table and repeated loop body now
+match. The sole residual is one independent setup swap: native adjusts the
+loop cursor before loading trigger 36200, while VC6 emits those instructions
+in the opposite order.
 
 Binary Ninja now types the repeated-wave cursor as a layout-equivalent
 `quest_spawn_pair_binja_t *` presentation view. The loop consequently renders
@@ -66,3 +66,12 @@ publication improves the candidate from 89.81% to 94.44% while preserving
 108/108 instructions, a ten-instruction prefix, and the exact repeated loop.
 The retained source SHA-256 is
 `5fec8611109e15b3a8cb11a84792b3e7ac1c71d4e839b907d1fc1c6e0d5aabbd`.
+
+## 2026-08-08 alternating-metadata improvement
+
+Replaying fixed-entry metadata shapes after the append-count change exposes a
+new interaction. Direct metadata on alternating entries zero, two, four, and
+six improves the score from 94.44% to 99.07% and extends the exact prefix from
+10 to 80 instructions while preserving the exact 108-instruction body. The
+retained source SHA-256 is
+`b404a7f4e5698f1d956b6c19d8278f655068ad23be5653838531e73d5e8dcea6`.
