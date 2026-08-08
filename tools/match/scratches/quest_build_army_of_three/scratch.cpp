@@ -29,42 +29,80 @@ extern "C" void quest_build_army_of_three(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].pos = quest_vec2_t(-64.0f, 256.0f);
-    int *first_trigger = &spawns[0].trigger_time_ms;
-    first_trigger[-1] = SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;
-    first_trigger[0] = 500;
-    first_trigger[1] = 1;
+    spawns[entry_count].pos = quest_vec2_t(-64.0f, 256.0f);
+    spawns[entry_count].template_id =
+        SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;
+    int one = 1;
+    spawns[entry_count].trigger_time_ms = 500;
+    quest_vec2_t next_position_1(-64.0f, 512.0f);
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    spawns[1].pos = quest_vec2_t(-64.0f, 512.0f);
-    spawns[1].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 5500, 1);
+    spawns[entry_count].pos = next_position_1;
+    spawns[entry_count].set_spawn(
+        SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 5500, one);
+    ++entry_count;
 
-    spawns[2].pos = quest_vec2_t(-64.0f, 768.0f);
-    spawns[2].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 15000, 1);
+    spawns[entry_count].pos = quest_vec2_t(-64.0f, 768.0f);
+    spawns[entry_count].template_id =
+        SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;
+    quest_vec2_t next_position_3(-64.0f, 768.0f);
+    spawns[entry_count].trigger_time_ms = 15000;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    spawns[3].pos = quest_vec2_t(-64.0f, 768.0f);
-    spawns[3].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 19500, 1);
+    spawns[entry_count].pos = next_position_3;
+    spawns[entry_count].template_id =
+        SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;
+    quest_vec2_t next_position_4(-64.0f, 512.0f);
+    spawns[entry_count].trigger_time_ms = 19500;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    spawns[4].pos = quest_vec2_t(-64.0f, 512.0f);
-    spawns[4].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 22500, 1);
+    spawns[entry_count].pos = next_position_4;
+    spawns[entry_count].template_id =
+        SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;
+    quest_vec2_t next_position_5(-64.0f, 256.0f);
+    spawns[entry_count].trigger_time_ms = 22500;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    spawns[5].pos = quest_vec2_t(-64.0f, 256.0f);
-    spawns[5].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 26500, 1);
+    spawns[entry_count].pos = next_position_5;
+    spawns[entry_count].set_spawn(
+        SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 26500, one);
+    ++entry_count;
 
-    spawns[6].pos = quest_vec2_t(-64.0f, 256.0f);
-    spawns[6].set_spawn(SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 35500, 1);
+    spawns[entry_count].pos = quest_vec2_t(-64.0f, 256.0f);
+    spawns[entry_count].template_id =
+        SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16;
+    quest_vec2_t next_position_7(-64.0f, 512.0f);
+    spawns[entry_count].trigger_time_ms = 35500;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    spawns[7].pos = quest_vec2_t(-64.0f, 512.0f);
-    spawns[7].set_spawn(SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 39500, 1);
+    spawns[entry_count].pos = next_position_7;
+    spawns[entry_count].set_spawn(
+        SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 39500, one);
+    ++entry_count;
 
-    spawns[8].pos = quest_vec2_t(-64.0f, 768.0f);
-    spawns[8].set_spawn(SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 42500, 1);
+    spawns[entry_count].pos = quest_vec2_t(-64.0f, 768.0f);
+    spawns[entry_count].template_id =
+        SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16;
+    spawns[entry_count].trigger_time_ms = 42500;
+    spawns[entry_count].count = one;
+    ++entry_count;
 
-    spawns[9].pos = quest_vec2_t(512.0f, 1152.0f);
-    spawns[9].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 52500, 3);
+    spawns[entry_count].pos = quest_vec2_t(512.0f, 1152.0f);
+    spawns[entry_count].set_spawn(
+        SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 52500, 3);
+    ++entry_count;
 
-    spawns[10].pos = quest_vec2_t(512.0f, -256.0f);
-    spawns[10].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 56500, 3);
+    spawns[entry_count].pos = quest_vec2_t(512.0f, -256.0f);
+    spawns[entry_count].set_spawn(
+        SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 56500, 3);
+    ++entry_count;
 
-    *count = 11;
+    *count = entry_count;
 }

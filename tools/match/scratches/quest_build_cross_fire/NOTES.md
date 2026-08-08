@@ -13,24 +13,19 @@ constant, not a map-size-derived bottom edge.
 Whole-vector construction reproduces the native reusable eight-byte temporary,
 the height-to-x87 conversion, shared registers for 512, template `0x3c`,
 template `0x40`, trigger 26000, and count six, plus the exact entry offsets and
-epilogue. The candidate has the same 76 instructions, preserves a ten-
-instruction prefix, both references, and scores 81.58%.
+epilogue. One continuous append count owns all seven entries. Constructing the
+following position between the current template and trigger/count publication
+reproduces the native overlap at the three relevant boundaries.
 
-The residual is independent VC6 scheduling across adjacent fixed entries:
-native overlaps each following vector temporary with the preceding metadata,
-whereas the candidate completes several position stores earlier. A two-field
-metadata setter with explicit count and direct first-entry metadata produce the
-same or worse schedule; `msvc6.5pp` is identical. The exact-length
-default-profile form is retained without artificial dependencies or register
-forcing.
+The candidate is exact: 76/76 instructions, 390/390 bytes, and both references
+resolved. No artificial dependencies or register forcing are used.
 
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+the same instruction count as native and all bytes match. Classification:
+`RECOVERY=semantic-complete`.
 
 ## 2026-07-27 focused family pass
 
@@ -59,3 +54,16 @@ to instruction 24 and raises the score from 81.58% to 93.42%, with the native
 three localized independent-store schedules: entry-one metadata against the
 next vector temporary, then two template stores against the following x
 coordinate construction.
+
+## 2026-08-08 append and publication-boundary recovery
+
+Replacing the fixed indices and output literal with one continuous append
+count raises the retained candidate from 93.42% to 94.74%. The remaining three
+regions all have the same source shape: native publishes the current template,
+constructs the following position, then publishes the current trigger and
+count.
+
+Naming those three following positions at that boundary recovers each overlap
+in turn, first reaching 97.37% and then matching all 390 bytes exactly. The
+final source retains the aggregate temporaries and semantic table order while
+making the original publication boundaries explicit.

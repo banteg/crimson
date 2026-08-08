@@ -18,11 +18,12 @@ the existing ports already preserve them.
 
 Whole-vector construction and the shared inlined metadata setter reproduce the
 native eight-byte temporary, template register reuse across each group, count
-reuse, exact entry offsets, and epilogue. The candidate has the exact
-116-instruction length and scores 86.21%. There are no auditable external
-references in this constant-only builder. Its residual mismatches are VC6
-scheduling among independent position temporaries and neighboring metadata
-stores; no artificial dependencies or register forcing are used.
+reuse, exact entry offsets, and epilogue. A continuous append count and five
+explicit metadata-to-next-position publication boundaries raise the candidate
+to 99.14% with the exact 116-instruction length. There are no auditable
+external references in this constant-only builder. The sole residual is one
+independent placement of the shared count-one load; no artificial dependency
+or register forcing is used.
 
 ## Recovery classification audit
 
@@ -72,3 +73,17 @@ one through ten are individually byte-neutral.
 bounds those ten remaining sites, and the complete result is recorded in
 `experiments.jsonl`. The residual remains independent vector-temporary and
 metadata scheduling rather than missing recovered behavior.
+
+## 2026-08-08 append and publication-boundary recovery
+
+One append count replaces the eleven fixed indices and output literal, raising
+the retained candidate from 91.38% to 93.10%. Cross Fire then exposes the
+remaining table dialect: publish the current template, construct the following
+position, and only then publish the current trigger and count.
+
+Applying that boundary at entries two, three, four, and six removes each
+five-byte schedule gap. Directly publishing entry eight removes the final
+larger tail region. Reconstructing the opening through the same boundary raises
+the result to 99.14%, leaving only `mov ecx, 1` on the opposite side of the
+following position construction. The candidate remains 116/116 instructions
+with identical recovered values and table order.
