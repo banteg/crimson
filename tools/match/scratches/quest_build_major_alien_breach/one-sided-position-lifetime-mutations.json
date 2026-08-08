@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "one-sided-position-lifetime",
+      "find": "    int trigger_time_ms = 4000;\n\n    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "second-position-before-trigger",
+          "text": "    quest_vec2_t second_position(512.0f, -64.0f);\n    int trigger_time_ms = 4000;\n\n    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            second_position,\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }\n"
+        },
+        {
+          "name": "second-position-after-trigger",
+          "text": "    int trigger_time_ms = 4000;\n    quest_vec2_t second_position(512.0f, -64.0f);\n\n    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            second_position,\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }\n"
+        },
+        {
+          "name": "first-position-before-trigger",
+          "text": "    quest_vec2_t first_position(1088.0f, 512.0f);\n    int trigger_time_ms = 4000;\n\n    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n        builder.add(\n            first_position,\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }\n"
+        },
+        {
+          "name": "first-position-after-trigger",
+          "text": "    int trigger_time_ms = 4000;\n    quest_vec2_t first_position(1088.0f, 512.0f);\n\n    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n        builder.add(\n            first_position,\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

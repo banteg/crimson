@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-loop-wide-distance-expression",
+      "find": "            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            if (live_distance > min_dist && distance < best_distance) {\n                best_index = index;\n                best_distance = distance;\n            }\n",
+      "replacements": [
+        {
+          "name": "inline-rounded-uses",
+          "text": "            double distance = sqrt(dx * dx + dy * dy);\n            if (distance > min_dist\n                && (float)distance < best_distance) {\n                best_index = index;\n                best_distance = (float)distance;\n            }\n"
+        },
+        {
+          "name": "assigned-wide-in-condition",
+          "text": "            double distance;\n            if ((distance = sqrt(dx * dx + dy * dy)) > min_dist\n                && (float)distance < best_distance) {\n                best_index = index;\n                best_distance = (float)distance;\n            }\n"
+        },
+        {
+          "name": "const-wide-inline-rounded-uses",
+          "text": "            const double distance = sqrt(dx * dx + dy * dy);\n            if (distance > min_dist\n                && (float)distance < best_distance) {\n                best_index = index;\n                best_distance = (float)distance;\n            }\n"
+        },
+        {
+          "name": "nested-inline-rounded-uses",
+          "text": "            double distance = sqrt(dx * dx + dy * dy);\n            if (distance > min_dist) {\n                if ((float)distance < best_distance) {\n                    best_index = index;\n                    best_distance = (float)distance;\n                }\n            }\n"
+        },
+        {
+          "name": "assigned-wide-with-named-rounded-result",
+          "text": "            double distance;\n            if ((distance = sqrt(dx * dx + dy * dy)) > min_dist) {\n                float rounded_distance = (float)distance;\n                if (rounded_distance < best_distance) {\n                    best_index = index;\n                    best_distance = rounded_distance;\n                }\n            }\n"
+        }
+      ]
+    }
+  ]
+}

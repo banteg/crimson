@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "late-player-owner",
+      "find": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n",
+      "replacements": [
+        {
+          "name": "player-owner-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_t *reset_player = &player_state_table[reset_index];\n            reset_player->shot_cooldown = 0.8f;\n            reset_player->weapon_id = 1;\n            reset_player->reset_reserved_zero = 0;\n            reset_player->death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n"
+        },
+        {
+          "name": "player-owner-before-demo-check",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n            player_state_t *reset_player = &player_state_table[reset_index];\n\n            if (!demo_mode_active) {\n"
+        }
+      ]
+    },
+    {
+      "name": "perk-clear-player-owner",
+      "find": "        }\n\n        memset(\n            player_state_table[render_overlay_player_index].perk_counts,\n            0,\n            sizeof(player_state_table[0].perk_counts));\n",
+      "replacements": [
+        {
+          "name": "move-clear-through-player-owner",
+          "text": "            memset(\n                reset_player->perk_counts,\n                0,\n                sizeof(player_state_table[0].perk_counts));\n        }\n"
+        }
+      ]
+    }
+  ]
+}

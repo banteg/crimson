@@ -68,3 +68,13 @@ byte-identically at 88.44%, 100 instructions, and references `14/0/0`; the
 incomplete goto-only form fails compilation. No source variant is retained.
 Stock `/G5`, `/G6`, `/Ob1`, and `/Ot` are likewise byte-identical to `/GB`,
 while `/Oy-` regresses.
+
+`guard-helper-mutations.json` tests the early bounds/Rush predicate behind
+both `__inline` and `__forceinline` helpers, including the complete helper-call
+interactions. Unused helper definitions are removed and leave the baseline
+byte-identical; calling either helper falls to 75.38% without changing the
+100-instruction count or clean `14/0/0` audit. The complete five-variant sweep
+is recorded under spec SHA-256
+`e882b73953bb6ea1430a1e6b993bd11b91bd7786ae7d88f5efd7652afe38fa72`.
+An inlined guard boundary therefore does not reproduce native's shrink-wrapped
+`ESI` save.

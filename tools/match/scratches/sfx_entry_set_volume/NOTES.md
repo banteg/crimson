@@ -36,3 +36,11 @@ the remaining allocation is not controlled by that lexical lifetime.
 initialized mapped-volume locals, late cursor declarations, and a late entry
 alias. All four were also byte-neutral. Its recorded spec SHA-256 is
 `be623af3f1826444ee9ef9c0be5b41f3db8e5a27ca30192fe6df3de2468df75a`.
+
+`normalization-helper-mutations.json` closes the remaining helper-boundary
+hypothesis. Returning and in-place mapping helpers, each under `__inline` and
+`__forceinline`, all compile byte-identically to the 86.67%, 45/45,
+`5/0/0` baseline. The complete four-variant sweep is recorded under spec
+SHA-256 `1ce4237d93183af49d84a9a4a4bf14258caf5e86b59c195795c5ac696c5a8b6d`.
+Inlining the normalization therefore does not delay the entry-pointer load or
+induce native's `EDI` allocation.

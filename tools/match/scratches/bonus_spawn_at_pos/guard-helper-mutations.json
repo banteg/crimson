@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "invalid-position-helper-definition",
+      "find": "#include \"crimsonland_gameplay.h\"\n",
+      "replacements": [
+        {
+          "name": "inline-invalid-position-helper",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nstatic __inline bool bonus_spawn_position_invalid(const vec2f_t *pos)\n{\n    return pos->x < 32.0f\n        || (float)(terrain_texture_width - 32) < pos->x\n        || pos->y < 32.0f\n        || (float)(terrain_texture_height - 32) < pos->y\n        || config_blob.game_mode == GAME_MODE_RUSH;\n}\n"
+        },
+        {
+          "name": "forceinline-invalid-position-helper",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nstatic __forceinline bool bonus_spawn_position_invalid(const vec2f_t *pos)\n{\n    return pos->x < 32.0f\n        || (float)(terrain_texture_width - 32) < pos->x\n        || pos->y < 32.0f\n        || (float)(terrain_texture_height - 32) < pos->y\n        || config_blob.game_mode == GAME_MODE_RUSH;\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "invalid-position-helper-call",
+      "find": "    if (pos->x < 32.0f\n        || (float)(terrain_texture_width - 32) < pos->x\n        || pos->y < 32.0f\n        || (float)(terrain_texture_height - 32) < pos->y\n        || config_blob.game_mode == GAME_MODE_RUSH) {\n",
+      "replacements": [
+        {
+          "name": "call-invalid-position-helper",
+          "text": "    if (bonus_spawn_position_invalid(pos)) {\n"
+        }
+      ]
+    }
+  ]
+}

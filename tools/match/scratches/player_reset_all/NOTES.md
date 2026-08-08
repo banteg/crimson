@@ -101,3 +101,14 @@ reference mismatches. No source change was retained. Final metrics remain
 instructions, prefix 94, and `57/0/1` references. The final four-record
 `experiments.jsonl` SHA-256 is
 `48bb4d8731cba8cf4626b3e7409860c1b3126df9f5101ed72d159c8c7e877c7d`.
+
+`perk-clear-owner-lifetime-mutations.json` tests whether a late typed
+`player_state_t *` can keep native's already-scaled player offset live through
+the demo branch and into the perk clear. An unused owner immediately before
+the demo check is byte-neutral; using either late owner for the clear moves the
+first mismatch from instruction 94 to 12 and falls below 51%, while owning the
+final stores alone also regresses. The complete five-variant sweep is recorded
+under spec SHA-256
+`7f4b8c7bbb04fefbe95fa874acadc67d90b855e69b313e14f03ff4d32370fd1d`.
+The native `EAX` reuse cannot be recovered by extending a narrow typed owner
+without perturbing the otherwise exact prefix.

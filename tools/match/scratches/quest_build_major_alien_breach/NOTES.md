@@ -49,3 +49,11 @@ for the 100-iteration paired-spawn loop. Both are byte-neutral at 97.92%,
 48/48 instructions, confirming that loop syntax does not move the remaining
 counter/constant scheduling swap. The spec SHA-256 is
 `1baa6632ca8e7c6e5f29c31a486b0023cd213f2cf6044d9508a65ad99dda9947`.
+
+`one-sided-position-lifetime-mutations.json` isolates the one remaining gap
+more narrowly than the earlier paired-position sweep. Hoisting only the first
+position falls to 89.58%; hoisting only the second adds an instruction and
+falls to 61.86%, regardless of whether the local appears before or after the
+trigger variable. None moves just the native loop-counter zeroing. The
+complete four-variant result is recorded under spec SHA-256
+`50b067d9e5706a3988ff8b5517bda1419273f0c401b37097e4a219a3f350de32`.

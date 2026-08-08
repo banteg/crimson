@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "normalization-helper-shape",
+      "find": "#include \"crimsonland_audio.h\"\n\nextern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer;\n\n    volume = (volume + 2.0f) * (1.0f / 3.0f);\n    if (entry->vorbis_stream != 0 && entry->volume == volume) {\n        return;\n    }\n\n    entry->volume = volume;\n    buffer = entry->buffers;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (entry->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n",
+      "replacements": [
+        {
+          "name": "inline-returning-helper",
+          "text": "#include \"crimsonland_audio.h\"\n\nstatic __inline float sfx_map_volume(float volume)\n{\n    return (volume + 2.0f) * (1.0f / 3.0f);\n}\n\nextern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer;\n\n    volume = sfx_map_volume(volume);\n    if (entry->vorbis_stream != 0 && entry->volume == volume) {\n        return;\n    }\n\n    entry->volume = volume;\n    buffer = entry->buffers;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (entry->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n"
+        },
+        {
+          "name": "forceinline-returning-helper",
+          "text": "#include \"crimsonland_audio.h\"\n\nstatic __forceinline float sfx_map_volume(float volume)\n{\n    return (volume + 2.0f) * (1.0f / 3.0f);\n}\n\nextern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer;\n\n    volume = sfx_map_volume(volume);\n    if (entry->vorbis_stream != 0 && entry->volume == volume) {\n        return;\n    }\n\n    entry->volume = volume;\n    buffer = entry->buffers;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (entry->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n"
+        },
+        {
+          "name": "inline-in-place-helper",
+          "text": "#include \"crimsonland_audio.h\"\n\nstatic __inline void sfx_map_volume(float *volume)\n{\n    *volume = (*volume + 2.0f) * (1.0f / 3.0f);\n}\n\nextern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer;\n\n    sfx_map_volume(&volume);\n    if (entry->vorbis_stream != 0 && entry->volume == volume) {\n        return;\n    }\n\n    entry->volume = volume;\n    buffer = entry->buffers;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (entry->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n"
+        },
+        {
+          "name": "forceinline-in-place-helper",
+          "text": "#include \"crimsonland_audio.h\"\n\nstatic __forceinline void sfx_map_volume(float *volume)\n{\n    *volume = (*volume + 2.0f) * (1.0f / 3.0f);\n}\n\nextern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer;\n\n    sfx_map_volume(&volume);\n    if (entry->vorbis_stream != 0 && entry->volume == volume) {\n        return;\n    }\n\n    entry->volume = volume;\n    buffer = entry->buffers;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (entry->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n"
+        }
+      ]
+    }
+  ]
+}

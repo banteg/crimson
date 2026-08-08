@@ -79,3 +79,14 @@ candidate instruction and loses 6.13 fuzzy-weighted bytes. Across the three
 recorded plans, all 15 bounded lifetime/control-flow variants are now covered;
 none removes VC6's final `fld`/`fxch`/`fcompp` lowering, so no further source
 change is retained.
+
+`wide-distance-expression-mutations.json` adds five late-rounding forms that
+keep one `double` square-root result and cast only at the ranking comparison
+and assignment. All five add one candidate instruction and regress: the three
+direct/const/nested forms lose 6.13 weighted bytes, while assignment-in-guard
+forms lose 8.62. The recorded spec SHA-256 is
+`d7edfc4b1ccbd207d9c9153c07a0a3b614e7f97e5a6ac898a08d57ef8561e9c3`.
+VC6.0, 6.5, and 6.6 remain tied at 93.33%; `/G5`, `/Oa`, `/Ow`, `/Ob1`, and
+explicit `/Ot` are byte-neutral, while `/G6`, `/Oy-`, `/Op`, Processor Pack,
+and VC7 regress. The direct native `fcomp [min_dist]` remains a backend
+lowering boundary rather than a missing rounded-distance lifetime.
