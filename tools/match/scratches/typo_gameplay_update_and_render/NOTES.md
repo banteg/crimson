@@ -18,7 +18,7 @@ match=98.43% prefix=33/508 target_insns=508 candidate_insns=508 refs=194/0/0
   the live database merges the former scalar `typo_target_world_x/y` objects
   into named `.x/.y` fields. Its native one-bit guard and empty exit-time
   destructor account for `typo_runtime_init_flag`, `typo_target_world`, and
-  `nullsub_71`.
+  `typo_target_world_destroy`.
 - Enter submits any nonempty buffer, increments the attempt count, resolves the
   first active creature with that name, and requests one aimed shot. The
   unmatched command `reload` requests a reload instead.

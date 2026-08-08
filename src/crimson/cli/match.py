@@ -947,6 +947,11 @@ def cmd_match_naming_audit(
         "--name-map",
         help="curated function-name map",
     ),
+    naming_hints: Path = typer.Option(
+        matchlib.DEFAULT_NAMING_HINTS_PATH,
+        "--naming-hints",
+        help="address-keyed, evidence-backed naming hints",
+    ),
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
     image: str | None = typer.Option(None, "--image", help="show rows for one image"),
     provider_member: str | None = typer.Option(
@@ -992,7 +997,11 @@ def cmd_match_naming_audit(
     """Report exact recoveries that still expose weaker analyzer names."""
 
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
-    rows = matchlib.collect_naming_debt(statuses, name_map_path=name_map)
+    rows = matchlib.collect_naming_debt(
+        statuses,
+        name_map_path=name_map,
+        naming_hints_path=naming_hints,
+    )
     provider_members = _parse_csv(provider_member)
     selected_statuses = [
         status

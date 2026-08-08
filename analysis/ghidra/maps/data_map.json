@@ -610,6 +610,16 @@
       "type": "unsigned char[24]"
     },
     {
+      "address": "0x0046fa50",
+      "aliases": [
+        "$T17396"
+      ],
+      "comment": "VC6 compiler-local two-entry SEH scope table occupying malloc.obj's complete 0x18-byte .rdata section.",
+      "name": "crt_heap_alloc_scope_table",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[24]"
+    },
+    {
       "address": "0x0046fa68",
       "aliases": [
         "$T17734"
@@ -5827,14 +5837,14 @@
     },
     {
       "address": "0x00487004",
-      "comment": "Quest stage major index (episode/tier). Initialized to 1 in FUN_004120b0; advances after every 10 minor stages; not persisted to disk.",
+      "comment": "Quest stage major index (episode/tier). Initialized to 1 in gameplay_run_state_init; advances after every 10 minor stages; not persisted to disk.",
       "name": "quest_stage_major",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00487008",
-      "comment": "Quest stage minor index (mission within major tier). Initialized to 1 in FUN_004120b0; incremented on quest results \"Play Next\"; not persisted to disk.",
+      "comment": "Quest stage minor index (mission within major tier). Initialized to 1 in gameplay_run_state_init; incremented on quest results \"Play Next\"; not persisted to disk.",
       "name": "quest_stage_minor",
       "program": "crimsonland.exe",
       "type": "int"
@@ -7156,7 +7166,7 @@
     },
     {
       "address": "0x0048f524",
-      "comment": "Perk prompt timer (0..200); drives prompt alpha and transform in FUN_00403550.",
+      "comment": "Perk prompt timer (0..200); drives prompt alpha and transform in perk_prompt_update_and_render.",
       "name": "perk_prompt_timer",
       "program": "crimsonland.exe",
       "type": "int"
@@ -7803,21 +7813,21 @@
     },
     {
       "address": "0x00490424",
-      "comment": "Randomized grayscale color G used by fx_queue_add helper FUN_00427700.",
+      "comment": "Randomized grayscale color G used by fx_queue_add_random.",
       "name": "fx_queue_random_color_g",
       "program": "crimsonland.exe",
       "type": "float"
     },
     {
       "address": "0x00490428",
-      "comment": "Randomized grayscale color B used by fx_queue_add helper FUN_00427700.",
+      "comment": "Randomized grayscale color B used by fx_queue_add_random.",
       "name": "fx_queue_random_color_b",
       "program": "crimsonland.exe",
       "type": "float"
     },
     {
       "address": "0x0049042c",
-      "comment": "Randomized color alpha used by fx_queue_add helper FUN_00427700.",
+      "comment": "Randomized color alpha used by fx_queue_add_random.",
       "name": "fx_queue_random_color_a",
       "program": "crimsonland.exe",
       "type": "float"
@@ -8174,7 +8184,7 @@
     },
     {
       "address": "0x00490bbc",
-      "comment": "Creature index targeted by Evil Eyes perk; set in FUN_00406b40 and read in creature_update_all.",
+      "comment": "Creature index targeted by Evil Eyes perk; set in perks_update_effects and read in creature_update_all.",
       "name": "evil_eyes_target_creature",
       "program": "crimsonland.exe",
       "type": "int"
@@ -12854,7 +12864,7 @@
         "_?pfnMessageBoxA@?1??__crtMessageBoxA@@9@9"
       ],
       "comment": "VC6 __crtMessageBoxA cached MessageBoxA function pointer.",
-      "name": "crt_message_box_a",
+      "name": "crt_message_box_a_proc",
       "program": "crimsonland.exe",
       "type": "void *"
     },
@@ -12864,7 +12874,7 @@
         "_?pfnGetActiveWindow@?1??__crtMessageBoxA@@9@9"
       ],
       "comment": "VC6 __crtMessageBoxA cached GetActiveWindow function pointer.",
-      "name": "crt_get_active_window",
+      "name": "crt_get_active_window_proc",
       "program": "crimsonland.exe",
       "type": "void *"
     },
@@ -12874,7 +12884,7 @@
         "_?pfnGetLastActivePopup@?1??__crtMessageBoxA@@9@9"
       ],
       "comment": "VC6 __crtMessageBoxA cached GetLastActivePopup function pointer.",
-      "name": "crt_get_last_active_popup",
+      "name": "crt_get_last_active_popup_proc",
       "program": "crimsonland.exe",
       "type": "void *"
     },
@@ -13954,7 +13964,7 @@
     },
     {
       "address": "0x1005a458",
-      "comment": "Byte size of the external lookup blob loaded by FUN_10005a40.",
+      "comment": "Byte size of the external lookup blob loaded by grim_lookup_blob_load.",
       "name": "grim_lookup_blob_size",
       "program": "grim.dll",
       "type": "int"
@@ -14052,7 +14062,7 @@
     },
     {
       "address": "0x1005a670",
-      "comment": "Heap buffer containing the lookup blob loaded by FUN_10005a40.",
+      "comment": "Heap buffer containing the lookup blob loaded by grim_lookup_blob_load.",
       "name": "grim_lookup_blob",
       "program": "grim.dll",
       "type": "void *"
@@ -14294,7 +14304,7 @@
     },
     {
       "address": "0x1005bc14",
-      "comment": "Lookup-blob availability flag set from FUN_10005a40 return value.",
+      "comment": "Lookup-blob availability flag set from grim_lookup_blob_load's return value.",
       "name": "grim_lookup_blob_loaded",
       "program": "grim.dll",
       "type": "char"

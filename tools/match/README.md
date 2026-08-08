@@ -617,7 +617,11 @@ uv run crimson match naming-audit --json --check
 
 Suggestions are intentionally narrow. The command proposes a canonical name
 when another exact scratch for the same hash-pinned archive and COFF symbol
-already has one unique non-placeholder identity. Recognized DirectX 8.1 D3DX
+already has one unique non-placeholder identity. The address-keyed
+`tools/match/naming_hints.json` ledger may also supply a canonical name,
+presentation comment, and concise evidence string for an exact recovery whose
+identity comes from binary context rather than a provider symbol. Hint/provider
+conflicts are rejected instead of silently choosing one. Recognized DirectX 8.1 D3DX
 base and optimized helpers may also derive canonical `d3dx_init_*`,
 `d3dx_c_*`, `d3dx_sse*_*`, or `d3dx_x86_*` names directly from their exact
 decorated COFF symbols, including the `$$1` implementation suffix. Exact

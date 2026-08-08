@@ -72,13 +72,13 @@ extern float render_tint_color_g;
 extern float render_tint_color_b;
 extern float render_tint_color_a;
 
-void nullsub_89(void);
-void nullsub_90(void);
-void nullsub_91(void);
-void nullsub_92(void);
-void nullsub_93(void);
-void nullsub_94(void);
-void nullsub_95(void);
+void controls_rebind_items_destroy(void);
+void controls_direction_arrow_checkbox_destroy(void);
+void controls_move_method_list_destroy(void);
+void controls_aim_method_list_destroy(void);
+void controls_player_profile_list_destroy(void);
+void controls_back_button_destroy(void);
+void controls_redefine_button_destroy(void);
 int crt_atexit(void (*function)(void));
 void crt_free(void *ptr);
 char *strdup_malloc(char *text);
@@ -256,27 +256,27 @@ extern "C" void controls_menu_update(void)
 {
     if (!(controls_menu_init_flags & 1)) {
         controls_menu_init_flags |= 1;
-        init_button(controls_redefine_button, nullsub_95);
+        init_button(controls_redefine_button, controls_redefine_button_destroy);
     }
     controls_redefine_button.label = "Redefine";
 
     if (!(controls_menu_init_flags & 2)) {
         controls_menu_init_flags |= 2;
-        init_button(controls_back_button, nullsub_94);
+        init_button(controls_back_button, controls_back_button_destroy);
     }
     controls_back_button.label = "Back";
 
     if (!(controls_menu_init_flags & 4)) {
         controls_menu_init_flags |= 4;
-        init_list(controls_player_profile_list, nullsub_93);
+        init_list(controls_player_profile_list, controls_player_profile_list_destroy);
     }
     if (!(controls_menu_init_flags & 8)) {
         controls_menu_init_flags |= 8;
-        init_list(controls_aim_method_list, nullsub_92);
+        init_list(controls_aim_method_list, controls_aim_method_list_destroy);
     }
     if (!(controls_menu_init_flags & 0x10)) {
         controls_menu_init_flags |= 0x10;
-        init_list(controls_move_method_list, nullsub_91);
+        init_list(controls_move_method_list, controls_move_method_list_destroy);
     }
 
     if (controls_menu_selection_refresh_latch) {
@@ -362,7 +362,7 @@ extern "C" void controls_menu_update(void)
         controls_direction_arrow_checkbox.disabled = 0;
         controls_direction_arrow_checkbox.hovered = 0;
         controls_direction_arrow_checkbox.label = 0;
-        crt_atexit(nullsub_90);
+        crt_atexit(controls_direction_arrow_checkbox_destroy);
     }
     controls_direction_arrow_checkbox.label = "Show direction arrow";
     draw_position.y += 4.0f;
@@ -448,7 +448,7 @@ extern "C" void controls_menu_update(void)
             item->hover_phase = 0.0f;
             ++item;
         } while (--item_count);
-        crt_atexit(nullsub_89);
+        crt_atexit(controls_rebind_items_destroy);
     }
 
     {

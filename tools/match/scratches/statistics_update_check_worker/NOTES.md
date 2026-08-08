@@ -58,7 +58,7 @@ structured read-loop improvement while avoiding padding, byte-by-byte source
 spelling, volatility, or artificial register constraints.
 
 The former unresolved `_sscanf` relocation is now scoped to native
-`FUN_00462ba0`. Live Binary Ninja shows the sole call from this worker, the
+`crt_sscanf`. Live Binary Ninja shows the sole call from this worker, the
 native cdecl varargs wrapper, and its handoff to the CRT scanning core; the
 callsite passes the recovered `Crimsonland %d.%d.%d<` format and three integer
 outputs. The alias therefore resolves the same callee rather than masking an

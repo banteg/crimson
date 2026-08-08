@@ -648,6 +648,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00408970",
+    "name": "tutorial_primary_button_destroy",
+    "comment": "Exact empty destructor for the tutorial primary-button state.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00408980",
+    "name": "tutorial_repeat_button_destroy",
+    "comment": "Exact empty destructor for the tutorial repeat-button state.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00408990",
     "name": "tutorial_timeline_update",
     "signature": "void tutorial_timeline_update(void)",
@@ -819,6 +833,20 @@
     "name": "credits_back_button_destroy",
     "signature": "void credits_back_button_destroy(void)",
     "comment": "empty destructor thunk registered for the credits-screen Back button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040df70",
+    "name": "crimson_crt_empty_initializer_slot_05_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 05; it jumps to the paired exact empty initializer at 0x0040df80.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040df80",
+    "name": "crimson_crt_empty_initializer_slot_05",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 05 tail thunk at 0x0040df70.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -1124,6 +1152,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040e850",
+    "name": "mod_info_destroy",
+    "comment": "Exact empty destructor for the recovered mod-info state.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040e860",
     "name": "mod_load_mod",
     "signature": "void * mod_load_mod(void)",
@@ -1178,6 +1213,20 @@
     "name": "credits_secret_alien_zookeeper_update",
     "signature": "void credits_secret_alien_zookeeper_update(void)",
     "comment": "updates and renders the AlienZooKeeper credits secret; drives match-3 board state and UI"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040ff30",
+    "name": "credits_secret_back_button_destroy",
+    "comment": "Exact empty destructor for the credits secret-screen back button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040ff40",
+    "name": "credits_secret_reset_button_destroy",
+    "comment": "Exact empty destructor for the credits secret-screen reset button.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -1322,11 +1371,39 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412080",
+    "name": "crimson_crt_empty_initializer_slot_07_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 07; it jumps to the paired exact empty initializer at 0x00412090.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412090",
+    "name": "crimson_crt_empty_initializer_slot_07",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 07 tail thunk at 0x00412080.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004120b0",
     "name": "gameplay_run_state_init",
     "signature": "int gameplay_run_state_init(void)",
     "analysis_skip_override": "never_skip",
     "comment": "initializes highscore_active_record defaults and resets run/quest runtime counters before gameplay"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412160",
+    "name": "crimson_crt_empty_initializer_slot_09_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 09; it jumps to the paired exact empty initializer at 0x00412170.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412170",
+    "name": "crimson_crt_empty_initializer_slot_09",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 09 tail thunk at 0x00412160.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -2155,6 +2232,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e250",
+    "name": "crimson_crt_empty_initializer_slot_31_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 31; it jumps to the paired exact empty initializer at 0x0041e260.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e260",
+    "name": "crimson_crt_empty_initializer_slot_31",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 31 tail thunk at 0x0041e250.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e420",
     "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
     "signature": "void unused_fx_queue_random_prefix_vec2_global_init_thunk(void)",
@@ -2225,6 +2316,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e710",
+    "name": "crimson_crt_empty_initializer_slot_38_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 38; it jumps to the paired exact empty initializer at 0x0041e720.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e720",
+    "name": "crimson_crt_empty_initializer_slot_38",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 38 tail thunk at 0x0041e710.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e730",
+    "name": "crimson_crt_empty_initializer_slot_39_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 39; it jumps to the paired exact empty initializer at 0x0041e740.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e740",
+    "name": "crimson_crt_empty_initializer_slot_39",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 39 tail thunk at 0x0041e730.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e750",
     "name": "projectile_pool_global_init_thunk",
     "signature": "void projectile_pool_global_init_thunk(void)",
@@ -2271,6 +2390,76 @@
     "name": "secondary_projectile_pool_global_init",
     "signature": "void secondary_projectile_pool_global_init(void)",
     "comment": "constructs 64 inactive secondary projectiles with native rocket, timer, and sentinel defaults"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e7a0",
+    "name": "crimson_crt_empty_initializer_slot_41_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 41; it jumps to the paired exact empty initializer at 0x0041e7b0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e7b0",
+    "name": "crimson_crt_empty_initializer_slot_41",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 41 tail thunk at 0x0041e7a0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e7c0",
+    "name": "crimson_crt_empty_initializer_slot_42_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 42; it jumps to the paired exact empty initializer at 0x0041e7d0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e7d0",
+    "name": "crimson_crt_empty_initializer_slot_42",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 42 tail thunk at 0x0041e7c0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e7e0",
+    "name": "crimson_crt_empty_initializer_slot_43_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 43; it jumps to the paired exact empty initializer at 0x0041e7f0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e7f0",
+    "name": "crimson_crt_empty_initializer_slot_43",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 43 tail thunk at 0x0041e7e0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e800",
+    "name": "crimson_crt_empty_initializer_slot_44_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 44; it jumps to the paired exact empty initializer at 0x0041e810.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e810",
+    "name": "crimson_crt_empty_initializer_slot_44",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 44 tail thunk at 0x0041e800.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e820",
+    "name": "crimson_crt_empty_initializer_slot_45_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 45; it jumps to the paired exact empty initializer at 0x0041e830.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e830",
+    "name": "crimson_crt_empty_initializer_slot_45",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 45 tail thunk at 0x0041e820.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -2452,7 +2641,7 @@
     "address": "0x00420600",
     "name": "creatures_apply_radius_damage",
     "signature": "void creatures_apply_radius_damage(const vec2f_t *pos, float radius, float damage, int damage_type)",
-    "comment": "applies damage to creatures within radius using FUN_004207c0"
+    "comment": "Applies radial creature damage through creature_apply_damage."
   },
   {
     "program": "crimsonland.exe",
@@ -2831,6 +3020,34 @@
     "name": "effect_pool_vertices_global_init",
     "signature": "void effect_pool_vertices_global_init(void)",
     "comment": "constructs the four quad vertices embedded in each of 512 effect-pool entries"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042de40",
+    "name": "crimson_crt_empty_initializer_slot_48_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 48; it jumps to the paired exact empty initializer at 0x0042de50.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042de50",
+    "name": "crimson_crt_empty_initializer_slot_48",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 48 tail thunk at 0x0042de40.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042de60",
+    "name": "crimson_crt_empty_initializer_slot_49_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 49; it jumps to the paired exact empty initializer at 0x0042de70.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042de70",
+    "name": "crimson_crt_empty_initializer_slot_49",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 49 tail thunk at 0x0042de60.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -4234,6 +4451,62 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00440090",
+    "name": "statistics_back_button_destroy",
+    "comment": "Exact empty destructor for the statistics back button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004400a0",
+    "name": "statistics_update_button_destroy",
+    "comment": "Exact empty destructor for the statistics update button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004400b0",
+    "name": "statistics_mods_button_destroy",
+    "comment": "Exact empty destructor for the statistics mods button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004400c0",
+    "name": "statistics_typo_button_destroy",
+    "comment": "Exact empty destructor for the statistics typo button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004400d0",
+    "name": "statistics_credits_button_destroy",
+    "comment": "Exact empty destructor for the statistics credits button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004400e0",
+    "name": "statistics_perks_button_destroy",
+    "comment": "Exact empty destructor for the statistics perks button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004400f0",
+    "name": "statistics_weapons_button_destroy",
+    "comment": "Exact empty destructor for the statistics weapons button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00440100",
+    "name": "statistics_high_scores_button_destroy",
+    "comment": "Exact empty destructor for the statistics high-scores button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00440110",
     "name": "unlocked_weapons_database_update",
     "signature": "void unlocked_weapons_database_update(void)",
@@ -4276,6 +4549,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004411a0",
+    "name": "crimson_crt_empty_initializer_slot_54_thunk",
+    "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 54; it jumps to the paired exact empty initializer at 0x004411b0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004411b0",
+    "name": "crimson_crt_empty_initializer_slot_54",
+    "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 54 tail thunk at 0x004411a0.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004411c0",
     "name": "highscore_card_draw_horizontal_divider",
     "signature": "void highscore_card_draw_horizontal_divider(float *xy)",
@@ -4308,6 +4595,13 @@
     "name": "ui_update_notice_update",
     "signature": "void ui_update_notice_update(float *xy, float alpha)",
     "comment": "renders the update-available notice and its button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004423c0",
+    "name": "ui_update_notice_button_destroy",
+    "comment": "Exact empty destructor for the UI update-notice button.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -4431,6 +4725,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004447d0",
+    "name": "profile_name_list_destroy",
+    "comment": "Exact empty destructor for the profile name list.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004447e0",
+    "name": "profile_delete_button_destroy",
+    "comment": "Exact empty destructor for the profile delete button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004447f0",
+    "name": "profile_add_button_destroy",
+    "comment": "Exact empty destructor for the profile add button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444800",
+    "name": "profile_name_input_destroy",
+    "comment": "Exact empty destructor for the profile name input.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00444810",
     "name": "creature_spawn_tinted",
     "signature": "int creature_spawn_tinted(const vec2f_t *pos, const effect_color_t *color, int type_id)",
@@ -4491,6 +4813,13 @@
     "name": "typo_gameplay_update_and_render",
     "signature": "void typo_gameplay_update_and_render(void)",
     "comment": "Typ-o-Shooter gameplay loop: typed-name crt_scan_input, target matching, spawns, world render, and HUD"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00445ff0",
+    "name": "typo_target_world_destroy",
+    "comment": "Exact empty destructor for the typo target-world state.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -4698,6 +5027,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447c30",
+    "name": "options_controls_button_destroy",
+    "comment": "Exact empty destructor for the options controls button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447c40",
+    "name": "options_mouse_sensitivity_slider_destroy",
+    "comment": "Exact empty destructor for the options mouse-sensitivity slider.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447c50",
+    "name": "options_graphics_detail_slider_destroy",
+    "comment": "Exact empty destructor for the options graphics-detail slider.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447c60",
+    "name": "options_music_volume_slider_destroy",
+    "comment": "Exact empty destructor for the options music-volume slider.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447c70",
+    "name": "options_sfx_volume_slider_destroy",
+    "comment": "Exact empty destructor for the options SFX-volume slider.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447c80",
+    "name": "options_info_checkbox_destroy",
+    "comment": "Exact empty destructor for the options info checkbox.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00447c90",
     "name": "input_configure_for_label",
     "signature": "char * input_configure_for_label(int config_id)",
@@ -4817,6 +5188,55 @@
     "name": "vec2_add_out",
     "signature": "float * __thiscall vec2_add_out(vec2f_t *self, float *dst, const vec2f_t *rhs)",
     "comment": "writes self + rhs into dst and returns dst; native decorated symbol retains the lowered float-pointer destination"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed10",
+    "name": "controls_rebind_items_destroy",
+    "comment": "Exact empty destructor for the controls rebind-item collection.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed20",
+    "name": "controls_direction_arrow_checkbox_destroy",
+    "comment": "Exact empty destructor for the controls direction-arrow checkbox.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed30",
+    "name": "controls_move_method_list_destroy",
+    "comment": "Exact empty destructor for the controls move-method list.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed40",
+    "name": "controls_aim_method_list_destroy",
+    "comment": "Exact empty destructor for the controls aim-method list.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed50",
+    "name": "controls_player_profile_list_destroy",
+    "comment": "Exact empty destructor for the controls player-profile list.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed60",
+    "name": "controls_back_button_destroy",
+    "comment": "Exact empty destructor for the controls back button.",
+    "create": false
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ed70",
+    "name": "controls_redefine_button_destroy",
+    "comment": "Exact empty destructor for the controls redefine button.",
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -5427,7 +5847,7 @@
     "address": "0x00454303",
     "name": "d3dx_init_matrix_scaling",
     "signature": "float * d3dx_init_matrix_scaling(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_scaling(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479624 (idx 0x21)",
+    "comment": "D3DX runtime-dispatch wrapper for matrix scaling (slot 0x21).",
     "aliases": [
       "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
@@ -5448,7 +5868,7 @@
     "address": "0x0045438d",
     "name": "d3dx_init_matrix_translation",
     "signature": "float * d3dx_init_matrix_translation(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_translation(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479608 (idx 0x1a)",
+    "comment": "D3DX runtime-dispatch wrapper for matrix translation (slot 0x1a).",
     "aliases": [
       "?init_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
@@ -5469,7 +5889,7 @@
     "address": "0x00454417",
     "name": "d3dx_init_matrix_rotation_x",
     "signature": "float * d3dx_init_matrix_rotation_x(float *arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_x(float arg1); wrapper calls PTR_FUN_00479618 (idx 0x1e)",
+    "comment": "D3DX runtime-dispatch wrapper for X-axis matrix rotation (slot 0x1e).",
     "aliases": [
       "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
@@ -5491,7 +5911,7 @@
     "address": "0x004544ad",
     "name": "d3dx_init_matrix_rotation_y",
     "signature": "float * d3dx_init_matrix_rotation_y(float *arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_y(float arg1); wrapper calls PTR_FUN_0047961c (idx 0x1f)",
+    "comment": "D3DX runtime-dispatch wrapper for Y-axis matrix rotation (slot 0x1f).",
     "aliases": [
       "?init_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
@@ -5513,7 +5933,7 @@
     "address": "0x00454544",
     "name": "d3dx_init_matrix_rotation_z",
     "signature": "float * d3dx_init_matrix_rotation_z(float *arg1, float arg2)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_z(float arg1); wrapper calls PTR_FUN_00479620 (idx 0x20)",
+    "comment": "D3DX runtime-dispatch wrapper for Z-axis matrix rotation (slot 0x20).",
     "aliases": [
       "?init_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
     ],
@@ -5535,7 +5955,7 @@
     "address": "0x004545dc",
     "name": "d3dx_init_matrix_rotation_axis",
     "signature": "float * d3dx_init_matrix_rotation_axis(float *arg1, float *arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_axis(int arg1, float arg2); wrapper calls PTR_FUN_00479648 (idx 0x2a)",
+    "comment": "D3DX runtime-dispatch wrapper for arbitrary-axis matrix rotation (slot 0x2a).",
     "aliases": [
       "?init_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
     ],
@@ -5588,7 +6008,7 @@
     "address": "0x004547f3",
     "name": "d3dx_init_matrix_rotation_yaw_pitch_roll",
     "signature": "float * d3dx_init_matrix_rotation_yaw_pitch_roll(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_matrix_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479640 (idx 0x28)",
+    "comment": "D3DX runtime-dispatch wrapper for yaw-pitch-roll matrix rotation (slot 0x28).",
     "aliases": [
       "?init_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ],
@@ -5650,7 +6070,7 @@
     "address": "0x00454b44",
     "name": "d3dx_init_quaternion_rotation_axis",
     "signature": "float * d3dx_init_quaternion_rotation_axis(float *arg1, float *arg2, float arg3)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_rotation_axis(int arg1, float arg2); wrapper calls PTR_FUN_00479614 (idx 0x1d)",
+    "comment": "D3DX runtime-dispatch wrapper for arbitrary-axis quaternion rotation (slot 0x1d).",
     "aliases": [
       "?init_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
     ],
@@ -5672,7 +6092,7 @@
     "address": "0x00454bc0",
     "name": "d3dx_init_quaternion_rotation_yaw_pitch_roll",
     "signature": "float * d3dx_init_quaternion_rotation_yaw_pitch_roll(float *arg1, float arg2, float arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_rotation_yaw_pitch_roll(float arg1, float arg2, float arg3); wrapper calls PTR_FUN_00479604 (idx 0x19)",
+    "comment": "D3DX runtime-dispatch wrapper for yaw-pitch-roll quaternion rotation (slot 0x19).",
     "aliases": [
       "?init_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
     ],
@@ -5817,7 +6237,7 @@
     "address": "0x00455028",
     "name": "d3dx_init_quaternion_slerp",
     "signature": "float * d3dx_init_quaternion_slerp(float *arg1, float *arg2, float *arg3, float arg4)",
-    "comment": "[binja] int32_t __stdcall d3dx_init_quaternion_slerp(int arg1, int arg2, float arg3); wrapper calls PTR_FUN_0047962c (idx 0x23)",
+    "comment": "D3DX runtime-dispatch wrapper for quaternion slerp (slot 0x23).",
     "aliases": [
       "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
     ],
@@ -7742,16 +8162,24 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046262b",
-    "name": "FUN_0046262b",
-    "signature": "int FUN_0046262b(void)",
-    "comment": "[binja] int32_t sub_46262b()"
+    "name": "crt_free_sbh_unlock_cleanup",
+    "signature": "int crt_free_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_free_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17371"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00462683",
-    "name": "FUN_00462683",
-    "signature": "int FUN_00462683(void)",
-    "comment": "[binja] int32_t sub_462683()"
+    "name": "crt_free_old_sbh_unlock_cleanup",
+    "signature": "int crt_free_old_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_free_old_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17375"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7763,16 +8191,24 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00462835",
-    "name": "FUN_00462835",
-    "signature": "int FUN_00462835(void)",
-    "comment": "[binja] int32_t sub_462835()"
+    "name": "crt_realloc_sbh_unlock_cleanup",
+    "signature": "int crt_realloc_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_realloc_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17775"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00462983",
-    "name": "FUN_00462983",
-    "signature": "int FUN_00462983(void)",
-    "comment": "[binja] int32_t sub_462983()"
+    "name": "crt_realloc_old_sbh_unlock_cleanup",
+    "signature": "int crt_realloc_old_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_realloc_old_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17779"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -7807,16 +8243,24 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00462a7e",
-    "name": "FUN_00462a7e",
-    "signature": "int FUN_00462a7e(void)",
-    "comment": "[binja] int32_t sub_462a7e()"
+    "name": "crt_heap_alloc_sbh_unlock_cleanup",
+    "signature": "int crt_heap_alloc_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_heap_alloc_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17390"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00462add",
-    "name": "FUN_00462add",
-    "signature": "int FUN_00462add(void)",
-    "comment": "[binja] int32_t sub_462add()"
+    "name": "crt_heap_alloc_old_sbh_unlock_cleanup",
+    "signature": "int crt_heap_alloc_old_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_heap_alloc_old_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17394"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8277,16 +8721,24 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00463bf0",
-    "name": "FUN_00463bf0",
-    "signature": "int FUN_00463bf0(void)",
-    "comment": "[binja] int32_t sub_463bf0()"
+    "name": "crt_msize_sbh_unlock_cleanup",
+    "signature": "int crt_msize_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_msize_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17132"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00463c6b",
-    "name": "FUN_00463c6b",
-    "signature": "int FUN_00463c6b(void)",
-    "comment": "[binja] int32_t sub_463c6b()"
+    "name": "crt_msize_old_sbh_unlock_cleanup",
+    "signature": "int crt_msize_old_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_msize_old_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17136"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -8806,16 +9258,24 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00466845",
-    "name": "FUN_00466845",
-    "signature": "int FUN_00466845(void)",
-    "comment": "[binja] int32_t sub_466845()"
+    "name": "crt_calloc_sbh_unlock_cleanup",
+    "signature": "int crt_calloc_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_calloc_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17381"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004668ce",
-    "name": "FUN_004668ce",
-    "signature": "int FUN_004668ce(void)",
-    "comment": "[binja] int32_t sub_4668ce()"
+    "name": "crt_calloc_old_sbh_unlock_cleanup",
+    "signature": "int crt_calloc_old_sbh_unlock_cleanup(void)",
+    "comment": "[binja] int32_t crt_calloc_old_sbh_unlock_cleanup()",
+    "aliases": [
+      "$L17385"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -9510,9 +9970,14 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0046a8c5",
-    "name": "FUN_0046a8c5",
-    "signature": "int FUN_0046a8c5(void)",
-    "comment": "[binja] int32_t sub_46a8c5()"
+    "name": "crt_fptrap",
+    "signature": "int crt_fptrap(void)",
+    "comment": "[binja] int32_t crt_fptrap()",
+    "end": "0x0046a8ce",
+    "aliases": [
+      "__fptrap"
+    ],
+    "create": false
   },
   {
     "program": "crimsonland.exe",
@@ -10441,6 +10906,148 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10001000",
+    "name": "grim_crt_empty_initializer_slot_01_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 01; it jumps to the paired exact empty initializer at 0x10001010.",
+    "create": true,
+    "end": "0x10001005"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001010",
+    "name": "grim_crt_empty_initializer_slot_01",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 01 tail thunk at 0x10001000.",
+    "create": true,
+    "end": "0x10001011"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001020",
+    "name": "grim_crt_empty_initializer_slot_02_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 02; it jumps to the paired exact empty initializer at 0x10001030.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001030",
+    "name": "grim_crt_empty_initializer_slot_02",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 02 tail thunk at 0x10001020.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001040",
+    "name": "grim_crt_empty_initializer_slot_03_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 03; it jumps to the paired exact empty initializer at 0x10001050.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001050",
+    "name": "grim_crt_empty_initializer_slot_03",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 03 tail thunk at 0x10001040.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001060",
+    "name": "grim_crt_empty_initializer_slot_04_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 04; it jumps to the paired exact empty initializer at 0x10001070.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001070",
+    "name": "grim_crt_empty_initializer_slot_04",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 04 tail thunk at 0x10001060.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001080",
+    "name": "grim_crt_empty_initializer_slot_05_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 05; it jumps to the paired exact empty initializer at 0x10001090.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001090",
+    "name": "grim_crt_empty_initializer_slot_05",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 05 tail thunk at 0x10001080.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100010a0",
+    "name": "grim_crt_empty_initializer_slot_06_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 06; it jumps to the paired exact empty initializer at 0x100010b0.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100010b0",
+    "name": "grim_crt_empty_initializer_slot_06",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 06 tail thunk at 0x100010a0.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100010c0",
+    "name": "grim_crt_empty_initializer_slot_07_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 07; it jumps to the paired exact empty initializer at 0x100010d0.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100010d0",
+    "name": "grim_crt_empty_initializer_slot_07",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 07 tail thunk at 0x100010c0.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100010e0",
+    "name": "grim_crt_empty_initializer_slot_08_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 08; it jumps to the paired exact empty initializer at 0x100010f0.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100010f0",
+    "name": "grim_crt_empty_initializer_slot_08",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 08 tail thunk at 0x100010e0.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001100",
+    "name": "grim_crt_empty_initializer_slot_09_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 09; it jumps to the paired exact empty initializer at 0x10001110.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001110",
+    "name": "grim_crt_empty_initializer_slot_09",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 09 tail thunk at 0x10001100.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001120",
+    "name": "grim_crt_empty_initializer_slot_10_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 10; it jumps to the paired exact empty initializer at 0x10001130.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001130",
+    "name": "grim_crt_empty_initializer_slot_10",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 10 tail thunk at 0x10001120.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10001140",
     "name": "grim_missing_frame_callback",
     "signature": "bool grim_missing_frame_callback(void)",
@@ -11233,6 +11840,20 @@
     "name": "grim_draw_circle_outline",
     "signature": "void grim_draw_circle_outline(float x, float y, float radius)",
     "comment": "Grim2D vtable 0xdc: exact-matched two-vertex triangle-strip ring with two-pixel outer radius"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007f10",
+    "name": "grim_crt_empty_initializer_slot_12_thunk",
+    "comment": "Tail thunk registered in Grim .CRT$XC slot 12; it jumps to the paired exact empty initializer at 0x10007f20.",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007f20",
+    "name": "grim_crt_empty_initializer_slot_12",
+    "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 12 tail thunk at 0x10007f10.",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -16900,21 +17521,21 @@
   {
     "program": "grim.dll",
     "address": "0x1003a4f4",
-    "name": "nullsub_7",
+    "name": "grim_nonfunction_record_field_c2",
     "exclude": true,
     "comment": "IDA false-positive function: bytes c2 00 00 are the 0xc2 field of a repeating 16-byte data record; Binary Ninja reports no function or references."
   },
   {
     "program": "grim.dll",
     "address": "0x1003a574",
-    "name": "nullsub_9",
+    "name": "grim_nonfunction_record_field_ca",
     "exclude": true,
     "comment": "IDA false-positive function: bytes ca 00 00 are the 0xca field of a repeating 16-byte data record; Binary Ninja reports no function or references."
   },
   {
     "program": "grim.dll",
     "address": "0x1003a584",
-    "name": "nullsub_10",
+    "name": "grim_nonfunction_record_field_cb",
     "exclude": true,
     "comment": "IDA false-positive function: byte cb is the 0xcb field of a repeating 16-byte data record; Binary Ninja reports no function or references."
   },

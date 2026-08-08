@@ -1,0 +1,579 @@
+{
+  "schema": 1,
+  "entries": [
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00408970",
+      "name": "tutorial_primary_button_destroy",
+      "comment": "Exact empty destructor for the tutorial primary-button state.",
+      "evidence": "tutorial static-object initialization order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00408980",
+      "name": "tutorial_repeat_button_destroy",
+      "comment": "Exact empty destructor for the tutorial repeat-button state.",
+      "evidence": "tutorial static-object initialization order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0040df70",
+      "name": "crimson_crt_empty_initializer_slot_05_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 05; it jumps to the paired exact empty initializer at 0x0040df80.",
+      "evidence": "crimsonland .CRT$XC slot 05 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0040df80",
+      "name": "crimson_crt_empty_initializer_slot_05",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 05 tail thunk at 0x0040df70.",
+      "evidence": "crimsonland .CRT$XC slot 05 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0040e850",
+      "name": "mod_info_destroy",
+      "comment": "Exact empty destructor for the recovered mod-info state.",
+      "evidence": "mod-info static-object initialization order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0040ff30",
+      "name": "credits_secret_back_button_destroy",
+      "comment": "Exact empty destructor for the credits secret-screen back button.",
+      "evidence": "credits secret-screen static-object initialization order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0040ff40",
+      "name": "credits_secret_reset_button_destroy",
+      "comment": "Exact empty destructor for the credits secret-screen reset button.",
+      "evidence": "credits secret-screen static-object initialization order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00412080",
+      "name": "crimson_crt_empty_initializer_slot_07_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 07; it jumps to the paired exact empty initializer at 0x00412090.",
+      "evidence": "crimsonland .CRT$XC slot 07 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00412090",
+      "name": "crimson_crt_empty_initializer_slot_07",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 07 tail thunk at 0x00412080.",
+      "evidence": "crimsonland .CRT$XC slot 07 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00412160",
+      "name": "crimson_crt_empty_initializer_slot_09_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 09; it jumps to the paired exact empty initializer at 0x00412170.",
+      "evidence": "crimsonland .CRT$XC slot 09 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00412170",
+      "name": "crimson_crt_empty_initializer_slot_09",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 09 tail thunk at 0x00412160.",
+      "evidence": "crimsonland .CRT$XC slot 09 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e250",
+      "name": "crimson_crt_empty_initializer_slot_31_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 31; it jumps to the paired exact empty initializer at 0x0041e260.",
+      "evidence": "crimsonland .CRT$XC slot 31 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e260",
+      "name": "crimson_crt_empty_initializer_slot_31",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 31 tail thunk at 0x0041e250.",
+      "evidence": "crimsonland .CRT$XC slot 31 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e710",
+      "name": "crimson_crt_empty_initializer_slot_38_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 38; it jumps to the paired exact empty initializer at 0x0041e720.",
+      "evidence": "crimsonland .CRT$XC slot 38 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e720",
+      "name": "crimson_crt_empty_initializer_slot_38",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 38 tail thunk at 0x0041e710.",
+      "evidence": "crimsonland .CRT$XC slot 38 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e730",
+      "name": "crimson_crt_empty_initializer_slot_39_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 39; it jumps to the paired exact empty initializer at 0x0041e740.",
+      "evidence": "crimsonland .CRT$XC slot 39 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e740",
+      "name": "crimson_crt_empty_initializer_slot_39",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 39 tail thunk at 0x0041e730.",
+      "evidence": "crimsonland .CRT$XC slot 39 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e7a0",
+      "name": "crimson_crt_empty_initializer_slot_41_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 41; it jumps to the paired exact empty initializer at 0x0041e7b0.",
+      "evidence": "crimsonland .CRT$XC slot 41 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e7b0",
+      "name": "crimson_crt_empty_initializer_slot_41",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 41 tail thunk at 0x0041e7a0.",
+      "evidence": "crimsonland .CRT$XC slot 41 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e7c0",
+      "name": "crimson_crt_empty_initializer_slot_42_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 42; it jumps to the paired exact empty initializer at 0x0041e7d0.",
+      "evidence": "crimsonland .CRT$XC slot 42 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e7d0",
+      "name": "crimson_crt_empty_initializer_slot_42",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 42 tail thunk at 0x0041e7c0.",
+      "evidence": "crimsonland .CRT$XC slot 42 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e7e0",
+      "name": "crimson_crt_empty_initializer_slot_43_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 43; it jumps to the paired exact empty initializer at 0x0041e7f0.",
+      "evidence": "crimsonland .CRT$XC slot 43 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e7f0",
+      "name": "crimson_crt_empty_initializer_slot_43",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 43 tail thunk at 0x0041e7e0.",
+      "evidence": "crimsonland .CRT$XC slot 43 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e800",
+      "name": "crimson_crt_empty_initializer_slot_44_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 44; it jumps to the paired exact empty initializer at 0x0041e810.",
+      "evidence": "crimsonland .CRT$XC slot 44 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e810",
+      "name": "crimson_crt_empty_initializer_slot_44",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 44 tail thunk at 0x0041e800.",
+      "evidence": "crimsonland .CRT$XC slot 44 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e820",
+      "name": "crimson_crt_empty_initializer_slot_45_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 45; it jumps to the paired exact empty initializer at 0x0041e830.",
+      "evidence": "crimsonland .CRT$XC slot 45 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0041e830",
+      "name": "crimson_crt_empty_initializer_slot_45",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 45 tail thunk at 0x0041e820.",
+      "evidence": "crimsonland .CRT$XC slot 45 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0042de40",
+      "name": "crimson_crt_empty_initializer_slot_48_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 48; it jumps to the paired exact empty initializer at 0x0042de50.",
+      "evidence": "crimsonland .CRT$XC slot 48 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0042de50",
+      "name": "crimson_crt_empty_initializer_slot_48",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 48 tail thunk at 0x0042de40.",
+      "evidence": "crimsonland .CRT$XC slot 48 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0042de60",
+      "name": "crimson_crt_empty_initializer_slot_49_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 49; it jumps to the paired exact empty initializer at 0x0042de70.",
+      "evidence": "crimsonland .CRT$XC slot 49 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0042de70",
+      "name": "crimson_crt_empty_initializer_slot_49",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 49 tail thunk at 0x0042de60.",
+      "evidence": "crimsonland .CRT$XC slot 49 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00440090",
+      "name": "statistics_back_button_destroy",
+      "comment": "Exact empty destructor for the statistics back button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004400a0",
+      "name": "statistics_update_button_destroy",
+      "comment": "Exact empty destructor for the statistics update button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004400b0",
+      "name": "statistics_mods_button_destroy",
+      "comment": "Exact empty destructor for the statistics mods button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004400c0",
+      "name": "statistics_typo_button_destroy",
+      "comment": "Exact empty destructor for the statistics typo button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004400d0",
+      "name": "statistics_credits_button_destroy",
+      "comment": "Exact empty destructor for the statistics credits button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004400e0",
+      "name": "statistics_perks_button_destroy",
+      "comment": "Exact empty destructor for the statistics perks button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004400f0",
+      "name": "statistics_weapons_button_destroy",
+      "comment": "Exact empty destructor for the statistics weapons button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00440100",
+      "name": "statistics_high_scores_button_destroy",
+      "comment": "Exact empty destructor for the statistics high-scores button.",
+      "evidence": "statistics static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004411a0",
+      "name": "crimson_crt_empty_initializer_slot_54_thunk",
+      "comment": "Tail thunk registered in Crimsonland .CRT$XC slot 54; it jumps to the paired exact empty initializer at 0x004411b0.",
+      "evidence": "crimsonland .CRT$XC slot 54 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004411b0",
+      "name": "crimson_crt_empty_initializer_slot_54",
+      "comment": "Exact empty initializer reached from the Crimsonland .CRT$XC slot 54 tail thunk at 0x004411a0.",
+      "evidence": "crimsonland .CRT$XC slot 54 xref"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004423c0",
+      "name": "ui_update_notice_button_destroy",
+      "comment": "Exact empty destructor for the UI update-notice button.",
+      "evidence": "update-notice static-object initialization order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004447d0",
+      "name": "profile_name_list_destroy",
+      "comment": "Exact empty destructor for the profile name list.",
+      "evidence": "profile screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004447e0",
+      "name": "profile_delete_button_destroy",
+      "comment": "Exact empty destructor for the profile delete button.",
+      "evidence": "profile screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004447f0",
+      "name": "profile_add_button_destroy",
+      "comment": "Exact empty destructor for the profile add button.",
+      "evidence": "profile screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00444800",
+      "name": "profile_name_input_destroy",
+      "comment": "Exact empty destructor for the profile name input.",
+      "evidence": "profile screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00445ff0",
+      "name": "typo_target_world_destroy",
+      "comment": "Exact empty destructor for the typo target-world state.",
+      "evidence": "typo screen static-object initialization order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00447c30",
+      "name": "options_controls_button_destroy",
+      "comment": "Exact empty destructor for the options controls button.",
+      "evidence": "options screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00447c40",
+      "name": "options_mouse_sensitivity_slider_destroy",
+      "comment": "Exact empty destructor for the options mouse-sensitivity slider.",
+      "evidence": "options screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00447c50",
+      "name": "options_graphics_detail_slider_destroy",
+      "comment": "Exact empty destructor for the options graphics-detail slider.",
+      "evidence": "options screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00447c60",
+      "name": "options_music_volume_slider_destroy",
+      "comment": "Exact empty destructor for the options music-volume slider.",
+      "evidence": "options screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00447c70",
+      "name": "options_sfx_volume_slider_destroy",
+      "comment": "Exact empty destructor for the options SFX-volume slider.",
+      "evidence": "options screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00447c80",
+      "name": "options_info_checkbox_destroy",
+      "comment": "Exact empty destructor for the options info checkbox.",
+      "evidence": "options screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0044ed10",
+      "name": "controls_rebind_items_destroy",
+      "comment": "Exact empty destructor for the controls rebind-item collection.",
+      "evidence": "controls screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0044ed20",
+      "name": "controls_direction_arrow_checkbox_destroy",
+      "comment": "Exact empty destructor for the controls direction-arrow checkbox.",
+      "evidence": "controls screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0044ed30",
+      "name": "controls_move_method_list_destroy",
+      "comment": "Exact empty destructor for the controls move-method list.",
+      "evidence": "controls screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0044ed40",
+      "name": "controls_aim_method_list_destroy",
+      "comment": "Exact empty destructor for the controls aim-method list.",
+      "evidence": "controls screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0044ed50",
+      "name": "controls_player_profile_list_destroy",
+      "comment": "Exact empty destructor for the controls player-profile list.",
+      "evidence": "controls screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0044ed60",
+      "name": "controls_back_button_destroy",
+      "comment": "Exact empty destructor for the controls back button.",
+      "evidence": "controls screen static-object declaration order"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0044ed70",
+      "name": "controls_redefine_button_destroy",
+      "comment": "Exact empty destructor for the controls redefine button.",
+      "evidence": "controls screen static-object declaration order"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001000",
+      "name": "grim_crt_empty_initializer_slot_01_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 01; it jumps to the paired exact empty initializer at 0x10001010.",
+      "evidence": "grim .CRT$XC slot 01 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001010",
+      "name": "grim_crt_empty_initializer_slot_01",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 01 tail thunk at 0x10001000.",
+      "evidence": "grim .CRT$XC slot 01 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001020",
+      "name": "grim_crt_empty_initializer_slot_02_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 02; it jumps to the paired exact empty initializer at 0x10001030.",
+      "evidence": "grim .CRT$XC slot 02 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001030",
+      "name": "grim_crt_empty_initializer_slot_02",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 02 tail thunk at 0x10001020.",
+      "evidence": "grim .CRT$XC slot 02 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001040",
+      "name": "grim_crt_empty_initializer_slot_03_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 03; it jumps to the paired exact empty initializer at 0x10001050.",
+      "evidence": "grim .CRT$XC slot 03 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001050",
+      "name": "grim_crt_empty_initializer_slot_03",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 03 tail thunk at 0x10001040.",
+      "evidence": "grim .CRT$XC slot 03 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001060",
+      "name": "grim_crt_empty_initializer_slot_04_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 04; it jumps to the paired exact empty initializer at 0x10001070.",
+      "evidence": "grim .CRT$XC slot 04 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001070",
+      "name": "grim_crt_empty_initializer_slot_04",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 04 tail thunk at 0x10001060.",
+      "evidence": "grim .CRT$XC slot 04 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001080",
+      "name": "grim_crt_empty_initializer_slot_05_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 05; it jumps to the paired exact empty initializer at 0x10001090.",
+      "evidence": "grim .CRT$XC slot 05 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001090",
+      "name": "grim_crt_empty_initializer_slot_05",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 05 tail thunk at 0x10001080.",
+      "evidence": "grim .CRT$XC slot 05 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x100010a0",
+      "name": "grim_crt_empty_initializer_slot_06_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 06; it jumps to the paired exact empty initializer at 0x100010b0.",
+      "evidence": "grim .CRT$XC slot 06 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x100010b0",
+      "name": "grim_crt_empty_initializer_slot_06",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 06 tail thunk at 0x100010a0.",
+      "evidence": "grim .CRT$XC slot 06 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x100010c0",
+      "name": "grim_crt_empty_initializer_slot_07_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 07; it jumps to the paired exact empty initializer at 0x100010d0.",
+      "evidence": "grim .CRT$XC slot 07 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x100010d0",
+      "name": "grim_crt_empty_initializer_slot_07",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 07 tail thunk at 0x100010c0.",
+      "evidence": "grim .CRT$XC slot 07 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x100010e0",
+      "name": "grim_crt_empty_initializer_slot_08_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 08; it jumps to the paired exact empty initializer at 0x100010f0.",
+      "evidence": "grim .CRT$XC slot 08 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x100010f0",
+      "name": "grim_crt_empty_initializer_slot_08",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 08 tail thunk at 0x100010e0.",
+      "evidence": "grim .CRT$XC slot 08 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001100",
+      "name": "grim_crt_empty_initializer_slot_09_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 09; it jumps to the paired exact empty initializer at 0x10001110.",
+      "evidence": "grim .CRT$XC slot 09 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001110",
+      "name": "grim_crt_empty_initializer_slot_09",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 09 tail thunk at 0x10001100.",
+      "evidence": "grim .CRT$XC slot 09 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001120",
+      "name": "grim_crt_empty_initializer_slot_10_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 10; it jumps to the paired exact empty initializer at 0x10001130.",
+      "evidence": "grim .CRT$XC slot 10 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10001130",
+      "name": "grim_crt_empty_initializer_slot_10",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 10 tail thunk at 0x10001120.",
+      "evidence": "grim .CRT$XC slot 10 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10007f10",
+      "name": "grim_crt_empty_initializer_slot_12_thunk",
+      "comment": "Tail thunk registered in Grim .CRT$XC slot 12; it jumps to the paired exact empty initializer at 0x10007f20.",
+      "evidence": "grim .CRT$XC slot 12 xref"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10007f20",
+      "name": "grim_crt_empty_initializer_slot_12",
+      "comment": "Exact empty initializer reached from the Grim .CRT$XC slot 12 tail thunk at 0x10007f10.",
+      "evidence": "grim .CRT$XC slot 12 xref"
+    }
+  ]
+}

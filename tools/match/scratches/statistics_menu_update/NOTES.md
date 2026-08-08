@@ -20,7 +20,8 @@ The static objects are mapped as `statistics_high_scores_button`,
 `statistics_credits_button`, `statistics_typo_button`,
 `statistics_mods_button`, `statistics_update_button`, and
 `statistics_back_button`. Their eight native atexit thunks are the empty
-destructors `nullsub_52` through `nullsub_45`.
+empty destructors `statistics_high_scores_button_destroy` through
+`statistics_back_button_destroy`.
 
 Several native asymmetries are intentional and retained:
 

@@ -439,6 +439,11 @@
           "ffffffff000000002d284600ffffffff000000007d294600"
         ],
         [
+          "0x0046fa50",
+          "crt_heap_alloc_scope_table",
+          "ffffffff000000007e2a4600ffffffff00000000da2a4600"
+        ],
+        [
           "0x0046fac0",
           "crt_msize_scope_table",
           "ffffffff00000000ed3b4600ffffffff00000000683c4600"
@@ -3877,9 +3882,9 @@
         ["0x004d99c4", "crt_ansi_environment_block"],
         ["0x004d9a74", "crt_new_handler"],
         ["0x004d9a7c", "crt_setargv_program_name"],
-        ["0x004d9cb4", "crt_message_box_a"],
-        ["0x004d9cb8", "crt_get_active_window"],
-        ["0x004d9cbc", "crt_get_last_active_popup"],
+        ["0x004d9cb4", "crt_message_box_a_proc"],
+        ["0x004d9cb8", "crt_get_active_window_proc"],
+        ["0x004d9cbc", "crt_get_last_active_popup_proc"],
         ["0x004d9cc0", "crt_previous_exception_filter"],
         ["0x004da390", "crt_sbh_header_scan"],
         ["0x004da394", "crt_sbh_header_defer"],

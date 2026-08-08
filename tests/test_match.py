@@ -77,6 +77,7 @@ from crimson.match import (
     load_matching_scope,
     load_matching_scope_function_dispositions,
     load_name_map_rows,
+    load_naming_hints,
     load_reference_catalog,
     load_scratch_config,
     match_function,
@@ -2446,7 +2447,7 @@ def test_collect_naming_debt_suggests_unique_exact_provider_peer(tmp_path: Path)
         ),
         ScratchStatus(
             config=peer_config,
-            address=0x10001000,
+            address=0x10002000,
             target_size=8,
             ratio=1.0,
             prefix_instructions=2,
@@ -2467,7 +2468,7 @@ def test_collect_naming_debt_suggests_unique_exact_provider_peer(tmp_path: Path)
                 },
                 {
                     "program": "grim.dll",
-                    "address": "0x10001000",
+                    "address": "0x10002000",
                     "name": "known_provider",
                     "aliases": ["sub_10001000", "?KnownProvider@@YAXXZ"],
                 },
@@ -2482,7 +2483,7 @@ def test_collect_naming_debt_suggests_unique_exact_provider_peer(tmp_path: Path)
     row = next(candidate for candidate in rows if candidate.image == "crimsonland.exe")
     assert row.function == "FUN_00401000"
     assert row.suggestion == "known_provider"
-    assert row.suggestion_sources == ("grim.dll:0x10001000",)
+    assert row.suggestion_sources == ("grim.dll:0x10002000",)
     assert row.issues == (
         "placeholder-function",
         "placeholder-directory",
@@ -3080,6 +3081,101 @@ def test_collect_naming_debt_canonicalizes_weak_exact_vc6_symbols(tmp_path: Path
         "provider-directory-conflict",
         "provider-name-conflict",
     )
+
+
+def test_curated_naming_hint_renames_exact_placeholder_and_records_evidence(
+    tmp_path: Path,
+) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "nullsub_13"
+    scratch.mkdir(parents=True)
+    scratch.joinpath("scratch.conf").write_text(
+        "IMAGE=crimsonland.exe\n"
+        "FUNCTION=nullsub_13\n"
+        "SYMBOL=nullsub_13\n"
+        "SOURCE=scratch.cpp\n"
+        "NOTE=empty-nullsub\n",
+        encoding="utf-8",
+    )
+    scratch.joinpath("scratch.cpp").write_text(
+        'extern "C" void nullsub_13() {}\n',
+        encoding="utf-8",
+    )
+    status = ScratchStatus(
+        config=load_scratch_config(scratch),
+        address=0x00408970,
+        target_size=1,
+        ratio=1.0,
+        prefix_instructions=1,
+        target_instructions=1,
+        candidate_instructions=1,
+        error=None,
+    )
+    name_map = tmp_path / "name_map.json"
+    name_map.write_text(
+        json.dumps(
+            [
+                {
+                    "program": "crimsonland.exe",
+                    "address": "0x00408970",
+                    "name": "nullsub_13",
+                    "aliases": ["sub_408970"],
+                    "comment": "analyzer placeholder",
+                },
+            ],
+        ),
+        encoding="utf-8",
+    )
+    hints = tmp_path / "naming_hints.json"
+    hints.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "entries": [
+                    {
+                        "program": "crimsonland.exe",
+                        "address": "0x00408970",
+                        "name": "tutorial_primary_button_destroy",
+                        "comment": "Exact empty destructor for the tutorial primary button.",
+                        "evidence": "tutorial static-object initialization order",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    loaded_hint = load_naming_hints(hints)[("crimsonland.exe", 0x00408970)]
+    rows = collect_naming_debt(
+        [status],
+        name_map_path=name_map,
+        naming_hints_path=hints,
+    )
+    row = rows[0]
+    result = apply_naming_suggestions(
+        rows,
+        match_root=match_root,
+        name_map_path=name_map,
+    )
+
+    renamed = match_root / "scratches" / "tutorial_primary_button_destroy"
+    assert loaded_hint.name == "tutorial_primary_button_destroy"
+    assert row.suggestion == "tutorial_primary_button_destroy"
+    assert row.suggestion_sources == (
+        "curated-hint:tutorial static-object initialization order",
+    )
+    assert row.suggestion_comment == loaded_hint.comment
+    renamed_config = load_scratch_config(renamed)
+    assert renamed_config.function == row.suggestion
+    assert renamed_config.note == "evidence-backed-tutorial-primary-button-destroy"
+    assert renamed.joinpath("scratch.cpp").read_text(encoding="utf-8") == (
+        'extern "C" void tutorial_primary_button_destroy() {}\n'
+    )
+    mapped = load_name_map_rows(name_map)[0]
+    assert mapped["name"] == row.suggestion
+    assert mapped["comment"] == loaded_hint.comment
+    assert "aliases" not in mapped
+    assert result["directories_renamed"] == 1
 
 
 def test_collect_naming_debt_suggests_exact_vc6_eh_decorated_symbol(tmp_path: Path) -> None:

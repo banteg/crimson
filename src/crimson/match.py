@@ -25,6 +25,7 @@ DEFAULT_METADATA_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_N
 DEFAULT_IMAGE_PATH = DEFAULT_GAME_DIR / DEFAULT_IMAGE_NAME
 DEFAULT_DATA_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "data_map.json"
 DEFAULT_NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.json"
+DEFAULT_NAMING_HINTS_PATH = DEFAULT_MATCH_ROOT / "naming_hints.json"
 DEFAULT_MATCHING_SCOPE_PATH = REPO_ROOT / "analysis" / "matching_scope.json"
 DEFAULT_NATIVE_ANALYSIS_ROOT = REPO_ROOT / "analysis" / "native"
 DEFAULT_MATCH_SCOPE = "port"
@@ -3212,6 +3213,77 @@ class NamingDebtRow:
     provider_member: str | None
     suggestion: str | None
     suggestion_sources: tuple[str, ...]
+    suggestion_comment: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class NamingHint:
+    image: str
+    address: int
+    name: str
+    comment: str
+    evidence: str
+
+
+def load_naming_hints(
+    path: Path = DEFAULT_NAMING_HINTS_PATH,
+) -> dict[tuple[str, int], NamingHint]:
+    """Load address-keyed identities backed by explicit repository evidence."""
+
+    if not path.exists():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or payload.get("schema") != 1:
+        raise ValueError(f"{path}: unsupported naming-hint schema")
+    raw_entries = payload.get("entries")
+    if not isinstance(raw_entries, list):
+        raise TypeError(f"{path}: naming hints require an entries array")
+
+    hints: dict[tuple[str, int], NamingHint] = {}
+    for index, raw_value in enumerate(raw_entries):
+        location = f"{path}:entries[{index}]"
+        if not isinstance(raw_value, dict):
+            raise TypeError(f"{location}: naming hint must be an object")
+        raw_entry = cast(dict[str, Any], raw_value)
+        unknown = sorted(
+            set(raw_entry) - {"program", "address", "name", "comment", "evidence"},
+        )
+        if unknown:
+            raise ValueError(f"{location}: unknown fields: {', '.join(unknown)}")
+        image = raw_entry.get("program")
+        if not isinstance(image, str) or image not in TRACKED_IMAGE_NAMES:
+            raise ValueError(f"{location}: unsupported program {image!r}")
+        raw_address = raw_entry.get("address")
+        if not isinstance(raw_address, (str, int)):
+            raise TypeError(f"{location}: invalid address")
+        try:
+            address = parse_int(raw_address)
+        except ValueError as exc:
+            raise ValueError(f"{location}: invalid address") from exc
+        name = raw_entry.get("name")
+        if (
+            not isinstance(name, str)
+            or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name) is None
+            or is_analyzer_placeholder(name)
+        ):
+            raise ValueError(f"{location}: invalid canonical name {name!r}")
+        comment = raw_entry.get("comment")
+        evidence = raw_entry.get("evidence")
+        if not isinstance(comment, str) or not comment.strip():
+            raise ValueError(f"{location}: comment must be non-empty")
+        if not isinstance(evidence, str) or not evidence.strip():
+            raise ValueError(f"{location}: evidence must be non-empty")
+        key = (image, address)
+        if key in hints:
+            raise ValueError(f"{location}: duplicate hint for {image}:0x{address:08x}")
+        hints[key] = NamingHint(
+            image=image,
+            address=address,
+            name=name,
+            comment=comment.strip(),
+            evidence=evidence.strip(),
+        )
+    return hints
 
 
 def _scratch_image_prefix(image: str) -> str:
@@ -4972,7 +5044,7 @@ def is_analyzer_placeholder(name: str) -> bool:
 def _is_placeholder_note(note: str) -> bool:
     """Return whether a note admits missing identity rather than naming real behavior."""
 
-    return (
+    return note.casefold() in {"empty-nullsub", "tail-thunk-to-nullsub"} or (
         re.search(
             r"(?:^|[-_ ])unknown[-_ ]+"
             r"(?:provider|library|libname|function|identity|name)(?:$|[-_ ])",
@@ -5276,6 +5348,7 @@ def collect_naming_debt(
     statuses: Collection[ScratchStatus],
     *,
     name_map_path: Path = DEFAULT_NAME_MAP_PATH,
+    naming_hints_path: Path = DEFAULT_NAMING_HINTS_PATH,
 ) -> list[NamingDebtRow]:
     """Find exact recoveries whose presentation still exposes weaker analyzer names.
 
@@ -5290,6 +5363,7 @@ def collect_naming_debt(
         (str(row.get("program", "")), parse_int(row["address"])): row
         for row in load_name_map_rows(name_map_path)
     }
+    naming_hints = load_naming_hints(naming_hints_path)
     canonical_names = {
         id(status): _status_canonical_name(status, name_rows)
         for status in exact_statuses
@@ -5325,6 +5399,18 @@ def collect_naming_debt(
         )
         source_symbol_suggestion = _source_provider_symbol_suggestion(status)
         symbol_suggestion = archive_symbol_suggestion or source_symbol_suggestion
+        naming_hint = naming_hints.get((status.config.image, status.address))
+        if (
+            naming_hint is not None
+            and symbol_suggestion is not None
+            and naming_hint.name != symbol_suggestion
+        ):
+            raise ValueError(
+                f"{naming_hints_path}: {status.config.image}:0x{status.address:08x} "
+                f"hint {naming_hint.name!r} conflicts with exact provider suggestion "
+                f"{symbol_suggestion!r}",
+            )
+        identity_suggestion = naming_hint.name if naming_hint is not None else symbol_suggestion
         placeholder_aliases = tuple(
             str(alias)
             for alias in map_row.get("aliases", ())
@@ -5359,13 +5445,17 @@ def collect_naming_debt(
             issues.append("placeholder-function")
         if is_analyzer_placeholder(status.config.directory.name):
             issues.append("placeholder-directory")
-        elif symbol_suggestion is not None:
+        elif identity_suggestion is not None:
             expected_directories = {
-                symbol_suggestion.casefold(),
-                f"{_scratch_image_prefix(status.config.image)}_{symbol_suggestion}".casefold(),
+                identity_suggestion.casefold(),
+                f"{_scratch_image_prefix(status.config.image)}_{identity_suggestion}".casefold(),
             }
             if status.config.directory.name.casefold() not in expected_directories:
-                issues.append("provider-directory-conflict")
+                issues.append(
+                    "curated-directory-conflict"
+                    if naming_hint is not None
+                    else "provider-directory-conflict",
+                )
         if placeholder_aliases:
             issues.append("placeholder-alias")
         if placeholder_references:
@@ -5373,24 +5463,39 @@ def collect_naming_debt(
         if _is_placeholder_note(status.config.note):
             issues.append("placeholder-note")
         if (
-            symbol_suggestion is not None
+            identity_suggestion is not None
             and not is_analyzer_placeholder(canonical)
             and not is_analyzer_placeholder(status.config.function)
-            and (canonical != symbol_suggestion or status.config.function != symbol_suggestion)
+            and (
+                canonical != identity_suggestion
+                or status.config.function != identity_suggestion
+            )
         ):
-            issues.append("provider-name-conflict")
+            issues.append(
+                "curated-name-conflict"
+                if naming_hint is not None
+                else "provider-name-conflict",
+            )
         if not issues:
             continue
 
         suggestion: str | None = None
         suggestion_sources: tuple[str, ...] = ()
+        suggestion_comment: str | None = None
         key = _archive_provider_key(status)
         if (
             "placeholder-function" in issues
             or "provider-name-conflict" in issues
             or "provider-directory-conflict" in issues
+            or "curated-name-conflict" in issues
+            or "curated-directory-conflict" in issues
+            or ("placeholder-note" in issues and identity_suggestion is not None)
         ):
-            if symbol_suggestion is not None:
+            if naming_hint is not None:
+                suggestion = naming_hint.name
+                suggestion_sources = (f"curated-hint:{naming_hint.evidence}",)
+                suggestion_comment = naming_hint.comment
+            elif symbol_suggestion is not None:
                 suggestion = symbol_suggestion
                 source_kind = (
                     "provider-symbol"
@@ -5439,6 +5544,7 @@ def collect_naming_debt(
                 provider_member=status.config.archive_member,
                 suggestion=suggestion,
                 suggestion_sources=suggestion_sources,
+                suggestion_comment=suggestion_comment,
             ),
         )
     return sorted(rows, key=lambda row: (row.image, row.address, row.scratch))
@@ -5499,10 +5605,13 @@ def apply_naming_suggestions(
             f"sub_{row.address:X}",
         }
         image_replacements = replacements_by_image[row.image]
+        replaces_semantic_name = bool(
+            {"provider-name-conflict", "curated-name-conflict"}.intersection(row.issues),
+        )
         for old_name in old_names:
             if not old_name or (
                 not is_analyzer_placeholder(old_name)
-                and "provider-name-conflict" not in row.issues
+                and not replaces_semantic_name
             ):
                 continue
             existing = next(
@@ -5535,6 +5644,7 @@ def apply_naming_suggestions(
         if (
             "placeholder-directory" not in row.issues
             and "provider-directory-conflict" not in row.issues
+            and "curated-directory-conflict" not in row.issues
             and not carries_old_identity
         ):
             continue
@@ -5593,7 +5703,8 @@ def apply_naming_suggestions(
                 updated = _replace_config_assignment(updated, "SYMBOL", suggestion)
             if _is_placeholder_note(config.note):
                 note_slug = re.sub(r"[^a-z0-9]+", "-", suggestion.lower()).strip("-")
-                updated = _replace_config_assignment(updated, "NOTE", f"exact-archive-{note_slug}")
+                note_prefix = "exact-archive" if config.archive is not None else "evidence-backed"
+                updated = _replace_config_assignment(updated, "NOTE", f"{note_prefix}-{note_slug}")
 
         image_replacements = replacements_by_image.get(config.image, {})
         folded_replacements = {key.casefold(): value for key, value in image_replacements.items()}
@@ -5673,7 +5784,8 @@ def apply_naming_suggestions(
                 "program": row.image,
                 "address": f"0x{row.address:08x}",
                 "name": row.suggestion,
-                "comment": (
+                "comment": row.suggestion_comment
+                or (
                     f"Exact archive recovery from {row.provider_member or 'provider object'} "
                     f"symbol {row.provider_symbol or row.suggestion}."
                 ),
@@ -5698,6 +5810,8 @@ def apply_naming_suggestions(
             map_rows_added += 1
         else:
             map_row["name"] = row.suggestion
+            if row.suggestion_comment is not None:
+                map_row["comment"] = row.suggestion_comment
             map_rows_updated += 1
 
         raw_aliases = map_row.get("aliases", ())
@@ -5997,6 +6111,7 @@ def naming_debt_payload(row: NamingDebtRow) -> dict[str, Any]:
         "provider_member": row.provider_member,
         "suggestion": row.suggestion,
         "suggestion_sources": list(row.suggestion_sources),
+        "suggestion_comment": row.suggestion_comment,
     }
 
 
