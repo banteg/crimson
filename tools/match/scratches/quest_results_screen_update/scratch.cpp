@@ -471,9 +471,8 @@ extern "C" void quest_results_screen_update(void)
         grim_interface_ptr->grim_set_color_ptr(
             &render_tint_color_r);
         {
-            quest_results_vec2_t button_xy;
-            button_xy.x = xy.x + 26.0f;
-            button_xy.y = xy.y + 16.0f;
+            quest_results_vec2_t button_xy(
+                xy.x + 26.0f, xy.y + 16.0f);
             ui_text_input_render(
                 (float *)&button_xy,
                 &highscore_active_record,

@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**739/810** functions matched exactly, **149008/341992** code bytes (**43.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**740/810** functions matched exactly, **149748/341992** code bytes (**43.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **308123/341992** code bytes (**90.1%**).
+Fuzzy-weighted alignment is **308174/341992** code bytes (**90.1%**).
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 603/671 | 131483/320827 | 41.0% | 287052/320827 | 89.5% | 671/671 | 320827/320827 | 100.0% | 603/671 |
+| crimsonland.exe | 604/671 | 132223/320827 | 41.2% | 287103/320827 | 89.5% | 671/671 | 320827/320827 | 100.0% | 604/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**603/671** functions, **131483/320827** bytes (**41.0%**), **287052/320827** fuzzy-weighted bytes (**89.5%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **603/671** scratches verified.
+**604/671** functions, **132223/320827** bytes (**41.2%**), **287103/320827** fuzzy-weighted bytes (**89.5%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **604/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -271,7 +271,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | quest_failed_main_menu_button_destroy | 0x00410cf0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-main-menu-button-empty-destructor |
 | match | quest_failed_play_another_button_destroy | 0x00410d00 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-another-button-empty-destructor |
 | match | quest_failed_play_again_button_destroy | 0x00410d10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-again-button-empty-destructor |
-| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4832/4857 | 25 | 1168/1168 | 99.49% | 490/1168 | 467/0/0 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
+| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4845/4857 | 12 | 1168/1168 | 99.74% | 490/1168 | 468/0/0 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
 | match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
 | match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
 | match | quest_results_play_again_button_destroy | 0x00412040 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-again-button-empty-destructor |
@@ -489,7 +489,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | effect_select_texture | 0x0042e0a0 | 113 | 113/113 | 0 | 35/35 | 100.00% | 35/35 | 6/0/0 |  | gameplay-effect-texture |
 | match | effect_spawn | 0x0042e120 | 1507 | 1507/1507 | 0 | 350/350 | 100.00% | 350/350 | 90/0/0 |  | gameplay-effect-allocation-and-quad-build |
 | match | effects_update | 0x0042e710 | 267 | 267/267 | 0 | 85/85 | 100.00% | 85/85 | 10/0/0 |  | gameplay-effect-lifecycle |
-| wip | effects_render | 0x0042e820 | 740 | 702/740 | 38 | 195/195 | 94.87% | 37/195 | 38/0/0 |  | gameplay-effect-render-passes |
+| match | effects_render | 0x0042e820 | 740 | 740/740 | 0 | 195/195 | 100.00% | 195/195 | 38/0/0 |  | gameplay-effect-render-passes |
 | match | effect_spawn_blood_splatter | 0x0042eb10 | 361 | 361/361 | 0 | 82/82 | 100.00% | 82/82 | 27/0/0 |  | gameplay-blood-splatter-effect |
 | match | effect_spawn_freeze_shard | 0x0042ec80 | 376 | 376/376 | 0 | 81/81 | 100.00% | 81/81 | 33/0/0 |  | gameplay-freeze-shard-effect |
 | match | effect_spawn_freeze_shatter | 0x0042ee00 | 339 | 339/339 | 0 | 79/79 | 100.00% | 79/79 | 27/0/0 |  | gameplay-freeze-shatter-effect |

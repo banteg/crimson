@@ -6,9 +6,9 @@ Live Binary Ninja evidence recovers the two effect-pool render passes, their
 flag-`0x40` partition, per-entry rotation/scale transform, BGRA packing, camera
 offset, and Grim2D batch state transitions.
 
-Best verified candidate: 94.87%, with 195/195 normalized instructions and
-masked references `38/0/0`, using Microsoft Visual C++ 6.5 with
-`/O2 /GB /W3 /GR-`.
+Best verified candidate: **100.00%**, with 195/195 normalized instructions,
+740/740 bytes, and masked references `38/0/0`, using Microsoft Visual C++ 6.5
+with `/O2 /GB /W3 /GR-`.
 
 ## Recovered source shape
 
@@ -31,29 +31,33 @@ masked references `38/0/0`, using Microsoft Visual C++ 6.5 with
   persisted separately, replacing anonymous structure offsets with stable
   field-relative indices without pretending either interior address is an
   `effect_entry_t *`.
+- The packed color output is owned once by `effects_render` and passed by
+  reference into the inlined entry renderer. Rotation remains entry-local.
+  That split is shared by both passes and reproduces the native scalar-slot
+  ownership without constraining layout.
 
-## Remaining compiler residue
+## Exact scalar-slot closure
 
-The candidate and target have identical instruction counts and reference
-audits. VC6 assigns the scalar rotation and packed-color destination to the
-opposite four-byte stack slots. The same residue repeats in both otherwise
-matching passes.
+At the preceding 94.87% baseline, VC6 assigned scalar rotation to `esp+0x8`
+and the packed-color destination to `esp+0xc`; native uses `esp+0xc` and
+`esp+0x8`, respectively, in both passes. Moving both scalars to the outer
+function regressed to 89.74% and displaced the packed-byte staging object in
+both passes. Moving only the packed-color result to the outer function is the
+natural boundary supported by native reuse: staging remains at `esp+0x4`,
+color becomes `esp+0x8`, rotation becomes `esp+0xc`, and all four regions
+close simultaneously.
 
-Natural variants checked include declaration and initialization order, nested
-scopes, return-value and output-pointer color helpers, a one-element color
-array, POD aggregate offset initialization, an inline transform helper, and a
-combined render-preparation helper. `msvc6.5pp` regresses to 85.28% and `/G6`
-to 90.26%. None removes the allocator residue without explicitly coercing
-local layout, so this remains an honest semantic WIP rather than a fakematch.
+This is an ownership/lifetime correction, not an artificial layout device:
+the ordinary caller local is passed by reference to the inlined renderer, and
+there are no volatile qualifiers, dummy reads, dead expressions, or explicit
+stack constraints.
 
 ## Recovery classification audit
 
 The Binary Ninja pass partition, transforms, color conversion, vertex submits,
 and Grim state transitions are all represented. Candidate and native each have
-195 instructions, and all 38 references resolve. The four localized regions
-repeat the documented scalar/local-slot allocation and x87 scheduling choice
-in the two equivalent passes. Recovery is therefore `semantic-complete` with a
-`compiler` residual.
+195 instructions and 740 bytes, all 38 references resolve, and the normalized
+diff has no regions. Recovery is exact.
 
 ## Recorded first-residual sweeps
 
@@ -91,10 +95,9 @@ Grim argument as one three-site interaction. The complete form is also
 byte-identical at 195/195 instructions with references `38/0/0`; incomplete
 type combinations correctly fail compilation.
 
-These sweeps close the remaining aggregate-type and cv-lifetime explanations
-without coercing stack layout. The repeated `rotation esp+0xc` versus packed
-color `esp+0x8` native assignment remains a VC6 local-slot allocator tie rather
-than a reason to retain an artificial layout constraint.
+These sweeps closed aggregate-type and cv-lifetime explanations at the earlier
+92.82% baseline without coercing stack layout. The later caller-ownership
+correction resolves the slot assignment through a real source boundary.
 
 ## SDK vector-construction transfer
 
@@ -104,6 +107,21 @@ and the caller constructs the first value directly at its declaration. Using
 that form for the render offset raises the global match from **92.8205%** to
 **94.8718%**, reduces the fuzzy gap from 53.128205 to 37.948718 bytes, and
 removes the dependent offset-argument region in each pass. Instruction count,
-exact prefix, and references remain 195/195, 37, and `38/0/0`. The only four
-remaining regions are the two repeated rotation and packed-color stack-slot
-pairs identified above.
+exact prefix, and references remained 195/195, 37, and `38/0/0`. That left
+only the two repeated rotation and packed-color stack-slot pairs subsequently
+closed by caller-owned packed-output reuse.
+
+## Caller-owned output interaction
+
+Live native disassembly maps the repeated pairs at
+`0x0042e8a6..0x0042e94f` and `0x0042e9f0..0x0042ea99`. Both passes reuse the
+same `esp+0x4` packed-byte staging, `esp+0x8` packed output, `esp+0xc`
+rotation, `esp+0x10..0x14` offset, and `esp+0x18..0x24` matrix workspace.
+
+A complete transfer of both color and rotation to `effects_render` affects the
+two passes identically and regresses from 94.8718% to 89.7436%. Transferring
+only the packed output while leaving rotation local improves 94.8718% to
+**100.0000%**, removes the 37.948718-byte fuzzy gap, and extends the exact
+prefix from 37 to all 195 instructions. The two passes therefore interact
+through one function-wide allocation decision, and the same single ownership
+correction closes both rather than requiring per-pass spelling.

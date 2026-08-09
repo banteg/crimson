@@ -39,9 +39,10 @@ static inline void effect_pack_color(
     *result = packed.value;
 }
 
-static inline void effect_render_entry(effect_entry_t *entry)
+static inline void effect_render_entry(
+    effect_entry_t *entry,
+    unsigned long &color)
 {
-    unsigned long color;
     float rotation;
     float matrix[4];
 
@@ -71,6 +72,8 @@ static inline void effect_render_entry(effect_entry_t *entry)
 
 extern "C" void effects_render(void)
 {
+    unsigned long color;
+
     grim_interface_ptr->grim_set_config_var(0x13, 5u);
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
     grim_interface_ptr->grim_bind_texture(particles_texture, 0);
@@ -81,7 +84,7 @@ extern "C" void effects_render(void)
         effect_entry_t *entry = &effect_pool[index];
         int flags = entry->flags;
         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) != 0) {
-            effect_render_entry(entry);
+            effect_render_entry(entry, color);
         }
     }
 
@@ -93,7 +96,7 @@ extern "C" void effects_render(void)
         effect_entry_t *entry = &effect_pool[index];
         int flags = entry->flags;
         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) == 0) {
-            effect_render_entry(entry);
+            effect_render_entry(entry, color);
         }
     }
 

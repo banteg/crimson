@@ -378,3 +378,25 @@ tradeoff variants are not retained. The spec SHA-256 is
 `854fda8bfe7ab282e2678f9716e6e743ab6b8bf54439f2bf5588c7812e6d1a3a`;
 the retained source SHA-256 is
 `dac18403f51ccbcd45d7fbe4472ce0b7da70da452fd7ec8039f2fbeb4bd82f6d`.
+
+## Name-preview aggregate publication (2026-08-09)
+
+After the name-save recovery, one independent coordinate residual remained at
+`0x00411927..0x00411959`. Native commits the preview coordinate's X field
+before pushing the rank and alpha arguments, then forms and publishes Y during
+the `ui_text_input_render` setup. The separate field assignments allowed VC6
+to defer X until after those pushes. The exact `game_over_screen_update`
+sibling likewise expresses its corresponding record coordinate through one
+vector publication boundary.
+
+Constructing this short-lived `button_xy` directly from both components
+removes the entire region. Similarity rises from
+`4832.049657534247/4857` (`99.48630136986302%`) to
+`4844.524828767123/4857` (`99.7431506849315%`), a gain of
+`12.475171232876358` weighted bytes. Instructions remain exactly
+`1168/1168`, references improve from `467/0/0` to `468/0/0`, the exact prefix
+remains 490, and the region count falls from two to one. The sole residual is
+the already-bounded phase-`-1` separator stack-home choice at
+`0x0041151a..0x0041155d`; no separator form is replayed. The retained source
+SHA-256 is
+`7d9033cdf956972a3a89641c3d40de39fbc527818a798cccb4a4b827b2b7d979`.
