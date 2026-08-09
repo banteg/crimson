@@ -131,15 +131,18 @@ extern "C" void perk_apply(int perk_id)
         player_health = -1.0f;
     }
 
-    if (perk_id == perk_id_ammo_maniac && player_count > 0) {
-        weapon_cursor = &player_state_table[0].weapon_id;
+    if (perk_id == perk_id_ammo_maniac) {
         i = 0;
-        do {
-            weapon_assign_player(i, *weapon_cursor);
-            player_count = config_player_count;
-            ++i;
-            weapon_cursor += sizeof(player_state_t) / sizeof(*weapon_cursor);
-        } while (i < player_count);
+        if (player_count > 0) {
+            weapon_cursor = &player_state_table[0].weapon_id;
+            do {
+                weapon_assign_player(i, *weapon_cursor);
+                count = config_player_count;
+                ++i;
+                weapon_cursor += sizeof(player_state_t) / sizeof(*weapon_cursor);
+            } while (i < count);
+            player_count = count;
+        }
     }
 
     if (perk_id == perk_id_death_clock) {

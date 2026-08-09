@@ -1,13 +1,11 @@
-# grim_is_key_active
+# `grim_is_key_active`
 
 Native target: `grim.dll` at `0x10006fe0..0x100071a8` (456 bytes).
 
-This is an evidence-backed semantic-complete reconstruction, not an exact
-match. Microsoft Visual C++ 6.5 with the stock `/O2 /GB /W3 /GR-` profile
-currently reproduces 176 candidate instructions against 175 target
-instructions: 79.20% normalized match, 95/175 prefix, and references `7/0/1`.
+The canonical MSVC 6.5 `/O2 /GB /W3 /GR-` source is exact: 175/175
+normalized instructions, prefix 175, and references `13/0/0`.
 
-## Recovered source shape
+## Recovered router
 
 - IDs at or below `0xff` forward to the raw keyboard-state query.
 - `0x100..0x104` forward to mouse buttons `0..4`.
@@ -16,108 +14,36 @@ instructions: 79.20% normalized match, 95/175 prefix, and references `7/0/1`.
 - Six sparse axis IDs (`0x13f`, `0x140`, `0x141`, `0x153`, `0x154`, and
   `0x155`) scale the corresponding `DIJOYSTATE2` value by `0.001f`, take its
   absolute value, and test it strictly above `0.5`.
-- When the optional input provider exists, `0x16d..0x17b` are split into three
-  consecutive groups of five actions and dispatched as `(player, action)`.
+- When the optional input provider exists, `0x16d..0x17b` are three players'
+  five consecutive actions, dispatched as `(player, action)`.
 - Every other extended ID returns zero.
 
-## Remaining compiler delta
+## Exact closure
 
-The call targets, constants, conditions, and ID families agree with the live
-Binary Ninja evidence. A recorded provider-loop sweep found that naming the
-exclusive end of each five-key group keeps the input key in native `edi`.
-Spelling the same bounded traversal as a `for` over `[base, mapped_end)` then
-raised the score from 73.93% to 79.20% and moved the exact prefix from 2 to 95
-instructions. This is a semantic source improvement: it directly names the
-native three groups of five and retains the recovered `(player, action)`
-dispatch.
+The provider tail is an indexed two-dimensional router, not a separately
+maintained base/mapped cursor pair. Expressing its key as
+`0x16d + player * 5 + action` lets VC6 strength-reduce the expression to the
+native `esi` base and incremented `edx` key while keeping `ebx` as player and
+`eax` as action. This moved the candidate from 176 to the native 175
+instructions and raised the match from 79.20% to 87.43% without changing the
+95-instruction prefix or reference audit.
 
-The residual is block layout and the final loop allocation. The target
-tail-merges the six identical axis thresholds at the first branch, while VC6.5
-places the candidate common tail after the last branch. The candidate also
-keeps the `for` loop's provably nonempty entry check, making it one instruction
-longer overall. The single conflicting masked reference is a block-alignment
-artifact pairing the candidate Rz load with the target X load; all six exact
-axis destinations at `grim_joystick_state + 0x0..0x14` are present in both
-functions.
+The remaining native axis CFG keeps the X threshold as the shared x87 tail;
+the later axis loads jump backward into it. Explicit semantic labels reproduce
+that ownership. Ordering the first five active blocks back toward X makes X
+the shared tail, while spelling the final Rz case as a positive branch keeps
+its load adjacent to the provider fallthrough. Together those ordinary
+control-flow choices close the function at 100% and resolve all 13 references.
 
-Compiler/profile checks do not justify an override: `msvc6.5pp`, `msvc7.0`,
-and `/O1` all score materially worse. No inline assembly, volatile shaping,
-fake references, forced addresses, or source-level register tricks are used.
-There is no unresolved behavior or missing referenced destination, so the
-scratch is classified as semantic-complete with a compiler residual.
+## Negative evidence
 
-## Recorded mutation evidence
+Earlier bounded sweeps covered mapped-end, action-count, post-tested, scoped
+lifetime, declaration-order, direct-switch, shared-scalar, and inline-helper
+forms. The former mapped-end loop was the strongest partial because it kept a
+95-instruction prefix, but its entry check added one instruction. Direct axis
+switches improved aggregate similarity while losing that prefix, and explicit
+shared scalar tails changed x87 lifetime. Those variants remain historical
+evidence in `experiments.jsonl`; none is retained.
 
-The mutation record covers the natural action-count loop, mapped-end loops,
-post-tested equivalents, declaration orders, and shared-axis formulations.
-The retained `for-mapped-to-end` variant is the only candidate that both
-improves fuzzy parity and preserves 95 exact leading instructions. Seven
-post-tested refinements either lose that prefix or regress the fuzzy score.
-Float `else if` axis selection compiles byte-identically; explicit
-float/double/long-double shared-tail and declaration-order variants do not
-improve the native layout. These negative results are retained in
-`experiments.jsonl`.
-
-A further recorded three-way `switch` sweep tested direct returns in both case
-orders and a shared float tail. All three shorten the candidate to 170
-instructions and score 80.00%; the reverse direct-return form also resolves all
-eight references. They are rejected because they destroy the 95-instruction
-exact prefix (falling to 5) and move the instruction count farther from the
-175-instruction target. The retained `if` spelling therefore remains the
-stronger local match despite its slightly lower aggregate ratio.
-
-Live Binary Ninja types `grim_joystick_state` as the standard 0x110-byte
-`DIJOYSTATE2`; `lX` through `lRz` occupy the exact six offsets
-`0x0..0x14`. The lone conflict pairs candidate `lRz` with native `lX` only
-after block alignment, so no joystick declaration correction is supported.
-
-`axis-direct-nesting-mutations.json` records three source layouts targeted at
-the native backward common tail. Direct `else if` nesting and an explicit
-remaining-axis `else` compile byte-identically at 79.20%, prefix 95, 176
-instructions, and references `7/1/0`. Inverting the first-axis test resolves
-the alignment conflict but falls to 65.53% and prefix 5. None is retained.
-
-`axis-provider-cross-mutations.json` tests whether the slightly higher-scoring
-axis `switch` interacts profitably with a native-shaped provider loop. It does
-not: all six two-site combinations fall to 72.89%, while the three standalone
-provider forms fall to 73.93%. The reverse `switch` repeats the isolated
-80.00% result and resolves the aligned reference, but loses 90 exact prefix
-instructions. Live disassembly at `0x100070cd..0x10007199` proves an ascending
-axis comparison chain with the shared x87 threshold immediately after `lX`,
-followed by an action-counted provider loop. The retained source expresses
-that native structure; the reversed router is a misleading aggregate-only
-gain and is not retained.
-
-`axis-inline-helper-mutations.json` closes the remaining natural shared-tail
-hypothesis. It evaluates ordinary, `static`, and forced-inline helpers with
-both byte and integer results, alone and at all six axis call sites. All eight
-compile-valid variants are byte-identical to the retained 79.20% candidate;
-the only failing variant intentionally references the helper without its
-declaration. The helper abstraction therefore cannot move VC6.5's common
-threshold tail, and the surviving axis/provider delta remains a compiler
-layout residual rather than missing source behavior.
-
-## Provider lifetime saturation
-
-Live disassembly at `0x10007153..0x10007199` assigns the provider loop's
-`player`, `base`, `action`, and `mapped` values to `ebx`, `esi`, `eax`, and
-`edx`, and terminates the inner loop on `action < 5`.
-`provider-scoped-lifetime-mutations.json` tests six natural block-scoped
-translations of that structure, including nested `for`, `while`, and
-post-tested forms. Every action-count variant moves the first mismatch from
-byte 243 to byte 2 and loses 93 exact prefix instructions; even the scoped
-mapped-end form falls to prefix 5. The retained function-scoped lifetimes are
-therefore code-generation evidence rather than incidental declarations.
-
-`provider-declaration-interactions.json` exhaustively crosses six
-function-scope declaration orders with three native action-count loop forms
-(27/27 variants). Declaration order is byte-neutral on the retained loop and
-cannot rescue any action-count form: every interaction repeats the 73.93%,
-prefix-2 result. Stock VC6 `/G5`, `/G6`, `/Ot`, and `/Ob1` profiles are
-byte-identical to canonical `/GB`; disabling intrinsics regresses to 73.02%
-and prefix 5.
-
-The experiment ledger now contains 100 evaluated variants across 13 mutation
-sweeps and three consecutive no-improvement sweeps, so the scratch is formally
-stalled. Further work should require new compiler/TU provenance rather than
-more local source permutations.
+No inline assembly, volatile shaping, fake references, forced addresses,
+register forcing, or dummy operations are used.

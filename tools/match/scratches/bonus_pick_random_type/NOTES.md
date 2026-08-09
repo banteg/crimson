@@ -76,3 +76,23 @@ Together with the earlier six predicate-layout variants, this falsifies a
 source `switch` as the missing shape. The residual is supported VC6 cold-block
 placement, not unrecovered behavior. Recorded spec SHA:
 `cdeec7b18eb188a4c8fe299d1759d1a876a50a798c42f65c34ccd3b3d1d94351`.
+
+## Exact-neighbor house-style follow-up (2026-08-09)
+
+The exact neighboring bonus functions suggest two recurring source shapes:
+`bonus_try_spawn_on_kill` uses a local rejection flag before shared cleanup,
+and `bonus_spawn_at_pos` uses a small ordinary inline helper for the accepted
+body. Applying those shapes here does not recover the displaced stage-5 block.
+A stage-5-only flag, a flag guarding the common acceptance path, a stage-5
+inline predicate, a whole secondary-quest inline predicate, and a single
+short-circuit secondary-quest predicate all remain at `75.9259259259%`,
+`162/162` instructions, prefix `55`, and references `20/0/0`.
+
+Factoring the entire common acceptance path into an inline helper regresses to
+`74.8466%` with 164 candidate instructions and 19 mapped references. A shared
+flag for every secondary quest rejection regresses to `74.691358%`. Inverting
+the stage-4 predicate to spell the native `cmp 4` / non-stage-4 edge directly
+regresses to `70.370370%` and `18/1/0` references because VC6 swaps the
+major/minor register ownership. These results leave the clean nested source as
+the strongest reference-complete reconstruction and further isolate the tail
+placement as a compiler scheduling residual.

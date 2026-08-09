@@ -27,10 +27,10 @@ bool GrimTexture::grim_texture_load_file(char *path)
     this->texture = 0;
 
     bool found_in_lookup = false;
-    unsigned char *lookup_data = 0;
+    unsigned char *source_data = 0;
     if (grim_lookup_blob_loaded) {
-        lookup_data = (unsigned char *)grim_lookup_blob_find(path);
-        found_in_lookup = lookup_data != 0;
+        source_data = (unsigned char *)grim_lookup_blob_find(path);
+        found_in_lookup = source_data != 0;
     }
 
     int image_width;
@@ -39,13 +39,11 @@ bool GrimTexture::grim_texture_load_file(char *path)
     GrimD3dxImageInfo source_info;
     bool has_jaz_extension = grim_path_has_extension(path, "jaz");
     if (has_jaz_extension) {
-        bool result = has_jaz_extension;
+        bool result = true;
         unsigned int source_size;
-        unsigned char *source_data;
 
         if (grim_lookup_blob_loaded && found_in_lookup) {
             source_size = grim_lookup_blob_size_for_path(path);
-            source_data = lookup_data;
         } else {
             FILE *file = fopen(path, "rb");
             if (file == 0) {
@@ -98,7 +96,7 @@ bool GrimTexture::grim_texture_load_file(char *path)
         unsigned int source_size = grim_lookup_blob_size_for_path(path);
         if (D3DXCreateTextureFromFileInMemoryEx(
                 grim_d3d_device,
-                lookup_data,
+                source_data,
                 source_size,
                 0xffffffff,
                 0xffffffff,

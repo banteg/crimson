@@ -21,9 +21,7 @@ unsigned char IGrim2D_cpp::grim_is_key_active(int key)
 {
     int button;
     int player;
-    int base;
     int action;
-    int mapped;
     GrimInputProvider *provider;
 
     if (key > 0xff) {
@@ -63,42 +61,47 @@ unsigned char IGrim2D_cpp::grim_is_key_active(int key)
         }
 
         if (key == 0x13f) {
-            return fabs((float)grim_joystick_state.lX * 0.001f) > 0.5;
+            goto axis_x_active;
         }
         if (key == 0x140) {
-            return fabs((float)grim_joystick_state.lY * 0.001f) > 0.5;
+            goto axis_y_active;
         }
         if (key == 0x141) {
-            return fabs((float)grim_joystick_state.lZ * 0.001f) > 0.5;
+            goto axis_z_active;
         }
         if (key == 0x153) {
-            return fabs((float)grim_joystick_state.lRx * 0.001f) > 0.5;
+            goto axis_rx_active;
         }
         if (key == 0x154) {
-            return fabs((float)grim_joystick_state.lRy * 0.001f) > 0.5;
+            goto axis_ry_active;
         }
         if (key == 0x155) {
             return fabs((float)grim_joystick_state.lRz * 0.001f) > 0.5;
         }
+        goto check_provider;
+axis_ry_active:
+        return fabs((float)grim_joystick_state.lRy * 0.001f) > 0.5;
+axis_rx_active:
+        return fabs((float)grim_joystick_state.lRx * 0.001f) > 0.5;
+axis_z_active:
+        return fabs((float)grim_joystick_state.lZ * 0.001f) > 0.5;
+axis_y_active:
+        return fabs((float)grim_joystick_state.lY * 0.001f) > 0.5;
+axis_x_active:
+        return fabs((float)grim_joystick_state.lX * 0.001f) > 0.5;
+check_provider:
 
         provider = grim_input_provider;
         if (provider == 0) {
             return 0;
         }
 
-        player = 0;
-        base = 0x16d;
-        while (base < 0x17c) {
-            int mapped_end = base + 5;
-            for (action = 0, mapped = base;
-                 mapped < mapped_end;
-                 ++action, ++mapped) {
-                if (key == mapped) {
+        for (player = 0; player < 3; ++player) {
+            for (action = 0; action < 5; ++action) {
+                if (key == 0x16d + player * 5 + action) {
                     return provider->is_active(player, action);
                 }
             }
-            base = mapped;
-            ++player;
         }
         return 0;
     }

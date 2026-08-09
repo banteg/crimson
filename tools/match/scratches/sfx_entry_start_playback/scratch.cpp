@@ -32,14 +32,13 @@ stream_playback:
     }
 
     while (result < 16) {
-        if (*buffer != 0) {
-            (*buffer)->GetStatus(&status);
+        if (entry->buffers[result] != 0) {
+            entry->buffers[result]->GetStatus(&status);
             if ((status & DSBSTATUS_PLAYING) == 0) {
                 goto play_voice;
             }
         }
         ++result;
-        ++buffer;
     }
     result = rand() % 16;
     entry->buffers[result]->Stop();

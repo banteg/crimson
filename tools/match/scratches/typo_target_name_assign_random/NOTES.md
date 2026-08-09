@@ -3,10 +3,10 @@
 Native target: `crimsonland.exe` at `0x00445380` (522 bytes, 173
 instructions).
 
-The recovered MSVC 6.5 `/O2 /GB` source is an honest WIP:
+The recovered MSVC 6.5 `/O2 /GB` source matches exactly:
 
 ```txt
-match=89.02% prefix=17/173 target_insns=173 candidate_insns=173 refs=32/0/0
+match=100.00% prefix=173/173 target_insns=173 candidate_insns=173 refs=37/0/0
 ```
 
 ## Recovered source shape
@@ -24,37 +24,43 @@ match=89.02% prefix=17/173 target_insns=173 candidate_insns=173 refs=32/0/0
   matching the native random-draw order.
 - The high-score branch copies its selected string inline; the fragment
   branches format directly into the selected creature's 64-byte name slot.
+  Each branch and the validation tail spell that slot as the direct table
+  expression rather than publishing it through a named pointer.
 - Every candidate is checked against active creature names. A unique name of at
   most 15 bytes returns immediately. Unique overlength names retry 100 times
   and the 101st is accepted; duplicate names do not advance that counter.
 
-The 173-instruction length and all 32 audited references agree. The signed
+The 173-instruction body, all 522 bytes, and all 37 audited references agree.
+The signed
 score cast is material: omitting it changes the native signed `jle` tests into
 unsigned comparisons.
 
-## Remaining compiler delta
+## Exact source-spelling completion
 
-Native forms each name-slot address through a temporary scaled index and an
-`lea`; the calibrated compiler keeps the creature id in the eventual `ebx`
-destination register and uses `add`. That allocation choice also changes the
-temporary used by the inline string copy and final post-increment comparison.
+The final residual came from publishing the selected slot through a local
+`char *name`. With that spelling, VC6 coalesces the creature id into the
+eventual `ebx` destination and emits `mov ebx, ebp; shl ebx, 6; add ebx, base`.
+The native function instead scales a temporary and forms the persistent `ebx`
+slot address with `lea`.
 
-Equivalent two-dimensional, byte-array, scalar-base, struct-field, and explicit
-offset expressions all reproduce the same candidate allocation. Combined
-short-circuit expressions and shared-label source retain the older linear
-layout, while explicit nested gates reproduce the independently written ladder
-and its native tail merges. MSVC 6.0 and 6.6 are no better, 6.5pp and 7.0
-regress sharply, and `/G6` is slightly worse. No volatile state, dummy work, or
-register-forcing construct is retained.
+Using `typo_target_name_table[creature_id]` directly at every copy, formatter,
+uniqueness, and length site gives VC6 the original common-subexpression shape.
+It keeps the slot address in `ebx` across the selected branch and validation,
+while constructing it through the native temporary `shl` plus `lea`. This also
+recovers the native scratch registers in the inline copy and final
+post-increment comparison. No volatile state, dummy work, or register forcing
+is involved.
 
-The complete recorded allocation audit adds 16 byte-neutral variants.
+The earlier allocation audit remains useful negative evidence. Its sixteen
+byte-neutral variants cover row typedefs, row-struct conversions, typed wrapper
+access, byte/shifted offsets, copied indices, and named base/offset forms.
 `name-table-type-mutations.json` covers row typedefs, row-struct conversions,
 typed wrapper access, and byte/shifted offsets.
 `first-name-slot-address-mutations.json` covers copied indices, named
 multiply/shift offsets, and both base-first address forms at the first affected
-site. A separate compiler/flags matrix confirms the baseline MSVC 6.5/6.6
-shape is still best. These results bound ordinary type and address spelling as
-causes of the remaining temporary-register choice.
+site. Those probes left the named-pointer ownership unchanged, which is why
+they were neutral. A separate compiler/flags matrix also confirms MSVC 6.5/6.6
+as the best compiler family for this body.
 
 ## Port parity
 
@@ -69,11 +75,9 @@ Both ports intentionally cap duplicate retries at 200 to avoid an unbounded
 loop when the generalized dictionary cannot produce a unique name; the native
 routine has no duplicate-attempt cap.
 
-## Recovery classification audit
+## Exactness audit
 
 Live Binary Ninja control flow accounts for every signed score tier, random
 gate and draw order, formatter path, active-name scan, length rule, and retry
-boundary. Candidate and native each have 173 instructions with `32/0/0`
-references. The seven localized regions are the documented name-slot address
-and temporary register allocation repeated across otherwise identical paths.
-Recovery is `semantic-complete` with a `compiler` residual.
+boundary. Candidate and native each have 173 instructions and 522 bytes with
+references `37/0/0`; the normalized instruction streams are identical.

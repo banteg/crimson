@@ -10,14 +10,15 @@ extern "C" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)
         return;
     }
 
+    i = 0;
     entry->volume = volume;
     buffer = entry->buffers;
-    for (i = 0; i < 16; ++i, ++buffer) {
+    for (; i < 16; ++i, ++buffer) {
         if (*buffer != 0) {
             (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));
-        }
-        if (entry->vorbis_stream != 0) {
-            break;
+            if (entry->vorbis_stream != 0) {
+                break;
+            }
         }
     }
 }

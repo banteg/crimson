@@ -5,7 +5,7 @@ prefill three quarters, and loop the primary buffer. Resident entries select
 the first non-playing voice, falling back to a random voice and stopping it when
 all 16 are busy, then apply the global playback frequency and start once.
 
-The default VC6 `/O2 /GB` result is 79.57% with a 43.92-byte fuzzy gap
+The default VC6 `/O2 /GB` result is 87.10% with a 27.74-byte fuzzy gap
 (93/93 instructions, `7/0/0` audited references). The historical Processor Pack
 `/G6` experiment reached 80.21%, but it also added an instruction and cannot be
 native-object provenance because the corresponding Rich records are absent.
@@ -20,13 +20,12 @@ Moving `result = 0` into the resident arm and nesting it under the streaming
 instruction shape. The later restore-to-stream CFG sweep found one useful
 explicit label, described below.
 
-Five broader mutation sweeps now record the streaming/resident lifetime, loop
-shape, restore predicate, and result-reuse alternatives. The only numeric
-aggregate improvement (`conditional-result-flag`, 80.00%) emits 97
-instructions against the native 93 and introduces an extra reference match by
-duplicating structure; the region evidence rejects it. All 93-instruction
-alternatives are neutral or worse, so none of those earlier source mutations
-is retained.
+Five earlier mutation sweeps record the streaming/resident lifetime, loop
+shape, restore predicate, and result-reuse alternatives before the recovered
+restore-to-stream edge was combined with direct resident indexing. The only
+numeric aggregate improvement at that baseline (`conditional-result-flag`,
+80.00%) emits 97 instructions against the native 93 and introduces an extra
+reference match by duplicating structure; the region evidence rejects it.
 
 Recovery is classified `semantic-complete` with a `compiler` residual. No
 volatile state, dummy dependencies, register forcing, or artificial control
@@ -63,6 +62,28 @@ two choices, but both the build-8966 and build-9782 optimizers shrink-wrap the
 prologue and falls to 73.91%. All five local declaration orders and both
 branch-polarity spellings produce the same result. Six direct, indexed, named,
 reference, and explicitly typed primary-buffer call forms are byte-neutral.
-The recorded interaction and primary-lifetime sweeps therefore leave the
-stronger 79.57% source unchanged and identify the rest as register-save and
-COM-call allocation residue.
+The recorded interaction and primary-lifetime sweeps therefore still retain
+the early initialization and identify that part of the residual as
+register-save scheduling.
+
+## Resident direct-index recovery
+
+The earlier resident-loop sweep predated the explicit restore-to-stream label.
+A focused seven-form follow-up retested the ordinary loop forms against the
+recovered CFG. Replacing the explicit `*buffer` scan and manual pointer
+increment with `entry->buffers[result]` raises the score from 79.57% to
+**87.10%** and cuts the fuzzy gap from 43.92 to **27.74 bytes**. Instruction
+count, 20-instruction prefix, and all seven audited references are unchanged.
+
+This is also the stronger source reconstruction. Exact sibling audio routines
+index `entry->buffers[i]` directly, while VC6 strength-reduces that source back
+to the native `EBP` induction pointer (`add ebp, 4`) without making source
+ownership pointer-shaped. Keeping that induction live also makes the streaming
+primary-buffer load and call agree with native. A `for` spelling and a scoped
+named voice compile identically; the canonical `while` form is the smallest
+change from the recovered source.
+
+The remaining mismatch is bounded to the placement of the resident zeroing
+instruction and the register choices for the final three COM calls. Delaying the
+initialization still shrink-wraps the `ESI` save and drops the object to 91
+instructions, so that superficially closer placement is not retained.
