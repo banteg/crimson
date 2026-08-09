@@ -160,13 +160,16 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x, position.y, "please upgrade to the full version of Crimsonland.");
             position.y += 22.0f;
+            float quest_tail_y = position.y;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, position.y, "The full version features unrestricted access to all 3");
-            position.y += 18.0f;
+                position.x, quest_tail_y,
+                "The full version features unrestricted access to all 3");
+            quest_tail_y += 18.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, position.y,
+                position.x, quest_tail_y,
                 "game modes and be able to post your scores on the Internet. Why not buy");
-            position.y += 18.0f;
+            quest_tail_y += 18.0f;
+            position.y = quest_tail_y;
         } else if (minutes <= 0 && seconds <= 0) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x, position.y,
@@ -179,14 +182,16 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
             grim_interface_ptr->grim_draw_text_small_fmt(position.x, position.y,
                                                          "is very easy and takes just minutes.");
             position.y += 24.0f;
+            float expired_tail_y = position.y;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, position.y,
+                position.x, expired_tail_y,
                 "Buy the full version to gain unrestricted access to all 3");
-            position.y += 18.0f;
+            expired_tail_y += 18.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, position.y,
+                position.x, expired_tail_y,
                 "game modes and be able to post your scores on the Internet. Why not buy");
-            position.y += 18.0f;
+            expired_tail_y += 18.0f;
+            position.y = expired_tail_y;
         } else {
             position.y -= 7.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(

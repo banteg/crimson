@@ -83,3 +83,23 @@ the raw ratio to 95.25% but created 33 unresolved references, so the
 reference-clean `/O2 /GB` baseline remains canonical at **94.25%**,
 2274.23/2413 fuzzy-weighted bytes, 616/636 instructions, prefix 205, and
 `171/0/0` references.
+
+## 2026-08-09 branch-owned suffix recovery
+
+The earlier compiler-only classification is superseded. Exact neighboring menu
+renderers keep the horizontal coordinate long-lived while a named vertical
+cursor advances through a block of text. Applying that ownership boundary to
+the native duplicated suffix gives the Quest and expired arms distinct
+`quest_tail_y` and `expired_tail_y` cursors. Each branch publishes its final Y
+back to `position` before the common last sentence, so the source remains
+semantically identical without artificial control flow or fake differences.
+
+This prevents VC6 from tail-merging the two branches and recovers the native
+instruction count exactly: **97.641509%**, 2356.089623/2413 fuzzy-weighted
+bytes, 636/636 instructions, prefix 339, and `175/0/0` references. The gain is
+81.856396 weighted bytes (+3.392308 percentage points). Both native suffix
+regions (`0x00404c6c..0x00404cb9` and `0x00404d55..0x00404da2`) now have equal
+candidate spans; their remaining differences are only the corresponding
+temporary stack slots (`esp+0x18`/`esp+0x24` native versus
+`esp+0x1c`/`esp+0x28` candidate). Source SHA-256:
+`6da0467796a04c63d65b82c1be11dd81e7a1941edeb4469aebbc10a3345f43bd`.

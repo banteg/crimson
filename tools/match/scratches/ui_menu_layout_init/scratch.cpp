@@ -5,11 +5,38 @@
 
 struct ui_layout_vec2_t : vec2f_t {
 
+    ui_layout_vec2_t()
+    {
+    }
+
     ui_layout_vec2_t(float x_value, float y_value)
     {
         x = x_value;
         y = y_value;
     }
+
+    ui_layout_vec2_t &operator-=(const ui_layout_vec2_t &other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
+    ui_layout_vec2_t &operator*=(float scale)
+    {
+        x *= scale;
+        y *= scale;
+        return *this;
+    }
+};
+
+struct ui_layout_vertex_t {
+    ui_layout_vec2_t position;
+    float z;
+    float rhw;
+    unsigned int color;
+    float u;
+    float v;
 };
 
 typedef ui_element_t ui_layout_element_t;
@@ -115,7 +142,6 @@ extern ui_layout_element_t ui_perk_prompt_element;
 extern ui_element_callback_t ui_perk_prompt_on_activate;
 extern float perk_prompt_origin_x;
 extern float perk_prompt_origin_y;
-extern ui_menu_item_subtemplate_block_t ui_perk_prompt_levelup_element;
 
 extern ui_menu_item_subtemplate_block_t ui_sign_crimson_template;
 extern ui_menu_item_subtemplate_block_t ui_menu_item_element;
@@ -778,30 +804,27 @@ extern "C" void ui_menu_layout_init(void)
     ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;
 
     ui_element_load(
-        &ui_perk_prompt_levelup_element,
+        &ui_perk_prompt_element.layers[1],
         "ui\\ui_textLevelUp.jaz");
     {
         ui_layout_vec2_t levelup_offset(-230.0f, -27.0f);
         ui_element_set_rect(
-            &ui_perk_prompt_levelup_element,
+            &ui_perk_prompt_element.layers[1],
             75.0f,
             25.0f,
             &levelup_offset.x);
     }
 
     for (i = 0; i < 4; ++i) {
-        ui_menu_item_subtemplate_slot_t *prompt_slot =
-            (&ui_perk_prompt_element.layers[0].slot_00) + i;
-        prompt_slot->x -= 300.0f;
-        prompt_slot->x *= 0.75f;
-        prompt_slot->y *= 0.75f;
+        ui_layout_vertex_t *prompt_slot =
+            (ui_layout_vertex_t *)&ui_perk_prompt_element.layers[0].slot_00 + i;
+        prompt_slot->position -= ui_layout_vec2_t(300.0f, 0.0f);
+        prompt_slot->position *= 0.75f;
 
-        ui_menu_item_subtemplate_slot_t *levelup_slot =
-            (&ui_perk_prompt_levelup_element.slot_00) + i;
-        levelup_slot->x *= 0.85f;
-        levelup_slot->y *= 0.85f;
-        levelup_slot->x -= 46.0f;
-        levelup_slot->y -= 4.0f;
+        ui_layout_vertex_t *levelup_slot =
+            (ui_layout_vertex_t *)&ui_perk_prompt_element.layers[1].slot_00 + i;
+        levelup_slot->position *= 0.85f;
+        levelup_slot->position -= ui_layout_vec2_t(46.0f, 4.0f);
     }
 
     if (config_screen_width == 640) {

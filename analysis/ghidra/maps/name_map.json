@@ -3045,6 +3045,7 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0042d8a0",
+    "end": "0x0042ddff",
     "name": "statistics_update_check_worker",
     "signature": "void statistics_update_check_worker(void *arg)",
     "comment": "background worker started from statistics/highscore flows to check for version updates and stage update notice URL state"

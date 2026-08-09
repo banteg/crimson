@@ -303,3 +303,31 @@ opening-order and prompt-schedule matrices, these results bound the opening
 residual as compiler scheduling rather than a missing semantic recovery. The
 experiment log SHA-256 after both records is
 `63a1482b3607f1190440b76acca15a9baf8eab88b8aeea182ee85b37b03b792b`.
+
+## Prompt layer ownership recovery
+
+The remaining prompt-transform region exposed a real aggregate-ownership error.
+Binary Ninja types `ui_perk_prompt_element` at `0x0048f20c` as the full
+`ui_element_t` (`0x318` bytes), while the symbol formerly modeled as the
+independent `ui_perk_prompt_levelup_element` is at `0x0048f330`: exactly
+`0x124` bytes into that owner, the offset of its second vertex block. Native
+likewise carries one cursor from `0x0048f334` through the loop at
+`0x0045175a..0x004517cd`, reaching the prompt and level-up vertices through
+fixed member offsets.
+
+The source now names that storage as `ui_perk_prompt_element.layers[1]` for
+load, rectangle setup, and transformation instead of preserving the interior
+symbol as a second global owner. It also transfers the exact neighboring
+`ui_menu_assets_init` house style by exposing each 28-byte vertex's position as
+a vector member and applying the transform through ordinary vector compound
+operators. That vector spelling is byte-neutral; the corrected aggregate
+ownership is the measured gain and also removes the stale overlapping extern.
+
+The retained result moves from **88.40989%** to **89.11661%**: 6,398.22 to
+**6,449.37 fuzzy-weighted bytes**, an 838.78 to **787.63-byte gap**, with the
+instruction counts and prefix unchanged at 1,408/1,422 and 10. The reference
+audit improves from **`482/0/5`** to **`485/0/4`**. The remaining local delta is
+the compiler's x87 materialization schedule: native stores and reloads between
+the compound vector stages, while the candidate legally fuses the adjacent
+arithmetic. Source SHA-256 is
+`146bec6b4fe14e75412e5625f91ea4fdd7bbb43bfc1d0e714dbb566002743fad`.

@@ -126,3 +126,25 @@ evaluations. The retained source SHA-256 is
 `fbcccb4047061ffcc135469c9d4db4f5df475fd424a4456258d36e2a466d642c`;
 `experiments.jsonl` is
 `7a2afd319355c070ab2636aa9acc48cc669a13c43aa6bbf0c16f1836f9a287e8`.
+
+## Native worker extent correction
+
+The canonical function extent ended at `0x0042ddf4`, immediately after the
+`crt_endthread` call, but live Binary Ninja disassembly shows that the same
+native function continues through the ordinary VC6 epilogue at
+`0x0042ddf4..0x0042ddfe`. The neighboring network worker
+`highscore_sync_worker` uses the same house style: its `crt_endthread` call at
+`0x0042d88d` is followed by register restores, stack release, and `ret` through
+`0x0042d89c`. The candidate already emitted the corresponding six
+instructions; they were incorrectly classified as extra because the target
+was truncated.
+
+The curated function map now overrides the stale analyzer extent with
+`end=0x0042ddff`, so every matcher and coverage consumer includes those eleven
+native bytes without a scratch-local exception. This raises the measured
+result from 1,055.520435967303/1,364
+(77.384196185286%) to 1,077.702702702703/1,375 (78.378378378378%), reduces
+the fuzzy gap from 308.479564032697 to 297.297297297297 bytes, and changes
+the instruction comparison from 373/361 to 373/367. The prefix remains 22
+and references remain `106/0/0`. Source is unchanged at SHA-256
+`fbcccb4047061ffcc135469c9d4db4f5df475fd424a4456258d36e2a466d642c`.

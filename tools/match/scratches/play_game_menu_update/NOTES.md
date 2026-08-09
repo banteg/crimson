@@ -222,3 +222,23 @@ The instruction score stays **95.4341%**, with the same 778/777 instruction
 counts, 120-instruction prefix, and 147.844373-byte weighted gap. The reference
 audit improves from `306/0/12` to **`318/0/0`**. Retained source SHA-256:
 `8928bdca3bc79424a2ceb3dda4b710a1045da46c0c31361af0a1e96aaeb038de`.
+
+## Typ-o-Shooter branch ownership (2026-08-09)
+
+The next weighted region exposed a genuine branch-scope discrepancy rather
+than compiler scheduling. Native calls `game_is_full_version` at `0x0044f4a0`;
+the false edge goes directly to the unconditional 28-pixel row advance at
+`0x0044f503`. On the true edge, a non-single-player count skips only the
+Typ-o-Shooter button call by branching to `0x0044f4c4`. The optional play-count
+text remains owned by the full-version branch, independently of whether the
+button is exposed.
+
+The former combined full-version/single-player condition incorrectly owned
+the count text and row advance as well as the button. Recovering the native
+nested scope removes the candidate's extra `mov` of `show_play_counts`, aligns
+all downstream branch destinations, and restores the exact instruction count.
+The retained result improves from **95.434084%** to **98.970399%**, gains
+114.505892 fuzzy-weighted bytes, and shrinks the weighted gap from 147.844373
+to 33.338481 bytes. It now has 777/777 instructions, a 120-instruction prefix,
+and reference audit **`319/0/0`**. Retained source SHA-256:
+`a7fa7e2cde6d4322c43739211cd86c26331d90c271fcf38b39c146d80daac635`.

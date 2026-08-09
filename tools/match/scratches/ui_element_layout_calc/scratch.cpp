@@ -48,7 +48,7 @@ extern "C" void ui_element_layout_calc(ui_element_t *element)
     float height = vertex_2.y - vertex_0.y;
     hover_min.y += height * 0.28f;
 
-    hover_max = position + vertex_2;
+    *(ui_layout_vec2_t *)&element->hover_max = position + vertex_2;
     unsigned char direction_flag = element->direction_flag;
     hover_max.x -= width * 0.05f;
     hover_max.y -= height * 0.1f;

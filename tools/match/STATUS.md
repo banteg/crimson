@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**733/810** functions matched exactly, **146108/341970** code bytes (**42.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**734/810** functions matched exactly, **146407/341981** code bytes (**42.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **306857/341970** code bytes (**89.7%**).
+Fuzzy-weighted alignment is **307146/341981** code bytes (**89.8%**).
 
-Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Reproducible candidates cover **810/810** functions and **341981/341981** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Native linking
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 97 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 103 recorded file inputs changed or missing
 - `grim.dll`: **stale** — 6 recorded file inputs changed or missing
 
 ## Function dispositions
@@ -96,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 597/671 | 128583/320805 | 40.1% | 285786/320805 | 89.1% | 671/671 | 320805/320805 | 100.0% | 597/671 |
+| crimsonland.exe | 598/671 | 128882/320816 | 40.2% | 286075/320816 | 89.2% | 671/671 | 320816/320816 | 100.0% | 598/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**597/671** functions, **128583/320805** bytes (**40.1%**), **285786/320805** fuzzy-weighted bytes (**89.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **597/671** scratches verified.
+**598/671** functions, **128882/320816** bytes (**40.2%**), **286075/320816** fuzzy-weighted bytes (**89.2%**), **671/671** reproducible candidates covering **320816/320816** bytes (**100.0%**), **598/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -161,7 +161,7 @@ Artifact freshness issues:
 | match | perk_prompt_update_and_render | 0x00403550 | 378 | 378/378 | 0 | 93/93 | 100.00% | 93/93 | 35/0/0 |  | ui-perk-prompt-animation |
 | match | input_key_name | 0x004036d0 | 2970 | 2970/2970 | 0 | 1097/1097 | 100.00% | 1097/1097 | 256/0/0 |  | input-device-key-label-policy |
 | match | perks_generate_choices | 0x004045a0 | 535 | 535/535 | 0 | 139/139 | 100.00% | 139/139 | 54/0/0 |  | perk-choice-generation-policy |
-| wip | demo_trial_overlay_render | 0x004047c0 | 2413 | 2274/2413 | 139 | 616/636 | 94.25% | 205/636 | 171/0/0 |  | demo-trial-overlay-render-and-actions |
+| wip | demo_trial_overlay_render | 0x004047c0 | 2413 | 2356/2413 | 57 | 636/636 | 97.64% | 339/636 | 175/0/0 |  | demo-trial-overlay-render-and-actions |
 | match | demo_trial_already_paid_button_destroy | 0x00405130 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-already-paid-button-empty-destructor |
 | match | demo_trial_purchase_button_destroy | 0x00405140 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-purchase-button-empty-destructor |
 | match | demo_trial_maybe_later_button_destroy | 0x00405150 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-maybe-later-button-empty-destructor |
@@ -424,7 +424,7 @@ Artifact freshness issues:
 | match | config_sync_from_grim | 0x0041ec60 | 1225 | 1225/1225 | 0 | 277/277 | 100.00% | 277/277 | 37/0/0 |  | grim-config-sync-and-legacy-migration |
 | match | config_ensure_file | 0x0041f130 | 112 | 112/112 | 0 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
 | wip | config_load_presets | 0x0041f1a0 | 653 | 580/653 | 73 | 178/178 | 88.76% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
-| wip | angle_approach | 0x0041f430 | 299 | 283/299 | 16 | 100/101 | 94.53% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
+| match | angle_approach | 0x0041f430 | 299 | 299/299 | 0 | 101/101 | 100.00% | 101/101 | 11/0/0 |  | gameplay-angle-x87 |
 | match | bonus_pool_sentinel_global_init_thunk | 0x0041f560 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-sentinel-global-initialization-thunk |
 | match | bonus_pool_sentinel_global_init | 0x0041f570 | 11 | 11/11 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | bonus-pool-sentinel-global-initialization |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 46/46 | 0 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
@@ -480,7 +480,7 @@ Artifact freshness issues:
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | wip | crimsonland_main | 0x0042c450 | 3214 | 3164/3214 | 50 | 832/832 | 98.44% | 684/832 | 393/0/2 |  | primary-game-bootstrap-and-shutdown |
 | wip | highscore_sync_worker | 0x0042d0e0 | 1970 | 1320/1970 | 650 | 517/519 | 66.99% | 26/519 | 107/0/0 |  | online-highscore-submit-receive-worker |
-| wip | statistics_update_check_worker | 0x0042d8a0 | 1364 | 1056/1364 | 308 | 373/361 | 77.38% | 22/361 | 106/0/0 |  | statistics-version-update-check-worker |
+| wip | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1078/1375 | 297 | 373/367 | 78.38% | 22/367 | 106/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
 | match | crimson_crt_empty_initializer_slot_48_thunk | 0x0042de40 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-48-thunk |
@@ -757,7 +757,7 @@ Artifact freshness issues:
 | match | controls_player_profile_list_destroy | 0x0044ed50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-player-profile-list-destroy |
 | match | controls_back_button_destroy | 0x0044ed60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-back-button-destroy |
 | match | controls_redefine_button_destroy | 0x0044ed70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-redefine-button-destroy |
-| wip | play_game_menu_update | 0x0044ed80 | 3238 | 3090/3238 | 148 | 778/777 | 95.43% | 120/777 | 318/0/0 |  | play-game-mode-buttons-player-count-and-routing |
+| wip | play_game_menu_update | 0x0044ed80 | 3238 | 3205/3238 | 33 | 777/777 | 98.97% | 120/777 | 319/0/0 |  | play-game-mode-buttons-player-count-and-routing |
 | match | play_game_player_count_list_destroy | 0x0044fa30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-player-count-list-empty-destructor |
 | match | play_game_tutorial_button_destroy | 0x0044fa40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-tutorial-button-empty-destructor |
 | match | play_game_hardcore_checkbox_destroy | 0x0044fa50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-hardcore-checkbox-empty-destructor |
@@ -766,10 +766,10 @@ Artifact freshness issues:
 | match | play_game_rush_button_destroy | 0x0044fa80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-rush-button-empty-destructor |
 | match | play_game_quests_button_destroy | 0x0044fa90 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-quests-button-empty-destructor |
 | match | ui_element_init_defaults | 0x0044faa0 | 173 | 173/173 | 0 | 40/40 | 100.00% | 40/40 | 3/0/0 |  | ui-element-default-state |
-| wip | ui_element_layout_calc | 0x0044fb50 | 288 | 281/288 | 7 | 86/86 | 97.67% | 32/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
+| wip | ui_element_layout_calc | 0x0044fb50 | 288 | 285/288 | 3 | 86/86 | 98.84% | 32/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 39/39 | 0 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 8/8 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
-| wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 6398/7237 | 839 | 1408/1422 | 88.41% | 10/1422 | 482/0/5 |  | menu-element-graph-layout-and-responsive-transforms |
+| wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 6449/7237 | 788 | 1408/1422 | 89.12% | 10/1422 | 485/0/4 |  | menu-element-graph-layout-and-responsive-transforms |
 | match | weapon_table_defaults_global_init_thunk | 0x00451900 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | weapon-table-default-global-initialization-thunk |
 | match | weapon_table_defaults_global_init | 0x00451910 | 150 | 150/150 | 0 | 47/47 | 100.00% | 47/47 | 2/0/0 |  | weapon-table-default-global-initialization |
 | match | weapon_table_init | 0x004519b0 | 4885 | 4885/4885 | 0 | 1000/1000 | 100.00% | 1000/1000 | 477/0/0 |  | weapon-metadata-database |

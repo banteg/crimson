@@ -267,8 +267,11 @@ extern "C" void play_game_menu_update(void)
         }
         position.y += 28.0f;
 
-        if (game_is_full_version() && config_player_count == 1) {
-            ui_button_update((float *)&position, (ui_button_t *)&typo_button);
+        if (game_is_full_version()) {
+            if (config_player_count == 1) {
+                ui_button_update(
+                    (float *)&position, (ui_button_t *)&typo_button);
+            }
             if (show_play_counts) {
                 grim_interface_ptr->grim_draw_text_small_fmt(
                     position.x + 158.0f,
@@ -276,8 +279,8 @@ extern "C" void play_game_menu_update(void)
                     "%d",
                     mode_play_typo);
             }
-            position.y += 28.0f;
         }
+        position.y += 28.0f;
 
         if (quest_play_counts[11] + mode_play_survival + mode_play_rush > 0) {
             ui_button_update(
