@@ -19,15 +19,20 @@ output count. Recovering the same cursor/count builder object used by adjacent
 quest constructors keeps the bottom-edge Y store beside the converted X store,
 extends the exact prefix from 10 to 18 instructions, and prevents VC6 from
 folding the two wave-ten count advances into one `+= 2`. It resolves the
-terrain-width reference and emits 82 instructions against the native 84,
-scoring 84.34%.
+terrain-width reference. Ordering the second template test as `wave >= 10`
+with the late gray arm before the blue fallback reproduces the native three
+template stores and both unconditional exits. This raises the score from the
+previous 87.27% to 96.43%, extends the exact prefix from 18 to 29 instructions,
+and emits the exact native count of 84 instructions with the reference still
+resolved.
 
-The residual is legitimate VC6 simplification and scheduling. The candidate
-still merges the pale/blue/pale template ladder into one range test, and a few
-independent arithmetic and epilogue choices remain. `pos.set(x, y)` and
-`msvc6.5pp` do not improve the result. Dummy dependencies or semantically
-distinct fake template values are not used to preserve the native control-flow
-spelling.
+The residual is now limited to three instructions in two regions. The candidate
+uses `sub eax, 5000` where the native function uses `add eax, -5000`, then uses
+`eax` rather than `ecx` for the final output-count pointer load and store. The
+template ladder itself is exact, and the fuzzy gap falls from 36.27 to 10.18
+bytes. `pos.set(x, y)` and `msvc6.5pp` do not improve the result. Dummy
+dependencies, volatile barriers, or semantically distinct fake template values
+are not used to preserve the native control-flow spelling.
 
 An address-keyed Binary Ninja local type now preserves the second wave-ten
 cursor after VC6 advances it. Both midpoint AlienBigGray creatures render as named
@@ -41,12 +46,15 @@ code-generation-only wrapper.
 
 ## Recorded mutation evidence
 
-Three complete sweeps add 53 variants around the dominant compiler residual.
+Three earlier complete sweeps add 53 variants around the dominant compiler
+residual.
 `bottom-entry-shape-mutations.json` evaluates eight nested, independent,
 defaulted, switch, and repeated-entry forms. The greater-first nesting is
 byte-neutral, while duplicating the complete entry construction regresses
 sharply; none restores the native unfused pale/blue/pale ladder. Its SHA-256 is
 `ef601c16d6e7ab3cd54bf575c83d0e99f09eca650a464d073eaaa6cf21f63faa`.
+The retained late-gray-first comparator ordering is distinct from that sweep's
+global default-and-middle-override form and recovers the complete ladder.
 
 `arithmetic-epilogue-mutations.json` exhausts all 11 single-site and 30
 two-site combinations of equivalent negative-trigger spellings and output
@@ -64,11 +72,20 @@ complete four-variant sweep has SHA-256
 VC6's equal-arm folding is therefore not controlled by an elided condition
 temporary.
 
+## Native template-arm ordering
+
+Live Binary Ninja disassembly at `0x00437e47` shows the exact missing sequence:
+an early gray store and jump, a `wave >= 10` gray store and jump, then the blue
+fallback. Spelling the second source condition as `wave >= 10` is sufficient
+for VC6 to retain all three stores and both jumps. An inlined whole-selector
+helper and an independent later-wave `if/else` both fall back to the older
+84.34%, 82-instruction form and are rejected.
+
 ## Recovery classification audit
 
 Fresh Binary Ninja HLIL confirms the complete wave range, template ladder,
 off-screen additions, wave-ten midpoint pair, trigger arithmetic, clamp, and
-output count. The candidate emits 82 instructions against 84 native
-instructions and its sole masked reference resolves. The localized differences
-are the documented VC6 condition folding, register allocation, and scheduling;
-recovery is `semantic-complete` with a `compiler` residual.
+output count. The candidate emits 84 instructions against 84 native instructions
+and its sole masked reference resolves. The localized differences are one
+equivalent negative-offset opcode choice and the final output-pointer register
+allocation; recovery is `semantic-complete` with a `compiler` residual.

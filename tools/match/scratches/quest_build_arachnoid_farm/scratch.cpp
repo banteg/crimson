@@ -36,7 +36,7 @@ extern "C" void quest_build_arachnoid_farm(
 
     if (config_player_count + 4 > 0) {
         int trigger_time_ms = 500;
-        while (top_index < config_player_count + 4) {
+        do {
             spawns[spawn_count].pos = quest_vec2_t(
                 (float)top_index * 102.4f + 256.0f,
                 256.0f);
@@ -47,13 +47,13 @@ extern "C" void quest_build_arachnoid_farm(
             ++spawn_count;
             ++top_index;
             trigger_time_ms += 500;
-        }
+        } while (top_index < config_player_count + 4);
     }
 
     int bottom_index = 0;
     if (config_player_count + 4 > 0) {
         int trigger_time_ms = 10500;
-        while (bottom_index < config_player_count + 4) {
+        do {
             spawns[spawn_count].pos = quest_vec2_t(
                 (float)bottom_index * 102.4f + 256.0f,
                 768.0f);
@@ -64,13 +64,13 @@ extern "C" void quest_build_arachnoid_farm(
             ++spawn_count;
             ++bottom_index;
             trigger_time_ms += 500;
-        }
+        } while (bottom_index < config_player_count + 4);
     }
 
     int middle_index = 0;
     if (config_player_count + 7 > 0) {
         int trigger_time_ms = 40500;
-        while (middle_index < config_player_count + 7) {
+        do {
             spawns[spawn_count].pos = quest_vec2_t(
                 (float)middle_index * 64.0f + 256.0f,
                 512.0f);
@@ -81,7 +81,7 @@ extern "C" void quest_build_arachnoid_farm(
             ++spawn_count;
             ++middle_index;
             trigger_time_ms += 3500;
-        }
+        } while (middle_index < config_player_count + 7);
 
         *count = spawn_count;
         return;

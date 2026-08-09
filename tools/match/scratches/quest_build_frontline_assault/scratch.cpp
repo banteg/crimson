@@ -19,10 +19,11 @@ extern "C" void quest_build_frontline_assault(
         builder.cursor->pos_y = 1088.0f;
         if (wave <= 4) {
             builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
-        } else if (wave < 10) {
-            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;
-        } else {
+        } else if (wave >= 10) {
             builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
+        } else {
+            builder.cursor->template_id =
+                SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;
         }
         int trigger_time_ms = wave * trigger_step_ms - 5000;
         builder.cursor->trigger_time_ms = trigger_time_ms;

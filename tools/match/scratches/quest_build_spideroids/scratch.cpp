@@ -30,29 +30,34 @@ extern "C" void quest_build_spideroids(
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
 
+    int entry_count = 0;
     int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;
-    spawns[0].pos.set(1088.0f, 512.0f);
-    spawns[0].set_spawn(splitter_template_id, 1000);
-    spawns[0].count = 1;
+    spawns[entry_count].pos.x = 1088.0f;
+    spawns[entry_count].pos.y = 512.0f;
+    spawns[entry_count].set_spawn(splitter_template_id, 1000);
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[1].pos.set(-64.0f, 512.0f);
-    spawns[1].set_spawn(splitter_template_id, 3000);
-    spawns[1].count = 1;
+    spawns[entry_count].pos.set(-64.0f, 512.0f);
+    spawns[entry_count].set_spawn(splitter_template_id, 3000);
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[2].pos.set(1088.0f, 256.0f);
-    spawns[2].set_spawn(splitter_template_id, 6000);
-    spawns[2].count = 1;
+    spawns[entry_count].pos.set(1088.0f, 256.0f);
+    spawns[entry_count].set_spawn(splitter_template_id, 6000);
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    int entry_count = 3;
     if (config_hardcore != 0) {
-        spawns[3].pos.set(1088.0f, 762.0f);
-        spawns[3].set_spawn(splitter_template_id, 9000);
-        spawns[3].count = 1;
+        spawns[entry_count].pos.set(1088.0f, 762.0f);
+        spawns[entry_count].set_spawn(splitter_template_id, 9000);
+        spawns[entry_count].count = 1;
+        ++entry_count;
 
-        spawns[4].pos.set(512.0f, 1088.0f);
-        spawns[4].set_spawn(splitter_template_id, 9000);
-        spawns[4].count = 1;
-        entry_count = 5;
+        spawns[entry_count].pos.set(512.0f, 1088.0f);
+        spawns[entry_count].set_spawn(splitter_template_id, 9000);
+        spawns[entry_count].count = 1;
+        ++entry_count;
     }
 
     if (config_blob.player_count >= 2 || config_hardcore != 0) {

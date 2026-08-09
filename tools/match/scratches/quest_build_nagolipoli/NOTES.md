@@ -25,9 +25,9 @@ coordinates are fixed in its 1024-by-1024 script space. That evidence also
 corrected the Python and Zig ports, which previously scaled Nagolipoli against
 the runtime terrain.
 
-The candidate represents 255 of the native body's 258 instructions and
-resolves all 12 audited references, scoring 61.99% fuzzy-weighted with a
-32-instruction exact prefix. One flat append counter preserves the native live
+The current candidate represents all 258 native instructions and resolves all
+14 audited references, scoring 74.81% fuzzy-weighted with a 38-instruction
+exact prefix. One flat append counter preserves the native live
 entry count and reusable x87 conversion slot. Separate `set` and scalar-add
 calls on both ring positions recover
 the native raw sine/cosine stores followed by 512 reload/add/store operations;
@@ -40,10 +40,10 @@ shape. A short-lived tail vector recovers the final position-copy idiom.
 
 The residual is consistent source and VC6 optimizer shape. Native anchors some
 cursors at later fields and writes through negative offsets, distributes four
-count increments through the corner-wave stores, and schedules the line and
-final literal-vector copies through different stack slots; the candidate uses
-record-base cursors, collapses the four increments, and chooses other legal
-temporary slots.
+count increments through the corner-wave stores, and schedules the line
+scalars and tail copies through different temporary lifetimes; the candidate
+uses record-base cursors, collapses the four increments, and chooses other
+legal registers or line stack slots.
 
 Eight address-keyed Binary Ninja local types preserve the recovered record
 shape across compiler-generated cursor expressions. All four corner entries
@@ -84,10 +84,11 @@ There was no positive single, so no interaction sweep was run and
 `scratch.cpp` remains unchanged at SHA-256
 `83ac8f02a631f5f3036f15ad168eb4942d0b3b90dcf574e5fd55a4434ce55285`.
 
-The scratch is classified `semantic-complete` with a `compiler` residual.
-Fresh live Binary Ninja output confirms all 164 entries and each ring, corner
-wave, vertical line, and four-entry tail. The candidate remains 255/258
-instructions with all 12 audited references resolved and matched.
+At that checkpoint the scratch was classified `semantic-complete` with a
+`compiler` residual. Fresh live Binary Ninja output confirmed all 164 entries
+and each ring, corner wave, vertical line, and four-entry tail. The candidate
+then remained 255/258 instructions with all 12 audited references resolved and
+matched.
 
 ## Superseded builder and second-ring cursor bounds
 
@@ -149,3 +150,17 @@ changes. A hybrid that reintroduced the builder after the rings reached only
 61.21%, and interior `pos.y` cursor aliases were neutral or regressed, so the
 smaller flat-counter source is retained. Source SHA-256:
 `776cec3d813c94de1229e5c213256ff868710a5af8f8a09c7d8963511a567870`.
+
+## 2026-08-09 ring and tail publication recovery
+
+Two ordinary record-publication boundaries transfer from the exact quest
+builders. A narrow heading/template helper for both rings keeps the live x87
+angle pop between the native template and trigger stores. It raises the match
+from 67.83% to 68.60% and extends the exact prefix from 32 to 38 instructions.
+
+The four fixed tail positions now use short-lived `quest_vec2_t` constructor
+temporaries instead of one repeatedly mutated vector. VC6 consequently reuses
+the native `esp+0x28`/`esp+0x2c` temporary slots. Publishing each temporary and
+its template through the narrower position/template helper also recovers the
+native template-before-heading stores. Together the retained changes reach
+**74.81%**, 258/258 instructions, prefix 38, and references `14/0/0`.

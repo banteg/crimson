@@ -23,7 +23,7 @@ untouched. The entries are:
 
 The recovered two-field spawn metadata setter is the same source idiom that
 matches `quest_build_two_fronts` and `quest_build_zombie_masters` exactly.
-Using it consistently first raised the honest match from 94.93% to 97.10%.
+Using it across the table first raised the honest match from 94.93% to 97.10%.
 A recorded lifetime sweep then found that naming the position pointer for entry
 six preserves the source's typed aggregate boundary and delays its fixed stores
 to the native schedule. That minimal retained form raises the match again to
@@ -34,19 +34,23 @@ The typed pointer removes the third scheduling cluster without a barrier,
 volatile access, or artificial dependency.
 
 A second recorded boundary sweep found that naming only the entry-two count
-pointer preserves another natural typed member lifetime. The retained form
-raises the match to **99.28%**, still with the exact 138-instruction body and
-all fifteen audited references. It eliminates the shared `768.0f` scheduling
+pointer preserves another natural typed member lifetime. That retained form
+raised the match to **99.28%**, still with the exact 138-instruction body and
+all fifteen audited references. It eliminated the shared `768.0f` scheduling
 cluster without changing any value or store.
 
-Only one two-instruction scheduling cluster remains: native loads template 9
-into `ebx` before saving `edi`, while VC6 emits those independent instructions
-in the opposite order. The remaining body is byte-identical.
+A focused follow-up using the exact fixed-table house style recovered the final
+interaction. A plain append counter is byte-identical by itself. Publishing
+entry one's template and trigger through direct fields without the counter
+regresses to 96.38%. Together, the append counter and that one direct metadata
+boundary move the shared template-9 load before the `edi` save, exactly as in
+native. The candidate now matches all **138 instructions** and **626 bytes**,
+with all fifteen audited references resolved.
 Attempts to model the positions as vector temporaries introduce 42 extra
 instructions; fixed-position setters retain the same score while regressing
-other scheduling. The direct position fields plus shared metadata setter are
-therefore the strongest plausible source shape without artificial dependencies
-or register forcing.
+other scheduling. The direct position fields, append counter, and entry-specific
+metadata boundary are therefore the strongest plausible source shape without
+artificial dependencies or register forcing.
 
 ## Recorded mutation evidence
 
@@ -93,6 +97,17 @@ MSVC 7.0 regress, and only `/G6` regresses among the tested VC6 flag variants.
 `first-dynamic-position-lifetime-mutations.json` evaluates four typed and
 scalar lifetimes around the first dynamic position. The typed record and
 position pointers are byte-neutral; float locals lose 63.51 weighted bytes and
-integer locals lose 127.01. The final `mov ebx, 9`/`push edi` scheduling swap
-therefore remains an honest compiler residual. The spec SHA-256 is
+integer locals lose 127.01. At that checkpoint the `mov ebx, 9`/`push edi`
+scheduling swap remained an honest compiler residual. The spec SHA-256 is
 `0b0ae8da91b8097b4c179f6ca3770aa568e00ef4d9aeff1b9758b6e84651ca18`.
+
+## 2026-08-09 append-publication completion
+
+The exact recent fixed-table builders showed that append ownership can interact
+with otherwise byte-neutral publication choices. Replacing fixed indices with
+a single `entry_count` append counter is byte-identical at 99.28%. Changing only
+entry one from `set_spawn()` to direct `template_id` and `trigger_time_ms`
+publication regresses to 96.38%. Combining those two natural source choices
+matches the native prologue schedule and the complete function exactly:
+**100.00%**, **138/138 instructions**, **626/626 bytes**, and references
+`15/0/0`.

@@ -48,7 +48,7 @@ extern "C" void quest_build_the_lizquidation(
         spawn = &builder.spawns[builder.count];
         spawn->pos.x = -64.0f;
         spawn->pos.y = (float)(terrain_texture_width / 2);
-        spawn->set_spawn(
+        builder.spawns[builder.count].set_spawn(
             SPAWN_ID_LIZARD_RANDOM_2E,
             wave * 8000 + 1500,
             wave + 6);

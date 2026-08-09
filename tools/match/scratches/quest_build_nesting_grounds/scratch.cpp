@@ -22,82 +22,94 @@ extern "C" void quest_build_nesting_grounds(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].pos.x = (float)(terrain_texture_width / 2);
-    spawns[0].pos.y = (float)(terrain_texture_height + 64);
-    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);
-    spawns[0].count = config_blob.player_count * 2 + 6;
+    spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
+    spawns[entry_count].pos.y = (float)(terrain_texture_height + 64);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);
+    spawns[entry_count].count = config_blob.player_count * 2 + 6;
+    ++entry_count;
 
-    spawns[1].pos.x = 256.0f;
-    spawns[1].pos.y = 256.0f;
-    spawns[1].set_spawn(
-        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
-        8000);
-    spawns[1].count = 1;
+    spawns[entry_count].pos.x = 256.0f;
+    spawns[entry_count].pos.y = 256.0f;
+    spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;
+    spawns[entry_count].trigger_time_ms = 8000;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[2].pos.x = 512.0f;
-    spawns[2].pos.y = 512.0f;
-    spawns[2].set_spawn(
+    spawns[entry_count].pos.x = 512.0f;
+    spawns[entry_count].pos.y = 512.0f;
+    spawns[entry_count].set_spawn(
         SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         13000);
-    int *entry_two_count = &spawns[2].count;
+    int *entry_two_count = &spawns[entry_count].count;
     *entry_two_count = 1;
+    ++entry_count;
 
-    spawns[3].pos.x = 768.0f;
-    spawns[3].pos.y = 768.0f;
-    spawns[3].set_spawn(
+    spawns[entry_count].pos.x = 768.0f;
+    spawns[entry_count].pos.y = 768.0f;
+    spawns[entry_count].set_spawn(
         SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         18000);
-    spawns[3].count = 1;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[4].pos.x = (float)(terrain_texture_width / 2);
-    spawns[4].pos.y = (float)(terrain_texture_height + 64);
-    spawns[4].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 25000);
-    spawns[4].count = config_blob.player_count * 2 + 6;
+    spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
+    spawns[entry_count].pos.y = (float)(terrain_texture_height + 64);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 25000);
+    spawns[entry_count].count = config_blob.player_count * 2 + 6;
+    ++entry_count;
 
-    spawns[5].pos.x = (float)(terrain_texture_width / 2);
-    spawns[5].pos.y = (float)(terrain_texture_height + 64);
-    spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);
-    spawns[5].count = config_blob.player_count * 3 + 3;
+    spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
+    spawns[entry_count].pos.y = (float)(terrain_texture_height + 64);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);
+    spawns[entry_count].count = config_blob.player_count * 3 + 3;
+    ++entry_count;
 
-    quest_vec2_t *entry_six_pos = &spawns[6].pos;
+    quest_vec2_t *entry_six_pos = &spawns[entry_count].pos;
     entry_six_pos->x = 384.0f;
     entry_six_pos->y = 512.0f;
-    spawns[6].set_spawn(
+    spawns[entry_count].set_spawn(
         SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         41100);
-    spawns[6].count = 1;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[7].pos.x = 640.0f;
-    spawns[7].pos.y = 512.0f;
-    spawns[7].set_spawn(
+    spawns[entry_count].pos.x = 640.0f;
+    spawns[entry_count].pos.y = 512.0f;
+    spawns[entry_count].set_spawn(
         SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         42100);
-    spawns[7].count = 1;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[8].pos.x = 512.0f;
-    spawns[8].pos.y = 640.0f;
-    spawns[8].set_spawn(
+    spawns[entry_count].pos.x = 512.0f;
+    spawns[entry_count].pos.y = 640.0f;
+    spawns[entry_count].set_spawn(
         SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         43100);
-    spawns[8].count = 1;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[9].pos.x = 512.0f;
-    spawns[9].pos.y = 512.0f;
-    spawns[9].set_spawn(
+    spawns[entry_count].pos.x = 512.0f;
+    spawns[entry_count].pos.y = 512.0f;
+    spawns[entry_count].set_spawn(
         SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08,
         44100);
-    spawns[9].count = 1;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[10].pos.x = (float)(terrain_texture_width / 2);
-    spawns[10].pos.y = (float)(terrain_texture_height + 64);
-    spawns[10].set_spawn(SPAWN_ID_ALIEN_RANDOM_1E, 50000);
-    spawns[10].count = config_blob.player_count * 2 + 5;
+    spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
+    spawns[entry_count].pos.y = (float)(terrain_texture_height + 64);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_RANDOM_1E, 50000);
+    spawns[entry_count].count = config_blob.player_count * 2 + 5;
+    ++entry_count;
 
-    spawns[11].pos.x = (float)(terrain_texture_width / 2);
-    spawns[11].pos.y = (float)(terrain_texture_height + 64);
-    spawns[11].set_spawn(SPAWN_ID_ALIEN_RANDOM_1F, 55000);
-    spawns[11].count = config_blob.player_count * 2 + 2;
+    spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
+    spawns[entry_count].pos.y = (float)(terrain_texture_height + 64);
+    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_RANDOM_1F, 55000);
+    spawns[entry_count].count = config_blob.player_count * 2 + 2;
+    ++entry_count;
 
-    *count = 12;
+    *count = entry_count;
 }

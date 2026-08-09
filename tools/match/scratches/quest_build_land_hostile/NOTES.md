@@ -10,11 +10,11 @@ positions are `(-64, 1088)`, `(-64, -64)`, and `(1088, -64)`.
 
 An inlined two-float constructor plus entry `set` method reproduces the
 native's 12-byte local frame, integer-to-float conversions, float-word copies,
-and shared template register. Publishing the first and fourth entries through
-their trigger-field cursors recovers two of the three cross-entry scheduling
-boundaries. The candidate has the same 53 instructions, scores 98.11%, and
-matches the first 37 instructions exactly. The sole residual is entry two's
-template store crossing construction of entry three's x-coordinate temporary.
+and shared template register. One continuous append count owns all four
+records. Publishing the first and fourth entries through their trigger-field
+cursors and publishing the third position/template through a narrower helper
+reproduce all cross-entry scheduling boundaries. The candidate is exact at
+53/53 instructions and 239/239 bytes, with both references resolved.
 
 `entry-boundary-mutations.json` records four complete whole-builder
 alternatives: aggregate and scalar direct metadata, a shared-template direct
@@ -27,9 +27,8 @@ so these negative results remain reproducible after future source refactors.
 
 The preceding BN recovery accounts for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+the same instruction count as native and all masked references resolved.
+Recovery is exact.
 
 ## Setter-shape exact-tail bound (2026-07-29)
 
@@ -60,3 +59,16 @@ and preserves 53/53 instructions and references `2/0/0`. Applying the same
 form to entry two is byte-neutral; direct metadata and named next-position
 forms regress. Retained source SHA-256:
 `b2ff49d64f7550fbbcb552022d4baeaaf9f237ff4c3bfbc90a7e627fc86df4b8`.
+
+## Append/helper interaction exact recovery (2026-08-09)
+
+A continuous append count is byte-neutral by itself at 98.11%. Splitting the
+third record into aggregate position plus direct metadata is worse at 94.34%,
+and the narrower position/template helper also regresses without the append
+count. Together, however, the two ordinary source choices recover the native
+boundary: VC6 publishes the third template before constructing the fourth
+record's x temporary, then emits the third trigger/count and remaining fourth
+position stores in native order. The result rises from 98.11% to 100%, extends
+the exact prefix from 37 to all 53 instructions, and preserves references
+`2/0/0`. Retained source SHA-256:
+`a2209a2bdc86f3a9f0c9c8a80087833532e15f6d5f1651a07bd45bdaf4596b36`.

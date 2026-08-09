@@ -104,3 +104,26 @@ the native register roles. The remaining delta is confined to independent
 opening metadata/position scheduling and the second entry's x87 latency slots.
 Source SHA-256:
 `b15cc30638c7f58de6058962ce2af57458c63b956c5e95069f389534abd5a98a`.
+
+## 2026-08-09 indexed second-entry publication
+
+The recovered house style has one further useful mixed publication boundary.
+The second wave entry keeps its retained record pointer for the two position
+fields, but publishes metadata through `builder.spawns[builder.count]`. This
+ordinary indexed helper receiver lets VC6 keep the native metadata order after
+the y conversion. The first entry's equivalent indexed receiver is byte-neutral,
+as are direct metadata fields, `while`/guarded loop spellings, and the inverted
+optional-entry guard.
+
+Pre-advancing the append count, retaining named trigger/count values, scalar or
+vector full-entry helpers, and a shared metadata value all regress. A two-field
+vector setter moves the x store and count increment away from their native
+slots. Split opening metadata publication also loses the register/lifetime win
+from the existing helper-before-position boundary.
+
+The retained one-line change raises the match from 88.60759493670886% to
+89.87341772151899%, adds 3.1012658227847965 fuzzy-weighted bytes, and preserves
+79/79 instructions, prefix seven, and references 5/0/0. The remaining delta is
+the opening entry's independent derivation/publication schedule plus one
+second-entry `cmp`/`fild` swap. Source SHA-256:
+`32d4b058847212f25f56234c5cfe46d98f52d3f4f93d2ea753cb2553cab981ce`.

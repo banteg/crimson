@@ -7,44 +7,22 @@ Live Binary Ninja evidence recovers three unconditional splitter entries at
 the byte currently named `config_hardcore` is nonzero, the builder adds
 `(1088, 762)` and `(512, 1088)` at 9000 ms. It then adds `(-64, 762)` at
 9000 ms when there are at least two players or that same byte is nonzero.
-Every entry uses template `0x01` and count 1, producing 3, 4, 5, or 6 entries
-according to those branches.
+Every entry uses template `0x01` and count one, producing 3, 4, 5, or 6
+entries according to those branches.
 
-The fixed entries now use the same inlined two-float position setter and
-two-field spawn-metadata setter recovered independently in the exact
-`quest_build_zombie_masters` and `quest_build_two_fronts` neighbors. Those
-translation-unit-local helper boundaries compile to the same strongest body
-as the flattened stores while recovering a more plausible shared source idiom.
-The candidate reproduces the native shared constants, branch shape, scaled
-final-entry address, early-pop return path, and all 62 instructions. It scores
-98.39%. The sole residual is a scheduling swap: VC6 loads the shared integer
-constant 1 immediately before the first x-coordinate store in the candidate
-and immediately after it in the target. The evidenced helper shape is retained
-without adding an artificial ordering constraint.
+The exact source uses one continuous append count for all six possible
+entries. VC6 constant-folds the first five indexed publications into their
+native fixed offsets, initializes the live count to three at the first branch,
+and raises it to five on the hardcore path. The final optional entry consumes
+the same append count through a record pointer.
 
-Moving the shared template-id declaration to the first setter boundary produces
-the identical candidate: VC6 still hoists the constant load ahead of the first
-x-coordinate store. The residual is therefore not explained by local lifetime.
+The first entry publishes x and y directly, while the remaining fixed entries
+retain the inlined two-float position setter. This boundary interacts with the
+append ownership: the append count alone is byte-identical to the prior
+98.39% fixed-index form, and direct first-position fields alone were also
+byte-identical there. Together they delay the shared integer constant `1`
+until after the first x-coordinate store, exactly reproducing the native
+schedule without an artificial dependency or register forcing.
 
-`initial-constant-lifetime-mutations.json` records that boundary explicitly.
-All five declaration, literal, scalar-position, and const-local alternatives
-compile byte-identically at 98.39%, 62/62 instructions. This complete negative
-sweep leaves the helper-based source as the smallest honest representation.
-
-`helper-boundary-mutations.json` adds a complete 69-variant single/pair sweep
-over position and metadata helper forms plus typed first-entry boundaries.
-Every variant is byte-neutral. `setter-store-order-mutations.json` checks all
-three position/metadata reversal combinations; all regress. Their SHA-256
-values are
-`9dcba33d9a58541ec5667a3091ab7acdaf8ee09f60026f650c10efc74154c11e`
-and
-`b995511a540ec5d4809b661b41accd20f3952b12ba128b71838dae65d3f4796b`.
-MSVC 6.0/6.5/6.5 Processor Pack/6.6 tie, MSVC 7.0 regresses, and `/G5`,
-`/G7`, `/Ox`, and `/Ob1` are byte-neutral while `/G6` regresses.
-
-`first-position-construction-mutations.json` evaluates eight constructor,
-temporary, and named-position variants, including all bounded two-site
-interactions. Constructor definitions alone are byte-neutral; the temporary
-and named-position assignment forms regress or fail compilation. No source
-change is retained. The spec SHA-256 is
-`e533054f22356b8cec1461e870164b56ac4a5d82c2e7c136e30fed35dd430b16`.
+The candidate is exact: all 62 instructions and 224 bytes match, including
+the complete 62-instruction prefix and all three static references.

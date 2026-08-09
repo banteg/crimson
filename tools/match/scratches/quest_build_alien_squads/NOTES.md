@@ -30,10 +30,10 @@ opposite shape: immediate coordinate and metadata fields preserve its exact
 template-before-trigger ordering.
 
 The candidate has the exact 108-instruction length and scores 99.07% with an
-80-instruction exact prefix. The entire fixed table and repeated loop body now
-match. The sole residual is one independent setup swap: native adjusts the
-loop cursor before loading trigger 36200, while VC6 emits those instructions
-in the opposite order.
+83-instruction exact prefix. The fixed table and loop setup now match. The
+sole residual is one independent body swap: native stores the first wave's two
+coordinates before computing trigger minus 400, while VC6 emits the `lea`
+first.
 
 Binary Ninja now types the repeated-wave cursor as a layout-equivalent
 `quest_spawn_pair_binja_t *` presentation view. The loop consequently renders
@@ -75,3 +75,17 @@ six improves the score from 94.44% to 99.07% and extends the exact prefix from
 10 to 80 instructions while preserving the exact 108-instruction body. The
 retained source SHA-256 is
 `b404a7f4e5698f1d956b6c19d8278f655068ad23be5653838531e73d5e8dcea6`.
+
+## 2026-08-09 synchronized-cursor improvement
+
+Keeping a cursor for the first entry of each repeated pair while retaining the
+publication count for the second entry reproduces the native setup order:
+count 8, cursor advance, then trigger 36200. This preserves 99.07%, 108/108
+instructions, and `0/0/0` references while extending the exact prefix from 80
+to 83 instructions. Direct cursor increments and fully cursor-owned pairs
+regress register allocation or let VC6 fold the final count to 60, so only the
+synchronized first-entry cursor is retained. Scoped references, named scalar
+coordinates, fluent setters, and `for`-header lifetimes are byte-neutral;
+splitting position and metadata ownership or rebasing indexed publication
+regresses. The retained source SHA-256 is
+`7c29de20218b87fc3d6a2a6fbb55347c66b9f704264800711438fa7ad1e38052`.

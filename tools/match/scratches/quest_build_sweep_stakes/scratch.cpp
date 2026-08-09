@@ -25,18 +25,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set(
-        const quest_vec2_t &position,
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        pos = position;
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_sweep_stakes(
@@ -53,19 +41,17 @@ extern "C" void quest_build_sweep_stakes(
         float angle_sin = (float)sin(angle);
 
         for (int radius = 84; radius < 252; radius += 42) {
-            quest_entry_original_t *wave_entry = &spawns[entry_count];
             quest_vec2_t offset(
                 (float)radius * angle_cos,
                 (float)radius * angle_sin);
-            wave_entry->set(
-                quest_vec2_t(
-                    offset.x + 512.0f,
-                    offset.y + 512.0f),
-                SPAWN_ID_ALIEN_AI7_ORBITER_36,
-                trigger_time_ms,
-                1);
-            wave_entry->heading =
-                (wave_entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()
+            spawns[entry_count].pos = quest_vec2_t(
+                offset.x + 512.0f,
+                offset.y + 512.0f);
+            spawns[entry_count].template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 1;
+            spawns[entry_count].heading =
+                (spawns[entry_count].pos - quest_vec2_t(512.0f, 512.0f)).angle()
                 - 1.57079637f;
             ++entry_count;
         }

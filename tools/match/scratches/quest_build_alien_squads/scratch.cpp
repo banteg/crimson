@@ -68,13 +68,14 @@ extern "C" void quest_build_alien_squads(
         SPAWN_ID_FORMATION_RING_ALIEN_8_12, 30000, 1);
     ++entry_count;
 
+    quest_entry_original_t *spawn = &spawns[entry_count];
     int trigger_time_ms = 36200;
     while (trigger_time_ms < 83000) {
-        spawns[entry_count].pos.x = -64.0f;
-        spawns[entry_count].pos.y = -64.0f;
-        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
-        spawns[entry_count].trigger_time_ms = trigger_time_ms - 400;
-        spawns[entry_count].count = 1;
+        spawn->pos.x = -64.0f;
+        spawn->pos.y = -64.0f;
+        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
+        spawn->trigger_time_ms = trigger_time_ms - 400;
+        spawn->count = 1;
         ++entry_count;
 
         spawns[entry_count].pos.x = 1088.0f;
@@ -85,6 +86,7 @@ extern "C" void quest_build_alien_squads(
         ++entry_count;
 
         trigger_time_ms += 1800;
+        spawn = &spawns[entry_count];
     }
 
     *count = entry_count;

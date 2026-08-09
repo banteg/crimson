@@ -6,6 +6,9 @@ struct quest_vec2_t {
     float x;
     float y;
 
+    quest_vec2_t() {}
+    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}
+
     void set(float x_value, float y_value)
     {
         x = x_value;
@@ -26,6 +29,14 @@ struct quest_entry_original_t {
     int trigger_time_ms;
     int count;
 
+    void set_position_and_template(
+        const quest_vec2_t &position,
+        int spawn_template_id)
+    {
+        pos = position;
+        template_id = spawn_template_id;
+    }
+
     void set_spawn(
         int spawn_template_id,
         int spawn_trigger_time_ms,
@@ -35,6 +46,13 @@ struct quest_entry_original_t {
         trigger_time_ms = spawn_trigger_time_ms;
         count = spawn_count;
     }
+
+    void set_heading_and_template(float spawn_heading, int spawn_template_id)
+    {
+        template_id = spawn_template_id;
+        heading = spawn_heading;
+    }
+
 };
 
 extern "C" void quest_build_nagolipoli(
@@ -50,11 +68,11 @@ extern "C" void quest_build_nagolipoli(
             (float)cos(angle) * 128.0f,
             (float)sin(angle) * 128.0f);
         spawn->pos.add(512.0f);
-        spawn->heading = angle;
-        spawn->set_spawn(
-            SPAWN_ID_SPIDER_SMALL_BLUE_40,
-            2000,
-            1);
+        spawn->set_heading_and_template(
+            angle,
+            SPAWN_ID_SPIDER_SMALL_BLUE_40);
+        spawn->trigger_time_ms = 2000;
+        spawn->count = 1;
         ++entry_count;
         ++spawn;
     }
@@ -68,11 +86,11 @@ extern "C" void quest_build_nagolipoli(
             (float)cos(angle) * 178.0f,
             (float)sin(angle) * 178.0f);
         spawn[ring_index].pos.add(512.0f);
-        spawn[ring_index].heading = angle;
-        spawn[ring_index].set_spawn(
-            SPAWN_ID_SPIDER_SMALL_BLUE_40,
-            8000,
-            1);
+        spawn[ring_index].set_heading_and_template(
+            angle,
+            SPAWN_ID_SPIDER_SMALL_BLUE_40);
+        spawn[ring_index].trigger_time_ms = 8000;
+        spawn[ring_index].count = 1;
         ++ring_index;
     }
 
@@ -167,52 +185,42 @@ extern "C" void quest_build_nagolipoli(
         trigger_time_ms += 100;
     }
 
-    quest_vec2_t tail_pos;
-
     trigger_time_ms = (wave * 5 + 175) * 160;
     spawn = &spawns[entry_count];
-    tail_pos.x = 512.0f;
-    tail_pos.y = 256.0f;
-    spawn->pos = tail_pos;
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, 256.0f),
+        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
     spawn->heading = 3.14159274f;
-    spawn->set_spawn(
-        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,
-        trigger_time_ms,
-        1);
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 1;
     ++entry_count;
 
     spawn = &spawns[entry_count];
-    tail_pos.x = 512.0f;
-    tail_pos.y = 768.0f;
-    spawn->pos = tail_pos;
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, 768.0f),
+        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
     spawn->heading = 3.14159274f;
-    spawn->set_spawn(
-        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,
-        trigger_time_ms,
-        1);
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 1;
     ++entry_count;
 
     trigger_time_ms = wave * 800 + 0x6f54;
     spawn = &spawns[entry_count];
-    tail_pos.x = 512.0f;
-    tail_pos.y = 1088.0f;
-    spawn->pos = tail_pos;
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, 1088.0f),
+        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
     spawn->heading = 3.926991f;
-    spawn->set_spawn(
-        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
-        trigger_time_ms,
-        8);
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 8;
     ++entry_count;
 
     spawn = &spawns[entry_count];
-    tail_pos.x = 512.0f;
-    tail_pos.y = -64.0f;
-    spawn->pos = tail_pos;
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, -64.0f),
+        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
     spawn->heading = 3.926991f;
-    spawn->set_spawn(
-        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
-        trigger_time_ms,
-        8);
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 8;
     ++entry_count;
 
     *count = entry_count;

@@ -15,17 +15,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
-
 };
 
 extern "C" void quest_build_the_spanking_of_the_dead(
@@ -51,7 +40,6 @@ extern "C" void quest_build_the_spanking_of_the_dead(
     while (trigger_time_ms < 0xA988) {
         float angle = (float)step_index * 0.333333343f;
         float radius = 512.0f - (float)step_index * 3.79999995f;
-        ++step_index;
 
         spawns[entry_count].pos = quest_vec2_t(
             (float)cos(angle) * radius + 512.0f,
@@ -62,22 +50,21 @@ extern "C" void quest_build_the_spanking_of_the_dead(
         spawns[entry_count].count = 1;
 
         ++entry_count;
+        ++step_index;
         trigger_time_ms += 300;
     }
 
     spawns[entry_count].pos = quest_vec2_t(1280.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_SMALL_WHITE_42;
     int trigger_offset_ms = step_index * 300;
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
-        trigger_offset_ms + 10000,
-        16);
+    spawns[entry_count].trigger_time_ms = trigger_offset_ms + 10000;
+    spawns[entry_count].count = 16;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 512.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
-        trigger_offset_ms + 20000,
-        16);
+    spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_SMALL_WHITE_42;
+    spawns[entry_count].trigger_time_ms = trigger_offset_ms + 20000;
+    spawns[entry_count].count = 16;
     ++entry_count;
 
     *count = entry_count;

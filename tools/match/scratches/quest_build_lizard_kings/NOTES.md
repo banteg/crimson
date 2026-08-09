@@ -9,24 +9,16 @@ ring centered at `(512, 512)`. The ring step is `0.34906587` radians, triggers
 start at 1500 ms and advance by 900 ms, and heading is the independently
 recomputed negative ring angle. The final count is 31.
 
-The candidate reproduces the fixed-entry vector temporaries and the complete
-native x87 ring stack: the integer index remains live below the positive angle,
-cosine and sine consume the duplicated angle, and the original index is then
-multiplied by the negative step for heading. The three fixed entries now publish
-through one append count. Each following position is constructed while the
-current entry's metadata remains live after the first record, and the ring
-index begins before the third count is published. The retained source models
-the native template-field induction pointer directly and emits the same 66
-instructions, with all six constant references resolved. Its current weighted
-match is 89.39% with a 38-instruction exact prefix.
-
-The fixed table now matches exactly. The remaining residual is the x87 ring
-body: the template cursor removes the former loop-invariant `mov edi, 0x31`,
-but VC6 still schedules ring metadata and loop updates around the trigonometric
-stack differently. Direct position fields, all-fields and metadata-only
-setters, compiler profiles, cursor views, member access, pointer-advance
-placements, fixed-value lifetimes, and helper orders are bounded without
-artificial dependencies, so this remains an honest WIP.
+The recovered source reproduces the fixed-entry vector temporaries and the
+complete native x87 ring stack: the integer index remains live below the
+positive angle, cosine and sine consume the duplicated angle, and the original
+index is then multiplied by the negative step for heading. The three fixed
+entries publish through one append count. The ring uses the original indexed
+record spelling, `spawns[entry_count + angle_index]`; VC6 strength-reduces it to
+the native 24-byte induction pointer, advances that pointer inside the x87
+window, and delays metadata publication until both coordinates are complete.
+The result is exact at 66/66 instructions and 254/254 bytes, with all six
+constant references resolved.
 
 ## Binary Ninja loop recovery
 
@@ -51,9 +43,7 @@ claiming the remaining decompiler artifacts are source structure.
 The live Binary Ninja loop and fixed prefix account for all 31 entries, ring
 constants, trigger recurrence, heading computation, and final count. The
 candidate emits 66 instructions against 66 native instructions with `6/0/0`
-references. `--regions` attributes the remaining delta to VC6
-allocation/scheduling, not missing quest policy. Recovery is
-`semantic-complete` with a `compiler` residual.
+references and no residual regions. Recovery is exact.
 
 ## Exact-tail follow-up (2026-07-27)
 
@@ -110,3 +100,15 @@ VC6 schedules the following constructor between the shared count-one load and
 the record stores, matching the whole fixed table. The score rises from 87.88%
 to 89.39% and the exact prefix from 13 to 38 instructions; the independent ring
 loop remains unchanged at 66/66 instructions and references `6/0/0`.
+
+## Indexed-ring exact recovery (2026-08-09)
+
+The exact Gauntlet ring established the missing house-style distinction:
+repeated `spawns[index]` expressions keep metadata publication behind both
+coordinate calculations, while a retained record or field cursor lets VC6
+hoist those stores ahead of the trig stack. Expressing this ring as
+`spawns[entry_count + angle_index]` also avoids a second incrementing record
+index. VC6 derives the native pointer advance after `fild`, retains the ring
+index for the late negative-angle heading, and emits the target's metadata and
+loop-update schedule exactly. The score rises from 89.39% to 100%, the exact
+prefix from 38 to 66 instructions, and references remain `6/0/0`.

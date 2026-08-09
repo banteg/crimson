@@ -15,20 +15,17 @@ and `i * 300 + 20000`.
 
 The continuous append-count candidate resolves all five audited references,
 preserves the recovered loop bounds, x87 trigonometric sequence, final entries,
-and trigger arithmetic, and scores 91.49%. It emits the exact 94 native
-instructions. Advancing the semantic spiral step after deriving its angle and
-radius recovers the native early integer update and spill, while constructing
-the first tail position before deriving its trigger offset recovers the native
-overlapped two-position materialization. The remaining differences are one
-independent loop cursor/step swap and an ESI/EDI allocation swap across the two
-tail entries.
+and trigger arithmetic. Ordering the entry append before the spiral-step update
+recovers the native induction schedule, while staged direct publication of the
+tail metadata recovers the native ESI/EDI allocation across the final two
+entries. The result is exact at 94/94 instructions and 391/391 bytes.
 
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. All masked
 references resolve and candidate and target both contain 94 instructions.
-Classification remains `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+Recovery is exact.
 
 ## 2026-07-27 focused profile and mutation pass
 
@@ -138,3 +135,19 @@ and second position. Pointer, reference, preadvanced-index, named-position,
 direct-metadata, declaration-order, and VC6 profile spellings were neutral or
 regressed. Retained source SHA-256:
 `d0df7cd3f15a4207be87fa7c6f0f874e6cc6833cf938e2741110f7eb5378c5e7`.
+
+## 2026-08-09 update and staged-tail exact recovery
+
+Placing `++step_index` after `++entry_count` gives the two independent updates
+their native source order. VC6 still hoists both into the x87 window, but now
+emits the 24-byte entry-cursor advance immediately before the integer step
+increment. This removes the sole loop mismatch and extends the exact prefix
+from 31 to 69 instructions.
+
+The final register swap came from a publication boundary rather than register
+forcing. Publishing the first tail template directly before deriving
+`trigger_offset_ms` keeps ESI live as the spiral step, assigns the shared
+template `0x42` to EDI, and then reuses ESI for the second position. Direct
+template/trigger/count publication on both tail entries emits the native store
+order exactly. The combined source rises from 91.49% to 100%, extends the exact
+prefix from 31 to all 94 instructions, and preserves references `5/0/0`.
