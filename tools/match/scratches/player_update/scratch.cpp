@@ -921,10 +921,10 @@ extern "C" void player_update(void)
                     (float)atan2(movement_input.y, movement_input.x)
                     + 1.5707964f;
                 random_offset.x = player->aim_heading - 1.5707964f;
+                move_delta.x = (float)cos(random_offset.x);
                 move_delta.y = (float)sin(random_offset.x);
+                scratch_pos.x = move_delta.x * 60.0f + player_position->x;
                 scratch_pos.y = move_delta.y * 60.0f + player_position->y;
-                scratch_pos.x =
-                    (float)cos(random_offset.x) * 60.0f + player_position->x;
                 player->aim.x = scratch_pos.x;
                 player->aim.y = scratch_pos.y;
             }
@@ -958,10 +958,10 @@ extern "C" void player_update(void)
                         player->aim_heading - frame_dt * 3.0f;
                 }
                 random_offset.x = player->aim_heading - 1.5707964f;
+                move_delta.x = (float)cos(random_offset.x);
                 move_delta.y = (float)sin(random_offset.x);
+                scratch_pos.x = move_delta.x * 60.0f + player_position->x;
                 scratch_pos.y = move_delta.y * 60.0f + player_position->y;
-                scratch_pos.x =
-                    (float)cos(random_offset.x) * 60.0f + player_position->x;
                 player->aim.x = scratch_pos.x;
                 player->aim.y = scratch_pos.y;
             }
@@ -975,10 +975,10 @@ extern "C" void player_update(void)
                     player->aim_heading + frame_dt * 4.0f;
             }
             random_offset.x = player->aim_heading - 1.5707964f;
+            move_delta.x = (float)cos(random_offset.x);
             move_delta.y = (float)sin(random_offset.x);
+            scratch_pos.x = move_delta.x * 60.0f + player_position->x;
             scratch_pos.y = move_delta.y * 60.0f + player_position->y;
-            scratch_pos.x =
-                (float)cos(random_offset.x) * 60.0f + player_position->x;
             player->aim.x = scratch_pos.x;
             player->aim.y = scratch_pos.y;
         }

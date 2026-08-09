@@ -897,3 +897,38 @@ instructions move from 2,878 to 2,880 against 3,021 native instructions.
 
 The retained source has SHA-256
 `064300adaa4c79f175dd6e578dfe7fce3088c16a92474b63e78b85b2b70296fc`.
+
+## Ion strip atlas coordinate
+
+The highest-weight residual region begins with the ion-chain strip UV setup.
+Native `0x00424b5c..0x00424bb8` pushes `0x3f200000` for the U coordinate at
+all four vertices, proving `0.625f`; the previous source used the nearby but
+incorrect decimal `0.6f` (`0x3f19999a`). The atlas-coordinate correction is
+semantic and leaves the already-recovered vector and loop ownership intact.
+
+The change adds 17.015 fuzzy-weighted bytes, raises the ratio from
+57.5156753% to 57.6512456%, and keeps the candidate at 2,880/3,021
+instructions with the same `444/0/10` reference audit. The retained source has
+SHA-256
+`68913092f7709a0627a0ee1500d01851f3ad959dc227de8d4c7fbc0610ca61bb`.
+
+## Conventional type refresh boundary
+
+The next-largest non-ion region covers the Gauss and catch-all conventional
+trail arms. Native confirms their semantic constants and branch order already
+match the source: Gauss uses `1.1f`, the catch-all uses `0.7f`, and the Gauss
+arm precedes the final catch-all. The missing boundary is earlier: after both
+trail-alpha `grim_set_color_slot` callbacks, native reloads the live projectile
+type at `0x004230d9` before selecting the four geometry arms. The previous
+source preserved the pre-callback value through those calls.
+
+Refreshing `type_id` from `tail->type_id` at that point also lets VC6 keep the
+initial gate value in `EAX`; its known-zero arm naturally emits native
+`mov [active], al` at `0x00423036`. Spelling that source assignment as either
+`0` or `type_id` is byte-identical, so the ordinary zero assignment remains.
+
+The refresh adds 37.052 fuzzy-weighted bytes, raises the ratio from
+57.6512456% to 57.9464588%, and moves the candidate from 2,880 to 2,881
+instructions against 3,021 native instructions. References remain
+`444/0/10`. The retained source has SHA-256
+`37901a9c83fd5fec5cd53cd03f6b8fa7967c77e9deaccfda966bd7fd5a27459d`.

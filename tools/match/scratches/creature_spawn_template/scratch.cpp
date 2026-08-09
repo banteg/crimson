@@ -529,8 +529,8 @@ extern "C" creature_t *creature_spawn_template(
                         *(creature_spawn_vec2_t *)&creature->velocity = chain_position;
                         creature->collision_flag = 0;
                         creature->health = 40.0f;
-                        creature->max_health = 40.0f;
                         *(creature_tint_t *)&creature->color = child_tint;
+                        creature->max_health = 40.0f;
                         creature->collision_timer = 0.0f;
                         creature->active = 1;
                         creature->state_flag = 1;

@@ -141,10 +141,29 @@ scopes, and alternate cursor/pointer lifetimes. A fresh profile matrix leaves
 stock MSVC 6.0, 6.5, and 6.6 tied at the retained result; the Processor Pack
 falls to `54.2766631467793%` and MSVC 7.0 to `30.2839116719243%`.
 
+## One-shot track-coordinate lifetime
+
+The track hit-test coordinate is consumed by one call, while the thumb
+coordinate remains shared by its draw, hit test, fill, and drag calculations.
+The source now publishes only the hit-test byte out of a short track-coordinate
+scope. This preserves the genuinely shared thumb group while ending the
+one-shot coordinate's lifetime at `ui_mouse_inside_rect`.
+
+Native code constructs the track coordinate in the stack pair at
+`0x0043e230..0x0043e260`, then immediately reuses that same pair for the hover
+fill coordinate at `0x0043e264..0x0043e2c5`. Expressing that ownership lets
+VC6 coalesce the slots: the candidate frame falls from `0x50` to `0x44` and
+the score moves from `62.05450733752621%` to `63.10272536687631%`. Weighted
+bytes increase from `1096.5031446540881` to `1115.0251572327045`, a gain of
+`18.52201257861634`; instructions remain `475/479`, references remain
+`63/0/0`, and the mismatch count remains 17 regions. The retained source
+SHA-256 is
+`398ceb159b2ace0922c370180cc6f76e5cb9e99be015e17d520bd9cabcfac774`.
+
 ## Remaining mismatch
 
 The scratch remains `semantic-complete` with a `compiler` residual. MSVC now
-allocates a `0x50`-byte frame versus the native `0x40` frame. The remaining
+allocates a `0x44`-byte frame versus the native `0x40` frame. The remaining
 17 localized regions are dominated by temporary-object stack-slot coalescing,
 the proportional-thumb x87 schedule, and late row-loop allocation. The final
 candidate has `475/479` instructions and resolves all `63` audited references

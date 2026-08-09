@@ -1001,3 +1001,29 @@ access, artificial dependency, dummy reference, or layout-only control flow is
 retained. The append-only experiment log now contains 49 records; its final
 SHA-256 is
 `832662202270490f82842839b40701779cf383b9a6961eaacaaa75a005cbdc0e`.
+
+## Manual-aim direction-pair lifetimes
+
+The next high-weight region at native `0x00415529..0x0041572e` exposed one
+repeated ordinary value lifetime in all three manual-aim arms. Native computes
+the cosine and sine of `aim_heading - 1.5707964f` as one direction pair,
+retains both components, scales them by `60.0f`, adds player position, and
+then copies the resulting pair into `player->aim`. The former scratch kept
+only the sine component and recomputed cosine later in each arm.
+
+Retaining `move_delta.x` beside the existing `move_delta.y` follows the same
+two-component direction shape in joystick-cursor, keyed rotation, and POV aim.
+Each site independently adds three candidate instructions, one exact reference,
+and about 12.04 fuzzy-weighted bytes; all three changes are exactly additive.
+The complete 7/7 interaction sweep is captured by
+`aim-direction-family-mutations.json` (spec SHA-256
+`adbeaea68fd4083b13be35be1e07c41758e8073ddd432a68300e5fddb8110be1`).
+
+The canonical build improves from 4,052/4,206 instructions at
+`62.6301767982562%`, 10,181.787842092515 weighted bytes, a
+6,075.212157907485-byte gap, prefix 7, and `800/0/2` references to
+4,061/4,206 at `62.8523043425668%`, 10,217.89911697109 weighted bytes, a
+6,039.10088302891-byte gap, prefix 7, and `803/0/2` references. This is a
+tradeoff-free gain of 36.111274878574 weighted bytes and 0.222127544311
+percentage points without changing control behavior or adding codegen-only
+state.

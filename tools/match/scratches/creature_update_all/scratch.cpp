@@ -44,6 +44,11 @@ inline float creature_vec2_length(creature_vec2_t &value)
     return 1.0f / reciprocal;
 }
 
+inline float creature_vec2_angle(const creature_vec2_t &value)
+{
+    return (float)atan2(value.y, value.x);
+}
+
 extern "C" {
 extern int creature_update_tick;
 extern int plaguebearer_infection_count;
@@ -420,9 +425,12 @@ extern "C" void creature_update_all(void)
                                 player_state_table[current_player_index].position.y;
                         }
 
-                        float desired_heading = (float)atan2(
-                            creature_pool[creature_index].target_y - position->y,
-                            creature_pool[creature_index].target_x - position->x);
+                        creature_vec2_t &target_position =
+                            *(creature_vec2_t *)&creature_pool[
+                                creature_index
+                            ].target_x;
+                        float desired_heading = creature_vec2_angle(
+                            target_position - *(creature_vec2_t *)position);
                         creature_pool[creature_index].target_heading =
                             (float)(desired_heading + 1.5707964f);
                         if ((bonus_energizer_timer > 0.0f

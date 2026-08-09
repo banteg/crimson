@@ -23,9 +23,9 @@ therefore preserved as recovered native source shape, but deliberately not
 given a speculative gameplay name or treated as a required modern-port feature.
 
 With the standard `msvc6.5 /O2 /GB` profile, the complete candidate is an
-`85.60%` WIP (`1,137/1,148` instructions, prefix `9/1,148`). The target and
+`86.35%` WIP (`1,138/1,148` instructions, prefix `9/1,148`). The target and
 candidate prologues are identical through the `sub esp, 0x2c` local-frame
-allocation. Masked-reference auditing reports `325/0/0`: every aligned symbol
+allocation. Masked-reference auditing reports `327/0/0`: every aligned symbol
 resolves and agrees without a speculative alias.
 
 The target-trail direction is a two-component value passed in place as both
@@ -35,8 +35,8 @@ prototype is now the proven stdcall
 `float *(float *, float *)` guess. Propagating that contract through this
 custom vector value remains matcher-neutral. The later target-direction
 assignment correction described below first moved the score to `85.20%`;
-the alive-torso value-shape recovery raises the current score to `85.60%`
-with a `325/0/0` reference audit.
+the two alive-torso value-shape recoveries raise the current score to `86.35%`
+with a `327/0/0` reference audit.
 
 The muzzle-flash weapon-flag arms deliberately retain their identical
 `grim_draw_quad` calls. Native reloads the player size in each arm and pushes
@@ -247,3 +247,18 @@ to `84.6221441%` and `320/0/0`, and setting a short-lived vector before copying
 it to the shared render vector fell to `84.7368421%` and `320/0/0`. The
 repeated component expression is therefore the only measured improvement from
 this focused region probe.
+
+## Normal-torso half-size counterpart
+
+The later normal-torso region at `0x00428d4a..0x00428dcd` has the same proven
+construction boundary. Native computes `size * 0.5f`, leaves it live on x87,
+copies it to `[esp+0x34]`, and consumes the one value for the two temporary
+vector components before adding recoil. Repeating the scalar expression in
+those constructor arguments recovers that complete prefix of the region.
+
+This second focused correction raises the whole-function match from
+`85.6017505%` to `86.3517060%`, adding `34.362961` weighted bytes and reducing
+the gap from `659.727790` to `625.364829` bytes. Candidate instructions move
+from `1,137` to `1,138` against `1,148` native, prefix remains 9, and reference
+agreement improves from `325/0/0` to `327/0/0`. The retained source SHA-256 is
+`064be5dfe9587679739ba3a2d89ed00235bb87d3a3272c9af9cad9ee9bf6f20b`.

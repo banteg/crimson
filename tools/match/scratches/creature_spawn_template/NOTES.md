@@ -766,6 +766,29 @@ Together the nine retained lifetime seams improve this scratch by
 retained source SHA-256 is
 `3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
 
+## 24-member spawner-ring tint lifetime
+
+The dominant residual at `0x00432121..0x00432199` comes from template `0x0e`.
+Native interleaves the typed child tint copy with its two equal health stores:
+red precedes `health`, green and blue follow `max_health`, and alpha remains
+live until the final stat group. Placing the aggregate tint assignment between
+the source-level `health` and `max_health` assignments gives VC6 that schedule
+without changing behavior, storage, or instruction count.
+
+This single natural ordering raises the whole-function score from
+12,363.395253164557/14,099 (87.689873417722%) to
+12,483.861392405062/14,099 (88.544303797468%), a gain of 120.466139240505
+weighted bytes. Candidate/native instructions remain 3,161/3,159, the prefix
+remains 23, and references improve from `352/0/1` to `357/0/1`.
+
+Two neighboring ownership controls were rejected. Delaying publication of a
+block-local child pointer until the loop tail is byte-identical, while direct
+indexed `creature_pool[child_slot_idx]` initialization (the exact small-spawn
+helper style) falls to 86.111990% with 3,163 instructions and `351/0/1`
+references. Moving shared-pointer publication past the angle declaration also
+adds two instructions and regresses to 86.902879%. The retained source SHA-256
+is `aaa35f3ae547fb29f7ff10b95b9253582d7dd452c2dc15fb84a835558a92bdc2`.
+
 ## Five-member ring position boundary
 
 The largest fresh non-grid x87 residual is the template-`0x19` child-position

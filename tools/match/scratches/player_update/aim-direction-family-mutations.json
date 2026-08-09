@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "cursor-aim-direction-pair",
+      "occurrence": 1,
+      "find": "                random_offset.x = player->aim_heading - 1.5707964f;\n                move_delta.y = (float)sin(random_offset.x);\n                scratch_pos.y = move_delta.y * 60.0f + player_position->y;\n                scratch_pos.x =\n                    (float)cos(random_offset.x) * 60.0f + player_position->x;\n                player->aim.x = scratch_pos.x;\n                player->aim.y = scratch_pos.y;",
+      "replacements": [
+        {
+          "name": "x-then-y",
+          "text": "                random_offset.x = player->aim_heading - 1.5707964f;\n                move_delta.x = (float)cos(random_offset.x);\n                move_delta.y = (float)sin(random_offset.x);\n                scratch_pos.x = move_delta.x * 60.0f + player_position->x;\n                scratch_pos.y = move_delta.y * 60.0f + player_position->y;\n                player->aim.x = scratch_pos.x;\n                player->aim.y = scratch_pos.y;"
+        }
+      ]
+    },
+    {
+      "name": "key-aim-direction-pair",
+      "occurrence": 2,
+      "find": "                random_offset.x = player->aim_heading - 1.5707964f;\n                move_delta.y = (float)sin(random_offset.x);\n                scratch_pos.y = move_delta.y * 60.0f + player_position->y;\n                scratch_pos.x =\n                    (float)cos(random_offset.x) * 60.0f + player_position->x;\n                player->aim.x = scratch_pos.x;\n                player->aim.y = scratch_pos.y;",
+      "replacements": [
+        {
+          "name": "x-then-y",
+          "text": "                random_offset.x = player->aim_heading - 1.5707964f;\n                move_delta.x = (float)cos(random_offset.x);\n                move_delta.y = (float)sin(random_offset.x);\n                scratch_pos.x = move_delta.x * 60.0f + player_position->x;\n                scratch_pos.y = move_delta.y * 60.0f + player_position->y;\n                player->aim.x = scratch_pos.x;\n                player->aim.y = scratch_pos.y;"
+        }
+      ]
+    },
+    {
+      "name": "pov-aim-direction-pair",
+      "find": "            random_offset.x = player->aim_heading - 1.5707964f;\n            move_delta.y = (float)sin(random_offset.x);\n            scratch_pos.y = move_delta.y * 60.0f + player_position->y;\n            scratch_pos.x =\n                (float)cos(random_offset.x) * 60.0f + player_position->x;\n            player->aim.x = scratch_pos.x;\n            player->aim.y = scratch_pos.y;",
+      "replacements": [
+        {
+          "name": "x-then-y",
+          "text": "            random_offset.x = player->aim_heading - 1.5707964f;\n            move_delta.x = (float)cos(random_offset.x);\n            move_delta.y = (float)sin(random_offset.x);\n            scratch_pos.x = move_delta.x * 60.0f + player_position->x;\n            scratch_pos.y = move_delta.y * 60.0f + player_position->y;\n            player->aim.x = scratch_pos.x;\n            player->aim.y = scratch_pos.y;"
+        }
+      ]
+    }
+  ]
+}

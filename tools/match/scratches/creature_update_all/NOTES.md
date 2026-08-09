@@ -555,3 +555,20 @@ versus vector-first multiplication is byte-identical, and applying aggregate
 addition to the neighboring linked-target stores regresses sharply. The
 retained form therefore records the specific native value-object lifetime
 rather than rewriting every two-component calculation indiscriminately.
+
+## Target-heading vector angle
+
+Native `0x00426b7e..0x00426b95` evaluates the target-position subtraction as
+an SDK-style two-component value before taking its angle: it loads X, then Y,
+uses `fxch`, and reaches `fpatan`. The scalar `atan2(target_y - pos_y,
+target_x - pos_x)` spelling instead loaded Y then X and omitted that native
+swap. Reusing the established vector subtraction boundary and a small
+`VEC2_Angle`-shaped helper recovers the native local schedule exactly.
+
+This raises the candidate from 2,919.772382397572/5,330
+(54.779969650986%) to 2,926.750094804703/5,330 (54.910883579826%), a gain
+of 6.977712407131 weighted bytes. Candidate instructions move from 1,298 to
+1,299 against 1,338 native instructions, exactly accounting for the restored
+`fxch`; references remain `225/0/2` and the prefix remains zero. The retained
+source SHA-256 is
+`b22a92a6656ebba289c6a0356ffee44033f46ecf595593b2397a72f7d0b0b8c0`.

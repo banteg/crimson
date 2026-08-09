@@ -138,9 +138,13 @@ extern "C" void ui_scrollbar_update(
                 (float *)&color);
         }
 
-        scrollbar_vec2_t track_position(xy->x + 240.0f, xy->y);
-        if ((unsigned char)ui_mouse_inside_rect(
-                (float *)&track_position, (int)height, 10)) {
+        unsigned char track_hovered;
+        {
+            scrollbar_vec2_t track_position(xy->x + 240.0f, xy->y);
+            track_hovered = (unsigned char)ui_mouse_inside_rect(
+                (float *)&track_position, (int)height, 10);
+        }
+        if (track_hovered) {
             {
                 scrollbar_vec2_t fill_position(
                     thumb_position.x + 1.0f, thumb_position.y + 1.0f);

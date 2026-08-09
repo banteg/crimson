@@ -206,6 +206,7 @@ extern "C" void projectile_render(float transition_alpha)
         grim_interface_ptr->grim_set_color_slot(
             3, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);
 
+        type_id = tail->type_id;
         projectile_render_vec2_t point0;
         projectile_render_vec2_t point1;
         projectile_render_vec2_t point2;
@@ -863,10 +864,10 @@ extern "C" void projectile_render(float transition_alpha)
                     radius,
                     1);
                 while (creature_index != -1) {
-                    grim_interface_ptr->grim_set_uv_point(0, 0.6f, 0.0f);
-                    grim_interface_ptr->grim_set_uv_point(1, 0.6f, 0.25f);
-                    grim_interface_ptr->grim_set_uv_point(2, 0.6f, 0.25f);
-                    grim_interface_ptr->grim_set_uv_point(3, 0.6f, 0.0f);
+                    grim_interface_ptr->grim_set_uv_point(0, 0.625f, 0.0f);
+                    grim_interface_ptr->grim_set_uv_point(1, 0.625f, 0.25f);
+                    grim_interface_ptr->grim_set_uv_point(2, 0.625f, 0.25f);
+                    grim_interface_ptr->grim_set_uv_point(3, 0.625f, 0.0f);
 
                     projectile_render_vec2_t arc_result =
                         *(projectile_render_vec2_t *)

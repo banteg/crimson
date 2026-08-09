@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **733/810** functions matched exactly, **146108/341970** code bytes (**42.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **306539/341970** code bytes (**89.6%**).
+Fuzzy-weighted alignment is **306810/341970** code bytes (**89.7%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 95 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 97 recorded file inputs changed or missing
 - `grim.dll`: **stale** — 6 recorded file inputs changed or missing
 
 ## Function dispositions
@@ -96,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 597/671 | 128583/320805 | 40.1% | 285468/320805 | 89.0% | 671/671 | 320805/320805 | 100.0% | 597/671 |
+| crimsonland.exe | 597/671 | 128583/320805 | 40.1% | 285739/320805 | 89.1% | 671/671 | 320805/320805 | 100.0% | 597/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**597/671** functions, **128583/320805** bytes (**40.1%**), **285468/320805** fuzzy-weighted bytes (**89.0%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **597/671** scratches verified.
+**597/671** functions, **128583/320805** bytes (**40.1%**), **285739/320805** fuzzy-weighted bytes (**89.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **597/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -318,7 +318,7 @@ Artifact freshness issues:
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 1623/1639 | 16 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 10182/16257 | 6075 | 4052/4206 | 62.63% | 7/4206 | 800/0/2 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 10218/16257 | 6039 | 4061/4206 | 62.85% | 7/4206 | 803/0/2 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | ui_menu_template_pool_init_thunk | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
@@ -446,10 +446,10 @@ Artifact freshness issues:
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 865/963 | 98 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
 | wip | projectile_update | 0x00420b90 | 8409 | 5199/8409 | 3210 | 2174/2203 | 61.82% | 0/2203 | 416/0/18 |  | core-projectile-simulation |
-| wip | projectile_render | 0x00422c70 | 12551 | 7219/12551 | 5332 | 2880/3021 | 57.52% | 0/3021 | 444/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
+| wip | projectile_render | 0x00422c70 | 12551 | 7273/12551 | 5278 | 2881/3021 | 57.95% | 0/3021 | 444/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
-| wip | creature_update_all | 0x00426220 | 5330 | 2920/5330 | 2410 | 1298/1338 | 54.78% | 0/1338 | 225/0/2 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
+| wip | creature_update_all | 0x00426220 | 5330 | 2927/5330 | 2403 | 1299/1338 | 54.91% | 0/1338 | 225/0/2 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
 | match | fx_queue_add_random | 0x00427700 | 291 | 291/291 | 0 | 73/73 | 100.00% | 73/73 | 23/0/0 |  | gameplay-random-fx-queue |
 | match | fx_queue_random_color_destroy | 0x00427830 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | fx-random-color-trivial-destructor |
 | match | fx_queue_add_rotated | 0x00427840 | 210 | 210/210 | 0 | 55/55 | 100.00% | 55/55 | 18/0/0 |  | gameplay-rotated-fx-queue |
@@ -458,7 +458,7 @@ Artifact freshness issues:
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
-| wip | player_render_overlays | 0x00428390 | 4582 | 3922/4582 | 660 | 1137/1148 | 85.60% | 9/1148 | 325/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
+| wip | player_render_overlays | 0x00428390 | 4582 | 3957/4582 | 625 | 1138/1148 | 86.35% | 9/1148 | 327/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | wip | bonus_render | 0x004295f0 | 4088 | 3643/4088 | 445 | 1087/1088 | 89.10% | 14/1088 | 221/0/8 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
@@ -517,7 +517,7 @@ Artifact freshness issues:
 | match | perks_init_database | 0x0042fd90 | 3211 | 3211/3211 | 0 | 588/588 | 100.00% | 588/588 | 443/0/0 |  | perk-id-and-metadata-database |
 | match | quest_meta_init_entry | 0x00430a20 | 170 | 170/170 | 0 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | quest-metadata-initialization |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 30/30 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
-| wip | creature_spawn_template | 0x00430af0 | 14099 | 12363/14099 | 1736 | 3161/3159 | 87.69% | 23/3159 | 352/0/1 |  | gameplay-spawn-switch |
+| wip | creature_spawn_template | 0x00430af0 | 14099 | 12484/14099 | 1615 | 3161/3159 | 88.54% | 23/3159 | 357/0/1 |  | gameplay-spawn-switch |
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 39/39 | 0 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
 | wip | quest_spawn_timeline_update | 0x00434250 | 368 | 336/368 | 32 | 113/115 | 91.23% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 30/30 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
@@ -652,7 +652,7 @@ Artifact freshness issues:
 | match | ui_focus_draw | 0x0043d940 | 104 | 104/104 | 0 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
 | match | ui_segmented_slider_update | 0x0043d9b0 | 714 | 714/714 | 0 | 213/213 | 100.00% | 213/213 | 35/0/0 |  | ui-segmented-slider-widget |
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 622/622 | 0 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
-| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 1097/1767 | 670 | 475/479 | 62.05% | 0/479 | 63/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
+| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 1115/1767 | 652 | 475/479 | 63.10% | 0/479 | 63/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 548/548 | 0 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
 | match | ui_menu_hover_color_destroy | 0x0043e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-hover-color-empty-destructor |
 | match | ui_menu_idle_color_destroy | 0x0043e820 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-idle-color-empty-destructor |
