@@ -78,21 +78,20 @@ extern "C" void quest_build_nagolipoli(
     }
 
     int ring_index = 0;
-    spawn = &spawns[entry_count];
-    entry_count += 12;
     while (ring_index < 12) {
         float angle = (float)ring_index * 0.52359879f;
-        spawn[ring_index].pos.set(
+        spawns[entry_count + ring_index].pos.set(
             (float)cos(angle) * 178.0f,
             (float)sin(angle) * 178.0f);
-        spawn[ring_index].pos.add(512.0f);
-        spawn[ring_index].set_heading_and_template(
+        spawns[entry_count + ring_index].pos.add(512.0f);
+        spawns[entry_count + ring_index].set_heading_and_template(
             angle,
             SPAWN_ID_SPIDER_SMALL_BLUE_40);
-        spawn[ring_index].trigger_time_ms = 8000;
-        spawn[ring_index].count = 1;
+        spawns[entry_count + ring_index].trigger_time_ms = 8000;
+        spawns[entry_count + ring_index].count = 1;
         ++ring_index;
     }
+    entry_count += 12;
 
     quest_vec2_t top_left;
     top_left.x = -64.0f;
@@ -109,45 +108,40 @@ extern "C" void quest_build_nagolipoli(
 
     int wave = 0;
     int trigger_time_ms = 13000;
-    spawn = &spawns[entry_count];
     while (trigger_time_ms < 0x96c8) {
         int spawn_count = wave / 8 + 1;
 
-        spawn->set_position_and_template(
+        spawns[entry_count].set_position_and_template(
             top_left,
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
-        spawn->heading = 1.04719758f;
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = spawn_count;
+        spawns[entry_count].heading = 1.04719758f;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = spawn_count;
         ++entry_count;
-        ++spawn;
 
-        spawn->set_position_and_template(
+        spawns[entry_count].set_position_and_template(
             top_right,
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
-        spawn->heading = -1.04719758f;
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = spawn_count;
+        spawns[entry_count].heading = -1.04719758f;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = spawn_count;
         ++entry_count;
-        ++spawn;
 
-        spawn->set_position_and_template(
+        spawns[entry_count].set_position_and_template(
             bottom_left,
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
-        spawn->heading = -1.04719758f;
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = spawn_count;
+        spawns[entry_count].heading = -1.04719758f;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = spawn_count;
         ++entry_count;
-        ++spawn;
 
-        spawn->set_position_and_template(
+        spawns[entry_count].set_position_and_template(
             bottom_right,
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
-        spawn->heading = 3.926991f;
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = spawn_count;
+        spawns[entry_count].heading = 3.926991f;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = spawn_count;
         ++entry_count;
-        ++spawn;
 
         trigger_time_ms += 800;
         ++wave;
@@ -156,34 +150,34 @@ extern "C" void quest_build_nagolipoli(
     int line_index = 0;
     trigger_time_ms = (wave * 5 + 150) * 160;
     bottom_left.x = 64.0f;
-    spawn = &spawns[entry_count];
-    entry_count += 6;
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
-        spawn[line_index].pos = bottom_left;
-        spawn[line_index].template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
-        spawn[line_index].heading = 0.0f;
-        spawn[line_index].trigger_time_ms = trigger_time_ms;
-        spawn[line_index].count = 1;
+        spawns[entry_count + line_index].pos = bottom_left;
+        spawns[entry_count + line_index].template_id =
+            SPAWN_ID_DEN_SPIDER_BASIC_0A;
+        spawns[entry_count + line_index].heading = 0.0f;
+        spawns[entry_count + line_index].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count + line_index].count = 1;
         ++line_index;
         trigger_time_ms += 100;
     }
+    entry_count += 6;
 
     line_index = 0;
     trigger_time_ms = wave * 800 + 25000;
     bottom_left.x = 960.0f;
-    spawn = &spawns[entry_count];
-    entry_count += 6;
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
-        spawn[line_index].pos = bottom_left;
-        spawn[line_index].template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
-        spawn[line_index].heading = 0.0f;
-        spawn[line_index].trigger_time_ms = trigger_time_ms;
-        spawn[line_index].count = 1;
+        spawns[entry_count + line_index].pos = bottom_left;
+        spawns[entry_count + line_index].template_id =
+            SPAWN_ID_DEN_SPIDER_BASIC_0A;
+        spawns[entry_count + line_index].heading = 0.0f;
+        spawns[entry_count + line_index].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count + line_index].count = 1;
         ++line_index;
         trigger_time_ms += 100;
     }
+    entry_count += 6;
 
     trigger_time_ms = (wave * 5 + 175) * 160;
     spawn = &spawns[entry_count];

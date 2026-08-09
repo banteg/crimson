@@ -26,7 +26,7 @@ corrected the Python and Zig ports, which previously scaled Nagolipoli against
 the runtime terrain.
 
 The current candidate represents all 258 native instructions and resolves all
-14 audited references, scoring 75.58% fuzzy-weighted with a 38-instruction
+14 audited references, scoring 76.74% fuzzy-weighted with a 39-instruction
 exact prefix. One flat append counter preserves the native live
 entry count and reusable x87 conversion slot. Separate `set` and scalar-add
 calls on both ring positions recover
@@ -39,11 +39,12 @@ their zero heading after the spawn fields improves their local store/reload
 shape. A short-lived tail vector recovers the final position-copy idiom.
 
 The residual is consistent source and VC6 optimizer shape. Native anchors some
-cursors at later fields and writes through negative offsets, distributes four
-count increments through the corner-wave stores, and schedules the line
-scalars and tail copies through different temporary lifetimes; the candidate
-uses record-base cursors, collapses the four increments, and chooses other
-legal registers or line stack slots.
+cursors at later fields and writes through negative offsets, reserves the ring
+and line ranges before their loops, and schedules the line scalars and tail
+copies through different temporary lifetimes. The candidate now preserves the
+four corner count increments and indexed phase ownership, but publishes the
+fixed ring and line range advances after their loops and chooses other legal
+registers or line stack slots.
 
 Eight address-keyed Binary Ninja local types preserve the recovered record
 shape across compiler-generated cursor expressions. All four corner entries
@@ -175,3 +176,27 @@ tail recovery did not overturn the earlier bound: extending the fourth corner
 vector through both lines fell to 70.16%, and a dedicated scoped line vector
 fell to 69.77%. Swapping cursor/count advance order at the recovered corner
 helper boundaries was byte-neutral. None of those variants is retained.
+
+## 2026-08-09 indexed phase interaction
+
+The exact Lizard Kings ring supplies a second transferable house-style rule:
+repeat `spawns[entry_count + index]` at every publication site rather than
+retaining a phase-local record cursor. Applying that spelling to Nagolipoli's
+second ring and both six-entry lines folds the native `+4` and two `+8` member
+offsets into their scaled `lea` instructions. On its own this reaches 76.80%
+but emits 255/258 instructions because the three fixed range advances move out
+of the native pre-loop slots.
+
+Direct indexed publication for all four corner records has the complementary
+effect. It preserves VC6's four per-wave `entry_count` increments instead of
+collapsing 128 entries into one pre-loop add, but on its own emits 261/258
+instructions and is therefore a tradeoff. Combining the two natural forms
+restores the exact 258-instruction extent and improves the retained result from
+75.58% to **76.74%**, the exact prefix from 38 to 39 instructions, and weighted
+matched bytes by 11.43, with references still `14/0/0`.
+
+Saved-start forms that reserve the ring or line ranges before their loops add
+one or two instructions and are rejected. A complete 15-combination matrix of
+direct indexed publication across the four fixed tail records is neutral except
+for the first record, which regresses by 7.62 weighted bytes; no tail change is
+retained.
