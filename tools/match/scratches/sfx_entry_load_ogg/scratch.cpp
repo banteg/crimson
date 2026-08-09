@@ -4,6 +4,11 @@
 #include "crimsonland_audio.h"
 #include "crimsonland_resource.h"
 
+struct sfx_pcm_storage_t {
+    void *data;
+    unsigned int bytes;
+};
+
 extern "C" unsigned char sfx_entry_load_ogg(
     sfx_entry_t *entry,
     char *path)
@@ -41,9 +46,10 @@ extern "C" unsigned char sfx_entry_load_ogg(
     remaining = entry->pcm_bytes;
     read_bytes = 1;
     while (remaining > 0 && read_bytes != 0) {
+        sfx_pcm_storage_t &pcm =
+            *(sfx_pcm_storage_t *)&entry->pcm_data;
         read_bytes = stream.read_pcm16(
-            (char *)(entry->pcm_bytes - remaining +
-                (unsigned int)entry->pcm_data),
+            (pcm.bytes - remaining) + (char *)pcm.data,
             remaining);
         remaining -= read_bytes;
     }

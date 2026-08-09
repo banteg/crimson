@@ -6,7 +6,7 @@ Live Binary Ninja evidence recovers the two effect-pool render passes, their
 flag-`0x40` partition, per-entry rotation/scale transform, BGRA packing, camera
 offset, and Grim2D batch state transitions.
 
-Best verified candidate: 92.82%, with 195/195 normalized instructions and
+Best verified candidate: 94.87%, with 195/195 normalized instructions and
 masked references `38/0/0`, using Microsoft Visual C++ 6.5 with
 `/O2 /GB /W3 /GR-`.
 
@@ -18,6 +18,9 @@ masked references `38/0/0`, using Microsoft Visual C++ 6.5 with
 - Each entry builds the native 2x2 `{ cos, -sin, sin, cos }` rotation matrix,
   multiplies all four elements by the entry scale, and adds the camera offset
   to its canonical `effect_entry_t.position` aggregate.
+- The offset uses the original mod SDK's vector house style: a two-float
+  constructor that assigns the components in its body, invoked directly at
+  the declaration site.
 - A four-byte union reproduces the native alpha/red/green/blue conversion
   order and the four `__ftol` calls. The packed value is passed by address to
   `grim_submit_vertices_transform_color` with the entry's four vertices.
@@ -33,12 +36,12 @@ masked references `38/0/0`, using Microsoft Visual C++ 6.5 with
 
 The candidate and target have identical instruction counts and reference
 audits. VC6 assigns the scalar rotation and packed-color destination to the
-opposite four-byte stack slots; that choice also moves one dependent offset
-argument push. The same residue repeats in both otherwise matching passes.
+opposite four-byte stack slots. The same residue repeats in both otherwise
+matching passes.
 
 Natural variants checked include declaration and initialization order, nested
 scopes, return-value and output-pointer color helpers, a one-element color
-array, aggregate offset initialization, an inline transform helper, and a
+array, POD aggregate offset initialization, an inline transform helper, and a
 combined render-preparation helper. `msvc6.5pp` regresses to 85.28% and `/G6`
 to 90.26%. None removes the allocator residue without explicitly coercing
 local layout, so this remains an honest semantic WIP rather than a fakematch.
@@ -47,7 +50,7 @@ local layout, so this remains an honest semantic WIP rather than a fakematch.
 
 The Binary Ninja pass partition, transforms, color conversion, vertex submits,
 and Grim state transitions are all represented. Candidate and native each have
-195 instructions, and all 38 references resolve. The six localized regions
+195 instructions, and all 38 references resolve. The four localized regions
 repeat the documented scalar/local-slot allocation and x87 scheduling choice
 in the two equivalent passes. Recovery is therefore `semantic-complete` with a
 `compiler` residual.
@@ -90,6 +93,17 @@ type combinations correctly fail compilation.
 
 These sweeps close the remaining aggregate-type and cv-lifetime explanations
 without coercing stack layout. The repeated `rotation esp+0xc` versus packed
-color `esp+0x8` native assignment is now saturated as a VC6 local-slot
-allocator tie. A revisit needs new compiler or original-TU provenance rather
-than further declaration, helper, or recovered-type permutations.
+color `esp+0x8` native assignment remains a VC6 local-slot allocator tie rather
+than a reason to retain an artificial layout constraint.
+
+## SDK vector-construction transfer
+
+The original 2003 mod SDK and the neighboring UI renderer establish a distinct
+non-POD vector form: the two-float constructor assigns `x` and `y` in its body,
+and the caller constructs the first value directly at its declaration. Using
+that form for the render offset raises the global match from **92.8205%** to
+**94.8718%**, reduces the fuzzy gap from 53.128205 to 37.948718 bytes, and
+removes the dependent offset-argument region in each pass. Instruction count,
+exact prefix, and references remain 195/195, 37, and `38/0/0`. The only four
+remaining regions are the two repeated rotation and packed-color stack-slot
+pairs identified above.

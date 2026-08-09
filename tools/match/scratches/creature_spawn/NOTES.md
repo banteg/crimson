@@ -25,7 +25,8 @@ indexes. The destination position is likewise copied through the canonical
 `creature_t::position` aggregate instead of two provisional scalar aliases.
 That source-shape recovery is byte-neutral. Binary Ninja also types the
 embedded destination beginning at `creature_t::tint_r` as
-`effect_color_t *creature_tint`.
+`effect_color_t *creature_tint`; materializing that aggregate destination
+owner in the source recovers the native `lea`-based tint publication.
 
 The native function explicitly materializes two zero words in its eight-byte
 stack frame before reading them back as the creature velocity. The matching
@@ -36,8 +37,8 @@ C front end: VC6 folds it away, deleting the native frame and six
 instructions. The named overlay is byte-neutral at 86.08%, 79/79 instructions,
 and 27/0/0 references.
 
-The candidate has the exact 79-instruction length, resolves all 27 audited
-references, and scores 86.08% with a seven-instruction exact prefix. Its
+The candidate has the exact 79-instruction length, resolves all 29 audited
+references, and scores 88.61% with a seven-instruction exact prefix. Its
 remaining differences are instruction scheduling rather than missing behavior:
 the scratch compiler hoists the first elapsed-time x87 calculation through
 independent record stores and starts the final size calculation during the tint
@@ -56,6 +57,16 @@ two RNG call sites, four-component tint, and max-health copy, so this audit did
 not reveal a port-parity correction.
 
 ## Recorded mutation evidence
+
+The native tint tail at `0x00428331..0x00428382` constructs a destination
+pointer before copying the four-component aggregate. Expressing that same
+owner explicitly raises the global match from 86.075949% to 88.607595%, keeps
+79/79 instructions and prefix 7, improves references from 27/0/0 to 29/0/0,
+and reduces the weighted byte gap from 46.506329 to 38.050633. Manual member
+copies lose the native destination owner, swapping contact damage and
+max-health publication or staging max health regress, and replacing the two
+observed velocity stores with an aggregate assignment falls to 64.102564%.
+Only the tint destination-owner recovery is retained.
 
 Two complete, recorded mutation matrices cover 53 ordinary source-shape
 variants without retaining a change. `initializer-schedule-mutations.json`
@@ -77,12 +88,12 @@ The live native body still contains the same 79 instructions and complete
 initializer policy described above. Focused regions isolate only x87
 scheduling: native finishes the elapsed-health expression near its store and
 starts the final elapsed-size expression after the tint copy, while stock VC6
-keeps those values live across independent stores. All 27 masked references
+keeps those values live across independent stores. All 29 masked references
 resolve to the intended globals, calls, constants, and record fields.
 
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
-metadata-only change preserves the before/after result: 86.08%, prefix 7/79,
-79/79 instructions, and references 27/0/0.
+retained destination-owner recovery produces 88.61%, prefix 7/79, 79/79
+instructions, and references 29/0/0.
 
 `elapsed-expression-lifetime-mutations.json` records 24 compile-valid
 single/paired integer-snapshot, float-snapshot, named-result, and staged-result
@@ -90,5 +101,5 @@ forms for the health and size expressions (spec
 `f9e49f8e6fbebfee744dba7c7ec2647f19238d81ecbca3fe57d7cd3e3106df72`).
 Ordinary integer snapshots and named results are byte-neutral; float or staged
 forms regress by 4.23 weighted bytes and can disturb reference alignment.
-None delays either x87 chain to the native schedule, so the **86.08%** source
-is retained unchanged.
+None delays either x87 chain to the native schedule, so **86.08%** remains the
+recorded pre-owner baseline rather than the current result.

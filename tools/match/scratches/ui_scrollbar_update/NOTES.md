@@ -2,7 +2,7 @@
 
 - Native function: `0x0043def0` (`1767` bytes, `479` instructions)
 - Compiler profile: MSVC 6.5
-- Current result: `62.05%`, `475` candidate instructions, `63/0/0`
+- Current result: `64.37%`, `478` candidate instructions, `64/0/0`
   relocation references.
 
 ## Recovered behavior
@@ -164,7 +164,27 @@ SHA-256 is
 
 The scratch remains `semantic-complete` with a `compiler` residual. MSVC now
 allocates a `0x44`-byte frame versus the native `0x40` frame. The remaining
-17 localized regions are dominated by temporary-object stack-slot coalescing,
+18 localized regions are dominated by temporary-object stack-slot coalescing,
 the proportional-thumb x87 schedule, and late row-loop allocation. The final
-candidate has `475/479` instructions and resolves all `63` audited references
+candidate has `478/479` instructions and resolves all `64` audited references
 with no mismatches or unresolved relocations.
+
+## Hover-fill vector ownership (2026-08-09)
+
+The exact list widget establishes the ordinary menu spelling for a coordinate
+derived from another coordinate: base vector plus a short-lived vector offset.
+Live native scrollbar disassembly shows that the track point at
+`0x0043e230..0x0043e254` already has the current direct constructor's X-then-Y
+schedule. The hovered thumb fill at `0x0043e264..0x0043e2c5` is the one
+analogous owner: it derives both components from the shared thumb position and
+is consumed by one draw call after the track hit test.
+
+Spelling only that fill as `thumb_position + scrollbar_vec2_t(1, 1)` raises
+the score from `63.10272536687631%` to `64.36781609195402%`. Weighted bytes
+increase from `1115.0251572327045` to `1137.3793103448277`, a gain of
+`22.3541531121232`; instructions move from `475/479` to `478/479`, and clean
+references improve from `63/0/0` to `64/0/0`. The track, alternate fill, and
+row constructors remain untouched. The function still has a `0x44` candidate
+frame and the native fill computation is not yet fully scheduled after the
+hover branch, so this is retained as a measured lifetime/allocation gain rather
+than claimed as local exactness.

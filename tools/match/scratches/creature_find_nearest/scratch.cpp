@@ -48,7 +48,8 @@ extern "C" int creature_find_nearest(
             float dy = pos->y - creature->position.y;
             double live_distance = sqrt(dx * dx + dy * dy);
             float distance = (float)live_distance;
-            if (live_distance > min_dist && distance < best_distance) {
+            if ((float)live_distance > min_dist
+                && distance < best_distance) {
                 best_index = index;
                 best_distance = distance;
             }

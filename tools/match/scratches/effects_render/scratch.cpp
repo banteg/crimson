@@ -16,6 +16,17 @@ union EffectPackedColor {
     unsigned char channel[4];
 };
 
+struct effect_render_vec2_t {
+    float x;
+    float y;
+
+    effect_render_vec2_t(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
+};
+
 static inline void effect_pack_color(
     effect_color_t *source,
     unsigned long *result)
@@ -32,7 +43,6 @@ static inline void effect_render_entry(effect_entry_t *entry)
 {
     unsigned long color;
     float rotation;
-    effect_vec2_t offset;
     float matrix[4];
 
     rotation = entry->rotation;
@@ -48,8 +58,9 @@ static inline void effect_render_entry(effect_entry_t *entry)
 
     effect_pack_color(&entry->color, &color);
 
-    offset.x = camera_offset_x + entry->position.x;
-    offset.y = camera_offset_y + entry->position.y;
+    effect_render_vec2_t offset(
+        camera_offset_x + entry->position.x,
+        camera_offset_y + entry->position.y);
     grim_interface_ptr->grim_submit_vertices_transform_color(
         &entry->vertices[0].pos.x,
         4,

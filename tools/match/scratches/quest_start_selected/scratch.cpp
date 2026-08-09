@@ -80,18 +80,15 @@ extern "C" void quest_start_selected(int tier, int index)
     int entries_left = entry_count;
     do {
         int template_id;
-        int count;
         if (config_hardcore) {
-            count = count_cursor[0];
-            if (count > 1) {
+            if (count_cursor[0] > 1) {
                 template_id = count_cursor[-2];
                 if (template_id != 0x3c) {
                     if (template_id == 0x2b) {
-                        count += 2;
+                        count_cursor[0] += 2;
                     } else {
-                        count += 8;
+                        count_cursor[0] += 8;
                     }
-                    count_cursor[0] = count;
                 }
             }
         }

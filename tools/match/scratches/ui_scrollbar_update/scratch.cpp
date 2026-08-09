@@ -14,6 +14,11 @@ struct scrollbar_vec2_t {
         : x(x_value), y(y_value)
     {
     }
+
+    scrollbar_vec2_t operator+(const scrollbar_vec2_t &other) const
+    {
+        return scrollbar_vec2_t(x + other.x, y + other.y);
+    }
 };
 
 struct scrollbar_color_t {
@@ -146,8 +151,8 @@ extern "C" void ui_scrollbar_update(
         }
         if (track_hovered) {
             {
-                scrollbar_vec2_t fill_position(
-                    thumb_position.x + 1.0f, thumb_position.y + 1.0f);
+                scrollbar_vec2_t fill_position =
+                    thumb_position + scrollbar_vec2_t(1.0f, 1.0f);
                 scrollbar_color_t color(0.2f, 0.4f, 0.8f, 1.0f);
                 grim_interface_ptr->grim_draw_rect_filled(
                     (float *)&fill_position,

@@ -2,8 +2,8 @@
 
 - Native function: `0x0043efc0` (`1420` bytes, `403` instructions)
 - Compiler profile: MSVC 6.5
-- Current result: `99.26%`, `403` candidate instructions, `50/0/0`
-  relocation references.
+- Current result: exact, `403/403` instructions and `50/0/0` relocation
+  references.
 
 ## Callers
 
@@ -42,7 +42,7 @@ The recovered helper:
 - updates the active row from pointer hover and closes when both pointer and
   keyboard focus leave.
 
-## Remaining mismatch
+## Row-position recovery
 
 The candidate has the native `0x1c` frame and the same calls, constants,
 branches, state accesses, instruction count, and references. Materializing the
@@ -57,23 +57,22 @@ comparison recovers the native pre-comparison decrement, branch condition,
 and complete clamp region. The exact prefix consequently advances from 119
 to 321 instructions and the weighted gap falls from 17.62 to 10.57 bytes.
 
-The remaining residual is row-vector expression scheduling. Native begins
-materializing the row Y expression before loading and storing the X component;
-the current compiler schedules the same constructor's X load first. No source
-padding or semantic distortion is used to force that compiler detail.
+The final residual was row-vector expression scheduling. Native begins
+materializing the row Y expression before loading and storing the X component.
+The original direct `(x, y)` constructor scheduled X first. Expressing the row
+position in the ordinary menu house style as `*xy + list_vec2_t(0.0f, y_offset)`
+recovers the native split X/Y schedule exactly. No source padding, dummy
+dependency, volatility, or register-forcing construct is used.
 
 ## Recovery classification audit
 
-A fresh focused `--regions` run is unchanged before and after classification:
-**99.26%**, 403/403 instructions, prefix 321, and `50/0/0` references. Its
-single region at native `0x0043f427..0x0043f464` contains the same row
-constructor, pointer hit test, and arguments; only the X/Y materialization and
-push schedule differ. Width measurement, focus navigation, drawing, hover
-selection, return values, and close policy are complete.
+A focused matcher run now reports **100.00%**, 403/403 instructions, prefix
+403, and `50/0/0` references. Width measurement, focus navigation, drawing,
+hover selection, return values, close policy, and row-vector materialization
+all match.
 
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
-`/O2 /GB` remaining best. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+`/O2 /GB` remaining best. Classification: `RECOVERY=semantic-complete`.
 
 `row-position-lifetime-mutations.json` evaluated five named-result,
 constructor, and component-assignment forms in the only residual region. The
@@ -112,7 +111,18 @@ retained. The complete plan has SHA-256
 `eae85b93be1ead939078cac7b91453a0204796092b18465a170de8db12e0d73d`,
 and the four-record experiment log now has SHA-256
 `164a93f668b8150e4c3e29514635be0246e8c1ab7d39227d124b8849ab02a52d`.
-This closes the natural constructor/value-category search around the sole
-residual without padding, volatility, or a forced dependency. The source
-remains **99.26%**, 403/403 instructions, prefix 321, and `50/0/0`
+This closed the natural constructor/value-category search tried at that
+checkpoint without padding, volatility, or a forced dependency. The source
+then remained **99.26%**, 403/403 instructions, prefix 321, and `50/0/0`
 references.
+
+## Exact vector-offset closure (2026-08-09)
+
+Exact sibling menus construct derived points with vector addition. Adding the
+same ordinary `operator+` to the local vector and spelling each row point as
+the base position plus `(0, row_offset)` reproduces native's interleaving of
+the Y conversion, X load/store, and hit-test argument pushes. The rejected
+copy-then-publish and copy-then-add forms fell to 80.94% and 80.69%,
+respectively; they were restored. The retained vector-offset form is exact:
+**100.00%**, **403/403 instructions**, prefix **403**, and references
+`50/0/0`.

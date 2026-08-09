@@ -6,19 +6,32 @@ decodes the complete resident sample, closes the decoder, and creates 16
 DirectSound voices. Native allocation, read, and short-decode failure handling
 is deliberately minimal and is preserved.
 
-The recovered source has the same 99-instruction count and all ten references
-aligned, but remains an honest 97.98% WIP. The only residual is the order in
-which MSVC loads `pcm_bytes` and `pcm_data` into `EDX`/`ECX` for the decode
-destination; the arithmetic, call, loop, object layout, and every side effect
-are otherwise identical, and the source is not contorted to force the schedule.
+The recovered source is now exact: 99/99 instructions, a 99-instruction exact
+prefix, and `10/0/0` references. The final residual was the order in which VC6
+loaded the adjacent `pcm_bytes` and `pcm_data` fields for the decode
+destination.
 
 ## Recovery classification audit
 
 Fresh Binary Ninja HLIL confirms the resource read, memory-source prefix,
 decoder lifecycle, PCM format, complete short-decode loop, and voice creation.
-Candidate and native each have 99 instructions with `10/0/0` references.
-`--regions` isolates the only difference to the two equivalent decode-pointer
-loads, so recovery is `semantic-complete` with a `compiler` residual.
+Candidate and native each have 99 identical instructions with `10/0/0`
+references, so no compiler residual remains.
+
+## Exact aggregate-owner closure
+
+Binary Ninja types `audio_entry_t::pcm_data` at `+0x14` immediately followed by
+`pcm_bytes` at `+0x18`. Native `0x0043bde7..0x0043bdf0` loads the byte count
+first, subtracts the remaining count, and then adds the data pointer. Exact
+neighbor `music_stream_fill` uses the same byte-count/data-base ownership at
+`0x0043c61e..0x0043c629` for its second decode attempt.
+
+Modeling those adjacent fields as a borrowed `sfx_pcm_storage_t` subobject at
+`&entry->pcm_data` preserves that natural aggregate boundary. VC6 then emits
+the native `pcm_bytes`-then-`pcm_data` load order without volatile state,
+forced inlining, register constraints, or changed behavior. This closes the
+former 6.141414-byte weighted gap and raises 97.98% to 100% while preserving
+the 99/99 instruction count and all ten references.
 
 ## Recorded decode-destination sweeps
 

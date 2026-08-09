@@ -6,36 +6,36 @@ Live Binary Ninja evidence identifies the default two-player key bindings, the
 0x480-byte `crimson.cfg` contract, binding transfer into runtime player state,
 conditional Grim configuration propagation, and player-name/reset behavior.
 
-The file-side copy now uses `player_input_config_t` records directly and binds
-an interior cursor to the evidenced `axis_move_x` field. This preserves the
-persisted Y/X analog-axis ordering while making the transfer into the runtime
+The file-side copy now names both aggregate identities directly through
+`config_blob.input_config[player_index]` and
+`player_state_table[player_index].input`. This preserves the persisted Y/X
+analog-axis ordering while making the transfer into the runtime
 `player_input_t` layout explicit.
 
-The recovered C++ source matches 88.76% (67-instruction exact prefix, 178 target
+The recovered C++ source matches 92.70% (67-instruction exact prefix, 178 target
 and candidate instructions). Everything outside the two-player binding-copy
-loop is instruction-identical. The remaining mismatch is confined to VC6's
-choice of induction anchors: the native uses `config_p1_axis_move_x` and the
-runtime backward-key field. Binding the source to `axis_move_x` advances the
-candidate's normalized source anchor from turn-left to backward-key and raises
-the weighted match by 3.67 bytes, but the compiler still rebases both induction
-registers differently from native.
+loop is instruction-identical. Direct aggregate identities recover the native
+runtime `move_key_backward` induction anchor. The remaining mismatch is
+confined to VC6's source induction choice: native uses
+`config_p1_axis_move_x`, while the candidate rebases the same accesses to the
+persisted `move_key_backward` field.
 
 Three recorded mutation sweeps cover 11 variants of the binding loop:
 field-identity aliases, typed/raw source anchors, and source/destination
-induction-pointer forms. The `axis_move_x` source anchor is the sole winner.
+induction-pointer forms. The `axis_move_x` source anchor was the sole winner in
+that earlier matrix.
 Making it the actual loop induction variable regresses 12.60-34.55 weighted
 bytes; the pointer-bound forms remove one relocation mismatch only by adding an
-instruction and losing 12.60 weighted bytes. Those tradeoffs are rejected, so
-the scratch retains the simplest evidenced interior cursor.
+instruction and losing 12.60 weighted bytes. Those tradeoffs remain rejected;
+the later direct-aggregate recovery supersedes the interior-cursor source.
 
 ## Recovery classification audit
 
 Binary Ninja accounts for the complete defaults, file contract, binding
 transfer, Grim propagation, names, and reset policy. Candidate and native each
-have 178 instructions. The address-level audit is `50/0/3`: all three
-mismatches are the same two-record copy rebased from native field anchors to
-the candidate compiler-selected anchors, not unknown data or incorrect
-offsets.
+have 178 instructions. The address-level audit is `51/0/2`: both mismatches are
+the source start/end identities for the same two-record copy, not unknown data
+or incorrect offsets. The destination induction identity now matches native.
 Everything outside that single localized loop is exact, so recovery is
 `semantic-complete` with a `compiler` residual.
 
@@ -66,3 +66,22 @@ The ordinary free-helper, raw/interior cursor, and member/operator source
 menus are therefore all closed. Replaying the member forms in
 `crimsonland_main` would test the same compiler decision in a noisier caller
 and is not justified by the smaller function's complete negative matrix.
+
+## 2026-08-09 aggregate-identity recovery
+
+The exact duplicate binding copy in `crimsonland_main` uses direct source and
+destination aggregate expressions. Transferring that identity boundary here
+raises the whole-function match from 88.7640449% to 92.6966292%, or from
+579.629213 to 605.308989 fuzzy-weighted bytes. It preserves 178/178
+instructions and the 67-instruction prefix while improving the reference audit
+from `50/0/3` to `51/0/2`.
+
+Live native disassembly at `0x0041f2bd..0x0041f322` confirms the reason: the
+destination induction register is based at runtime `move_key_backward` in both
+native and the revised candidate. Native still bases the source induction at
+`config_p1_axis_move_x` and ends at `0x004805c0`; the candidate naturally
+rebases those same field accesses to persisted `move_key_backward`. Giving the
+first `move_key_forward` load a named local, as in `crimsonland_main`, is
+byte-neutral, so the simpler direct publication is retained. The retained
+source SHA-256 is
+`a7041f8bce90003abaea9fc5fd575e36d948eb27ac7dd1f5956e285437305643`.

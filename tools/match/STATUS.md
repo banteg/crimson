@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**736/810** functions matched exactly, **147059/341992** code bytes (**43.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**739/810** functions matched exactly, **149008/341992** code bytes (**43.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **307990/341992** code bytes (**90.1%**).
+Fuzzy-weighted alignment is **308123/341992** code bytes (**90.1%**).
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -92,12 +92,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 600/671 | 129534/320827 | 40.4% | 286919/320827 | 89.4% | 671/671 | 320827/320827 | 100.0% | 600/671 |
+| crimsonland.exe | 603/671 | 131483/320827 | 41.0% | 287052/320827 | 89.5% | 671/671 | 320827/320827 | 100.0% | 603/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**600/671** functions, **129534/320827** bytes (**40.4%**), **286919/320827** fuzzy-weighted bytes (**89.4%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **600/671** scratches verified.
+**603/671** functions, **131483/320827** bytes (**41.0%**), **287052/320827** fuzzy-weighted bytes (**89.5%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **603/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -419,7 +419,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | creature_handle_death | 0x0041e910 | 834 | 734/834 | 100 | 203/204 | 87.96% | 6/204 | 82/0/0 |  | creature-death-side-effects |
 | match | config_sync_from_grim | 0x0041ec60 | 1225 | 1225/1225 | 0 | 277/277 | 100.00% | 277/277 | 37/0/0 |  | grim-config-sync-and-legacy-migration |
 | match | config_ensure_file | 0x0041f130 | 112 | 112/112 | 0 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
-| wip | config_load_presets | 0x0041f1a0 | 653 | 580/653 | 73 | 178/178 | 88.76% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
+| wip | config_load_presets | 0x0041f1a0 | 653 | 605/653 | 48 | 178/178 | 92.70% | 67/178 | 51/0/2 |  | config-file-load-and-runtime-sync |
 | match | angle_approach | 0x0041f430 | 299 | 299/299 | 0 | 101/101 | 100.00% | 101/101 | 11/0/0 |  | gameplay-angle-x87 |
 | match | bonus_pool_sentinel_global_init_thunk | 0x0041f560 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-sentinel-global-initialization-thunk |
 | match | bonus_pool_sentinel_global_init | 0x0041f570 | 11 | 11/11 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | bonus-pool-sentinel-global-initialization |
@@ -431,7 +431,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | weapon_table_entry | 0x0041fc60 | 19 | 19/19 | 0 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | player_reset_all | 0x0041fc80 | 584 | 536/584 | 48 | 130/127 | 91.83% | 94/127 | 57/0/1 | msvc6.5 /O2 /GB /W3 /GR- /TP | gameplay-player-reset |
 | match | effect_uv_tables_init | 0x0041fed0 | 356 | 356/356 | 0 | 109/109 | 100.00% | 109/109 | 15/0/0 |  | gameplay-effect-atlas-uv-init |
-| wip | creature_find_nearest | 0x00420040 | 225 | 210/225 | 15 | 91/89 | 93.33% | 51/89 | 5/0/0 |  | gameplay-target-search |
+| match | creature_find_nearest | 0x00420040 | 225 | 225/225 | 0 | 89/89 | 100.00% | 89/89 | 5/0/0 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 264/264 | 0 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 274/274 | 0 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_secondary_projectile | 0x00420360 | 218 | 218/218 | 0 | 65/65 | 100.00% | 65/65 | 13/0/0 |  | gameplay-secondary-projectile |
@@ -453,7 +453,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | creature_alloc_slot | 0x00428140 | 145 | 145/145 | 0 | 39/39 | 100.00% | 39/39 | 14/0/0 |  |  |
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
-| wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
+| wip | creature_spawn | 0x00428240 | 334 | 296/334 | 38 | 79/79 | 88.61% | 7/79 | 29/0/0 |  | gameplay-creature-spawn |
 | wip | player_render_overlays | 0x00428390 | 4582 | 3999/4582 | 583 | 1141/1148 | 87.29% | 9/1148 | 329/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | wip | bonus_render | 0x004295f0 | 4088 | 3676/4088 | 412 | 1087/1088 | 89.93% | 14/1088 | 223/0/6 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
@@ -489,7 +489,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | effect_select_texture | 0x0042e0a0 | 113 | 113/113 | 0 | 35/35 | 100.00% | 35/35 | 6/0/0 |  | gameplay-effect-texture |
 | match | effect_spawn | 0x0042e120 | 1507 | 1507/1507 | 0 | 350/350 | 100.00% | 350/350 | 90/0/0 |  | gameplay-effect-allocation-and-quad-build |
 | match | effects_update | 0x0042e710 | 267 | 267/267 | 0 | 85/85 | 100.00% | 85/85 | 10/0/0 |  | gameplay-effect-lifecycle |
-| wip | effects_render | 0x0042e820 | 740 | 687/740 | 53 | 195/195 | 92.82% | 37/195 | 38/0/0 |  | gameplay-effect-render-passes |
+| wip | effects_render | 0x0042e820 | 740 | 702/740 | 38 | 195/195 | 94.87% | 37/195 | 38/0/0 |  | gameplay-effect-render-passes |
 | match | effect_spawn_blood_splatter | 0x0042eb10 | 361 | 361/361 | 0 | 82/82 | 100.00% | 82/82 | 27/0/0 |  | gameplay-blood-splatter-effect |
 | match | effect_spawn_freeze_shard | 0x0042ec80 | 376 | 376/376 | 0 | 81/81 | 100.00% | 81/81 | 33/0/0 |  | gameplay-freeze-shard-effect |
 | match | effect_spawn_freeze_shatter | 0x0042ee00 | 339 | 339/339 | 0 | 79/79 | 100.00% | 79/79 | 27/0/0 |  | gameplay-freeze-shatter-effect |
@@ -569,7 +569,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | quest_build_the_end_of_all | 0x00438e10 | 692 | 692/692 | 0 | 174/174 | 100.00% | 174/174 | 18/0/0 |  | quest-the-end-of-all-append-count |
 | wip | quest_build_spiders_inc | 0x004390d0 | 346 | 308/346 | 38 | 106/105 | 89.10% | 17/105 | 8/0/0 |  | quest-spiders-inc-staged-publication |
 | match | quest_database_init | 0x00439230 | 5466 | 5466/5466 | 0 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |
-| wip | quest_start_selected | 0x0043a790 | 434 | 397/434 | 37 | 116/116 | 91.38% | 80/116 | 47/0/0 |  | quest-start-state-and-spawn-table |
+| wip | quest_start_selected | 0x0043a790 | 434 | 427/434 | 7 | 116/116 | 98.28% | 80/116 | 47/0/0 |  | quest-start-state-and-spawn-table |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 262/262 | 0 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 38/38 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 113/113 | 0 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
@@ -603,7 +603,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | dsound_shutdown | 0x0043bc20 | 26 | 26/26 | 0 | 8/8 | 100.00% | 8/8 | 2/0/0 |  | audio-directsound-lifecycle |
 | match | dsound_restore_buffer | 0x0043bc40 | 81 | 81/81 | 0 | 34/34 | 100.00% | 34/34 | 3/0/0 |  | audio-directsound-buffer-restore |
 | match | resource_read_alloc | 0x0043bca0 | 75 | 75/75 | 0 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
-| wip | sfx_entry_load_ogg | 0x0043bcf0 | 304 | 298/304 | 6 | 99/99 | 97.98% | 78/99 | 10/0/0 |  | audio-ogg-resident-load |
+| match | sfx_entry_load_ogg | 0x0043bcf0 | 304 | 304/304 | 0 | 99/99 | 100.00% | 99/99 | 10/0/0 |  | audio-ogg-resident-load |
 | match | sfx_entry_seek | 0x0043be20 | 56 | 56/56 | 0 | 24/24 | 100.00% | 24/24 | 1/0/0 |  | audio-entry-playback |
 | wip | sfx_entry_start_playback | 0x0043be60 | 215 | 187/215 | 28 | 93/93 | 87.10% | 20/93 | 7/0/0 |  | audio-entry-voice-start |
 | match | sfx_entry_resume | 0x0043bf40 | 27 | 27/27 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | audio-entry-playback |
@@ -648,13 +648,13 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | ui_focus_draw | 0x0043d940 | 104 | 104/104 | 0 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
 | match | ui_segmented_slider_update | 0x0043d9b0 | 714 | 714/714 | 0 | 213/213 | 100.00% | 213/213 | 35/0/0 |  | ui-segmented-slider-widget |
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 622/622 | 0 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
-| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 1115/1767 | 652 | 475/479 | 63.10% | 0/479 | 63/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
+| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 1137/1767 | 630 | 478/479 | 64.37% | 0/479 | 64/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 548/548 | 0 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
 | match | ui_menu_hover_color_destroy | 0x0043e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-hover-color-empty-destructor |
 | match | ui_menu_idle_color_destroy | 0x0043e820 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-idle-color-empty-destructor |
 | match | ui_button_update | 0x0043e830 | 1215 | 1215/1215 | 0 | 347/347 | 100.00% | 347/347 | 61/0/0 |  | ui-button-focus-animation-render-and-activation |
 | match | ui_text_input_update | 0x0043ecf0 | 716 | 716/716 | 0 | 203/203 | 100.00% | 203/203 | 36/0/0 |  | ui-text-input-widget |
-| wip | ui_list_widget_update | 0x0043efc0 | 1420 | 1409/1420 | 11 | 403/403 | 99.26% | 321/403 | 50/0/0 |  | ui-dropdown-focus-navigation-hover-and-row-selection |
+| match | ui_list_widget_update | 0x0043efc0 | 1420 | 1420/1420 | 0 | 403/403 | 100.00% | 403/403 | 50/0/0 |  | ui-dropdown-vector-offset-and-row-selection |
 | wip | statistics_menu_update | 0x0043f550 | 2877 | 2683/2877 | 194 | 675/676 | 93.26% | 280/676 | 276/0/0 |  | statistics-playtime-network-status-and-navigation |
 | match | statistics_back_button_destroy | 0x00440090 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-back-button-destroy |
 | match | statistics_update_button_destroy | 0x004400a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-statistics-update-button-destroy |

@@ -12,6 +12,11 @@ struct list_vec2_t {
         : x(x_value), y(y_value)
     {
     }
+
+    list_vec2_t operator+(const list_vec2_t &other) const
+    {
+        return list_vec2_t(x + other.x, y + other.y);
+    }
 };
 
 struct list_color_t {
@@ -169,8 +174,9 @@ extern "C" int ui_list_widget_update(
     for (int row_index = 0;
          row_index < list->item_count;
          ++row_index) {
-        list_vec2_t row_position(
-            xy->x, xy->y + (float)(row_index * 16 + 16));
+        list_vec2_t row_position =
+            *xy + list_vec2_t(
+                0.0f, (float)(row_index * 16 + 16));
         if ((unsigned char)ui_mouse_inside_rect_with_padding(
                 (float *)&row_position, 14, (int)width)) {
             list->active_index = row_index;

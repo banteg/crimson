@@ -34,7 +34,10 @@ int creature_spawn(
         creature_pool[slot_id].attack_cooldown = 0.0f;
         creature_pool[slot_id].reward_value = (float)(reward_roll % 30 + 140);
     }
-    creature_pool[slot_id].color = *tint;
+    {
+        effect_color_t *creature_tint = &creature_pool[slot_id].color;
+        *creature_tint = *tint;
+    }
     creature_pool[slot_id].contact_damage = 4.0f;
     creature_pool[slot_id].max_health = creature_pool[slot_id].health;
     creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;
