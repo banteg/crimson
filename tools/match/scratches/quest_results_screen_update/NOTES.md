@@ -395,8 +395,26 @@ removes the entire region. Similarity rises from
 `4844.524828767123/4857` (`99.7431506849315%`), a gain of
 `12.475171232876358` weighted bytes. Instructions remain exactly
 `1168/1168`, references improve from `467/0/0` to `468/0/0`, the exact prefix
-remains 490, and the region count falls from two to one. The sole residual is
-the already-bounded phase-`-1` separator stack-home choice at
-`0x0041151a..0x0041155d`; no separator form is replayed. The retained source
-SHA-256 is
+remains 490. At this checkpoint, the sole residual was the phase-`-1`
+separator stack-home choice at `0x0041151a..0x0041155d`; no separator form had
+yet been replayed after the later allocation changes.
+The retained source SHA-256 at that checkpoint is
 `7d9033cdf956972a3a89641c3d40de39fbc527818a798cccb4a4b827b2b7d979`.
+
+
+## Exact separator lifetime recovery (2026-08-09)
+
+Replaying the separator after the later name-coordinate and preview-coordinate
+recoveries exposes a source lifetime that earlier allocation contexts hid.
+Putting the short-lived `line_xy` construction and draw call in their own
+lexical block makes its lifetime explicit and lets VC6 reuse the native stack
+home. The source still constructs the same two-float value and makes the same
+draw call; no storage overlay, volatile access, dummy dependency, or register
+constraint is involved.
+
+The focused eight-variant sweep compared constructor, canonical-vector, array,
+reference, assignment, and scoped forms. Only the nested local scope improves
+the retained source, closing the final `0x0041151a..0x0041155d` region without
+a tradeoff. The scratch is now **100.00%**, with **1,168/1,168** instructions,
+an exact **1,168-instruction prefix**, and **`468/0/0`** references. The former
+`RECOVERY=semantic-complete` / `RESIDUAL=compiler` classification is removed.

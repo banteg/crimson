@@ -347,10 +347,12 @@ extern "C" void quest_results_screen_update(void)
         xy.y += 20.0f;
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, alpha);
-        quest_results_vec2_t line_xy(
-            xy.x - 4.0f, xy.y + 1.0f);
-        grim_interface_ptr->grim_draw_rect_outline(
-            (float *)&line_xy, 168.0f, 1.0f);
+        {
+            quest_results_vec2_t line_xy(
+                xy.x - 4.0f, xy.y + 1.0f);
+            grim_interface_ptr->grim_draw_rect_outline(
+                (float *)&line_xy, 168.0f, 1.0f);
+        }
         xy.y += 8.0f;
         grim_interface_ptr->grim_draw_text_small_fmt(
             xy.x, xy.y, "Final Time:");
