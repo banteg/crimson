@@ -2,8 +2,8 @@
 
 Native target: `crimsonland.exe` at `0x004475d0` (1,621 bytes).
 
-Current reconstruction: **75.50%**, 378 candidate instructions versus 377
-native instructions, with 151 aligned references proven, no unresolved
+Current reconstruction: **76.29%**, 378 candidate instructions versus 377
+native instructions, with 153 aligned references proven, no unresolved
 references, and one alignment mismatch.
 
 Live Binary Ninja and IDA evidence recovers the complete options-screen
@@ -145,3 +145,28 @@ and
 `ac2eaec813733940e9d923ecf83839c6269b1bcbca40a7b0189429284606105f`.
 All retained source is behavior-preserving C++; no volatile state, dummy use,
 forced address, alias masking, inline assembly, or inert control flow is used.
+
+## Direct perk-index publication (2026-08-09)
+
+The highest remaining tail region at `0x00447b6b..0x00447bf4` combines the
+Controls widget call with publication of the violence-sensitive Bloody Mess /
+Quick Learner metadata. Native tests `config_blob.violence_disabled` before
+loading `perk_id_bloody_mess_quick_learner`, then keeps that one indexed perk
+record across both branch-local name/description stores. The previous source
+first snapshotted the global ID into an ordinary local, which made VC6 schedule
+the ID load before the violence byte.
+
+Exact sibling `perks_init_database` uses the direct global-index spelling for
+the same name/description pair. Transferring that ownership to this callback
+makes the normalized perk-publication tail instruction-identical apart from
+downstream label displacement. It adds `12.882119205298068` weighted bytes,
+raising the result from `1223.8013245033112/1621`
+(`75.49668874172185%`) to `1236.6834437086093/1621`
+(`76.29139072847683%`). Candidate instructions remain 378 against 377 native,
+prefix remains 10, and references improve from `151/0/1` to `153/0/1`.
+
+A separate one-shot Controls coordinate object was also tested against the
+native stack ownership. It allocated a fourth vector, shortened the prefix to
+zero, and regressed the whole function to `74.43708609271523%`, so it was
+rejected. The retained source contains only the direct, exact-sibling-backed
+perk publication and leaves the existing widget coordinate lifetime intact.

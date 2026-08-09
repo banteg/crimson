@@ -449,3 +449,22 @@ semantic correction that is instruction-byte neutral: the scratch remains
 improving the reference audit from `589/0/7` to **`590/0/6`** with no dropped
 audit entry. Retained source SHA-256:
 `5b5ecd33d88f00efc6b9a61a474bb962cb06d0091cf60396873fa55212cef5e8`.
+
+## Quest unlock-limit identity (2026-08-09)
+
+Native tests the Hardcore selector before scheduling the shared quest-index
+arithmetic, then compares the chosen normal or Hardcore unlock limit. A
+bounded 13-form ownership probe found that giving the selected limit an
+explicit C++ reference identity preserves the complete normalized instruction
+body while aligning the two branch-specific globals more precisely. Equivalent
+pointer and reference spellings compile identically; the const reference is
+retained as the clearest read-only object identity.
+
+The weighted result remains **78.0770199%**
+(`6266.461615907375/8026`), with 1,969/2,004 instructions and prefix 45.
+The reference audit improves without debt from `590/0/6` to **`593/0/4`**.
+`crimson match validate` passes. The scalar-copy spellings gained
+`1.577659017096` weighted bytes but removed one candidate instruction, so they
+were rejected as an instruction-shape tradeoff.
+Retained source SHA-256:
+`3ffe79baf7387d59d4483eaefea2a5c3ba45d9e46182dcf026831ba4f0952707`.

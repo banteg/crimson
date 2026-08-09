@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-13-root-tint-publication",
+      "find": "                creature->health = 200.0f;\n                creature->move_speed = 2.0f;\n                creature->reward_value = 600.0f;\n                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                *(creature_tint_t *)&creature->color = child_tint;",
+      "replacements": [
+        {
+          "name": "construct-before-health-publish-after-health",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                creature->health = 200.0f;\n                *(creature_tint_t *)&creature->color = child_tint;\n                creature->move_speed = 2.0f;\n                creature->reward_value = 600.0f;"
+        }
+      ]
+    }
+  ]
+}

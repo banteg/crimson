@@ -91,11 +91,11 @@ static __forceinline void demo_purchase_render_message(
         * message_width;
 
     position.x = 60.0f;
-    position.y = (message_y = position_y + 50.0f) - 4.0f;
     color.r = 0.0f;
     color.g = 0.0f;
     color.b = 0.0f;
     color.a = alpha * 0.5f;
+    position.y = (message_y = position_y + 50.0f) - 4.0f;
     grim_interface_ptr->grim_draw_rect_filled(
         (float *)&position,
         message_width + 12.0f,
@@ -103,11 +103,11 @@ static __forceinline void demo_purchase_render_message(
         (float *)&color);
 
     position.x = 64.0f;
-    position.y = position_y + 72.0f;
     color.r = 0.5f;
     color.g = 0.1f;
     color.b = 0.1f;
     color.a = alpha * 0.8f;
+    position.y = position_y + 72.0f;
     grim_interface_ptr->grim_draw_rect_filled(
         (float *)&position,
         progress_width,

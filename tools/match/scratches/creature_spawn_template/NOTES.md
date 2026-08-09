@@ -766,6 +766,27 @@ Together the nine retained lifetime seams improve this scratch by
 retained source SHA-256 is
 `3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
 
+## Template 0x13 root tint publication
+
+After excluding the settled template-`0x0e` and template-`0x0f` regions, the
+highest-weight remaining native mismatch begins at `0x0043125e`. Native starts
+constructing the template-`0x13` root RGBA value before the health/stat group
+and publishes the completed value across the health assignment. This is the
+same source boundary already recovered for the template-`0x12` and
+template-`0x19` roots; the previous template-`0x13` source delayed both
+construction and publication until after health, speed, and reward.
+
+`template-13-root-tint-publication-mutations.json` tests that single sibling
+transfer. Constructing tint before health and copying it immediately after
+health gains 22.308544303798 fuzzy-weighted bytes without changing candidate
+length, prefix, or reference debt. The retained score is
+12,506.16993670886/14,099 (`88.70253164556962%`), with 3,161/3,159
+candidate/native instructions, a 23-instruction prefix, and `357/0/1`
+references. The source SHA-256 is
+`05d94a6e353268147510ce4a3702eb128d69a1cc67ff25a70c8adaa2f557111b`;
+the mutation-spec SHA-256 is
+`0d5862515f011330b7752c02d42e26e8766b3941c1ebb4e5694c9b0be954f9da`.
+
 ## 24-member spawner-ring tint lifetime
 
 The dominant residual at `0x00432121..0x00432199` comes from template `0x0e`.

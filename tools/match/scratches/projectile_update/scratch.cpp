@@ -363,26 +363,37 @@ extern "C" void projectile_update(void)
                                         int lower = -30;
                                         do {
                                             int range = upper - lower;
-                                            vec2f_t impact;
-                                            impact.x =
+                                            vec2f_t impact_offset_1 = {
                                                 (float)(crt_rand() % range
-                                                    + lower)
-                                                + creature_pool[hit_id].position.x;
-                                            impact.y =
+                                                    + lower),
                                                 (float)(crt_rand() % range
-                                                    + lower)
-                                                + creature_pool[hit_id].position.y;
-                                            fx_queue_add_random(&impact);
+                                                    + lower),
+                                            };
+                                            vec2f_t impact_1 = {
+                                                impact_offset_1.x
+                                                    + creature_pool[hit_id]
+                                                        .position.x,
+                                                impact_offset_1.y
+                                                    + creature_pool[hit_id]
+                                                        .position.y,
+                                            };
+                                            fx_queue_add_random(&impact_1);
 
-                                            impact.x =
+                                            vec2f_t impact_offset_2 = {
                                                 (float)(crt_rand() % range
-                                                    + lower)
-                                                + creature_pool[hit_id].position.x;
-                                            impact.y =
+                                                    + lower),
                                                 (float)(crt_rand() % range
-                                                    + lower)
-                                                + creature_pool[hit_id].position.y;
-                                            fx_queue_add_random(&impact);
+                                                    + lower),
+                                            };
+                                            vec2f_t impact_2 = {
+                                                impact_offset_2.x
+                                                    + creature_pool[hit_id]
+                                                        .position.x,
+                                                impact_offset_2.y
+                                                    + creature_pool[hit_id]
+                                                        .position.y,
+                                            };
+                                            fx_queue_add_random(&impact_2);
 
                                             lower -= 10;
                                             upper += 10;

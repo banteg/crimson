@@ -1023,3 +1023,23 @@ and the final hit-creature displacement were measured individually and in the
 relevant interactions; all were neutral or regressive and are not retained.
 The retained source SHA-256 is
 `f283368028c152aa81044e3a1fd17fc2a5fcc22a375bc248eac1c9e50e47fa59`.
+
+## Bloody Mess offset and destination vectors
+
+After excluding the completed primary-microstep and particle movement/
+collision-owner families, the highest uncovered region was native
+`0x004210a6..0x00421201`. Its Bloody Mess loop does not add each random
+component directly to the hit creature position. At
+`0x004210ce..0x00421183`, native first converts both random offsets, then
+constructs a distinct destination vector by adding the creature position;
+it repeats the same two-vector boundary for the second queue call.
+
+The matching source now transfers the already-confirmed secondary direct-hit
+house style to these two calls: each has a separately named offset and
+destination vector. This is a source-lifetime recovery, not an address or
+register-forcing device. It raises the whole-function weighted result from
+`5198.7101/8409` to `5269.3071/8409` (`61.8231666%` to `62.6627084%`),
+adds two candidate instructions (`2174` to `2176` of `2203`), and improves
+references from `416/0/18` to `417/0/18`. The selected region rises from
+145.5161 to 151.3511 weighted bytes. The retained source SHA-256 is
+`3c354f7b530d8308e7cab67ae303a1b4f219b0df3ee869c38d0d5b364adbb923`.

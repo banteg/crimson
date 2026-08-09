@@ -471,13 +471,12 @@ extern "C" void highscore_screen_update(void)
         online_sync_status == 6 || online_sync_status == 0;
     if (ui_button_update((float *)&position, (ui_button_t *)&play_button)) {
         if (config_blob.game_mode == GAME_MODE_QUEST) {
+            const int &quest_unlock_limit = config_blob.hardcore
+                ? quest_unlock_index_full
+                : quest_unlock_index;
             int quest_index =
                 quest_stage_minor + quest_stage_major * 10 - 11;
-            if (config_blob.hardcore) {
-                if (quest_unlock_index_full < quest_index) {
-                    goto play_game_done;
-                }
-            } else if (quest_unlock_index < quest_index) {
+            if (quest_unlock_limit < quest_index) {
                 goto play_game_done;
             }
             render_pass_mode = 0;

@@ -22,7 +22,7 @@ The narrow main-menu transform is one fused vertex loop: it scales and shifts
 the sign while applying the 14-pixel vertical correction to the first menu
 entry. This is distinct from the later per-element responsive transforms.
 Focused native disassembly also confirms that the level-up prompt operates on
-a standalone `0xe8` subtemplate block, loads
+the prompt owner's second `0xe8` subtemplate layer at `+0x124`, loads
 `ui\ui_textLevelUp.jaz`, and applies separate four-vertex prompt/text
 transforms.
 
@@ -331,3 +331,24 @@ the compiler's x87 materialization schedule: native stores and reloads between
 the compound vector stages, while the candidate legally fuses the adjacent
 arithmetic. Source SHA-256 is
 `146bec6b4fe14e75412e5625f91ea4fdd7bbb43bfc1d0e714dbb566002743fad`.
+
+## Remaining interior-member identities
+
+A focused Binary Ninja containment pass found three more stale standalone
+aliases inside already recovered UI owners. `ui_perk_prompt_on_activate` at
+`0x0048f240` is `ui_perk_prompt_element.on_activate` (`+0x34`), while
+`perk_prompt_origin_x/y` at `0x0048f224/0x0048f228` are the same element's
+`pos` vector (`+0x18/+0x1c`). The source now publishes the callback and both
+origin branches through those actual members. The final
+`ui_menu_layout_init_latch` at `0x0048f164` is likewise
+`ui_element_slot_40.direction_flag` (`+0x314`), so that byte-neutral alias is
+removed too.
+
+The prompt member identities raise the result from **89.11661%** to
+**89.25795%**, adding **10.23 fuzzy-weighted bytes** (6,449.37 to 6,459.60)
+and reducing the gap from 787.63 to **777.40 bytes**. Instructions and prefix
+remain 1,408/1,422 and 10; the reference audit improves from **`485/0/4`** to
+**`488/0/3`**. An adjacent-template array spelling and the exact-neighbor
+slot-31 vector-add spelling were both rejected after losing weighted bytes;
+neither changed the retained source. Source SHA-256 is
+`bf1cf806240dfd538343e3bf2df182e760a3aed85b14425013e44287c0b42384`.

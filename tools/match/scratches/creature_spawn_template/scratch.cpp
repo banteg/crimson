@@ -391,11 +391,11 @@ extern "C" creature_t *creature_spawn_template(
                 creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
                 chain_position.set(-10.0f, (float)alien_chain_cursor);
                 *(creature_spawn_vec2_t *)&creature->position = chain_position;
+                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);
                 creature->health = 200.0f;
+                *(creature_tint_t *)&creature->color = child_tint;
                 creature->move_speed = 2.0f;
                 creature->reward_value = 600.0f;
-                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);
-                *(creature_tint_t *)&creature->color = child_tint;
                 creature->size = 40.0f;
                 creature->contact_damage = 20.0f;
                 zero_velocity.set(0.0f, 0.0f);

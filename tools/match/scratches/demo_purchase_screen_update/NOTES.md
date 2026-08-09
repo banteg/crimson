@@ -1,9 +1,9 @@
 # `demo_purchase_screen_update`
 
 High-confidence recovery of the 2,642-byte demo purchase and rotating upsell
-callback at `0x0040b740`. The current VC6 scratch matches **93.30%**
+callback at `0x0040b740`. The current VC6 scratch matches **94.60%**
 (`698` candidate instructions versus `691` native), reaches a 136-instruction
-exact prefix, and resolves all `187` references without unresolved or
+exact prefix, and resolves all `190` references without unresolved or
 mismatched references.
 
 ## Recovered source shape
@@ -79,3 +79,22 @@ These results are recorded by `message-cold-tail-mutations.json`,
 the natural guard spellings, and the already-identified renderer lifetimes as
 independent levers. Further work needs a different recovered type/lifetime or
 original-TU constraint rather than retaining a score-regressing layout rewrite.
+
+## Message color-alpha publication order
+
+Live Binary Ninja disassembly at `0x0040c022..0x0040c0c2` shows both message
+rectangle passes publishing their color alpha before materializing the
+corresponding Y coordinate. The first pass stores `alpha * 0.5f` before
+forming `message_y - 4.0f`; after the draw call, the second pass computes
+`alpha * 0.8f` before forming `position_y + 72.0f`.
+
+The source previously stated each independent Y assignment before its alpha
+assignment. Reordering those ordinary aggregate-field publications to match
+the native ownership schedule removes the large x87/stack-lifetime
+regions at `0x0040c022..0x0040c0cc`. The only remaining renderer region is a
+small 4.83-byte scheduling residual.
+
+The retained source improves from **93.3045%** to **94.6004%**, adding
+**34.2376 fuzzy-weighted bytes** and reducing the gap from **176.8942** to
+**142.6566 bytes**. Instruction counts and the 136-instruction prefix are
+unchanged, while the reference audit improves from `187/0/0` to `190/0/0`.

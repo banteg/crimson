@@ -51,7 +51,6 @@ extern float ui_layout_scale_x;
 extern float ui_layout_scale_y;
 extern unsigned char screen_fade_ramp_flag;
 extern unsigned char main_menu_full_version_layout_latch;
-extern unsigned char ui_menu_layout_init_latch;
 extern ui_element_t *ui_element_hover_focus_ptr;
 
 extern ui_layout_element_t ui_sign_crimson;
@@ -139,9 +138,6 @@ extern ui_layout_element_t *ui_element_table_slot_39;
 extern ui_layout_element_t *ui_element_table_start;
 
 extern ui_layout_element_t ui_perk_prompt_element;
-extern ui_element_callback_t ui_perk_prompt_on_activate;
-extern float perk_prompt_origin_x;
-extern float perk_prompt_origin_y;
 
 extern ui_menu_item_subtemplate_block_t ui_sign_crimson_template;
 extern ui_menu_item_subtemplate_block_t ui_menu_item_element;
@@ -796,7 +792,7 @@ extern "C" void ui_menu_layout_init(void)
     }
 
     ui_element_init_defaults(&ui_perk_prompt_element);
-    ui_perk_prompt_on_activate = ui_callback_noop;
+    ui_perk_prompt_element.on_activate = ui_callback_noop;
     copy_layer(ui_perk_prompt_element, ui_menu_item_element);
     ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;
     ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;
@@ -828,10 +824,9 @@ extern "C" void ui_menu_layout_init(void)
     }
 
     if (config_screen_width == 640) {
-        *(ui_layout_vec2_t *)&perk_prompt_origin_x =
-            ui_layout_vec2_t(690.0f, 80.0f);
+        ui_perk_prompt_element.pos = ui_layout_vec2_t(690.0f, 80.0f);
     } else {
-        *(ui_layout_vec2_t *)&perk_prompt_origin_x = ui_layout_vec2_t(
+        ui_perk_prompt_element.pos = ui_layout_vec2_t(
             (float)(config_screen_width + 50),
             40.0f);
     }
@@ -853,7 +848,7 @@ extern "C" void ui_menu_layout_init(void)
         ui_element_slot_40.pos.y -= 14.0f;
     }
     ui_element_slot_40.use_offset_render = 1;
-    ui_menu_layout_init_latch = 1;
+    ui_element_slot_40.direction_flag = 1;
 
     table = ui_element_table;
     do {
