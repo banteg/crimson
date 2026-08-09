@@ -64,16 +64,15 @@ extern "C" void quest_build_nagolipoli(
     entry_count += 12;
     while (ring_index < 12) {
         float angle = (float)ring_index * 0.52359879f;
-        spawn->pos.set(
+        spawn[ring_index].pos.set(
             (float)cos(angle) * 178.0f,
             (float)sin(angle) * 178.0f);
-        spawn->pos.add(512.0f);
-        spawn->heading = angle;
-        spawn->set_spawn(
+        spawn[ring_index].pos.add(512.0f);
+        spawn[ring_index].heading = angle;
+        spawn[ring_index].set_spawn(
             SPAWN_ID_SPIDER_SMALL_BLUE_40,
             8000,
             1);
-        ++spawn;
         ++ring_index;
     }
 
@@ -143,14 +142,12 @@ extern "C" void quest_build_nagolipoli(
     entry_count += 6;
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
-        spawn->pos = bottom_left;
-        spawn->set_spawn(
-            SPAWN_ID_DEN_SPIDER_BASIC_0A,
-            trigger_time_ms,
-            1);
-        spawn->heading = 0.0f;
+        spawn[line_index].pos = bottom_left;
+        spawn[line_index].template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
+        spawn[line_index].heading = 0.0f;
+        spawn[line_index].trigger_time_ms = trigger_time_ms;
+        spawn[line_index].count = 1;
         ++line_index;
-        ++spawn;
         trigger_time_ms += 100;
     }
 
@@ -161,14 +158,12 @@ extern "C" void quest_build_nagolipoli(
     entry_count += 6;
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
-        spawn->pos = bottom_left;
-        spawn->set_spawn(
-            SPAWN_ID_DEN_SPIDER_BASIC_0A,
-            trigger_time_ms,
-            1);
-        spawn->heading = 0.0f;
+        spawn[line_index].pos = bottom_left;
+        spawn[line_index].template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
+        spawn[line_index].heading = 0.0f;
+        spawn[line_index].trigger_time_ms = trigger_time_ms;
+        spawn[line_index].count = 1;
         ++line_index;
-        ++spawn;
         trigger_time_ms += 100;
     }
 
