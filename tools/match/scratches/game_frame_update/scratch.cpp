@@ -395,8 +395,8 @@ extern "C" unsigned char game_frame_update(void)
     grim_interface_ptr->grim_set_config_var(0x18, 0.4f);
     if (!game_is_full_version()) {
         grim_interface_ptr->grim_set_color(1.0f, 0.3f, 0.3f, 0.6f);
-        grim_interface_ptr->grim_set_config_var(0x18, 0.45f);
     }
+    grim_interface_ptr->grim_set_config_var(0x18, 0.45f);
 
     if (cv_showFPS->value != 0.0f) {
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.6f);
@@ -413,8 +413,8 @@ extern "C" unsigned char game_frame_update(void)
                 "%d",
                 (int)grim_interface_ptr->grim_get_fps());
         }
-        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.6f);
     }
+    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.6f);
 
     console_log_queue.render();
     crt_rand();

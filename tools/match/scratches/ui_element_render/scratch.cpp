@@ -13,6 +13,12 @@ struct ui_render_vec2_t {
         x = x_value;
         y = y_value;
     }
+
+    void set(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
 };
 
 struct ui_render_matrix_t {
@@ -117,16 +123,18 @@ extern "C" void ui_element_render(ui_element_t *element)
                     &element->rot_m00,
                     &shadow_color);
                 if (element->vertex_count == 8) {
-                    shadow_pos.x = element->pos_x + 7.0f;
-                    shadow_pos.y = element->pos_y + 7.0f;
+                    shadow_pos.set(
+                        element->pos_x + 7.0f,
+                        element->pos_y + 7.0f);
                     grim_interface_ptr->grim_submit_vertices_transform_color(
                         ui_element_quad(element, 2),
                         4,
                         &shadow_pos.x,
                         &element->rot_m00,
                         &shadow_color);
-                    shadow_pos.x = element->pos_x + 7.0f;
-                    shadow_pos.y = element->pos_y + 7.0f;
+                    shadow_pos.set(
+                        element->pos_x + 7.0f,
+                        element->pos_y + 7.0f);
                     grim_interface_ptr->grim_submit_vertices_transform_color(
                         ui_element_quad(element, 4),
                         4,
@@ -173,8 +181,9 @@ extern "C" void ui_element_render(ui_element_t *element)
                     &shadow_pos.x,
                     &shadow_color);
                 if (element->vertex_count == 8) {
-                    shadow_pos.x = element->pos_x + 7.0f;
-                    shadow_pos.y = element->pos_y + 7.0f;
+                    shadow_pos.set(
+                        element->pos_x + 7.0f,
+                        element->pos_y + 7.0f);
                     shadow_pos.x += element->render_offset_x;
                     shadow_pos.y += element->render_offset_y;
                     grim_interface_ptr->grim_submit_vertices_offset_color(
@@ -182,8 +191,9 @@ extern "C" void ui_element_render(ui_element_t *element)
                         4,
                         &shadow_pos.x,
                         &shadow_color);
-                    shadow_pos.x = element->pos_x + 7.0f;
-                    shadow_pos.y = element->pos_y + 7.0f;
+                    shadow_pos.set(
+                        element->pos_x + 7.0f,
+                        element->pos_y + 7.0f);
                     shadow_pos.x += element->render_offset_x;
                     shadow_pos.y += element->render_offset_y;
                     grim_interface_ptr->grim_submit_vertices_offset_color(
@@ -203,16 +213,14 @@ extern "C" void ui_element_render(ui_element_t *element)
             grim_interface_ptr->grim_submit_vertices_offset(
                 ui_element_quad(element, 0), 4, &render_pos.x);
             if (element->vertex_count == 8) {
-                render_pos.x =
-                    element->render_offset_x + element->pos_x;
-                render_pos.y =
-                    element->render_offset_y + element->pos_y;
+                render_pos.set(
+                    element->render_offset_x + element->pos_x,
+                    element->render_offset_y + element->pos_y);
                 grim_interface_ptr->grim_submit_vertices_offset(
                     ui_element_quad(element, 2), 4, &render_pos.x);
-                render_pos.x =
-                    element->render_offset_x + element->pos_x;
-                render_pos.y =
-                    element->render_offset_y + element->pos_y;
+                render_pos.set(
+                    element->render_offset_x + element->pos_x,
+                    element->render_offset_y + element->pos_y);
                 grim_interface_ptr->grim_submit_vertices_offset(
                     ui_element_quad(element, 4), 4, &render_pos.x);
             }

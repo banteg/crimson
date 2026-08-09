@@ -2,8 +2,8 @@
 
 Native target: `crimsonland.exe` at `0x00446c40` (1,801 bytes).
 
-Current reconstruction: **92.71%**, exactly 521 candidate and native
-instructions, a 165-instruction exact prefix, and all 65 emitted references
+Current reconstruction: **95.78%**, exactly 521 candidate and native
+instructions, a 258-instruction exact prefix, and all 65 emitted references
 resolved.
 
 Live Binary Ninja and IDA evidence recovers the game-owned UI element render
@@ -76,6 +76,15 @@ counter position is byte-neutral; assigning a temporary into the existing
 shadow variable or introducing separate block-local shadows regresses, so
 those variants are not retained.
 
+The exact `ui_draw_progress_bar`, `ui_render_loading`, and UI widget methods
+also establish the complementary reuse style: construct the first vector,
+then publish later coordinate pairs through an inline two-float `set` method.
+Using that method for the six repeated transform-shadow, offset-shadow, and
+offset-render positions raises the result from **92.71%** to **95.78%** and
+extends the exact prefix from 165 to 258 instructions. Instruction count and
+references remain 521/521 and `65/0/0`; the complete transformed-shadow path
+now matches native.
+
 The remaining residual is code-generation shape: VC6 schedules otherwise
 equivalent vertex-call arguments and cursor registers differently.
 Introducing artificial volatility or extra aggregates changes the native
@@ -84,7 +93,7 @@ frame and lowers the match, so the plausible expression form is retained.
 ## Recovery classification audit
 
 A fresh focused `--regions` run after the SDK-style recovery reports
-**92.71%**, 521/521 instructions, prefix 165, and `65/0/0` references. Every
+**95.78%**, 521/521 instructions, prefix 258, and `65/0/0` references. Every
 remaining localized region preserves the same call, vertex window,
 offset/matrix input, constants, and control-flow edge; the differences are
 argument-push, x87-store, and temporary-slot scheduling. The existing live
@@ -98,12 +107,12 @@ The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 
 ## Recorded submit-scheduling sweeps
 
-Fresh live Binary Ninja disassembly anchors the first residual at
-`0x00446e19..0x00446ec7`. Native and candidate compute the same three
-`position + 7.0f` vectors, reuse the same two stack slots, pass the same
-vertex windows/matrix/color, and issue the same virtual calls. The mismatch is
-only the interleaving of `fstp` stores with right-to-left argument pushes.
-The later regions at `0x00446faf..0x00447079` and
+The earlier sweep anchored the first residual at
+`0x00446e19..0x00446ec7`; the recovered `set` reuse style now makes that
+transformed-shadow span exact. Fresh live Binary Ninja disassembly places the
+first residual at `0x00446faf`, where native and candidate compute the same
+offset-shadow position but choose different temporary stack slots. The later
+regions at `0x00446faf..0x00447079` and
 `0x004470b9..0x004471d7` repeat that exact scheduler pattern for offset
 submits.
 
@@ -124,6 +133,6 @@ winner:
   base-plus-stride, and force-inline helper combinations. Every variant is
   byte-identical to baseline.
 
-The retained SDK-style construction recovery supersedes that earlier
-baseline. The final verified result is **92.71%**, 521/521 instructions,
-prefix 165, and references `65/0/0`.
+The retained SDK-style construction and setter recovery supersedes that
+earlier baseline. The final verified result is **95.78%**, 521/521
+instructions, prefix 258, and references `65/0/0`.

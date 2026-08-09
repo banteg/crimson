@@ -182,3 +182,27 @@ winner improves the audit from `280/0/26` to **`285/0/21`** with unchanged
 89.65% instruction score, 778/777 instruction counts, and 120-instruction
 prefix. The remaining 21 mismatches are the documented block-scheduling
 alignment pairs rather than literal-value debt.
+
+## Named layout-predicate ownership (2026-08-09)
+
+A fresh masked-reference audit confirms that the former 21-reference debt was
+entirely aligned mismatch debt, not unresolved naming. Thirteen entries paired
+the same proven `quest_play_counts[11]`, `mode_play_survival`,
+`mode_play_rush`, and `mode_play_typo` loads across opposite layout arms; the
+other eight paired the known 26.0f, 28.0f, and 32.0f constant-pool loads.
+Binary Ninja confirms the data identities and native layout-arm load schedule;
+the matcher records the exact constant bytes.
+
+Giving the compound roomy-layout decision an ordinary named `bool` preserves
+the exact predicate and branch semantics while recovering the native physical
+arm order. This raises the match from 89.6463% to **95.4341%**, adds
+187.408360 fuzzy-weighted bytes, shrinks the gap from 335.252733 to
+147.844373 bytes, and improves the audit from `285/0/21` to **`306/0/12`**.
+The 778/777 instruction counts and 120-instruction prefix are unchanged.
+
+The remaining 12 mismatches are four repetitions of one source-expression
+ordering choice: native loads quest, Survival, and Rush counts in that order,
+while VC6 loads Survival, Rush, and quest for the current summed expression.
+They remain explained source/compiler scheduling debt; no alias or data-map
+change is warranted. Retained source SHA-256:
+`89caefd22e46e1e8666b7d8bf904ba4a8148d31cc889e7c7b5211e26c7c4b418`.

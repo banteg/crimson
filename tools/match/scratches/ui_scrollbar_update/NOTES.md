@@ -2,7 +2,7 @@
 
 - Native function: `0x0043def0` (`1767` bytes, `479` instructions)
 - Compiler profile: MSVC 6.5
-- Current result: `61.22%`, `475` candidate instructions, `61/0/0`
+- Current result: `62.05%`, `475` candidate instructions, `63/0/0`
   relocation references.
 
 ## Recovered behavior
@@ -106,6 +106,10 @@ The retained changes are semantic or directly native-evidenced:
 - assigning the proportional thumb's `y` component before `x` gives VC6 the
   native interleaved x87 construction schedule at
   `0x0043e1b0..0x0043e1db`;
+- declaring the interior height before the second panel draw but assigning it
+  after that draw's position and color construction matches the native
+  `0x0043dfae..0x0043e015` evaluation order. This is a source-lifetime fix,
+  not a register-placement probe;
 - drag scaling and clamping reload `item_count` and `visible_rows` from the
   recovered state object, matching `0x0043e331..0x0043e337`, while the row
   bounds reload the same fields at `0x0043e45a` and `0x0043e5af`;
@@ -125,10 +129,10 @@ The retained changes are semantic or directly native-evidenced:
 The combined result moves from `55.00526870389885%`
 (`971.943097997893` weighted bytes, `795.056902002107` gap, `470/479`
 instructions, `59/0/0` references, `0x54` frame) to
-`61.21593291404612%` (`1081.685534591195` weighted bytes,
-`685.314465408805` gap, `475/479` instructions, `61/0/0` references,
-`0x50` frame). That is a `6.21066421014727` percentage-point and
-`109.742436593302` weighted-byte improvement.
+`62.05450733752621%` (`1096.5031446540881` weighted bytes,
+`670.4968553459119` gap, `475/479` instructions, `63/0/0` references,
+`0x50` frame). That is a `7.049238633627364` percentage-point and
+`124.56004665619552` weighted-byte improvement.
 
 Negative sweeps rule out max-scroll type changes, cast spelling, temporary
 constructor families, count declaration order, drag-block scheduling,
@@ -143,5 +147,5 @@ The scratch remains `semantic-complete` with a `compiler` residual. MSVC now
 allocates a `0x50`-byte frame versus the native `0x40` frame. The remaining
 17 localized regions are dominated by temporary-object stack-slot coalescing,
 the proportional-thumb x87 schedule, and late row-loop allocation. The final
-candidate has `475/479` instructions and resolves all `61` audited references
+candidate has `475/479` instructions and resolves all `63` audited references
 with no mismatches or unresolved relocations.

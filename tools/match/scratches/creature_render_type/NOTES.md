@@ -25,9 +25,9 @@ frame 15, and adds 32 for ranged-attack shock creatures. Transition alpha,
 batch boundaries, render-state changes, camera offset, tint clamps, and all
 four quad submissions are accounted for.
 
-The current honest VC6.5 result is 78.45% with the exact native 0x3c-byte stack
-frame, 757 candidate instructions versus 765 target instructions, a
-25-instruction exact prefix, and references `136/0/5`. The adjacent camera
+The current honest VC6.5 result is 79.74% with the exact native 0x3c-byte stack
+frame, 760 candidate instructions versus 765 target instructions, a
+25-instruction exact prefix, and references `139/0/5`. The adjacent camera
 coordinates are the two fields of the native aggregate `camera_offset`;
 recording that proven object-level alias resolves the eight formerly
 unresolved aligned references without masking any address disagreement.
@@ -57,8 +57,8 @@ Native anchors its four walks at lifecycle stage, max health, animation phase,
 and lifecycle stage respectively. VC6 rebases the middle walks to type id and
 the flash walk to hit-flash timer. Native also keeps each tint pointer in `ebp`
 through the corresponding draw, whereas the candidate folds those addresses
-into the induction pointer; this removes the native pointer reloads and
-explains the eight-instruction length difference.
+into the induction pointer; this removes native pointer reloads and accounts
+for most of the remaining five-instruction length difference.
 
 Natural indexed, pointer, `for`, `while`, and `do` loop shapes were checked,
 including the proven lifecycle/max-health/animation symbols and direct flag
@@ -67,6 +67,18 @@ materially regresses the stack frame and floating-point comparisons. No
 volatile fields, dummy expressions, fake references, hard-coded addresses, or
 artificial register constraints are used, so this remains an evidence-backed
 semantic WIP rather than a fakematch.
+
+## Violence atlas publication ownership
+
+Physical disassembly at `0x004194b3..0x0041957d` shows two native owners for
+the hit-flash atlas publication. The ping-pong path materializes the Grim
+interface and vtable before adding the type's base frame, then jumps into the
+call tail; the lifecycle/animation path computes its frame first and reaches
+the same tail through its own interface setup. Expressing the call once in
+each source branch lets VC6 perform that same partial tail merge. It improves
+the honest match from 78.45% to 79.74%, closes the instruction-count gap from
+eight to five, and raises aligned references from `136/0/5` to `139/0/5`
+without changing behavior or introducing source constraints.
 
 ## Binary Ninja type and control-flow recovery
 

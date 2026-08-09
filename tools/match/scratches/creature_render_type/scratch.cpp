@@ -339,26 +339,29 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                     frame = 15 - frame;
                 }
                 frame += creature_type_table[type_id].base_frame + 16;
-            } else if (creature->lifecycle_stage < 16.0f) {
-                if (creature->lifecycle_stage < 0.0f) {
-                    frame = creature_type_table[type_id].base_frame + 15;
-                } else {
-                    frame = (int)((float)(
-                        creature_type_table[type_id].base_frame + 15)
-                        - creature->lifecycle_stage);
-                }
+                grim_interface_ptr->grim_set_atlas_frame(8, frame);
             } else {
-                frame = (int)(creature->anim_phase + 0.5f);
-                if ((creature_type_table[type_id].anim_flags & 1) != 0
-                    && frame > 15) {
-                    frame = 31 - frame;
+                if (creature->lifecycle_stage < 16.0f) {
+                    if (creature->lifecycle_stage < 0.0f) {
+                        frame = creature_type_table[type_id].base_frame + 15;
+                    } else {
+                        frame = (int)((float)(
+                            creature_type_table[type_id].base_frame + 15)
+                            - creature->lifecycle_stage);
+                    }
+                } else {
+                    frame = (int)(creature->anim_phase + 0.5f);
+                    if ((creature_type_table[type_id].anim_flags & 1) != 0
+                        && frame > 15) {
+                        frame = 31 - frame;
+                    }
+                    if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
+                        frame += 32;
+                    }
                 }
-                if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
-                    frame += 32;
-                }
+                grim_interface_ptr->grim_set_atlas_frame(8, frame);
             }
 
-            grim_interface_ptr->grim_set_atlas_frame(8, frame);
             color.a *= transition_alpha;
             grim_interface_ptr->grim_set_color_ptr((float *)&color);
             grim_interface_ptr->grim_set_rotation(

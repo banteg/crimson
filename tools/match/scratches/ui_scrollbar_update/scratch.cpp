@@ -63,10 +63,11 @@ extern "C" void ui_scrollbar_update(
             (float *)xy, 250.0f, height, (float *)&color);
     }
 
-    float interior_height = height - 2.0f;
+    float interior_height;
     {
         scrollbar_vec2_t position(xy->x + 1.0f, xy->y + 1.0f);
         scrollbar_color_t color(0.0f, 0.0f, 0.0f, 1.0f);
+        interior_height = height - 2.0f;
         grim_interface_ptr->grim_draw_rect_filled(
             (float *)&position,
             248.0f,

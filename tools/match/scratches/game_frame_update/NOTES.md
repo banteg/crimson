@@ -71,31 +71,41 @@ expression split reproduces native's `fild`/`fild`/`fdivp` sequence instead of
 VC6 folding the denominator into `fidiv`. It restores the missing instruction
 and raises the score from `96.08%` to `99.45%`.
 
-Current honest MSVC result: `99.45%`, exact prefix `363/905`, candidate
-`905/905` instructions, and masked references `317/0/0`. Remaining differences
-are local load/store scheduling in the two-player aim copy and three equivalent
-interface-call schedules. Aggregate vector assignment, direct indexed aim
-stores, and the natural `set(x, y)` helper were tested, but regressed the score
-or reference audit; the scalar pointer source is retained. No known native
-behavior is omitted. The candidate uses no volatile, dead-code, register,
-assembly, or layout constraints.
+Two late rendering calls also belong to their surrounding sequence rather than
+the preceding conditionals. Native `jne` at `0x0040c982` joins the unconditional
+`grim_set_config_var(0x18, 0.45f)` call at `0x0040c9a6`; only the red shareware
+color is conditional. Likewise, the `cv_showFPS == 0` branch at `0x0040c9d2`
+joins the final white `grim_set_color` at `0x0040ca96`, so that color reset is
+unconditional. Correcting those two brace placements resolves four of the five
+remaining instruction differences.
+
+Current honest MSVC result: `99.89%`, exact prefix `363/905`, candidate
+`905/905` instructions, and masked references `318/0/0`. The sole remaining
+difference is local load/store scheduling in the two-player aim copy: native
+stores X before loading Y, while VC6 hoists both loads ahead of both stores.
+Aggregate vector assignment, direct indexed aim stores, typed slot views,
+pointer-loop control, component locals, and the natural `set(x, y)` helper were
+tested, but were byte-neutral or regressed the score or reference audit; the
+scalar pointer source is retained. No known native behavior is omitted. The
+candidate uses no volatile, dead-code, register, assembly, or layout
+constraints.
 
 The one-time full-version menu adjustment now addresses the owning UI element
 through `ui_element_t::pos.x/y` rather than its compatibility scalar aliases.
-This is byte-neutral at the same 99.45%, 905/905 instructions, 363-instruction
-prefix, and `317/0/0` references.
+This remains byte-neutral.
 
 ## Recovery classification audit
 
-The four focused regions preserve the exact 905-instruction count and all 317
-references. Live Binary Ninja confirms the first region is the two-player
-mouse-aim copy and the others are already recovered interface calls; only
-equivalent register and load/store schedules differ. The complete timing,
-input, state-dispatch, pause, trial, and return policies are accounted for.
+The one focused region preserves the exact 905-instruction count and all 318
+references. Live Binary Ninja confirms it is the two-player mouse-aim copy and
+only the equivalent load/store schedule differs. The complete timing, input,
+state-dispatch, pause, trial, rendering-state, and return policies are accounted
+for.
 
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
-metadata-only change is byte-neutral: before and after are 99.45%, prefix
-363/905, 905/905 instructions, and references 317/0/0.
+retained control-flow corrections improve the score from 99.45% to 99.89% and
+references from 317/0/0 to 318/0/0, with prefix 363/905 and 905/905
+instructions unchanged.
 
 ## Recorded aim-copy sweep
 
@@ -117,9 +127,10 @@ the native schedule. The plan SHA-256 is
 
 `final-color-inline-helper-mutations.json` evaluates nine inline,
 force-inline, interface-lifetime, component-lifetime, and restored-helper
-forms around the final `set_color` call. Every complete form is byte-neutral,
-which bounds the remaining call-order residual to VC6 scheduling rather than a
-missing source-level helper. Its SHA-256 is
+forms around the final `set_color` call. Every complete form was byte-neutral
+while preserving the old conditional scope. The later branch-target evidence
+identified the actual source distinction as the call's unconditional scope,
+not a helper boundary. Its SHA-256 is
 `19e5f0079dc9ee5720343e25ab7e88390d943fc33ea6e8e33079467e1b2ee9df`.
 
 `aim-copy-scalar-helper-mutations.json` additionally evaluates five bounded

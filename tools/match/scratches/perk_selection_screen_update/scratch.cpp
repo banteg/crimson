@@ -155,10 +155,12 @@ extern "C" void perk_selection_screen_update(void)
     }
 
     if (player_state_table[0].perk_counts[perk_id_perk_expert] > 0) {
-        choice_position.y += 40.0f;
+        float choice_y = choice_position.y + 40.0f;
         line_height = 18.0f;
+        choice_position.y = choice_y;
     } else {
-        choice_position.y += 50.0f;
+        float choice_y = choice_position.y + 50.0f;
+        choice_position.y = choice_y;
     }
 
     static perk_selection_color_t idle_color(

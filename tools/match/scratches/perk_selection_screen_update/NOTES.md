@@ -13,6 +13,8 @@ tail.
 - draws the Pick a Perk banner and the Perk Expert/Perk Master sponsor text;
 - selects five, six, or seven choices and preserves the native 19/18-pixel
   vertical spacing policy;
+- keeps the Expert-dependent Y adjustment in branch-local scalar scopes, which
+  preserves the native per-arm load and shared result store;
 - lazily constructs the idle/hover colors and ten menu-item states;
 - updates the hovered choice, draws its description, and constructs the unused
   Select button alongside the active Cancel button;
@@ -33,7 +35,7 @@ callbacks to those evidenced native identities.
 ## Remaining mismatch
 
 The current source produces the same 314 normalized instructions and all 117
-references align. It remains an honest 86.94% WIP because the native reserves
+references align. It remains an honest 87.58% WIP because the native reserves
 a 40-byte frame and coalesces the later Cancel-button position with a dead
 two-float/spacing slot, while this natural VC6 reconstruction reserves 36
 bytes and assigns that position a fresh slot. Direct scalar construction,
@@ -49,7 +51,18 @@ behavior.
 
 The panel anchor now consumes the recovered `ui_element_t::pos` and
 `ui_element_vertex_t::position` aggregates. This type-only cleanup preserves
-the same 314 instructions, 86.94% score, and 117 resolved references.
+the same 314 instructions and 117 resolved references.
+
+## Expert-spacing branch scope
+
+The native Expert-spacing branch compares the perk count before loading the
+choice Y coordinate, performs the `+40` or `+50` operation inside the selected
+arm, and publishes the result through one store at the join. Direct compound
+assignments let VC6 hoist the common load and emit one store in each arm. Two
+short-lived scalar temporaries, one scoped to each arm, recover the native
+load/store shape without changing behavior, instruction count, or references.
+This moves the score from 86.94% to 87.58%; the region is otherwise exact apart
+from the known four-byte frame shift.
 
 ## Cancel-position lifetime audit
 

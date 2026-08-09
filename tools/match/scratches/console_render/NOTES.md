@@ -9,8 +9,8 @@ font renderer, emits the version label and input prompt, walks the scrolled
 log chain, and draws a sine-squared blinking caret in either mono or small-font
 mode.
 
-The natural VC6 reconstruction has the same 400-instruction extent and a
-99.50% order-sensitive score. All 61 aligned references resolve. Expressing
+The initial natural VC6 reconstruction had the same 400-instruction extent and
+a 99.50% order-sensitive score. All 61 aligned references resolved. Expressing
 the first visible-line selection as an explicit ternary minimum, with the log
 node declared between the bound and selection, reproduces the native `EBP`
 visible-line count, `EBX` text-Y/vtable role, and complete instruction order.
@@ -73,5 +73,17 @@ constant spelling family. Its 15 complete single/paired variants cover
 `0xfffffffeu`, `~1u`, and a cast negative at both native sites; every variant
 is byte-identical to baseline. The recorded spec SHA is
 `54aab9197fcba724952722ce74ecda8a21b6044afc530a765e8f73d74263df72`.
-This leaves no evidenced C/C++ arithmetic spelling that selects native
-`add eax, -2`; the canonical source remains unchanged.
+
+## Exact visible-line publication closure (2026-08-09)
+
+The residual depended on expression ownership rather than a different
+arithmetic spelling. Repeating `height / 16 - 2` directly in each clamp's
+comparison and selected assignment makes VC6 preserve the native additive IR,
+emitting `add eax, -2` at both sites. Keeping the first selection as a ternary
+and the second as an `if` preserves the native long-lived EBP and EDI values;
+seeding the first selection from either operand regresses register allocation.
+
+The retained ordinary source closes the function exactly: **100%**, 400/400
+normalized instructions, full prefix, and `61/0/0` references. No volatile
+state, artificial dependency, forced register, inline assembly, or profile
+override is used.

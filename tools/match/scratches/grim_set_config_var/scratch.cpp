@@ -28,12 +28,15 @@ unsigned char grim_set_texture_stage_ops(unsigned int mode);
 void IGrim2D_cpp::grim_set_config_var(
     unsigned int id, grim_config_value_t value)
 {
+    grim_config_value_t *config;
+
     switch (id) {
     case 26:
         if (!grim_set_texture_stage_ops(value.words[0])) {
             return;
         }
-        grim_config_values[id].words[0] = value.words[0];
+        config = &grim_config_values[id];
+        config->words[0] = value.words[0];
         goto copy_config_tail;
 
     case 27: {
@@ -118,7 +121,7 @@ void IGrim2D_cpp::grim_set_config_var(
             if (stored != 0) {
                 delete stored;
             }
-            grim_config_values[id].words[3] =
+            grim_config_values[16].words[3] =
                 (unsigned int)strdup(&grim_empty_string);
             grim_lookup_blob_loaded = 0;
         }
@@ -234,11 +237,10 @@ void IGrim2D_cpp::grim_set_config_var(
         break;
     }
 
-    grim_config_values[id].words[0] = value.words[0];
-copy_config_tail: {
-        grim_config_value_t *config = &grim_config_values[id];
-        config->words[1] = value.words[1];
-        config->words[2] = value.words[2];
-        config->words[3] = value.words[3];
-    }
+    config = &grim_config_values[id];
+    config->words[0] = value.words[0];
+copy_config_tail:
+    config->words[1] = value.words[1];
+    config->words[2] = value.words[2];
+    config->words[3] = value.words[3];
 }
