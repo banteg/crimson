@@ -219,8 +219,8 @@ extern "C" void quest_results_screen_update(void)
     if (phase == -1) {
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, 1.0f);
-        quest_results_reveal_step_timer_ms -= frame_dt_ms;
         xy.y += 40.0f;
+        quest_results_reveal_step_timer_ms -= frame_dt_ms;
         if (quest_results_reveal_step_timer_ms <= 0) {
             if (quest_results_step < 3) {
                 switch (quest_results_step) {

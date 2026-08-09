@@ -215,3 +215,22 @@ The retained source improves from 754.395348837209/983 weighted bytes
 weighted bytes. It preserves 258/258 instructions, prefix 39, and references
 `14/0/0`. Source SHA-256:
 `e7c1adb9fd116a8736054b840f1249292c7d766381123739771f5efb09fefe5b`.
+
+## 2026-08-09 tail trigger-expression ownership
+
+The next independent residual was the four fixed tail entries at
+`0x00434753..0x00434846`. Native publishes the first position/template pair
+before evaluating `(wave * 5 + 175) * 160`, and likewise publishes the third
+position/template pair before evaluating `wave * 800 + 0x6f54`. The former
+source evaluated both expressions before their owning entry publications.
+
+A complete three-variant matrix measured the two ordinary statement moves
+separately and together. Moving only the first expression reaches
+849.6472868217054/983 (86.434109%); moving only the second reaches
+800.1162790697674/983 (81.395349%); retaining both reaches
+853.4573643410853/983 (**86.821705%**). The combined gain is
+60.9612403100775 weighted bytes over the 80.620155% baseline. All variants
+preserve 258/258 instructions, prefix 39, references `14/0/0`, and identical
+quest semantics. No helper, count, angle, loop, cursor, or aggregate shape is
+changed. Final source SHA-256:
+`18362782e7eca1384262144327827a540ecb9daa86eac5ada87a64fc9cd2c49a`.

@@ -337,3 +337,18 @@ recovers most of that publication schedule. Similarity rises from
 `1168/1168`, the prefix remains 112, and references improve from `461/0/0`
 to `462/0/0`. The retained source SHA-256 is
 `d718d6c08401adca272e2063a899480d30405f210ddb6988d54ce2a0019492f2`.
+
+## Reveal-cursor publication order (2026-08-09)
+
+The next independent residual is immediately after the phase-`-1` color call
+at `0x0041104d..0x0041106b`. Native starts the working Y-coordinate `+40`
+before loading and decrementing the reveal timer, then commits the timer and Y
+values around the branch comparison. The source had stated those two
+independent updates in the opposite order.
+
+Publishing `xy.y` first removes this residual. Similarity rises from
+`96.4041095890411%` to `96.48972602739725%`; instructions remain exactly
+`1168/1168`, the prefix remains 112, references improve from `462/0/0` to
+`463/0/0`, and the region count falls from 23 to 22. The retained source
+SHA-256 is
+`058231a2386b23ec8ab6748a94817d52bdd16e82564e418444062b8d79015693`.

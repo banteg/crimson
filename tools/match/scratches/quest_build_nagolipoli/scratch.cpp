@@ -177,11 +177,11 @@ extern "C" void quest_build_nagolipoli(
     }
     entry_count += 6;
 
-    trigger_time_ms = (wave * 5 + 175) * 160;
     spawn = &spawns[entry_count];
     spawn->set_position_and_template(
         quest_vec2_t(512.0f, 256.0f),
         SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
+    trigger_time_ms = (wave * 5 + 175) * 160;
     spawn->heading = 3.14159274f;
     spawn->trigger_time_ms = trigger_time_ms;
     spawn->count = 1;
@@ -196,11 +196,11 @@ extern "C" void quest_build_nagolipoli(
     spawn->count = 1;
     ++entry_count;
 
-    trigger_time_ms = wave * 800 + 0x6f54;
     spawn = &spawns[entry_count];
     spawn->set_position_and_template(
         quest_vec2_t(512.0f, 1088.0f),
         SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
+    trigger_time_ms = wave * 800 + 0x6f54;
     spawn->heading = 3.926991f;
     spawn->trigger_time_ms = trigger_time_ms;
     spawn->count = 8;
