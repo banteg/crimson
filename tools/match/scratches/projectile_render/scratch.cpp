@@ -317,8 +317,14 @@ extern "C" void projectile_render(float transition_alpha)
             transition_alpha * overlay_player->muzzle_flash_alpha);
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_draw_quad(
-            camera_offset_x + overlay_player->pos_x + flash.x - 80.0f,
-            camera_offset_y + overlay_player->pos_y + flash.y - 80.0f,
+            camera_offset_x
+                + player_state_table[render_overlay_player_index].pos_x
+                + flash.x
+                - 80.0f,
+            camera_offset_y
+                + player_state_table[render_overlay_player_index].pos_y
+                + flash.y
+                - 80.0f,
             160.0f,
             160.0f);
         grim_interface_ptr->grim_end_batch();

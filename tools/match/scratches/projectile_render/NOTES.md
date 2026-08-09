@@ -932,3 +932,24 @@ The refresh adds 37.052 fuzzy-weighted bytes, raises the ratio from
 instructions against 3,021 native instructions. References remain
 `444/0/10`. The retained source has SHA-256
 `37901a9c83fd5fec5cd53cd03f6b8fa7967c77e9deaccfda966bd7fd5a27459d`.
+
+## Muzzle-flash post-callback player reload
+
+The next independent high-weight island is the muzzle-flash draw at
+`0x004236d7..0x004237c2`. Native uses the first indexed player address for the
+alpha, heading, and color setup, calls `grim_begin_batch` at `0x00423768`, and
+then reloads `render_overlay_player_index` at `0x0042376e` before rebuilding
+the player-table address used by both draw coordinates. The previous source
+kept one `overlay_player` pointer live across that callback.
+
+Writing the two draw coordinates through the indexed player table expresses
+the native callback boundary directly. VC6 now reloads the global index once
+after `grim_begin_batch` and shares the rebuilt address across x and y, while
+leaving the already-recovered flash-vector lifetime intact. The change adds
+54.578 fuzzy-weighted bytes, raises the ratio from 57.9464588% to
+58.3813071%, and moves the candidate from 2,881 to 2,885 instructions toward
+the 3,021-instruction native target. References improve from `444/0/10` to
+`448/0/10`.
+
+The retained source has SHA-256
+`69e88872af0ebc65643871a25392f8e0ad009c0ca74f0887d477a549ac04b3b4`.
