@@ -19,15 +19,18 @@ with `0x07` in every sweep.
 - x=200, y=`824 - offset/10`, triggers 68500 through 74800 by 700;
 - y=200, x=`200 + offset/10`, triggers 75500 through 82700 by 800.
 
-The candidate scores 75.95% with a sixteen-instruction exact prefix, exactly
-291 candidate and native instructions, and no static-reference debt. It
-reproduces the signed division-by-ten lowering, parity-to-template arithmetic,
-24-byte stride, loop limits, count reservation, trigger increments, register
-frame, and final count. In particular, the first sweep advances the live count
-per entry while each later sweep reserves ten entries before looping, matching
-the native `add edi, 0xa` boundaries.
+The retained candidate scores 86.59% with a forty-instruction exact prefix,
+298 candidate instructions versus 291 native instructions, and no
+static-reference debt. It reproduces the signed division-by-ten lowering,
+parity-to-template arithmetic, 24-byte stride, loop limits, count reservation,
+trigger increments, register frame, and final count. In particular, the first
+sweep advances the live count per entry while each later sweep reserves ten
+entries before looping, matching the native `add edi, 0xa` boundaries. The
+first sweep is exact; each later fixed batch currently carries one extra
+member-address adjustment.
 
-Advancing the independent integer offset immediately after the coordinate
+In the earlier carried-pointer candidate, advancing the independent integer
+offset immediately after the coordinate
 expressions is semantics-neutral and recovers the native `add ebp, 0x270`
 schedule in most sweeps, improving the fuzzy gap from 291.49 to 241.24 bytes.
 The repeated residual is legal independent-store scheduling. Native VC6 uses
@@ -47,8 +50,9 @@ dummy dependencies, or register-forcing constructs are used.
 Fresh live Binary Ninja HLIL confirms all eight ten-entry sweeps, the inserted
 center entry, every axis formula, alternating template expression, trigger
 step, and the final count of 81. Address-matched IDA and Ghidra snapshots
-independently agree on the signature and absence of callees. Candidate and
-target remain exactly 291 instructions with no static-reference debt.
+independently agree on the signature and absence of callees. The retained
+indexed form has 298 candidate instructions versus 291 native instructions and
+no static-reference debt.
 
 Replacing the direct position stores with a natural vector constructor
 regressed from 75.26% to 61.24%, added 32 instructions, and removed the
@@ -145,3 +149,25 @@ cursors regressed sharply, while named coordinate and template temporaries
 were byte-neutral, so the ordinary record pointer and the smaller helper
 boundary are retained. The retained source SHA-256 is
 `c8e38ad16a82435cf18b52baa00da28d1b5826d48735df81dcac6725e6ea5016`.
+
+## 2026-08-09 indexed fixed-batch recovery
+
+The neighboring exact Nagolipoli builder establishes the original house style
+for fixed-size quest batches: reserve the batch in the live count, then publish
+records through `base[index]` rather than carrying and incrementing a record
+pointer. Replaying that style across the seven later Unblitzkrieg perimeter
+batches raises the score from 79.73% to 85.23%. The compiler materializes each
+`template_id` member address as `lea base` followed by `add 0xc`, whereas the
+native function folds the displacement into the `lea`; those seven uniform
+adjustments explain the 298/291 instruction count.
+
+The fixed batches also alternate between two natural inline publication
+boundaries already recovered in neighboring builders: `set_template(template)`
+plus a direct trigger store, and `set_spawn(template, trigger)`. The complete
+127-combination sweep in `indexed-batch-publication-mutations.json` (SHA-256
+`2ffa2ea756f5984b4cad83c77c39f9b015f54731c3b2e20fccf2d1ca0ffeaa73`)
+selects the two-field boundary for batches 2, 4, 6, and 8 and the single-field
+boundary for batches 3, 5, and 7. That alternating form is strictly better than
+all other combinations: 844.2275/975 weighted bytes, **86.59%**, prefix 40,
+298/291 instructions, and references 0/0/0. The retained source SHA-256 is
+`d97cfdf0a07cb9c8ea887ae1a9f06183c9e6ed57db0cf910e14b61660dff5add`.

@@ -17,6 +17,11 @@ struct quest_entry_original_t {
         template_id = spawn_template_id;
     }
 
+    void set_spawn(int spawn_template_id, int spawn_trigger_time_ms)
+    {
+        template_id = spawn_template_id;
+        trigger_time_ms = spawn_trigger_time_ms;
+    }
 };
 
 extern "C" void quest_build_the_unblitzkrieg(
@@ -48,18 +53,17 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     entry_count += 10;
     while (offset < 0x1860) {
-        spawn->pos.x = (float)(0x338 - offset / 10);
-        spawn->pos.y = 824.0f;
-        spawn->set_template(
+        spawn[toggle].pos.x = (float)(0x338 - offset / 10);
+        spawn[toggle].pos.y = 824.0f;
+        spawn[toggle].set_spawn(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07);
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = 1;
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
+            trigger_time_ms);
+        spawn[toggle].count = 1;
         offset += 0x270;
         trigger_time_ms += 1500;
         ++toggle;
-        ++spawn;
     }
 
     spawn = &spawns[entry_count];
@@ -75,18 +79,17 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     entry_count += 10;
     while (offset < 0x1860) {
-        spawn->pos.x = 200.0f;
-        spawn->pos.y = (float)(0x338 - offset / 10);
-        spawn->set_template(
+        spawn[toggle].pos.x = 200.0f;
+        spawn[toggle].pos.y = (float)(0x338 - offset / 10);
+        spawn[toggle].set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07);
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = 1;
+        spawn[toggle].trigger_time_ms = trigger_time_ms;
+        spawn[toggle].count = 1;
         offset += 0x270;
         trigger_time_ms += 1200;
         ++toggle;
-        ++spawn;
     }
 
     offset = 0;
@@ -94,18 +97,17 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     entry_count += 10;
     while (offset < 0x1860) {
-        spawn->pos.x = (float)(offset / 10 + 200);
-        spawn->pos.y = 200.0f;
-        spawn->set_template(
+        spawn[toggle].pos.x = (float)(offset / 10 + 200);
+        spawn[toggle].pos.y = 200.0f;
+        spawn[toggle].set_spawn(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07);
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = 1;
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
+            trigger_time_ms);
+        spawn[toggle].count = 1;
         offset += 0x270;
         trigger_time_ms += 800;
         ++toggle;
-        ++spawn;
     }
 
     offset = 0;
@@ -113,18 +115,17 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     entry_count += 10;
     while (offset < 0x1860) {
-        spawn->pos.x = 824.0f;
-        spawn->pos.y = (float)(offset / 10 + 200);
-        spawn->set_template(
+        spawn[toggle].pos.x = 824.0f;
+        spawn[toggle].pos.y = (float)(offset / 10 + 200);
+        spawn[toggle].set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07);
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = 1;
+        spawn[toggle].trigger_time_ms = trigger_time_ms;
+        spawn[toggle].count = 1;
         offset += 0x270;
         trigger_time_ms += 800;
         ++toggle;
-        ++spawn;
     }
 
     offset = 0;
@@ -132,18 +133,17 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     entry_count += 10;
     while (offset < 0x1860) {
-        spawn->pos.x = (float)(0x338 - offset / 10);
-        spawn->pos.y = 824.0f;
-        spawn->set_template(
+        spawn[toggle].pos.x = (float)(0x338 - offset / 10);
+        spawn[toggle].pos.y = 824.0f;
+        spawn[toggle].set_spawn(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07);
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = 1;
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
+            trigger_time_ms);
+        spawn[toggle].count = 1;
         offset += 0x270;
         trigger_time_ms += 700;
         ++toggle;
-        ++spawn;
     }
 
     offset = 0;
@@ -151,18 +151,17 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     entry_count += 10;
     while (offset < 0x1860) {
-        spawn->pos.x = 200.0f;
-        spawn->pos.y = (float)(0x338 - offset / 10);
-        spawn->set_template(
+        spawn[toggle].pos.x = 200.0f;
+        spawn[toggle].pos.y = (float)(0x338 - offset / 10);
+        spawn[toggle].set_template(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07);
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = 1;
+        spawn[toggle].trigger_time_ms = trigger_time_ms;
+        spawn[toggle].count = 1;
         offset += 0x270;
         trigger_time_ms += 700;
         ++toggle;
-        ++spawn;
     }
 
     offset = 0;
@@ -170,18 +169,17 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn = &spawns[entry_count];
     entry_count += 10;
     while (offset < 0x1860) {
-        spawn->pos.x = (float)(offset / 10 + 200);
-        spawn->pos.y = 200.0f;
-        spawn->set_template(
+        spawn[toggle].pos.x = (float)(offset / 10 + 200);
+        spawn[toggle].pos.y = 200.0f;
+        spawn[toggle].set_spawn(
             (toggle & 1)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
-                : SPAWN_ID_DEN_ALIEN_BASIC_07);
-        spawn->trigger_time_ms = trigger_time_ms;
-        spawn->count = 1;
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
+            trigger_time_ms);
+        spawn[toggle].count = 1;
         offset += 0x270;
         trigger_time_ms += 800;
         ++toggle;
-        ++spawn;
     }
 
     *count = entry_count;

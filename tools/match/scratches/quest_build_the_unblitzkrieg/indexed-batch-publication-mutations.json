@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-2-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "two-field-setter",
+          "text": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);"
+        }
+      ]
+    },
+    {
+      "name": "batch-3-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "two-field-setter",
+          "text": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);"
+        }
+      ]
+    },
+    {
+      "name": "batch-4-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "two-field-setter",
+          "text": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);"
+        }
+      ]
+    },
+    {
+      "name": "batch-5-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "two-field-setter",
+          "text": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);"
+        }
+      ]
+    },
+    {
+      "name": "batch-6-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;",
+      "occurrence": 5,
+      "replacements": [
+        {
+          "name": "two-field-setter",
+          "text": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);"
+        }
+      ]
+    },
+    {
+      "name": "batch-7-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;",
+      "occurrence": 6,
+      "replacements": [
+        {
+          "name": "two-field-setter",
+          "text": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);"
+        }
+      ]
+    },
+    {
+      "name": "batch-8-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;",
+      "occurrence": 7,
+      "replacements": [
+        {
+          "name": "two-field-setter",
+          "text": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);"
+        }
+      ]
+    }
+  ]
+}
