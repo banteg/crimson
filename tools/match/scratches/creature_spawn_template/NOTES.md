@@ -922,3 +922,21 @@ source recovery. The honest baseline remains 87.689873%, 3,161/3,159
 instructions, a 23-instruction prefix, `352/0/1` references, and source
 SHA-256
 `3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
+
+## Template 0x2e speed-remainder publication
+
+Native `0x00432edd..0x00432f05` keeps the template-`0x2e` speed remainder as
+the source-owned value: after `rand()` it sets the divisor, publishes alpha,
+performs `idiv`, and only then converts and stores speed. Expanding the broad
+`RAND_FIELD` macro to the direct block-local remainder form already recovered
+in templates `0x03..0x06` gives VC6 that exact alpha/division boundary.
+
+This raises the score from 12,506.169936708860/14,099
+(`88.70253164556962%`) to 12,510.631645569620/14,099
+(`88.73417721518987%`), a gain of 4.461708860759 weighted bytes.
+Candidate/native instructions remain 3,161/3,159, the prefix remains 23, and
+references remain `357/0/1`. A raw-roll spelling added one instruction and
+regressed, while moving the neighboring template-`0x12` child aggregate tint
+across health/max-health or to the stat tail also regressed; none is retained.
+The retained source SHA-256 is
+`2fbbe9585b7095d29e06e3cd00e73c1902a6337f4709afa8ddec7142f1c77acc`.

@@ -347,9 +347,8 @@ extern "C" void quest_results_screen_update(void)
         xy.y += 20.0f;
         grim_interface_ptr->grim_set_color(
             1.0f, 1.0f, 1.0f, alpha);
-        quest_results_vec2_t line_xy;
-        line_xy.x = xy.x - 4.0f;
-        line_xy.y = xy.y + 1.0f;
+        quest_results_vec2_t line_xy(
+            xy.x - 4.0f, xy.y + 1.0f);
         grim_interface_ptr->grim_draw_rect_outline(
             (float *)&line_xy, 168.0f, 1.0f);
         xy.y += 8.0f;
@@ -510,9 +509,8 @@ show_results:
             xy.y += 6.0f;
         }
 
-        quest_results_vec2_t record_xy;
-        record_xy.x = xy.x;
-        record_xy.y = xy.y + 16.0f;
+        quest_results_vec2_t record_xy(
+            xy.x, xy.y + 16.0f);
         ui_text_input_render(
             (float *)&record_xy,
             &highscore_active_record,

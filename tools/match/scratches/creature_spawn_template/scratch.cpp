@@ -783,8 +783,10 @@ extern "C" creature_t *creature_spawn_template(
                     creature->type_id = CREATURE_TYPE_LIZARD;
                     RAND_FIELD_INT_BASE(creature->size, 0x1e, 0x28);
                     creature->health = creature->size * 1.1428572f + 20.0f;
-                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);
+                    int random_speed_remainder = crt_rand() % 0x12;
                     creature->color.a = 1.0f;
+                    creature->move_speed =
+                        (float)random_speed_remainder * 0.1f + 1.1f;
                     creature->reward_value = creature->size + creature->size + 50.0f;
                     RAND_FIELD(creature->color.r, 0x28, 0.01f, 0.6f);
                     RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);

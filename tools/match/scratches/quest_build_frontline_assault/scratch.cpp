@@ -25,8 +25,8 @@ extern "C" void quest_build_frontline_assault(
             builder.cursor->template_id =
                 SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;
         }
-        int trigger_time_ms = wave * trigger_step_ms - 5000;
-        builder.cursor->trigger_time_ms = trigger_time_ms;
+        builder.cursor->trigger_time_ms =
+            wave * trigger_step_ms - 5000;
         builder.cursor->count = 1;
         ++builder.cursor;
         ++builder.count;
@@ -35,7 +35,8 @@ extern "C" void quest_build_frontline_assault(
             builder.cursor->pos_x = -64.0f;
             builder.cursor->pos_y = -64.0f;
             builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
-            builder.cursor->trigger_time_ms = trigger_time_ms;
+            builder.cursor->trigger_time_ms =
+                wave * trigger_step_ms - 5000;
             builder.cursor->count = 1;
             ++builder.count;
             ++builder.cursor;
@@ -45,7 +46,8 @@ extern "C" void quest_build_frontline_assault(
             builder.cursor->pos_x = 1088.0f;
             builder.cursor->pos_y = -64.0f;
             builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
-            builder.cursor->trigger_time_ms = trigger_time_ms;
+            builder.cursor->trigger_time_ms =
+                wave * trigger_step_ms - 5000;
             builder.cursor->count = 1;
             ++builder.count;
             ++builder.cursor;

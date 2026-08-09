@@ -297,3 +297,43 @@ publication boundary. Similarity rises from `4619.971746575343/4857`
 Instructions remain exactly `1168/1168`, prefix remains 112, and references
 remain fully aligned at `460/0/0`. No coordinate storage, branch condition, or
 render behavior changes.
+
+## Results-record aggregate publication (2026-08-09)
+
+The next independent residual is the `show_results` record renderer at
+`0x00411a26..0x00411a73`. Native copies the working X coordinate through x87
+into the temporary record aggregate before forming its Y coordinate, then
+publishes the Y field while setting up `ui_text_input_render`. Separate field
+assignments let VC6 defer the X bit-copy until after the call arguments were
+pushed.
+
+Constructing `record_xy` from both components recovers the native aggregate
+publication and removes that residual. Similarity rises from
+`4628.288527397261/4857` (`95.29109589041096%`) to
+`4665.71404109589/4857` (`96.06164383561644%`), a gain of
+`37.4255136986294` weighted bytes. Instructions remain exactly `1168/1168`,
+the prefix remains 112, and references improve from `460/0/0` to `461/0/0`.
+
+`results-record-aggregate-mutations.json` covers the direct constructor, an
+equivalent vector addition, and copy-then-Y-offset forms. The first two are
+byte-identical winners; the copy form regresses by `3.959186` weighted bytes,
+adds two instructions, and loses one aligned reference. The retained direct
+constructor is the simpler source form. The spec SHA-256 is
+`fb67b6ceb56c3658d2a53d795ab92b64f4d0cae29096c29688f5a6680fd8c40a`;
+the retained source SHA-256 is
+`8b5bf0204e6dbcfbdf97e8cd46b61416ff7d3e3ff3ab814af98136fa27cefb24`.
+
+## Results-separator aggregate publication (2026-08-09)
+
+The next independent render residual is the phase-`-1` separator at
+`0x0041151a..0x0041155d`. Native begins the X calculation, captures the Grim
+interface, and publishes the two-field line aggregate around the renderer's
+argument setup. Separate field assignments gave VC6 a later stack home for
+the aggregate and deferred its stores.
+
+Constructing `line_xy` directly from `xy.x - 4.0f` and `xy.y + 1.0f`
+recovers most of that publication schedule. Similarity rises from
+`96.06164383561644%` to `96.4041095890411%`. Instructions remain exactly
+`1168/1168`, the prefix remains 112, and references improve from `461/0/0`
+to `462/0/0`. The retained source SHA-256 is
+`d718d6c08401adca272e2063a899480d30405f210ddb6988d54ce2a0019492f2`.

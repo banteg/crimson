@@ -13,7 +13,7 @@ Each wave trigger is `wave * step - 5000`. The step starts at 2500, decreases
 by 50, and clamps to 1800. The special wave-ten trigger retains the native
 spelling `(step * 5 - 2500) * 2`. The result contains 50 entries.
 
-The candidate preserves the native cursor/count/step/wave registers, signed
+The exact candidate preserves the native cursor/count/step/wave registers, signed
 terrain halving, conditional entry policy, trigger arithmetic, clamp, and
 output count. Recovering the same cursor/count builder object used by adjacent
 quest constructors keeps the bottom-edge Y store beside the converted X store,
@@ -24,9 +24,12 @@ with the late gray arm before the blue fallback reproduces the native three
 template stores and both unconditional exits. This raises the score from the
 previous 87.27% to 96.43%, extends the exact prefix from 18 to 29 instructions,
 and emits the exact native count of 84 instructions with the reference still
-resolved.
+resolved. Repeating the ordinary trigger expression at each publication then
+closes the final arithmetic and output-register differences, producing an
+exact 84/84-instruction match.
 
-The residual is now limited to three instructions in two regions. The candidate
+At the preceding 96.43% checkpoint, the residual was limited to three
+instructions in two regions. That candidate
 uses `sub eax, 5000` where the native function uses `add eax, -5000`, then uses
 `eax` rather than `ecx` for the final output-count pointer load and store. The
 template ladder itself is exact, and the fuzzy gap falls from 36.27 to 10.18
@@ -36,7 +39,7 @@ are not used to preserve the native control-flow spelling.
 
 An address-keyed Binary Ninja local type now preserves the second wave-ten
 cursor after VC6 advances it. Both midpoint AlienBigGray creatures render as named
-`quest_spawn_entry_t` fields; the remaining negative trigger/count access is a
+`quest_spawn_entry_t` fields; the native negative trigger/count access is a
 real induction-pointer artifact, not an unknown structure member.
 
 The compiler-facing builder uses the canonical `quest_spawn_entry_t` directly.
@@ -90,11 +93,27 @@ for VC6 to retain all three stores and both jumps. An inlined whole-selector
 helper and an independent later-wave `if/else` both fall back to the older
 84.34%, 82-instruction form and are rejected.
 
-## Recovery classification audit
+## Pre-closure recovery classification audit
 
-Fresh Binary Ninja HLIL confirms the complete wave range, template ladder,
+At the 96.43% checkpoint, fresh Binary Ninja HLIL confirmed the complete wave range, template ladder,
 off-screen additions, wave-ten midpoint pair, trigger arithmetic, clamp, and
 output count. The candidate emits 84 instructions against 84 native instructions
 and its sole masked reference resolves. The localized differences are one
 equivalent negative-offset opcode choice and the final output-pointer register
-allocation; recovery is `semantic-complete` with a `compiler` residual.
+allocation. The expression-ownership closure below supersedes that temporary
+classification.
+
+## Exact trigger-expression ownership closure (2026-08-09)
+
+The final residual depended on expression ownership rather than arithmetic
+spelling. As in exact `console_render`, repeating the ordinary wave trigger
+`wave * trigger_step_ms - 5000` directly at each of its three publications
+lets VC6 common the value while retaining the native additive IR and final
+output-pointer allocation. The special wave-ten trigger remains the distinct
+`(trigger_step_ms * 5 - 2500) * 2` expression proven by native code.
+
+Removing the named per-wave `trigger_time_ms` owner closes the function
+exactly: **100%**, 84/84 normalized instructions, full prefix, and `1/0/0`
+references, up from 96.43% and a 29-instruction prefix. The retained source
+SHA-256 is
+`e1b858e95ce5049f6564cd194b686a2c9432c9c61f0e551ac6a89f2e010858e2`.

@@ -41,17 +41,18 @@ button supports two explicit y advances before the x-column shift; spelling
 those independent layout operations in that observed order improves alignment
 without changing or padding behavior.
 
-Verified WIP: 90.75%, with 675 candidate instructions against 676 native and
+Verified WIP: 93.26%, with 675 candidate instructions against 676 native and
 audited references `276/0/0`. The remaining substantive region is integer
 register allocation for the two playtime calculations. Native loads the
 renderer between the minute and hour quotients, spills the session-hour value,
 and reuses quotient products for both remainders; the natural VC6 candidate
 keeps the session hour in a register and emits one `idiv` in the lifetime
-block. Literal `% 60`, direct minute-count, explicit renderer-cache, and
-equivalent quotient/remainder source forms were tested and all reduced the
-match. A renderer capture scoped after the total-hours key gate now preserves
-the native downstream widget ownership and resolves all references without
-aliasing distinct operands.
+block. Literal `% 60`, direct minute-count, and equivalent quotient/remainder
+source forms were tested and reduce the match. With the downstream
+total-renderer ownership fixed, a session renderer capture at the native
+seconds/minutes boundary now improves the match; the total-hours branch-local
+capture preserves the native widget ownership and resolves all references
+without aliasing distinct operands.
 
 A fresh live Binary Ninja pass isolated one UI source-shape question outside
 that playtime divergence. After `Sleep(10)` and the default color, native loads
@@ -198,3 +199,30 @@ bytes**. It keeps the 280-instruction prefix and 675/676 instruction count,
 while references improve from `264/0/5` to fully clean **`276/0/0`**. Current
 source SHA-256 is
 `85f19ac8e976657c26a299cf0e99f2410b0b13d35caaaf766da00545a7bd5d45`.
+
+## Session renderer and quotient ownership (2026-08-09)
+
+The total-renderer boundary above changes the tradeoff for the older session
+playtime ownership hypothesis. Native finishes the seconds quotient at
+`0x0043fa95`, loads `grim_interface_ptr` at `0x0043fa97`, starts the minute
+quotient at `0x0043fa9d`, and loads the renderer vtable at `0x0043faa3` before
+that quotient finishes. Naming `session_seconds` and capturing
+`session_renderer` immediately after it is the natural source boundary that
+matches the first of those two native ownership events.
+
+On the branch-local total-renderer baseline, this source shape improves from
+`2610.8082901554403/2877` (**90.747594%**) to
+`2683.2124352331607/2877` (**93.264249%**), a gain of
+**72.404145 weighted bytes**. It keeps the 280-instruction prefix, 675/676
+instruction count, and fully clean `276/0/0` references. Declaring the
+session-hour local before that capture is byte-neutral. Rechecking the one
+previous call-lifetime form that recovered the 676th instruction reaches only
+**92.751479%**, so its quotient/modulo tradeoff remains inferior and is not
+retained.
+
+The remaining session residual is narrower: the candidate retains the
+renderer in `ebp` and the session hour in `edi`, while native retains the
+renderer in `edi`, its vtable in `ebp`, and spills the hour at
+`[esp+0x10]`. No artificial dependency or forced spill is justified. Current
+source SHA-256 is
+`1f05054f3a40357f922e1127348bc36f0cba975e8130101ddbc2ddd272dfe591`.
