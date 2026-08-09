@@ -1,5 +1,5 @@
 {
-  "audit_digest": "bea2e66fe547f4b718eb5026ecb9cd39ec746c4ca7996d6bfd6e5ece529103cf",
+  "audit_digest": "a6cf7260b64c77a0ef0f5e31b86541ee01754cc35affc1d440269af2125c7e2a",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -83589,7 +83589,7 @@
           "comdat_selection": 1,
           "function": "creature_render_type",
           "kind": "section",
-          "logical_section_size": 2784,
+          "logical_section_size": 2800,
           "object": "tools/match/scratches/creature_render_type/build/msvc6.5/4df8b48a842c6e59/scratch.obj",
           "section": ".text",
           "size": null,
@@ -83829,7 +83829,7 @@
           "comdat_selection": 1,
           "function": "creature_update_all",
           "kind": "section",
-          "logical_section_size": 5120,
+          "logical_section_size": 5136,
           "object": "tools/match/scratches/creature_update_all/build/msvc6.5/236de815d9c6e91a/scratch.obj",
           "section": ".text",
           "size": null,
@@ -85755,7 +85755,7 @@
           "comdat_selection": 1,
           "function": "demo_trial_overlay_render",
           "kind": "section",
-          "logical_section_size": 2352,
+          "logical_section_size": 2416,
           "object": "tools/match/scratches/demo_trial_overlay_render/build/msvc6.5/8afed9ee908754e4/scratch.obj",
           "section": ".text",
           "size": null,
@@ -94623,7 +94623,7 @@
           "comdat_selection": 1,
           "function": "player_render_overlays",
           "kind": "section",
-          "logical_section_size": 4512,
+          "logical_section_size": 4544,
           "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
           "section": ".text",
           "size": null,
@@ -94809,7 +94809,7 @@
           "comdat_selection": 1,
           "function": "player_update",
           "kind": "section",
-          "logical_section_size": 15840,
+          "logical_section_size": 15888,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
@@ -95259,7 +95259,7 @@
           "comdat_selection": 1,
           "function": "projectile_render",
           "kind": "section",
-          "logical_section_size": 11776,
+          "logical_section_size": 11808,
           "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
           "section": ".text",
           "size": null,
@@ -95337,7 +95337,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8112,
+          "logical_section_size": 8224,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
           "section": ".text",
           "size": null,
@@ -95487,7 +95487,7 @@
           "comdat_selection": 1,
           "function": "quest_build_deja_vu",
           "kind": "section",
-          "logical_section_size": 208,
+          "logical_section_size": 224,
           "object": "tools/match/scratches/quest_build_deja_vu/build/msvc6.5/af0e79b5b2af94aa/scratch.obj",
           "section": ".text",
           "size": null,
@@ -95919,7 +95919,7 @@
           "comdat_selection": 1,
           "function": "quest_build_survival_of_the_fastest",
           "kind": "section",
-          "logical_section_size": 784,
+          "logical_section_size": 800,
           "object": "tools/match/scratches/quest_build_survival_of_the_fastest/build/msvc6.5/fdb5d8c9321efa41/scratch.obj",
           "section": ".text",
           "size": null,
@@ -95937,7 +95937,7 @@
           "comdat_selection": 1,
           "function": "quest_build_sweep_stakes",
           "kind": "section",
-          "logical_section_size": 256,
+          "logical_section_size": 272,
           "object": "tools/match/scratches/quest_build_sweep_stakes/build/msvc6.5/c375200c2220623f/scratch.obj",
           "section": ".text",
           "size": null,
@@ -96063,7 +96063,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_end_of_all",
           "kind": "section",
-          "logical_section_size": 688,
+          "logical_section_size": 704,
           "object": "tools/match/scratches/quest_build_the_end_of_all/build/msvc6.5/6f9568442031383a/scratch.obj",
           "section": ".text",
           "size": null,
@@ -96207,7 +96207,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_spanking_of_the_dead",
           "kind": "section",
-          "logical_section_size": 368,
+          "logical_section_size": 400,
           "object": "tools/match/scratches/quest_build_the_spanking_of_the_dead/build/msvc6.5/c53fec72a7bbaf68/scratch.obj",
           "section": ".text",
           "size": null,
@@ -96225,7 +96225,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_unblitzkrieg",
           "kind": "section",
-          "logical_section_size": 976,
+          "logical_section_size": 992,
           "object": "tools/match/scratches/quest_build_the_unblitzkrieg/build/msvc6.5/6a5500592cfaa5ac/scratch.obj",
           "section": ".text",
           "size": null,
@@ -106239,7 +106239,7 @@
           "comdat_selection": 1,
           "function": "ui_menu_layout_init",
           "kind": "section",
-          "logical_section_size": 7200,
+          "logical_section_size": 7184,
           "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
           "section": ".text",
           "size": null,
@@ -106247,30 +106247,6 @@
         }
       ],
       "name": "_ui_menu_layout_init"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 1,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780388,
-          "data_binding_kind": "definition",
-          "data_name": "ui_menu_layout_init_latch",
-          "data_storage_address": 4780388,
-          "data_storage_name": "ui_menu_layout_init_latch",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 1,
-          "weak": false
-        }
-      ],
-      "name": "_ui_menu_layout_init_latch"
     },
     {
       "definitions": [
@@ -106643,54 +106619,6 @@
         }
       ],
       "name": "_ui_perk_prompt_element"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780848,
-          "data_binding_kind": "definition",
-          "data_name": "ui_perk_prompt_levelup_element",
-          "data_storage_address": 4780848,
-          "data_storage_name": "ui_perk_prompt_levelup_element",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 232,
-          "weak": false
-        }
-      ],
-      "name": "_ui_perk_prompt_levelup_element"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780608,
-          "data_binding_kind": "definition",
-          "data_name": "ui_perk_prompt_on_activate",
-          "data_storage_address": 4780608,
-          "data_storage_name": "ui_perk_prompt_on_activate",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_ui_perk_prompt_on_activate"
     },
     {
       "definitions": [
@@ -126581,7 +126509,7 @@
           "comdat_selection": 1,
           "function": "creature_render_type",
           "kind": "section",
-          "logical_section_size": 2784,
+          "logical_section_size": 2800,
           "object": "tools/match/scratches/creature_render_type/build/msvc6.5/4df8b48a842c6e59/scratch.obj",
           "section": ".text",
           "size": null,
@@ -127000,7 +126928,7 @@
           "comdat_selection": 1,
           "function": "creature_update_all",
           "kind": "section",
-          "logical_section_size": 5120,
+          "logical_section_size": 5136,
           "object": "tools/match/scratches/creature_update_all/build/msvc6.5/236de815d9c6e91a/scratch.obj",
           "section": ".text",
           "size": null,
@@ -129369,7 +129297,7 @@
           "comdat_selection": 1,
           "function": "demo_trial_overlay_render",
           "kind": "section",
-          "logical_section_size": 2352,
+          "logical_section_size": 2416,
           "object": "tools/match/scratches/demo_trial_overlay_render/build/msvc6.5/8afed9ee908754e4/scratch.obj",
           "section": ".text",
           "size": null,
@@ -141710,11 +141638,6 @@
           "function": "gameplay_update_and_render",
           "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/1843c3380498116b/scratch.obj",
           "weak": false
-        },
-        {
-          "function": "ui_menu_layout_init",
-          "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
-          "weak": false
         }
       ]
     },
@@ -143093,7 +143016,7 @@
           "comdat_selection": 1,
           "function": "player_render_overlays",
           "kind": "section",
-          "logical_section_size": 4512,
+          "logical_section_size": 4544,
           "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
           "section": ".text",
           "size": null,
@@ -143592,7 +143515,7 @@
           "comdat_selection": 1,
           "function": "player_update",
           "kind": "section",
-          "logical_section_size": 15840,
+          "logical_section_size": 15888,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
@@ -144194,7 +144117,7 @@
           "comdat_selection": 1,
           "function": "projectile_render",
           "kind": "section",
-          "logical_section_size": 11776,
+          "logical_section_size": 11808,
           "object": "tools/match/scratches/projectile_render/build/msvc6.5/69b94371aaeca556/scratch.obj",
           "section": ".text",
           "size": null,
@@ -144335,7 +144258,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8112,
+          "logical_section_size": 8224,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/de1a8ecdfeae57ea/scratch.obj",
           "section": ".text",
           "size": null,
@@ -144546,7 +144469,7 @@
           "comdat_selection": 1,
           "function": "quest_build_deja_vu",
           "kind": "section",
-          "logical_section_size": 208,
+          "logical_section_size": 224,
           "object": "tools/match/scratches/quest_build_deja_vu/build/msvc6.5/af0e79b5b2af94aa/scratch.obj",
           "section": ".text",
           "size": null,
@@ -145146,7 +145069,7 @@
           "comdat_selection": 1,
           "function": "quest_build_survival_of_the_fastest",
           "kind": "section",
-          "logical_section_size": 784,
+          "logical_section_size": 800,
           "object": "tools/match/scratches/quest_build_survival_of_the_fastest/build/msvc6.5/fdb5d8c9321efa41/scratch.obj",
           "section": ".text",
           "size": null,
@@ -145171,7 +145094,7 @@
           "comdat_selection": 1,
           "function": "quest_build_sweep_stakes",
           "kind": "section",
-          "logical_section_size": 256,
+          "logical_section_size": 272,
           "object": "tools/match/scratches/quest_build_sweep_stakes/build/msvc6.5/c375200c2220623f/scratch.obj",
           "section": ".text",
           "size": null,
@@ -145346,7 +145269,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_end_of_all",
           "kind": "section",
-          "logical_section_size": 688,
+          "logical_section_size": 704,
           "object": "tools/match/scratches/quest_build_the_end_of_all/build/msvc6.5/6f9568442031383a/scratch.obj",
           "section": ".text",
           "size": null,
@@ -145546,7 +145469,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_spanking_of_the_dead",
           "kind": "section",
-          "logical_section_size": 368,
+          "logical_section_size": 400,
           "object": "tools/match/scratches/quest_build_the_spanking_of_the_dead/build/msvc6.5/c53fec72a7bbaf68/scratch.obj",
           "section": ".text",
           "size": null,
@@ -145571,7 +145494,7 @@
           "comdat_selection": 1,
           "function": "quest_build_the_unblitzkrieg",
           "kind": "section",
-          "logical_section_size": 976,
+          "logical_section_size": 992,
           "object": "tools/match/scratches/quest_build_the_unblitzkrieg/build/msvc6.5/6a5500592cfaa5ac/scratch.obj",
           "section": ".text",
           "size": null,
@@ -161108,7 +161031,7 @@
           "comdat_selection": 1,
           "function": "ui_menu_layout_init",
           "kind": "section",
-          "logical_section_size": 7200,
+          "logical_section_size": 7184,
           "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
           "section": ".text",
           "size": null,
@@ -161120,37 +161043,6 @@
         {
           "function": "ui_menu_assets_init",
           "object": "tools/match/scratches/ui_menu_assets_init/build/msvc6.5/755a68a6a9956113/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 1,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780388,
-          "data_binding_kind": "definition",
-          "data_name": "ui_menu_layout_init_latch",
-          "data_storage_address": 4780388,
-          "data_storage_name": "ui_menu_layout_init_latch",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 1,
-          "weak": false
-        }
-      ],
-      "name": "_ui_menu_layout_init_latch",
-      "referenced_by": [
-        {
-          "function": "ui_menu_layout_init",
-          "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
           "weak": false
         }
       ]
@@ -161828,68 +161720,6 @@
           "object": "tools/match/scratches/ui_get_element_index/build/msvc6.5/645a73576dcd14dc/scratch.obj",
           "weak": false
         },
-        {
-          "function": "ui_menu_layout_init",
-          "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780848,
-          "data_binding_kind": "definition",
-          "data_name": "ui_perk_prompt_levelup_element",
-          "data_storage_address": 4780848,
-          "data_storage_name": "ui_perk_prompt_levelup_element",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 232,
-          "weak": false
-        }
-      ],
-      "name": "_ui_perk_prompt_levelup_element",
-      "referenced_by": [
-        {
-          "function": "ui_menu_layout_init",
-          "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 4,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4780608,
-          "data_binding_kind": "definition",
-          "data_name": "ui_perk_prompt_on_activate",
-          "data_storage_address": 4780608,
-          "data_storage_name": "ui_perk_prompt_on_activate",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 792,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 4,
-          "weak": false
-        }
-      ],
-      "name": "_ui_perk_prompt_on_activate",
-      "referenced_by": [
         {
           "function": "ui_menu_layout_init",
           "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/7cfff8484a340377/scratch.obj",
@@ -164867,7 +164697,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "97d0dfe48758924d3c8f04466a056a9fba07b925db7ca99c96627226493bdda0"
+        "sha256": "d4f355f7be42d97fdf6797be3271a4d4b223a14896f27f5417ad807268bde5cc"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -164879,7 +164709,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3148,
+    "defined_symbols": 3145,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -164888,7 +164718,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 663,
     "reference_exports_closed": true,
-    "resolved_symbols": 1354,
+    "resolved_symbols": 1351,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,

@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**736/810** functions matched exactly, **147059/341981** code bytes (**43.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**736/810** functions matched exactly, **147059/341992** code bytes (**43.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **307963/341981** code bytes (**90.1%**).
+Fuzzy-weighted alignment is **307990/341992** code bytes (**90.1%**).
 
-Reproducible candidates cover **810/810** functions and **341981/341981** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Native linking
 
@@ -16,17 +16,13 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1354 | 97 |
-| grim.dll | stale | 139 | 133 | 3 | passed | yes | yes | no | 0 | 268 | 54 |
+| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1351 | 97 |
+| grim.dll | current | 139 | 133 | 3 | passed | yes | yes | no | 0 | 268 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1788 | 1788 | 1788 | 1788 | 1788 |
-| grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
-
-Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 111 recorded file inputs changed or missing
-- `grim.dll`: **stale** — 6 recorded file inputs changed or missing
+| grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 ## Function dispositions
 
@@ -96,12 +92,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 600/671 | 129534/320816 | 40.4% | 286892/320816 | 89.4% | 671/671 | 320816/320816 | 100.0% | 600/671 |
+| crimsonland.exe | 600/671 | 129534/320827 | 40.4% | 286919/320827 | 89.4% | 671/671 | 320827/320827 | 100.0% | 600/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**600/671** functions, **129534/320816** bytes (**40.4%**), **286892/320816** fuzzy-weighted bytes (**89.4%**), **671/671** reproducible candidates covering **320816/320816** bytes (**100.0%**), **600/671** scratches verified.
+**600/671** functions, **129534/320827** bytes (**40.4%**), **286919/320827** fuzzy-weighted bytes (**89.4%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **600/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -446,7 +442,7 @@ Artifact freshness issues:
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 865/963 | 98 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
 | wip | projectile_update | 0x00420b90 | 8409 | 5269/8409 | 3140 | 2176/2203 | 62.66% | 0/2203 | 417/0/18 |  | core-projectile-simulation |
-| wip | projectile_render | 0x00422c70 | 12551 | 7327/12551 | 5224 | 2885/3021 | 58.38% | 0/3021 | 448/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
+| wip | projectile_render | 0x00422c70 | 12551 | 7332/12551 | 5219 | 2885/3021 | 58.42% | 0/3021 | 448/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | wip | creature_update_all | 0x00426220 | 5330 | 2927/5330 | 2403 | 1299/1338 | 54.91% | 0/1338 | 225/0/2 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
@@ -479,7 +475,7 @@ Artifact freshness issues:
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 100/100 | 0 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | wip | crimsonland_main | 0x0042c450 | 3214 | 3164/3214 | 50 | 832/832 | 98.44% | 684/832 | 393/0/2 |  | primary-game-bootstrap-and-shutdown |
-| wip | highscore_sync_worker | 0x0042d0e0 | 1970 | 1320/1970 | 650 | 517/519 | 66.99% | 26/519 | 107/0/0 |  | online-highscore-submit-receive-worker |
+| wip | highscore_sync_worker | 0x0042d0e0 | 1981 | 1342/1981 | 639 | 517/525 | 67.75% | 26/525 | 107/0/0 |  | online-highscore-submit-receive-worker |
 | wip | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1078/1375 | 297 | 373/367 | 78.38% | 22/367 | 106/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |

@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "cf9a30522cd23b879ebc2f5e96349841726537895672dc628ef4c096003e1dcd",
+  "audit_digest": "37b308fe29beab60409c5a72f88a26c7b8766f39a1bc5e0f366b34c337307bd0",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4261,7 +4261,7 @@
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "ebb8867472b40519461d87ea27c3cce63f7ca01579201243a98b5550f7968364",
+  "object_list_sha256": "07e2d7832760b375691dda52d18f05bb541a4d3c5f71570c0926e287a4854223",
   "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
     {
@@ -7620,12 +7620,12 @@
         {
           "path": "tools/match/scratches/grim_texture_load_file/scratch.cpp",
           "repository_relative": true,
-          "sha256": "75a9abffb4085a40d5a8c7aac0e81df722fe8240a4619859935155f7090e0e1d"
+          "sha256": "4668360ac21bc92b5f8a3eb65c2f123cf40a90989f5b728f9c34c19bd1128212"
         },
         {
           "path": "tools/match/scratches/grim_texture_load_file/scratch.conf",
           "repository_relative": true,
-          "sha256": "56d895ae3a8751c687f019f0bf2088cbdf0b6117e0212b83b9b4c54d7a897714"
+          "sha256": "3e067667e8d0f41c3213dc9a8e182f3d638897d788e4500ff25ac8c9e11301f7"
         },
         {
           "path": "tools/match/cl.sh",
@@ -7655,7 +7655,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_texture_load_file/scratch.conf",
-      "config_sha256": "56d895ae3a8751c687f019f0bf2088cbdf0b6117e0212b83b9b4c54d7a897714",
+      "config_sha256": "3e067667e8d0f41c3213dc9a8e182f3d638897d788e4500ff25ac8c9e11301f7",
       "effective_end": 268456207,
       "end": 268456207,
       "function": "grim_texture_load_file",
@@ -7663,21 +7663,21 @@
         {
           "address": 268455616,
           "canonical_config": "tools/match/scratches/grim_texture_load_file/scratch.conf",
-          "canonical_config_sha256": "56d895ae3a8751c687f019f0bf2088cbdf0b6117e0212b83b9b4c54d7a897714",
+          "canonical_config_sha256": "3e067667e8d0f41c3213dc9a8e182f3d638897d788e4500ff25ac8c9e11301f7",
           "canonical_scratch": "tools/match/scratches/grim_texture_load_file",
           "canonical_source": "tools/match/scratches/grim_texture_load_file/scratch.cpp",
-          "canonical_source_sha256": "75a9abffb4085a40d5a8c7aac0e81df722fe8240a4619859935155f7090e0e1d",
+          "canonical_source_sha256": "4668360ac21bc92b5f8a3eb65c2f123cf40a90989f5b728f9c34c19bd1128212",
           "effective_end": 268456207,
           "end": 268456207,
           "function": "grim_texture_load_file",
           "match": {
             "candidate_instructions": 235,
             "masked_mismatches": 0,
-            "masked_ok": 24,
+            "masked_ok": 25,
             "masked_unresolved": 0,
-            "prefix_instructions": 5,
-            "ratio": 0.8595744680851064,
-            "state": "wip",
+            "prefix_instructions": 235,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 235
           },
           "object_function_symbol": "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z",
@@ -7687,19 +7687,19 @@
       "match": {
         "candidate_instructions": 235,
         "masked_mismatches": 0,
-        "masked_ok": 24,
+        "masked_ok": 25,
         "masked_unresolved": 0,
-        "prefix_instructions": 5,
-        "ratio": 0.8595744680851064,
-        "state": "wip",
+        "prefix_instructions": 235,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 235
       },
       "object": "tools/match/scratches/grim_texture_load_file/build/msvc6.5/bdfe39cc6c991eca/scratch.obj",
       "object_function_symbol": "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z",
-      "object_sha256": "284051f4dd3de67e53c2c02e396a91cdbff5c05972030897b08d333d0064b683",
+      "object_sha256": "ec74545b52d853d4be899ecc72832e3b75b0a02d270f90697a5897f4f45ff956",
       "scratch": "tools/match/scratches/grim_texture_load_file",
       "source": "tools/match/scratches/grim_texture_load_file/scratch.cpp",
-      "source_sha256": "75a9abffb4085a40d5a8c7aac0e81df722fe8240a4619859935155f7090e0e1d",
+      "source_sha256": "4668360ac21bc92b5f8a3eb65c2f123cf40a90989f5b728f9c34c19bd1128212",
       "target_size": 591,
       "translation_unit": {
         "kind": "isolated",
@@ -9370,7 +9370,8 @@
         "/O2",
         "/GB",
         "/W3",
-        "/GR-"
+        "/GR-",
+        "/MD"
       ],
       "compile_argv": [
         "/nologo",
@@ -9379,18 +9380,19 @@
         "/GB",
         "/W3",
         "/GR-",
+        "/MD",
         "scratch.cpp"
       ],
       "compile_inputs": [
         {
           "path": "tools/match/scratches/grim_set_config_var/scratch.cpp",
           "repository_relative": true,
-          "sha256": "07985d79bf27b4ea9869c460fd4403d9366494b9b5aa0b02d1d6cecbc318e019"
+          "sha256": "ea26e08afcd16f14c69b2f596aea49412520223c045494a362dfb13614d9ddc4"
         },
         {
           "path": "tools/match/scratches/grim_set_config_var/scratch.conf",
           "repository_relative": true,
-          "sha256": "68cff5e199db1ef253a721229456961d8eaf64b7fe50871011a8b5654c6c1ca1"
+          "sha256": "52253eeaa11092dbccab85c730875e0c55c9a82497a1f743590ede5ec3080f97"
         },
         {
           "path": "tools/match/cl.sh",
@@ -9415,7 +9417,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_set_config_var/scratch.conf",
-      "config_sha256": "68cff5e199db1ef253a721229456961d8eaf64b7fe50871011a8b5654c6c1ca1",
+      "config_sha256": "52253eeaa11092dbccab85c730875e0c55c9a82497a1f743590ede5ec3080f97",
       "effective_end": 268462974,
       "end": 268462974,
       "function": "grim_set_config_var",
@@ -9423,21 +9425,21 @@
         {
           "address": 268461440,
           "canonical_config": "tools/match/scratches/grim_set_config_var/scratch.conf",
-          "canonical_config_sha256": "68cff5e199db1ef253a721229456961d8eaf64b7fe50871011a8b5654c6c1ca1",
+          "canonical_config_sha256": "52253eeaa11092dbccab85c730875e0c55c9a82497a1f743590ede5ec3080f97",
           "canonical_scratch": "tools/match/scratches/grim_set_config_var",
           "canonical_source": "tools/match/scratches/grim_set_config_var/scratch.cpp",
-          "canonical_source_sha256": "07985d79bf27b4ea9869c460fd4403d9366494b9b5aa0b02d1d6cecbc318e019",
+          "canonical_source_sha256": "ea26e08afcd16f14c69b2f596aea49412520223c045494a362dfb13614d9ddc4",
           "effective_end": 268462974,
           "end": 268462974,
           "function": "grim_set_config_var",
           "match": {
             "candidate_instructions": 443,
             "masked_mismatches": 0,
-            "masked_ok": 70,
+            "masked_ok": 74,
             "masked_unresolved": 0,
-            "prefix_instructions": 7,
-            "ratio": 0.9435665914221218,
-            "state": "wip",
+            "prefix_instructions": 443,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 443
           },
           "object_function_symbol": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z",
@@ -9447,19 +9449,19 @@
       "match": {
         "candidate_instructions": 443,
         "masked_mismatches": 0,
-        "masked_ok": 70,
+        "masked_ok": 74,
         "masked_unresolved": 0,
-        "prefix_instructions": 7,
-        "ratio": 0.9435665914221218,
-        "state": "wip",
+        "prefix_instructions": 443,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 443
       },
-      "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/c3062e9c8f6b9176/scratch.obj",
+      "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/89b2b03526970b8b/scratch.obj",
       "object_function_symbol": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z",
-      "object_sha256": "b7faf5589642a1325d3900607895f496e8986a516a6caedcc34e0b9c676d584b",
+      "object_sha256": "00d4f129347e904342ba2bf26be4b8df5b65d6362fe86bbc4a226a0fc57870e3",
       "scratch": "tools/match/scratches/grim_set_config_var",
       "source": "tools/match/scratches/grim_set_config_var/scratch.cpp",
-      "source_sha256": "07985d79bf27b4ea9869c460fd4403d9366494b9b5aa0b02d1d6cecbc318e019",
+      "source_sha256": "ea26e08afcd16f14c69b2f596aea49412520223c045494a362dfb13614d9ddc4",
       "target_size": 1534,
       "translation_unit": {
         "kind": "isolated",
@@ -10656,12 +10658,12 @@
         {
           "path": "tools/match/scratches/grim_is_key_active/scratch.cpp",
           "repository_relative": true,
-          "sha256": "17211906a50c5fbb491c128f7301d6258734b0ee6d17c95f2cd120a9943c3339"
+          "sha256": "c120c4879e3c190bcb66654bd8c7cc16118e377fc5ed0dcee39d0f69e476368b"
         },
         {
           "path": "tools/match/scratches/grim_is_key_active/scratch.conf",
           "repository_relative": true,
-          "sha256": "07b512808417858c099dfd42c868270be373614f43a0c2a807b5937694584ae7"
+          "sha256": "419ec0bcad970432daa0881f8bc6aaa8bd1537ef13561177a97b80e0bfe75c4d"
         },
         {
           "path": "tools/match/cl.sh",
@@ -10686,7 +10688,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_is_key_active/scratch.conf",
-      "config_sha256": "07b512808417858c099dfd42c868270be373614f43a0c2a807b5937694584ae7",
+      "config_sha256": "419ec0bcad970432daa0881f8bc6aaa8bd1537ef13561177a97b80e0bfe75c4d",
       "effective_end": 268464552,
       "end": 268464552,
       "function": "grim_is_key_active",
@@ -10694,21 +10696,21 @@
         {
           "address": 268464096,
           "canonical_config": "tools/match/scratches/grim_is_key_active/scratch.conf",
-          "canonical_config_sha256": "07b512808417858c099dfd42c868270be373614f43a0c2a807b5937694584ae7",
+          "canonical_config_sha256": "419ec0bcad970432daa0881f8bc6aaa8bd1537ef13561177a97b80e0bfe75c4d",
           "canonical_scratch": "tools/match/scratches/grim_is_key_active",
           "canonical_source": "tools/match/scratches/grim_is_key_active/scratch.cpp",
-          "canonical_source_sha256": "17211906a50c5fbb491c128f7301d6258734b0ee6d17c95f2cd120a9943c3339",
+          "canonical_source_sha256": "c120c4879e3c190bcb66654bd8c7cc16118e377fc5ed0dcee39d0f69e476368b",
           "effective_end": 268464552,
           "end": 268464552,
           "function": "grim_is_key_active",
           "match": {
-            "candidate_instructions": 176,
-            "masked_mismatches": 1,
-            "masked_ok": 7,
+            "candidate_instructions": 175,
+            "masked_mismatches": 0,
+            "masked_ok": 13,
             "masked_unresolved": 0,
-            "prefix_instructions": 95,
-            "ratio": 0.792022792022792,
-            "state": "wip",
+            "prefix_instructions": 175,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 175
           },
           "object_function_symbol": "?grim_is_key_active@IGrim2D_cpp@@UAEEH@Z",
@@ -10716,21 +10718,21 @@
         }
       ],
       "match": {
-        "candidate_instructions": 176,
-        "masked_mismatches": 1,
-        "masked_ok": 7,
+        "candidate_instructions": 175,
+        "masked_mismatches": 0,
+        "masked_ok": 13,
         "masked_unresolved": 0,
-        "prefix_instructions": 95,
-        "ratio": 0.792022792022792,
-        "state": "wip",
+        "prefix_instructions": 175,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 175
       },
       "object": "tools/match/scratches/grim_is_key_active/build/msvc6.5/734c51d94292c3ca/scratch.obj",
       "object_function_symbol": "?grim_is_key_active@IGrim2D_cpp@@UAEEH@Z",
-      "object_sha256": "08affa62ba77fdc517578197bfa15a5d292de5cd38ba4cca087207ccc12174b9",
+      "object_sha256": "db2029ea55a2d7f71f165c41cbf3a0604253131071e33da85216e777d7d2ae40",
       "scratch": "tools/match/scratches/grim_is_key_active",
       "source": "tools/match/scratches/grim_is_key_active/scratch.cpp",
-      "source_sha256": "17211906a50c5fbb491c128f7301d6258734b0ee6d17c95f2cd120a9943c3339",
+      "source_sha256": "c120c4879e3c190bcb66654bd8c7cc16118e377fc5ed0dcee39d0f69e476368b",
       "target_size": 456,
       "translation_unit": {
         "kind": "isolated",
@@ -17333,8 +17335,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 133,
-    "wip": 6
+    "match": 136,
+    "wip": 3
   },
   "translation_units": {
     "cluster_count": 3,

@@ -51,7 +51,7 @@ tools/match/scratches/grim_init_system/build/msvc6.5/acfdbc66ecd8f91e/scratch.ob
 tools/match/scratches/grim_shutdown/build/msvc6.5/11fb47577925344b/scratch.obj
 tools/match/scratches/grim_apply_settings/build/msvc6.5/f3d37ff0bdab2452/scratch.obj
 tools/match/scratches/grim_set_texture_stage_ops/build/msvc6.5/6f329768062f1576/scratch.obj
-tools/match/scratches/grim_set_config_var/build/msvc6.5/c3062e9c8f6b9176/scratch.obj
+tools/match/scratches/grim_set_config_var/build/msvc6.5/89b2b03526970b8b/scratch.obj
 tools/match/scratches/grim_get_config_var/build/msvc6.5/d517da5885ff6a9a/scratch.obj
 tools/match/scratches/grim_get_error_text/build/msvc6.5/e308ff216be8f74b/scratch.obj
 tools/match/scratches/grim_clear_color/build/msvc6.5/9ee087175c440c87/scratch.obj

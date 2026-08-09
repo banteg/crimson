@@ -1,8 +1,9 @@
 # `highscore_sync_worker`
 
-Native target: `crimsonland.exe` at `0x0042d0e0` (1970 bytes).
+Native target: `crimsonland.exe` at `0x0042d0e0..0x0042d89d`
+(1981 bytes, exclusive end).
 
-Work in progress: 66.99% normalized match, 26/519-instruction exact prefix,
+Work in progress: 67.75% normalized match, 26/525-instruction exact prefix,
 517 candidate instructions, and 107/0/0 reference audit. The candidate also
 reproduces the native `0x160`-byte frame.
 
@@ -171,3 +172,19 @@ string lowering, the native field-anchored submit cursor, scalar-slot reuse,
 and shared failure tails. The bounded natural forms above either compile
 identically or regress, so no artificial aliases, volatility, raw owner
 offsets, fake references, padding, or register forcing are retained.
+
+## Live target-extent correction
+
+The provisional manifest extent stopped at `0x0042d892`, immediately before
+the native saved-register and frame epilogue. Live Binary Ninja assigns the
+entire terminal basic block `0x0042d87b..0x0042d89d` to
+`highscore_sync_worker`: `0x0042d892..0x0042d89c` contains `pop edi`,
+`pop esi`, `pop ebp`, `pop ebx`, `add esp, 0x160`, and `ret`. The next function,
+`statistics_update_check_worker`, starts at `0x0042d8a0`.
+
+The curated `name_map.json` end is now `0x0042d89d`, so the canonical function
+manifest includes the complete epilogue. With no source change,
+the corrected extent improves the focused score from
+`1319.6718146718147/1970` (`66.98841698841699%`, 517/519 instructions) to
+`1342.2130518234167/1981` (`67.75431861804223%`, 517/525 instructions), keeps
+the exact prefix at 26, and preserves the clean `107/0/0` reference audit.

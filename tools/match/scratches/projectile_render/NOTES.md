@@ -953,3 +953,25 @@ the 3,021-instruction native target. References improve from `444/0/10` to
 
 The retained source has SHA-256
 `69e88872af0ebc65643871a25392f8e0ad009c0ca74f0887d477a549ac04b3b4`.
+
+## Fire-overlay type owner
+
+The independent Fire Bullets overlay at `0x004253bb..0x0042544a` has a real
+source-ownership asymmetry. Its active flag, life timer, rotation, and draw
+position advance through the current 0x40-byte projectile record, but the
+type gate at `0x004253cf` reads `[EDI+0x20]`. MLIL SSA traces `EDI` back to
+the primary-projectile pointer established at `0x0042418c`; after that pass
+finishes it still names `projectile_pool[0x5f]`. Thus the native overlay tests
+the last primary record's type for every current record rather than reusing
+the current overlay cursor.
+
+An explicit `fire_type_owner` for `projectile_pool[0x5f]` recovers that native
+semantic boundary without disturbing the exhausted overlay geometry. The
+more literal shared-pointer lifetime spellings are globally regressive, while
+placing this fixed owner immediately before the overlay is the smallest
+tradeoff-free form. It adds 4.250 fuzzy-weighted bytes, raises the ratio from
+58.3813071% to 58.4151710%, and keeps the candidate at 2,885/3,021
+instructions with the same `448/0/10` reference audit.
+
+The retained source has SHA-256
+`ca0add177b6fdef14fa5477c7883ab2a49996cb4c095fd59102f0f97a298146b`.

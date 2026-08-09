@@ -1041,12 +1041,13 @@ extern "C" void projectile_render(float transition_alpha)
     grim_interface_ptr->grim_set_color(
         1.0f, 1.0f, 1.0f, transition_alpha);
     grim_interface_ptr->grim_begin_batch();
+    projectile_t *fire_type_owner = &projectile_pool[0x5f];
     for (projectile_index = 0;
          projectile_index < 0x60;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
         if (projectile->active
-            && projectile->pos.tail.vy.type_id
+            && fire_type_owner->pos.tail.vy.type_id
                 == PROJECTILE_TYPE_FIRE_BULLETS
             && projectile->pos.tail.vy.life_timer == 0.4f) {
             grim_interface_ptr->grim_set_rotation(projectile->angle);

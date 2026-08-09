@@ -597,12 +597,12 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
 
     coverage = native_provider_coverage(config, closure)
 
-    assert coverage["covered_symbols"] == 54
-    assert coverage["import_symbols"] == 21
+    assert coverage["covered_symbols"] == 53
+    assert coverage["import_symbols"] == 20
     assert coverage["import_exports"] == 20
     assert coverage["generated_import_symbols"] == 5
-    assert coverage["archive_symbols"] == 49
-    assert coverage["link_dependency_symbols"] == 65
+    assert coverage["archive_symbols"] == 48
+    assert coverage["link_dependency_symbols"] == 66
     assert coverage["closure_placeholder_symbols"] == 0
     assert coverage["link_dependency_placeholder_symbols"] == 1
     assert coverage["placeholder_symbols"] == 1
@@ -630,9 +630,10 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
         provider.name
         for provider in config.providers
         if provider.resolution == "archive-library"
-    ] == [
-        "msvcrt.dll",
-        "recovered-platform",
+        ] == [
+            "msvcrt.dll",
+            "msvcrt-strdup-link-dependency",
+            "recovered-platform",
         "recovered-platform-config-dialog",
         "recovered-platform-dinput-data",
         "recovered-platform-dxguid",
@@ -758,8 +759,8 @@ def test_default_grim_link_manifest_records_recovered_platform_frontier() -> Non
     assert manifest["schema"] == 3
     assert manifest["status"] == "linked"
     assert manifest["runnable"] is False
-    assert manifest["summary"]["link_dependency_symbols"] == 65
-    assert manifest["summary"]["archive_symbols"] == 49
+    assert manifest["summary"]["link_dependency_symbols"] == 66
+    assert manifest["summary"]["archive_symbols"] == 48
     assert manifest["summary"]["import_exports"] == 20
     assert manifest["summary"]["closure_placeholder_symbols"] == 0
     assert manifest["summary"]["link_dependency_placeholder_symbols"] == 1
@@ -1010,7 +1011,7 @@ def test_native_provider_import_definitions_preserve_reference_export_names() ->
     ]
     assert [
         (alias.alias, alias.target)
-        for alias in providers["msvcrt.dll"].aliases
+        for alias in providers["msvcrt-strdup-link-dependency"].aliases
     ] == [("_strdup", "__strdup")]
     assert providers["directx-8.1-d3dx8-kernel32"].scope == "link-dependency"
     assert "    FindResourceW\n" in render_native_import_definition(

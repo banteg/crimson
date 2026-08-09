@@ -90,12 +90,6 @@
           "note": "The provenance manifest pins the original VC6 SP6 MSVCRT import archive used by the reference runtime seam."
         }
       ],
-      "aliases": [
-        {
-          "alias": "_strdup",
-          "target": "__strdup"
-        }
-      ],
       "symbols": [
         {
           "name": "??2@YAPAXI@Z",
@@ -171,11 +165,31 @@
           "name": "__imp__strdup",
           "link_name": "strdup",
           "export": "_strdup"
-        },
+        }
+      ]
+    },
+    {
+      "name": "msvcrt-strdup-link-dependency",
+      "kind": "static-library",
+      "resolution": "archive-library",
+      "scope": "link-dependency",
+      "archive": "vc6-sp6-msvcrt",
+      "evidence": [
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The VC6 import archive member pairs the direct _strdup thunk with the __imp__strdup slot required by recovered Grim callers."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_strdup",
+          "target": "__strdup"
+        }
+      ],
+      "symbols": [
         {
           "name": "_strdup",
-          "link_name": "strdup",
-          "export": "_strdup"
+          "binding": "function"
         }
       ]
     },

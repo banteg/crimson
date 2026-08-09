@@ -117,7 +117,7 @@
       }
     }
   ],
-  "audit_digest": "cf9a30522cd23b879ebc2f5e96349841726537895672dc628ef4c096003e1dcd",
+  "audit_digest": "37b308fe29beab60409c5a72f88a26c7b8766f39a1bc5e0f366b34c337307bd0",
   "entry": {
     "symbol": "DllMain"
   },
@@ -139,7 +139,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "8de5e8a84968d7116ff3116167e636afa8b38761abe31c17b9b88152aba4ebd0"
+    "sha256": "ca2531fe7342299f57cfa5283ed9ecc122fc45105e97af3943a6a0e7180c1f82"
   },
   "placeholder_object": {
     "discarded_symbols": [],
@@ -152,26 +152,13 @@
     "symbol_count": 1
   },
   "provider_config": {
-    "declared_sha256": "fce9f21a7fd881f60535c87936afa137799fa3949fde237349ec413acbfeccd7",
+    "declared_sha256": "238978cf15f03119e9b3fb96a227d04ff50f89479ed432e1f30d6c25faaa1ccd",
     "path": "tools/native/providers/grim.dll.json",
     "repository_relative": true,
-    "sha256": "fce9f21a7fd881f60535c87936afa137799fa3949fde237349ec413acbfeccd7"
+    "sha256": "238978cf15f03119e9b3fb96a227d04ff50f89479ed432e1f30d6c25faaa1ccd"
   },
   "providers": [
     {
-      "aliases": {
-        "object": {
-          "path": "analysis/native/grim.dll/link/providers/msvcrt-dll-aliases.obj",
-          "repository_relative": true,
-          "sha256": "64d84c539a3db0923f87986c8069579a8b66675cdc649443b4c1504634142bdf"
-        },
-        "symbols": [
-          {
-            "alias": "_strdup",
-            "target": "__strdup"
-          }
-        ]
-      },
       "archive": "vc6-sp6-msvcrt",
       "evidence": [
         {
@@ -206,7 +193,37 @@
         "__imp__fseek",
         "__imp__ftell",
         "__imp__vsprintf",
-        "__imp__strdup",
+        "__imp__strdup"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/msvcrt-strdup-link-dependency-aliases.obj",
+          "repository_relative": true,
+          "sha256": "64d84c539a3db0923f87986c8069579a8b66675cdc649443b4c1504634142bdf"
+        },
+        "symbols": [
+          {
+            "alias": "_strdup",
+            "target": "__strdup"
+          }
+        ]
+      },
+      "archive": "vc6-sp6-msvcrt",
+      "evidence": [
+        {
+          "note": "The VC6 import archive member pairs the direct _strdup thunk with the __imp__strdup slot required by recovered Grim callers.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "42486b29afffe23e8fccd5c4aa17837b5daff641cb58f857a519d563e04fc127"
+        }
+      ],
+      "kind": "static-library",
+      "name": "msvcrt-strdup-link-dependency",
+      "resolution": "archive-library",
+      "scope": "link-dependency",
+      "symbols": [
         "_strdup"
       ]
     },
@@ -1314,7 +1331,7 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "f856b251664b41f1525a405d5fa25f78b06693137d929e889625811cf9cfe6f6"
+          "sha256": "1dd18b11dfe3af229647d94e0a050613af8867daa92ca1e2c0bee5f2761c1985"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",
@@ -1708,26 +1725,33 @@
   "schema": 3,
   "status": "linked",
   "summary": {
-    "archive_symbols": 49,
+    "archive_symbols": 48,
     "closure_placeholder_symbols": 0,
-    "covered_symbols": 54,
+    "covered_symbols": 53,
     "discarded_placeholder_symbols": 0,
     "generated_import_symbols": 5,
     "import_exports": 20,
-    "import_symbols": 21,
+    "import_symbols": 20,
     "input_object_count": 168,
     "link_dependency_placeholder_symbols": 1,
-    "link_dependency_symbols": 65,
+    "link_dependency_symbols": 66,
     "placeholder_symbols": 1,
     "providers": [
       {
-        "alias_count": 1,
         "archive": "vc6-sp6-msvcrt",
         "kind": "reference-import",
         "name": "msvcrt.dll",
         "resolution": "archive-library",
         "scope": "closure",
-        "symbol_count": 16
+        "symbol_count": 15
+      },
+      {
+        "alias_count": 1,
+        "kind": "static-library",
+        "name": "msvcrt-strdup-link-dependency",
+        "resolution": "archive-library",
+        "scope": "link-dependency",
+        "symbol_count": 1
       },
       {
         "alias_count": 2,
