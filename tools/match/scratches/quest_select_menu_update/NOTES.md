@@ -40,13 +40,12 @@ match.
 ## Matching evidence and honest residual
 
 The verified VC6 build is now 803 normalized instructions against 803 native,
-scores 95.26774595267746%, and audits 282 references as resolved, zero as
+scores 95.8904109589041%, and audits 282 references as resolved, zero as
 unresolved, and zero as mismatched. Its weighted score is
-3273.3997509339974/3436, leaving a 162.60024906600256-byte fuzzy gap. The
-broad behavior and static-constructor sequence are recovered, but the natural
-reconstruction still uses a 56-byte frame while native uses 48 bytes. The
-remaining small regions are register/lifetime and stack-layout differences;
-they are recorded rather than hidden with match-only shaping.
+3294.794520547945/3436, leaving a 141.2054794520548-byte fuzzy gap. The broad
+behavior, static-constructor sequence, and native 48-byte frame are recovered.
+The remaining small regions are register/lifetime and instruction-scheduling
+differences; they are recorded rather than hidden with match-only shaping.
 
 The panel geometry now uses the recovered UI element and vertex position
 aggregates in native operand order. Reordering the equivalent commutative
@@ -245,12 +244,23 @@ lost aggregate similarity despite matching one local load order. A compiler
 profile matrix (`/G5`, `/G6`, `/Ob1`, `/Ob2`, `/Ot`, `/Oy-`, `/Os`, and `/O1`)
 found no improvement over the retained `/O2 /GB /W3 /GR-` build.
 
+## Back-position scope correction
+
+Exact neighboring menu callbacks keep one-shot button-coordinate vectors in a
+short block around the widget update. Applying that ownership boundary to the
+Back position lets VC6 end its lifetime at `ui_button_update` and reuse the
+native stack pair. The candidate frame drops from 56 bytes to the native 48
+bytes without changing behavior, instruction count, or references. The score
+moves from 95.26774595267746% to 95.8904109589041%, and the exact prefix grows
+from zero to nine instructions. A fresh normalized diff confirms the former
+frame-wide stack-offset residual is gone.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja audit retains the complete stage-icon, Hardcore,
 locked/unlocked row, Back, quick-select, validation, and gameplay-transition
 paths. All 282 audited references resolve, with no unresolved or mismatched
-entries. The remaining 48-byte native versus 56-byte candidate frame and
-small register/lifetime differences are compiler layout, not missing menu
-behavior.
+entries. The native and candidate frames are both 48 bytes; the remaining
+small register/lifetime and scheduling differences are compiler layout, not
+missing menu behavior.

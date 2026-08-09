@@ -377,12 +377,14 @@ row_done:
 
     static quest_select_button_t back_button;
     back_button.label = menu_label_back;
-    quest_select_vec2_t back_position;
-    back_position.x = position.x + 148.0f;
-    back_position.y = position.y;
-    ui_button_update(
-        (float *)&back_position,
-        (ui_button_t *)&back_button);
+    {
+        quest_select_vec2_t back_position;
+        back_position.x = position.x + 148.0f;
+        back_position.y = position.y;
+        ui_button_update(
+            (float *)&back_position,
+            (ui_button_t *)&back_button);
+    }
     if (back_button.activated) {
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_PLAY_GAME_MENU;

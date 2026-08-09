@@ -206,3 +206,19 @@ while VC6 loads Survival, Rush, and quest for the current summed expression.
 They remain explained source/compiler scheduling debt; no alias or data-map
 change is warranted. Retained source SHA-256:
 `89caefd22e46e1e8666b7d8bf904ba4a8148d31cc889e7c7b5211e26c7c4b418`.
+
+## Play-count operand ownership (2026-08-09)
+
+The four remaining audit groups share one VC6 whole-function scheduling
+decision. The first roomy-layout test previously spelled the nonnegative
+counter sum as quest + Survival + Rush, for which VC6 emitted Survival, Rush,
+quest loads at all four repeated tests. Rotating that first source expression
+to Rush + quest + Survival preserves the counter-domain result and makes VC6
+emit the native quest, Survival, Rush load order at every site. This removes
+all 12 aligned mismatches without aliases, data-map changes, or match-only
+shaping.
+
+The instruction score stays **95.4341%**, with the same 778/777 instruction
+counts, 120-instruction prefix, and 147.844373-byte weighted gap. The reference
+audit improves from `306/0/12` to **`318/0/0`**. Retained source SHA-256:
+`8928bdca3bc79424a2ceb3dda4b710a1045da46c0c31361af0a1e96aaeb038de`.

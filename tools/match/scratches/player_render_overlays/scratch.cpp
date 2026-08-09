@@ -253,14 +253,14 @@ extern "C" void player_render_overlays(void)
     player_render_set_uv(player_overlay_torso_uv8, frame);
     grim_interface_ptr->grim_set_rotation(
         player_state_table[render_overlay_player_index].aim_heading);
-    half_size =
-        player_state_table[render_overlay_player_index].size * 0.5f;
     render_scratch_f0 =
         camera_offset
         + *(player_render_vec2_t *)&player_state_table
               [render_overlay_player_index]
                   .pos_x
-        - half_size
+        - player_render_vec2_t(
+            player_state_table[render_overlay_player_index].size * 0.5f,
+            player_state_table[render_overlay_player_index].size * 0.5f)
         + recoil;
     sprite_size =
         player_state_table[render_overlay_player_index].size * 1.03f;

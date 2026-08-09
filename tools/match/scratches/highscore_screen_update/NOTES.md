@@ -7,7 +7,7 @@ screen callback:
 
 - derives both UI panels from element slots 09 and 33, draws the current-mode
   title, quest selector, score headings, Hardcore toggle, and ten formatted
-  score rows;
+  score rows at a time from the top-100 backing table;
 - distinguishes time-based Rush/Quest records from score-based modes, preserves
   the native internet-record marker, and renders the hovered record detail with
   its one-based rank;
@@ -432,3 +432,20 @@ compiler lowering or control-layout boundaries, not source-precision leads.
 The scratch remains at 78.0770199%, 1,969/2,004 instructions, and `589/0/7`
 references. The complete experiment ledger SHA-256 is
 `9dc677a5a86b9472a33fcd27c5fa502d31d8ea852362ab0e67e333bcc61636d4`.
+
+## Top-100 score backing extent (2026-08-09)
+
+Comparison with the exact scrollbar helper separated its ten-row viewport
+from the number of score records backing it. Native advances the 164-byte row
+cursor from `0x004ccd68` to `0x004d0d78`; the `0x4010`-byte span is exactly
+100 rows, not ten. The adjacent item-pointer cursor likewise has capacity for
+all 100 entries before the scrollbar object. The former ten-entry declarations
+therefore confused `visible_rows = 10` with the backing-table extent.
+
+Recovering both static arrays as 100 entries and walking the full range is a
+semantic correction that is instruction-byte neutral: the scratch remains
+**78.0770199%**, 1,969/2,004 instructions, prefix 45, and weighted gap
+`1759.5383840926252`. The corrected end relocation now resolves exactly,
+improving the reference audit from `589/0/7` to **`590/0/6`** with no dropped
+audit entry. Retained source SHA-256:
+`5b5ecd33d88f00efc6b9a61a474bb962cb06d0091cf60396873fa55212cef5e8`.

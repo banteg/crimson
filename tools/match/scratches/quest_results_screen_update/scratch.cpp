@@ -424,12 +424,14 @@ extern "C" void quest_results_screen_update(void)
         name_submit_button.label = "Ok";
         name_submit_button.alpha = alpha;
 
-        quest_results_vec2_t button_xy;
-        button_xy.x = xy.x + 170.0f;
-        button_xy.y = xy.y - 8.0f;
-        ui_button_update(
-            (float *)&button_xy,
-            (ui_button_t *)&name_submit_button);
+        {
+            quest_results_vec2_t button_xy;
+            button_xy.x = xy.x + 170.0f;
+            button_xy.y = xy.y - 8.0f;
+            ui_button_update(
+                (float *)&button_xy,
+                (ui_button_t *)&name_submit_button);
+        }
         if (ui_text_input_update(
                 (float *)&xy,
                 (ui_text_input_state_t *)&name_input)
@@ -472,13 +474,16 @@ extern "C" void quest_results_screen_update(void)
         xy.y += 30.0f;
         grim_interface_ptr->grim_set_color_ptr(
             &render_tint_color_r);
-        button_xy.x = xy.x + 26.0f;
-        button_xy.y = xy.y + 16.0f;
-        ui_text_input_render(
-            (float *)&button_xy,
-            &highscore_active_record,
-            alpha,
-            quest_results_highscore_rank_index + 1);
+        {
+            quest_results_vec2_t button_xy;
+            button_xy.x = xy.x + 26.0f;
+            button_xy.y = xy.y + 16.0f;
+            ui_text_input_render(
+                (float *)&button_xy,
+                &highscore_active_record,
+                alpha,
+                quest_results_highscore_rank_index + 1);
+        }
         goto done;
     }
 

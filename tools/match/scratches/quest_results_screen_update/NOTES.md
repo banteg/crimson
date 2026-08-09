@@ -38,14 +38,12 @@ those scoped `REFERENCE_ALIASES`.
 
 ## Matching evidence and honest residual
 
-The verified VC6 build is 1,165 normalized instructions against 1,168 native,
-scores 88.38%, and audits 442 references as resolved, zero as unresolved, and
-2 as mismatched within nonmatching instruction regions. The remaining broad
-delta is register/stack allocation: native uses a 24-byte frame and caches the
-working coordinates in `edi`/`ebp`, while the natural reconstruction still
-uses a 32-byte frame and hoists the constant-one and name-buffer values.
-Bounded lifetime tests leave that residual visible rather than forcing stack
-overlap.
+The verified VC6 build is 1,168 normalized instructions against 1,168 native,
+scores 95.11986301369864%, and audits 460 references as resolved, zero as
+unresolved, and zero as mismatched. The native and candidate both use a
+24-byte frame and preserve the working coordinates in `edi`/`ebp`. The
+remaining delta is small register/lifetime and instruction-scheduling residue;
+bounded lifetime tests leave it visible rather than forcing storage overlap.
 
 The score-ranking branch at `0x0041168d` is invalid-first: records ranked 100
 or worse clear the name-input state, advance directly to the completed-results
@@ -228,8 +226,8 @@ forms clean improvements: the retained `strlen + 1` byte count and `memcpy`
 remove one instruction, align three more references, and produce an exact
 1,168/1,168 instruction count.
 
-The current source is **94.5205%**, has a 66-instruction exact prefix, and
-audits all `460/0/0` normalized references. A final 39-variant
+That tranche reached **94.5205%**, a 66-instruction exact prefix, and all
+`460/0/0` normalized references. A final 39-variant
 `opening-register-allocation-mutations.json` sweep covers vector operand
 order, declaration order, copy ownership, and render-offset spelling; every
 non-regressing form is byte-identical, bounding the opening stack-slot
@@ -259,3 +257,24 @@ the complete 14-sweep, 253-variant ledger has zero errors and SHA-256
 `433ef5f879052545b4b126b66987f422046982154f8cc0c6ff13ef58d1e48444`.
 Together with the 39-variant opening allocation sweep, this closes ordinary
 lexical scope as the missing constraint.
+
+## Name-coordinate scope correction (2026-08-09)
+
+The name-entry phase used one source-level `button_xy` across the entire name
+validation block, then republished it for the high-score record render. The
+native lifetimes are separate: the submit-button coordinates die at
+`ui_button_update`, and the later render coordinates reuse that same stack
+pair. Giving each use its own short block expresses that ownership directly
+and lets VC6 recover the native allocation without an overlay.
+
+The score moves from 94.52054794520548% to 95.11986301369864%, a gain of
+29.10873287671258 weighted bytes. Instructions remain exactly 1,168/1,168,
+references remain `460/0/0`, and the exact prefix grows from 66 to 112
+instructions.
+
+Live Binary Ninja callsites at `0x00411e4a`, `0x00411e67`, `0x00411e84`, and
+`0x00411ea1` show that the four result-action buttons intentionally share the
+working coordinate. Native leaves each two-argument call on the stack, adjusts
+the same absolute Y slot, and performs one `add esp, 0x20` after the fourth
+call. Separate one-shot coordinate scopes would therefore contradict that
+native ownership pattern and are not introduced.

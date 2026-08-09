@@ -351,8 +351,8 @@ extern "C" void highscore_screen_update(void)
         }
     }
 
-    static char score_line_buffers[10][164];
-    static char *score_line_items[10];
+    static char score_line_buffers[100][164];
+    static char *score_line_items[100];
     int score_number = 1;
     int selected_score = -1;
     int score_count = 0;
@@ -409,7 +409,7 @@ extern "C" void highscore_screen_update(void)
         ++score_count;
         ++score_line_buffer;
         ++score_number;
-    } while (score_line_buffer < score_line_buffers + 10);
+    } while (score_line_buffer < score_line_buffers + 100);
 
     position.x += 16.0f;
     static highscore_scrollbar_t score_scrollbar;

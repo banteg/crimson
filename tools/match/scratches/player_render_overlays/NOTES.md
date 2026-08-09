@@ -23,7 +23,7 @@ therefore preserved as recovered native source shape, but deliberately not
 given a speculative gameplay name or treated as a required modern-port feature.
 
 With the standard `msvc6.5 /O2 /GB` profile, the complete candidate is an
-`85.20%` WIP (`1,136/1,148` instructions, prefix `9/1,148`). The target and
+`85.60%` WIP (`1,137/1,148` instructions, prefix `9/1,148`). The target and
 candidate prologues are identical through the `sub esp, 0x2c` local-frame
 allocation. Masked-reference auditing reports `325/0/0`: every aligned symbol
 resolves and agrees without a speculative alias.
@@ -34,7 +34,8 @@ prototype is now the proven stdcall
 `vec2f_t *(vec2f_t *, const vec2f_t *)`, replacing Binary Ninja's former cdecl
 `float *(float *, float *)` guess. Propagating that contract through this
 custom vector value remains matcher-neutral. The later target-direction
-assignment correction described below moves the current score to `85.20%`
+assignment correction described below first moved the score to `85.20%`;
+the alive-torso value-shape recovery raises the current score to `85.60%`
 with a `325/0/0` reference audit.
 
 The muzzle-flash weapon-flag arms deliberately retain their identical
@@ -222,3 +223,27 @@ differences, beginning at native `0x004285e8`; the largest later cluster is
 the multiplayer tint schedule at `0x00428c66-0x00428cd2`. The component
 correction is therefore retained as semantic recovery, while the remaining
 gap stays classified `RESIDUAL=compiler`.
+
+## Alive-torso half-size value shape
+
+The high-weight alive torso region at `0x00428a49..0x00428ad7` exposed one
+remaining source-shape difference. Native computes `size * 0.5f` once, keeps
+the result on x87, publishes a copy to `[esp+0x34]`, and consumes that same
+value for both vector components. The exact neighboring `creature_render_type`
+uses the corresponding house style: repeat the half-size expression in both
+temporary-vector constructor arguments and let VC6 common-subexpression it.
+
+Applying that shape only to the recoil-adjusted torso position recovers the
+native store and raises the whole-function match from `85.2014011%` to
+`85.6017505%`. The weighted score gains `18.344014` bytes, from
+`3,903.928196/4,582` to `3,922.272210/4,582`, while candidate instructions
+move from `1,136` to `1,137` against `1,148` native. Prefix remains 9 and the
+reference audit remains clean at `325/0/0`. The retained source SHA-256 is
+`fe2a459473a2a397f866a83d91d0eb8eba25be883712c58f22b632bb61c20aed`.
+
+Three bounded controls were rejected: localizing the existing scalar was
+byte-identical, publishing components directly through an inlined setter fell
+to `84.6221441%` and `320/0/0`, and setting a short-lived vector before copying
+it to the shared render vector fell to `84.7368421%` and `320/0/0`. The
+repeated component expression is therefore the only measured improvement from
+this focused region probe.

@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **733/810** functions matched exactly, **146108/341970** code bytes (**42.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **306470/341970** code bytes (**89.6%**).
+Fuzzy-weighted alignment is **306539/341970** code bytes (**89.6%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 91 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 95 recorded file inputs changed or missing
 - `grim.dll`: **stale** — 6 recorded file inputs changed or missing
 
 ## Function dispositions
@@ -96,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 597/671 | 128583/320805 | 40.1% | 285399/320805 | 89.0% | 671/671 | 320805/320805 | 100.0% | 597/671 |
+| crimsonland.exe | 597/671 | 128583/320805 | 40.1% | 285468/320805 | 89.0% | 671/671 | 320805/320805 | 100.0% | 597/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**597/671** functions, **128583/320805** bytes (**40.1%**), **285399/320805** fuzzy-weighted bytes (**89.0%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **597/671** scratches verified.
+**597/671** functions, **128583/320805** bytes (**40.1%**), **285468/320805** fuzzy-weighted bytes (**89.0%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **597/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -275,7 +275,7 @@ Artifact freshness issues:
 | match | quest_failed_main_menu_button_destroy | 0x00410cf0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-main-menu-button-empty-destructor |
 | match | quest_failed_play_another_button_destroy | 0x00410d00 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-another-button-empty-destructor |
 | match | quest_failed_play_again_button_destroy | 0x00410d10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-again-button-empty-destructor |
-| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4591/4857 | 266 | 1168/1168 | 94.52% | 66/1168 | 460/0/0 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
+| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4620/4857 | 237 | 1168/1168 | 95.12% | 112/1168 | 460/0/0 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
 | match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
 | match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
 | match | quest_results_play_again_button_destroy | 0x00412040 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-again-button-empty-destructor |
@@ -458,7 +458,7 @@ Artifact freshness issues:
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
-| wip | player_render_overlays | 0x00428390 | 4582 | 3904/4582 | 678 | 1136/1148 | 85.20% | 9/1148 | 325/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
+| wip | player_render_overlays | 0x00428390 | 4582 | 3922/4582 | 660 | 1137/1148 | 85.60% | 9/1148 | 325/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | wip | bonus_render | 0x004295f0 | 4088 | 3643/4088 | 445 | 1087/1088 | 89.10% | 14/1088 | 221/0/8 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
@@ -682,7 +682,7 @@ Artifact freshness issues:
 | match | ui_text_input_render | 0x004413a0 | 3504 | 3504/3504 | 0 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 614/614 | 0 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
 | match | ui_update_notice_button_destroy | 0x004423c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-ui-update-notice-button-destroy |
-| wip | highscore_screen_update | 0x004423d0 | 8026 | 6266/8026 | 1760 | 1969/2004 | 78.08% | 45/2004 | 589/0/7 |  | highscore-list-filters-online-sync-and-state-routing |
+| wip | highscore_screen_update | 0x004423d0 | 8026 | 6266/8026 | 1760 | 1969/2004 | 78.08% | 45/2004 | 590/0/6 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
 | match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
 | match | highscore_date_filter_list_destroy | 0x00444350 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-date-filter-list-empty-destructor |
@@ -736,7 +736,7 @@ Artifact freshness issues:
 | match | options_info_checkbox_destroy | 0x00447c80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-options-info-checkbox-destroy |
 | match | input_configure_for_label | 0x00447c90 | 58 | 58/58 | 0 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 53/53 | 0 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
-| wip | quest_select_menu_update | 0x00447d40 | 3436 | 3273/3436 | 163 | 803/803 | 95.27% | 0/803 | 282/0/0 |  | quest-stage-picker-hardcore-gating-and-start-routing |
+| wip | quest_select_menu_update | 0x00447d40 | 3436 | 3295/3436 | 141 | 803/803 | 95.89% | 9/803 | 282/0/0 |  | quest-stage-picker-hardcore-gating-and-start-routing |
 | match | quest_select_back_button_destroy | 0x00448ab0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-back-button-empty-destructor |
 | match | quest_select_hardcore_checkbox_destroy | 0x00448ac0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-hardcore-checkbox-empty-destructor |
 | match | quest_select_unused_orange_color_destroy | 0x00448ad0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-unused-orange-color-empty-destructor |
@@ -757,7 +757,7 @@ Artifact freshness issues:
 | match | controls_player_profile_list_destroy | 0x0044ed50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-player-profile-list-destroy |
 | match | controls_back_button_destroy | 0x0044ed60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-back-button-destroy |
 | match | controls_redefine_button_destroy | 0x0044ed70 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-controls-redefine-button-destroy |
-| wip | play_game_menu_update | 0x0044ed80 | 3238 | 3090/3238 | 148 | 778/777 | 95.43% | 120/777 | 306/0/12 |  | play-game-mode-buttons-player-count-and-routing |
+| wip | play_game_menu_update | 0x0044ed80 | 3238 | 3090/3238 | 148 | 778/777 | 95.43% | 120/777 | 318/0/0 |  | play-game-mode-buttons-player-count-and-routing |
 | match | play_game_player_count_list_destroy | 0x0044fa30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-player-count-list-empty-destructor |
 | match | play_game_tutorial_button_destroy | 0x0044fa40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-tutorial-button-empty-destructor |
 | match | play_game_hardcore_checkbox_destroy | 0x0044fa50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-hardcore-checkbox-empty-destructor |

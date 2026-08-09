@@ -184,7 +184,7 @@ extern "C" void play_game_menu_update(void)
         quest_unlock_index < 0x28 || config_player_count > 1;
     if (roomy_layout) {
         position.y += 32.0f;
-        if (quest_play_counts[11] + mode_play_survival + mode_play_rush <= 0
+        if (mode_play_rush + quest_play_counts[11] + mode_play_survival <= 0
             && config_player_count == 1) {
             ui_button_update(
                 (float *)&position, (ui_button_t *)&tutorial_button);
