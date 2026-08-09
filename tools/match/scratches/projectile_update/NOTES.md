@@ -1002,3 +1002,24 @@ bytes to `5085.8557/8409` (`60.4810997%`), moves the candidate from
 2,155 to 2,162 of 2,203 instructions, and improves references from
 `403/0/20` to `408/0/19`. The retained source SHA-256 is
 `d19d18a72f4955ad49d2de0594c1ccbc72c1605d72e89304eb5c6ee08eb988aa`.
+
+## Pool movement vector house style
+
+The recovered SDK's update loops consistently spell two-component motion as
+`position += time * velocity`. Applying that idiom to the secondary-projectile
+movement, sprite-effect movement, and the style-eight low-intensity particle
+arm recovers the corresponding constructor, scalar-multiply, and compound-add
+x87 schedules. The three sites interact through VC6 allocation: together they
+also improve the static-reference alignment, rather than merely shifting stack
+temporaries.
+
+The retained source raises `projectile_update` by 112.8544 fuzzy-weighted bytes,
+from `5085.8557/8409` to `5198.7101/8409` (`60.4810997%` to
+`61.8231666%`), and moves the candidate from 2,162 to 2,174 of 2,203 native
+instructions. References improve from `408/0/19` to `416/0/18`. Equivalent
+operator forms in the two high-intensity helper arms, the default
+low-intensity arm, collision geometry, velocity scaling, Pulse Gun knockback,
+and the final hit-creature displacement were measured individually and in the
+relevant interactions; all were neutral or regressive and are not retained.
+The retained source SHA-256 is
+`f283368028c152aa81044e3a1fd17fc2a5fcc22a375bc248eac1c9e50e47fa59`.

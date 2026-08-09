@@ -31,11 +31,25 @@ struct projectile_vec2_t {
     {
         return projectile_vec2_t(x - other.x, y - other.y);
     }
+
+    inline projectile_vec2_t &operator+=(const projectile_vec2_t &other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
 };
 
 inline projectile_vec2_t operator*(
     const projectile_vec2_t &value,
     float scalar)
+{
+    return projectile_vec2_t(scalar * value.x, scalar * value.y);
+}
+
+inline projectile_vec2_t operator*(
+    float scalar,
+    const projectile_vec2_t &value)
 {
     return projectile_vec2_t(scalar * value.x, scalar * value.y);
 }
@@ -830,13 +844,12 @@ extern "C" void projectile_update(void)
                     ++creature_id;
                 } while (creature_id < 0x180);
             } else {
-                vec2f_t movement = {
-                    frame_dt * secondary->pos.vx.vel_x,
-                    frame_dt * secondary->pos.vx.vy.vel_y,
-                };
+                projectile_vec2_t movement =
+                    frame_dt
+                    * *(projectile_vec2_t *)&secondary->pos.vx.velocity;
                 vec2_add(
                     &secondary->position,
-                    &movement,
+                    (vec2f_t *)&movement,
                     4.0f);
 
                 secondary_projectile_type_id_t type_id =
@@ -1164,13 +1177,8 @@ extern "C" void projectile_update(void)
     sprite_effect_t *sprite = sprite_effect_pool;
     do {
         if (sprite->active) {
-            float move_dt = frame_dt;
-            vec2f_t movement = {
-                move_dt * sprite->velocity.x,
-                move_dt * sprite->velocity.y,
-            };
-            sprite->position.x += movement.x;
-            sprite->position.y += movement.y;
+            *(projectile_vec2_t *)&sprite->position +=
+                frame_dt * *(projectile_vec2_t *)&sprite->velocity;
             sprite->rotation += frame_dt * 3.0f;
             sprite->color_a -= frame_dt;
             if (sprite->color_a <= 0.0f) {
@@ -1185,17 +1193,20 @@ extern "C" void projectile_update(void)
     particle_t *particle = particle_pool;
     do {
         if (particle->active) {
+            projectile_vec2_t &particle_position =
+                *(projectile_vec2_t *)&particle->position;
+            projectile_vec2_t &particle_velocity =
+                *(projectile_vec2_t *)&particle->velocity;
             unsigned char style_id = particle->style_id;
             if (style_id == 8) {
                 particle->intensity -= frame_dt * 0.11f;
                 particle->spin += frame_dt * 5.0f;
                 if (particle->render_flag) {
                     if (particle->intensity <= 0.15f) {
-                        float move_x = frame_dt * particle->velocity.x;
-                        particle->position.x +=
-                            move_x * 0.55f * particle->intensity;
-                        particle->position.y += frame_dt * particle->velocity.y
-                            * 0.55f * particle->intensity;
+                        particle_position +=
+                            frame_dt * particle_velocity
+                            * 0.55f
+                            * particle->intensity;
                     } else {
                         float move_x = frame_dt * particle->velocity.x;
                         vec2f_t movement = {
