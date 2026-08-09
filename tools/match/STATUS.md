@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **718/810** functions matched exactly, **138197/341970** code bytes (**40.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **305218/341970** code bytes (**89.3%**).
+Fuzzy-weighted alignment is **305229/341970** code bytes (**89.3%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 585/671 | 123253/320805 | 38.4% | 284412/320805 | 88.7% | 671/671 | 320805/320805 | 100.0% | 585/671 |
+| crimsonland.exe | 585/671 | 123253/320805 | 38.4% | 284423/320805 | 88.7% | 671/671 | 320805/320805 | 100.0% | 585/671 |
 | grim.dll | 133/139 | 14944/21165 | 70.6% | 20807/21165 | 98.3% | 139/139 | 21165/21165 | 100.0% | 133/139 |
 
 ## crimsonland.exe
 
-**585/671** functions, **123253/320805** bytes (**38.4%**), **284412/320805** fuzzy-weighted bytes (**88.7%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **585/671** scratches verified.
+**585/671** functions, **123253/320805** bytes (**38.4%**), **284423/320805** fuzzy-weighted bytes (**88.7%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **585/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -448,7 +448,7 @@ Artifact freshness issues:
 | wip | projectile_render | 0x00422c70 | 12551 | 7219/12551 | 5332 | 2880/3021 | 57.52% | 0/3021 | 444/0/10 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
-| wip | creature_update_all | 0x00426220 | 5330 | 2909/5330 | 2421 | 1297/1338 | 54.57% | 0/1338 | 225/0/2 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
+| wip | creature_update_all | 0x00426220 | 5330 | 2920/5330 | 2410 | 1298/1338 | 54.78% | 0/1338 | 225/0/2 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
 | match | fx_queue_add_random | 0x00427700 | 291 | 291/291 | 0 | 73/73 | 100.00% | 73/73 | 23/0/0 |  | gameplay-random-fx-queue |
 | match | fx_queue_random_color_destroy | 0x00427830 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | fx-random-color-trivial-destructor |
 | match | fx_queue_add_rotated | 0x00427840 | 210 | 210/210 | 0 | 55/55 | 100.00% | 55/55 | 18/0/0 |  | gameplay-rotated-fx-queue |

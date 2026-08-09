@@ -24,6 +24,17 @@ struct creature_vec2_t {
     {
         return creature_vec2_t(x - other.x, y - other.y);
     }
+
+    creature_vec2_t operator+(const creature_vec2_t &other)
+    {
+        return creature_vec2_t(x + other.x, y + other.y);
+    }
+
+    creature_vec2_t operator*(float scale)
+    {
+        return creature_vec2_t(x * scale, y * scale);
+    }
+
 };
 
 inline float creature_vec2_length(creature_vec2_t &value)
@@ -659,17 +670,19 @@ extern "C" void creature_update_all(void)
                                     player_take_damage(
                                         current_player_index,
                                         creature_pool[creature_index].contact_damage);
-                                    creature_vec2_t contact_delta(
-                                        player_state_table[current_player_index].position.x - position->x,
-                                        player_state_table[current_player_index].position.y - position->y);
+                                    creature_vec2_t contact_delta =
+                                        *(creature_vec2_t *)&player_state_table[
+                                            current_player_index
+                                        ].position
+                                        - *(creature_vec2_t *)position;
                                     D3DXVec2Normalize(
                                         (vec2f_t *)&contact_delta,
                                         (vec2f_t *)&contact_delta);
-                                    creature_vec2_t impact(
-                                        player_state_table[current_player_index].position.x
-                                            + contact_delta.x * 3.0f,
-                                        player_state_table[current_player_index].position.y
-                                            + contact_delta.y * 3.0f);
+                                    creature_vec2_t impact =
+                                        *(creature_vec2_t *)&player_state_table[
+                                            current_player_index
+                                        ].position
+                                        + contact_delta * 3.0f;
                                     fx_queue_add_random((vec2f_t *)&impact);
                                     *attack_cooldown += 1.0f;
                                 }

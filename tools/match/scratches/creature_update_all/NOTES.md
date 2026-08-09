@@ -535,3 +535,23 @@ fallback, auto-target, forced-target, tethered-target, and later interaction
 distance sites. Every additional application regressed alignment and several
 lost resolved references, so only the first site is retained. This confirms a
 specific native temporary-lifetime boundary rather than a type-wide rewrite.
+
+## Contact-impact vector style
+
+The melee-contact block exposes a second complete SDK expression boundary.
+The native source-shaped form subtracts the creature position from the selected
+player position, normalizes that vector in place, and constructs the queued
+impact as `player.position + direction * 3.0f`. Replacing the two manual
+component constructors with those temporary-returning operators raises the
+candidate from 2,908.743833017078/5,330 (54.573055028463%) to
+2,919.772382397572/5,330 (54.779969650986%), a gain of
+11.028549380494 weighted bytes. Candidate instructions move from 1,297 to
+1,298 against 1,338 native instructions, while references remain `225/0/2`.
+
+The boundary is interaction-sensitive: subtraction alone is byte-identical,
+while the scaled addition alone regresses the wider allocation and loses four
+aligned references. The complete expression is the clean winner. Scalar-first
+versus vector-first multiplication is byte-identical, and applying aggregate
+addition to the neighboring linked-target stores regresses sharply. The
+retained form therefore records the specific native value-object lifetime
+rather than rewriting every two-component calculation indiscriminately.
