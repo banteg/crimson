@@ -404,11 +404,11 @@ extern "C" void highscore_screen_update(void)
                 HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);
             break;
         }
-        record_flags += sizeof(highscore_record_t);
-        ++score_line_item;
         ++score_count;
         ++score_line_buffer;
+        record_flags += sizeof(highscore_record_t);
         ++score_number;
+        ++score_line_item;
     } while (score_line_buffer < score_line_buffers + 100);
 
     position.x += 16.0f;

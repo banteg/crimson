@@ -14,9 +14,9 @@ fade envelopes and that the icon size pulse is `pow(sin(phase), 2.0)`, not a
 fourth power. The modern renderer parity fix is tracked separately from this
 matching scratch.
 
-The complete VC6 scratch currently matches 89.10% (1,088 target instructions,
+The complete VC6 scratch currently matches 89.93% (1,088 target instructions,
 1,087 candidate instructions, 14-instruction exact prefix). Reference auditing
-reports 221 aligned references, no unresolved references, and 8 mismatches.
+reports 223 aligned references, no unresolved references, and 6 mismatches.
 The remaining reference mismatches are instruction-alignment or strength-
 reduced field-anchor differences such as `particle_style_id` versus the same
 record's `intensity` field; no reference aliases are used.
@@ -179,6 +179,27 @@ Three complete follow-up sweeps bound the remaining nearby residual:
 
 The complete 12-line experiment log has SHA-256
 `2d2ecd79a6d5c09174439a891a5a50f8530eec8664e4a9f111ef203b60183625`.
+
+## Sprite-effect publication ownership
+
+Native `0x0042a53e..0x0042a5b8` keeps the final smoke-effect loop's induction
+register anchored at `sprite_effect_t::scale`: `active` is read at `-0x28`,
+`rotation` at `-0x14`, and the color and position fields at their corresponding
+negative displacements. The prior loop-local `sprite_effect_t *effect` alias
+made VC6 anchor the same 0x2c-byte walk at `rotation`, leaving the body
+instruction-identical except for every member displacement.
+
+Publishing the fields directly from `sprite_effect_pool[effect_index]` is the
+natural global-array spelling used elsewhere in the gameplay source and lets
+VC6 recover the native `scale`-owned induction without an interior pointer or
+container recovery. Merely narrowing the aggregate alias to the active branch
+was byte-neutral. Removing it raises the whole-function match from 89.1034% to
+89.9310%, adds 33.832 fuzzy-weighted bytes, and improves the reference audit
+from `221/0/8` to `223/0/6`, with instruction counts and prefix unchanged. The
+entire smoke-effect loop body now matches instruction-for-instruction; its only
+reported differences are branch-label displacement inherited from earlier
+regions. The retained source SHA-256 is
+`6e96d59dd82e6d6beb05d87453cf2b6d50d55151d93872ed918165f63f9e8d5f`.
 
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output confirms the ordinary and weapon

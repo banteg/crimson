@@ -1727,7 +1727,7 @@ extern "C" void player_update(void)
                 float rocket_heading = (angle_step - 3.1415927f)
                     - movement_heading * player->ammo * 0.5f;
                 int rocket_count = 0;
-                if (player->ammo > 0.0f) {
+                if (0.0f < player->ammo) {
                     do {
                         scratch_pos.x = movement_input.x + player_position->x;
                         scratch_pos.y = movement_input.y + player_position->y;

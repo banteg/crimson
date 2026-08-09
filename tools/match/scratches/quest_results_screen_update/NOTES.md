@@ -352,3 +352,29 @@ Publishing `xy.y` first removes this residual. Similarity rises from
 `463/0/0`, and the region count falls from 23 to 22. The retained source
 SHA-256 is
 `058231a2386b23ec8ab6748a94817d52bdd16e82564e418444062b8d79015693`.
+
+## Name-save cursor publication (2026-08-09)
+
+The next independent residual was the validated-name save at
+`0x00411893..0x004118e6`. Native finishes the name-buffer scan before
+capturing `name_input.cursor`, publishes that value to `player_name_length`
+between the scan and inline copy, then clears the input state while retaining
+the cursor for the record terminator. The exact `game_over_screen_update`
+sibling likewise owns the copy before the cursor publication.
+
+Restoring that source boundary with `strcpy`, followed by a named cursor
+snapshot and publication, lets VC6 reproduce the native interleaving. The
+score rises from `4686.505993150685/4857` (`96.48972602739725%`) to
+`4832.049657534247/4857` (`99.48630136986302%`), a gain of
+`145.54366438356192` weighted bytes. Instructions remain exactly
+`1168/1168`, the exact prefix grows from 112 to 490 instructions, references
+improve from `463/0/0` to `467/0/0`, and the region count falls from 22 to 2.
+
+`name-save-cursor-publication-mutations.json` records four focused forms.
+Both sibling-copy forms are byte-identical clean winners. Keeping the sized
+copy while moving only the cursor publication gains 14.487583 weighted bytes
+but loses one instruction and introduces one reference mismatch, so those
+tradeoff variants are not retained. The spec SHA-256 is
+`854fda8bfe7ab282e2678f9716e6e743ab6b8bf54439f2bf5588c7812e6d1a3a`;
+the retained source SHA-256 is
+`dac18403f51ccbcd45d7fbe4472ce0b7da70da452fd7ec8039f2fbeb4bd82f6d`.

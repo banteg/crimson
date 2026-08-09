@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **736/810** functions matched exactly, **147059/341981** code bytes (**43.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **307666/341981** code bytes (**90.0%**).
+Fuzzy-weighted alignment is **307909/341981** code bytes (**90.0%**).
 
 Reproducible candidates cover **810/810** functions and **341981/341981** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=13, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 110 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 111 recorded file inputs changed or missing
 - `grim.dll`: **stale** — 6 recorded file inputs changed or missing
 
 ## Function dispositions
@@ -96,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 600/671 | 129534/320816 | 40.4% | 286595/320816 | 89.3% | 671/671 | 320816/320816 | 100.0% | 600/671 |
+| crimsonland.exe | 600/671 | 129534/320816 | 40.4% | 286838/320816 | 89.4% | 671/671 | 320816/320816 | 100.0% | 600/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**600/671** functions, **129534/320816** bytes (**40.4%**), **286595/320816** fuzzy-weighted bytes (**89.3%**), **671/671** reproducible candidates covering **320816/320816** bytes (**100.0%**), **600/671** scratches verified.
+**600/671** functions, **129534/320816** bytes (**40.4%**), **286838/320816** fuzzy-weighted bytes (**89.4%**), **671/671** reproducible candidates covering **320816/320816** bytes (**100.0%**), **600/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -275,7 +275,7 @@ Artifact freshness issues:
 | match | quest_failed_main_menu_button_destroy | 0x00410cf0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-main-menu-button-empty-destructor |
 | match | quest_failed_play_another_button_destroy | 0x00410d00 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-another-button-empty-destructor |
 | match | quest_failed_play_again_button_destroy | 0x00410d10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-again-button-empty-destructor |
-| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4687/4857 | 170 | 1168/1168 | 96.49% | 112/1168 | 463/0/0 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
+| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4832/4857 | 25 | 1168/1168 | 99.49% | 490/1168 | 467/0/0 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
 | match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
 | match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
 | match | quest_results_play_again_button_destroy | 0x00412040 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-again-button-empty-destructor |
@@ -318,7 +318,7 @@ Artifact freshness issues:
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 1623/1639 | 16 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 10222/16257 | 6035 | 4064/4206 | 62.88% | 7/4206 | 803/0/2 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 10269/16257 | 5988 | 4064/4206 | 63.17% | 7/4206 | 805/0/2 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | ui_menu_template_pool_init_thunk | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
@@ -460,7 +460,7 @@ Artifact freshness issues:
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
 | wip | player_render_overlays | 0x00428390 | 4582 | 3999/4582 | 583 | 1141/1148 | 87.29% | 9/1148 | 329/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
-| wip | bonus_render | 0x004295f0 | 4088 | 3643/4088 | 445 | 1087/1088 | 89.10% | 14/1088 | 221/0/8 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
+| wip | bonus_render | 0x004295f0 | 4088 | 3676/4088 | 412 | 1087/1088 | 89.93% | 14/1088 | 223/0/6 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | audio_suspend_all | 0x0042a630 | 52 | 52/52 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | texture_get_or_load | 0x0042a670 | 133 | 133/133 | 0 | 44/44 | 100.00% | 44/44 | 11/0/0 |  | texture-cache-load |
@@ -682,7 +682,7 @@ Artifact freshness issues:
 | match | ui_text_input_render | 0x004413a0 | 3504 | 3504/3504 | 0 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 614/614 | 0 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
 | match | ui_update_notice_button_destroy | 0x004423c0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-ui-update-notice-button-destroy |
-| wip | highscore_screen_update | 0x004423d0 | 8026 | 6279/8026 | 1747 | 1969/2004 | 78.23% | 45/2004 | 594/0/4 |  | highscore-list-filters-online-sync-and-state-routing |
+| wip | highscore_screen_update | 0x004423d0 | 8026 | 6295/8026 | 1731 | 1969/2004 | 78.43% | 45/2004 | 594/0/4 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
 | match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
 | match | highscore_date_filter_list_destroy | 0x00444350 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-date-filter-list-empty-destructor |

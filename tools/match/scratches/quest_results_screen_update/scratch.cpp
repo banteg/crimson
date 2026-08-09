@@ -450,14 +450,11 @@ extern "C" void quest_results_screen_update(void)
                     != 0) {
                 ui_screen_phase = 2;
                 sfx_play(sfx_ui_typeenter, 1.0f);
-                size_t copy_size =
-                    strlen(quest_results_name_input_buffer) + 1;
+                strcpy(
+                    highscore_active_record.player_name,
+                    quest_results_name_input_buffer);
                 int cursor = name_input.cursor;
                 player_name_length = cursor;
-                memcpy(
-                    highscore_active_record.player_name,
-                    quest_results_name_input_buffer,
-                    copy_size);
                 name_input.cursor = 0;
                 name_input.max_chars = 0;
                 highscore_active_record.player_name[cursor] = 0;

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "name-save-cursor-publication",
+      "find": "                size_t copy_size =\n                    strlen(quest_results_name_input_buffer) + 1;\n                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                memcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer,\n                    copy_size);\n                name_input.cursor = 0;\n                name_input.max_chars = 0;\n                highscore_active_record.player_name[cursor] = 0;",
+      "replacements": [
+        {
+          "name": "post-copy-local-publication",
+          "text": "                size_t copy_size =\n                    strlen(quest_results_name_input_buffer) + 1;\n                memcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer,\n                    copy_size);\n                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                name_input.cursor = 0;\n                name_input.max_chars = 0;\n                highscore_active_record.player_name[cursor] = 0;"
+        },
+        {
+          "name": "post-copy-direct-publication",
+          "text": "                size_t copy_size =\n                    strlen(quest_results_name_input_buffer) + 1;\n                memcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer,\n                    copy_size);\n                player_name_length = name_input.cursor;\n                highscore_active_record.player_name[name_input.cursor] = 0;\n                name_input.cursor = 0;\n                name_input.max_chars = 0;"
+        },
+        {
+          "name": "sibling-copy-post-copy-local-publication",
+          "text": "                strcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer);\n                int cursor = name_input.cursor;\n                player_name_length = cursor;\n                name_input.cursor = 0;\n                name_input.max_chars = 0;\n                highscore_active_record.player_name[cursor] = 0;"
+        },
+        {
+          "name": "sibling-copy-post-copy-direct-publication",
+          "text": "                strcpy(\n                    highscore_active_record.player_name,\n                    quest_results_name_input_buffer);\n                player_name_length = name_input.cursor;\n                highscore_active_record.player_name[name_input.cursor] = 0;\n                name_input.cursor = 0;\n                name_input.max_chars = 0;"
+        }
+      ]
+    }
+  ]
+}

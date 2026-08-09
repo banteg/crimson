@@ -487,3 +487,22 @@ Candidate instructions remain 1,969/2,004, the prefix remains 45, and the
 reference audit improves from `593/0/4` to `594/0/4`. Focused validation
 passes. Retained source SHA-256:
 `c302015aa1015b10bf68464cc79ab11b34f525ae2543b00793ff2cb05196dd62`.
+
+## Score-row cursor publication order (2026-08-09)
+
+The highest-weight independent residual outside the exhausted UI families is
+the score-row builder backedge. Native `0x00442c46..0x00442c73` reloads the
+row count, buffer cursor, and displayed rank after formatting, then advances
+the count, buffer cursor, record cursor, rank, and item cursor in that order
+before testing the buffer bound. The previous source spelled those five
+independent updates as record, item, count, buffer, and rank.
+
+Matching the native publication order reduces the local
+`0x00442be5..0x00442c8a` weighted gap from `113.666667` to `99.0` bytes and
+raises the whole function from **78.2280393%**
+(`6278.582431412032/8026`) to **78.4293984%**
+(`6294.743518751574/8026`), a gain of `16.161087339542` weighted bytes.
+Candidate instructions remain 1,969/2,004, the prefix remains 45, and the
+reference audit remains `594/0/4`. Focused validation passes. Retained source
+SHA-256:
+`6a26b945e7b298a18b77089fbe82778726cc0b3bbfd9bbcd516165691889d9f9`.

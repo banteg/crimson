@@ -468,20 +468,23 @@ extern "C" void bonus_render(void)
         for (int effect_index = 0;
              effect_index < 0x180;
              ++effect_index) {
-            sprite_effect_t *effect =
-                &sprite_effect_pool[effect_index];
-            if (effect->active) {
-                float size = effect->scale;
-                grim_interface_ptr->grim_set_rotation(effect->rotation);
+            if (sprite_effect_pool[effect_index].active) {
+                float size = sprite_effect_pool[effect_index].scale;
+                grim_interface_ptr->grim_set_rotation(
+                    sprite_effect_pool[effect_index].rotation);
                 grim_interface_ptr->grim_set_color(
-                    effect->color_r,
-                    effect->color_g,
-                    effect->color_b,
-                    effect->color_a);
+                    sprite_effect_pool[effect_index].color_r,
+                    sprite_effect_pool[effect_index].color_g,
+                    sprite_effect_pool[effect_index].color_b,
+                    sprite_effect_pool[effect_index].color_a);
                 float half_size = size * 0.5f;
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + effect->pos_x - half_size,
-                    camera_offset_y + effect->pos_y - half_size,
+                    camera_offset_x
+                        + sprite_effect_pool[effect_index].pos_x
+                        - half_size,
+                    camera_offset_y
+                        + sprite_effect_pool[effect_index].pos_y
+                        - half_size,
                     size,
                     size);
             }

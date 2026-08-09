@@ -1045,3 +1045,22 @@ and from `62.8523043425668%` to `62.8778718258767%`: weighted bytes rise by
 `6,034.944377267231`, and prefix 7 plus `803/0/2` references are unchanged.
 The adjacent gamepad-aim arm was not changed: native already has its current
 store-X/carry-Y schedule at `0x00415390..0x004153ba`.
+
+## Mini-Rocket Swarmers ammo comparison orientation
+
+Native `0x004170c7..0x004170d8` loads the constant zero first, compares it
+against `player->ammo`, and uses the resulting C0 test to skip the swarm loop.
+The former `player->ammo > 0.0f` spelling let VC6 choose the opposite x87
+operand orientation and a different status-word mask. Writing the same
+condition in its natural native orientation, `0.0f < player->ammo`, restores
+that compare and branch without changing the source semantics.
+
+The canonical build improves from `62.8778718258767%` to
+`63.1680773881499%`: weighted bytes rise from `10,222.055622732769` to
+`10,269.335622732769` (`+47.28`), while the candidate remains 4,064/4,206
+instructions with prefix 7. References improve from `803/0/2` to `805/0/2`.
+All 179 matcher regions retain identical boundaries; the sole changed region,
+native `0x0041708b` (197 bytes), improves by 47.28 weighted bytes, reduces
+changed instructions from 33/33 to 21/21, and gains both exact references.
+No other region regresses. Retained source SHA-256 is
+`782b2be5b47e1d9278833bea8cfd6c2e5f23a6a6c35b7517e5d8f94144d4e680`.
