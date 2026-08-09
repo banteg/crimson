@@ -109,14 +109,12 @@ extern "C" void quest_build_nagolipoli(
     int wave = 0;
     int trigger_time_ms = 13000;
     while (trigger_time_ms < 0x96c8) {
-        int spawn_count = wave / 8 + 1;
-
         spawns[entry_count].set_position_and_template(
             top_left,
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawns[entry_count].heading = 1.04719758f;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
-        spawns[entry_count].count = spawn_count;
+        spawns[entry_count].count = wave / 8 + 1;
         ++entry_count;
 
         spawns[entry_count].set_position_and_template(
@@ -124,7 +122,7 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawns[entry_count].heading = -1.04719758f;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
-        spawns[entry_count].count = spawn_count;
+        spawns[entry_count].count = wave / 8 + 1;
         ++entry_count;
 
         spawns[entry_count].set_position_and_template(
@@ -132,7 +130,7 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawns[entry_count].heading = -1.04719758f;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
-        spawns[entry_count].count = spawn_count;
+        spawns[entry_count].count = wave / 8 + 1;
         ++entry_count;
 
         spawns[entry_count].set_position_and_template(
@@ -140,7 +138,7 @@ extern "C" void quest_build_nagolipoli(
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawns[entry_count].heading = 3.926991f;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
-        spawns[entry_count].count = spawn_count;
+        spawns[entry_count].count = wave / 8 + 1;
         ++entry_count;
 
         trigger_time_ms += 800;

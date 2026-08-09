@@ -424,13 +424,13 @@ extern "C" void highscore_screen_update(void)
         ui_scrollbar_update(
             (float *)&scrollbar_position, (float *)&score_scrollbar);
     }
+    position.y += 168.0f;
     int hovered_score = score_scrollbar.hovered_index;
     if (hovered_score != -1) {
         selected_score = hovered_score;
     }
 
     position.x += 16.0f;
-    position.y += 168.0f;
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
     position.y -= 1.0f;
 

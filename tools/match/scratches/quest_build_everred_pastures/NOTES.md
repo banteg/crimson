@@ -16,8 +16,9 @@ reproduces the native pointer and count inductions. Declaring the trigger at
 its first use recovers the native position-first schedule and constant-13000
 multiplication chain. The candidate also preserves signed width halving, x87
 conversions, per-entry count increments, the conditional two-entry insertion,
-24-byte record stride, all seven references, and the epilogue. It has the same
-114 instructions, preserves a 30-instruction prefix, and scores 92.98%.
+24-byte record stride, and the epilogue. Repeating the trigger expression at
+each publication closes the function exactly at 114/114 instructions and all
+eight aligned references.
 
 Publishing the first entry's metadata as three direct stores after calculating
 its trigger raises the score from 92.11% by 3.219298 weighted bytes. This keeps
@@ -25,7 +26,7 @@ the source's natural template/trigger/count order while preventing VC6 from
 hoisting the independent count store through the trigger multiplication. The
 quest table and every control-flow decision are unchanged.
 
-The residual is four independent VC6 choices: one metadata store crosses the
+At the preceding 92.98% checkpoint, the residual was four independent VC6 choices: one metadata store crosses the
 last trigger multiply, one width-plus-64 temporary uses EAX instead of EDX,
 the resulting branch displacement differs by one byte, and the output pointer
 uses ECX instead of EAX in the epilogue. A separate cursor/count, raw indexed
@@ -46,10 +47,27 @@ VC6.0, 6.5, the diagnostic-only Processor Pack profile, and 6.6 are
 byte-identical at the retained score; VC7 is worse. Full results are recorded
 in `experiments.jsonl`.
 
-## Recovery classification audit
+## Pre-closure recovery classification audit
 
-The preceding BN recovery accounts for the complete control-flow, call (where
+At the 92.98% checkpoint, the preceding BN recovery accounted for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+localized residual was compiler scheduling/allocation only. The exact
+expression-ownership result below supersedes that temporary classification.
+
+## Exact trigger-expression ownership closure (2026-08-09)
+
+The exact Frontline Assault result transfers directly: repeating
+`wave * 13000 + 1500` at all four ordinary trigger publications lets VC6
+common the value with the native ownership and schedule. Removing only the
+named `trigger_time_ms` raises the result from 92.98% to **100%**, extends the
+prefix from 30 to all 114 instructions, and improves aligned references from
+`7/0/0` to `8/0/0`.
+
+The bounded ownership matrix also removed only `wave_count`, then removed both
+locals. Direct `wave + 1` is byte-neutral by itself; the combined form remains
+exact because the trigger change owns the result. The minimal exact source
+therefore retains the descriptive `wave_count` local and removes only
+`trigger_time_ms`. It matches 114/114 normalized instructions with source
+SHA-256
+`e6ea2cad91467a3dcea4b3c821375361b17f6816362fe3447da21a5cccda4d07`.

@@ -24,7 +24,7 @@ The fixed final coordinates corrected the Zig port, which had scaled the four
 corners by runtime terrain dimensions. The native builder has no terrain-size
 references.
 
-The candidate scores 62.02% with a five-instruction exact prefix, 217
+The current candidate scores 66.07% with a five-instruction exact prefix, 217
 candidate instructions against 228 native instructions, and no static-reference
 debt. A small builder object plus pointer-based first phases preserves the
 native generalized threshold loops at 16, 20, and 22 entries. Those middle
@@ -58,7 +58,8 @@ and its reference audit unchanged.
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live decompilation confirms all five routed phases plus the four fixed
 corners, including their template IDs and paired trigger times. The candidate
-remains 217/228 instructions with no static-reference debt.
+remains 217/228 instructions with no static-reference debt; direct corner
+trigger expressions improve its final two regions as documented below.
 
 ## 2026-07-27 focused profile and mutation pass
 
@@ -119,7 +120,24 @@ produced 174 instructions and 13.2982%, still a large regression.
 
 The semantic invariant is therefore confirmed but not safely expressible as
 a visible fixed reservation in the current reconstructed builder shape.
-The retained 218-instruction scratch remains the honest best result. The next
+The pre-transfer 218-instruction scratch remained the honest best result. The next
 useful revisit needs a recovered original helper or object boundary that
 explains why VC6 emits the immediate 12 without specializing the later loops;
 more scalar reservation or declaration-order variants are exhausted.
+
+## Corner trigger-expression ownership transfer (2026-08-09)
+
+The exact Frontline/Everred expression-ownership shape also improves both
+fixed-corner pairs here. Exactly three forms were tested against the retained
+548.2601/861 (63.6771%) baseline: repeating only
+`path_index * 900 + 2500` reached 555.9821/861 (64.5740%); repeating only
+`path_index * 900 + 4500` reached 561.1011/861 (65.1685%); repeating both
+reached 568.8404/861 (66.0674%) and was retained.
+
+The combined form has 217/228 candidate/native instructions versus 218/228 at
+baseline, while prefix five and references 0/0/0 are unchanged. A regional
+comparison showed the first six mismatch regions unchanged and improvements
+confined to the final two corner regions, including fewer changed candidate
+instructions in both. This is a tradeoff-free local alignment improvement,
+not a builder-opacity or reservation change. The retained `scratch.cpp` has
+SHA-256 `e3abffd6f2a778065673095932304b75fce58473fa371a9ba054033cea58bd6b`.

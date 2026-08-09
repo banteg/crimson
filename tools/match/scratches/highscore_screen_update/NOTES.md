@@ -468,3 +468,22 @@ The reference audit improves without debt from `590/0/6` to **`593/0/4`**.
 were rejected as an instruction-shape tradeoff.
 Retained source SHA-256:
 `3ffe79baf7387d59d4483eaefea2a5c3ba45d9e46182dcf026831ba4f0952707`.
+
+## Scrollbar cursor publication boundary (2026-08-09)
+
+The first independent renderer residual outside the exhausted selector,
+right-panel, filter, scrollbar-constructor, and batch-sync families occurs
+immediately after `ui_scrollbar_update`. Native `0x00442d11..0x00442d32`
+starts `position.y += 168.0f` before loading the hovered row, carries that x87
+result through the hover comparison, and publishes it before advancing
+`position.x`. The previous source delayed the identical Y update until after
+the hover assignment.
+
+Moving only that cursor publication next to the renderer call reproduces the
+native schedule without changing control flow. The weighted match rises from
+**78.0770199%** (`6266.461615907375/8026`) to **78.2280393%**
+(`6278.582431412032/8026`), a gain of `12.120815504657` weighted bytes.
+Candidate instructions remain 1,969/2,004, the prefix remains 45, and the
+reference audit improves from `593/0/4` to `594/0/4`. Focused validation
+passes. Retained source SHA-256:
+`c302015aa1015b10bf68464cc79ab11b34f525ae2543b00793ff2cb05196dd62`.

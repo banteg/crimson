@@ -26,7 +26,7 @@ corrected the Python and Zig ports, which previously scaled Nagolipoli against
 the runtime terrain.
 
 The current candidate represents all 258 native instructions and resolves all
-14 audited references, scoring 76.74% fuzzy-weighted with a 39-instruction
+14 audited references, scoring 80.62% fuzzy-weighted with a 39-instruction
 exact prefix. One flat append counter preserves the native live
 entry count and reusable x87 conversion slot. Separate `set` and scalar-add
 calls on both ring positions recover
@@ -36,7 +36,9 @@ schedule. Four corner vectors recover the native stack materialization, with
 the top-left vector declared before top-right to reproduce their construction
 order. Reusing the bottom-left vector for both six-entry lines and assigning
 their zero heading after the spawn fields improves their local store/reload
-shape. A short-lived tail vector recovers the final position-copy idiom.
+shape. A short-lived tail vector recovers the final position-copy idiom, and
+repeating the four corner count expressions recovers their native publication
+ownership.
 
 The residual is consistent source and VC6 optimizer shape. Native anchors some
 cursors at later fields and writes through negative offsets, reserves the ring
@@ -200,3 +202,16 @@ one or two instructions and are rejected. A complete 15-combination matrix of
 direct indexed publication across the four fixed tail records is neutral except
 for the first record, which regresses by 7.62 weighted bytes; no tail change is
 retained.
+
+## 2026-08-09 corner count expression ownership
+
+The four corner count publications match better when each repeats
+`wave / 8 + 1` instead of sharing a loop-local `spawn_count`. This is a pure
+source-ownership correction: position/template helpers, loop structure, entry
+advances, trigger stores, and quest semantics are unchanged.
+
+The retained source improves from 754.395348837209/983 weighted bytes
+(76.744186%) to 792.496124031008/983 (80.620155%), a gain of 38.100775193798
+weighted bytes. It preserves 258/258 instructions, prefix 39, and references
+`14/0/0`. Source SHA-256:
+`e7c1adb9fd116a8736054b840f1249292c7d766381123739771f5efb09fefe5b`.
