@@ -242,3 +242,22 @@ The retained result improves from **95.434084%** to **98.970399%**, gains
 to 33.338481 bytes. It now has 777/777 instructions, a 120-instruction prefix,
 and reference audit **`319/0/0`**. Retained source SHA-256:
 `a7fa7e2cde6d4322c43739211cd86c26331d90c271fcf38b39c146d80daac635`.
+
+## Tutorial row ownership (2026-08-09)
+
+The two remaining repeated control-flow regions exposed the same semantic
+scope error in the roomy and tight layouts. Native `0x0044f17b..0x0044f1a8`
+tests whether the Tutorial-placement count is positive and, on the
+nonpositive edge, conditionally calls the Tutorial button only for one player
+but advances the row unconditionally. Native `0x0044f341..0x0044f36e` uses
+the same nested ownership with the 28-pixel tight-layout advance.
+
+The former combined `count <= 0 && player_count == 1` conditions incorrectly
+made each row advance single-player-only. Restoring the native nested scopes
+removes both regions, keeps the exact 777/777 instruction count, and improves
+the match from **98.970399%** to **99.742600%**. The weighted gap falls from
+33.338481 to 8.333333 bytes, references improve from `319/0/0` to
+**`321/0/0`**, and the 120-instruction prefix is unchanged. The sole remaining
+region is the already-bounded opening-position stack-slot allocation at
+`0x0044efce..0x0044f009`. Retained source SHA-256:
+`1e2d19e67439a8b4cf20aa0fb16268408154cc57ba7603201f4065d9af2ecf8f`.

@@ -39,7 +39,7 @@ those scoped `REFERENCE_ALIASES`.
 ## Matching evidence and honest residual
 
 The verified VC6 build is 1,168 normalized instructions against 1,168 native,
-scores 95.11986301369864%, and audits 460 references as resolved, zero as
+scores 95.29109589041096%, and audits 460 references as resolved, zero as
 unresolved, and zero as mismatched. The native and candidate both use a
 24-byte frame and preserve the working coordinates in `edi`/`ebp`. The
 remaining delta is small register/lifetime and instruction-scheduling residue;
@@ -278,3 +278,22 @@ working coordinate. Native leaves each two-argument call on the stack, adjusts
 the same absolute Y slot, and performs one `add esp, 0x20` after the fourth
 call. Separate one-shot coordinate scopes would therefore contradict that
 native ownership pattern and are not introduced.
+
+## Results-base publication order (2026-08-09)
+
+After excluding the name-coordinate lifetime and the low-score branch cursor,
+the next independent render residual begins at the `show_results` entry,
+`0x00411973..0x004119b9`. Native first updates or clamps
+`quest_results_anim_timer`, begins the integer-to-float alpha conversion, and
+loads the Grim interface. It then republishes both saved `results_base_xy`
+components into the working coordinate immediately before the alpha multiply.
+The previous source restored that independent aggregate before the timer
+branch.
+
+Moving only `xy = results_base_xy` below the timer update recovers that native
+publication boundary. Similarity rises from `4619.971746575343/4857`
+(`95.11986301369864%`) to `4628.288527397261/4857`
+(`95.29109589041096%`), a gain of `8.316780821917572` weighted bytes.
+Instructions remain exactly `1168/1168`, prefix remains 112, and references
+remain fully aligned at `460/0/0`. No coordinate storage, branch condition, or
+render behavior changes.

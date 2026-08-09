@@ -211,7 +211,8 @@ extern "C" void statistics_menu_update(void)
     total_minutes -= total_hours * 60;
     if (total_hours != session_hours
         && grim_interface_ptr->grim_is_key_active(0x3b)) {
-        grim_interface_ptr->grim_draw_text_small_fmt(
+        IGrim2D_cpp *total_renderer = grim_interface_ptr;
+        total_renderer->grim_draw_text_small_fmt(
             xy.x - 38.0f,
             xy.y + 230.0f - 15.0f,
             "(total %dh)",

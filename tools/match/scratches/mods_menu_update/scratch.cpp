@@ -170,9 +170,9 @@ extern "C" void mods_menu_update(void)
 
     static mods_scrollbar_t scrollbar;
     position.x += 4.0f;
-    IGrim2D_cpp *renderer = grim_interface_ptr;
     scrollbar.items = mods_menu_item_labels;
     scrollbar.item_count = mods_menu_entry_count;
+    IGrim2D_cpp *renderer = grim_interface_ptr;
     scrollbar.visible_rows = 5;
 
     position.y += 6.0f;

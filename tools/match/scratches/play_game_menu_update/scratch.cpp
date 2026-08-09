@@ -184,10 +184,11 @@ extern "C" void play_game_menu_update(void)
         quest_unlock_index < 0x28 || config_player_count > 1;
     if (roomy_layout) {
         position.y += 32.0f;
-        if (mode_play_rush + quest_play_counts[11] + mode_play_survival <= 0
-            && config_player_count == 1) {
-            ui_button_update(
-                (float *)&position, (ui_button_t *)&tutorial_button);
+        if (mode_play_rush + quest_play_counts[11] + mode_play_survival <= 0) {
+            if (config_player_count == 1) {
+                ui_button_update(
+                    (float *)&position, (ui_button_t *)&tutorial_button);
+            }
             position.y += 32.0f;
         }
 
@@ -230,10 +231,11 @@ extern "C" void play_game_menu_update(void)
         }
     } else {
         position.y += 26.0f;
-        if (quest_play_counts[11] + mode_play_survival + mode_play_rush <= 0
-            && config_player_count == 1) {
-            ui_button_update(
-                (float *)&position, (ui_button_t *)&tutorial_button);
+        if (quest_play_counts[11] + mode_play_survival + mode_play_rush <= 0) {
+            if (config_player_count == 1) {
+                ui_button_update(
+                    (float *)&position, (ui_button_t *)&tutorial_button);
+            }
             position.y += 28.0f;
         }
 

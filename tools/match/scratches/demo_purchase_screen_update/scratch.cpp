@@ -102,10 +102,10 @@ static __forceinline void demo_purchase_render_message(
         30.0f,
         (float *)&color);
 
-    position.x = 64.0f;
     color.r = 0.5f;
     color.g = 0.1f;
     color.b = 0.1f;
+    position.x = 64.0f;
     color.a = alpha * 0.8f;
     position.y = position_y + 72.0f;
     grim_interface_ptr->grim_draw_rect_filled(

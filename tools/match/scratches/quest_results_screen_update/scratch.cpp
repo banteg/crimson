@@ -489,12 +489,12 @@ extern "C" void quest_results_screen_update(void)
 
     if (phase == 2) {
 show_results:
-        xy = results_base_xy;
         if (quest_results_anim_timer < 500) {
             quest_results_anim_timer += frame_dt_ms;
         } else {
             quest_results_anim_timer = 500;
         }
+        xy = results_base_xy;
         float alpha =
             (float)quest_results_anim_timer * 0.002f;
         xy.x += 30.0f;

@@ -1,7 +1,7 @@
 # `demo_purchase_screen_update`
 
 High-confidence recovery of the 2,642-byte demo purchase and rotating upsell
-callback at `0x0040b740`. The current VC6 scratch matches **94.60%**
+callback at `0x0040b740`. The current VC6 scratch matches **94.74%**
 (`698` candidate instructions versus `691` native), reaches a 136-instruction
 exact prefix, and resolves all `190` references without unresolved or
 mismatched references.
@@ -90,11 +90,18 @@ forming `message_y - 4.0f`; after the draw call, the second pass computes
 
 The source previously stated each independent Y assignment before its alpha
 assignment. Reordering those ordinary aggregate-field publications to match
-the native ownership schedule removes the large x87/stack-lifetime
-regions at `0x0040c022..0x0040c0cc`. The only remaining renderer region is a
-small 4.83-byte scheduling residual.
+the native ownership schedule removes the large x87/stack-lifetime regions at
+`0x0040c022..0x0040c0cc`.
 
 The retained source improves from **93.3045%** to **94.6004%**, adding
 **34.2376 fuzzy-weighted bytes** and reducing the gap from **176.8942** to
 **142.6566 bytes**. Instruction counts and the 136-instruction prefix are
 unchanged, while the reference audit improves from `187/0/0` to `190/0/0`.
+
+The remaining 4.83-byte region showed one further independent publication
+order. Native stores the second rectangle's RGB fields before
+`position.x = 64.0f`; the source stated X first. Moving that X publication
+after RGB removes the region completely, adds another **3.8042 weighted
+bytes**, and lowers the gap to **138.8524 bytes** without changing instruction
+counts, prefix, or references. The final retained result is **94.7444%**, a
+cumulative **38.0418 weighted-byte** improvement over the 93.3045% baseline.

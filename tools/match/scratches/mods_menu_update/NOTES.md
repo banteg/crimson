@@ -20,14 +20,15 @@ Mods browser callback:
 The reconstructed source preserves the native two-stage vector expression.
 Writing `position = position + offset` exposes the VC6 return temporary seen
 in the opening x87 sequence. Keeping the three table accesses directly indexed
-also reproduces the native enumeration loop. The renderer used for the
-scrollbar-label color is captured before the scrollbar fields are populated,
-matching the native load at `0x0040ec74` and its use at `0x0040ecbc`.
+also reproduces the native enumeration loop. The scrollbar item count is
+evaluated before the renderer used for the scrollbar-label color is captured.
+VC6 then batches the aggregate stores, matching the native loads at
+`0x0040ec6e..0x0040ec74` and the renderer's use at `0x0040ecbc`.
 
 Current MSVC 6.5 `/O2 /GB` result:
 
 ```txt
-match=94.29% prefix=0/648 target_insns=648 candidate_insns=648 refs=183/0/0
+match=94.44% prefix=0/648 target_insns=648 candidate_insns=648 refs=184/0/0
 first_target=sub esp, 0x144
 first_candidate=sub esp, 0x160
 ```
@@ -224,3 +225,23 @@ evaluated variants with zero errors; its SHA-256 is
 `0c639139588928c444359cc739477de7dc53e7733016e63378702eae99a82431`.
 Further progress needs a recovered shared type/TU constraint or another
 whole-function ownership fact, not more local scope syntax.
+
+## Scrollbar aggregate publication order (2026-08-09)
+
+A fresh focused region pass separated one non-frame mismatch at native
+`0x0040ec5c..0x0040ec99` from the surrounding stack-allocation residue. Native
+loads `mods_menu_entry_count` into `edx` at `0x0040ec6e`, then captures
+`grim_interface_ptr` in `ecx` at `0x0040ec74`, before publishing the scrollbar
+item pointer, count, and visible-row fields. The prior source declared the
+renderer before all three field expressions, reversing those two global loads.
+
+Placing the renderer capture between the item-count and visible-row
+assignments gives VC6 the native evaluation/publication schedule without an
+extra temporary: it loads the count, captures the renderer, and then batches
+the three aggregate stores. The complete region becomes exact. The retained
+result improves from **94.290123%** to **94.444444%**, reduces the fuzzy gap by
+**6.1 weighted bytes** (148.856481 to **142.756481**), preserves the exact
+**648/648** instruction count, and improves references from `183/0/0` to
+**`184/0/0`**. The remaining localized regions are the documented stack-slot
+and frame-size residue. Current source SHA-256 is
+`58f6b7611309ee0c9275c67a83b117952fd85824dfab0d9bd58e152a01044fdf`.

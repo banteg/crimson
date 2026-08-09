@@ -41,16 +41,17 @@ button supports two explicit y advances before the x-column shift; spelling
 those independent layout operations in that observed order improves alignment
 without changing or padding behavior.
 
-Verified WIP: 88.82%, with 675 candidate instructions against 676 native and
-audited references `264/0/5`. The remaining substantive region is integer
+Verified WIP: 90.75%, with 675 candidate instructions against 676 native and
+audited references `276/0/0`. The remaining substantive region is integer
 register allocation for the two playtime calculations. Native loads the
 renderer between the minute and hour quotients, spills the session-hour value,
 and reuses quotient products for both remainders; the natural VC6 candidate
 keeps the session hour in a register and emits one `idiv` in the lifetime
 block. Literal `% 60`, direct minute-count, explicit renderer-cache, and
 equivalent quotient/remainder source forms were tested and all reduced the
-match. The five reported reference mismatches occur after that scheduling
-divergence; their distinct real operands were deliberately not aliased.
+match. A renderer capture scoped after the total-hours key gate now preserves
+the native downstream widget ownership and resolves all references without
+aliasing distinct operands.
 
 A fresh live Binary Ninja pass isolated one UI source-shape question outside
 that playtime divergence. After `Sleep(10)` and the default color, native loads
@@ -88,10 +89,8 @@ quotient/remainder forms.
 No volatile state, dummy use, forced address, fake alias, inline assembly, or
 dead arithmetic is used. The callback remains WIP only for compiler scheduling,
 not for missing recovered behavior. It is therefore `semantic-complete` with
-only a `compiler` residual. The five audit mismatches pair the three adjacent
-music IDs and their already-present mute/play calls after the playtime
-scheduling divergence; they remain visible and unaliased rather than being
-treated as independent reference debt.
+only a `compiler` residual. All references now audit cleanly; the three music
+IDs remain distinct and unaliased.
 
 ## Session-playtime lifetime and call-shape bounds (2026-07-29)
 
@@ -177,3 +176,25 @@ virtual target later. The rotated registers in the otherwise aligned button
 and music blocks inherit from that choice and cannot be changed locally by the
 tested semantic spellings. No volatile object, forced spill, register hint,
 dead expression, or fake alias is justified.
+
+## Total-renderer ownership and widget publication (2026-08-09)
+
+Focused native inspection separated the five-call button-coordinate run at
+`0x0043fdf9..0x0043fe8b` from the earlier session-hours arithmetic. After the
+F1 key gate, native reloads `grim_interface_ptr` into `eax` at `0x0043fdc8`
+for the total-hours draw. The following widget addresses then cycle through
+`edx`, `eax`, `ecx`, `edx`, and `eax`. The prior direct-global draw left its
+renderer pointer in `edx`, rotating every otherwise-identical widget address
+register and the later reference schedule by one.
+
+Capturing `total_renderer` inside the taken branch, after the key test and
+immediately before the draw, recovers that natural ownership boundary. It also
+preserves the fact that the key call precedes the renderer reload. The complete
+five-widget publication run becomes exact without changing its arithmetic,
+calls, or coordinate storage. The retained result improves from
+`2585.2538860103627/2877` (**89.859363%**) to
+`2610.8082901554403/2877` (**90.747594%**), a gain of **25.554404 weighted
+bytes**. It keeps the 280-instruction prefix and 675/676 instruction count,
+while references improve from `264/0/5` to fully clean **`276/0/0`**. Current
+source SHA-256 is
+`85f19ac8e976657c26a299cf0e99f2410b0b13d35caaaf766da00545a7bd5d45`.
