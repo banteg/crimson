@@ -22,27 +22,20 @@ coordinates are fixed. This corrected the Zig port, which previously scaled
 their x coordinates with runtime width while the Python port already preserved
 the native values.
 
-The candidate matches all 134 native instructions with no static-reference
-debt, scoring 89.55% with a 12-instruction exact prefix. An inlined combined
-position-and-metadata setter is the strongest source shape: like native, VC6
-materializes float coordinate literals through two eight-byte-frame temporary
-slots while reusing integer constants across entries.
-
-The residual consists only of legal independent-store scheduling. The
-candidate occasionally loads the next entry's coordinate literal before
-storing the current template id, and schedules a few final-entry stores across
-the epilogue in a different order. Separate position assignment followed by a
-metadata setter scored 88.06%; direct-field and statement-order variants did
-not justify artificial barriers. No volatile state, dummy dependencies, or
-register-forcing constructs are used.
+The candidate is exact: all 134 instructions and 725 bytes match, with no
+static-reference debt. One continuous append count owns all thirteen entries.
+Twelve entries publish their vector and metadata through direct record fields;
+entry three retains the combined position-and-metadata setter. Those ordinary
+boundaries reproduce the native cross-entry coordinate loads, metadata stores,
+and epilogue schedule without volatile state, dummy dependencies, or register
+forcing.
 
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+the same instruction count as native and all bytes match. Classification:
+`RECOVERY=semantic-complete`.
 
 ## 2026-07-27 focused family pass
 
@@ -84,5 +77,20 @@ SHA-256 is
 `5d4db88df0c094aad8efc26a12a15606b07cbbf290b8ee8d7fc431cc8622d7cd`.
 Together with the earlier store-order sweep, this bounds the constructor,
 aggregate-copy, helper-boundary, parameter-order, and metadata-order source
-families. The remaining legal store swaps are therefore retained as an honest
-compiler residual.
+families at that checkpoint.
+
+## 2026-08-09 append-publication recovery
+
+The exact sibling quests expose a table-wide interaction that the earlier
+whole-table sweeps did not cover: a plain append counter combined with
+entry-specific publication boundaries. The append counter alone is
+byte-identical to the 89.55% fixed-index baseline. Publishing entries 0, 2, 4,
+6, 8, 10, and 12 through direct fields raises the result to 94.78% and extends
+the exact prefix from 12 to 21 instructions.
+
+The remaining mismatches are the same cross-entry boundary at entries 1, 5,
+7, 9, and 11. Converting those five entries one at a time raises the score
+through 95.52%, 97.01%, 97.76%, and 99.25%, then matches the function exactly.
+Entry three's combined setter already has the native schedule and remains in
+place. The final result is **100.00%**, **134/134 instructions**, **725/725
+bytes**, and references `0/0/0`.

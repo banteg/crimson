@@ -31,84 +31,86 @@ extern "C" void quest_build_the_gathering(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
 
-    spawns[0].set(
-        quest_vec2_t(256.0f, 512.0f),
-        SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-        500,
-        1);
+    spawns[entry_count].pos = quest_vec2_t(256.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;
+    spawns[entry_count].trigger_time_ms = 500;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[1].set(
-        quest_vec2_t(768.0f, 512.0f),
-        SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-        9500,
-        2);
+    spawns[entry_count].pos = quest_vec2_t(768.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;
+    spawns[entry_count].trigger_time_ms = 9500;
+    spawns[entry_count].count = 2;
+    ++entry_count;
 
-    spawns[2].set(
-        quest_vec2_t(256.0f, 512.0f),
-        SPAWN_ID_SPIDER_BOSS_3A,
-        15500,
-        2);
+    spawns[entry_count].pos = quest_vec2_t(256.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_BOSS_3A;
+    spawns[entry_count].trigger_time_ms = 15500;
+    spawns[entry_count].count = 2;
+    ++entry_count;
 
-    spawns[3].set(
+    spawns[entry_count].set(
         quest_vec2_t(768.0f, 512.0f),
         SPAWN_ID_SPIDER_BOSS_3A,
         24500,
         2);
+    ++entry_count;
 
-    spawns[4].set(
-        quest_vec2_t(256.0f, 512.0f),
-        SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00,
-        30500,
-        2);
+    spawns[entry_count].pos = quest_vec2_t(256.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00;
+    spawns[entry_count].trigger_time_ms = 30500;
+    spawns[entry_count].count = 2;
+    ++entry_count;
 
-    spawns[5].set(
-        quest_vec2_t(768.0f, 512.0f),
-        SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00,
-        39500,
-        2);
+    spawns[entry_count].pos = quest_vec2_t(768.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00;
+    spawns[entry_count].trigger_time_ms = 39500;
+    spawns[entry_count].count = 2;
+    ++entry_count;
 
-    spawns[6].set(
-        quest_vec2_t(64.0f, 64.0f),
-        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-        54500,
-        2);
+    spawns[entry_count].pos = quest_vec2_t(64.0f, 64.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
+    spawns[entry_count].trigger_time_ms = 54500;
+    spawns[entry_count].count = 2;
+    ++entry_count;
 
-    spawns[7].set(
-        quest_vec2_t(960.0f, 64.0f),
-        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-        54500,
-        1);
+    spawns[entry_count].pos = quest_vec2_t(960.0f, 64.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
+    spawns[entry_count].trigger_time_ms = 54500;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[8].set(
-        quest_vec2_t(64.0f, 960.0f),
-        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-        54500,
-        2);
+    spawns[entry_count].pos = quest_vec2_t(64.0f, 960.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
+    spawns[entry_count].trigger_time_ms = 54500;
+    spawns[entry_count].count = 2;
+    ++entry_count;
 
-    spawns[9].set(
-        quest_vec2_t(960.0f, 960.0f),
-        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
-        54500,
-        1);
+    spawns[entry_count].pos = quest_vec2_t(960.0f, 960.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
+    spawns[entry_count].trigger_time_ms = 54500;
+    spawns[entry_count].count = 1;
+    ++entry_count;
 
-    spawns[10].set(
-        quest_vec2_t(-128.0f, 512.0f),
-        SPAWN_ID_SPIDER_BOSS_3A,
-        90500,
-        6);
+    spawns[entry_count].pos = quest_vec2_t(-128.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_BOSS_3A;
+    spawns[entry_count].trigger_time_ms = 90500;
+    spawns[entry_count].count = 6;
+    ++entry_count;
 
-    spawns[11].set(
-        quest_vec2_t(1152.0f, 512.0f),
-        SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-        99500,
-        4);
+    spawns[entry_count].pos = quest_vec2_t(1152.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;
+    spawns[entry_count].trigger_time_ms = 99500;
+    spawns[entry_count].count = 4;
+    ++entry_count;
 
-    spawns[12].set(
-        quest_vec2_t(1152.0f, 512.0f),
-        SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-        109500,
-        2);
+    spawns[entry_count].pos = quest_vec2_t(1152.0f, 512.0f);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;
+    spawns[entry_count].trigger_time_ms = 109500;
+    spawns[entry_count].count = 2;
+    ++entry_count;
 
-    *count = 13;
+    *count = entry_count;
 }
