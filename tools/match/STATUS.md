@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **733/810** functions matched exactly, **146108/341970** code bytes (**42.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **306810/341970** code bytes (**89.7%**).
+Fuzzy-weighted alignment is **306857/341970** code bytes (**89.7%**).
 
 Reproducible candidates cover **810/810** functions and **341970/341970** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -96,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 597/671 | 128583/320805 | 40.1% | 285739/320805 | 89.1% | 671/671 | 320805/320805 | 100.0% | 597/671 |
+| crimsonland.exe | 597/671 | 128583/320805 | 40.1% | 285786/320805 | 89.1% | 671/671 | 320805/320805 | 100.0% | 597/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**597/671** functions, **128583/320805** bytes (**40.1%**), **285739/320805** fuzzy-weighted bytes (**89.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **597/671** scratches verified.
+**597/671** functions, **128583/320805** bytes (**40.1%**), **285786/320805** fuzzy-weighted bytes (**89.1%**), **671/671** reproducible candidates covering **320805/320805** bytes (**100.0%**), **597/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -318,7 +318,7 @@ Artifact freshness issues:
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 1623/1639 | 16 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 10218/16257 | 6039 | 4061/4206 | 62.85% | 7/4206 | 803/0/2 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 10222/16257 | 6035 | 4064/4206 | 62.88% | 7/4206 | 803/0/2 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | ui_menu_template_pool_init_thunk | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
@@ -458,7 +458,7 @@ Artifact freshness issues:
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
-| wip | player_render_overlays | 0x00428390 | 4582 | 3957/4582 | 625 | 1138/1148 | 86.35% | 9/1148 | 327/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
+| wip | player_render_overlays | 0x00428390 | 4582 | 3999/4582 | 583 | 1141/1148 | 87.29% | 9/1148 | 329/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | wip | bonus_render | 0x004295f0 | 4088 | 3643/4088 | 445 | 1087/1088 | 89.10% | 14/1088 | 221/0/8 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |

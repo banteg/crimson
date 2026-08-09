@@ -23,9 +23,9 @@ therefore preserved as recovered native source shape, but deliberately not
 given a speculative gameplay name or treated as a required modern-port feature.
 
 With the standard `msvc6.5 /O2 /GB` profile, the complete candidate is an
-`86.35%` WIP (`1,138/1,148` instructions, prefix `9/1,148`). The target and
+`87.29%` WIP (`1,141/1,148` instructions, prefix `9/1,148`). The target and
 candidate prologues are identical through the `sub esp, 0x2c` local-frame
-allocation. Masked-reference auditing reports `327/0/0`: every aligned symbol
+allocation. Masked-reference auditing reports `329/0/0`: every aligned symbol
 resolves and agrees without a speculative alias.
 
 The target-trail direction is a two-component value passed in place as both
@@ -35,8 +35,8 @@ prototype is now the proven stdcall
 `float *(float *, float *)` guess. Propagating that contract through this
 custom vector value remains matcher-neutral. The later target-direction
 assignment correction described below first moved the score to `85.20%`;
-the two alive-torso value-shape recoveries raise the current score to `86.35%`
-with a `327/0/0` reference audit.
+the four recovered half-size value shapes raise the current score to `87.29%`
+with a `329/0/0` reference audit.
 
 The muzzle-flash weapon-flag arms deliberately retain their identical
 `grim_draw_quad` calls. Native reloads the player size in each arm and pushes
@@ -262,3 +262,33 @@ the gap from `659.727790` to `625.364829` bytes. Candidate instructions move
 from `1,137` to `1,138` against `1,148` native, prefix remains 9, and reference
 agreement improves from `325/0/0` to `327/0/0`. The retained source SHA-256 is
 `064be5dfe9587679739ba3a2d89ed00235bb87d3a3272c9af9cad9ee9bf6f20b`.
+
+## Remaining half-size construction set
+
+The three remaining BN-evidenced scalar-subtraction sites were tested as one
+bounded analogous set. Native keeps the computed half size live on x87 and
+publishes a copy before consuming the value as both temporary-vector
+components at the dead-body region `0x0042867f..0x004286eb` and the alive-body
+region `0x00428be5..0x00428c47`. Repeating `size * 0.5f` in those constructor
+arguments lets VC6 recover that ownership naturally.
+
+The dead-body correction raises the match from `86.3517060%` to
+`86.8881119%`, adds `24.578116` weighted bytes, and moves the candidate from
+`1,138` to `1,140` instructions while retaining `327/0/0` reference
+agreement. The alive-body correction then raises the match to `87.2870249%`,
+adds another `18.278194` weighted bytes, moves the candidate to `1,141/1,148`
+instructions, and improves reference agreement to `329/0/0`.
+
+The superficially similar alive-shadow site at `0x0042891f..0x0042898e`
+includes a `- 2.0f` adjustment. Repeating that whole expression in both
+constructor arguments falls from the dead-body baseline of `86.8881119%` to
+`80.73394495%`, loses `281.983929` weighted bytes, and drops the prefix to
+zero, so it is restored to the named scalar lifetime. This distinguishes the
+two native CSE sites from the adjusted shadow calculation without forcing
+registers or stack slots.
+
+Together the two retained changes raise the weighted score from
+`3,956.635171/4,582` to `3,999.491481/4,582` and reduce the gap from
+`625.364829` to `582.508519` bytes. Prefix remains 9. The retained source
+SHA-256 is
+`9efd2e9e07c0aeb04382f612b9566db8c3d44f3451ee13f4a040b837057a071b`.

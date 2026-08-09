@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "auto-target-scaled-direction-pair",
+      "find": "            angle_step = (scalar * 6.0f) * frame_dt;\n            move_delta.x = movement_input.x * angle_step;\n            player->aim.x = player->aim.x + move_delta.x;\n            player->aim.y = player->aim.y + movement_input.y * angle_step;",
+      "replacements": [
+        {
+          "name": "retain-y-component",
+          "text": "            angle_step = (scalar * 6.0f) * frame_dt;\n            move_delta.x = movement_input.x * angle_step;\n            move_delta.y = movement_input.y * angle_step;\n            player->aim.x = player->aim.x + move_delta.x;\n            player->aim.y = player->aim.y + move_delta.y;"
+        }
+      ]
+    }
+  ]
+}

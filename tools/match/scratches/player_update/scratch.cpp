@@ -995,8 +995,9 @@ extern "C" void player_update(void)
             D3DXVec2Normalize(&movement_input, &movement_input);
             angle_step = (scalar * 6.0f) * frame_dt;
             move_delta.x = movement_input.x * angle_step;
+            move_delta.y = movement_input.y * angle_step;
             player->aim.x = player->aim.x + move_delta.x;
-            player->aim.y = player->aim.y + movement_input.y * angle_step;
+            player->aim.y = player->aim.y + move_delta.y;
         } else {
             player->aim.x = creature_pool[target_index].position.x;
             player->aim.y = creature_pool[target_index].position.y;

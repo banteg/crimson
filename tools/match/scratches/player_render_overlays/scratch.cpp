@@ -182,14 +182,14 @@ extern "C" void player_render_overlays(void)
         grim_interface_ptr->grim_set_rotation(
             player_state_table[render_overlay_player_index].aim_heading);
 
-        half_size =
-            player_state_table[render_overlay_player_index].size * 0.5f;
         render_scratch_f0 =
             camera_offset
             + *(player_render_vec2_t *)&player_state_table
                   [render_overlay_player_index]
                       .pos_x
-            - half_size;
+            - player_render_vec2_t(
+                player_state_table[render_overlay_player_index].size * 0.5f,
+                player_state_table[render_overlay_player_index].size * 0.5f);
         sprite_size =
             player_state_table[render_overlay_player_index].size * 1.03f;
         grim_interface_ptr->grim_draw_quad(
@@ -282,14 +282,14 @@ extern "C" void player_render_overlays(void)
         player_state_table[render_overlay_player_index].heading);
     player_render_set_uv(effect_uv8, frame);
 
-    half_size =
-        player_state_table[render_overlay_player_index].size * 0.5f;
     render_scratch_f0 =
         camera_offset
         + *(player_render_vec2_t *)&player_state_table
               [render_overlay_player_index]
                   .pos_x
-        - half_size;
+        - player_render_vec2_t(
+            player_state_table[render_overlay_player_index].size * 0.5f,
+            player_state_table[render_overlay_player_index].size * 0.5f);
     grim_interface_ptr->grim_draw_quad(
         render_scratch_f0.x,
         render_scratch_f0.y,

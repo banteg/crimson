@@ -1027,3 +1027,21 @@ The canonical build improves from 4,052/4,206 instructions at
 tradeoff-free gain of 36.111274878574 weighted bytes and 0.222127544311
 percentage points without changing control behavior or adding codegen-only
 state.
+
+## Auto-target direction-pair lifetime
+
+Native `0x004156ca..0x004156f5` scales both normalized auto-target direction
+components by the same `(distance * 6.0f) * frame_dt` step before adding the
+pair to `player->aim`. Keeping both results in the existing `move_delta`
+vector, instead of retaining only X and repeating the Y product in the final
+assignment, restores the corresponding ordinary component-pair lifetime.
+
+The single-site plan is captured by
+`auto-target-component-pair-mutations.json` (spec SHA-256
+`ab807de6db909289ae7b129c539f4bd120dd829a59e2d4e451b24fab06bd5868`).
+It improves the canonical build from 4,061 to 4,064 candidate instructions
+and from `62.8523043425668%` to `62.8778718258767%`: weighted bytes rise by
+`4.156505761679` to `10,222.055622732769`, the gap falls to
+`6,034.944377267231`, and prefix 7 plus `803/0/2` references are unchanged.
+The adjacent gamepad-aim arm was not changed: native already has its current
+store-X/carry-Y schedule at `0x00415390..0x004153ba`.
