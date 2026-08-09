@@ -113,39 +113,39 @@ extern "C" void quest_build_nagolipoli(
     while (trigger_time_ms < 0x96c8) {
         int spawn_count = wave / 8 + 1;
 
-        spawn->pos = top_left;
+        spawn->set_position_and_template(
+            top_left,
+            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawn->heading = 1.04719758f;
-        spawn->set_spawn(
-            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
-            trigger_time_ms,
-            spawn_count);
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = spawn_count;
         ++entry_count;
         ++spawn;
 
-        spawn->pos = top_right;
+        spawn->set_position_and_template(
+            top_right,
+            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawn->heading = -1.04719758f;
-        spawn->set_spawn(
-            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
-            trigger_time_ms,
-            spawn_count);
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = spawn_count;
         ++entry_count;
         ++spawn;
 
-        spawn->pos = bottom_left;
+        spawn->set_position_and_template(
+            bottom_left,
+            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawn->heading = -1.04719758f;
-        spawn->set_spawn(
-            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
-            trigger_time_ms,
-            spawn_count);
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = spawn_count;
         ++entry_count;
         ++spawn;
 
-        spawn->pos = bottom_right;
+        spawn->set_position_and_template(
+            bottom_right,
+            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
         spawn->heading = 3.926991f;
-        spawn->set_spawn(
-            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
-            trigger_time_ms,
-            spawn_count);
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = spawn_count;
         ++entry_count;
         ++spawn;
 

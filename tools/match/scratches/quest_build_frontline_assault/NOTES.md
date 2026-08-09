@@ -58,10 +58,19 @@ global default-and-middle-override form and recovers the complete ladder.
 
 `arithmetic-epilogue-mutations.json` exhausts all 11 single-site and 30
 two-site combinations of equivalent negative-trigger spellings and output
-pointer forms. All 41 are byte-identical to the baseline, ruling out AST
-spelling and their interaction as controls for the native `add -5000` and
-final `ecx` allocation. Its SHA-256 is
+pointer forms. Replaying all 41 variants after recovering the native template
+arm order leaves them byte-identical to the 96.43% baseline, ruling out AST
+spelling and their interaction as controls for the native `add -5000` and final
+`ecx` allocation. Its SHA-256 is
 `8b841b0ad44299e42ec85d1fcab0525d074b829331f4aeb42b0bee81821f2e34`.
+
+A final focused lifetime pass also tests inline builder publication, a
+builder-owned output sink, an early output-pointer alias, function-scoped wave
+ownership, and named, split, accumulated, and commuted trigger-offset forms.
+Those forms are byte-neutral. Declaring the trigger step before the builder
+instead regresses to 95.24% and shortens the exact prefix to five instructions.
+No source-only lifetime form changes the final three instructions, so none is
+retained.
 
 `template-condition-lifetime-mutations.json` tests four named-boolean forms
 around the pale/blue/pale template ladder. Naming the early and late bounds,

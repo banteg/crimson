@@ -26,7 +26,7 @@ corrected the Python and Zig ports, which previously scaled Nagolipoli against
 the runtime terrain.
 
 The current candidate represents all 258 native instructions and resolves all
-14 audited references, scoring 74.81% fuzzy-weighted with a 38-instruction
+14 audited references, scoring 75.58% fuzzy-weighted with a 38-instruction
 exact prefix. One flat append counter preserves the native live
 entry count and reusable x87 conversion slot. Separate `set` and scalar-add
 calls on both ring positions recover
@@ -164,3 +164,14 @@ the native `esp+0x28`/`esp+0x2c` temporary slots. Publishing each temporary and
 its template through the narrower position/template helper also recovers the
 native template-before-heading stores. Together the retained changes reach
 **74.81%**, 258/258 instructions, prefix 38, and references `14/0/0`.
+
+The same narrow position/template helper also transfers to the four corner
+publications. It preserves the native position-copy-then-template boundary
+before the remaining heading, trigger, and count stores, raising the current
+result to **75.58%** without changing instruction or reference counts.
+
+Rechecking the native `esp+0x28`/`esp+0x2c` line-scalar ownership after the
+tail recovery did not overturn the earlier bound: extending the fourth corner
+vector through both lines fell to 70.16%, and a dedicated scoped line vector
+fell to 69.77%. Swapping cursor/count advance order at the recovered corner
+helper boundaries was byte-neutral. None of those variants is retained.
