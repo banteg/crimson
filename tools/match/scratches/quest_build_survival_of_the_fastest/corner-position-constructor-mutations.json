@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "top-left-position",
+      "find": "    builder.spawns[entry_count].pos.x = 128.0f;\n    builder.spawns[entry_count].pos.y = 128.0f;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "whole-vector",
+          "text": "    builder.spawns[entry_count].pos =\n        quest_vec2_t(128.0f, 128.0f);\n"
+        }
+      ]
+    },
+    {
+      "name": "top-right-position",
+      "find": "    builder.spawns[entry_count].pos.x = 896.0f;\n    builder.spawns[entry_count].pos.y = 128.0f;\n",
+      "replacements": [
+        {
+          "name": "whole-vector",
+          "text": "    builder.spawns[entry_count].pos =\n        quest_vec2_t(896.0f, 128.0f);\n"
+        }
+      ]
+    },
+    {
+      "name": "bottom-left-position",
+      "find": "    builder.spawns[entry_count].pos.x = 128.0f;\n    builder.spawns[entry_count].pos.y = 896.0f;\n",
+      "replacements": [
+        {
+          "name": "whole-vector",
+          "text": "    builder.spawns[entry_count].pos =\n        quest_vec2_t(128.0f, 896.0f);\n"
+        }
+      ]
+    },
+    {
+      "name": "bottom-right-position",
+      "find": "    builder.spawns[entry_count].pos.x = 896.0f;\n    builder.spawns[entry_count].pos.y = 896.0f;\n",
+      "replacements": [
+        {
+          "name": "whole-vector",
+          "text": "    builder.spawns[entry_count].pos =\n        quest_vec2_t(896.0f, 896.0f);\n"
+        }
+      ]
+    }
+  ]
+}

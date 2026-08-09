@@ -24,22 +24,25 @@ The fixed final coordinates corrected the Zig port, which had scaled the four
 corners by runtime terrain dimensions. The native builder has no terrain-size
 references.
 
-The current candidate scores 66.07% with a five-instruction exact prefix, 217
-candidate instructions against 228 native instructions, and no static-reference
-debt. A small builder object plus pointer-based first phases preserves the
-native generalized threshold loops at 16, 20, and 22 entries. Those middle
-regions individually score between 75% and 91%, including the recovered
-coordinate and trigger-time formulas.
+The current candidate scores 76.32% with a five-instruction exact prefix, the
+exact 228 native instructions, and no static-reference debt. A small builder
+object plus pointer-based first phases preserves the native generalized
+threshold loops at 16, 20, and 22 entries. Those middle regions individually
+score between 75% and 91%, including the recovered coordinate and trigger-time
+formulas. Whole-vector construction for the first three fixed corners restores
+the native stack-temporary publication shape and the former 11-instruction
+deficit; the fourth corner deliberately remains scalar because its constructor
+form changes the whole function's frame and prologue.
 
 The remaining mismatch is optimizer shape, not unresolved behavior. VC6
 eliminates the first two phase counters and starts the shared entry/path
 registers at twelve, while the candidate retains induction through the builder
 count. The candidate also schedules independent template/count stores before
-some x87 coordinate conversions, and folds more corner float literals directly
-into stores. Fixed-count, combined-setter, and corner-vector-constructor
-spellings all regressed materially; the latter changed the frame from 12 to 20
-bytes. No volatile state, dummy dependencies, or register-forcing constructs
-are used.
+some x87 coordinate conversions. Fixed-count, combined-setter, and
+all-four-corner constructor spellings regress materially; the latter changes
+the frame from 12 to 20 bytes. The retained three-corner interaction keeps the
+native 12-byte frame. No volatile state, dummy dependencies, or
+register-forcing constructs are used.
 
 ## Cursor type recovery
 
@@ -141,3 +144,26 @@ confined to the final two corner regions, including fewer changed candidate
 instructions in both. This is a tradeoff-free local alignment improvement,
 not a builder-opacity or reservation change. The retained `scratch.cpp` has
 SHA-256 `e3abffd6f2a778065673095932304b75fce58473fa371a9ba054033cea58bd6b`.
+
+## Three-corner constructor interaction (2026-08-09)
+
+Replaying fixed-corner position publication after the direct trigger-expression
+recovery overturns the older all-or-nothing constructor result.
+`corner-position-constructor-mutations.json` evaluates the complete 15-variant
+matrix of scalar versus whole-vector publication for the four corners. The
+tradeoff-free winner uses constructor temporaries for the top-left, top-right,
+and bottom-left entries while retaining scalar fields for the bottom-right.
+
+That ordinary source change improves the candidate from
+568.8404494382022/861 weighted bytes (66.067363%) to
+657.078947368421/861 (76.315789%), a gain of 88.23849793021884 weighted
+bytes. It restores the exact 228/228 instruction extent from 217/228 while
+preserving prefix five and references `0/0/0`. Using constructors for all four
+corners instead emits 230 instructions, changes the prologue immediately, and
+regresses to 51.53%; the asymmetric retained result is therefore measured, not
+stylistic.
+
+The complete sweep is recorded in `experiments.jsonl`. The mutation spec has
+SHA-256 `4ca6313f5f77b6feec937b3f4b5cd38d7e1cffbe9e66483a13bd9242d7c2ba2c`;
+the retained source has SHA-256
+`248f702d2a451704e7eece73b912d2355ccb8c5240d80755fed1a2e86d012dec`.

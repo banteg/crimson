@@ -108,8 +108,8 @@ extern "C" void quest_build_survival_of_the_fastest(
         ++path_index;
     }
 
-    builder.spawns[entry_count].pos.x = 128.0f;
-    builder.spawns[entry_count].pos.y = 128.0f;
+    builder.spawns[entry_count].pos =
+        quest_vec2_t(128.0f, 128.0f);
     builder.spawns[entry_count].template_id =
         SPAWN_ID_DEN_SPIDER_WEAK_10;
     builder.spawns[entry_count].trigger_time_ms =
@@ -117,8 +117,8 @@ extern "C" void quest_build_survival_of_the_fastest(
     builder.spawns[entry_count].count = 1;
     ++entry_count;
 
-    builder.spawns[entry_count].pos.x = 896.0f;
-    builder.spawns[entry_count].pos.y = 128.0f;
+    builder.spawns[entry_count].pos =
+        quest_vec2_t(896.0f, 128.0f);
     builder.spawns[entry_count].template_id =
         SPAWN_ID_DEN_ALIEN_BASIC_07;
     builder.spawns[entry_count].trigger_time_ms =
@@ -126,8 +126,8 @@ extern "C" void quest_build_survival_of_the_fastest(
     builder.spawns[entry_count].count = 1;
     ++entry_count;
 
-    builder.spawns[entry_count].pos.x = 128.0f;
-    builder.spawns[entry_count].pos.y = 896.0f;
+    builder.spawns[entry_count].pos =
+        quest_vec2_t(128.0f, 896.0f);
     builder.spawns[entry_count].template_id =
         SPAWN_ID_DEN_ALIEN_BASIC_07;
     builder.spawns[entry_count].trigger_time_ms =
