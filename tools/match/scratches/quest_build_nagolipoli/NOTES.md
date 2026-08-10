@@ -234,3 +234,33 @@ preserve 258/258 instructions, prefix 39, references `14/0/0`, and identical
 quest semantics. No helper, count, angle, loop, cursor, or aggregate shape is
 changed. Final source SHA-256:
 `18362782e7eca1384262144327827a540ecb9daa86eac5ada87a64fc9cd2c49a`.
+
+## 2026-08-10 loop-carried count and corner lifetime recovery
+
+The second ring and both six-entry line phases now carry `entry_count` as the
+publication cursor instead of indexing from a fixed base and advancing the
+count after each loop. This is the source shape implied by the native `ESI`
+lifetime: VC6 hoists the known `+12`, `+6`, and `+6` trip-count advances into
+the three pre-loop setup blocks while retaining separate angle or line
+coordinate counters. It also preserves the native `+4` ring and `+8` line
+member offsets in their scaled address calculations.
+
+Moving the corner `wave` declaration ahead of the four position temporaries
+then places its zeroing before their eight constant stores, as at the native
+corner-loop boundary. These four ownership corrections are semantic no-ops:
+all 164 entries, positions, templates, headings, triggers, counts, and final
+publication count remain unchanged.
+
+The complete 15-variant reverse matrix in
+`count-cursor-lifetime-mutations.json` measures every non-empty combination of
+the former ring owner, two former line owners, and former `wave` lifetime.
+Every reversion is worse. Reverting all four reproduces the prior
+853.4573643410853/983 (86.821705%) result and prefix 39; retaining all four
+reaches 902.9883720930233/983 (**91.860465%**) and prefix 77. The gain is
+49.531007751938 weighted bytes, with the exact 258/258 instruction extent and
+references `14/0/0` preserved. The remaining first mismatch is the
+compiler-scheduling swap between the corner cursor `lea` and the 13000-ms
+trigger load. Mutation spec SHA-256:
+`34ce129c84ef10bab15f548f0a9dd258c88d92aed420df774a13ae91ad88190d`.
+Final source SHA-256:
+`52fd6cbac0cab62a63d0a8e562d2f95c5c4e26a1d678e4e5ec3d3591d5978248`.

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-ring-count-owner",
+      "find": "    int ring_index = 0;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        spawns[entry_count].pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        spawns[entry_count].pos.add(512.0f);\n        spawns[entry_count].set_heading_and_template(\n            angle,\n            SPAWN_ID_SPIDER_SMALL_BLUE_40);\n        spawns[entry_count].trigger_time_ms = 8000;\n        spawns[entry_count].count = 1;\n        ++entry_count;\n        ++ring_index;\n    }",
+      "replacements": [
+        {
+          "name": "indexed-then-advance",
+          "text": "    int ring_index = 0;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        spawns[entry_count + ring_index].pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        spawns[entry_count + ring_index].pos.add(512.0f);\n        spawns[entry_count + ring_index].set_heading_and_template(\n            angle,\n            SPAWN_ID_SPIDER_SMALL_BLUE_40);\n        spawns[entry_count + ring_index].trigger_time_ms = 8000;\n        spawns[entry_count + ring_index].count = 1;\n        ++ring_index;\n    }\n    entry_count += 12;"
+        }
+      ]
+    },
+    {
+      "name": "corner-wave-lifetime",
+      "find": "    int wave = 0;\n    quest_vec2_t top_left;\n    top_left.x = -64.0f;\n    top_left.y = -64.0f;\n    quest_vec2_t top_right;\n    top_right.x = 1088.0f;\n    top_right.y = -64.0f;\n    quest_vec2_t bottom_left;\n    bottom_left.x = -64.0f;\n    bottom_left.y = 1088.0f;\n    quest_vec2_t bottom_right;\n    bottom_right.x = 1088.0f;\n    bottom_right.y = 1088.0f;\n\n    int trigger_time_ms = 13000;",
+      "replacements": [
+        {
+          "name": "wave-after-positions",
+          "text": "    quest_vec2_t top_left;\n    top_left.x = -64.0f;\n    top_left.y = -64.0f;\n    quest_vec2_t top_right;\n    top_right.x = 1088.0f;\n    top_right.y = -64.0f;\n    quest_vec2_t bottom_left;\n    bottom_left.x = -64.0f;\n    bottom_left.y = 1088.0f;\n    quest_vec2_t bottom_right;\n    bottom_right.x = 1088.0f;\n    bottom_right.y = 1088.0f;\n\n    int wave = 0;\n    int trigger_time_ms = 13000;"
+        }
+      ]
+    },
+    {
+      "name": "first-line-count-owner",
+      "find": "    int line_index = 0;\n    trigger_time_ms = (wave * 5 + 150) * 160;\n    bottom_left.x = 64.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_left;\n        spawns[entry_count].template_id =\n            SPAWN_ID_DEN_SPIDER_BASIC_0A;\n        spawns[entry_count].heading = 0.0f;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 1;\n        ++entry_count;\n        ++line_index;\n        trigger_time_ms += 100;\n    }",
+      "replacements": [
+        {
+          "name": "indexed-then-advance",
+          "text": "    int line_index = 0;\n    trigger_time_ms = (wave * 5 + 150) * 160;\n    bottom_left.x = 64.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count + line_index].pos = bottom_left;\n        spawns[entry_count + line_index].template_id =\n            SPAWN_ID_DEN_SPIDER_BASIC_0A;\n        spawns[entry_count + line_index].heading = 0.0f;\n        spawns[entry_count + line_index].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count + line_index].count = 1;\n        ++line_index;\n        trigger_time_ms += 100;\n    }\n    entry_count += 6;"
+        }
+      ]
+    },
+    {
+      "name": "second-line-count-owner",
+      "find": "    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;\n    bottom_left.x = 960.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_left;\n        spawns[entry_count].template_id =\n            SPAWN_ID_DEN_SPIDER_BASIC_0A;\n        spawns[entry_count].heading = 0.0f;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 1;\n        ++entry_count;\n        ++line_index;\n        trigger_time_ms += 100;\n    }",
+      "replacements": [
+        {
+          "name": "indexed-then-advance",
+          "text": "    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;\n    bottom_left.x = 960.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count + line_index].pos = bottom_left;\n        spawns[entry_count + line_index].template_id =\n            SPAWN_ID_DEN_SPIDER_BASIC_0A;\n        spawns[entry_count + line_index].heading = 0.0f;\n        spawns[entry_count + line_index].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count + line_index].count = 1;\n        ++line_index;\n        trigger_time_ms += 100;\n    }\n    entry_count += 6;"
+        }
+      ]
+    }
+  ]
+}
