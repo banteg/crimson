@@ -4,8 +4,6 @@ This page tracks the current code-level state of the rewrite under `src/`, and t
 largest remaining parity gaps vs the classic Windows build (v1.9.93) documented in
 [`docs/crimsonland-exe/`](../crimsonland-exe/).
 
-Last reviewed: **2026-05-03**
-
 ## What you can run today
 
 - `uv run crimson`

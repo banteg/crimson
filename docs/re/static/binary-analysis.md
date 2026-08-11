@@ -11,14 +11,38 @@ Static analysis findings for `crimsonland.exe` and `grim.dll` to aid decompilati
 
 | Property | crimsonland.exe | grim.dll |
 |----------|-----------------|----------|
-| Compiler | Visual Studio 2003 (VC++ 7.1 SP1) | Visual Studio 2003 (VC++ 7.1 SP1) |
-| Build date | 2011-02-01 07:13:37 UTC | 2011-02-01 07:25:24 UTC |
+| Compiler family | Visual C++ 6 | Visual C++ 6, with older static/import-library members |
+| PE timestamp | 2011-02-01 07:13:37 UTC | 2011-02-01 07:25:24 UTC |
 | Image base | 0x00400000 (fixed) | 0x10000000 |
 | Entry point | 0x00463026 | 0x1000a9e9 |
 | Subsystem | GUI (Windows) | GUI (Windows) |
 | Relocations | None | 5738 HIGHLOW |
 
 **Original build path:** `..\grim_grSystem_c\Release\grim.dll`
+
+### Toolchain provenance
+
+The former VC++ 7.1 attribution on this page was an early heuristic and is
+superseded by object-level evidence:
+
+- the executable's optional-header linker version is 6.0;
+- its Rich header contains product-10/product-11 build-9782 records consistent
+  with the VC6 SP6 code generator;
+- controlled Processor Pack objects use product 48/49 build 9044, which is
+  absent from the executable; and
+- the build-8047 records in `grim.dll` can be reproduced from members of the
+  VC6 SP6 `msvcrt.lib` archive, so they do not identify an 8047 engine-code
+  frontend.
+
+An authentic VS6 RTM compile reports build 8168, ruling out RTM as a hidden
+8047 compiler. Corpus-wide comparison also produces identical output from the
+available 8966 and 9782 optimizers across all current Crimsonland and Grim
+scratches. Matching therefore uses `msvc6.5 /O2 /GB` as the compact canonical
+profile; alternate compiler profiles are search controls, not provenance
+claims.
+
+See `tools/match/README.md` in the repository for the compiler inventory,
+hashes, Rich-header controls, and current corpus comparison.
 
 ## Security Features (None)
 

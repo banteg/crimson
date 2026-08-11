@@ -11,8 +11,6 @@ tags:
 Legacy lockstep is retained as a compatibility fallback mode while rollback is
 primary for network play.
 
-Last reviewed: **2026-02-17**
-
 ## Current role
 
 - Not default.

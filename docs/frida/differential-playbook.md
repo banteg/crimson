@@ -56,17 +56,17 @@ uv run crimson dbg record \
 
 ## 3) Decide session bookkeeping
 
-Search for the SHA in the differential sessions index and session files:
-`docs/frida/differential-sessions.md` and `docs/frida/differential-sessions/session-*.md`.
+Search for the SHA in the differential capture ledger:
+`docs/frida/differential-sessions.md`.
 
 Quick lookup:
 
 ```bash
-rg "<sha256>" docs/frida/differential-sessions.md docs/frida/differential-sessions/session-*.md
+rg "<sha256>" docs/frida/differential-sessions.md
 ```
 
-- If SHA exists: append to that session file.
-- If SHA is new: create a new session file and add it to the index.
+- If SHA exists: update that ledger entry.
+- If SHA is new: add a concise entry from the template in the ledger.
 
 Do not assume you can re-record the same gameplay timeline. Use event and RNG
 anchors, not exact absolute tick equality across different recordings.
@@ -130,8 +130,7 @@ preserved in `analysis/overlays/ghidra_local_renames.json`.
 
 1. Add targeted tests for every replay/trace-finalization behavior change.
 2. Run `just check`.
-3. Update differential session docs (`docs/frida/differential-sessions.md` index
-   plus the relevant `docs/frida/differential-sessions/session-*.md` file) with:
+3. Update `docs/frida/differential-sessions.md` with:
    - SHA
    - exact baseline commands
    - first mismatch progression

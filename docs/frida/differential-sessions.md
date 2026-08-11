@@ -4,12 +4,14 @@ tags:
   - differential-sessions
 ---
 
-# Differential capture sessions
+# Differential capture ledger
 
-This index tracks original-vs-rewrite work by **capture SHA256**. The linked
-older sessions are historical investigation notes; their recordings predate the
-current owned formats and are not expected to load. Do not add compatibility
-code for them.
+This page tracks current original-vs-rewrite work by **capture SHA256**.
+Pre-CDT session reports 1-19 were removed from the live documentation because
+their recordings use unsupported formats and their commands target deleted
+tooling. They remain available in Git history under
+`docs/frida/differential-sessions/`; do not restore compatibility code for
+them.
 
 Start a current session only from a fresh Frida format 22 capture finalized as
 CDT container 2/schema 15 with its CRD replay 16 and evidence sidecars.
@@ -80,26 +82,9 @@ finalization never appends or salvages lifecycle rows.
 
 ---
 
-## Sessions
+## Active sessions
 
-- [Session 1 (2026-02-08)](differential-sessions/session-01.md)
-- [Session 2 (2026-02-08)](differential-sessions/session-02.md)
-- [Session 3 (2026-02-09)](differential-sessions/session-03.md)
-- [Session 4 (2026-02-09)](differential-sessions/session-04.md)
-- [Session 5 (2026-02-10)](differential-sessions/session-05.md)
-- [Session 6 (2026-02-10)](differential-sessions/session-06.md)
-- [Session 7 (2026-02-11)](differential-sessions/session-07.md)
-- [Session 8 (2026-02-11)](differential-sessions/session-08.md)
-- [Session 9 (2026-02-11)](differential-sessions/session-09.md)
-- [Session 10 (2026-02-12)](differential-sessions/session-10.md)
-- [Session 11 (2026-02-12)](differential-sessions/session-11.md)
-- [Session 12 (2026-02-12)](differential-sessions/session-12.md)
-- [Session 13 (2026-02-12)](differential-sessions/session-13.md)
-- [Session 14 (2026-02-13)](differential-sessions/session-14.md)
-- [Session 15 (2026-02-13)](differential-sessions/session-15.md)
-- [Session 16 (2026-02-15)](differential-sessions/session-16.md)
-- [Session 17 (2026-02-18)](differential-sessions/session-17.md)
-- [Session 18 (2026-02-19)](differential-sessions/session-18.md)
-- [Session 19 (2026-02-24)](differential-sessions/session-19.md)
-
-Session 18 includes continued entries in the same file.
+None. Add new-format session entries directly to this ledger using the template
+above. Keep each entry outcome-focused; detailed command transcripts and
+intermediate reports belong in local artifacts and Git history, not the live
+documentation set.

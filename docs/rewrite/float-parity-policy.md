@@ -93,14 +93,11 @@ newly-ported expression.
 
 ### Differential evidence this matters in practice
 
-- Session notes repeatedly show divergence movement when arithmetic order or
-  spill points differ:
-  - `docs/frida/differential-sessions/session-18.md`:
-    decompile-order `angle_approach` fix moved first mismatch from `7722` to
-    `7756`.
-  - `docs/frida/differential-sessions/session-19.md`:
-    tighter float32 spill behavior in creature heading/tau-boundary handling
-    cleared the remaining `quest_1_8` capture.
+- Historical differential runs repeatedly moved divergence when arithmetic
+  order or spill points changed. A decompile-order `angle_approach` fix moved
+  the first mismatch from tick `7722` to `7756`; tighter float32 spills in
+  creature heading/tau-boundary handling then cleared the remaining
+  `quest_1_8` capture. The full pre-CDT transcripts remain in Git history.
 
 ### Implementation consequence
 
@@ -155,6 +152,5 @@ If any condition is missing, keep the native-looking float behavior.
   churn inside hot loops.
 - Use explicit spill points (`roundF32`) where native would store to `float`.
 - Prefer parity captures and focused traces over intuitive “cleanup”.
-- Document any intentional float deviation in the differential session docs:
-  `docs/frida/differential-sessions.md` and the relevant
-  `docs/frida/differential-sessions/session-*.md`.
+- Document any intentional float deviation in the differential capture ledger:
+  `docs/frida/differential-sessions.md`.

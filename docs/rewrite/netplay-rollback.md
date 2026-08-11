@@ -11,8 +11,6 @@ tags:
 Rollback netcode is the primary multiplayer path for the rewrite, for both LAN
 and internet sessions. Network sessions are room-code based and relay-backed.
 
-Last reviewed: **2026-02-17**
-
 ## Locked product decisions
 
 - Default netcode mode: `rollback`.

@@ -13,7 +13,6 @@ Parity status and known behavior deltas.
 - [Original bugs and rewrite policy](../original-bugs.md)
 - [Typ-o-Shooter text input parity](typo-mode-text-input.md)
 - [Delta-time parity reference](delta-time.md)
-- [Parity audit 2026-06-12](audit-2026-06-12.md) - undocumented divergences found by decompile-vs-port audit
 
 ## Known primary-input helper differences
 

@@ -7,8 +7,6 @@ tags:
 
 # Zig native port status (`crimson-zig/`)
 
-Last reviewed: **2026-05-02**
-
 Scope target: a full native Zig port of Crimson systems, content, codecs,
 runtime, and product shell.
 

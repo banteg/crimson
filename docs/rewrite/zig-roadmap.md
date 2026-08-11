@@ -7,8 +7,6 @@ tags:
 
 # Zig port roadmap (`crimson-zig/`)
 
-Last reviewed: **2026-05-03**
-
 This page now tracks the remaining work after the Zig port crossed the
 “desktop playable slice” threshold. The current tree already contains a real
 native app, shared deterministic runtime, replay tooling, asset/audio loading,
