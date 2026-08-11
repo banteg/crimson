@@ -87,3 +87,33 @@ The remaining mismatch is bounded to the placement of the resident zeroing
 instruction and the register choices for the final three COM calls. Delaying the
 initialization still shrink-wraps the `ESI` save and drops the object to 91
 instructions, so that superficially closer placement is not retained.
+
+## Current indexed-baseline replay (2026-08-12)
+
+The resident direct-index recovery changed the allocation graph after most of
+the earlier experiments, so three plans replay the remaining natural source
+choices against the retained 87.10% baseline:
+
+- `current-resident-call-ownership-mutations.json` (SHA-256
+  `ba106aa9d15f063deecc69879afbebff0f980806e5f1fff278bc4d6c817ee88a`)
+  exhausts all 63 single, paired, and three-call combinations of named value,
+  reference, and slot ownership at `Stop`, `SetFrequency`, and `Play`. Every
+  form is byte identical to the direct indexed source.
+- `current-result-placement-mutations.json` (SHA-256
+  `6db4366be254c71fe5d3c9ba65b7e6aa49dc5e7497dc73cb2e5c96461bafdd11`)
+  evaluates six structured, inverted, and explicit-label placements. None
+  improves: the four least disruptive delayed forms fall to 77.17%, while
+  the inverted resident forms fall to 59.78% and lose three reference hits.
+- `current-local-allocation-mutations.json` (SHA-256
+  `5e90f6d09f64eda157a640b47d5b6f7926f5b07b0ee70dd2edead131a5ff8dd8`)
+  records all five non-baseline declaration orders. All are byte identical.
+
+A direct early-assignment/inverted-branch probe keeps the 93-instruction
+extent but VC6 lays the streaming block after the resident return, falling to
+64.52% and `4/0/0` references. The ordinary delayed form instead proves the
+shrink-wrap mechanism directly: `push esi` moves from the common prologue to
+the resident entry and the object drops to 91 instructions. The retained
+source is therefore the only tested natural form that simultaneously keeps
+the native block order, common callee-save set, instruction extent, and full
+reference set; the residual three COM temporary registers follow that same
+compiler scheduling choice.

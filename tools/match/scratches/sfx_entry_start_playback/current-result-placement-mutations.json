@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-result-placement",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {\nstream_playback:\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n",
+      "replacements": [
+        {
+          "name": "resident-assignment-after-stream",
+          "text": "    if (entry->vorbis_stream != 0) {\nstream_playback:\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "resident-inverted-with-label",
+          "text": "    if (entry->vorbis_stream == 0) {\n        result = 0;\n        goto resident_playback;\n    }\nstream_playback:\n    sfx_entry_seek(entry, 0);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n    return 0;\n\nresident_playback:\n"
+        },
+        {
+          "name": "direct-stream-and-resident-labels",
+          "text": "    if (entry->vorbis_stream != 0) {\n        goto stream_playback;\n    }\n    result = 0;\n    goto resident_playback;\n\nstream_playback:\n    sfx_entry_seek(entry, 0);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    music_stream_fill(entry);\n    (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n    return 0;\n\nresident_playback:\n"
+        },
+        {
+          "name": "stream-predicate-result",
+          "text": "    result = entry->vorbis_stream != 0;\n    if (result != 0) {\nstream_playback:\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "resident-else-assignment",
+          "text": "    if (entry->vorbis_stream != 0) {\nstream_playback:\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    } else {\n        result = 0;\n    }\n\n"
+        },
+        {
+          "name": "resident-condition-assignment",
+          "text": "    if (entry->vorbis_stream == 0) {\n        result = 0;\n    } else {\nstream_playback:\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n"
+        }
+      ]
+    }
+  ]
+}

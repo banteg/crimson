@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-resident-stop-owner",
+      "find": "    entry->buffers[result]->Stop();",
+      "replacements": [
+        {
+          "name": "named-value-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER voice = entry->buffers[result];\n        voice->Stop();\n    }"
+        },
+        {
+          "name": "named-reference-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER &voice = entry->buffers[result];\n        voice->Stop();\n    }"
+        },
+        {
+          "name": "named-slot-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER *voice = &entry->buffers[result];\n        (*voice)->Stop();\n    }"
+        }
+      ]
+    },
+    {
+      "name": "current-resident-frequency-owner",
+      "find": "    entry->buffers[result]->SetFrequency(sfx_rate_scale);",
+      "replacements": [
+        {
+          "name": "named-value-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER voice = entry->buffers[result];\n        voice->SetFrequency(sfx_rate_scale);\n    }"
+        },
+        {
+          "name": "named-reference-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER &voice = entry->buffers[result];\n        voice->SetFrequency(sfx_rate_scale);\n    }"
+        },
+        {
+          "name": "named-slot-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER *voice = &entry->buffers[result];\n        (*voice)->SetFrequency(sfx_rate_scale);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "current-resident-play-owner",
+      "find": "    entry->buffers[result]->Play(0, 0, 0);",
+      "replacements": [
+        {
+          "name": "named-value-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER voice = entry->buffers[result];\n        voice->Play(0, 0, 0);\n    }"
+        },
+        {
+          "name": "named-reference-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER &voice = entry->buffers[result];\n        voice->Play(0, 0, 0);\n    }"
+        },
+        {
+          "name": "named-slot-block",
+          "text": "    {\n        LPDIRECTSOUNDBUFFER *voice = &entry->buffers[result];\n        (*voice)->Play(0, 0, 0);\n    }"
+        }
+      ]
+    }
+  ]
+}

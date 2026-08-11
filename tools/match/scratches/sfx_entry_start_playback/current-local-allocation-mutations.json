@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-local-declaration-order",
+      "find": "    LPDIRECTSOUNDBUFFER *buffer;\n    DWORD status;\n    int result;",
+      "replacements": [
+        {
+          "name": "buffer-result-status",
+          "text": "    LPDIRECTSOUNDBUFFER *buffer;\n    int result;\n    DWORD status;"
+        },
+        {
+          "name": "status-buffer-result",
+          "text": "    DWORD status;\n    LPDIRECTSOUNDBUFFER *buffer;\n    int result;"
+        },
+        {
+          "name": "status-result-buffer",
+          "text": "    DWORD status;\n    int result;\n    LPDIRECTSOUNDBUFFER *buffer;"
+        },
+        {
+          "name": "result-buffer-status",
+          "text": "    int result;\n    LPDIRECTSOUNDBUFFER *buffer;\n    DWORD status;"
+        },
+        {
+          "name": "result-status-buffer",
+          "text": "    int result;\n    DWORD status;\n    LPDIRECTSOUNDBUFFER *buffer;"
+        }
+      ]
+    }
+  ]
+}
