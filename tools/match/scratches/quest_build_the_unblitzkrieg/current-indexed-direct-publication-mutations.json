@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-2-direct-publication",
+      "find": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn[toggle].template_id = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "batch-3-direct-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn[toggle].template_id = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "batch-4-direct-publication",
+      "find": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn[toggle].template_id = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "batch-5-direct-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn[toggle].template_id = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "batch-6-direct-publication",
+      "find": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn[toggle].template_id = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "batch-7-direct-publication",
+      "find": "        spawn[toggle].set_template(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07);\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn[toggle].template_id = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "batch-8-direct-publication",
+      "find": "        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn[toggle].template_id = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn[toggle].trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    }
+  ]
+}

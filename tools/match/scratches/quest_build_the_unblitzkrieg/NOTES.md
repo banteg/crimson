@@ -171,3 +171,21 @@ boundary for batches 3, 5, and 7. That alternating form is strictly better than
 all other combinations: 844.2275/975 weighted bytes, **86.59%**, prefix 40,
 298/291 instructions, and references 0/0/0. The retained source SHA-256 is
 `d97cfdf0a07cb9c8ea887ae1a9f06183c9e6ed57db0cf910e14b61660dff5add`.
+
+## Current indexed direct-publication replay (2026-08-11)
+
+The earlier direct-field probes predate the retained indexed fixed batches, so
+they do not exclude the current seven repeated `lea` plus `add 0xc` address
+adjustments. `current-indexed-direct-publication-mutations.json` (SHA-256
+`eba1ce4a28a5e91bd1bc1facfa692e40cac37316b45d2db422e65d99be2d94f0`)
+therefore replaces each current helper independently with direct template and
+trigger stores and evaluates the complete 127/127 interaction matrix.
+
+Direct stores are byte-neutral in batches 3, 5, and 7, where they replace the
+single-field helper. The seven non-empty combinations of only those batches
+are identical to the baseline. Every variant touching batches 2, 4, 6, or 8
+regresses because it removes the retained two-field publication boundary; no
+variant folds away the address adjustment. The canonical source remains
+86.59%, 298/291 instructions, prefix 40, and `0/0/0`. The complete eight-line
+experiment log now has SHA-256
+`2c08bbf01ac2fd8606fcd43c7257a9b35b4ca9da943092aa5ae09619a22ec9d3`.
