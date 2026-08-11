@@ -112,3 +112,35 @@ under spec SHA-256
 `7f4b8c7bbb04fefbe95fa874acadc67d90b855e69b313e14f03ff4d32370fd1d`.
 The native `EAX` reuse cannot be recovered by extending a narrow typed owner
 without perturbing the otherwise exact prefix.
+
+## Tail subobject and control interaction bound (2026-08-11)
+
+Live Binary Ninja confirms that the native tail keeps the scaled player offset
+in `EAX`, loads the demo byte into `CL`, copies the two mouse floats through
+`ECX`, and reuses `EAX` for the perk-array `lea`. The candidate instead loads
+the flag into `AL`, uses `EAX` for mouse X, and rebuilds the player offset from
+the loop index before the same `rep stosd` clear. The apparent mouse reference
+debt remains an alignment consequence of those register choices.
+
+Three current-baseline sweeps test the remaining natural relationships:
+
+- `perk-subobject-lifetime-mutations.json` carries only the typed perk array,
+  rather than the whole player owner, across the demo branch in five pointer,
+  `void *`, and array-reference forms. Every form disturbs the exact prefix and
+  falls to 50.78%--60.08%.
+- `mouse-position-copy-mutations.json` covers eight direct temporary, const,
+  pointer/reference, destination-owner, and fixed-size `memcpy` copies. All
+  eight are byte-identical to the 91.83% baseline.
+- `cached-demo-death-interactions.json` combines the previously neutral early
+  demo cache with the previously regressive post-branch death publication in
+  six byte, bool, int, inverted, and duplicated-arm forms. Every interaction
+  still moves the first mismatch from instruction 94 to 12 and falls to
+  62.79%--64.34%.
+
+These 19 variants leave no source-supported subobject, mouse-copy, or
+demo/death interaction that preserves the exact prefix while selecting the
+native `CL`/`EAX` allocation. Recorded spec SHA-256 values:
+`a17d3112d9840acfa23d3135008a662f9a5ddd4d227ea9d8f4d97397506ced04`,
+`95d5b22ab96e75233b8f6034198dce0a5d61ae6a4b3787c9baf2ed2808619e86`,
+and
+`72539289a4a3ad903354d91563078590943efdd380c3d0b4f67ab2b99f70da26`.

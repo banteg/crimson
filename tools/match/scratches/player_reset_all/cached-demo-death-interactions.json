@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "cached-demo-death-interaction",
+      "find": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n",
+      "replacements": [
+        {
+          "name": "cached-byte-death-after-branch",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            unsigned char demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n\n            if (!demo_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n            player_state_table[reset_index].death_timer = 16.0f;\n"
+        },
+        {
+          "name": "cached-bool-death-after-branch",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            bool demo_active = demo_mode_active != 0;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n\n            if (!demo_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n            player_state_table[reset_index].death_timer = 16.0f;\n"
+        },
+        {
+          "name": "cached-int-death-after-branch",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            int demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n\n            if (!demo_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n            player_state_table[reset_index].death_timer = 16.0f;\n"
+        },
+        {
+          "name": "cached-byte-inverted-arm-death-after",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            unsigned char demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n\n            if (demo_active) {\n            } else {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n            player_state_table[reset_index].death_timer = 16.0f;\n"
+        },
+        {
+          "name": "cached-byte-death-in-both-arms",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            unsigned char demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n\n            if (!demo_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n                player_state_table[reset_index].death_timer = 16.0f;\n            } else {\n                player_state_table[reset_index].death_timer = 16.0f;\n            }\n"
+        },
+        {
+          "name": "cached-byte-death-first-in-both-arms",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            unsigned char demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n\n            if (!demo_active) {\n                player_state_table[reset_index].death_timer = 16.0f;\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            } else {\n                player_state_table[reset_index].death_timer = 16.0f;\n            }\n"
+        }
+      ]
+    }
+  ]
+}

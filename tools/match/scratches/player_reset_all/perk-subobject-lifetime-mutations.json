@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "perk-subobject-lifetime",
+      "find": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n        }\n\n        memset(\n            player_state_table[render_overlay_player_index].perk_counts,\n            0,\n            sizeof(player_state_table[0].perk_counts));\n",
+      "replacements": [
+        {
+          "name": "typed-pointer-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            int *perk_counts = player_state_table[reset_index].perk_counts;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            memset(perk_counts, 0, sizeof(player_state_table[0].perk_counts));\n        }\n"
+        },
+        {
+          "name": "typed-pointer-before-demo",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n            int *perk_counts = player_state_table[reset_index].perk_counts;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            memset(perk_counts, 0, sizeof(player_state_table[0].perk_counts));\n        }\n"
+        },
+        {
+          "name": "typed-pointer-after-demo",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            int *perk_counts = player_state_table[reset_index].perk_counts;\n            memset(perk_counts, 0, sizeof(player_state_table[0].perk_counts));\n        }\n"
+        },
+        {
+          "name": "void-pointer-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            void *perk_counts = player_state_table[reset_index].perk_counts;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            memset(perk_counts, 0, sizeof(player_state_table[0].perk_counts));\n        }\n"
+        },
+        {
+          "name": "array-reference-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            int (&perk_counts)[0x80] =\n                player_state_table[reset_index].perk_counts;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            memset(perk_counts, 0, sizeof(player_state_table[0].perk_counts));\n        }\n"
+        }
+      ]
+    }
+  ]
+}

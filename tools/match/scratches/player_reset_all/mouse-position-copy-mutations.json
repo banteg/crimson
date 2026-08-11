@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mouse-position-copy",
+      "find": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n",
+      "replacements": [
+        {
+          "name": "direct-constructed-temporary",
+          "text": "            if (!demo_mode_active) {\n                *(reset_vec2_t *)&ui_mouse_x =\n                    reset_vec2_t(320.0f, 140.0f);\n            }\n"
+        },
+        {
+          "name": "copy-initialized-local",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos =\n                    reset_vec2_t(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n"
+        },
+        {
+          "name": "const-local",
+          "text": "            if (!demo_mode_active) {\n                const reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n"
+        },
+        {
+          "name": "const-reference-copy",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                const reset_vec2_t &mouse_ref = mouse_pos;\n                *(reset_vec2_t *)&ui_mouse_x = mouse_ref;\n            }\n"
+        },
+        {
+          "name": "local-pointer-copy",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                reset_vec2_t *mouse_ptr = &mouse_pos;\n                *(reset_vec2_t *)&ui_mouse_x = *mouse_ptr;\n            }\n"
+        },
+        {
+          "name": "destination-reference-copy",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                reset_vec2_t &mouse_state =\n                    *(reset_vec2_t *)&ui_mouse_x;\n                mouse_state = mouse_pos;\n            }\n"
+        },
+        {
+          "name": "destination-pointer-copy",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                reset_vec2_t *mouse_state =\n                    (reset_vec2_t *)&ui_mouse_x;\n                *mouse_state = mouse_pos;\n            }\n"
+        },
+        {
+          "name": "fixed-memcpy-copy",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                memcpy(&ui_mouse_x, &mouse_pos, sizeof(mouse_pos));\n            }\n"
+        }
+      ]
+    }
+  ]
+}
