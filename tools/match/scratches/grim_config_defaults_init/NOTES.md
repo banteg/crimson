@@ -144,3 +144,17 @@ references **83/0/0**, with the same first mismatch at byte 107. This proves
 that merely restoring the observed tail thunk to the translation unit does
 not affect the scheduler inversion, so the production TU map should not grow
 a no-op cluster for these two functions.
+
+## Exact shared cursor schedule
+
+The executable-side `saved-name-cursor-scheduling-mutations.json` sweep was
+repeated after the one-byte `ui_info_texts` correction. A byte cursor
+initialized to `saved_names[0]` between the slot-index and order-offset
+initializers recovers the native preheader schedule that the older,
+pre-correction cursor probes could not produce. Its 27-byte typed advance
+preserves every loop instruction and reference.
+
+Because both images include the same recovered body, the retained
+`/O2 /GB /W3 /GR-` source now matches this target at **734/734 bytes**,
+**140/140 instructions**, and references **83/0/0**. The compiler residual
+override has been removed.

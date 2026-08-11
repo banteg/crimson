@@ -12,6 +12,7 @@ extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
 {
     int i;
     int saved_order_offset;
+    char *saved_name;
 
     CRIMSON_CONFIG_DEFAULTS_BLOB.hardcore = 0;
     memset(
@@ -29,12 +30,14 @@ extern "C" void CRIMSON_CONFIG_DEFAULTS_FUNCTION(void)
     memset(CRIMSON_CONFIG_DEFAULTS_BLOB.player_name_buf, 0, 9);
 
     i = 0;
+    saved_name = CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[0];
     saved_order_offset = offsetof(crimson_cfg_t, saved_name_order);
     do {
         *(int *)((char *)&CRIMSON_CONFIG_DEFAULTS_BLOB + saved_order_offset) = i;
-        strcpy(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[i], "default");
+        strcpy(saved_name, "default");
         saved_order_offset += sizeof(int);
         ++i;
+        saved_name += sizeof(CRIMSON_CONFIG_DEFAULTS_BLOB.saved_names[0]);
     } while (saved_order_offset < (int)offsetof(crimson_cfg_t, saved_names));
 
     CRIMSON_CONFIG_DEFAULTS_BLOB.highscore_duplicate_mode = 0;

@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**742/810** functions matched exactly, **155146/341992** code bytes (**45.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**744/810** functions matched exactly, **156614/341992** code bytes (**45.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **308441/341992** code bytes (**90.2%**).
+Fuzzy-weighted alignment is **308452/341992** code bytes (**90.2%**).
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -17,7 +17,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
 | crimsonland.exe | stale | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1351 | 97 |
-| grim.dll | current | 139 | 133 | 3 | passed | yes | yes | no | 0 | 268 | 53 |
+| grim.dll | stale | 139 | 133 | 3 | passed | yes | yes | no | 0 | 268 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -25,7 +25,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 9 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 11 recorded file inputs changed or missing
+- `grim.dll`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 606/671 | 137621/320827 | 42.9% | 287370/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 606/671 |
-| grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
+| crimsonland.exe | 607/671 | 138355/320827 | 43.1% | 287375/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 607/671 |
+| grim.dll | 137/139 | 18259/21165 | 86.3% | 21076/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 137/139 |
 
 ## crimsonland.exe
 
-**606/671** functions, **137621/320827** bytes (**42.9%**), **287370/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **606/671** scratches verified.
+**607/671** functions, **138355/320827** bytes (**43.1%**), **287375/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **607/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -144,7 +145,7 @@ Artifact freshness issues:
 | match | console_command_autocomplete | 0x004027b0 | 165 | 165/165 | 0 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | console_flush_log | 0x00402860 | 121 | 121/121 | 0 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
 | match | config_init_defaults_thunk | 0x004028e0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-config-defaults |
-| wip | config_init_defaults | 0x004028f0 | 734 | 729/734 | 5 | 140/140 | 99.29% | 21/140 | 83/0/0 |  | config-defaults-and-input-bindings |
+| match | config_init_defaults | 0x004028f0 | 734 | 734/734 | 0 | 140/140 | 100.00% | 140/140 | 83/0/0 |  | config-defaults-and-input-bindings-exact |
 | match | game_build_path | 0x00402bd0 | 34 | 34/34 | 0 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | register_core_cvars | 0x00402c00 | 326 | 326/326 | 0 | 66/66 | 100.00% | 66/66 | 65/0/0 |  | core-console-variable-registration |
 | match | ui_render_loading | 0x00402d50 | 375 | 375/375 | 0 | 107/107 | 100.00% | 107/107 | 15/0/0 |  | ui-loading-panel-renderer |
@@ -778,7 +779,7 @@ Artifact freshness issues:
 
 ## grim.dll
 
-**136/139** functions, **17525/21165** bytes (**82.8%**), **21071/21165** fuzzy-weighted bytes (**99.6%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **136/139** scratches verified.
+**137/139** functions, **18259/21165** bytes (**86.3%**), **21076/21165** fuzzy-weighted bytes (**99.6%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **137/139** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -806,7 +807,7 @@ Artifact freshness issues:
 | match | grim_default_device_callback | 0x10001150 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | default-device-callback |
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
 | match | grim_config_defaults_init_thunk | 0x10001700 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | config-defaults-tail-thunk |
-| wip | grim_config_defaults_init | 0x10001710 | 734 | 729/734 | 5 | 140/140 | 99.29% | 21/140 | 83/0/0 |  | shared-config-defaults-and-input-bindings |
+| match | grim_config_defaults_init | 0x10001710 | 734 | 734/734 | 0 | 140/140 | 100.00% | 140/140 | 83/0/0 |  | shared-config-defaults-and-input-bindings-exact |
 | match | grim_apply_render_state | 0x10004520 | 720 | 720/720 | 0 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 51/51 | 0 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_select_texture_format | 0x10004830 | 232 | 232/232 | 0 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |

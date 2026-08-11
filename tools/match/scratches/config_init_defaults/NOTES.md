@@ -119,3 +119,21 @@ moves the native cursor-publication/order-offset swap in the required
 direction, so the canonical shared implementation remains unchanged. The
 complete run is recorded in `experiments.jsonl` with spec SHA-256
 `ccc9a6f77bc46718bbdb468315a53d0975843a586e442529b1f14e1edecf4144`.
+
+
+## Exact saved-name cursor schedule
+
+Re-running the cursor-lifetime matrix after the retained one-byte
+`ui_info_texts` correction exposes the interaction that the earlier cursor
+sweeps predated. Initializing a byte cursor to `saved_names[0]` between the
+slot-index zeroing and the `saved_name_order` offset assignment makes VC6
+publish the cursor stack slot before loading `0x88` into `EBP`. Advancing that
+cursor by the recovered 27-byte row size preserves the native loop body.
+
+The shared `/O2 /GB /W3 /GR-` implementation now matches all **734/734 bytes**,
+all **140/140 instructions**, and references **83/0/0** in both images. The
+typed `char (*)[27]` spelling is also exact; placing either cursor after the
+order-offset initialization reproduces the former one-swap result. The
+three-way comparison is recorded in
+`saved-name-cursor-scheduling-mutations.json`. No recovery or residual
+override remains.
