@@ -161,3 +161,36 @@ redundant initial count assignment, shared countdown indices, and publishing
 from either the loop count or the authoritative global are byte-neutral on
 this improved form. Splitting both Ammo and Bandage callback counts instead
 regresses to 62.24%. No register directive or synthetic use is retained.
+
+## Current-baseline allocation replay (2026-08-11)
+
+Because the callback-count recovery moved this scratch from the baseline used
+by the older mutation notes, the natural allocation probes were replayed
+against the retained 77.18% source instead of assuming those results still
+held. Four current-source plans record 38 complete evaluations:
+
+- `current-local-allocation-mutations.json` (SHA-256
+  `7e514e671cfdba962b87a8f9d4719b6befb8cfcd5698cf78838d9800021ca4df`)
+  evaluates all eight declaration-priority orders. Every variant is byte
+  identical to the 683/885 weighted-byte baseline.
+- `current-bandage-loop-entry-mutations.json` (SHA-256
+  `ba4bffc2c5db64718c10ec0fcfaffa92963e4110dd393b27701d7ee61b575684`)
+  replays the shared- and block-local nested guards. Both now regress to
+  516/885 (58.26%), a four-instruction prefix, and `55/0/0` references.
+- `current-perk-count-update-mutations.json` (SHA-256
+  `976b573dd6f72ffb45a1ef57a4a399669454384df2005557b4bcd59e01f447ff`)
+  evaluates preincrement, postincrement, explicit addition, and named value or
+  pointer forms. The first four are byte identical; the pointer form loses
+  seven weighted bytes and falls to 76.35% without changing the extent.
+- `current-player-loop-locality-mutations.json` (SHA-256
+  `334a5fe437d720ceaa7888c491ec268df38f5d4883876fe99378cbc2dfe866f9`)
+  exhausts all 8 single-site and 15 paired Ammo/Bandage block-local lifetime
+  variants. All 23 compile byte identically to the retained source.
+
+An additional direct probe copied the incoming parameter into a natural
+`const int applied_perk_id` local and used that value throughout the
+dispatcher. VC6 coalesces it byte identically, preserving the same opening
+`EBP`/`EDI` rotation. These current results confirm that declaration priority,
+ordinary expression spelling, block locality, and a semantic parameter alias
+do not control the remaining register-color choice; the nested Bandage form
+is actively incompatible with the recovered callback-count allocation graph.

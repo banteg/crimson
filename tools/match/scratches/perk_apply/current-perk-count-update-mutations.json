@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-perk-count-update",
+      "find": "    player_state_table[0].perk_counts[perk_id] += 1;",
+      "replacements": [
+        {
+          "name": "preincrement",
+          "text": "    ++player_state_table[0].perk_counts[perk_id];"
+        },
+        {
+          "name": "postincrement",
+          "text": "    player_state_table[0].perk_counts[perk_id]++;"
+        },
+        {
+          "name": "explicit-addition",
+          "text": "    player_state_table[0].perk_counts[perk_id] =\n        player_state_table[0].perk_counts[perk_id] + 1;"
+        },
+        {
+          "name": "named-current-count",
+          "text": "    int current_perk_count =\n        player_state_table[0].perk_counts[perk_id];\n    player_state_table[0].perk_counts[perk_id] = current_perk_count + 1;"
+        },
+        {
+          "name": "named-count-pointer",
+          "text": "    int *current_perk_count =\n        &player_state_table[0].perk_counts[perk_id];\n    ++*current_perk_count;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-local-declaration-order",
+      "find": "    float value;\n    int i;\n    int player_count;\n    int count;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;",
+      "replacements": [
+        {
+          "name": "player-count-before-index",
+          "text": "    float value;\n    int player_count;\n    int i;\n    int count;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "player-count-first",
+          "text": "    int player_count;\n    float value;\n    int i;\n    int count;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "count-pair-first",
+          "text": "    int player_count;\n    int count;\n    int i;\n    float value;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "index-count-pair-first",
+          "text": "    int i;\n    int player_count;\n    int count;\n    float value;\n    int weapon_id;\n    int experience;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "integer-locals-first",
+          "text": "    int i;\n    int player_count;\n    int count;\n    int weapon_id;\n    int experience;\n    float value;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "cursor-locals-first",
+          "text": "    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;\n    float value;\n    int i;\n    int player_count;\n    int count;\n    int weapon_id;\n    int experience;"
+        },
+        {
+          "name": "player-count-last-integer",
+          "text": "    float value;\n    int i;\n    int count;\n    int weapon_id;\n    int experience;\n    int player_count;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        },
+        {
+          "name": "reverse-integer-priority",
+          "text": "    float value;\n    int experience;\n    int weapon_id;\n    int count;\n    int player_count;\n    int i;\n    int *weapon_cursor;\n    float *cursor;\n    creature_t *creature;"
+        }
+      ]
+    }
+  ]
+}
