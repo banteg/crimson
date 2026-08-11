@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-panel-y-lifetime",
+      "find": "            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                element->render_offset_y + element->pos_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "component-local",
+          "text": "            float render_y = element->pos_y;\n            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                render_y + element->render_offset_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);"
+        },
+        {
+          "name": "sum-local",
+          "text": "            float render_y =\n                element->pos_y + element->render_offset_y;\n            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                render_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);"
+        }
+      ]
+    },
+    {
+      "name": "second-panel-y-lifetime",
+      "find": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->render_offset_y + element->pos_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "component-local",
+          "text": "                float render_y_2 = element->pos_y;\n                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    render_y_2 + element->render_offset_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);"
+        },
+        {
+          "name": "sum-local",
+          "text": "                float render_y_2 =\n                    element->pos_y + element->render_offset_y;\n                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    render_y_2);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);"
+        }
+      ]
+    },
+    {
+      "name": "third-panel-y-lifetime",
+      "find": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->render_offset_y + element->pos_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "component-local",
+          "text": "                float render_y_4 = element->pos_y;\n                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    render_y_4 + element->render_offset_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);"
+        },
+        {
+          "name": "sum-local",
+          "text": "                float render_y_4 =\n                    element->pos_y + element->render_offset_y;\n                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    render_y_4);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);"
+        }
+      ]
+    },
+    {
+      "name": "counter-position-lifetime",
+      "find": "            ui_render_vec2_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;",
+      "replacements": [
+        {
+          "name": "component-locals",
+          "text": "            ui_render_vec2_t render_pos;\n            float render_x = element->pos_x;\n            float render_y = element->pos_y;\n            render_pos.x =\n                render_x + element->render_offset_x;\n            render_pos.y =\n                render_y + element->render_offset_y;"
+        },
+        {
+          "name": "sum-locals",
+          "text": "            ui_render_vec2_t render_pos;\n            float render_x =\n                element->pos_x + element->render_offset_x;\n            float render_y =\n                element->pos_y + element->render_offset_y;\n            render_pos.x = render_x;\n            render_pos.y = render_y;"
+        }
+      ]
+    }
+  ]
+}

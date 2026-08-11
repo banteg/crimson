@@ -181,3 +181,22 @@ natural counter record types are neutral or regressive on the retained
 source. The remaining 45 weighted bytes are three commutative y-add operand
 orders in the panel path plus the later counter position's stack-slot and
 argument schedule; no semantic operation or reference remains missing.
+
+## Current panel/counter operand boundary (2026-08-12)
+
+The retained 97.50% source was replayed against the four live residual
+regions. `current-panel-counter-order-interactions.json` evaluates every 31
+non-empty combination of the three panel y-add operand orders and the counter
+x/y operand orders. Every variant is byte-identical to baseline: VC6
+canonicalizes the direct commutative spellings before instruction selection.
+
+`current-panel-counter-lifetime-interactions.json` then evaluates all 80
+non-empty combinations of short-lived component and sum locals at the same
+three panel submits and the counter submit. Every compiling variant is again
+byte-identical to baseline. Ordinary scalar lifetimes therefore cannot alter
+the native x87 operand order or the counter stack-slot coloring.
+
+No source change is retained. The current result remains **97.50%**,
+521/521 instructions, prefix 332, and references `65/0/0`; the remaining
+four regions are bounded compiler scheduling differences rather than missing
+recovered behavior.

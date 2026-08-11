@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-panel-y-order",
+      "find": "            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                element->render_offset_y + element->pos_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "position-plus-offset",
+          "text": "            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);"
+        }
+      ]
+    },
+    {
+      "name": "second-panel-y-order",
+      "find": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->render_offset_y + element->pos_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "position-plus-offset",
+          "text": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->pos_y + element->render_offset_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);"
+        }
+      ]
+    },
+    {
+      "name": "third-panel-y-order",
+      "find": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->render_offset_y + element->pos_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "position-plus-offset",
+          "text": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->pos_y + element->render_offset_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);"
+        }
+      ]
+    },
+    {
+      "name": "counter-x-order",
+      "find": "            render_pos.x =\n                element->render_offset_x + element->pos_x;",
+      "replacements": [
+        {
+          "name": "position-plus-offset",
+          "text": "            render_pos.x =\n                element->pos_x + element->render_offset_x;"
+        }
+      ]
+    },
+    {
+      "name": "counter-y-order",
+      "find": "            render_pos.y =\n                element->render_offset_y + element->pos_y;",
+      "replacements": [
+        {
+          "name": "position-plus-offset",
+          "text": "            render_pos.y =\n                element->pos_y + element->render_offset_y;"
+        }
+      ]
+    }
+  ]
+}
