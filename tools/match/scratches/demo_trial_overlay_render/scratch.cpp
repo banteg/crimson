@@ -159,17 +159,16 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
             position.y += 18.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x, position.y, "please upgrade to the full version of Crimsonland.");
+            float quest_tail_x = position.x;
             position.y += 22.0f;
-            float quest_tail_y = position.y;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, quest_tail_y,
+                quest_tail_x, position.y,
                 "The full version features unrestricted access to all 3");
-            quest_tail_y += 18.0f;
+            position.y += 18.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, quest_tail_y,
+                quest_tail_x, position.y,
                 "game modes and be able to post your scores on the Internet. Why not buy");
-            quest_tail_y += 18.0f;
-            position.y = quest_tail_y;
+            position.y += 18.0f;
         } else if (minutes <= 0 && seconds <= 0) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x, position.y,

@@ -6,9 +6,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **749/810** functions matched exactly (**92.5%**), **164524/341992** code bytes (**48.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **308876/341992** code bytes (**90.3%**).
+Fuzzy-weighted alignment is **308887/341992** code bytes (**90.3%**).
 
-Remaining exact-match debt is **61 functions**, **177468 code bytes**, and **33116 fuzzy-gap bytes**.
+Remaining exact-match debt is **61 functions**, **177468 code bytes**, and **33105 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -94,12 +94,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 612/671 | 146265/320827 | 45.6% | 287800/320827 | 89.7% | 671/671 | 320827/320827 | 100.0% | 612/671 |
+| crimsonland.exe | 612/671 | 146265/320827 | 45.6% | 287811/320827 | 89.7% | 671/671 | 320827/320827 | 100.0% | 612/671 |
 | grim.dll | 137/139 | 18259/21165 | 86.3% | 21076/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 137/139 |
 
 ## crimsonland.exe
 
-**612/671** functions (**91.2%**), **146265/320827** bytes (**45.6%**), **287800/320827** fuzzy-weighted bytes (**89.7%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **612/671** scratches verified.
+**612/671** functions (**91.2%**), **146265/320827** bytes (**45.6%**), **287811/320827** fuzzy-weighted bytes (**89.7%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **612/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -159,7 +159,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | perk_prompt_update_and_render | 0x00403550 | 378 | 378/378 | 0 | 93/93 | 100.00% | 93/93 | 35/0/0 |  | ui-perk-prompt-animation |
 | match | input_key_name | 0x004036d0 | 2970 | 2970/2970 | 0 | 1097/1097 | 100.00% | 1097/1097 | 256/0/0 |  | input-device-key-label-policy |
 | match | perks_generate_choices | 0x004045a0 | 535 | 535/535 | 0 | 139/139 | 100.00% | 139/139 | 54/0/0 |  | perk-choice-generation-policy |
-| wip | demo_trial_overlay_render | 0x004047c0 | 2413 | 2356/2413 | 57 | 636/636 | 97.64% | 339/636 | 175/0/0 |  | demo-trial-overlay-render-and-actions |
+| wip | demo_trial_overlay_render | 0x004047c0 | 2413 | 2367/2413 | 46 | 636/636 | 98.11% | 405/636 | 175/0/0 |  | demo-trial-overlay-render-and-actions |
 | match | demo_trial_already_paid_button_destroy | 0x00405130 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-already-paid-button-empty-destructor |
 | match | demo_trial_purchase_button_destroy | 0x00405140 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-purchase-button-empty-destructor |
 | match | demo_trial_maybe_later_button_destroy | 0x00405150 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-maybe-later-button-empty-destructor |

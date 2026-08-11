@@ -103,3 +103,31 @@ candidate spans; their remaining differences are only the corresponding
 temporary stack slots (`esp+0x18`/`esp+0x24` native versus
 `esp+0x1c`/`esp+0x28` candidate). Source SHA-256:
 `6da0467796a04c63d65b82c1be11dd81e7a1941edeb4469aebbc10a3345f43bd`.
+
+## 2026-08-11 direct Quest-tail ownership
+
+Live Binary Ninja and a focused region diff show that native renders the Quest
+suffix directly through the enclosing `position.y` slot while keeping its
+horizontal coordinate branch-owned. Replacing the Quest-only vertical cursor
+with that natural ownership shape makes the complete native Quest suffix exact
+through `0x00404cb9`. The expired suffix remains deliberately branch-owned: if
+both branches render directly through `position.y`, VC6 tail-merges them again
+and loses 20 instructions and four references.
+
+The retained source reaches **98.113208%**, 2367.471698/2413 fuzzy-weighted
+bytes, 636/636 instructions, prefix 405, and `175/0/0` references. This is a
+tradeoff-free gain of 11.382075 weighted bytes and 66 exact-prefix instructions
+over the previous source. The three remaining mismatch regions are the expired
+suffix scalar slot (`0x00404d75..0x00404dab`) and the two complementary button
+coordinate slots (`0x0040502f..0x0040508e` and
+`0x0040509c..0x004050dd`). Source SHA-256:
+`89b465d877fb800f185c819585159239a23e8fe943e42a3406fb69309f636c06`.
+
+Three exhaustive, non-truncated two-site matrices are recorded for this
+decision (72 variants total). The lifetime and scheduling matrices independently
+recover either suffix by 11.382075 weighted bytes, but every pair of direct
+suffixes triggers the 81.856396-byte merge regression. All scalar-coalescing
+forms regress. Replaying the 12 existing button declaration, construction, and
+lifetime probes on the retained source is stable: ordinary declaration and
+constructor forms are neutral, y-first loses one reference, and reusing the
+body vector materially regresses the function.

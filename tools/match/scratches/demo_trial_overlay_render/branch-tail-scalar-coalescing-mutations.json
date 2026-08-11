@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-tail-scalar-shape",
+      "find": "            position.y += 22.0f;\n            float quest_tail_y = position.y;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"The full version features unrestricted access to all 3\");\n            quest_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            quest_tail_y += 18.0f;\n            position.y = quest_tail_y;",
+      "replacements": [
+        {
+          "name": "sum-initializer-final-sum",
+          "text": "            float quest_tail_y = position.y + 22.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"The full version features unrestricted access to all 3\");\n            quest_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = quest_tail_y + 18.0f;"
+        },
+        {
+          "name": "copy-then-offset-final-sum",
+          "text": "            float quest_tail_y = position.y;\n            quest_tail_y += 22.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"The full version features unrestricted access to all 3\");\n            quest_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = quest_tail_y + 18.0f;"
+        },
+        {
+          "name": "compound-position-initializer",
+          "text": "            float quest_tail_y = (position.y += 22.0f);\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"The full version features unrestricted access to all 3\");\n            quest_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = (quest_tail_y += 18.0f);"
+        },
+        {
+          "name": "split-sum-assignment",
+          "text": "            float quest_tail_y;\n            quest_tail_y = position.y + 22.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"The full version features unrestricted access to all 3\");\n            quest_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, quest_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = quest_tail_y + 18.0f;"
+        }
+      ]
+    },
+    {
+      "name": "expired-tail-scalar-shape",
+      "find": "            position.y += 24.0f;\n            float expired_tail_y = position.y;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"Buy the full version to gain unrestricted access to all 3\");\n            expired_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            expired_tail_y += 18.0f;\n            position.y = expired_tail_y;",
+      "replacements": [
+        {
+          "name": "sum-initializer-final-sum",
+          "text": "            float expired_tail_y = position.y + 24.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"Buy the full version to gain unrestricted access to all 3\");\n            expired_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = expired_tail_y + 18.0f;"
+        },
+        {
+          "name": "copy-then-offset-final-sum",
+          "text": "            float expired_tail_y = position.y;\n            expired_tail_y += 24.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"Buy the full version to gain unrestricted access to all 3\");\n            expired_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = expired_tail_y + 18.0f;"
+        },
+        {
+          "name": "compound-position-initializer",
+          "text": "            float expired_tail_y = (position.y += 24.0f);\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"Buy the full version to gain unrestricted access to all 3\");\n            expired_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = (expired_tail_y += 18.0f);"
+        },
+        {
+          "name": "split-sum-assignment",
+          "text": "            float expired_tail_y;\n            expired_tail_y = position.y + 24.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"Buy the full version to gain unrestricted access to all 3\");\n            expired_tail_y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, expired_tail_y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y = expired_tail_y + 18.0f;"
+        }
+      ]
+    }
+  ]
+}
