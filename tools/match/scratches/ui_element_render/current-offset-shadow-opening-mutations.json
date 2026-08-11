@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-offset-shadow-opening",
+      "find": "                ui_render_vec2_t shadow_pos(\n                    element->pos_x + 7.0f,\n                    element->pos_y + 7.0f);\n                shadow_pos.x += element->render_offset_x;\n                shadow_pos.y += element->render_offset_y;",
+      "replacements": [
+        {
+          "name": "offset-first-direct-then-position",
+          "text": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.x = element->render_offset_x + 7.0f;\n                shadow_pos.y = element->render_offset_y + 7.0f;\n                shadow_pos.x += element->pos_x;\n                shadow_pos.y += element->pos_y;"
+        },
+        {
+          "name": "offset-first-constructor-then-position",
+          "text": "                ui_render_vec2_t shadow_pos(\n                    element->render_offset_x + 7.0f,\n                    element->render_offset_y + 7.0f);\n                shadow_pos.x += element->pos_x;\n                shadow_pos.y += element->pos_y;"
+        },
+        {
+          "name": "offset-first-set-then-position",
+          "text": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.set(\n                    element->render_offset_x + 7.0f,\n                    element->render_offset_y + 7.0f);\n                shadow_pos.x += element->pos_x;\n                shadow_pos.y += element->pos_y;"
+        },
+        {
+          "name": "position-first-direct-final",
+          "text": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.x = element->pos_x + 7.0f\n                    + element->render_offset_x;\n                shadow_pos.y = element->pos_y + 7.0f\n                    + element->render_offset_y;"
+        },
+        {
+          "name": "position-first-set-then-offset",
+          "text": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.set(\n                    element->pos_x + 7.0f,\n                    element->pos_y + 7.0f);\n                shadow_pos.x += element->render_offset_x;\n                shadow_pos.y += element->render_offset_y;"
+        }
+      ]
+    }
+  ]
+}

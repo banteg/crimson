@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-counter-x-component-order",
+      "find": "            render_pos.x =\n                element->render_offset_x + element->pos_x;",
+      "replacements": [
+        {
+          "name": "position-plus-offset",
+          "text": "            render_pos.x =\n                element->pos_x + element->render_offset_x;"
+        }
+      ]
+    },
+    {
+      "name": "current-counter-y-component-order",
+      "find": "            render_pos.y =\n                element->render_offset_y + element->pos_y;",
+      "replacements": [
+        {
+          "name": "position-plus-offset",
+          "text": "            render_pos.y =\n                element->pos_y + element->render_offset_y;"
+        }
+      ]
+    }
+  ]
+}

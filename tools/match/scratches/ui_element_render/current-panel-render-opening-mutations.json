@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-panel-render-opening",
+      "find": "            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            ui_render_vec2_t render_pos(\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y);",
+      "replacements": [
+        {
+          "name": "constructor-position-plus-offset",
+          "text": "            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            ui_render_vec2_t render_pos(\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y);"
+        },
+        {
+          "name": "setter-offset-plus-position",
+          "text": "            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            ui_render_vec2_t render_pos;\n            render_pos.set(\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y);"
+        },
+        {
+          "name": "setter-position-plus-offset",
+          "text": "            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            ui_render_vec2_t render_pos;\n            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y);"
+        },
+        {
+          "name": "direct-offset-plus-position",
+          "text": "            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            ui_render_vec2_t render_pos;\n            render_pos.x = element->render_offset_x + element->pos_x;\n            render_pos.y = element->render_offset_y + element->pos_y;"
+        },
+        {
+          "name": "direct-position-plus-offset",
+          "text": "            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            ui_render_vec2_t render_pos;\n            render_pos.x = element->pos_x + element->render_offset_x;\n            render_pos.y = element->pos_y + element->render_offset_y;"
+        },
+        {
+          "name": "declaration-before-state",
+          "text": "            ui_render_vec2_t render_pos;\n            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y);"
+        }
+      ]
+    }
+  ]
+}

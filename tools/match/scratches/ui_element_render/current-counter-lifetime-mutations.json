@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-counter-position-lifetime",
+      "find": "    int counter_id = element->overlay_texture_handle;\n    if (counter_id != -1) {\n        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            ui_render_vec2_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &render_pos.x);\n        }\n        grim_interface_ptr->grim_end_batch();\n    }",
+      "replacements": [
+        {
+          "name": "counter-block-scope",
+          "text": "    int counter_id = element->overlay_texture_handle;\n    if (counter_id != -1) {\n        ui_render_vec2_t counter_render_pos;\n        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            counter_render_pos.set(\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element),\n                4,\n                &counter_render_pos.x);\n        }\n        grim_interface_ptr->grim_end_batch();\n    }"
+        },
+        {
+          "name": "before-counter-test",
+          "text": "    int counter_id = element->overlay_texture_handle;\n    ui_render_vec2_t counter_render_pos;\n    if (counter_id != -1) {\n        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            counter_render_pos.set(\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element),\n                4,\n                &counter_render_pos.x);\n        }\n        grim_interface_ptr->grim_end_batch();\n    }"
+        },
+        {
+          "name": "declaration-before-counter-id",
+          "text": "    ui_render_vec2_t counter_render_pos;\n    int counter_id = element->overlay_texture_handle;\n    if (counter_id != -1) {\n        grim_interface_ptr->grim_bind_texture(counter_id, 0);\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(\n                ui_element_counter_quad(element),\n                4,\n                &element->pos_x,\n                &element->rot_m00);\n        } else {\n            counter_render_pos.set(\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y);\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element),\n                4,\n                &counter_render_pos.x);\n        }\n        grim_interface_ptr->grim_end_batch();\n    }"
+        }
+      ]
+    }
+  ]
+}

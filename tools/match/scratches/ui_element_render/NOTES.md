@@ -2,8 +2,8 @@
 
 Native target: `crimsonland.exe` at `0x00446c40` (1,801 bytes).
 
-Current reconstruction: **95.78%**, exactly 521 candidate and native
-instructions, a 258-instruction exact prefix, and all 65 emitted references
+Current reconstruction: **97.50%**, exactly 521 candidate and native
+instructions, a 332-instruction exact prefix, and all 65 emitted references
 resolved.
 
 Live Binary Ninja and IDA evidence recovers the game-owned UI element render
@@ -92,7 +92,7 @@ frame and lowers the match, so the plausible expression form is retained.
 
 ## Recovery classification audit
 
-A fresh focused `--regions` run after the SDK-style recovery reports
+The focused `--regions` run after the SDK-style recovery reported
 **95.78%**, 521/521 instructions, prefix 258, and `65/0/0` references. Every
 remaining localized region preserves the same call, vertex window,
 offset/matrix input, constants, and control-flow edge; the differences are
@@ -108,10 +108,11 @@ The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 ## Recorded submit-scheduling sweeps
 
 The earlier sweep anchored the first residual at
-`0x00446e19..0x00446ec7`; the recovered `set` reuse style now makes that
-transformed-shadow span exact. Fresh live Binary Ninja disassembly places the
-first residual at `0x00446faf`, where native and candidate compute the same
-offset-shadow position but choose different temporary stack slots. The later
+`0x00446e19..0x00446ec7`; the recovered `set` reuse style made that
+transformed-shadow span exact. Before the shared ownership recovery below,
+live Binary Ninja disassembly placed the first residual at `0x00446faf`, where
+native and candidate computed the same offset-shadow position but chose
+different temporary stack slots. The later
 regions at `0x00446faf..0x00447079` and
 `0x004470b9..0x004471d7` repeat that exact scheduler pattern for offset
 submits.
@@ -133,6 +134,50 @@ winner:
   base-plus-stride, and force-inline helper combinations. Every variant is
   byte-identical to baseline.
 
-The retained SDK-style construction and setter recovery supersedes that
-earlier baseline. The final verified result is **95.78%**, 521/521
-instructions, prefix 258, and references `65/0/0`.
+The retained SDK-style construction and setter recovery superseded that
+earlier baseline and produced **95.78%**, 521/521 instructions, prefix 258,
+and references `65/0/0` before the ownership recovery below.
+
+## Shared offset-position ownership (2026-08-11)
+
+Fresh native disassembly exposed a semantic boundary hidden by the equivalent
+arithmetic. The offset-shadow calls publish their final position through the
+same stack slot later used by the three plain offset panel submits. Native
+also preserves the `position + 7` pair separately while adding the render
+offset: the final vector occupies the first two-float slot, while the other
+slot carries the intermediate y component. The retained source now names
+those roles as `shadow_offset` and `render_pos` and reuses `render_pos` for
+the following panel calls.
+
+That two-vector dataflow raises the weighted result from 1725/1801
+(**95.78%**) to 1756/1801 (**97.50%**), advances the exact prefix from 258 to
+332 instructions, and keeps the exact 521/521 extent and `65/0/0` reference
+audit. The retained source SHA-256 is
+`a507817bc4b8056c8c3853a67b94e5c28ddb474dcc18769df1521954a3e44927`.
+It makes all three offset-shadow submissions byte exact. A one-object
+version shrinks the native 0x20-byte frame to 0x18 and regresses to 94.82%; a
+two-object version with the opposite ownership keeps the frame but regresses
+to 95.20% with a 250-instruction prefix. The retained boundary is therefore
+not a score-only arithmetic rewrite.
+
+Six current-source plans bound the nearby spelling-only alternatives:
+
+- `current-counter-component-order-mutations.json` (SHA-256
+  `532700c5bd61bebc499f82f3c208ecab4189c5fec4ced96e035e53b1c0cde28e`);
+- `current-offset-shadow-opening-mutations.json` (SHA-256
+  `0daa7530474095acfe644950358bc3752b4fc1f52bf0ec63be3dd1521aec1970`);
+- `current-offset-shadow-lifetime-mutations.json` (SHA-256
+  `2ac4d9a01193de009339a683a4020f3ea0ec84b6cf18d07f5dbf4191bf87a64d`);
+- `current-panel-render-opening-mutations.json` (SHA-256
+  `85a08fa9adadf358939eafb296b7af4ff9d3405bb741254b76c2c2080f5915e0`);
+- `current-counter-position-style-mutations.json` (SHA-256
+  `9c51c8efb70f3d4154961521db37d040ad9c883dca195e0eee3ab0a94f44587e`);
+  and
+- `current-counter-lifetime-mutations.json` (SHA-256
+  `2da0c78d33df38b816f6fe588d10c65faec86fa3063102f63f46bf85e7058379`).
+
+Component order, constructor/setter spelling, declaration widening, and the
+natural counter record types are neutral or regressive on the retained
+source. The remaining 45 weighted bytes are three commutative y-add operand
+orders in the panel path plus the later counter position's stack-slot and
+argument schedule; no semantic operation or reference remains missing.

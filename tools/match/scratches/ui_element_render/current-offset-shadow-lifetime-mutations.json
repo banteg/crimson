@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-offset-shadow-lifetime",
+      "find": "        } else if (element->use_offset_render == 1) {\n            if (config_blob.shadows_enabled) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                ui_render_vec2_t shadow_pos(\n                    element->pos_x + 7.0f,\n                    element->pos_y + 7.0f);",
+      "replacements": [
+        {
+          "name": "shadow-scope-before-state",
+          "text": "        } else if (element->use_offset_render == 1) {\n            if (config_blob.shadows_enabled) {\n                ui_render_vec2_t shadow_pos;\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                shadow_pos.set(\n                    element->pos_x + 7.0f,\n                    element->pos_y + 7.0f);"
+        },
+        {
+          "name": "shadow-scope-before-state-direct",
+          "text": "        } else if (element->use_offset_render == 1) {\n            if (config_blob.shadows_enabled) {\n                ui_render_vec2_t shadow_pos;\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                shadow_pos.x = element->pos_x + 7.0f;\n                shadow_pos.y = element->pos_y + 7.0f;"
+        },
+        {
+          "name": "mode-scope-before-shadow-test",
+          "text": "        } else if (element->use_offset_render == 1) {\n            ui_render_vec2_t shadow_pos;\n            if (config_blob.shadows_enabled) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                shadow_pos.set(\n                    element->pos_x + 7.0f,\n                    element->pos_y + 7.0f);"
+        }
+      ]
+    }
+  ]
+}

@@ -166,40 +166,44 @@ extern "C" void ui_element_render(ui_element_t *element)
             }
             grim_interface_ptr->grim_end_batch();
         } else if (element->use_offset_render == 1) {
+            ui_render_vec2_t render_pos;
             if (config_blob.shadows_enabled) {
                 grim_interface_ptr->grim_set_config_var(0x13, 1u);
                 grim_interface_ptr->grim_begin_batch();
 
-                ui_render_vec2_t shadow_pos(
+                ui_render_vec2_t shadow_offset(
                     element->pos_x + 7.0f,
                     element->pos_y + 7.0f);
-                shadow_pos.x += element->render_offset_x;
-                shadow_pos.y += element->render_offset_y;
+                render_pos.set(
+                    shadow_offset.x + element->render_offset_x,
+                    shadow_offset.y + element->render_offset_y);
                 grim_interface_ptr->grim_submit_vertices_offset_color(
                     ui_element_quad(element, 0),
                     4,
-                    &shadow_pos.x,
+                    &render_pos.x,
                     &shadow_color);
                 if (element->vertex_count == 8) {
-                    shadow_pos.set(
+                    shadow_offset.set(
                         element->pos_x + 7.0f,
                         element->pos_y + 7.0f);
-                    shadow_pos.x += element->render_offset_x;
-                    shadow_pos.y += element->render_offset_y;
+                    render_pos.set(
+                        shadow_offset.x + element->render_offset_x,
+                        shadow_offset.y + element->render_offset_y);
                     grim_interface_ptr->grim_submit_vertices_offset_color(
                         ui_element_quad(element, 2),
                         4,
-                        &shadow_pos.x,
+                        &render_pos.x,
                         &shadow_color);
-                    shadow_pos.set(
+                    shadow_offset.set(
                         element->pos_x + 7.0f,
                         element->pos_y + 7.0f);
-                    shadow_pos.x += element->render_offset_x;
-                    shadow_pos.y += element->render_offset_y;
+                    render_pos.set(
+                        shadow_offset.x + element->render_offset_x,
+                        shadow_offset.y + element->render_offset_y);
                     grim_interface_ptr->grim_submit_vertices_offset_color(
                         ui_element_quad(element, 4),
                         4,
-                        &shadow_pos.x,
+                        &render_pos.x,
                         &shadow_color);
                 }
                 grim_interface_ptr->grim_end_batch();
@@ -207,8 +211,8 @@ extern "C" void ui_element_render(ui_element_t *element)
 
             grim_interface_ptr->grim_set_config_var(0x13, 5u);
             grim_interface_ptr->grim_begin_batch();
-            ui_render_vec2_t render_pos(
-                element->render_offset_x + element->pos_x,
+            render_pos.set(
+                element->pos_x + element->render_offset_x,
                 element->render_offset_y + element->pos_y);
             grim_interface_ptr->grim_submit_vertices_offset(
                 ui_element_quad(element, 0), 4, &render_pos.x);

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-counter-position-style",
+      "find": "            ui_render_vec2_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;",
+      "replacements": [
+        {
+          "name": "constructor-offset-plus-position",
+          "text": "            ui_render_vec2_t render_pos(\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y);"
+        },
+        {
+          "name": "constructor-position-plus-offset",
+          "text": "            ui_render_vec2_t render_pos(\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y);"
+        },
+        {
+          "name": "setter-offset-plus-position",
+          "text": "            ui_render_vec2_t render_pos;\n            render_pos.set(\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y);"
+        },
+        {
+          "name": "setter-position-plus-offset",
+          "text": "            ui_render_vec2_t render_pos;\n            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y);"
+        },
+        {
+          "name": "aggregate-position-plus-offset",
+          "text": "            vec2f_t render_pos = {\n                element->pos_x + element->render_offset_x,\n                element->pos_y + element->render_offset_y\n            };"
+        },
+        {
+          "name": "vec2f-position-plus-offset",
+          "text": "            vec2f_t render_pos;\n            render_pos.x = element->pos_x + element->render_offset_x;\n            render_pos.y = element->pos_y + element->render_offset_y;"
+        }
+      ]
+    }
+  ]
+}
