@@ -378,6 +378,7 @@ def test_mutate_cli_writes_only_a_tradeoff_free_improving_winner(
     assert source.read_text(encoding="utf-8") == "int value = x + y;\n"
     recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
     assert recorded["kind"] == "mutation-sweep"
+    assert len(recorded["baseline_epoch"]) == 64
     assert recorded["spec_sha256"] == sweep.spec.sha256
     assert recorded["winner"]["label"] == second_variant.label
     assert len(recorded["results"]) == 2

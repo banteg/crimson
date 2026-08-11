@@ -316,27 +316,28 @@ remaining fuzzy gap, and creates deterministic disjoint claims:
 
 ```sh
 batch_dir=/tmp/crimson-match-batch
-uv run crimson match shard --workers 4 --state missing,wip \
+uv run crimson match shard --workers 4 \
   --min-bytes 32 --limit 24 --out "$batch_dir"
 ```
 
 Sharding requires a clean repository so pre-existing edits cannot be mistaken
 for worker output.
 
-By default, sharding includes missing targets plus scratches whose recovery is
-`incomplete` or `unspecified`. Scratches marked `semantic-complete` are omitted
-even when they retain a large compiler/reference fuzzy gap. If that recovery
-queue is empty, the command exits without writing an inert plan and points at
-the separate residual-audit mode:
+By default, sharding first includes missing targets plus scratches whose
+recovery is `incomplete` or `unspecified`. If that recovery queue is empty, it
+automatically switches to semantic-complete residual work instead of emitting
+an empty plan. Use an explicit mode to pin either queue:
 
 ```sh
+uv run crimson match shard --mode recovery --workers 4 \
+  --min-bytes 32 --limit 24 --out "$batch_dir"
 uv run crimson match shard --mode residual-audit --workers 4 \
   --min-bytes 32 --limit 24 --out "$batch_dir"
 ```
 
 Residual-audit mode defaults to `--state wip,audit` and
 `--recovery semantic-complete`. Explicit `--state` or `--recovery` values
-override either mode's defaults.
+override either mode's defaults and disable the automatic fallback.
 
 `plan.json` pins the batch's starting commit. Each `worker-NN.json` assigns
 targets and their only permitted `scratches/<directory>` paths. Existing
@@ -397,11 +398,12 @@ git add tools/match/scratches tools/match/STATUS.md
 git commit -m "feat(match): recover claimed gameplay functions"
 ```
 
-Checkpoint rejects duplicate scratch targets, a stale or malformed plan,
-scratch changes outside all claims, evaluation failures, and whitespace
-errors. Because ownership is measured from the pinned base commit, the same
-check also covers worker commits if a coordinator chooses to integrate them
-directly.
+Checkpoint rejects duplicate scratch targets, contradictory recovery/residual
+metadata, a stale or malformed plan, scratch changes outside all claims,
+evaluation failures, current experiment evaluation errors, stale native audit
+artifacts, and whitespace errors. Because ownership is measured from the
+pinned base commit, the same check also covers worker commits if a coordinator
+chooses to integrate them directly.
 
 Regenerate and validate the dashboard:
 
@@ -470,9 +472,11 @@ uv run crimson match probe tools/match/scratches/player_update \
   --stdin --json < /tmp/player_update_variant.cpp
 ```
 
-Pass `--record` to append the complete result, source SHA-256, profile, label,
-and timestamp to `experiments.jsonl` in the scratch directory. Recording is
-explicit; ordinary probes leave both the scratch and repository untouched.
+Pass `--record` to append the complete result, source SHA-256, canonical
+baseline epoch, profile, label, and timestamp to `experiments.jsonl` in the
+scratch directory. The epoch hashes the source/build inputs, target evidence,
+curated reference maps, and a versioned baseline scheme. Recording is explicit;
+ordinary probes leave both the scratch and repository untouched.
 
 For repeated source-shape experiments, use the bounded mutation harness. A
 JSON plan names exact, non-overlapping source spans and plausible replacements:
@@ -543,17 +547,22 @@ Summarize the append-only experiment corpus before scheduling more sweeps:
 uv run crimson match experiments --sort no-improvement --limit 20
 uv run crimson match experiments --sort errors --limit 20
 uv run crimson match experiments --scratch player_update --json --check
+uv run crimson match experiments --check --strict --limit 1
 ```
 
 The summary counts improving, byte-neutral, degrading, and evaluation-error
 variants separately, along with repeated source/profile evaluations, repeated
 specs, exact winners, metric tradeoffs, and each scratch's trailing
-no-improvement streak. Sorting by `errors` surfaces plans whose intended
-complete variants may need an authoring audit instead of treating a failed
-compile as negative matching evidence. `stalled` means at least three recorded
-mutation sweeps since the last improving sweep; it is a prompt to change or
-falsify the current hypothesis, not a claim that the function is unmatchable.
-`--check` rejects malformed or internally inconsistent JSONL.
+no-improvement streak. Current and historical records are reported separately;
+legacy records without an epoch remain useful history but cannot mark the live
+scratch as stalled. Sorting by `errors` surfaces plans whose intended complete
+variants may need an authoring audit instead of treating a failed compile as
+negative matching evidence. `stalled` means at least three consecutive,
+complete, error-free, current-baseline mutation sweeps since the last improving
+sweep. Truncated or errored sweeps are inconclusive and break that streak. It is
+a prompt to change or falsify the current hypothesis, not a claim that the
+function is unmatchable. `--check` rejects malformed or internally inconsistent
+JSONL; `--strict` also rejects current-baseline evaluation errors.
 
 The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the

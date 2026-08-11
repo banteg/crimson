@@ -57,6 +57,12 @@ jobs:
             use_zig: true
             command: uv run --no-sync pytest --no-cov
             sync_args: --group dev
+          - task: match-experiments
+            use_uv: true
+            do_sync: true
+            use_zig: false
+            command: uv run --no-sync crimson match experiments --check --strict --limit 1
+            sync_args: ""
           - task: native-closure
             use_uv: true
             do_sync: true
@@ -126,7 +132,7 @@ jobs:
         run: uv sync --frozen ${{ matrix.sync_args }}
 
       - name: Download provenance artifacts
-        if: ${{ matrix.task == 'pytest' || matrix.task == 'native-closure' }}
+        if: ${{ matrix.task == 'pytest' || matrix.task == 'match-experiments' || matrix.task == 'native-closure' }}
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"
           base_url="https://paq.crimson.banteg.xyz/v1.9.93"

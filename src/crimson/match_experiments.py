@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
-from collections.abc import Collection
+from collections.abc import Collection, Mapping
 from pathlib import Path
 from typing import Any, cast
 
@@ -173,19 +173,67 @@ def _recorded_function(record: dict[str, Any]) -> tuple[str | None, str | None]:
     )
 
 
+def _valid_epoch(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _non_improving_sweep_inconclusive_reasons(
+    record: dict[str, Any],
+    *,
+    declared_variants: int | None,
+    result_count: int,
+    errored_variants: int,
+    require_coverage: bool,
+) -> tuple[str, ...]:
+    reasons: list[str] = []
+    if errored_variants:
+        reasons.append("variant-errors")
+
+    possible = _non_negative_int(record.get("possible_variants"))
+    never_evaluated = _non_negative_int(record.get("combinations_never_evaluated"))
+    truncated = record.get("truncated")
+    stop_reason = record.get("stop_reason")
+    has_coverage = possible is not None and never_evaluated is not None and isinstance(truncated, bool)
+    if not has_coverage:
+        if require_coverage:
+            reasons.append("coverage-unrecorded")
+        return tuple(reasons)
+    if (
+        truncated
+        or declared_variants != possible
+        or result_count != possible
+        or never_evaluated
+        or stop_reason is not None
+    ):
+        reasons.append("incomplete-coverage")
+    return tuple(dict.fromkeys(reasons))
+
+
 def summarize_experiment_log(
     path: Path,
     *,
     match_root: Path,
+    current_epoch: str | None = None,
+    classify_epochs: bool = False,
 ) -> tuple[dict[str, Any], list[str]]:
     records, errors = load_experiment_log(path)
     kinds: Counter[str] = Counter()
+    current_kinds: Counter[str] = Counter()
     mutation_improvements: list[bool] = []
+    current_mutation_outcomes: list[bool | None] = []
     spec_shas: Counter[str] = Counter()
     variant_keys: Counter[tuple[str, str, str]] = Counter()
+    strict_errors: list[str] = []
     latest_recorded_at: str | None = None
     function: str | None = None
     image: str | None = None
+    current_records = 0
+    historical_records = 0
+    unversioned_records = 0
     evaluated_variants = 0
     improving_variants = 0
     neutral_variants = 0
@@ -195,6 +243,8 @@ def summarize_experiment_log(
     improving_sweeps = 0
     improving_probes = 0
     exact_winners = 0
+    current_inconclusive_sweeps = 0
+    current_errored_variants = 0
 
     for record_index, record in enumerate(records, start=1):
         context = f"{path}:{record_index}"
@@ -203,6 +253,19 @@ def summarize_experiment_log(
             errors.append(f"{context}: unsupported experiment schema {schema!r}")
         kind = _experiment_kind(record)
         kinds[kind] += 1
+        baseline_epoch = record.get("baseline_epoch")
+        if baseline_epoch is None:
+            unversioned_records += 1
+        elif not _valid_epoch(baseline_epoch):
+            errors.append(f"{context}: baseline_epoch must be a lowercase SHA-256 digest")
+        is_current = not classify_epochs or (
+            current_epoch is not None and baseline_epoch == current_epoch
+        )
+        if is_current:
+            current_records += 1
+            current_kinds[kind] += 1
+        else:
+            historical_records += 1
         recorded_at = record.get("recorded_at")
         if isinstance(recorded_at, str) and (latest_recorded_at is None or recorded_at > latest_recorded_at):
             latest_recorded_at = recorded_at
@@ -245,6 +308,7 @@ def summarize_experiment_log(
 
             baseline = record.get("baseline")
             baseline_status = cast(dict[str, Any], baseline) if isinstance(baseline, dict) else None
+            record_errored_variants = 0
             for result_index, result in enumerate(results, start=1):
                 if not isinstance(result, dict):
                     errors.append(f"{context}: result {result_index} must be an object")
@@ -260,6 +324,7 @@ def summarize_experiment_log(
                 variant_errored = isinstance(status, dict) and status.get("state") == "error"
                 if variant_errored:
                     errored_variants += 1
+                    record_errored_variants += 1
                 delta = typed_result.get("delta")
                 fuzzy_delta = _number(delta.get("fuzzy_weighted_bytes")) if isinstance(delta, dict) else None
                 if fuzzy_delta is None:
@@ -278,14 +343,48 @@ def summarize_experiment_log(
                     tradeoff_variants += bool(
                         _inferred_tradeoffs(typed_result, baseline_status),
                     )
+            if is_current:
+                current_errored_variants += record_errored_variants
+                if best_improves:
+                    current_mutation_outcomes.append(True)
+                    inconclusive_reasons = (
+                        ("variant-errors",) if record_errored_variants else ()
+                    )
+                else:
+                    inconclusive_reasons = _non_improving_sweep_inconclusive_reasons(
+                        record,
+                        declared_variants=declared,
+                        result_count=len(results),
+                        errored_variants=record_errored_variants,
+                        require_coverage=classify_epochs,
+                    )
+                    current_mutation_outcomes.append(
+                        None if inconclusive_reasons else False,
+                    )
+                if inconclusive_reasons:
+                    current_inconclusive_sweeps += 1
+                if record_errored_variants:
+                    strict_errors.append(
+                        f"{context}: current mutation sweep has "
+                        f"{record_errored_variants} errored variants",
+                    )
+                if isinstance(baseline_status, dict) and baseline_status.get("state") == "error":
+                    strict_errors.append(f"{context}: current mutation baseline is an error")
         elif kind == "probe":
             delta = record.get("delta")
             fuzzy_delta = _number(delta.get("fuzzy_weighted_bytes")) if isinstance(delta, dict) else None
             improving_probes += fuzzy_delta is not None and fuzzy_delta > 0
+            if is_current:
+                baseline = record.get("baseline")
+                probe = record.get("probe")
+                if isinstance(baseline, dict) and baseline.get("state") == "error":
+                    strict_errors.append(f"{context}: current probe baseline is an error")
+                if isinstance(probe, dict) and probe.get("state") == "error":
+                    strict_errors.append(f"{context}: current probe result is an error")
 
     no_improvement_streak = 0
-    for improved in reversed(mutation_improvements):
-        if improved:
+    for outcome in reversed(current_mutation_outcomes):
+        if outcome is not False:
             break
         no_improvement_streak += 1
     repeated_variants = sum(count - 1 for count in variant_keys.values())
@@ -301,6 +400,10 @@ def summarize_experiment_log(
         flags.append("metric-tradeoffs")
     if errored_variants:
         flags.append("variant-errors")
+    if current_inconclusive_sweeps:
+        flags.append("inconclusive-sweeps")
+    if classify_epochs and records and not current_records:
+        flags.append("historical-only")
     if errors:
         flags.append("malformed")
 
@@ -309,8 +412,13 @@ def summarize_experiment_log(
             "scratch": _relative_scratch(path, match_root),
             "function": function,
             "image": image,
+            "current_epoch": current_epoch if classify_epochs else None,
             "records": len(records),
+            "current_records": current_records,
+            "historical_records": historical_records,
+            "unversioned_records": unversioned_records,
             "kinds": dict(sorted(kinds.items())),
+            "current_kinds": dict(sorted(current_kinds.items())),
             "mutation_sweeps": kinds["mutation-sweep"],
             "probes": kinds["probe"],
             "evaluated_variants": evaluated_variants,
@@ -326,13 +434,16 @@ def summarize_experiment_log(
             "exact_winners": exact_winners,
             "no_improvement_sweeps": len(mutation_improvements) - improving_sweeps,
             "no_improvement_streak": no_improvement_streak,
+            "current_inconclusive_sweeps": current_inconclusive_sweeps,
+            "current_errored_variants": current_errored_variants,
             "unique_specs": len(spec_shas),
             "repeated_spec_runs": repeated_spec_runs,
             "latest_recorded_at": latest_recorded_at,
             "flags": flags,
             "errors": len(errors),
+            "strict_errors": len(strict_errors),
         },
-        errors,
+        [*errors, *strict_errors],
     )
 
 
@@ -367,14 +478,27 @@ def summarize_experiments(
     *,
     scratches: Collection[str] = (),
     sort_by: str = "variants",
+    current_epochs: Mapping[Path, str] | None = None,
 ) -> dict[str, Any]:
     paths = find_experiment_logs(match_root, scratches)
     rows: list[dict[str, Any]] = []
     errors: list[str] = []
+    strict_errors: list[str] = []
     for path in paths:
-        row, row_errors = summarize_experiment_log(path, match_root=match_root)
+        row, row_issues = summarize_experiment_log(
+            path,
+            match_root=match_root,
+            current_epoch=(
+                current_epochs.get(path.parent.resolve())
+                if current_epochs is not None
+                else None
+            ),
+            classify_epochs=current_epochs is not None,
+        )
         rows.append(row)
-        errors.extend(row_errors)
+        structural_count = int(row["errors"])
+        errors.extend(row_issues[:structural_count])
+        strict_errors.extend(row_issues[structural_count:])
     rows = sort_experiment_rows(rows, sort_by=sort_by)
     kinds: Counter[str] = Counter()
     for row in rows:
@@ -386,6 +510,9 @@ def summarize_experiments(
         "summary": {
             "files": len(paths),
             "records": sum(int(row["records"]) for row in rows),
+            "current_records": sum(int(row["current_records"]) for row in rows),
+            "historical_records": sum(int(row["historical_records"]) for row in rows),
+            "unversioned_records": sum(int(row["unversioned_records"]) for row in rows),
             "kinds": dict(sorted(kinds.items())),
             "evaluated_variants": sum(int(row["evaluated_variants"]) for row in rows),
             "unique_variants": sum(int(row["unique_variants"]) for row in rows),
@@ -399,9 +526,17 @@ def summarize_experiments(
             "improving_probes": sum(int(row["improving_probes"]) for row in rows),
             "exact_winners": sum(int(row["exact_winners"]) for row in rows),
             "stalled_scratches": sum("stalled" in row["flags"] for row in rows),
+            "current_inconclusive_sweeps": sum(
+                int(row["current_inconclusive_sweeps"]) for row in rows
+            ),
+            "current_errored_variants": sum(
+                int(row["current_errored_variants"]) for row in rows
+            ),
             "errors": len(errors),
+            "strict_errors": len(strict_errors),
         },
         "errors": errors,
+        "strict_errors": strict_errors,
         "rows": rows,
     }
 
@@ -410,7 +545,7 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
     rows: list[tuple[str, ...]] = [
         (
             "scratch",
-            "logs",
+            "current/all",
             "sweeps",
             "probes",
             "variants",
@@ -426,7 +561,7 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
         rows.append(
             (
                 str(row["scratch"]).removeprefix("scratches/"),
-                str(row["records"]),
+                f"{row['current_records']}/{row['records']}",
                 str(row["mutation_sweeps"]),
                 str(row["probes"]),
                 str(row["evaluated_variants"]),
@@ -447,6 +582,8 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
     lines.append(
         (
             f"\nfiles={summary['files']} records={summary['records']} "
+            f"current/historical/unversioned={summary['current_records']}/"
+            f"{summary['historical_records']}/{summary['unversioned_records']} "
             f"kinds="
             + "/".join(f"{kind}:{count}" for kind, count in summary["kinds"].items())
             + f"; variants={summary['evaluated_variants']} "
@@ -456,7 +593,9 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
             f"{summary['errored_variants']} "
             f"tradeoffs={summary['tradeoff_variants']} "
             f"sweep-wins={summary['improving_sweeps']} exact={summary['exact_winners']} "
-            f"stalled={summary['stalled_scratches']} errors={summary['errors']}"
+            f"stalled={summary['stalled_scratches']} "
+            f"inconclusive={summary['current_inconclusive_sweeps']} "
+            f"errors={summary['errors']} strict-errors={summary['strict_errors']}"
         ),
     )
     return "\n".join(lines)

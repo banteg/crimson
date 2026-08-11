@@ -4,9 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**747/810** functions matched exactly, **160657/341992** code bytes (**47.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**747/810** functions matched exactly (**92.2%**), **160657/341992** code bytes (**47.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 Fuzzy-weighted alignment is **308462/341992** code bytes (**90.2%**).
+
+Remaining exact-match debt is **63 functions**, **181335 code bytes**, and **33530 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -97,7 +99,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## crimsonland.exe
 
-**610/671** functions, **142398/320827** bytes (**44.4%**), **287386/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **610/671** scratches verified.
+**610/671** functions (**90.9%**), **142398/320827** bytes (**44.4%**), **287386/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **610/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -775,7 +777,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## grim.dll
 
-**137/139** functions, **18259/21165** bytes (**86.3%**), **21076/21165** fuzzy-weighted bytes (**99.6%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **137/139** scratches verified.
+**137/139** functions (**98.6%**), **18259/21165** bytes (**86.3%**), **21076/21165** fuzzy-weighted bytes (**99.6%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **137/139** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|

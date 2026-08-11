@@ -24,6 +24,8 @@ check *args:
     uv run lint-imports
     uv run ty check src tests
     uv run scripts/check_docs.py
+    uv run crimson match experiments --check --strict --limit 1
+    uv run crimson native verify --require-game-closure --allow-absent-toolchain
     sg scan
     sg test
     uv run pytest --no-cov {{args}}

@@ -113,6 +113,7 @@ from crimson.match import (
     rewrite_placeholder_references,
     rewrite_resolved_name_references,
     run_match,
+    scratch_experiment_epoch,
     sort_profile_statuses,
     sort_triage_rows,
     triage_row_payload,
@@ -120,6 +121,7 @@ from crimson.match import (
     validate_match_claim,
     validate_matching_workspace,
     validate_scratch_source,
+    validate_scratch_status_metadata,
     write_match_shard_plan,
 )
 
@@ -4338,13 +4340,14 @@ def test_render_status_rows_includes_prefix() -> None:
         "0/1",
     )
     assert (
-        "all images: 0/30 functions, 0/3000 bytes (0.0%) matched; "
+        "all images: 0/30 functions (0.0%), 0/3000 bytes (0.0%) matched; "
         "5/3000 fuzzy-weighted bytes (0.2%); "
         "1/30 reproducible candidates covering 10/3000 bytes (0.3%); "
-        "0/1 scratches verified"
+        "0/1 scratches verified; remaining exact-match debt: "
+        "30 functions, 3000 bytes, 2995 fuzzy-gap bytes"
     ) in render_status_table([status], totals)
     assert render_status_summary(totals).startswith(
-        "all images: 0/30 functions, 0/3000 bytes (0.0%) matched",
+        "all images: 0/30 functions (0.0%), 0/3000 bytes (0.0%) matched",
     )
     markdown = render_status_markdown([status], totals)
     assert (
@@ -4352,6 +4355,10 @@ def test_render_status_rows_includes_prefix() -> None:
         "1/10 | 10/1000 | 1.0% | 0/1 |"
     ) in markdown
     assert "Fuzzy-weighted alignment is **5/3000** code bytes (**0.2%**)." in markdown
+    assert (
+        "Remaining exact-match debt is **30 functions**, **3000 code bytes**, "
+        "and **2995 fuzzy-gap bytes**."
+    ) in markdown
     assert "Candidate coverage includes exact matches and WIPs" in markdown
     assert "## crimsonland.exe" in markdown
     assert "## grim.dll" in markdown
@@ -4923,12 +4930,16 @@ def test_triage_surfaces_and_sorts_recorded_search_evidence() -> None:
         scratch_count=1,
         experiments=TriageExperimentEvidence(
             records=4,
+            current_records=2,
+            historical_records=2,
+            unversioned_records=2,
             mutation_sweeps=3,
             probes=1,
             evaluated_variants=12,
             unique_variants=10,
             unique_specs=3,
             no_improvement_streak=3,
+            current_inconclusive_sweeps=0,
             flags=("stalled",),
         ),
     )
@@ -4943,17 +4954,21 @@ def test_triage_surfaces_and_sorts_recorded_search_evidence() -> None:
     payload = triage_row_payload(explored)["experiments"]
     assert payload == {
         "records": 4,
+        "current_records": 2,
+        "historical_records": 2,
+        "unversioned_records": 2,
         "mutation_sweeps": 3,
         "probes": 1,
         "evaluated_variants": 12,
         "unique_variants": 10,
         "unique_specs": 3,
         "no_improvement_streak": 3,
+        "current_inconclusive_sweeps": 0,
         "flags": ["stalled"],
         "errors": 0,
     }
     rendered = render_triage_rows([explored])[0]
-    assert rendered[-4:-1] == ("4/10", "3", "stalled")
+    assert rendered[-4:-1] == ("2/4/10", "3", "stalled")
 
 
 def test_match_shard_excludes_semantic_complete_by_default(
@@ -5051,6 +5066,9 @@ def test_match_shard_excludes_semantic_complete_by_default(
         "unspecified_target",
     }
     assert payload["filters"]["recoveries"] == ["incomplete", "unspecified"]
+    assert payload["filters"]["mode"] == "recovery"
+    assert payload["filters"]["requested_mode"] == "auto"
+    assert payload["filters"]["auto_fallback"] is False
 
     completed = CliRunner().invoke(
         match_app,
@@ -5104,7 +5122,7 @@ def test_match_shard_excludes_semantic_complete_by_default(
     assert payload["filters"]["recoveries"] == ["semantic-complete"]
 
 
-def test_match_shard_empty_recovery_queue_points_to_residual_audit(
+def test_match_shard_empty_recovery_queue_automatically_uses_residual_audit(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -5147,20 +5165,43 @@ def test_match_shard_empty_recovery_queue_points_to_residual_audit(
     monkeypatch.setattr("crimson.cli.match._batch_changed_paths", list)
     monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
     monkeypatch.setattr("crimson.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match._git_head", lambda: "a" * 40)
 
     completed = CliRunner().invoke(
         match_app,
         ["shard", "--workers", "1", "--match-root", str(tmp_path), "--json"],
     )
 
-    assert completed.exit_code == 1
+    assert completed.exit_code == 0
     payload = json.loads(completed.output)
-    assert payload["error"] == "empty-shard"
-    assert payload["semantic_complete_residual_targets"] == 1
-    assert payload["suggested_command"] == (
+    assert payload["target_count"] == 1
+    assert payload["assignments"][0]["targets"][0]["function"] == "residual"
+    assert payload["filters"]["mode"] == "residual-audit"
+    assert payload["filters"]["requested_mode"] == "auto"
+    assert payload["filters"]["auto_fallback"] is True
+
+    recovery_only = CliRunner().invoke(
+        match_app,
+        [
+            "shard",
+            "--workers",
+            "1",
+            "--match-root",
+            str(tmp_path),
+            "--mode",
+            "recovery",
+            "--json",
+        ],
+    )
+
+    assert recovery_only.exit_code == 1
+    error_payload = json.loads(recovery_only.output)
+    assert error_payload["error"] == "empty-shard"
+    assert error_payload["semantic_complete_residual_targets"] == 1
+    assert error_payload["suggested_command"] == (
         "crimson match shard --mode residual-audit --workers <N>"
     )
-    assert not (tmp_path / ".cache" / "shards" / "plan.json").exists()
 
 
 def test_exact_score_with_reference_debt_requires_audit() -> None:
@@ -5712,6 +5753,7 @@ def test_probe_command_records_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
     assert recorded["schema"] == 1
     assert recorded["kind"] == "probe"
+    assert len(recorded["baseline_epoch"]) == 64
     assert recorded["recorded_at"].endswith("+00:00")
     assert recorded["label"] == "trial"
     assert (scratch / "scratch.cpp").read_text(encoding="utf-8") == "baseline\n"
@@ -6427,6 +6469,90 @@ def test_matching_workspace_rejects_scratch_files_without_config(tmp_path: Path)
 
     assert validate_matching_workspace(tmp_path, scope="port") == [
         "orphan: scratch files require scratch.conf",
+    ]
+
+
+def test_scratch_experiment_epoch_tracks_build_inputs_not_recovery_labels(
+    tmp_path: Path,
+) -> None:
+    scratch = tmp_path / "scratches" / "foo"
+    scratch.mkdir(parents=True)
+    (tmp_path / "cl.sh").write_text("compile\n", encoding="utf-8")
+    source = scratch / "scratch.cpp"
+    source.write_text("int foo(void) { return 1; }\n", encoding="utf-8")
+    config = ScratchConfig(
+        directory=scratch,
+        function="game_is_full_version",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol="game_is_full_version",
+        note="first note",
+        recovery="semantic-complete",
+        residuals=("compiler",),
+    )
+
+    initial = scratch_experiment_epoch(config, tmp_path)
+    relabeled = scratch_experiment_epoch(
+        replace(config, note="updated note", recovery=None, residuals=()),
+        tmp_path,
+    )
+    assert relabeled == initial
+
+    source.write_text("int foo(void) { return 12345; }\n", encoding="utf-8")
+    assert scratch_experiment_epoch(config, tmp_path) != initial
+
+
+def test_status_metadata_rejects_stale_exact_and_unlabeled_reference_debt(
+    tmp_path: Path,
+) -> None:
+    exact = ScratchStatus(
+        config=ScratchConfig(
+            directory=tmp_path / "exact",
+            function="exact",
+            image="crimsonland.exe",
+            compiler="msvc6.5",
+            cflags="/O2",
+            source="scratch.cpp",
+            end_va=None,
+            symbol="exact",
+            note="",
+            recovery="semantic-complete",
+            residuals=("compiler",),
+        ),
+        address=0x401000,
+        target_size=10,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    reference_debt = ScratchStatus(
+        config=replace(
+            exact.config,
+            directory=tmp_path / "reference_debt",
+            function="reference_debt",
+            symbol="reference_debt",
+            residuals=(),
+        ),
+        address=0x401100,
+        target_size=10,
+        ratio=0.5,
+        prefix_instructions=1,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+        masked_mismatches=2,
+    )
+
+    assert validate_scratch_status_metadata([exact, reference_debt]) == [
+        "exact: exact match must remove RECOVERY=semantic-complete",
+        "exact: exact match must remove RESIDUAL=compiler",
+        "reference_debt: semantic-complete scratch must declare RESIDUAL",
+        "reference_debt: 2 unresolved/mismatched references require RESIDUAL=references",
     ]
 
 

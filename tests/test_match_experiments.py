@@ -64,7 +64,12 @@ def _sweep(
         "kind": "mutation-sweep",
         "recorded_at": "2026-07-27T00:00:00+00:00",
         "spec_sha256": spec,
+        "possible_variants": len(results),
+        "planned_variants": len(results),
         "evaluated_variants": len(results),
+        "combinations_never_evaluated": 0,
+        "truncated": False,
+        "stop_reason": None,
         "best_improves": improves,
         "winner": winner,
         "baseline": {
@@ -78,7 +83,7 @@ def _sweep(
 
 
 def _write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
-    path.parent.mkdir(parents=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "".join(json.dumps(record) + "\n" for record in records),
         encoding="utf-8",
@@ -111,6 +116,9 @@ def test_experiment_summary_surfaces_repeats_stalls_and_tradeoffs(
     assert payload["summary"] == {
         "files": 1,
         "records": 4,
+        "current_records": 4,
+        "historical_records": 0,
+        "unversioned_records": 4,
         "kinds": {"mutation-sweep": 3, "probe": 1},
         "evaluated_variants": 4,
         "unique_variants": 3,
@@ -124,7 +132,10 @@ def test_experiment_summary_surfaces_repeats_stalls_and_tradeoffs(
         "improving_probes": 1,
         "exact_winners": 1,
         "stalled_scratches": 0,
+        "current_inconclusive_sweeps": 0,
+        "current_errored_variants": 0,
         "errors": 0,
+        "strict_errors": 0,
     }
     row = payload["rows"][0]
     assert row["scratch"] == "scratches/foo"
@@ -161,9 +172,9 @@ def test_experiment_summary_check_rejects_malformed_logs(tmp_path: Path) -> None
 
     assert completed.exit_code == 1
     payload = json.loads(completed.output)
-    assert payload["summary"]["stalled_scratches"] == 1
+    assert payload["summary"]["stalled_scratches"] == 0
     assert payload["summary"]["errors"] == 1
-    assert payload["rows"][0]["flags"] == ["stalled", "malformed"]
+    assert payload["rows"][0]["flags"] == ["historical-only", "malformed"]
 
 
 def test_experiment_summary_separates_variant_errors_from_regressions(
@@ -179,7 +190,85 @@ def test_experiment_summary_separates_variant_errors_from_regressions(
     assert payload["summary"]["evaluated_variants"] == 1
     assert payload["summary"]["degrading_variants"] == 0
     assert payload["summary"]["errored_variants"] == 1
-    assert payload["rows"][0]["flags"] == ["variant-errors"]
+    assert payload["rows"][0]["flags"] == ["variant-errors", "inconclusive-sweeps"]
+    assert payload["summary"]["strict_errors"] == 1
 
     sorted_payload = summarize_experiments(tmp_path, sort_by="errors")
     assert sorted_payload["rows"][0]["errored_variants"] == 1
+
+
+def test_only_complete_current_epoch_sweeps_can_mark_a_scratch_stalled(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "scratches" / "epoch" / "experiments.jsonl"
+    old_epoch = "a" * 64
+    current_epoch = "b" * 64
+    historical = [
+        {"baseline_epoch": old_epoch, **_sweep(f"old-{index}", [_result(f"old-{index}", 0)])}
+        for index in range(3)
+    ]
+    incomplete = {
+        "baseline_epoch": current_epoch,
+        **_sweep("current-incomplete", [_result("current-incomplete", 0)]),
+        "possible_variants": 2,
+        "truncated": True,
+        "stop_reason": "variant-budget",
+    }
+    _write_jsonl(log, [*historical, incomplete])
+
+    payload = summarize_experiments(
+        tmp_path,
+        current_epochs={log.parent.resolve(): current_epoch},
+    )
+
+    row = payload["rows"][0]
+    assert row["current_records"] == 1
+    assert row["historical_records"] == 3
+    assert row["no_improvement_streak"] == 0
+    assert row["current_inconclusive_sweeps"] == 1
+    assert "stalled" not in row["flags"]
+
+    complete = [
+        {
+            "baseline_epoch": current_epoch,
+            **_sweep(f"current-{index}", [_result(f"current-{index}", 0)]),
+        }
+        for index in range(3)
+    ]
+    _write_jsonl(log, [*historical, *complete])
+
+    payload = summarize_experiments(
+        tmp_path,
+        current_epochs={log.parent.resolve(): current_epoch},
+    )
+    assert payload["rows"][0]["no_improvement_streak"] == 3
+    assert "stalled" in payload["rows"][0]["flags"]
+
+
+def test_strict_errors_only_apply_to_the_current_baseline_epoch(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "scratches" / "failed_epoch" / "experiments.jsonl"
+    failed = _result("failed", -1)
+    failed["status"]["state"] = "error"
+    old_epoch = "a" * 64
+    current_epoch = "b" * 64
+    _write_jsonl(
+        log,
+        [{"baseline_epoch": old_epoch, **_sweep("failed", [failed])}],
+    )
+
+    historical = summarize_experiments(
+        tmp_path,
+        current_epochs={log.parent.resolve(): current_epoch},
+    )
+    assert historical["summary"]["errored_variants"] == 1
+    assert historical["summary"]["current_errored_variants"] == 0
+    assert historical["strict_errors"] == []
+
+    current = summarize_experiments(
+        tmp_path,
+        current_epochs={log.parent.resolve(): old_epoch},
+    )
+    assert current["summary"]["current_errored_variants"] == 1
+    assert len(current["strict_errors"]) == 1

@@ -11,6 +11,7 @@ from collections import Counter, defaultdict
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, cast
 
@@ -3407,6 +3408,10 @@ class ImageTotals:
     matched_scratches: int
 
     @property
+    def function_percentage(self) -> float:
+        return self.matched_functions / self.function_count if self.function_count else 0.0
+
+    @property
     def byte_percentage(self) -> float:
         return self.matched_bytes / self.byte_total if self.byte_total else 0.0
 
@@ -3445,12 +3450,16 @@ class NativeLinkStatus:
 @dataclass(frozen=True, slots=True)
 class TriageExperimentEvidence:
     records: int = 0
+    current_records: int = 0
+    historical_records: int = 0
+    unversioned_records: int = 0
     mutation_sweeps: int = 0
     probes: int = 0
     evaluated_variants: int = 0
     unique_variants: int = 0
     unique_specs: int = 0
     no_improvement_streak: int = 0
+    current_inconclusive_sweeps: int = 0
     flags: tuple[str, ...] = ()
     errors: int = 0
 
@@ -3952,6 +3961,115 @@ def _scratch_build_dependencies(
         _compiler_executable_path(config, match_root),
         *_scratch_include_headers(config, match_root, resolver=include_resolver),
     )
+
+
+@lru_cache(maxsize=4096)
+def _experiment_epoch_file_sha256(
+    path_text: str,
+    mtime_ns: int,
+    size: int,
+) -> str:
+    del mtime_ns, size
+    return hashlib.sha256(Path(path_text).read_bytes()).hexdigest()
+
+
+def _experiment_epoch_path_label(path: Path, match_root: Path) -> str:
+    resolved = path.resolve()
+    if resolved.is_relative_to(match_root):
+        return f"match/{resolved.relative_to(match_root).as_posix()}"
+    if resolved.is_relative_to(REPO_ROOT):
+        return f"repo/{resolved.relative_to(REPO_ROOT).as_posix()}"
+    return f"external/{resolved.name}"
+
+
+def scratch_experiment_epoch(
+    config: ScratchConfig,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+) -> str:
+    """Hash the canonical inputs that determine an experiment baseline."""
+
+    match_root = match_root.resolve()
+    digest = hashlib.sha256(b"crimson-scratch-experiment-epoch-v1\0")
+    profile = {
+        "archive": config.archive,
+        "archive_end_symbol": config.archive_end_symbol,
+        "archive_extent": config.archive_extent,
+        "archive_member": config.archive_member,
+        "archive_sha256": config.archive_sha256,
+        "archive_size": config.archive_size,
+        "auto_inline_off": list(config.auto_inline_off),
+        "cflags": config.cflags,
+        "compiler": config.compiler,
+        "end_va": config.end_va,
+        "function": config.function,
+        "image": config.image,
+        "import_thunk": config.import_thunk,
+        "reference_aliases": [list(alias) for alias in config.reference_aliases],
+        "source": config.source,
+        "symbol": config.symbol,
+        "version": DEFAULT_VERSION,
+    }
+    digest.update(json.dumps(profile, separators=(",", ":"), sort_keys=True).encode())
+
+    compiler_path = _compiler_executable_path(config, match_root).resolve()
+    config_path = (config.directory / "scratch.conf").resolve()
+    dependencies = {
+        path.resolve()
+        for path in _scratch_build_dependencies(config, match_root)
+        if path.resolve() not in {compiler_path, config_path}
+    }
+    image_path, functions_path, metadata_path = _paths_for_image(config.image)
+    dependencies.update(
+        {
+            image_path.resolve(),
+            functions_path.resolve(),
+            metadata_path.resolve(),
+            functions_path.with_name("imports.json").resolve(),
+            DEFAULT_DATA_MAP_PATH.resolve(),
+            DEFAULT_NAME_MAP_PATH.resolve(),
+        },
+    )
+    for path in sorted(dependencies, key=lambda value: _experiment_epoch_path_label(value, match_root)):
+        label = _experiment_epoch_path_label(path, match_root)
+        digest.update(b"\0path\0")
+        digest.update(label.encode())
+        try:
+            stat = path.stat()
+        except OSError:
+            digest.update(b"\0missing")
+            continue
+        digest.update(b"\0sha256\0")
+        digest.update(
+            _experiment_epoch_file_sha256(
+                str(path),
+                stat.st_mtime_ns,
+                stat.st_size,
+            ).encode(),
+        )
+    return digest.hexdigest()
+
+
+def scratch_experiment_epochs(
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    directories: Collection[Path] | None = None,
+) -> dict[Path, str]:
+    """Return canonical experiment epochs keyed by resolved scratch directory."""
+
+    match_root = match_root.resolve()
+    selected = (
+        {directory.resolve() for directory in directories}
+        if directories is not None
+        else None
+    )
+    epochs: dict[Path, str] = {}
+    for conf_path in sorted(match_root.glob("scratches/*/scratch.conf")):
+        directory = conf_path.parent.resolve()
+        if selected is not None and directory not in selected:
+            continue
+        config = load_scratch_config(directory)
+        epochs[directory] = scratch_experiment_epoch(config, match_root)
+    return epochs
 
 
 def _scratch_build_key(
@@ -4702,6 +4820,41 @@ def validate_matching_workspace(
             continue
         directories = ", ".join(config.directory.name for config in configs)
         errors.append(f"duplicate target {image}:0x{address:08x}: {directories}")
+    return errors
+
+
+def validate_scratch_status_metadata(
+    statuses: Collection[ScratchStatus],
+) -> list[str]:
+    """Return recovery/residual metadata that contradicts compiled status."""
+
+    errors: list[str] = []
+    for status in sorted(
+        statuses,
+        key=lambda value: (value.config.image, value.address, value.config.directory.name),
+    ):
+        config = status.config
+        name = config.directory.name
+        if status.state == "match":
+            if config.recovery is not None:
+                errors.append(
+                    f"{name}: exact match must remove RECOVERY={config.recovery}",
+                )
+            if config.residuals:
+                errors.append(
+                    f"{name}: exact match must remove RESIDUAL={','.join(config.residuals)}",
+                )
+            continue
+        if status.state == "error":
+            continue
+        if config.recovery == "semantic-complete" and not config.residuals:
+            errors.append(f"{name}: semantic-complete scratch must declare RESIDUAL")
+        reference_debt = status.masked_unresolved + status.masked_mismatches
+        if reference_debt and "references" not in config.residuals:
+            errors.append(
+                f"{name}: {reference_debt} unresolved/mismatched references require "
+                "RESIDUAL=references",
+            )
     return errors
 
 
@@ -7216,15 +7369,24 @@ def triage_experiment_evidence(status: ScratchStatus | None) -> TriageExperiment
     row, errors = match_experiments.summarize_experiment_log(
         path,
         match_root=status.config.directory.parent.parent,
+        current_epoch=scratch_experiment_epoch(
+            status.config,
+            status.config.directory.parent.parent,
+        ),
+        classify_epochs=True,
     )
     return TriageExperimentEvidence(
         records=int(row["records"]),
+        current_records=int(row["current_records"]),
+        historical_records=int(row["historical_records"]),
+        unversioned_records=int(row["unversioned_records"]),
         mutation_sweeps=int(row["mutation_sweeps"]),
         probes=int(row["probes"]),
         evaluated_variants=int(row["evaluated_variants"]),
         unique_variants=int(row["unique_variants"]),
         unique_specs=int(row["unique_specs"]),
         no_improvement_streak=int(row["no_improvement_streak"]),
+        current_inconclusive_sweeps=int(row["current_inconclusive_sweeps"]),
         flags=tuple(str(flag) for flag in row["flags"]),
         errors=len(errors),
     )
@@ -8068,12 +8230,16 @@ def triage_row_payload(row: TriageRow) -> dict[str, Any]:
         "scratch_count": row.scratch_count,
         "experiments": {
             "records": row.experiments.records,
+            "current_records": row.experiments.current_records,
+            "historical_records": row.experiments.historical_records,
+            "unversioned_records": row.experiments.unversioned_records,
             "mutation_sweeps": row.experiments.mutation_sweeps,
             "probes": row.experiments.probes,
             "evaluated_variants": row.experiments.evaluated_variants,
             "unique_variants": row.experiments.unique_variants,
             "unique_specs": row.experiments.unique_specs,
             "no_improvement_streak": row.experiments.no_improvement_streak,
+            "current_inconclusive_sweeps": row.experiments.current_inconclusive_sweeps,
             "flags": list(row.experiments.flags),
             "errors": row.experiments.errors,
         },
@@ -8162,7 +8328,11 @@ def render_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> li
                     else "-"
                 ),
                 best.config.directory.name if best is not None else "-",
-                f"{row.experiments.records}/{row.experiments.unique_variants}",
+                (
+                    f"{row.experiments.current_records}/"
+                    f"{row.experiments.records}/"
+                    f"{row.experiments.unique_variants}"
+                ),
                 str(row.experiments.no_improvement_streak),
                 ",".join(row.experiments.flags) or "-",
                 (best.error or best.config.note) if best is not None else "",
@@ -8889,7 +9059,8 @@ def collect_native_link_statuses(
 
 def _image_summary(total: ImageTotals) -> str:
     return (
-        f"{total.image}: {total.matched_functions}/{total.function_count} functions, "
+        f"{total.image}: {total.matched_functions}/{total.function_count} functions "
+        f"({total.function_percentage:.1%}), "
         f"{total.matched_bytes}/{total.byte_total} bytes "
         f"({total.byte_percentage:.1%}) matched; "
         f"{total.fuzzy_weighted_bytes:.0f}/{total.byte_total} fuzzy-weighted bytes "
@@ -8903,8 +9074,12 @@ def _image_summary(total: ImageTotals) -> str:
 
 def render_status_summary(totals: list[ImageTotals]) -> str:
     overall = _overall_totals(totals)
+    remaining_functions = overall.function_count - overall.matched_functions
+    remaining_bytes = overall.byte_total - overall.matched_bytes
+    fuzzy_gap_bytes = overall.byte_total - overall.fuzzy_weighted_bytes
     lines = [
-        (f"all images: {overall.matched_functions}/{overall.function_count} functions, "
+        (f"all images: {overall.matched_functions}/{overall.function_count} functions "
+        f"({overall.function_percentage:.1%}), "
         f"{overall.matched_bytes}/{overall.byte_total} bytes "
         f"({overall.byte_percentage:.1%}) matched; "
         f"{overall.fuzzy_weighted_bytes:.0f}/{overall.byte_total} fuzzy-weighted bytes "
@@ -8912,7 +9087,9 @@ def render_status_summary(totals: list[ImageTotals]) -> str:
         f"{overall.candidate_functions}/{overall.function_count} reproducible candidates covering "
         f"{overall.candidate_bytes}/{overall.byte_total} bytes "
         f"({overall.candidate_byte_percentage:.1%}); "
-        f"{overall.matched_scratches}/{overall.scratch_count} scratches verified"),
+        f"{overall.matched_scratches}/{overall.scratch_count} scratches verified; "
+        f"remaining exact-match debt: {remaining_functions} functions, "
+        f"{remaining_bytes} bytes, {fuzzy_gap_bytes:.0f} fuzzy-gap bytes"),
         "by image:",
         *(_image_summary(total) for total in totals),
     ]
@@ -9051,7 +9228,8 @@ def render_status_markdown(
         "",
         "Regenerate with `uv run crimson match checkpoint`.",
         "",
-        (f"**{overall.matched_functions}/{overall.function_count}** functions matched exactly, "
+        (f"**{overall.matched_functions}/{overall.function_count}** functions matched exactly "
+        f"(**{overall.function_percentage:.1%}**), "
         f"**{overall.matched_bytes}/{overall.byte_total}** code bytes "
         f"(**{overall.byte_percentage:.1%}**). Byte totals are manifest function "
         "extents with terminal padding trimmed."),
@@ -9059,6 +9237,13 @@ def render_status_markdown(
         (f"Fuzzy-weighted alignment is **{overall.fuzzy_weighted_bytes:.0f}/"
         f"{overall.byte_total}** code bytes "
         f"(**{overall.fuzzy_byte_percentage:.1%}**)."),
+        "",
+        (
+            f"Remaining exact-match debt is "
+            f"**{overall.function_count - overall.matched_functions} functions**, "
+            f"**{overall.byte_total - overall.matched_bytes} code bytes**, and "
+            f"**{overall.byte_total - overall.fuzzy_weighted_bytes:.0f} fuzzy-gap bytes**."
+        ),
         "",
         (f"Reproducible candidates cover **{overall.candidate_functions}/{overall.function_count}** "
         f"functions and **{overall.candidate_bytes}/{overall.byte_total}** code bytes "
@@ -9110,7 +9295,8 @@ def render_status_markdown(
                 "",
                 f"## {total.image}",
                 "",
-                (f"**{total.matched_functions}/{total.function_count}** functions, "
+                (f"**{total.matched_functions}/{total.function_count}** functions "
+                f"(**{total.function_percentage:.1%}**), "
                 f"**{total.matched_bytes}/{total.byte_total}** bytes "
                 f"(**{total.byte_percentage:.1%}**), "
                 f"**{total.fuzzy_weighted_bytes:.0f}/{total.byte_total}** fuzzy-weighted bytes "

@@ -626,6 +626,10 @@ def cmd_match_probe(
             "schema": match_experiments.EXPERIMENT_SCHEMA,
             "kind": "probe",
             "recorded_at": datetime.now(UTC).isoformat(),
+            "baseline_epoch": matchlib.scratch_experiment_epoch(
+                result.baseline.config,
+                match_root,
+            ),
             **payload,
         }
         with record_path.open("a", encoding="utf-8") as handle:
@@ -720,6 +724,10 @@ def cmd_match_mutate(
         record_payload = {
             "kind": "mutation-sweep",
             "recorded_at": datetime.now(UTC).isoformat(),
+            "baseline_epoch": matchlib.scratch_experiment_epoch(
+                sweep.baseline.config,
+                match_root,
+            ),
             "best_source_written_to": written_to,
             "mutation_source": str(source_path),
             **match_mutation.mutation_sweep_payload(sweep),
@@ -770,13 +778,27 @@ def cmd_match_experiments(
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to display"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
     check: bool = typer.Option(False, "--check", help="fail when any log record is malformed"),
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="also fail on current-baseline probe or mutation evaluation errors",
+    ),
 ) -> None:
     """Summarize recorded probes and mutation sweeps across scratch logs."""
     try:
+        experiment_paths = match_experiments.find_experiment_logs(
+            match_root,
+            scratch or (),
+        )
+        current_epochs = matchlib.scratch_experiment_epochs(
+            match_root,
+            directories=[path.parent for path in experiment_paths],
+        )
         payload = match_experiments.summarize_experiments(
             match_root,
             scratches=scratch or (),
             sort_by=sort_by,
+            current_epochs=current_epochs,
         )
     except Exception as exc:
         typer.echo(f"experiment summary failed: {str(exc).splitlines()[0]}", err=True)
@@ -791,7 +813,9 @@ def cmd_match_experiments(
         typer.echo(match_experiments.render_experiment_summary(payload))
         for error in payload["errors"]:
             typer.echo(str(error), err=True)
-    if check and payload["errors"]:
+        for error in payload["strict_errors"]:
+            typer.echo(str(error), err=True)
+    if ((check or strict) and payload["errors"]) or (strict and payload["strict_errors"]):
         raise typer.Exit(code=1)
 
 
@@ -1091,12 +1115,19 @@ def cmd_match_status(
                 statuses,
                 totals,
                 scope=scope,
-                native_statuses=matchlib.collect_native_link_statuses(scope=scope),
+                native_statuses=matchlib.collect_native_link_statuses(
+                    scope=scope,
+                    allow_absent_toolchain=True,
+                ),
             ),
             encoding="utf-8",
         )
-    if check and any(status.state == "error" for status in statuses):
-        raise typer.Exit(code=1)
+    if check:
+        metadata_errors = matchlib.validate_scratch_status_metadata(statuses)
+        for error in metadata_errors:
+            typer.echo(error, err=True)
+        if any(status.state == "error" for status in statuses) or metadata_errors:
+            raise typer.Exit(code=1)
 
 
 @match_app.command("resolved-name-audit")
@@ -1454,10 +1485,10 @@ def cmd_match_triage(
 def cmd_match_shard(
     workers: int = typer.Option(..., "--workers", min=1, help="number of disjoint worker claims"),
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
-    mode: Literal["recovery", "residual-audit"] = typer.Option(
-        "recovery",
+    mode: Literal["auto", "recovery", "residual-audit"] = typer.Option(
+        "auto",
         "--mode",
-        help="queue defaults: broad recovery or semantic-complete residual audit",
+        help="queue defaults: auto fallback, broad recovery, or semantic-complete residual audit",
     ),
     scope: Literal["port", "all"] = typer.Option(
         matchlib.DEFAULT_MATCH_SCOPE,
@@ -1478,8 +1509,14 @@ def cmd_match_shard(
     as_json: bool = typer.Option(False, "--json", help="emit the complete plan"),
 ) -> None:
     """Create deterministic, disjoint target claims for a worker batch."""
-    default_state = "wip,audit" if mode == "residual-audit" else "missing,wip"
-    default_recovery = "semantic-complete" if mode == "residual-audit" else "incomplete,unspecified"
+    requested_mode = mode
+    effective_mode = "recovery" if mode == "auto" else mode
+    default_state = "wip,audit" if effective_mode == "residual-audit" else "missing,wip"
+    default_recovery = (
+        "semantic-complete"
+        if effective_mode == "residual-audit"
+        else "incomplete,unspecified"
+    )
     states = _parse_csv(state or default_state) or set()
     unknown_states = states - {"match", "audit", "wip", "error", "missing"}
     if unknown_states:
@@ -1512,15 +1549,29 @@ def cmd_match_shard(
         images=(image,) if image is not None else None,
         scope=scope,
     )
-    rows = [
-        row
-        for row in all_rows
-        if (
-            row.state in states
-            and row.target_size >= min_bytes
-            and (row.best_status is None or matchlib.scratch_recovery(row.best_status) in recoveries)
-        )
-    ]
+
+    def selected_rows() -> list[matchlib.TriageRow]:
+        return [
+            row
+            for row in all_rows
+            if (
+                row.state in states
+                and row.target_size >= min_bytes
+                and (
+                    row.best_status is None
+                    or matchlib.scratch_recovery(row.best_status) in recoveries
+                )
+            )
+        ]
+
+    rows = selected_rows()
+    auto_fallback = False
+    if not rows and requested_mode == "auto" and state is None and recovery is None:
+        effective_mode = "residual-audit"
+        states = {"audit", "wip"}
+        recoveries = {"semantic-complete"}
+        rows = selected_rows()
+        auto_fallback = bool(rows)
     rows = matchlib.sort_triage_rows(rows, sort_by="fuzzy-gap")
     if limit is not None:
         rows = rows[:limit]
@@ -1532,8 +1583,8 @@ def cmd_match_shard(
             for row in all_rows
         )
         suggested_command = "crimson match shard --mode residual-audit --workers <N>"
-        message = f"no targets match the {mode} shard filters"
-        if mode == "recovery" and residual_targets:
+        message = f"no targets match the {effective_mode} shard filters"
+        if effective_mode == "recovery" and residual_targets:
             message += (
                 f"; {residual_targets} semantic-complete residual targets remain; "
                 f"run `{suggested_command}`"
@@ -1544,7 +1595,8 @@ def cmd_match_shard(
                     {
                         "error": "empty-shard",
                         "message": message,
-                        "mode": mode,
+                        "mode": effective_mode,
+                        "requested_mode": requested_mode,
                         "semantic_complete_residual_targets": residual_targets,
                         "suggested_command": suggested_command if residual_targets else None,
                     },
@@ -1563,7 +1615,9 @@ def cmd_match_shard(
         match_root=match_root,
         filters={
             "image": image,
-            "mode": mode,
+            "mode": effective_mode,
+            "requested_mode": requested_mode,
+            "auto_fallback": auto_fallback,
             "states": sorted(states),
             "recoveries": sorted(recoveries),
             "min_bytes": min_bytes,
@@ -1582,7 +1636,7 @@ def cmd_match_shard(
         return
     typer.echo(
         f"scope={scope} targets={plan['target_count']} workers={workers} "
-        f"mode={mode} plan={plan_path}",
+        f"mode={effective_mode} requested_mode={requested_mode} plan={plan_path}",
     )
     for assignment, claim_path in zip(plan["assignments"], claim_paths, strict=True):
         typer.echo(
@@ -2068,13 +2122,31 @@ def cmd_match_checkpoint(
             claim_errors.append(str(exc).splitlines()[0])
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
     totals = matchlib.collect_image_totals(statuses, scope=scope)
+    metadata_errors = matchlib.validate_scratch_status_metadata(statuses)
+    experiment_paths = match_experiments.find_experiment_logs(match_root)
+    experiment_payload = match_experiments.summarize_experiments(
+        match_root,
+        current_epochs=matchlib.scratch_experiment_epochs(
+            match_root,
+            directories=[path.parent for path in experiment_paths],
+        ),
+    )
+    native_statuses = matchlib.collect_native_link_statuses(
+        scope=scope,
+        allow_absent_toolchain=True,
+    )
+    native_errors = [
+        status
+        for status in native_statuses
+        if status.artifact_state != "current"
+    ]
     write.parent.mkdir(parents=True, exist_ok=True)
     write.write_text(
         matchlib.render_status_markdown(
             statuses,
             totals,
             scope=scope,
-            native_statuses=matchlib.collect_native_link_statuses(scope=scope),
+            native_statuses=native_statuses,
         ),
         encoding="utf-8",
     )
@@ -2100,12 +2172,27 @@ def cmd_match_checkpoint(
         typer.echo(f"changed_batch_files={len(changed_paths)}")
     typer.echo(
         f"scope_errors={len(errors)} claim_errors={len(claim_errors)} "
-        f"evaluation_errors={len(evaluation_errors)}",
+        f"evaluation_errors={len(evaluation_errors)} "
+        f"metadata_errors={len(metadata_errors)} "
+        f"experiment_errors={len(experiment_payload['errors'])} "
+        f"experiment_strict_errors={len(experiment_payload['strict_errors'])} "
+        f"native_errors={len(native_errors)}",
     )
     for error in errors[:20]:
         typer.echo(f"  {error}", err=True)
     for error in claim_errors[:20]:
         typer.echo(f"  {error}", err=True)
+    for error in metadata_errors[:20]:
+        typer.echo(f"  {error}", err=True)
+    for error in experiment_payload["errors"][:20]:
+        typer.echo(f"  {error}", err=True)
+    for error in experiment_payload["strict_errors"][:20]:
+        typer.echo(f"  {error}", err=True)
+    for status in native_errors:
+        typer.echo(
+            f"  {status.image}: {status.artifact_state}: {status.artifact_note}",
+            err=True,
+        )
     for diff_check in diff_checks:
         if diff_check.stdout:
             typer.echo(diff_check.stdout.rstrip(), err=True)
@@ -2115,6 +2202,10 @@ def cmd_match_checkpoint(
         errors
         or claim_errors
         or evaluation_errors
+        or metadata_errors
+        or experiment_payload["errors"]
+        or experiment_payload["strict_errors"]
+        or native_errors
         or any(diff_check.returncode for diff_check in diff_checks)
     ):
         raise typer.Exit(code=1)
