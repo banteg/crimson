@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "telekinetic-apply-guard",
+      "find": "                if (*hover_timer > 650\n                    && perk_count_get(perk_id_telekinetic)\n                    && bonus_pool[nearby_bonus_index].state == 0) {\n                    bonus_entry_t *entry =\n                        &bonus_pool[nearby_bonus_index];\n                    bonus_apply(player_index, entry);\n                    entry->state = 1;\n                    entry->time.time_left = 0.5f;\n                    telekinetic_bonus_hover_timer_ms[player_index] = 0;\n                    break;\n                }\n",
+      "replacements": [
+        {
+          "name": "nested-three-guards",
+          "text": "                if (*hover_timer > 650) {\n                    if (perk_count_get(perk_id_telekinetic)) {\n                        if (bonus_pool[nearby_bonus_index].state == 0) {\n                            bonus_entry_t *entry =\n                                &bonus_pool[nearby_bonus_index];\n                            bonus_apply(player_index, entry);\n                            entry->state = 1;\n                            entry->time.time_left = 0.5f;\n                            telekinetic_bonus_hover_timer_ms[player_index] = 0;\n                            break;\n                        }\n                    }\n                }\n"
+        },
+        {
+          "name": "nested-threshold-combined-tail",
+          "text": "                if (*hover_timer > 650) {\n                    if (perk_count_get(perk_id_telekinetic)\n                        && bonus_pool[nearby_bonus_index].state == 0) {\n                        bonus_entry_t *entry =\n                            &bonus_pool[nearby_bonus_index];\n                        bonus_apply(player_index, entry);\n                        entry->state = 1;\n                        entry->time.time_left = 0.5f;\n                        telekinetic_bonus_hover_timer_ms[player_index] = 0;\n                        break;\n                    }\n                }\n"
+        },
+        {
+          "name": "inverse-threshold-empty-arm",
+          "text": "                if (*hover_timer <= 650) {\n                } else if (perk_count_get(perk_id_telekinetic)\n                    && bonus_pool[nearby_bonus_index].state == 0) {\n                    bonus_entry_t *entry =\n                        &bonus_pool[nearby_bonus_index];\n                    bonus_apply(player_index, entry);\n                    entry->state = 1;\n                    entry->time.time_left = 0.5f;\n                    telekinetic_bonus_hover_timer_ms[player_index] = 0;\n                    break;\n                }\n"
+        },
+        {
+          "name": "constant-left-threshold",
+          "text": "                if (650 < *hover_timer\n                    && perk_count_get(perk_id_telekinetic)\n                    && bonus_pool[nearby_bonus_index].state == 0) {\n                    bonus_entry_t *entry =\n                        &bonus_pool[nearby_bonus_index];\n                    bonus_apply(player_index, entry);\n                    entry->state = 1;\n                    entry->time.time_left = 0.5f;\n                    telekinetic_bonus_hover_timer_ms[player_index] = 0;\n                    break;\n                }\n"
+        },
+        {
+          "name": "inclusive-651-threshold",
+          "text": "                if (*hover_timer >= 651\n                    && perk_count_get(perk_id_telekinetic)\n                    && bonus_pool[nearby_bonus_index].state == 0) {\n                    bonus_entry_t *entry =\n                        &bonus_pool[nearby_bonus_index];\n                    bonus_apply(player_index, entry);\n                    entry->state = 1;\n                    entry->time.time_left = 0.5f;\n                    telekinetic_bonus_hover_timer_ms[player_index] = 0;\n                    break;\n                }\n"
+        },
+        {
+          "name": "named-apply-condition",
+          "text": "                bool should_apply =\n                    *hover_timer > 650\n                    && perk_count_get(perk_id_telekinetic)\n                    && bonus_pool[nearby_bonus_index].state == 0;\n                if (should_apply) {\n                    bonus_entry_t *entry =\n                        &bonus_pool[nearby_bonus_index];\n                    bonus_apply(player_index, entry);\n                    entry->state = 1;\n                    entry->time.time_left = 0.5f;\n                    telekinetic_bonus_hover_timer_ms[player_index] = 0;\n                    break;\n                }\n"
+        }
+      ]
+    }
+  ]
+}

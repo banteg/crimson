@@ -177,7 +177,7 @@ Three complete follow-up sweeps bound the remaining nearby residual:
   weighted bytes and added one instruction despite removing one reference
   mismatch. The existing index loops therefore remain the honest source.
 
-The complete 12-line experiment log has SHA-256
+At that checkpoint, the complete 12-line experiment log had SHA-256
 `2d2ecd79a6d5c09174439a891a5a50f8530eec8664e4a9f111ef203b60183625`.
 
 ## Sprite-effect publication ownership
@@ -201,15 +201,47 @@ reported differences are branch-label displacement inherited from earlier
 regions. The retained source SHA-256 is
 `6e96d59dd82e6d6beb05d87453cf2b6d50d55151d93872ed918165f63f9e8d5f`.
 
-The scratch is classified `semantic-complete` with a `compiler` residual.
+The scratch is classified `semantic-complete` with compiler and aligned-
+reference residuals.
 Fresh live Binary Ninja output confirms the ordinary and weapon
 bonus passes, Telekinetic hover/apply path, all three particle passes, exploding
 secondary-projectile and sprite-effect passes, and the final `effects_render`
 call through `0x004295f0..0x0042a5e8`. IDA and Ghidra independently retain the
 same signature and six named helper calls. The first localized regions differ
 only in branch displacement, zero materialization (`EBX` versus literal zero),
-and x87 scheduling. All their scoped references resolve; the eight whole-function
+and x87 scheduling. All their scoped references resolve; the six whole-function
 audit mismatches remain visible as alignment or strength-reduced field-anchor
 effects rather than being aliased away. Each candidate cursor is an evidenced
 interior of the same player, particle, secondary-projectile, camera, or sprite
 record used by native, so none is independent source-reference debt.
+
+## Current Telekinetic control replay
+
+The earlier `telekinetic-search-sentinel-mutations.json` plan predates the
+retained aggregate-player cursor and no longer matches the current source: its
+search pattern is anchored on the old `player_aim` spelling. It is historical
+evidence only, not a current-baseline exclusion.
+
+Three fresh plans therefore replay the nearby control shapes against the
+89.9310% source:
+
+- `current-telekinetic-found-arm-mutations.json` (SHA-256
+  `f2b66075c3a6d876e366efeee503b9479542c0b76e060f73a06378b0795f3954`)
+  evaluates all 4/4 truth-test and empty-arm spellings;
+- `current-telekinetic-apply-guard-mutations.json` (SHA-256
+  `2c7a71f9b85993304de85eeebc814d6305a409a6ade6e51a4cc236a1e2b504c0`)
+  evaluates all 6/6 nested, inverted, equivalent-threshold, and named-condition
+  spellings;
+- `current-telekinetic-control-interactions.json` (SHA-256
+  `129bef5cdb0d092de7f1fc96135bed0da0a77cffa9b29927049df44cb3c7c706`)
+  evaluates all 8/8 selected one- and two-site structural interactions.
+
+All 18 evaluations (14 unique variants) are byte-identical to the current
+baseline, including every two-site combination. A manual replay of the old
+full player-index lifetime
+move is current-applicable but negative: moving initialization ahead of the
+weapon pass drops the result to 88.51%, adds one candidate instruction, and
+changes the reference audit from `223/0/6` to `218/0/8`. It is not retained.
+The restored scratch remains 89.93%, 1,087/1,088 instructions, prefix 14, and
+`223/0/6`. The complete 15-line experiment log now has SHA-256
+`8b88b520f5cf72783b1a82e974af7e638fe28e8519e757661132ecba4fc92cb6`.

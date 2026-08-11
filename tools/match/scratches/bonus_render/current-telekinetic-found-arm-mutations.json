@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "telekinetic-found-arm",
+      "find": "                if (nearby_bonus_found) {\n",
+      "replacements": [
+        {
+          "name": "explicit-nonzero",
+          "text": "                if (nearby_bonus_found != 0) {\n"
+        },
+        {
+          "name": "inverted-empty-arm",
+          "text": "                if (!nearby_bonus_found) {\n                } else {\n"
+        },
+        {
+          "name": "explicit-zero-empty-arm",
+          "text": "                if (nearby_bonus_found == 0) {\n                } else {\n"
+        },
+        {
+          "name": "positive-found-test",
+          "text": "                if (nearby_bonus_found > 0) {\n"
+        }
+      ]
+    }
+  ]
+}
