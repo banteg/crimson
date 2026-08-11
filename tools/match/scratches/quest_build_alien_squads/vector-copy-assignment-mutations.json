@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-vector-copy-assignment",
+      "find": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n",
+      "replacements": [
+        {
+          "name": "inline-reference-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    quest_vec2_t &operator=(const quest_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "forceinline-reference-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    __forceinline quest_vec2_t &operator=(const quest_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "inline-void-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    void operator=(const quest_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n    }\n"
+        },
+        {
+          "name": "reverse-component-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    quest_vec2_t &operator=(const quest_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n        return *this;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

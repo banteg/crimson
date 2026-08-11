@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "optional-wave-condition",
+      "find": "        if (wave == 4) {",
+      "replacements": [
+        {
+          "name": "constant-first",
+          "text": "        if (4 == wave) {"
+        },
+        {
+          "name": "negated-inequality",
+          "text": "        if (!(wave != 4)) {"
+        },
+        {
+          "name": "subtraction-zero",
+          "text": "        if (wave - 4 == 0) {"
+        },
+        {
+          "name": "unsigned-equality",
+          "text": "        if ((unsigned int)wave == 4u) {"
+        },
+        {
+          "name": "explicit-bool-result",
+          "text": "        if ((wave == 4) != false) {"
+        },
+        {
+          "name": "named-bool-result",
+          "text": "        bool is_bonus_wave = wave == 4;\n        if (is_bonus_wave) {"
+        }
+      ]
+    }
+  ]
+}

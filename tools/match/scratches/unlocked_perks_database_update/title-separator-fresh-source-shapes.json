@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "separator-construction",
+      "find": "        database_vec2_t separator_position(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n",
+      "replacements": [
+        {
+          "name": "copy-initialized-temporary",
+          "text": "        database_vec2_t separator_position = database_vec2_t(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n"
+        },
+        {
+          "name": "component-assignment",
+          "text": "        database_vec2_t separator_position;\n        separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n        separator_position.y = position.y + 13.0f;\n"
+        },
+        {
+          "name": "temporary-assignment",
+          "text": "        database_vec2_t separator_position;\n        separator_position = database_vec2_t(\n            position.x + (float)(132 - title_width / 2),\n            position.y + 13.0f);\n"
+        },
+        {
+          "name": "copy-position-then-adjust",
+          "text": "        database_vec2_t separator_position = position;\n        separator_position.x += (float)(132 - title_width / 2);\n        separator_position.y += 13.0f;\n"
+        },
+        {
+          "name": "vector-addition",
+          "text": "        database_vec2_t separator_position =\n            position + database_vec2_t(\n                (float)(132 - title_width / 2), 13.0f);\n"
+        },
+        {
+          "name": "named-float-x",
+          "text": "        float separator_x =\n            position.x + (float)(132 - title_width / 2);\n        database_vec2_t separator_position(\n            separator_x, position.y + 13.0f);\n"
+        },
+        {
+          "name": "named-integer-offset",
+          "text": "        int separator_x_offset = 132 - title_width / 2;\n        database_vec2_t separator_position(\n            position.x + (float)separator_x_offset,\n            position.y + 13.0f);\n"
+        },
+        {
+          "name": "y-before-x-components",
+          "text": "        database_vec2_t separator_position;\n        separator_position.y = position.y + 13.0f;\n        separator_position.x =\n            position.x + (float)(132 - title_width / 2);\n"
+        },
+        {
+          "name": "copy-constructed-position-then-adjust",
+          "text": "        database_vec2_t separator_position(position);\n        separator_position.x += (float)(132 - title_width / 2);\n        separator_position.y += 13.0f;\n"
+        },
+        {
+          "name": "commuted-x-addition",
+          "text": "        database_vec2_t separator_position(\n            (float)(132 - title_width / 2) + position.x,\n            position.y + 13.0f);\n"
+        }
+      ]
+    },
+    {
+      "name": "separator-call",
+      "find": "        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n",
+      "replacements": [
+        {
+          "name": "member-address",
+          "text": "        grim_interface_ptr->grim_draw_rect_outline(\n            &separator_position.x, (float)title_width, 1.0f);\n"
+        },
+        {
+          "name": "reinterpret-cast-pointer",
+          "text": "        grim_interface_ptr->grim_draw_rect_outline(\n            reinterpret_cast<float *>(&separator_position),\n            (float)title_width,\n            1.0f);\n"
+        },
+        {
+          "name": "void-pointer-round-trip",
+          "text": "        grim_interface_ptr->grim_draw_rect_outline(\n            static_cast<float *>(static_cast<void *>(&separator_position)),\n            (float)title_width,\n            1.0f);\n"
+        },
+        {
+          "name": "function-style-width-cast",
+          "text": "        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, float(title_width), 1.0f);\n"
+        },
+        {
+          "name": "static-width-cast",
+          "text": "        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position,\n            static_cast<float>(title_width),\n            1.0f);\n"
+        },
+        {
+          "name": "width-times-one",
+          "text": "        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, title_width * 1.0f, 1.0f);\n"
+        },
+        {
+          "name": "one-times-width",
+          "text": "        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, 1.0f * title_width, 1.0f);\n"
+        },
+        {
+          "name": "const-float-width",
+          "text": "        const float separator_width = (float)title_width;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, separator_width, 1.0f);\n"
+        },
+        {
+          "name": "const-integer-width-alias",
+          "text": "        const int separator_width = title_width;\n        grim_interface_ptr->grim_draw_rect_outline(\n            (float *)&separator_position, (float)separator_width, 1.0f);\n"
+        },
+        {
+          "name": "local-coordinate-pointer",
+          "text": "        float *separator_xy = &separator_position.x;\n        grim_interface_ptr->grim_draw_rect_outline(\n            separator_xy, (float)title_width, 1.0f);\n"
+        },
+        {
+          "name": "local-interface-pointer",
+          "text": "        IGrim2D_cpp *interface_owner = grim_interface_ptr;\n        interface_owner->grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n"
+        },
+        {
+          "name": "local-interface-reference",
+          "text": "        IGrim2D_cpp &interface_owner = *grim_interface_ptr;\n        interface_owner.grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n"
+        },
+        {
+          "name": "subscripted-interface",
+          "text": "        grim_interface_ptr[0].grim_draw_rect_outline(\n            (float *)&separator_position, (float)title_width, 1.0f);\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-vector-constructor",
+      "find": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n",
+      "replacements": [
+        {
+          "name": "component-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "explicit-this-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value)\n    {\n        this->x = x_value;\n        this->y = y_value;\n    }\n"
+        },
+        {
+          "name": "member-named-parameters",
+          "text": "    quest_vec2_t(float x, float y) : x(x), y(y) {}\n"
+        },
+        {
+          "name": "reverse-initializer-spelling",
+          "text": "    quest_vec2_t(float x_value, float y_value) : y(y_value), x(x_value) {}\n"
+        }
+      ]
+    }
+  ]
+}

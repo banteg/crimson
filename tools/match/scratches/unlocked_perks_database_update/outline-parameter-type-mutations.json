@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outline-position-parameter",
+      "find": "    virtual void grim_draw_rect_outline(float *xy, float width, float height);\n",
+      "replacements": [
+        {
+          "name": "const-float-pointer",
+          "text": "    virtual void grim_draw_rect_outline(const float *xy, float width, float height);\n"
+        },
+        {
+          "name": "void-pointer",
+          "text": "    virtual void grim_draw_rect_outline(void *xy, float width, float height);\n"
+        },
+        {
+          "name": "const-void-pointer",
+          "text": "    virtual void grim_draw_rect_outline(const void *xy, float width, float height);\n"
+        },
+        {
+          "name": "fixed-float-array",
+          "text": "    virtual void grim_draw_rect_outline(float xy[2], float width, float height);\n"
+        },
+        {
+          "name": "unsized-float-array",
+          "text": "    virtual void grim_draw_rect_outline(float xy[], float width, float height);\n"
+        }
+      ]
+    }
+  ]
+}

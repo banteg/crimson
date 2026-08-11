@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**747/810** functions matched exactly (**92.2%**), **160657/341992** code bytes (**47.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**749/810** functions matched exactly (**92.5%**), **164524/341992** code bytes (**48.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **308462/341992** code bytes (**90.2%**).
+Fuzzy-weighted alignment is **308560/341992** code bytes (**90.2%**).
 
-Remaining exact-match debt is **63 functions**, **181335 code bytes**, and **33530 fuzzy-gap bytes**.
+Remaining exact-match debt is **61 functions**, **177468 code bytes**, and **33432 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -94,12 +94,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 610/671 | 142398/320827 | 44.4% | 287386/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 610/671 |
+| crimsonland.exe | 612/671 | 146265/320827 | 45.6% | 287484/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 612/671 |
 | grim.dll | 137/139 | 18259/21165 | 86.3% | 21076/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 137/139 |
 
 ## crimsonland.exe
 
-**610/671** functions (**90.9%**), **142398/320827** bytes (**44.4%**), **287386/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **610/671** scratches verified.
+**612/671** functions (**91.2%**), **146265/320827** bytes (**45.6%**), **287484/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **612/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -421,7 +421,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | wip | creature_handle_death | 0x0041e910 | 834 | 734/834 | 100 | 203/204 | 87.96% | 6/204 | 82/0/0 |  | creature-death-side-effects |
 | match | config_sync_from_grim | 0x0041ec60 | 1225 | 1225/1225 | 0 | 277/277 | 100.00% | 277/277 | 37/0/0 |  | grim-config-sync-and-legacy-migration |
 | match | config_ensure_file | 0x0041f130 | 112 | 112/112 | 0 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
-| wip | config_load_presets | 0x0041f1a0 | 653 | 605/653 | 48 | 178/178 | 92.70% | 67/178 | 51/0/2 |  | config-file-load-and-runtime-sync |
+| match | config_load_presets | 0x0041f1a0 | 653 | 653/653 | 0 | 178/178 | 100.00% | 178/178 | 53/0/0 |  | config-file-load-and-runtime-sync |
 | match | angle_approach | 0x0041f430 | 299 | 299/299 | 0 | 101/101 | 100.00% | 101/101 | 11/0/0 |  | gameplay-angle-x87 |
 | match | bonus_pool_sentinel_global_init_thunk | 0x0041f560 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-sentinel-global-initialization-thunk |
 | match | bonus_pool_sentinel_global_init | 0x0041f570 | 11 | 11/11 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | bonus-pool-sentinel-global-initialization |
@@ -476,7 +476,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | game_startup_init | 0x0042b290 | 4303 | 4303/4303 | 0 | 1126/1126 | 100.00% | 1126/1126 | 334/0/0 |  | startup-loading-intro-and-frame-callback |
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 100/100 | 0 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
-| wip | crimsonland_main | 0x0042c450 | 3214 | 3164/3214 | 50 | 832/832 | 98.44% | 684/832 | 393/0/2 |  | primary-game-bootstrap-and-shutdown |
+| match | crimsonland_main | 0x0042c450 | 3214 | 3214/3214 | 0 | 832/832 | 100.00% | 832/832 | 395/0/0 |  | primary-game-bootstrap-and-shutdown |
 | wip | highscore_sync_worker | 0x0042d0e0 | 1981 | 1342/1981 | 639 | 517/525 | 67.75% | 26/525 | 107/0/0 |  | online-highscore-submit-receive-worker |
 | wip | statistics_update_check_worker | 0x0042d8a0 | 1375 | 1078/1375 | 297 | 373/367 | 78.38% | 22/367 | 106/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |

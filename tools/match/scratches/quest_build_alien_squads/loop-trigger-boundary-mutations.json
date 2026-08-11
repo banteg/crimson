@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-loop-entry-metadata",
+      "find": "        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms - 400;\n        spawn->count = 1;\n",
+      "replacements": [
+        {
+          "name": "set-spawn-helper",
+          "text": "        spawn->set_spawn(\n            SPAWN_ID_ALIEN_SMALL_GRAY_26, trigger_time_ms - 400, 1);\n"
+        },
+        {
+          "name": "named-trigger-before-metadata",
+          "text": "        int spawn_trigger_time_ms = trigger_time_ms - 400;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = spawn_trigger_time_ms;\n        spawn->count = 1;\n"
+        },
+        {
+          "name": "split-named-trigger",
+          "text": "        int spawn_trigger_time_ms;\n        spawn_trigger_time_ms = trigger_time_ms - 400;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = spawn_trigger_time_ms;\n        spawn->count = 1;\n"
+        },
+        {
+          "name": "negative-addend",
+          "text": "        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms + -400;\n        spawn->count = 1;\n"
+        },
+        {
+          "name": "hex-offset",
+          "text": "        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms - 0x190;\n        spawn->count = 1;\n"
+        },
+        {
+          "name": "two-step-field-adjustment",
+          "text": "        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->trigger_time_ms -= 400;\n        spawn->count = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-loop-entry-metadata",
+      "find": "        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 1;\n",
+      "replacements": [
+        {
+          "name": "set-spawn-helper",
+          "text": "        spawns[entry_count].set_spawn(\n            SPAWN_ID_ALIEN_SMALL_GRAY_26, trigger_time_ms, 1);\n"
+        }
+      ]
+    }
+  ]
+}

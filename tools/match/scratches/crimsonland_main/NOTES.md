@@ -71,12 +71,12 @@ it is not part of that conditional. Moving it to the evidenced join adds
 instructions. That positive sweep is recorded under spec SHA
 `4b589c2d2811c693e625973944d96aaab19cfc7366a9935dc08709c33df56754`.
 
-The final result is 98.4375%, with a 50.21875-byte fuzzy gap, all 832 native
-instructions, a 684-instruction exact prefix, and audit `393/0/2`. The only
-remaining instruction residual is the aggregate binding copy's source
-induction base: as in `config_load_presets`, VC6 still rebases the reconstructed
+That pass reached 98.4375%, with a 50.21875-byte fuzzy gap, all 832 native
+instructions, a 684-instruction exact prefix, and audit `393/0/2`. Its only
+remaining instruction residual was the aggregate binding copy's source
+induction base: as in `config_load_presets`, VC6 rebased the reconstructed
 config row to `move_key_backward` rather than native `axis_move_x`. Three
-source-cursor menus were all negative and are recorded under spec SHAs
+source-cursor menus were negative and are recorded under spec SHAs
 `e0a2032628fd2c93f9478250c5cfa0dd20a64cba6a53b486b4c912803ba56a4b`,
 `2d54b3cc6a08d0d215244c536d9a63601b771eb66a6c1d6d04753229c77ec597`,
 and `23686c59c2e449df6f7d388aa34c4933bfb969ada76ea721919529bc42de2e23`.
@@ -86,8 +86,8 @@ and `23686c59c2e449df6f7d388aa34c4933bfb969ada76ea721919529bc42de2e23`.
 The live Binary Ninja control flow accounts for the complete startup gate,
 console/config/Grim initialization, callback and resource setup, main handoff,
 save/teardown, and deferred-update path. Candidate and native each have 832
-instructions. The two mismatched references are the documented config-copy
-induction rebasing and remain compiler debt.
+instructions. The final address audit is `395/0/0`, and the complete
+3,214-byte function is exact.
 
 The four unresolved uses are genuine missing data-map identities rather than
 SequenceMatcher alignment artifacts. Binary Ninja proves native `0x00473a64`
@@ -95,8 +95,7 @@ is the integrity-cookie store/compare pair, `0x004aaeda` is the byte copied
 from `config_blob.music_disabled`, and `0x00473a30` is the 510-byte key-input
 buffer size loaded for both initialization and registration. The shared data
 map now assigns those exact source identities, resolving all four uses without
-a local alias. The final audit is `393/0/2`, so recovery is classified
-`semantic-complete` with a `compiler` residual.
+a local alias. No recovery residual remains.
 
 `binding-inline-helper-mutations.json` adds eleven complete single and paired
 forms around a typed persisted-to-runtime binding copier. Named-field helpers
@@ -122,3 +121,16 @@ natural record/member syntax preserves the `move_key_backward` anchor, while
 forcing the native `axis_move_x` anchor perturbs unrelated allocation. The
 clean typed source remains canonical. Recorded spec SHA:
 `cfa357651e0c1d8c6a98495b0f5abce331e325f32a8732edb67d0114390e8375`.
+
+## Exact hybrid source anchor (2026-08-11)
+
+The exact `config_load_presets` recovery exposed one missing interaction in
+the menus above: a typed row pointer for the named members combined with a
+row-local `axis_move_x` cursor used only for the first and final field. This
+does not make a cursor own the loop or the destination aggregate.
+
+`binding-hybrid-source-anchor-mutations.json` transfers that source boundary
+unchanged. Its sole variant raises the entry point from 98.4375% to **100%**,
+extends the prefix from 684 to all 832 instructions, and improves references
+from `393/0/2` to **`395/0/0`**. Candidate and native now match for all 3,214
+bytes, so the scratch is classified exact.

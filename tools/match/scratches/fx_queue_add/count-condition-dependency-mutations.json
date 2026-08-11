@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "count-publication-expression",
+      "find": "    fx_queue_count = count;\n",
+      "replacements": [
+        {
+          "name": "preincrement-global",
+          "text": "    ++fx_queue_count;\n"
+        },
+        {
+          "name": "postincrement-global",
+          "text": "    fx_queue_count++;\n"
+        },
+        {
+          "name": "add-assign-global",
+          "text": "    fx_queue_count += 1;\n"
+        },
+        {
+          "name": "add-expression-global",
+          "text": "    fx_queue_count = fx_queue_count + 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "count-limit-source",
+      "find": "    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n",
+      "replacements": [
+        {
+          "name": "condition-on-published-global",
+          "text": "    if (fx_queue_count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n"
+        },
+        {
+          "name": "success-first",
+          "text": "    if (count < 0x80) {\n        return 1;\n    }\n    fx_queue_count = 0x7f;\n    return 0;\n"
+        },
+        {
+          "name": "global-success-first",
+          "text": "    if (fx_queue_count < 0x80) {\n        return 1;\n    }\n    fx_queue_count = 0x7f;\n    return 0;\n"
+        }
+      ]
+    }
+  ]
+}

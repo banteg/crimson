@@ -12,15 +12,14 @@ The file-side copy now names both aggregate identities directly through
 analog-axis ordering while making the transfer into the runtime
 `player_input_t` layout explicit.
 
-The recovered C++ source matches 92.70% (67-instruction exact prefix, 178 target
-and candidate instructions). Everything outside the two-player binding-copy
-loop is instruction-identical. Direct aggregate identities recover the native
-runtime `move_key_backward` induction anchor. The remaining mismatch is
-confined to VC6's source induction choice: native uses
-`config_p1_axis_move_x`, while the candidate rebases the same accesses to the
-persisted `move_key_backward` field.
+The recovered C++ source now matches 100%: 653/653 bytes, all 178 instructions,
+and all 53 audited references. A typed persisted-row pointer preserves the
+field identities, while an ordinary pointer to its `axis_move_x` member owns
+the first and final field accesses. VC6 then selects the native
+`config_p1_axis_move_x` induction base and exact loop-end identity without
+changing any copied value or the direct destination aggregate.
 
-Three recorded mutation sweeps cover 11 variants of the binding loop:
+Three earlier mutation sweeps cover 11 variants of the binding loop:
 field-identity aliases, typed/raw source anchors, and source/destination
 induction-pointer forms. The `axis_move_x` source anchor was the sole winner in
 that earlier matrix.
@@ -33,11 +32,8 @@ the later direct-aggregate recovery supersedes the interior-cursor source.
 
 Binary Ninja accounts for the complete defaults, file contract, binding
 transfer, Grim propagation, names, and reset policy. Candidate and native each
-have 178 instructions. The address-level audit is `51/0/2`: both mismatches are
-the source start/end identities for the same two-record copy, not unknown data
-or incorrect offsets. The destination induction identity now matches native.
-Everything outside that single localized loop is exact, so recovery is
-`semantic-complete` with a `compiler` residual.
+have 178 instructions. The final address-level audit is `53/0/0`, and the
+entire 653-byte function is exact. No recovery residual remains.
 
 ## Shared member-boundary audit
 
@@ -85,3 +81,18 @@ first `move_key_forward` load a named local, as in `crimsonland_main`, is
 byte-neutral, so the simpler direct publication is retained. The retained
 source SHA-256 is
 `a7041f8bce90003abaea9fc5fd575e36d948eb27ac7dd1f5956e285437305643`.
+
+## Exact source-induction recovery (2026-08-11)
+
+The direct-aggregate pass left the source loop anchored at persisted
+`move_key_backward`, even though all effective field addresses were correct.
+The older cursor sweeps changed both source and destination ownership and did
+not cover a hybrid with the recovered direct destination aggregate.
+
+`binding-hybrid-source-anchor-mutations.json` evaluates five such hybrids.
+Keeping a typed `player_input_config_t *bindings` for the named fields, plus an
+`int *binding_cursor = &bindings->axis_move_x` for the first and final fields,
+is the sole winner. It raises the function from 92.6966% to **100%**, extends
+the prefix from 67 to all 178 instructions, and improves references from
+`51/0/2` to **`53/0/0`**. The other axis-relative spellings are byte-neutral or
+regressive. The scratch is now classified exact.

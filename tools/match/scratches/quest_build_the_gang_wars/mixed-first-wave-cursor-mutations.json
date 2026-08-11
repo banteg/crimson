@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mixed-first-wave-cursor",
+      "find": "    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining != 0);\n",
+      "replacements": [
+        {
+          "name": "pointer-position-indexed-metadata",
+          "text": "    quest_entry_original_t *spawn_cursor = &spawns[spawn_index];\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawn_cursor->pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_cursor;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining != 0);\n"
+        },
+        {
+          "name": "indexed-position-pointer-metadata",
+          "text": "    quest_entry_original_t *spawn_cursor = &spawns[spawn_index];\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawn_cursor->template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawn_cursor->trigger_time_ms = trigger_time_ms;\n        spawn_cursor->count = 2;\n        ++spawn_cursor;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining != 0);\n"
+        },
+        {
+          "name": "pointer-x-indexed-rest",
+          "text": "    quest_entry_original_t *spawn_cursor = &spawns[spawn_index];\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawn_cursor->pos.x = 1174.0f;\n        spawns[spawn_index].pos.y =\n            (float)terrain_texture_height * 0.5f;\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_cursor;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining != 0);\n"
+        },
+        {
+          "name": "indexed-x-pointer-rest",
+          "text": "    quest_entry_original_t *spawn_cursor = &spawns[spawn_index];\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos.x = 1174.0f;\n        spawn_cursor->pos.y =\n            (float)terrain_texture_height * 0.5f;\n        spawn_cursor->template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawn_cursor->trigger_time_ms = trigger_time_ms;\n        spawn_cursor->count = 2;\n        ++spawn_cursor;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining != 0);\n"
+        }
+      ]
+    }
+  ]
+}

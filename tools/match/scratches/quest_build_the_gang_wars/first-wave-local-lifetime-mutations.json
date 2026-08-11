@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-wave-local-lifetime",
+      "find": "    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n",
+      "replacements": [
+        {
+          "name": "waves-before-trigger",
+          "text": "    int waves_remaining = 10;\n    int trigger_time_ms = 5500;\n"
+        },
+        {
+          "name": "split-trigger-after-waves",
+          "text": "    int trigger_time_ms;\n    int waves_remaining = 10;\n    trigger_time_ms = 5500;\n"
+        },
+        {
+          "name": "waves-then-split-trigger",
+          "text": "    int waves_remaining = 10;\n    int trigger_time_ms;\n    trigger_time_ms = 5500;\n"
+        },
+        {
+          "name": "combined-trigger-first",
+          "text": "    int trigger_time_ms = 5500, waves_remaining = 10;\n"
+        },
+        {
+          "name": "combined-waves-first",
+          "text": "    int waves_remaining = 10, trigger_time_ms = 5500;\n"
+        },
+        {
+          "name": "hex-trigger-initializer",
+          "text": "    int trigger_time_ms = 0x157c;\n    int waves_remaining = 10;\n"
+        }
+      ]
+    },
+    {
+      "name": "first-wave-loop-condition",
+      "find": "    } while (--waves_remaining != 0);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "implicit-nonzero",
+          "text": "    } while (--waves_remaining);\n"
+        },
+        {
+          "name": "subtract-assign",
+          "text": "    } while (waves_remaining -= 1);\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "menu-offset-operation",
+      "find": "    position = position + play_game_vec2_t(330.0f, 50.0f);",
+      "replacements": [
+        {
+          "name": "compound-components-x-y",
+          "text": "    position.x += 330.0f;\n    position.y += 50.0f;"
+        },
+        {
+          "name": "expression-components-x-y",
+          "text": "    position.x = position.x + 330.0f;\n    position.y = position.y + 50.0f;"
+        },
+        {
+          "name": "compound-components-y-x",
+          "text": "    position.y += 50.0f;\n    position.x += 330.0f;"
+        },
+        {
+          "name": "expression-components-y-x",
+          "text": "    position.y = position.y + 50.0f;\n    position.x = position.x + 330.0f;"
+        },
+        {
+          "name": "plus-equals-vector",
+          "text": "    position += play_game_vec2_t(330.0f, 50.0f);"
+        },
+        {
+          "name": "pair-constructor-from-components",
+          "text": "    position = play_game_vec2_t(\n        position.x + 330.0f, position.y + 50.0f);"
+        },
+        {
+          "name": "named-components-x-y",
+          "text": "    float menu_x = position.x + 330.0f;\n    float menu_y = position.y + 50.0f;\n    position.x = menu_x;\n    position.y = menu_y;"
+        },
+        {
+          "name": "named-components-y-x",
+          "text": "    float menu_y = position.y + 50.0f;\n    float menu_x = position.x + 330.0f;\n    position.x = menu_x;\n    position.y = menu_y;"
+        }
+      ]
+    }
+  ]
+}
