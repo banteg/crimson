@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**741/810** functions matched exactly, **154605/341992** code bytes (**45.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**742/810** functions matched exactly, **155146/341992** code bytes (**45.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **308437/341992** code bytes (**90.2%**).
+Fuzzy-weighted alignment is **308441/341992** code bytes (**90.2%**).
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 7 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 9 recorded file inputs changed or missing
 
 ## Function dispositions
 
@@ -95,12 +95,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 605/671 | 137080/320827 | 42.7% | 287366/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 605/671 |
+| crimsonland.exe | 606/671 | 137621/320827 | 42.9% | 287370/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 606/671 |
 | grim.dll | 136/139 | 17525/21165 | 82.8% | 21071/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 136/139 |
 
 ## crimsonland.exe
 
-**605/671** functions, **137080/320827** bytes (**42.7%**), **287366/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **605/671** scratches verified.
+**606/671** functions, **137621/320827** bytes (**42.9%**), **287370/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **606/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -525,7 +525,7 @@ Artifact freshness issues:
 | match | quest_build_monster_blues | 0x00434860 | 348 | 348/348 | 0 | 95/95 | 100.00% | 95/95 | 4/0/0 |  | quest-monster-blues-append-prefix |
 | match | quest_build_the_gathering | 0x004349c0 | 725 | 725/725 | 0 | 134/134 | 100.00% | 134/134 | 0/0/0 |  | quest-the-gathering-append-publication |
 | match | quest_build_army_of_three | 0x00434ca0 | 608 | 608/608 | 0 | 116/116 | 100.00% | 116/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |
-| wip | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 537/541 | 4 | 141/141 | 99.29% | 20/141 | 18/0/0 |  | quest-knee-deep-direct-opening |
+| match | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 541/541 | 0 | 141/141 | 100.00% | 141/141 | 18/0/0 |  | quest-knee-deep-persistent-position-shifted-base |
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 419/424 | 5 | 92/92 | 98.91% | 33/92 | 8/0/0 |  | quest-gang-wars-append-prefix |
 | match | quest_build_the_fortress | 0x004352d0 | 429 | 429/429 | 0 | 102/102 | 100.00% | 102/102 | 8/0/0 |  | quest-fortress-field-cursor-grid |
 | match | quest_build_cross_fire | 0x00435480 | 390 | 390/390 | 0 | 76/76 | 100.00% | 76/76 | 2/0/0 |  | quest-cross-fire-fixed-table |

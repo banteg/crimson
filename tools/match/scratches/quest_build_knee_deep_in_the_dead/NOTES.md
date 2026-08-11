@@ -26,12 +26,12 @@ schedule. Signed `wave % 8` is required for the target's correction sequence,
 even though the runtime wave never becomes negative. The opening count is also
 the initial logical entry count, explaining the shared `edi` value.
 
-The candidate has the exact 141-instruction length, resolves all 18 audited
-references, and scores 99.29% with a 20-instruction exact prefix. The complete
-loop body and backedge match. Publishing the opening brute through the append
-count and spelling its metadata directly recovers the native opening vector,
-callee-save, and metadata schedule. The sole residual is one independent swap
-between the initial trigger load and the hoisted loop-position setup.
+The candidate matches all 541 normalized bytes and all 141 instructions, with
+all 18 audited references resolved. A function-scope center-position object
+recovers the native preheader lifetime. Advancing the spawn base past the
+opening brute and addressing loop publications as `spawns[entry_count - 1]`
+then recovers the remaining four bytes without changing the logical count or
+any emitted entry.
 
 ## Recorded opening-lifetime search
 
@@ -69,10 +69,25 @@ and extends the exact prefix from three to 20 instructions while preserving
 SHA-256:
 `c4e32ace06f3df88560dae220780ffca00246e690d43a721ff31940a2aa464b6`.
 
-## Recovery classification audit
+## 2026-08-11 exact loop-position ownership
 
-The preceding BN recovery accounts for the complete control-flow, call (where
-present), constant, record-store, and output-count policy. The candidate has
-the same instruction count as native and all masked references resolved; its
-localized residual is compiler scheduling/allocation only. Classification:
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+Keeping the center position alive across the loop first extends the exact
+prefix from 20 to 21 instructions while retaining 99.29% and 537/541 fuzzy
+bytes. The decisive change advances the physical spawn base once after the
+opening entry while preserving the zero-based logical count. Together they
+produce an exact 541/541-byte, 141/141-instruction match with references
+`18/0/0`.
+
+`shifted-loop-base-mutations.json` records the exact source as its baseline and
+reverses only that base ownership. The single exhaustive regression falls to
+99.29%, 537/541 fuzzy bytes, and a 21-instruction prefix. The spec SHA-256 is
+`ced56167987e59fca4ae6553875488afebb78aa9c75f302daddff79917073d89`;
+the retained source SHA-256 is
+`85781ce0be389ec59ce347791d6b130a8b9b79f068d00cafff684d578fbb426d`.
+
+## Exact-match audit
+
+The Binary Ninja recovery accounts for the complete control-flow, constants,
+record stores, spawn ordering, and output-count policy. The compiled candidate
+matches every normalized instruction and reference. No recovery or residual
+classification override remains.

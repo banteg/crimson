@@ -4,6 +4,7 @@ struct quest_vec2_t {
     float x;
     float y;
 
+    quest_vec2_t() {}
     quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}
 };
 
@@ -40,13 +41,16 @@ extern "C" void quest_build_knee_deep_in_the_dead(
     ++entry_count;
 
     int wave = 0;
+    quest_vec2_t normal_position;
+    normal_position.x = -50.0f;
+    ++spawns;
     int trigger_time_ms = 500;
     while (trigger_time_ms < 0x178f4) {
         if (wave % 8 == 0) {
-            spawns[entry_count].pos = quest_vec2_t(
+            spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f);
-            spawns[entry_count].set_spawn(
+            spawns[entry_count - 1].set_spawn(
                 SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,
                 trigger_time_ms - 2,
                 1);
@@ -54,20 +58,20 @@ extern "C" void quest_build_knee_deep_in_the_dead(
         }
 
         int spawn_count = wave > 0x20 ? 2 : 1;
-        spawns[entry_count].pos = quest_vec2_t(
-            -50.0f,
-            (float)terrain_texture_height * 0.5f);
-        spawns[entry_count].set_spawn(
+        normal_position.y =
+            (float)terrain_texture_height * 0.5f;
+        spawns[entry_count - 1].pos = normal_position;
+        spawns[entry_count - 1].set_spawn(
             SPAWN_ID_ZOMBIE_RANDOM_41,
             trigger_time_ms,
             spawn_count);
         ++entry_count;
 
         if (trigger_time_ms > 0x30d4) {
-            spawns[entry_count].pos = quest_vec2_t(
+            spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f + 158.0f);
-            spawns[entry_count].set_spawn(
+            spawns[entry_count - 1].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms + 500,
                 1);
@@ -75,10 +79,10 @@ extern "C" void quest_build_knee_deep_in_the_dead(
         }
 
         if (trigger_time_ms > 0x5fb4) {
-            spawns[entry_count].pos = quest_vec2_t(
+            spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f - 158.0f);
-            spawns[entry_count].set_spawn(
+            spawns[entry_count - 1].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms + 1000,
                 1);
@@ -86,10 +90,10 @@ extern "C" void quest_build_knee_deep_in_the_dead(
         }
 
         if (trigger_time_ms > 0x8e94) {
-            spawns[entry_count].pos = quest_vec2_t(
+            spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f - 258.0f);
-            spawns[entry_count].set_spawn(
+            spawns[entry_count - 1].set_spawn(
                 SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
                 trigger_time_ms + 0x514,
                 1);
@@ -97,10 +101,10 @@ extern "C" void quest_build_knee_deep_in_the_dead(
         }
 
         if (trigger_time_ms > 0xbd74) {
-            spawns[entry_count].pos = quest_vec2_t(
+            spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f + 258.0f);
-            spawns[entry_count].set_spawn(
+            spawns[entry_count - 1].set_spawn(
                 SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
                 trigger_time_ms + 300,
                 1);
