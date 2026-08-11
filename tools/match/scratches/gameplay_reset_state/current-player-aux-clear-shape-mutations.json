@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-player-aux-clear-shape",
+      "find": "    memset(player_aux_timer, 0, sizeof(player_aux_timer));",
+      "replacements": [
+        {
+          "name": "chained-zero-forward",
+          "text": "    player_aux_timer[0] = player_aux_timer[1] = 0.0f;"
+        },
+        {
+          "name": "chained-zero-reverse",
+          "text": "    player_aux_timer[1] = player_aux_timer[0] = 0.0f;"
+        },
+        {
+          "name": "typed-aggregate-zero",
+          "text": "    *(reset_vec2_t *)player_aux_timer = reset_vec2_t(0.0f, 0.0f);"
+        },
+        {
+          "name": "typed-reference-chained-zero",
+          "text": "    reset_vec2_t &aux_timer = *(reset_vec2_t *)player_aux_timer;\n    aux_timer.x = aux_timer.y = 0.0f;"
+        }
+      ]
+    }
+  ]
+}

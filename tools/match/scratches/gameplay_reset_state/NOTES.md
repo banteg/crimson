@@ -111,3 +111,21 @@ retained.
 surrounding `extern "C"` block makes the consumer request that exact identity.
 The body remains 99.02%, 307/307 instructions, prefix 165, and `213/0/0`
 references; the change affects only the COFF relocation name.
+
+## Current auxiliary-clear shape replay (2026-08-12)
+
+The current native diff still contains exactly the two documented scheduling
+regions. `current-player-aux-clear-shape-mutations.json` (SHA-256
+`5e16d60332dd299958e35b45c1ab0d5d55fd9264a10d04e4123e035681380938`)
+tests four previously uncovered ways to state the two-float auxiliary clear:
+both chained scalar orders, a typed vector aggregate assignment, and a typed
+reference with chained component stores.
+
+Neither chained order nor the typed reference recovers the native interleave;
+all three lose **56.174578 weighted bytes**, one instruction, and one resolved
+reference. The typed aggregate loses **66.332174 weighted bytes** and grows to
+310 instructions. The canonical `memset` therefore remains the only tested
+shape that produces the native zero-register clear and surrounding allocation.
+Current source remains **99.022801%**, 307/307 instructions, prefix 165, and
+`213/0/0` references; its SHA-256 is
+`27f4cb995e409e10a182ffd0d97a8ffc5e9e401f78becaf72ff1d0d6c273b641`.
