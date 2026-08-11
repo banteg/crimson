@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "37b308fe29beab60409c5a72f88a26c7b8766f39a1bc5e0f366b34c337307bd0",
+  "audit_digest": "ef2a15756fbc3dee20452a0fd949427900652b38cc9c58bbfa7422148886af05",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -6498,7 +6498,7 @@
         {
           "path": "tools/match/scratches/grim_config_defaults_init/scratch.conf",
           "repository_relative": true,
-          "sha256": "693f7305fbaa14927abc0e6c08360e924a6b76b13bd8f6c5e0f9fbb5a51159a7"
+          "sha256": "61d1e6fadfbb1efd84a443fed28c7eb532074a6e5c4bfae7a38ca7535aafc95a"
         },
         {
           "path": "tools/match/cl.sh",
@@ -6518,7 +6518,7 @@
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
           "repository_relative": true,
-          "sha256": "ce827a09d1e18c529faa081e70063b3321caacdaccdb09a20b1d5ec6e6a6f98b"
+          "sha256": "d498934b784c704bed53d5e439f747e9de0d258773ca165ad133d7a85df8645d"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -6533,7 +6533,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_config_defaults_init/scratch.conf",
-      "config_sha256": "693f7305fbaa14927abc0e6c08360e924a6b76b13bd8f6c5e0f9fbb5a51159a7",
+      "config_sha256": "61d1e6fadfbb1efd84a443fed28c7eb532074a6e5c4bfae7a38ca7535aafc95a",
       "effective_end": 268442094,
       "end": 268442094,
       "function": "grim_config_defaults_init",
@@ -6541,7 +6541,7 @@
         {
           "address": 268441360,
           "canonical_config": "tools/match/scratches/grim_config_defaults_init/scratch.conf",
-          "canonical_config_sha256": "693f7305fbaa14927abc0e6c08360e924a6b76b13bd8f6c5e0f9fbb5a51159a7",
+          "canonical_config_sha256": "61d1e6fadfbb1efd84a443fed28c7eb532074a6e5c4bfae7a38ca7535aafc95a",
           "canonical_scratch": "tools/match/scratches/grim_config_defaults_init",
           "canonical_source": "tools/match/scratches/grim_config_defaults_init/scratch.cpp",
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
@@ -6553,9 +6553,9 @@
             "masked_mismatches": 0,
             "masked_ok": 83,
             "masked_unresolved": 0,
-            "prefix_instructions": 21,
-            "ratio": 0.9928571428571429,
-            "state": "wip",
+            "prefix_instructions": 140,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 140
           },
           "object_function_symbol": "_grim_config_defaults_init",
@@ -6567,14 +6567,14 @@
         "masked_mismatches": 0,
         "masked_ok": 83,
         "masked_unresolved": 0,
-        "prefix_instructions": 21,
-        "ratio": 0.9928571428571429,
-        "state": "wip",
+        "prefix_instructions": 140,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 140
       },
       "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/ac94ecc0000c935c/scratch.obj",
       "object_function_symbol": "_grim_config_defaults_init",
-      "object_sha256": "5f37ec6cfe442281ad3911c9df5c3848832f77c05315ce458859cf9f036055ff",
+      "object_sha256": "5e80b82c136f9bd0215cb2b8137fa9782c1ad67c558660af6b6852826082f790",
       "scratch": "tools/match/scratches/grim_config_defaults_init",
       "source": "tools/match/scratches/grim_config_defaults_init/scratch.cpp",
       "source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
@@ -17335,8 +17335,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 136,
-    "wip": 3
+    "match": 137,
+    "wip": 2
   },
   "translation_units": {
     "cluster_count": 3,

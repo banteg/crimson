@@ -6310,7 +6310,10 @@
     },
     {
       "address": "0x004871ec",
-      "comment": "UI mouse X position.",
+      "aliases": [
+        "frame_cursor_state"
+      ],
+      "comment": "UI mouse X position and base of the recovered contiguous mouse/aim cursor state used by game_frame_update.",
       "name": "ui_mouse_x",
       "program": "crimsonland.exe",
       "type": "float"

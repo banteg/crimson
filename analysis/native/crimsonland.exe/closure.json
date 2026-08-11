@@ -1,5 +1,5 @@
 {
-  "audit_digest": "2540b221755dc2c206a1b591598159e48cfa1812189f008a9c5b643b85aa7922",
+  "audit_digest": "ba6cbdb0cb0f0294010f161b3a96b16d0bd37648b9b3b42d9119aede36ce4d97",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -87272,6 +87272,30 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 4747756,
+          "data_binding_kind": "definition",
+          "data_name": "ui_mouse_x",
+          "data_storage_address": 4747756,
+          "data_storage_name": "ui_mouse_x",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_frame_cursor_state"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 4720704,
           "data_binding_kind": "definition",
           "data_name": "frame_dt",
@@ -95919,7 +95943,7 @@
           "comdat_selection": 1,
           "function": "quest_build_survival_of_the_fastest",
           "kind": "section",
-          "logical_section_size": 800,
+          "logical_section_size": 848,
           "object": "tools/match/scratches/quest_build_survival_of_the_fastest/build/msvc6.5/fdb5d8c9321efa41/scratch.obj",
           "section": ".text",
           "size": null,
@@ -131614,6 +131638,37 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 4747756,
+          "data_binding_kind": "definition",
+          "data_name": "ui_mouse_x",
+          "data_storage_address": 4747756,
+          "data_storage_name": "ui_mouse_x",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_frame_cursor_state",
+      "referenced_by": [
+        {
+          "function": "game_frame_update",
+          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 4720704,
           "data_binding_kind": "definition",
           "data_name": "frame_dt",
@@ -142407,11 +142462,6 @@
       "name": "_player_aim_screen_x",
       "referenced_by": [
         {
-          "function": "game_frame_update",
-          "object": "tools/match/scratches/game_frame_update/build/msvc6.5/e775d2b58a86e468/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "player_update",
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "weak": false
@@ -145069,7 +145119,7 @@
           "comdat_selection": 1,
           "function": "quest_build_survival_of_the_fastest",
           "kind": "section",
-          "logical_section_size": 800,
+          "logical_section_size": 848,
           "object": "tools/match/scratches/quest_build_survival_of_the_fastest/build/msvc6.5/fdb5d8c9321efa41/scratch.obj",
           "section": ".text",
           "size": null,
@@ -164688,7 +164738,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "4b8977f4542912182326fd9922f5acbeffe5433935d24e549cea8732eaa8444d"
+        "sha256": "d68023457c8e351064d8583a0d6bd9975cc9c37ad062300b28c37bd911c83fee"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -164709,7 +164759,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3145,
+    "defined_symbols": 3146,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -164718,7 +164768,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 663,
     "reference_exports_closed": true,
-    "resolved_symbols": 1351,
+    "resolved_symbols": 1352,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "2540b221755dc2c206a1b591598159e48cfa1812189f008a9c5b643b85aa7922",
+  "audit_digest": "ba6cbdb0cb0f0294010f161b3a96b16d0bd37648b9b3b42d9119aede36ce4d97",
   "entries": [
     {
       "address": 4211888,
@@ -17155,10 +17155,12 @@
     },
     {
       "address": 4747756,
-      "aliases": [],
+      "aliases": [
+        "frame_cursor_state"
+      ],
       "alignment": 4,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_float_alignment_is_four",
-      "comment": "UI mouse X position.",
+      "comment": "UI mouse X position and base of the recovered contiguous mouse/aim cursor state used by game_frame_update.",
       "definition_state": "fully-specified",
       "initializer_hex": "00000000",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004871ec",
@@ -37778,7 +37780,7 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "4b8977f4542912182326fd9922f5acbeffe5433935d24e549cea8732eaa8444d",
+    "data_map_sha256": "d68023457c8e351064d8583a0d6bd9975cc9c37ad062300b28c37bd911c83fee",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
     "definitions_sha256": "24a4d581a8054eb2aafc417b7c45c43e8a2db19f822e132998fcafc5812d6470",
     "reference_image": {
@@ -37789,8 +37791,8 @@
     "segments_sha256": "65e2a4e6a7d63516ac68264a83f3d001d2476b750d982afe1fbc72d25eae9b44"
   },
   "summary": {
-    "alias_names": 254,
-    "alias_rows": 251,
+    "alias_names": 255,
+    "alias_rows": 252,
     "code_label_entries": 54,
     "definition_group_entries": 1679,
     "definition_groups": 175,
