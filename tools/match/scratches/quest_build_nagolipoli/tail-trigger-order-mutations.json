@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-tail-trigger-order",
+      "find": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 256.0f),\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n    trigger_time_ms = (wave * 5 + 175) * 160;\n    spawn->heading = 3.14159274f;\n",
+      "replacements": [
+        {
+          "name": "heading-before-trigger-expression",
+          "text": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 256.0f),\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n    spawn->heading = 3.14159274f;\n    trigger_time_ms = (wave * 5 + 175) * 160;\n"
+        }
+      ]
+    },
+    {
+      "name": "third-tail-trigger-order",
+      "find": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 1088.0f),\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n    trigger_time_ms = wave * 800 + 0x6f54;\n    spawn->heading = 3.926991f;\n",
+      "replacements": [
+        {
+          "name": "heading-before-trigger-expression",
+          "text": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 1088.0f),\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n    spawn->heading = 3.926991f;\n    trigger_time_ms = wave * 800 + 0x6f54;\n"
+        }
+      ]
+    }
+  ]
+}

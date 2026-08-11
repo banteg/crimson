@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "position-heading-template-helper",
+      "find": "    void set_position_and_template(\n        const quest_vec2_t &position,\n        int spawn_template_id)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n    }\n",
+      "replacements": [
+        {
+          "name": "template-before-heading",
+          "text": "    void set_position_and_template(\n        const quest_vec2_t &position,\n        int spawn_template_id)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n    }\n\n    void set_position_heading_and_template(\n        const quest_vec2_t &position,\n        float spawn_heading,\n        int spawn_template_id)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        heading = spawn_heading;\n    }\n"
+        },
+        {
+          "name": "heading-before-template",
+          "text": "    void set_position_and_template(\n        const quest_vec2_t &position,\n        int spawn_template_id)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n    }\n\n    void set_position_heading_and_template(\n        const quest_vec2_t &position,\n        float spawn_heading,\n        int spawn_template_id)\n    {\n        pos = position;\n        heading = spawn_heading;\n        template_id = spawn_template_id;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "first-tail-publication",
+      "find": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 256.0f),\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n    trigger_time_ms = (wave * 5 + 175) * 160;\n    spawn->heading = 3.14159274f;\n",
+      "replacements": [
+        {
+          "name": "position-heading-template-helper",
+          "text": "    spawn->set_position_heading_and_template(\n        quest_vec2_t(512.0f, 256.0f),\n        3.14159274f,\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n    trigger_time_ms = (wave * 5 + 175) * 160;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-tail-publication",
+      "find": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 768.0f),\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n    spawn->heading = 3.14159274f;\n",
+      "replacements": [
+        {
+          "name": "position-heading-template-helper",
+          "text": "    spawn->set_position_heading_and_template(\n        quest_vec2_t(512.0f, 768.0f),\n        3.14159274f,\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n"
+        }
+      ]
+    },
+    {
+      "name": "third-tail-publication",
+      "find": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 1088.0f),\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n    trigger_time_ms = wave * 800 + 0x6f54;\n    spawn->heading = 3.926991f;\n",
+      "replacements": [
+        {
+          "name": "position-heading-template-helper",
+          "text": "    spawn->set_position_heading_and_template(\n        quest_vec2_t(512.0f, 1088.0f),\n        3.926991f,\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n    trigger_time_ms = wave * 800 + 0x6f54;\n"
+        }
+      ]
+    },
+    {
+      "name": "fourth-tail-publication",
+      "find": "    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, -64.0f),\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n    spawn->heading = 3.926991f;\n",
+      "replacements": [
+        {
+          "name": "position-heading-template-helper",
+          "text": "    spawn->set_position_heading_and_template(\n        quest_vec2_t(512.0f, -64.0f),\n        3.926991f,\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n"
+        }
+      ]
+    }
+  ]
+}

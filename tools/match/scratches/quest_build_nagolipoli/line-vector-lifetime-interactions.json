@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "line-vector-declaration",
+      "find": "    int line_index = 0;\n    trigger_time_ms = (wave * 5 + 150) * 160;\n",
+      "replacements": [
+        {
+          "name": "before-line-index",
+          "text": "    quest_vec2_t line_position;\n    int line_index = 0;\n    trigger_time_ms = (wave * 5 + 150) * 160;\n"
+        },
+        {
+          "name": "after-line-index",
+          "text": "    int line_index = 0;\n    quest_vec2_t line_position;\n    trigger_time_ms = (wave * 5 + 150) * 160;\n"
+        }
+      ]
+    },
+    {
+      "name": "first-line-local-owner",
+      "find": "    bottom_left.x = 64.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_left;\n",
+      "replacements": [
+        {
+          "name": "dedicated-line-position",
+          "text": "    line_position.x = 64.0f;\n    while (line_index < 6) {\n        line_position.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = line_position;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-line-local-owner",
+      "find": "    bottom_left.x = 960.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_left;\n",
+      "replacements": [
+        {
+          "name": "dedicated-line-position",
+          "text": "    line_position.x = 960.0f;\n    while (line_index < 6) {\n        line_position.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = line_position;\n"
+        }
+      ]
+    }
+  ]
+}

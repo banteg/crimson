@@ -107,14 +107,15 @@ extern "C" void quest_build_nagolipoli(
     bottom_right.x = 1088.0f;
     bottom_right.y = 1088.0f;
 
+    quest_entry_original_t *corner_spawn = &spawns[entry_count];
     int trigger_time_ms = 13000;
     while (trigger_time_ms < 0x96c8) {
-        spawns[entry_count].set_position_and_template(
+        corner_spawn->set_position_and_template(
             top_left,
             SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
-        spawns[entry_count].heading = 1.04719758f;
-        spawns[entry_count].trigger_time_ms = trigger_time_ms;
-        spawns[entry_count].count = wave / 8 + 1;
+        corner_spawn->heading = 1.04719758f;
+        corner_spawn->trigger_time_ms = trigger_time_ms;
+        corner_spawn->count = wave / 8 + 1;
         ++entry_count;
 
         spawns[entry_count].set_position_and_template(
@@ -143,14 +144,16 @@ extern "C" void quest_build_nagolipoli(
 
         trigger_time_ms += 800;
         ++wave;
+        corner_spawn = &spawns[entry_count];
     }
 
+    quest_vec2_t line_position;
     int line_index = 0;
     trigger_time_ms = (wave * 5 + 150) * 160;
-    bottom_left.x = 64.0f;
+    line_position.x = 64.0f;
     while (line_index < 6) {
-        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
-        spawns[entry_count].pos = bottom_left;
+        line_position.y = (float)line_index * 85.3333359f + 256.0f;
+        spawns[entry_count].pos = line_position;
         spawns[entry_count].template_id =
             SPAWN_ID_DEN_SPIDER_BASIC_0A;
         spawns[entry_count].heading = 0.0f;
@@ -161,12 +164,14 @@ extern "C" void quest_build_nagolipoli(
         trigger_time_ms += 100;
     }
 
+    quest_vec2_t second_line_position;
     line_index = 0;
     trigger_time_ms = wave * 800 + 25000;
-    bottom_left.x = 960.0f;
+    second_line_position.x = 960.0f;
     while (line_index < 6) {
-        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
-        spawns[entry_count].pos = bottom_left;
+        second_line_position.y =
+            (float)line_index * 85.3333359f + 256.0f;
+        spawns[entry_count].pos = second_line_position;
         spawns[entry_count].template_id =
             SPAWN_ID_DEN_SPIDER_BASIC_0A;
         spawns[entry_count].heading = 0.0f;

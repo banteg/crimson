@@ -264,3 +264,46 @@ trigger load. Mutation spec SHA-256:
 `34ce129c84ef10bab15f548f0a9dd258c88d92aed420df774a13ae91ad88190d`.
 Final source SHA-256:
 `52fd6cbac0cab62a63d0a8e562d2f95c5c4e26a1d678e4e5ec3d3591d5978248`.
+
+## 2026-08-12 line-vector and corner-cursor recovery
+
+Replaying the stale line ownership evidence after the 2026-08-10 count
+recovery exposed a different allocation result. Live native disassembly maps
+the four corner vectors to distinct stack pairs and then reuses
+`[esp+0x28]/[esp+0x2c]` for both six-entry line loops. Directly renaming the
+line owner to `bottom_right` still perturbs the corner allocation and regresses,
+but two short-lived line vectors give VC6 the native dead-slot coalescing
+without touching the corner objects.
+
+`line-vector-lifetime-interactions.json` evaluates both declaration orders and
+each line owner independently. A dedicated first-line vector improves
+902.9883720930233/983 (91.860465%) to 918.2286821705426/983
+(93.410853%), a gain of 15.240310077519325 weighted bytes.
+`second-line-vector-lifetime-mutations.json` then gives the second loop its own
+non-overlapping vector and adds another 15.240310077519439 weighted bytes,
+reaching 933.468992248062/983 (94.961240%). Both changes preserve 258/258
+instructions, prefix 77, and references `14/0/0`; using one vector across both
+loops extends its lifetime and regresses.
+
+The remaining corner-boundary swap also has an honest owner. Native computes
+the first corner entry address before loading 13000 ms, then carries that first
+record cursor through each wave. A full cursor perturbs the already-recovered
+indexed publications, but `corner-cursor-owner-mutations.json` shows that a
+first-entry-only cursor, refreshed after each wave, preserves the other three
+direct indexed records. It adds 3.810077519379888 weighted bytes and extends
+the exact prefix from 77 to 202 instructions.
+
+The retained source is now 937.2790697674419/983 (**95.348837%**), 258/258
+instructions, prefix 202, and references `14/0/0`. Its only region is the
+49-instruction four-entry fixed tail at native
+`0x00434780..0x00434840`; operations and operands are identical, with 12
+scheduled positions differing. Final source SHA-256:
+`62899e80bca277ecb2e79c5c65e6f833445aa87afcaa0dbb9d52637f38790849`.
+
+Three complete tail matrices bound straightforward source-order explanations.
+`tail-trigger-order-mutations.json` tests both trigger/heading orders,
+`tail-count-advance-order-mutations.json` tests all 15 count-advance
+combinations, and `tail-publication-helper-interactions.json` tests 47 helper
+ownership and member-order combinations. Natural variants are byte-neutral or
+worse. No artificial dependency, dummy store, volatile spill, or register
+constraint is retained.

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-line-vector-declaration",
+      "find": "    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;\n",
+      "replacements": [
+        {
+          "name": "before-line-index-reset",
+          "text": "    quest_vec2_t second_line_position;\n    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;\n"
+        },
+        {
+          "name": "after-line-index-reset",
+          "text": "    line_index = 0;\n    quest_vec2_t second_line_position;\n    trigger_time_ms = wave * 800 + 25000;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-line-vector-owner",
+      "find": "    bottom_left.x = 960.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_left;\n",
+      "replacements": [
+        {
+          "name": "dedicated-second-line-position",
+          "text": "    second_line_position.x = 960.0f;\n    while (line_index < 6) {\n        second_line_position.y =\n            (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = second_line_position;\n"
+        }
+      ]
+    }
+  ]
+}

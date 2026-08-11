@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-line-vector-owner",
+      "find": "    bottom_left.x = 64.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_left;\n",
+      "replacements": [
+        {
+          "name": "reuse-bottom-right",
+          "text": "    bottom_right.x = 64.0f;\n    while (line_index < 6) {\n        bottom_right.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_right;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-line-vector-owner",
+      "find": "    bottom_left.x = 960.0f;\n    while (line_index < 6) {\n        bottom_left.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_left;\n",
+      "replacements": [
+        {
+          "name": "reuse-bottom-right",
+          "text": "    bottom_right.x = 960.0f;\n    while (line_index < 6) {\n        bottom_right.y = (float)line_index * 85.3333359f + 256.0f;\n        spawns[entry_count].pos = bottom_right;\n"
+        }
+      ]
+    }
+  ]
+}
