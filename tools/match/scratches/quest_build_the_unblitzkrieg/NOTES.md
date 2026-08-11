@@ -189,3 +189,35 @@ variant folds away the address adjustment. The canonical source remains
 86.59%, 298/291 instructions, prefix 40, and `0/0/0`. The complete eight-line
 experiment log now has SHA-256
 `2c08bbf01ac2fd8606fcd43c7257a9b35b4ca9da943092aa5ae09619a22ec9d3`.
+
+## Fixed-batch owner replay (2026-08-12)
+
+The seven extra candidate instructions are uniform `lea record_base` followed
+by `add 0xc` pairs; native folds the `template_id` displacement into each LEA.
+The publication-helper sweep does not test whether the fixed batch itself has a
+different owner, so the first later batch was replayed through nine additional
+bounded shapes.
+
+`second-batch-owner-mutations.json` tests reserve-then-previous-base, pointer
+arithmetic, direct global indexing, and per-entry pointer/reference forms.
+Neither delayed base spelling folds the displacement; both lose 6.65 weighted
+bytes and three prefix instructions. Direct and per-entry ownership regress by
+89 to 103 weighted bytes and collapse the prefix to one instruction.
+
+`second-batch-array-owner-mutations.json` models the ten reserved entries as a
+fixed-size array pointer and array reference. Both are byte-identical to the
+retained source, proving that a clean batch aggregate does not alter member
+address selection.
+
+A separately marked diagnostic,
+`second-batch-interior-cursor-diagnostic.json`, checks the native optimizer's
+`template_id`-biased induction directly. A parallel metadata cursor falls to
+57.29%; using that cursor for negative position fields falls to 44.48%.
+Neither low-level form is a retainable source shape, and the decisive
+regressions show that the native cursor cannot be recovered by spelling the
+optimizer's address bias back into C++.
+
+The current source remains `844.2275/975` weighted bytes (`86.59%`), 298/291
+instructions, prefix 40, and `0/0/0` references. Batch ownership, aggregate
+shape, direct publication, and interior-cursor hypotheses are now current and
+bounded; the repeated folded-displacement choice remains compiler residual.

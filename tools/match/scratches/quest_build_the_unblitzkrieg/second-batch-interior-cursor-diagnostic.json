@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-batch-interior-cursor",
+      "find": "    offset = 0;\n    int toggle = 0;\n    spawn = &spawns[entry_count];\n    entry_count += 10;\n    while (offset < 0x1860) {\n        spawn[toggle].pos.x = (float)(0x338 - offset / 10);\n        spawn[toggle].pos.y = 824.0f;\n        spawn[toggle].set_spawn(\n            (toggle & 1)\n                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n                : SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms);\n        spawn[toggle].count = 1;\n        offset += 0x270;\n        trigger_time_ms += 1500;\n        ++toggle;\n    }",
+      "replacements": [
+        {
+          "name": "parallel-metadata-cursor",
+          "text": "    offset = 0;\n    int toggle = 0;\n    spawn = &spawns[entry_count];\n    int *metadata = &spawn[0].template_id;\n    entry_count += 10;\n    while (offset < 0x1860) {\n        spawn[toggle].pos.x = (float)(0x338 - offset / 10);\n        spawn[toggle].pos.y = 824.0f;\n        metadata[0] = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        metadata[1] = trigger_time_ms;\n        metadata[2] = 1;\n        metadata += 6;\n        offset += 0x270;\n        trigger_time_ms += 1500;\n        ++toggle;\n    }"
+        },
+        {
+          "name": "interior-cursor-negative-fields",
+          "text": "    offset = 0;\n    int toggle = 0;\n    spawn = &spawns[entry_count];\n    int *metadata = &spawn[0].template_id;\n    entry_count += 10;\n    while (offset < 0x1860) {\n        quest_entry_original_t *entry =\n            (quest_entry_original_t *)(metadata - 3);\n        entry->pos.x = (float)(0x338 - offset / 10);\n        entry->pos.y = 824.0f;\n        metadata += 6;\n        metadata[-6] = (toggle & 1)\n            ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D\n            : SPAWN_ID_DEN_ALIEN_BASIC_07;\n        metadata[-5] = trigger_time_ms;\n        metadata[-4] = 1;\n        offset += 0x270;\n        trigger_time_ms += 1500;\n        ++toggle;\n    }"
+        }
+      ]
+    }
+  ]
+}
