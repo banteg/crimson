@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-scope-accept-types",
+      "find": "    DWORD headers_length = strlen(headers);\n    DWORD response_error;",
+      "replacements": [
+        {
+          "name": "before-response-error",
+          "text": "    DWORD headers_length = strlen(headers);\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };\n    DWORD response_error;"
+        },
+        {
+          "name": "after-response-error",
+          "text": "    DWORD headers_length = strlen(headers);\n    DWORD response_error;\n    const char *accept_types[] = {\n        \"image/gif\",\n        \"image/x-xbitmap\",\n        \"image/jpeg\",\n        \"image/pjpeg\",\n        \"application/vnd.ms-powerpoint\",\n        \"application/vnd.ms-excel\",\n        \"application/msword\",\n        \"application/x-comet\",\n        \"application/octet-stream\",\n        \"*/*\",\n        0,\n    };"
+        }
+      ]
+    }
+  ]
+}

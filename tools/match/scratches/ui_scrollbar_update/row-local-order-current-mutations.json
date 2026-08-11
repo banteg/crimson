@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-local-order-current",
+      "find": "    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    int row = 0;\n    if (state->visible_rows <= 0) {\n        return;\n    }\n\n    int item_index = first_item;\n    int item_offset = first_item * 4;",
+      "replacements": [
+        {
+          "name": "index-offset-before-position",
+          "text": "    int item_index;\n    int item_offset;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    int row = 0;\n    if (state->visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item_offset = first_item * 4;"
+        },
+        {
+          "name": "index-offset-before-row",
+          "text": "    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    int item_index;\n    int item_offset;\n    int row = 0;\n    if (state->visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item_offset = first_item * 4;"
+        },
+        {
+          "name": "index-offset-row-before-position",
+          "text": "    int item_index;\n    int item_offset;\n    int row;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    row = 0;\n    if (state->visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item_offset = first_item * 4;"
+        },
+        {
+          "name": "offset-index-row-before-position",
+          "text": "    int item_offset;\n    int item_index;\n    int row;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    row = 0;\n    if (state->visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item_offset = first_item * 4;"
+        },
+        {
+          "name": "row-index-offset-before-position",
+          "text": "    int row;\n    int item_index;\n    int item_offset;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    row = 0;\n    if (state->visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item_offset = first_item * 4;"
+        },
+        {
+          "name": "row-offset-index-before-position",
+          "text": "    int row;\n    int item_offset;\n    int item_index;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    row = 0;\n    if (state->visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item_offset = first_item * 4;"
+        }
+      ]
+    }
+  ]
+}

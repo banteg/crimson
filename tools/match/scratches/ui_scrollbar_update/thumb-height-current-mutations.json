@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "thumb-height-integer-operand",
+      "find": "    float thumb_height =\n        (float)visible_rows / (float)item_count * interior_height;",
+      "replacements": [
+        {
+          "name": "implicit-numerator",
+          "text": "    float thumb_height =\n        visible_rows / (float)item_count * interior_height;"
+        },
+        {
+          "name": "implicit-denominator",
+          "text": "    float thumb_height =\n        (float)visible_rows / item_count * interior_height;"
+        }
+      ]
+    }
+  ]
+}

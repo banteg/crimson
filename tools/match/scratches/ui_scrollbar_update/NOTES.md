@@ -2,7 +2,7 @@
 
 - Native function: `0x0043def0` (`1767` bytes, `479` instructions)
 - Compiler profile: MSVC 6.5
-- Current result: `64.37%`, `478` candidate instructions, `64/0/0`
+- Current result: `82.22%`, `477` candidate instructions, `62/0/0`
   relocation references.
 
 ## Recovered behavior
@@ -188,3 +188,57 @@ row constructors remain untouched. The function still has a `0x44` candidate
 frame and the native fill computation is not yet fully scheduled after the
 hover branch, so this is retained as a measured lifetime/allocation gain rather
 than claimed as local exactness.
+
+## Interaction lifetime and row induction (2026-08-11)
+
+A fresh replay of `interaction-scope-lifetime-mutations.json` against the
+current source invalidated the previous stopping point. The complete
+31-variant interaction space found one five-site source shape that carries
+`first_item` out of a short geometry/input scope, reloads `item_count` for the
+thumb grab, ends the scope before row rendering, and reloads `visible_rows`
+for the initial row check. It moves the retained result from
+`64.36781609195402%` (`1137.3793103448277/1767` weighted bytes, no exact
+prefix, `478/479` instructions, `64/0/0` references, `0x44` frame) to
+`81.79916317991632%` (`1445.3912133891215/1767`, 26-instruction exact prefix,
+`477/479`, `62/0/0`, `0x40` frame).
+
+The reference-count reduction is not unresolved debt: all 62 remaining
+references resolve cleanly, with zero mismatches and zero unresolved
+relocations. It comes from the changed instruction shape. Live native
+disassembly independently proves the direct field operands at the thumb grab
+(`0x0043e305`), initial row check (`0x0043e396`), item-count loop bound
+(`0x0043e45a`), and later visible-row bound (`0x0043e5af`), as well as the
+native `0x40` epilogue frame. A complete 63-variant field-reload ablation left
+this layout unbeaten; restoring only the cached thumb divisor loses about 14
+weighted bytes, while the other cached-field interactions regress much more
+or no longer compile because the locals correctly end with the scope.
+
+The complete 26-variant `row-item-induction-mutations.json` sweep then proved
+that this allocation wants the native four-byte item displacement explicitly,
+not a typed pointer cursor. Carrying `item_offset = first_item * 4`, loading
+through `(char *)state->items + item_offset`, and advancing by four adds
+`7.393305439330334` weighted bytes without changing instruction or reference
+counts. The retained final result is `82.21757322175732%`
+(`1452.7845188284518/1767` weighted bytes, `314.21548117154816` gap), with a
+26-instruction exact prefix, `477/479` instructions, a native-sized `0x40`
+frame, and `62/0/0` references. Relative to the former 64.37% stopping point,
+this is a `315.4052084836241` weighted-byte improvement.
+
+Three additional current-source sweeps reached bounded neutral stopping
+points: both thumb-height cast spellings (2/2), both text-loop entry
+comparisons (2/2), and all six native-guided row-local declaration orders
+(6/6). Their spec SHA-256 values are, respectively,
+`5a70a015aeaaa050d4248ced309e15255ef5aad840efa80e5ddc77d925b10a67`,
+`bd545e29642d04f29fd0c62d13c37c4f0f7cdddb60e838766962f0564340afda`,
+and `4afbda504c9c91d4e03ad651491b673114e6e1d783370b5c46338b02aaaeb09e`.
+The interaction, field-ablation, and row-induction spec hashes are
+`00047dba22fb3600eb7a45f1ac1b2c1bbbb6a150ed36292dc84ad9a2d2f5126a`,
+`0bedcf0dceb9e6a34460bf5c52b083bda2795c6a60271e698584143b4e5c6fa8`,
+and `6694f8181fa156f8370bc7e5a501c5754612d441485301d510fc24b04cae32f3`.
+The retained source SHA-256 is
+`44355ff9cd417bac5fd92bcc7d9a3a826e4be77fab47c00f69cbebb7b73e893f`.
+
+The scratch remains `semantic-complete` with an honest `compiler` residual.
+The first residual is now after 26 exact instructions and is dominated by
+temporary stack-slot placement; later regions remain x87 scheduling and row
+loop allocation differences.

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "text-loop-entry-bound",
+      "find": "        if (text_length > 0) {",
+      "replacements": [
+        {
+          "name": "cursor-less-than-length",
+          "text": "        if (cursor < text_length) {"
+        },
+        {
+          "name": "length-greater-than-cursor",
+          "text": "        if (text_length > cursor) {"
+        }
+      ]
+    }
+  ]
+}

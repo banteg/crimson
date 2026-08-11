@@ -2,7 +2,7 @@
 
 Native target: `crimsonland.exe` at `0x0042d8a0` (1364 bytes).
 
-Work in progress: 77.38% normalized match, 22/361-instruction exact prefix,
+Work in progress: 78.38% normalized match, 22/367-instruction exact prefix,
 373 candidate instructions, and 106/0/0 reference audit.
 
 Live Binary Ninja evidence and the MSVC candidate recover the complete worker:
@@ -148,3 +148,22 @@ the fuzzy gap from 308.479564032697 to 297.297297297297 bytes, and changes
 the instruction comparison from 373/361 to 373/367. The prefix remains 22
 and references remain `106/0/0`. Source is unchanged at SHA-256
 `fbcccb4047061ffcc135469c9d4db4f5df475fd424a4456258d36e2a466d642c`.
+
+## Accept-array current-layout recheck (2026-08-11)
+
+The first bounded current-layout replay tested five single and paired
+hypotheses. Reintroducing a dead function-scope MIME array before or after
+`response_error` is byte-neutral. Replacing the active request-scope array
+with either outer lifetime regresses from `1077.7027027027027` to
+`1073.9864864864865` weighted bytes (78.38% to 78.11%), while removing the
+only active array is compile-invalid rather than a meaningful variant.
+
+The retained source now documents the request-only lifetime directly. The
+strict-clean current spec exhausts the two valid independent outer-declaration
+probes (2/2 neutral); the original five-result record remains historical
+evidence for the two coupled regressions and the rejected invalid singleton.
+The scoped array therefore remains the only active declaration. The current
+spec SHA-256 is
+`9e925517304a4f1176fd58d4a90f196ebfdec89a9a02dbf50a64be0a5ad5dd90`;
+the comment-only retained source SHA-256 is
+`f395f87f40fec1c326807bc4a031dacea4c20ea122aa5b6e49c975048661dd3a`.

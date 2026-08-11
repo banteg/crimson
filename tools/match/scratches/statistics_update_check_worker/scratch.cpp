@@ -64,6 +64,7 @@ extern "C" void statistics_update_check_worker(void *)
     }
 
     {
+        // The MIME list is needed only while the request is constructed.
         const char *accept_types[] = {
             "image/gif",
             "image/x-xbitmap",

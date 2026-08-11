@@ -61,6 +61,8 @@ extern "C" void ui_scrollbar_update(
         ui_focus_draw((float *)&position);
     }
 
+    int first_item;
+    {
     float height = (float)(state->visible_rows * 16 + 4);
     {
         scrollbar_color_t color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -119,7 +121,7 @@ extern "C" void ui_scrollbar_update(
         state->scroll_offset = 0.0f;
     }
 
-    int first_item = (int)state->scroll_offset;
+    first_item = (int)state->scroll_offset;
     float thumb_height =
         (float)visible_rows / (float)item_count * interior_height;
     if (thumb_height > interior_height) {
@@ -166,7 +168,8 @@ extern "C" void ui_scrollbar_update(
                         (float *)&thumb_position, (int)thumb_height, 8)) {
                     ui_scrollbar_drag_offset =
                         ui_mouse_y - xy->y
-                        - state->scroll_offset / (float)item_count * height;
+                        - state->scroll_offset
+                            / (float)state->item_count * height;
                 } else {
                     ui_scrollbar_drag_offset = 0.0f;
                 }
@@ -203,15 +206,17 @@ extern "C" void ui_scrollbar_update(
         }
     }
 
+    }
+
     scrollbar_vec2_t row_position(xy->x, xy->y);
     row_position.x -= 2.0f;
     int row = 0;
-    if (visible_rows <= 0) {
+    if (state->visible_rows <= 0) {
         return;
     }
 
     int item_index = first_item;
-    char **item = state->items + first_item;
+    int item_offset = first_item * 4;
     do {
         if (row >= state->item_count) {
             return;
@@ -232,7 +237,8 @@ extern "C" void ui_scrollbar_update(
             }
         }
 
-        char *text = *item;
+        char *text =
+            *(char **)((char *)state->items + item_offset);
         if (text[0] == '\\') {
             if (text[1] == 'g') {
                 grim_interface_ptr->grim_set_color(
@@ -269,7 +275,7 @@ extern "C" void ui_scrollbar_update(
 
         row_position.y += 16.0f;
         ++row;
-        ++item;
+        item_offset += 4;
         ++item_index;
     } while (row < state->visible_rows);
 }
