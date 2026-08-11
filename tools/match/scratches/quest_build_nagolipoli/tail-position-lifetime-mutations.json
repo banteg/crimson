@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-tail-position-lifetime",
+      "find": "    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 256.0f),\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n",
+      "replacements": [
+        {
+          "name": "named-after-entry-cursor",
+          "text": "    spawn = &spawns[entry_count];\n    quest_vec2_t first_tail_position(512.0f, 256.0f);\n    spawn->set_position_and_template(\n        first_tail_position,\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n"
+        },
+        {
+          "name": "named-before-entry-cursor",
+          "text": "    quest_vec2_t first_tail_position(512.0f, 256.0f);\n    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        first_tail_position,\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n"
+        }
+      ]
+    },
+    {
+      "name": "second-tail-position-lifetime",
+      "find": "    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 768.0f),\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n",
+      "replacements": [
+        {
+          "name": "named-after-entry-cursor",
+          "text": "    spawn = &spawns[entry_count];\n    quest_vec2_t second_tail_position(512.0f, 768.0f);\n    spawn->set_position_and_template(\n        second_tail_position,\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n"
+        },
+        {
+          "name": "named-before-entry-cursor",
+          "text": "    quest_vec2_t second_tail_position(512.0f, 768.0f);\n    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        second_tail_position,\n        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);\n"
+        }
+      ]
+    },
+    {
+      "name": "third-tail-position-lifetime",
+      "find": "    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, 1088.0f),\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n",
+      "replacements": [
+        {
+          "name": "named-after-entry-cursor",
+          "text": "    spawn = &spawns[entry_count];\n    quest_vec2_t third_tail_position(512.0f, 1088.0f);\n    spawn->set_position_and_template(\n        third_tail_position,\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n"
+        },
+        {
+          "name": "named-before-entry-cursor",
+          "text": "    quest_vec2_t third_tail_position(512.0f, 1088.0f);\n    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        third_tail_position,\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n"
+        }
+      ]
+    },
+    {
+      "name": "fourth-tail-position-lifetime",
+      "find": "    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        quest_vec2_t(512.0f, -64.0f),\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n",
+      "replacements": [
+        {
+          "name": "named-after-entry-cursor",
+          "text": "    spawn = &spawns[entry_count];\n    quest_vec2_t fourth_tail_position(512.0f, -64.0f);\n    spawn->set_position_and_template(\n        fourth_tail_position,\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n"
+        },
+        {
+          "name": "named-before-entry-cursor",
+          "text": "    quest_vec2_t fourth_tail_position(512.0f, -64.0f);\n    spawn = &spawns[entry_count];\n    spawn->set_position_and_template(\n        fourth_tail_position,\n        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);\n"
+        }
+      ]
+    }
+  ]
+}

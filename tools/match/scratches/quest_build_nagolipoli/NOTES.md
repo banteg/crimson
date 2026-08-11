@@ -307,3 +307,13 @@ combinations, and `tail-publication-helper-interactions.json` tests 47 helper
 ownership and member-order combinations. Natural variants are byte-neutral or
 worse. No artificial dependency, dummy store, volatile spill, or register
 constraint is retained.
+
+The final position-lifetime pass is also saturated.
+`tail-position-lifetime-mutations.json` evaluates all 80 single through
+four-entry combinations of named position temporaries placed before or after
+their entry cursors; every variant is byte-identical at 95.348837%.
+`tail-position-reuse-mutations.json` tests three ordinary reusable-vector
+forms. All three regress by 49.53100775193798 weighted bytes to
+887.7480620155039/983 (90.310078%) and move the exact prefix back to 191.
+The four short-lived constructor temporaries therefore remain the strongest
+evidenced source shape for the compiler-scheduled tail.
