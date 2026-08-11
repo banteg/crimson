@@ -57,3 +57,16 @@ falls to 61.86%, regardless of whether the local appears before or after the
 trigger variable. None moves just the native loop-counter zeroing. The
 complete four-variant result is recorded under spec SHA-256
 `50b067d9e5706a3988ff8b5517bda1419273f0c401b37097e4a219a3f350de32`.
+
+## Exact wave counter model
+
+The residual was not a free-standing acceleration lifetime. Expressing the
+loop in its quest-domain unit—100 paired waves—and deriving acceleration as
+`wave * 15` preserves the same 0 through 1485 sequence. VC6 strength-reduces
+that expression back to the native `ESI += 15` induction while scheduling its
+zeroing after both hoisted position constants.
+
+Both `wave * 15` and `15 * wave` match all **167/167 bytes** and **48/48
+instructions**; the explicit acceleration-counter form reproduces the former
+swap. `wave-counter-model-mutations.json` records the comparison. No recovery
+or residual override remains.

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "wave-counter-model",
+      "find": "    int trigger_time_ms = 4000;\n\n    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }",
+      "replacements": [
+        {
+          "name": "wave-times-15",
+          "text": "    int trigger_time_ms = 4000;\n\n    for (int wave = 0; wave < 100; ++wave) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - wave * 15;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }"
+        },
+        {
+          "name": "wave-15-times",
+          "text": "    int trigger_time_ms = 4000;\n\n    for (int wave = 0; wave < 100; ++wave) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - 15 * wave;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }"
+        },
+        {
+          "name": "paired-wave-acceleration",
+          "text": "    int trigger_time_ms = 4000;\n\n    for (int wave = 0, acceleration = 0; wave < 100; ++wave, acceleration += 15) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }"
+        }
+      ]
+    }
+  ]
+}

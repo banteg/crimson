@@ -55,7 +55,7 @@ extern "C" void quest_build_major_alien_breach(
     quest_spawn_builder_t builder((quest_entry_original_t *)entries);
     int trigger_time_ms = 4000;
 
-    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {
+    for (int wave = 0; wave < 100; ++wave) {
         builder.add(
             quest_vec2_t(1088.0f, 512.0f),
             SPAWN_ID_ALIEN_RANDOM_GREEN_20,
@@ -68,7 +68,7 @@ extern "C" void quest_build_major_alien_breach(
             trigger_time_ms,
             2);
 
-        trigger_time_ms += 2000 - acceleration;
+        trigger_time_ms += 2000 - wave * 15;
         if (trigger_time_ms < 1000) {
             trigger_time_ms = 1000;
         }

@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**745/810** functions matched exactly, **156902/341992** code bytes (**45.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**746/810** functions matched exactly, **157069/341992** code bytes (**45.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **308455/341992** code bytes (**90.2%**).
+Fuzzy-weighted alignment is **308458/341992** code bytes (**90.2%**).
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 13 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 15 recorded file inputs changed or missing
 - `grim.dll`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
@@ -96,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 608/671 | 138643/320827 | 43.2% | 287379/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 608/671 |
+| crimsonland.exe | 609/671 | 138810/320827 | 43.3% | 287382/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 609/671 |
 | grim.dll | 137/139 | 18259/21165 | 86.3% | 21076/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 137/139 |
 
 ## crimsonland.exe
 
-**608/671** functions, **138643/320827** bytes (**43.2%**), **287379/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **608/671** scratches verified.
+**609/671** functions, **138810/320827** bytes (**43.3%**), **287382/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **609/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -556,7 +556,7 @@ Artifact freshness issues:
 | match | quest_build_sweep_stakes | 0x00437810 | 258 | 258/258 | 0 | 76/76 | 100.00% | 76/76 | 7/0/0 |  | quest-sweep-stakes-indexed-publication |
 | match | quest_build_deja_vu | 0x00437920 | 209 | 209/209 | 0 | 63/63 | 100.00% | 63/63 | 4/0/0 |  | quest-deja-vu-split-publication |
 | match | quest_build_target_practice | 0x00437a00 | 240 | 240/240 | 0 | 69/69 | 100.00% | 69/69 | 8/0/0 |  | quest-target-practice-indexed-builder |
-| wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 164/167 | 3 | 48/48 | 97.92% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
+| match | quest_build_major_alien_breach | 0x00437af0 | 167 | 167/167 | 0 | 48/48 | 100.00% | 48/48 | 0/0/0 |  | quest-major-alien-breach-builder-exact |
 | match | quest_build_land_of_lizards | 0x00437ba0 | 204 | 204/204 | 0 | 46/46 | 100.00% | 46/46 | 0/0/0 |  | quest-land-of-lizards |
 | wip | quest_build_the_lizquidation | 0x00437c70 | 245 | 220/245 | 25 | 79/79 | 89.87% | 7/79 | 5/0/0 | msvc6.5 /O2 /G6 /W3 /GR- | quest-the-lizquidation-builder |
 | match | quest_build_zombie_time | 0x00437d70 | 152 | 152/152 | 0 | 50/50 | 100.00% | 50/50 | 3/0/0 |  | quest-zombie-time-indexed-publication |
