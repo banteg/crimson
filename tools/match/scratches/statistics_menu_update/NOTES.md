@@ -226,3 +226,41 @@ renderer in `edi`, its vtable in `ebp`, and spills the hour at
 `[esp+0x10]`. No artificial dependency or forced spill is justified. Current
 source SHA-256 is
 `1f05054f3a40357f922e1127348bc36f0cba975e8130101ddbc2ddd272dfe591`.
+
+## Current session scheduling replay (2026-08-12)
+
+The older experiment records predate the retained renderer boundaries, so the
+remaining session region was replayed from the current **93.264249%** source
+rather than treated as settled by those notes. Live native comparison confirms
+that the first mismatch still starts at the same ownership split: native loads
+the renderer into `edi` and its vtable into `ebp` before completing the
+minute/hour arithmetic, then spills the hour at `[esp+0x10]`. The candidate
+keeps the renderer in `ebp`, delays the vtable load until the call, and retains
+the hour in `edi`.
+
+Three complete current-baseline sweeps bound the ordinary source shapes:
+
+- `current-session-call-evaluation-mutations.json` (SHA-256
+  `e98bb595ba7ccc9a2799cb936f339175d596fcb65ba4d805ab8a966f6b59fb3e`)
+  evaluates all eight defined call-argument forms. One assigned-hour spelling
+  is byte-neutral. Modulo forms lose **63.886010 weighted bytes**, direct
+  division by 3600 loses **84.768976**, and the independent-expression forms
+  lose **120.685109**.
+- `current-session-renderer-ownership-mutations.json` (SHA-256
+  `b7d33d8ad83b6904bdc1d2a2a2f34493236392e6673fb72b3ded99ec6af09ad5`)
+  evaluates all seven pointer/reference, qualifier, declaration, and assignment
+  placements. Six are byte-neutral; moving the renderer capture after the hour
+  quotient loses **106.476684 weighted bytes**.
+- `current-session-quotient-lifetime-mutations.json` (SHA-256
+  `3ddb8166bdeb2cdf2a9208076dc9204e0a662c0ad168656a6d7e2dc97c597992`)
+  evaluates all nine defined assignment, compound-division, named-result, and
+  remainder-reuse forms. Seven are byte-neutral. Modulo loses **63.886010
+  weighted bytes**, while reusing `session_minutes` for the remainder loses
+  **106.476684**.
+
+No current variant improves the canonical source, so none is retained. The
+remaining allocation would require an artificial vtable dependency, forced
+spill, or register coercion; those are not honest decompilation evidence. The
+canonical result remains `2683.2124352331607/2877` (**93.264249%**), with a
+280-instruction exact prefix, 675/676 instructions, and clean `276/0/0`
+references.

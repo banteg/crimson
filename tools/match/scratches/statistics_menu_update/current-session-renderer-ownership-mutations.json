@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-session-renderer-ownership",
+      "find": "    int session_seconds = (int)play_time_ms / 1000;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);",
+      "replacements": [
+        {
+          "name": "renderer-reference-after-seconds",
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    IGrim2D_cpp &session_renderer = *grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer.grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+        },
+        {
+          "name": "const-renderer-after-seconds",
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    IGrim2D_cpp *const session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+        },
+        {
+          "name": "renderer-before-seconds",
+          "text": "    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_seconds = (int)play_time_ms / 1000;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+        },
+        {
+          "name": "renderer-after-minutes",
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    int session_minutes = session_seconds / 60;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+        },
+        {
+          "name": "renderer-after-hours",
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+        },
+        {
+          "name": "hour-declared-before-renderer",
+          "text": "    int session_seconds = (int)play_time_ms / 1000;\n    int session_hours;\n    IGrim2D_cpp *session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+        },
+        {
+          "name": "renderer-declared-before-seconds-assigned-after",
+          "text": "    IGrim2D_cpp *session_renderer;\n    int session_seconds = (int)play_time_ms / 1000;\n    session_renderer = grim_interface_ptr;\n    int session_minutes = session_seconds / 60;\n    int session_hours = session_minutes / 60;\n    int session_minute_part = session_minutes - session_hours * 60;\n    session_renderer->grim_draw_text_small_fmt(\n        xy.x - 38.0f,\n        xy.y + 230.0f,\n        \"played for %d hours %d minutes\",\n        session_hours,\n        session_minute_part,\n        session_seconds - session_minute_part * 60);"
+        }
+      ]
+    }
+  ]
+}
