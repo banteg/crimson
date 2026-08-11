@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-second-button-component-order",
+      "find": "        float maybe_later_x =\n            (float)(config_blob.screen_width / 2 + 128);\n        float maybe_later_y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        position.x = maybe_later_x;\n        position.y = maybe_later_y;",
+      "replacements": [
+        {
+          "name": "const-components",
+          "text": "        const float maybe_later_x =\n            (float)(config_blob.screen_width / 2 + 128);\n        const float maybe_later_y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        position.x = maybe_later_x;\n        position.y = maybe_later_y;"
+        },
+        {
+          "name": "assigned-components",
+          "text": "        float maybe_later_x;\n        float maybe_later_y;\n        maybe_later_x =\n            (float)(config_blob.screen_width / 2 + 128);\n        maybe_later_y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        position.x = maybe_later_x;\n        position.y = maybe_later_y;"
+        },
+        {
+          "name": "y-component-declared-first",
+          "text": "        float maybe_later_y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        float maybe_later_x =\n            (float)(config_blob.screen_width / 2 + 128);\n        position.x = maybe_later_x;\n        position.y = maybe_later_y;"
+        },
+        {
+          "name": "publish-x-before-y-component",
+          "text": "        float maybe_later_x =\n            (float)(config_blob.screen_width / 2 + 128);\n        position.x = maybe_later_x;\n        float maybe_later_y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        position.y = maybe_later_y;"
+        },
+        {
+          "name": "reverse-component-publication",
+          "text": "        float maybe_later_x =\n            (float)(config_blob.screen_width / 2 + 128);\n        float maybe_later_y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        position.y = maybe_later_y;\n        position.x = maybe_later_x;"
+        }
+      ]
+    }
+  ]
+}

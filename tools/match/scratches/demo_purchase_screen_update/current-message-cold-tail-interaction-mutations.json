@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-message-cold-tail-entry",
+      "find": "    if (demo_purchase_screen_active != 0) {\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "zero-guard-goto",
+          "text": "    if (demo_purchase_screen_active == 0) {\n        goto select_inactive_message;\n    }\n    {\n"
+        }
+      ]
+    },
+    {
+      "name": "current-message-cold-tail-layout",
+      "find": "    } else {\n        int message_index = demo_upsell_message_index;\n        if (quest_spawn_timeline == 0) {\n            message_index = (message_index + 1) % 5;\n            demo_upsell_message_index = message_index;\n        }\n\n        if (message_index == 0) {\n            message = \"Want more Levels?\";\n        } else if (message_index == 1) {\n            message = \"Want more Weapons?\";\n        } else if (message_index == 2) {\n            message = \"Want more Perks?\";\n        } else if (message_index == 3) {\n            message = \"Want unlimited Play time?\";\n        } else if (message_index == 4) {\n            message = \"Want to post your high scores?\";\n        }\n    }\n\n    demo_purchase_render_message(message, position_y, alpha);\n\n    ui_elements_update_and_render();\n    ui_cursor_render();\n}\n",
+      "replacements": [
+        {
+          "name": "selector-after-return",
+          "text": "    }\n\nrender_message:\n    demo_purchase_render_message(message, position_y, alpha);\n\n    ui_elements_update_and_render();\n    ui_cursor_render();\n    return;\n\nselect_inactive_message:\n    {\n        int message_index = demo_upsell_message_index;\n        if (quest_spawn_timeline == 0) {\n            message_index = (message_index + 1) % 5;\n            demo_upsell_message_index = message_index;\n        }\n\n        if (message_index == 0) {\n            message = \"Want more Levels?\";\n        } else if (message_index == 1) {\n            message = \"Want more Weapons?\";\n        } else if (message_index == 2) {\n            message = \"Want more Perks?\";\n        } else if (message_index == 3) {\n            message = \"Want unlimited Play time?\";\n        } else if (message_index == 4) {\n            message = \"Want to post your high scores?\";\n        }\n    }\n    goto render_message;\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "current-message-width-progress-order",
+      "find": "    float message_y;\n    float message_width = (float)strlen(message) * 12.8f;\n    float progress_width =\n        (float)quest_spawn_timeline\n        / (float)demo_time_limit_ms\n        * message_width;",
+      "replacements": [
+        {
+          "name": "width-then-message-y-then-progress",
+          "text": "    float message_width = (float)strlen(message) * 12.8f;\n    float message_y;\n    float progress_width =\n        (float)quest_spawn_timeline\n        / (float)demo_time_limit_ms\n        * message_width;"
+        },
+        {
+          "name": "message-y-initialized-before-width",
+          "text": "    float message_y = position_y + 50.0f;\n    float message_width = (float)strlen(message) * 12.8f;\n    float progress_width =\n        (float)quest_spawn_timeline\n        / (float)demo_time_limit_ms\n        * message_width;"
+        }
+      ]
+    },
+    {
+      "name": "current-message-y-materialization",
+      "find": "    position.x = 60.0f;\n    color.r = 0.0f;\n    color.g = 0.0f;\n    color.b = 0.0f;\n    color.a = alpha * 0.5f;\n    position.y = (message_y = position_y + 50.0f) - 4.0f;",
+      "replacements": [
+        {
+          "name": "message-y-before-position-and-color",
+          "text": "    message_y = position_y + 50.0f;\n    position.x = 60.0f;\n    color.r = 0.0f;\n    color.g = 0.0f;\n    color.b = 0.0f;\n    color.a = alpha * 0.5f;\n    position.y = message_y - 4.0f;"
+        },
+        {
+          "name": "message-y-before-color",
+          "text": "    position.x = 60.0f;\n    message_y = position_y + 50.0f;\n    color.r = 0.0f;\n    color.g = 0.0f;\n    color.b = 0.0f;\n    color.a = alpha * 0.5f;\n    position.y = message_y - 4.0f;"
+        }
+      ]
+    }
+  ]
+}

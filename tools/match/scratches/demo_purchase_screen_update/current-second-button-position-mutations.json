@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-second-button-position",
+      "find": "        position.x =\n            (float)(config_blob.screen_width / 2 + 128);\n        position.y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        if (ui_button_update(\n                (float *)&position,\n                (ui_button_t *)&maybe_later_button)) {",
+      "replacements": [
+        {
+          "name": "aggregate-local-direct",
+          "text": "        demo_purchase_vec2_t maybe_later_position = {\n            (float)(config_blob.screen_width / 2 + 128),\n            (float)(config_blob.screen_height / 2 + 102)\n                + layout_shift * 0.3f + 90.0f\n        };\n        if (ui_button_update(\n                (float *)&maybe_later_position,\n                (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "aggregate-local-copy",
+          "text": "        demo_purchase_vec2_t maybe_later_position = {\n            (float)(config_blob.screen_width / 2 + 128),\n            (float)(config_blob.screen_height / 2 + 102)\n                + layout_shift * 0.3f + 90.0f\n        };\n        position = maybe_later_position;\n        if (ui_button_update(\n                (float *)&position,\n                (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "sequential-local-direct",
+          "text": "        demo_purchase_vec2_t maybe_later_position;\n        maybe_later_position.x =\n            (float)(config_blob.screen_width / 2 + 128);\n        maybe_later_position.y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        if (ui_button_update(\n                (float *)&maybe_later_position,\n                (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "float-pair-aggregate",
+          "text": "        float maybe_later_position[2] = {\n            (float)(config_blob.screen_width / 2 + 128),\n            (float)(config_blob.screen_height / 2 + 102)\n                + layout_shift * 0.3f + 90.0f\n        };\n        if (ui_button_update(\n                maybe_later_position,\n                (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "reverse-field-publication",
+          "text": "        position.y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        position.x =\n            (float)(config_blob.screen_width / 2 + 128);\n        if (ui_button_update(\n                (float *)&position,\n                (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "named-integer-bases",
+          "text": "        int maybe_later_x = config_blob.screen_width / 2 + 128;\n        int maybe_later_y = config_blob.screen_height / 2 + 102;\n        position.x = (float)maybe_later_x;\n        position.y =\n            (float)maybe_later_y + layout_shift * 0.3f + 90.0f;\n        if (ui_button_update(\n                (float *)&position,\n                (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "named-float-components",
+          "text": "        float maybe_later_x =\n            (float)(config_blob.screen_width / 2 + 128);\n        float maybe_later_y =\n            (float)(config_blob.screen_height / 2 + 102)\n            + layout_shift * 0.3f + 90.0f;\n        position.x = maybe_later_x;\n        position.y = maybe_later_y;\n        if (ui_button_update(\n                (float *)&position,\n                (ui_button_t *)&maybe_later_button)) {"
+        }
+      ]
+    }
+  ]
+}

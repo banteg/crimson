@@ -105,3 +105,42 @@ after RGB removes the region completely, adds another **3.8042 weighted
 bytes**, and lowers the gap to **138.8524 bytes** without changing instruction
 counts, prefix, or references. The final retained result is **94.7444%**, a
 cumulative **38.0418 weighted-byte** improvement over the 93.3045% baseline.
+
+## Current cold-tail replay and second-button lifetime (2026-08-12)
+
+Because the original cold-tail searches predated the retained message color
+publication order, the complete interaction matrix was rebuilt around the
+current source. `current-message-cold-tail-interaction-mutations.json`
+(SHA-256
+`693dcbaeeeff556809cb1f62f1da2d948538d85b505154e7e5abfc1f774908e5`)
+evaluates all 35 defined singles and interactions across the forward guard,
+cold selector placement, message-width declaration, and current message-Y
+publication. The width declarations are byte-neutral, the current Y
+alternatives lose **13 weighted bytes**, and the paired cold-tail layout still
+loses **14 weighted bytes**. The current source therefore does not revive the
+previous score-regressing cold layout.
+
+Live native comparison exposed an independent scheduling region at
+`0x0040bf08..0x0040bf33`. For the Maybe later button, native starts converting
+the X component, computes the integer Y base, and only then publishes X before
+converting and publishing Y. The prior sequential field expressions forced the
+X store before the Y calculation.
+
+`current-second-button-position-mutations.json` (SHA-256
+`ec81b950bf81ed7922c0667557a418f806e808fb6d86e4edc3cad13df6b297d4`)
+evaluates all seven defined aggregate, scalar-pair, declaration, and
+publication shapes. Naming the two float components before assigning the
+shared vector is the sole improvement and removes that complete regional diff.
+It raises the score from `2503.1475881929446/2642` (**94.744420%**) to
+`2506.9517638588914/2642` (**94.888409%**), a gain of **3.804176 weighted
+bytes**, while preserving the 136-instruction prefix, 698/691 instruction
+count, and clean `190/0/0` references. Current source SHA-256 is
+`a9300418e68160ba19c6191529d800bce74322661510da3aeea11991c531ac7a`.
+
+The five-variant current-baseline confirmation in
+`current-second-button-component-order-mutations.json` (SHA-256
+`3e1625bc60a77193d55bf17f090defb6811be67905d81229ed7ef7d2ca099982`)
+finds declaration, assignment, qualifier, and early-X-publication spellings
+byte-neutral. Reversing the final component publications loses **26.629230
+weighted bytes** and two references, confirming that the retained X-then-Y
+publication boundary is material rather than a name-only score accident.

@@ -303,11 +303,13 @@ extern "C" void demo_purchase_screen_update(void)
             return;
         }
 
-        position.x =
+        float maybe_later_x =
             (float)(config_blob.screen_width / 2 + 128);
-        position.y =
+        float maybe_later_y =
             (float)(config_blob.screen_height / 2 + 102)
             + layout_shift * 0.3f + 90.0f;
+        position.x = maybe_later_x;
+        position.y = maybe_later_y;
         if (ui_button_update(
                 (float *)&position,
                 (ui_button_t *)&maybe_later_button)) {
