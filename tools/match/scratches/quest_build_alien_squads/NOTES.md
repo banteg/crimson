@@ -105,3 +105,23 @@ falls to 98.15%. Whole-vector assignment falls to 61.88% for the first member,
 108/108-instruction baseline or changes its `0/0/0` reference audit, so the
 natural direct coordinate stores remain canonical. The spec SHA-256 is
 `8c98855d0c865817eb742f42236b8aca4775d5e5573280e791e2fe259e6296c2`.
+
+## 2026-08-12 loop helper boundaries
+
+The remaining five-byte region was replayed through the entry helper already
+recovered for the fixed waves. The complete three-variant first-wave,
+second-wave, and paired sweep in
+`current-loop-metadata-boundary-mutations.json` (SHA-256
+`215d394b041fd74b7a701dd10f79ab230929c6ea35d43eef29435f0d20ead43a`)
+finds the first-wave `set_spawn` call byte-neutral. Using the helper for the
+second wave, alone or paired, loses **4.694444 weighted bytes** and lowers the
+match to **98.148148%**.
+
+A direct current-source probe also added the ordinary `quest_vec2_t::set(x,
+y)` member recovered in sibling quest/UI scratches and used it for the first
+wave. VC6 inlines it to the same candidate bytes, including the early `lea`.
+Together with the recorded coordinate, trigger, and metadata sweeps, this
+leaves only the compiler's legal hoist of `trigger_time_ms - 400` across the
+two independent coordinate stores. No artificial dependency, volatile
+qualifier, or alias is retained. The canonical result remains **99.074074%**,
+108/108 instructions, an 83-instruction prefix, and `0/0/0` references.

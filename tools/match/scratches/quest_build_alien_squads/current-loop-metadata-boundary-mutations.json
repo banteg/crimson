@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-first-wave-metadata-boundary",
+      "find": "        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms - 400;\n        spawn->count = 1;",
+      "replacements": [
+        {
+          "name": "set-spawn",
+          "text": "        spawn->set_spawn(\n            SPAWN_ID_ALIEN_SMALL_GRAY_26, trigger_time_ms - 400, 1);"
+        }
+      ]
+    },
+    {
+      "name": "current-second-wave-metadata-boundary",
+      "find": "        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 1;",
+      "replacements": [
+        {
+          "name": "set-spawn",
+          "text": "        spawns[entry_count].set_spawn(\n            SPAWN_ID_ALIEN_SMALL_GRAY_26, trigger_time_ms, 1);"
+        }
+      ]
+    }
+  ]
+}
