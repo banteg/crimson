@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-result-helper",
+      "find": "static __forceinline void typo_fire_vec_add(\n    vec2f_t *out,\n    const vec2f_t *left,\n    const typo_fire_vec2_t *right)\n{\n    float y = left->y + right->y;\n    float x = left->x + right->x;\n    out->x = x;\n    out->y = y;\n}\n\nextern \"C\" {",
+      "replacements": [
+        {
+          "name": "named-result-y-first",
+          "text": "static __forceinline void typo_fire_vec_add(\n    vec2f_t *out,\n    const vec2f_t *left,\n    const typo_fire_vec2_t *right)\n{\n    float y = left->y + right->y;\n    float x = left->x + right->x;\n    out->x = x;\n    out->y = y;\n}\n\nstatic __forceinline vec2f_t typo_fire_vec_sum(\n    const vec2f_t *left,\n    const typo_fire_vec2_t *right)\n{\n    vec2f_t result;\n    float y = left->y + right->y;\n    float x = left->x + right->x;\n    result.x = x;\n    result.y = y;\n    return result;\n}\n\nextern \"C\" {"
+        },
+        {
+          "name": "component-result-y-first",
+          "text": "static __forceinline void typo_fire_vec_add(\n    vec2f_t *out,\n    const vec2f_t *left,\n    const typo_fire_vec2_t *right)\n{\n    float y = left->y + right->y;\n    float x = left->x + right->x;\n    out->x = x;\n    out->y = y;\n}\n\nstatic __forceinline vec2f_t typo_fire_vec_sum(\n    const vec2f_t *left,\n    const typo_fire_vec2_t *right)\n{\n    vec2f_t result;\n    result.y = left->y + right->y;\n    result.x = left->x + right->x;\n    return result;\n}\n\nextern \"C\" {"
+        }
+      ]
+    },
+    {
+      "name": "first-sprite-result",
+      "find": "                typo_fire_vec_add(\n                    &effect_position,\n                    &player_state_table[render_overlay_player_index].position,\n                    &local_offset);",
+      "replacements": [
+        {
+          "name": "assign-return-value",
+          "text": "                effect_position = typo_fire_vec_sum(\n                    &player_state_table[render_overlay_player_index].position,\n                    &local_offset);"
+        }
+      ]
+    },
+    {
+      "name": "second-sprite-result",
+      "find": "                typo_fire_vec_add(\n                    &effect_velocity, player_position, &local_offset);",
+      "replacements": [
+        {
+          "name": "assign-return-value",
+          "text": "                effect_velocity = typo_fire_vec_sum(\n                    player_position, &local_offset);"
+        }
+      ]
+    },
+    {
+      "name": "pellet-result",
+      "find": "                    typo_fire_vec_add(\n                        &effect_velocity, player_position, &local_offset);",
+      "replacements": [
+        {
+          "name": "assign-return-value",
+          "text": "                    effect_velocity = typo_fire_vec_sum(\n                        player_position, &local_offset);"
+        }
+      ]
+    }
+  ]
+}

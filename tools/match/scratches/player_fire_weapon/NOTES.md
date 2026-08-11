@@ -120,3 +120,21 @@ not color a disjoint pellet value into the native upper slot.
 ownership for every parameter of the forced-inline vector helper. All four
 forms are byte-identical to the retained 99.21% object. The residual is not
 hidden in the helper's source-level parameter ownership.
+
+## Vector result-ownership bound (2026-08-12)
+
+The remaining untested helper boundary was return-value ownership.
+`vector-helper-result-ownership-mutations.json` adds two ordinary forced-inline
+helpers that return a named `vec2f_t`, preserving the native Y-then-X
+calculation order, and tests their use at the first sprite, second sprite, and
+pellet call sites in every one- through four-site combination.
+
+Both unused return helpers optimize away and leave the 99.21% baseline
+byte-identical. Every actual return-value assignment is a decisive regression:
+pellet-only forms fall to 87.11%--87.89%, other partial uses fall as low as
+81.94%, and using the returned vector at all three sites falls to
+79.69%--81.25% with two reference mismatches in the worst forms. All move the
+first mismatch from instruction 245 to the prologue. Across 16 compile-valid
+variants, no returned aggregate preserves the native frame or existing exact
+prefix. The destination-writing helper remains the strongest natural source,
+and the three pellet stack operands remain a compiler coloring residual.
