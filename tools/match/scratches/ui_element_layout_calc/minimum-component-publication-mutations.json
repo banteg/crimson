@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "minimum-component-publication",
+      "find": "    ui_layout_vec2_t min_position = position + vertex_0;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;",
+      "replacements": [
+        {
+          "name": "component-memcpy-x-width-y",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    memcpy(&hover_min.x, &min_position.x, sizeof(float));\n    float width = vertex_2.x - vertex_0.x;\n    memcpy(&hover_min.y, &min_position.y, sizeof(float));"
+        },
+        {
+          "name": "component-integer-bits-x-width-y",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    *(unsigned int *)&hover_min.x = *(unsigned int *)&min_position.x;\n    float width = vertex_2.x - vertex_0.x;\n    *(unsigned int *)&hover_min.y = *(unsigned int *)&min_position.y;"
+        },
+        {
+          "name": "aggregate-before-width",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    hover_min = min_position;\n    float width = vertex_2.x - vertex_0.x;"
+        },
+        {
+          "name": "scalar-components-x-width-y",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    hover_min.x = min_position.x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = min_position.y;"
+        }
+      ]
+    }
+  ]
+}

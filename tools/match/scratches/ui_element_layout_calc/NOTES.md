@@ -28,16 +28,19 @@ without affecting the already-exact vector arithmetic, loop, or references.
 The retained result is **98.84%**: 86/86 instructions, 284.6512/288 weighted
 bytes, prefix 32, and references `6/0/0`.
 
-## Remaining residual
+## Exact component publication
 
-One instruction-order difference remains in the minimum-bound publication.
-Native copies the completed X component to `hover_min.x` before storing the
-pending Y component to its aggregate temporary; VC6 emits that X copy four
-instructions later. The calculations, stores, constants, and references are
-otherwise identical.
+The remaining target sequence publishes the completed X component of the
+minimum aggregate, begins the independent width calculation, and then
+publishes Y. Two `sizeof(float)` `memcpy` operations express those observed
+bitwise aggregate-component transfers without aliasing a `float` as an
+integer, using volatility, or adding a dummy dependency. VC6 inlines them to
+the target's existing integer moves while preserving the x87 temporary.
 
-Bounded tests of native POD destinations, assignment-result ownership, comma
-expressions, inline copy helpers, and explicit aggregate declaration orders
-were neutral or worse. No alias trick, volatile state, dummy operation, or
-register forcing is retained. The honest classification remains
-`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+The resulting source matches all **288/288 bytes**, all **86/86
+instructions**, and references **6/0/0**. Aggregate-before-width and
+aggregate-after-width forms bracketed the native schedule by moving both
+component stores together; direct scalar assignments changed the arithmetic
+lifetime. `minimum-component-publication-mutations.json` records those
+boundaries and the equivalent integer-bit form. No recovery or residual
+override remains.

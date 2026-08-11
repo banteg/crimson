@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "crimsonland_audio.h"
 #include "crimsonland_ui.h"
 
@@ -42,8 +44,9 @@ extern "C" void ui_element_layout_calc(ui_element_t *element)
     hover_max += position + vertex_0;
 
     ui_layout_vec2_t min_position = position + vertex_0;
+    memcpy(&hover_min.x, &min_position.x, sizeof(float));
     float width = vertex_2.x - vertex_0.x;
-    hover_min = min_position;
+    memcpy(&hover_min.y, &min_position.y, sizeof(float));
     hover_min.x += width * 0.54f;
     float height = vertex_2.y - vertex_0.y;
     hover_min.y += height * 0.28f;
