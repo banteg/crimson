@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-flash-ping-pong-base-frame",
+      "find": "            int flags = creature->flags;\n            int frame;\n            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0\n                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {\n                frame = (int)(creature->anim_phase + 0.5f) % 16;\n                if (frame > 7) {\n                    frame = 15 - frame;\n                }\n                frame += creature_type_table[type_id].base_frame + 16;\n                grim_interface_ptr->grim_set_atlas_frame(8, frame);\n            } else {\n",
+      "replacements": [
+        {
+          "name": "base-local-after-reflection",
+          "text": "            int flags = creature->flags;\n            int frame;\n            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0\n                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {\n                frame = (int)(creature->anim_phase + 0.5f) % 16;\n                if (frame > 7) {\n                    frame = 15 - frame;\n                }\n                int base_frame = creature_type_table[type_id].base_frame;\n                frame += base_frame + 16;\n                grim_interface_ptr->grim_set_atlas_frame(8, frame);\n            } else {\n"
+        },
+        {
+          "name": "base-local-before-rounding",
+          "text": "            int flags = creature->flags;\n            int frame;\n            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0\n                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {\n                int base_frame = creature_type_table[type_id].base_frame;\n                frame = (int)(creature->anim_phase + 0.5f) % 16;\n                if (frame > 7) {\n                    frame = 15 - frame;\n                }\n                frame += base_frame + 16;\n                grim_interface_ptr->grim_set_atlas_frame(8, frame);\n            } else {\n"
+        },
+        {
+          "name": "base-offset-local",
+          "text": "            int flags = creature->flags;\n            int frame;\n            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0\n                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {\n                frame = (int)(creature->anim_phase + 0.5f) % 16;\n                if (frame > 7) {\n                    frame = 15 - frame;\n                }\n                int base_frame_offset =\n                    creature_type_table[type_id].base_frame + 16;\n                frame += base_frame_offset;\n                grim_interface_ptr->grim_set_atlas_frame(8, frame);\n            } else {\n"
+        },
+        {
+          "name": "direct-frame-assignment",
+          "text": "            int flags = creature->flags;\n            int frame;\n            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0\n                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {\n                frame = (int)(creature->anim_phase + 0.5f) % 16;\n                if (frame > 7) {\n                    frame = 15 - frame;\n                }\n                frame = frame + creature_type_table[type_id].base_frame + 16;\n                grim_interface_ptr->grim_set_atlas_frame(8, frame);\n            } else {\n"
+        },
+        {
+          "name": "base-plus-frame-assignment",
+          "text": "            int flags = creature->flags;\n            int frame;\n            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0\n                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {\n                frame = (int)(creature->anim_phase + 0.5f) % 16;\n                if (frame > 7) {\n                    frame = 15 - frame;\n                }\n                frame = creature_type_table[type_id].base_frame + frame + 16;\n                grim_interface_ptr->grim_set_atlas_frame(8, frame);\n            } else {\n"
+        }
+      ]
+    }
+  ]
+}

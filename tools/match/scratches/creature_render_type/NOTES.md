@@ -275,3 +275,31 @@ Together with the earlier `/G5`, `/Ob1`, `/Ot`, `/Oi-`, `/Op`, `/Os`, and
 `/O1` checks, this bounds the ordinary profile space. No mutation improved
 the aggregate rank, so none was retained in `scratch.cpp`; the honest stopping
 state remains semantic-complete with a compiler residual.
+
+## Current flash-ownership replay (2026-08-11)
+
+The retained per-branch atlas publication raises the current baseline to
+79.74%, 760/765 instructions, prefix 25, and `139/0/5`. Because it changes the
+violence-pass CFG and whole-function allocation, four native-backed historical
+matrices were replayed against that source rather than treated as exclusions.
+
+- The complete 19/19 `detail-tint-lifetime-mutations.json` matrix again has
+  nine byte-identical variants, six owner-Y regressions, and four invalid
+  reference cross-combinations.
+- The complete 3/3 `flash-lifecycle-cursor-mutations.json` matrix again makes
+  only its paired header/tail form valid. It improves one aligned reference to
+  `139/0/4` but falls to 79.03%, so the typed native anchor is not retained.
+- The complete 9/9 `main-animation-cursor-mutations.json` matrix again has
+  four valid header/tail pairs. Each improves one aligned reference but falls
+  to 77.72%; the five incomplete single-site forms do not compile.
+- The old flash base-frame plan is structurally stale because it targets the
+  former shared-call CFG. Its current replacement,
+  `current-flash-base-frame-mutations.json` (SHA-256
+  `bdcd923f9ee6a1aabd1f209c1028bc9d9f617309d8128da14e13a66537bd1357`),
+  evaluates all 5/5 per-branch forms. Four are byte-identical; hoisting the
+  base frame before animation rounding falls to 79.48% and `138/0/5`.
+
+Across 36 current-baseline evaluations, no variant improves and no tradeoff is
+accepted. `scratch.cpp` remains unchanged. The complete 20-line experiment log
+now has SHA-256
+`a893846f4e7994d582262084a3a216c44b4336d4614237cb71af3e8cc03be302`.
