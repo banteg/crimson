@@ -264,3 +264,33 @@ paths. All 282 audited references resolve, with no unresolved or mismatched
 entries. The native and candidate frames are both 48 bytes; the remaining
 small register/lifetime and scheduling differences are compiler layout, not
 missing menu behavior.
+
+## 2026-08-12 current-source residual replay
+
+The later Back-position scope correction changed the source fingerprint after
+the July experiment wave, so the applicable lifetime and control-flow families
+were replayed against the current 48-byte-frame source. Eighty-five bounded
+single-site variants compiled across 15 current selectors. None improves the
+retained `3294.794520547945/3436` weighted score (`95.8904109589041%`),
+803/803 instruction alignment, nine-instruction exact prefix, or 282/0/0
+reference audit.
+
+Two new current-source matrices close the regions affected by that correction:
+
+- `entry-hover-store-order-current-mutations.json` tests all six natural
+  declaration and assignment placements around the opening panel geometry.
+  Every variant is byte-identical. Native spills panel Y and then clears the
+  long-lived hover flag; VC6 retains the reverse scheduling for every source
+  placement without an artificial dependency.
+- `scoped-back-position-shape-mutations.json` tests eight constructor, copy,
+  component-order, and named-value forms inside the short Back-button scope.
+  Reversing the component stores and using a named position copy are
+  byte-identical. The remaining forms regress by 4 to 188 weighted bytes, and
+  none reproduces native's x87 Y reload after the argument pushes.
+
+The replay also reconfirms neutral row-loop tail, stage-clamp, tenth-key,
+color-call, show-count, unlock-index, and vector-operator forms; alternate row
+mode, checkbox, controls-vector, unlock-branch, and assignment shapes regress.
+The residual remains a set of localized independent-store, register, and call
+scheduling differences, so the `semantic-complete` / `compiler` classification
+and source are unchanged.

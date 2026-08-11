@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scoped-back-position-shape",
+      "find": "    {\n        quest_select_vec2_t back_position;\n        back_position.x = position.x + 148.0f;\n        back_position.y = position.y;\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }",
+      "replacements": [
+        {
+          "name": "constructor",
+          "text": "    {\n        quest_select_vec2_t back_position(\n            position.x + 148.0f, position.y);\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        },
+        {
+          "name": "named-x",
+          "text": "    {\n        float back_x = position.x + 148.0f;\n        quest_select_vec2_t back_position;\n        back_position.x = back_x;\n        back_position.y = position.y;\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        },
+        {
+          "name": "named-y",
+          "text": "    {\n        float back_y = position.y;\n        quest_select_vec2_t back_position;\n        back_position.x = position.x + 148.0f;\n        back_position.y = back_y;\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        },
+        {
+          "name": "named-x-y",
+          "text": "    {\n        float back_x = position.x + 148.0f;\n        float back_y = position.y;\n        quest_select_vec2_t back_position;\n        back_position.x = back_x;\n        back_position.y = back_y;\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        },
+        {
+          "name": "y-then-x",
+          "text": "    {\n        quest_select_vec2_t back_position;\n        back_position.y = position.y;\n        back_position.x = position.x + 148.0f;\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        },
+        {
+          "name": "copy-then-adjust",
+          "text": "    {\n        quest_select_vec2_t back_position;\n        back_position = position;\n        back_position.x += 148.0f;\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        },
+        {
+          "name": "plus-offset-assignment",
+          "text": "    {\n        quest_select_vec2_t back_position;\n        back_position =\n            position + quest_select_vec2_t(148.0f, 0.0f);\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        },
+        {
+          "name": "named-position-copy",
+          "text": "    {\n        quest_select_vec2_t back_position;\n        quest_select_vec2_t back_source = position;\n        back_position.x = back_source.x + 148.0f;\n        back_position.y = back_source.y;\n        ui_button_update(\n            (float *)&back_position,\n            (ui_button_t *)&back_button);\n    }"
+        }
+      ]
+    }
+  ]
+}

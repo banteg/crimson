@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-hover-store-order-current",
+      "find": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n\n    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;",
+      "replacements": [
+        {
+          "name": "before-panel-offset",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    bool row_hovered = false;\n    panel_position.x += 300.0f;\n\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "before-panel-offset-split",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    bool row_hovered;\n    row_hovered = false;\n    panel_position.x += 300.0f;\n\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "entry-declaration-before-panel-offset-assignment",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    bool row_hovered;\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    row_hovered = false;\n    panel_position.x += 300.0f;\n\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "entry-initialized",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    bool row_hovered = false;\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "current-position-split",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n\n    bool row_hovered;\n    row_hovered = false;\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "after-position-geometry",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;\n    bool row_hovered = false;"
+        }
+      ]
+    }
+  ]
+}
