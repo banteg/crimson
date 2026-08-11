@@ -70,3 +70,22 @@ the epilogue pops interleave between the final metadata stores exactly as in
 the target. The score rises from 94.57% to 98.91% with the exact 92/92
 instructions and references `8/0/0`. Applying the setter inside the repeated
 right loop is byte-neutral and is not retained.
+
+## First-wave loop-form replay (2026-08-12)
+
+Live native comparison still isolates the five-byte residual to one independent
+swap after the second opening record: native materializes the first loop's
+cursor anchor before loading trigger 5500, while the candidate loads the
+trigger first. `current-first-wave-loop-form-mutations.json` (SHA-256
+`adc370d6edf1d58158e6f96a54fd0d320017dd1d2a3251327ec33e37564fa6c8`)
+replays six exact `do`, `while`, and `for` forms on the current source,
+including both update-clause orders and explicit versus conditional
+decrements.
+
+All six variants compile byte-for-byte identically to the **98.913043%**
+baseline. Together with the existing pointer, reference, declaration-order,
+and constructor sweeps, this bounds the remaining cursor/trigger order as VC6
+scheduling rather than a missing high-level loop form. The canonical source
+remains 92/92 instructions, a 33-instruction prefix, and clean `8/0/0`
+references; its SHA-256 is
+`12657dca669e42ee8bb824442c012e8599ab6aa5165fdfa3d1531c2c782b25ac`.

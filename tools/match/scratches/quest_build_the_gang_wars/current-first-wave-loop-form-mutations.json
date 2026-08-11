@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-first-wave-loop-form",
+      "find": "    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining != 0);",
+      "replacements": [
+        {
+          "name": "for-decrement-header",
+          "text": "    int trigger_time_ms = 5500;\n    for (int waves_remaining = 10;\n         waves_remaining != 0;\n         --waves_remaining) {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    }"
+        },
+        {
+          "name": "for-both-updates",
+          "text": "    int trigger_time_ms = 5500;\n    for (int waves_remaining = 10;\n         waves_remaining != 0;\n         --waves_remaining, trigger_time_ms += 4000) {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n    }"
+        },
+        {
+          "name": "for-trigger-update-first",
+          "text": "    int trigger_time_ms = 5500;\n    for (int waves_remaining = 10;\n         waves_remaining != 0;\n         trigger_time_ms += 4000, --waves_remaining) {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n    }"
+        },
+        {
+          "name": "while-countdown",
+          "text": "    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    while (waves_remaining != 0) {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n        --waves_remaining;\n    }"
+        },
+        {
+          "name": "do-explicit-decrement",
+          "text": "    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n        --waves_remaining;\n    } while (waves_remaining != 0);"
+        },
+        {
+          "name": "do-positive-condition",
+          "text": "    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining > 0);"
+        }
+      ]
+    }
+  ]
+}
