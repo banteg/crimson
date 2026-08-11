@@ -261,3 +261,20 @@ the match from **98.970399%** to **99.742600%**. The weighted gap falls from
 region is the already-bounded opening-position stack-slot allocation at
 `0x0044efce..0x0044f009`. Retained source SHA-256:
 `1e2d19e67439a8b4cf20aa0fb16268408154cc57ba7603201f4065d9af2ecf8f`.
+
+## Neutral opening/vector interaction bound (2026-08-11)
+
+Live Binary Ninja identifies the final mismatch as the opening sum temporary:
+native stores and reloads it through `[esp+0x24]`, while the candidate uses
+`[esp+0x14]`. Both sides otherwise retain the exact 0x2c-byte frame and the
+same x87 operation order.
+
+`opening-neutral-vector-interactions.json` crosses the five opening-object
+lifetimes and two `operator+` forms that are individually byte-neutral. All
+17 singles and pairs remain byte-identical at 99.74%, 777/777 instructions,
+prefix 120, and `321/0/0` references. Declaring the later `list_position`
+object at function scope was also falsified as the presumed slot owner: VC6
+grew the frame from 0x2c to 0x34, emitted four extra instructions, and
+regressed the match to 89.35% without moving the opening temporary. The
+canonical scoped object remains retained. Spec SHA-256:
+`18bdd85cd8aa0633514ef80e82966439ffd136114497e2d20aebcac0fd200129`.

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-stack-lifetime",
+      "find": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    position = position + play_game_vec2_t(330.0f, 50.0f);\n    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    play_game_vec2_t base_position = position;",
+      "replacements": [
+        {
+          "name": "base-default-before-position",
+          "text": "    play_game_vec2_t base_position;\n    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    position = position + play_game_vec2_t(330.0f, 50.0f);\n    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    base_position = position;"
+        },
+        {
+          "name": "base-default-after-position",
+          "text": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    play_game_vec2_t base_position;\n    tutorial_button.label = \"Tutorial\";\n    position = position + play_game_vec2_t(330.0f, 50.0f);\n    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    base_position = position;"
+        },
+        {
+          "name": "base-default-after-label",
+          "text": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    play_game_vec2_t base_position;\n    position = position + play_game_vec2_t(330.0f, 50.0f);\n    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    base_position = position;"
+        },
+        {
+          "name": "base-default-before-adjustment",
+          "text": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    position = position + play_game_vec2_t(330.0f, 50.0f);\n    play_game_vec2_t base_position;\n    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    base_position = position;"
+        },
+        {
+          "name": "named-menu-offset",
+          "text": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    play_game_vec2_t menu_offset(330.0f, 50.0f);\n    position = position + menu_offset;\n    position.x += ui_element_slot_11.render_offset_x - 64.0f;\n    play_game_vec2_t base_position = position;"
+        }
+      ]
+    },
+    {
+      "name": "vector-plus-return-shape",
+      "find": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const\n    {\n        return play_game_vec2_t(x + other.x, y + other.y);\n    }\n",
+      "replacements": [
+        {
+          "name": "nonconst-method",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)\n    {\n        return play_game_vec2_t(x + other.x, y + other.y);\n    }\n"
+        },
+        {
+          "name": "reverse-y-operands",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const\n    {\n        return play_game_vec2_t(x + other.x, other.y + y);\n    }\n"
+        }
+      ]
+    }
+  ]
+}
