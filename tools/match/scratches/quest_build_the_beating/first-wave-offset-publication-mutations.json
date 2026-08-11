@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-wave-advance-before-position",
+      "find": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 8;\n        ++entry_count;\n        x_offset += 32;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);\n",
+      "replacements": [
+        {
+          "name": "advance-cursor-before-publishing-position",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        x_offset += 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset - 32),\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 8;\n        ++entry_count;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);\n"
+        }
+      ]
+    }
+  ]
+}

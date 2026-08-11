@@ -51,10 +51,10 @@ extern "C" void quest_build_the_beating(
     int x_offset = 64;
     int remaining = 8;
     do {
-        spawns[entry_count].pos = quest_vec2_t(
-            (float)(terrain_texture_width + x_offset),
-            (float)(terrain_texture_height / 2));
         x_offset += 32;
+        spawns[entry_count].pos = quest_vec2_t(
+            (float)(terrain_texture_width + x_offset - 32),
+            (float)(terrain_texture_height / 2));
         spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count].count = 8;
@@ -72,8 +72,8 @@ extern "C" void quest_build_the_beating(
         3);
     ++entry_count;
 
-    int x = -64;
     trigger_time_ms = 20000;
+    int x = -64;
     do {
         spawns[entry_count].pos = quest_vec2_t(
             (float)x,

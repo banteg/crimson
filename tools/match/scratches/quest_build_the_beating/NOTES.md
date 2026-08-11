@@ -25,24 +25,25 @@ The final phase deliberately derives both coordinates from terrain width. This
 native detail also corrected the Zig quest port, whose prior y coordinate used
 height and only happened to agree on square maps. Heading remains untouched.
 
-The append-count candidate represents all 166 native instructions and resolves
-all seven audited global references. It scores 77.71% with a 39-instruction
-exact prefix. One continuous count now publishes all 31 entries and supplies
-the returned count, replacing four phase-specific cursor starts and the fixed
-final assignment. The remaining gap is VC6 scheduling and register allocation
-within otherwise aligned position-conversion loops; no artificial
-dependencies, volatile state, or register-forcing constructs are used.
+The retained append-count candidate represents all 166 native instructions,
+resolves all eight audited global references, and scores 95.18% with a
+39-instruction exact prefix. One continuous count publishes all 31 entries and
+supplies the returned count, replacing four phase-specific cursor starts and
+the fixed final assignment. The remaining 31.2771 weighted bytes are VC6
+instruction scheduling and equivalent address encoding within otherwise
+aligned position-conversion loops.
 
-The opening eight-entry walk now advances its X offset immediately after
-constructing the current position and before storing spawn metadata. Live
-Binary Ninja shows the same update between the coordinate calculation and the
-template/trigger/count stores. This source order preserves offsets 64 through
-288 and triggers 10000 through 10700 while improving the exact prefix from 22
-to 37 instructions and the match from 53.61% to 54.82%.
+An earlier intermediate candidate advanced the opening walk's X offset
+immediately after constructing the current position and before storing spawn
+metadata. Live Binary Ninja shows the update between the coordinate
+calculation and the template/trigger/count stores. At that stage, this source
+order preserved offsets 64 through 288 and triggers 10000 through 10700 while
+improving the exact prefix from 22 to 37 instructions and the match from 53.61%
+to 54.82%.
 
-All four repeated walks now also advance the entry cursor before writing the
-current entry's metadata, then address that just-completed entry as
-`spawn[-1]`. This is the native dataflow: the first walk advances ECX at
+That intermediate candidate also advanced each repeated walk's entry cursor
+before writing the current entry's metadata, then addressed the completed entry
+as `spawn[-1]`. This is the native dataflow: the first walk advances ECX at
 `0x004356b3` before coordinate stores at `0x004356de..0x004356e9` and metadata
 stores at `0x004356ec..0x004356f6`; the later walks repeat that shape at
 `0x0043577a`, `0x004357dd`, and `0x00435838`. Using direct fields after the
@@ -134,3 +135,21 @@ The source remains a direct expression of the recovered 31-entry script; the
 remaining differences are localized load, x87-store, and cursor-advance
 scheduling. The retained source SHA-256 is
 `22d545378aee4fd749fed2b132033db2f34f1659411f46c677ffba56a6b2797e`.
+
+## 2026-08-10 first-wave publication scheduling
+
+A bounded operation-order sweep exposed the first walk's one-step-ahead X
+cursor. Advancing `x_offset` before publishing the position and reading the
+current offset as `x_offset - 32` preserves the recovered coordinates 64
+through 288. Declaring the later left-walk trigger before its X cursor preserves
+the same 20000 through 20700 ms schedule while matching VC6's register lifetime.
+
+Together, these source-equivalent orders improve the retained candidate from
+504.3433734939759/649 weighted bytes (77.71%) to
+617.722891566265/649 (95.18%). The exact prefix remains 39 instructions, the
+instruction count remains 166/166, and audited references improve from `7/0/0`
+to `8/0/0`. `first-wave-offset-publication-mutations.json` records the retained
+cutover with SHA-256
+`e92db069a27bda2066069c8065c704b0fdf97f2e125048c7562da5b8f8f4373d`.
+The retained source SHA-256 is
+`74a67a7a2bd56a400f02fdf590329356f86c4d47d5731602646c385e1aa755ca`.
