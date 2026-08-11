@@ -103,3 +103,30 @@ Ordinary integer snapshots and named results are byte-neutral; float or staged
 forms regress by 4.23 weighted bytes and can disturb reference alignment.
 None delays either x87 chain to the native schedule, so **86.08%** remains the
 recorded pre-owner baseline rather than the current result.
+
+## Current tint-owner replay (2026-08-11)
+
+The retained aggregate tint destination raises the live baseline to 88.61%
+and changes the tail's allocation graph, so all three historical scheduling
+matrices were replayed against that source.
+
+- The complete 24/24 `elapsed-expression-lifetime-mutations.json` matrix has
+  14 byte-identical integer/result forms and ten health-staging regressions.
+  No health/size interaction moves either x87 chain toward native.
+- The complete 29/29 `field-init-order-mutations.json` matrix keeps four
+  zero-storage forms byte-identical. Moving `active` is score-neutral but loses
+  one aligned reference; every other field-order family regresses.
+- The old initializer-schedule plan no longer matches the aggregate tint-owner
+  block. Its current replacement,
+  `current-initializer-schedule-mutations.json` (SHA-256
+  `4c32b264a03364899ba0b99d8b546ab46c73a9c26913b00cfa2f739cb737fde1`),
+  evaluates all 24/24 generated combinations. The only valid byte-neutral form
+  moves size between the tint copy and the scalar tail; fourteen valid forms
+  regress. Nine named-local combinations do not compile because their
+  declarations follow statements under the scratch's C89 mode, so they are
+  recorded as invalid rather than treated as source evidence.
+
+Across 77 current-baseline evaluations, no tradeoff-free variant improves the
+88.61%, 79/79-instruction, prefix-seven, `29/0/0` source. `scratch.c` remains
+unchanged. The complete seven-line experiment log now has SHA-256
+`f88e42d37a8afeabc089acde7d106dd60ca2f403dd00931218ab5ff35f7b0855`.
