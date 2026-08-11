@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "wave-declaration-assignment-order",
+      "find": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = step_count / 2 + 3;\n",
+      "replacements": [
+        {
+          "name": "pointer-declared-first-count-assigned-first",
+          "text": "        quest_entry_original_t *wave_spawn;\n        int wave_count;\n        wave_count = step_count / 2 + 3;\n        wave_spawn = &builder.spawns[builder.count];\n"
+        },
+        {
+          "name": "pointer-declared-first-pointer-assigned-first",
+          "text": "        quest_entry_original_t *wave_spawn;\n        int wave_count;\n        wave_spawn = &builder.spawns[builder.count];\n        wave_count = step_count / 2 + 3;\n"
+        },
+        {
+          "name": "count-declared-first-pointer-assigned-first",
+          "text": "        int wave_count;\n        quest_entry_original_t *wave_spawn;\n        wave_spawn = &builder.spawns[builder.count];\n        wave_count = step_count / 2 + 3;\n"
+        },
+        {
+          "name": "pointer-initialized-count-assigned",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count;\n        wave_count = step_count / 2 + 3;\n"
+        }
+      ]
+    }
+  ]
+}

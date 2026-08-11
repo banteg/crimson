@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-wave-pointer-owner",
+      "find": "        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n",
+      "replacements": [
+        {
+          "name": "reassign-first-pointer",
+          "text": "        wave_spawn = &builder.spawns[builder.count];\n        wave_spawn->pos.y = -64.0f;\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "advance-first-pointer",
+          "text": "        ++wave_spawn;\n        wave_spawn->pos.y = -64.0f;\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "direct-indexed-position",
+          "text": "        builder.spawns[builder.count].pos.y = -64.0f;\n        builder.spawns[builder.count].pos.x =\n            (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "second-wave-reference",
+          "text": "        quest_entry_original_t &second_wave_spawn =\n            builder.spawns[builder.count];\n        second_wave_spawn.pos.y = -64.0f;\n        second_wave_spawn.pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "reassign-and-direct-metadata",
+          "text": "        wave_spawn = &builder.spawns[builder.count];\n        wave_spawn->pos.y = -64.0f;\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        wave_spawn->template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        wave_spawn->trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-wave-local-order",
+      "find": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = step_count / 2 + 3;\n",
+      "replacements": [
+        {
+          "name": "wave-count-before-pointer",
+          "text": "        int wave_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n"
+        },
+        {
+          "name": "assigned-count-before-pointer",
+          "text": "        int wave_count;\n        quest_entry_original_t *wave_spawn;\n        wave_count = step_count / 2 + 3;\n        wave_spawn = &builder.spawns[builder.count];\n"
+        },
+        {
+          "name": "declared-count-before-pointer-assigned-pointer-first",
+          "text": "        int wave_count;\n        quest_entry_original_t *wave_spawn;\n        wave_spawn = &builder.spawns[builder.count];\n        wave_count = step_count / 2 + 3;\n"
+        },
+        {
+          "name": "named-half-step-before-pointer",
+          "text": "        int half_step = step_count / 2;\n        int wave_count = half_step + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n"
+        },
+        {
+          "name": "constant-first-wave-count",
+          "text": "        int wave_count = 3 + step_count / 2;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n"
+        },
+        {
+          "name": "staged-wave-count",
+          "text": "        int wave_count = 3;\n        wave_count += step_count / 2;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n"
+        }
+      ]
+    }
+  ]
+}

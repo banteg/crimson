@@ -101,3 +101,47 @@ advance first. The second fixed record remains on the shared setter because its
 direct form is byte-neutral. The retained result remains 106/105 instructions
 with `8/0/0` references; the residual is the bounded EBX/EBP trigger and wave-
 count allocation swap plus its one extra half-step copy.
+
+## Current-baseline loop allocation bound (2026-08-11)
+
+Live Binary Ninja localizes the current residual more precisely. Native reuses
+`EBX` for the 17000-ms trigger only after the fixed template-`0x38` lifetime,
+computes the half-step in `EAX`, and forms `wave_count` in `EBP` with one
+`lea`. The candidate hoists the trigger into `EBP` during the fixed prefix and
+copies the half-step into `EBX`, accounting for its one extra instruction.
+Both paired records and the loop tail otherwise perform the same operations.
+
+Six current-source sweeps record 41 variants across the plausible ownership
+boundaries that predated the retained staged-publication source:
+
+- all ten trigger/step declaration, initialization, and update orders;
+- six pointer-versus-wave-count local orders;
+- eight signed, const, long, and staged wave-count spellings;
+- five second-record pointer, reference, indexed, and reuse forms;
+- four declaration-versus-assignment orderings; and
+- every single and pair of the exact-neighbor count-advance/pointer-metadata
+  boundary on both records.
+
+Thirty forms are byte-neutral at 89.10%, 106/105 instructions, prefix 17, and
+`8/0/0` references. The remaining eleven regress; computing the wave count
+before pointer materialization loses one reference and falls to 75.83%, while
+the exact-neighbor publication transfer falls as low as 86.26%. A fresh matrix
+of all twelve installed VC6 builds is byte-identical to the baseline; VC7
+regresses. No current-source form recovers the `EBX`/`EBP` allocation without
+a metric or reference loss.
+
+Recorded spec SHA-256 values:
+
+- `current-loop-induction-mutations.json`:
+  `fb0c39a327bbdb28074be58bb6dbb49580c8c989c124f9d3f174a3d66a3d50cc`;
+- `current-wave-local-order-mutations.json`:
+  `9af1b506000180fe48b53f33683d3d1a4be6d597a90ec17dfc17df7f4b13fb7c`;
+- `current-wave-count-shape-mutations.json`:
+  `5ab7c804ef7bcc95c668cd4c8e68a1d9913ca79107ceb34e78fb1d4a460e6f35`;
+- `current-second-wave-pointer-mutations.json`:
+  `c04cb19c801051ea40ddd7f34ed2e3e730622d86eb3896a8f918335d0ecb4e26`;
+- `current-wave-declaration-assignment-mutations.json`:
+  `f8d8487bfcbb3b7c7f09b4a70ab3a111a2e3653a5b5e81a4248a8383ab5f0d1e`;
+  and
+- `current-loop-publication-boundary-mutations.json`:
+  `2d9ddb0e9b5cefdad063069265aa74a37fbcc366488faca35919fa5422568218`.

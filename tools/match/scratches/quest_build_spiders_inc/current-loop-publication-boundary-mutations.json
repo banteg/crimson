@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bottom-wave-publication-boundary",
+      "find": "        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n        ++builder.count;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "advance-then-pointer-metadata",
+          "text": "        ++builder.count;\n        wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "pointer-metadata-then-advance",
+          "text": "        wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n        ++builder.count;\n"
+        }
+      ]
+    },
+    {
+      "name": "top-wave-publication-boundary",
+      "find": "        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n        ++builder.count;\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "advance-then-pointer-metadata",
+          "text": "        ++builder.count;\n        second_wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "pointer-metadata-then-advance",
+          "text": "        second_wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n        ++builder.count;\n"
+        }
+      ]
+    }
+  ]
+}

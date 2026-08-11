@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "wave-count-shape",
+      "find": "        int wave_count = step_count / 2 + 3;\n",
+      "replacements": [
+        {
+          "name": "const-int",
+          "text": "        const int wave_count = step_count / 2 + 3;\n"
+        },
+        {
+          "name": "explicit-signed-int",
+          "text": "        signed int wave_count = step_count / 2 + 3;\n"
+        },
+        {
+          "name": "long-int",
+          "text": "        long wave_count = step_count / 2 + 3;\n"
+        },
+        {
+          "name": "const-long-int",
+          "text": "        const long wave_count = step_count / 2 + 3;\n"
+        },
+        {
+          "name": "constant-first",
+          "text": "        int wave_count = 3 + step_count / 2;\n"
+        },
+        {
+          "name": "initialized-half-then-compound",
+          "text": "        int wave_count = step_count / 2;\n        wave_count += 3;\n"
+        },
+        {
+          "name": "initialized-half-then-assigned",
+          "text": "        int wave_count = step_count / 2;\n        wave_count = wave_count + 3;\n"
+        },
+        {
+          "name": "declared-then-assigned",
+          "text": "        int wave_count;\n        wave_count = step_count / 2 + 3;\n"
+        }
+      ]
+    }
+  ]
+}

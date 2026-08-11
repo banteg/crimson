@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-loop-induction",
+      "find": "    for (int trigger_time_ms = 17000, step_count = 0;\n         trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n",
+      "replacements": [
+        {
+          "name": "separate-trigger-then-step",
+          "text": "    int trigger_time_ms = 17000;\n    int step_count = 0;\n    for (; trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n"
+        },
+        {
+          "name": "separate-step-then-trigger",
+          "text": "    int step_count = 0;\n    int trigger_time_ms = 17000;\n    for (; trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n"
+        },
+        {
+          "name": "separate-trigger-then-step-reversed-update",
+          "text": "    int trigger_time_ms = 17000;\n    int step_count = 0;\n    for (; trigger_time_ms < 107000;\n         trigger_time_ms += 6000, ++step_count) {\n"
+        },
+        {
+          "name": "separate-step-then-trigger-reversed-update",
+          "text": "    int step_count = 0;\n    int trigger_time_ms = 17000;\n    for (; trigger_time_ms < 107000;\n         trigger_time_ms += 6000, ++step_count) {\n"
+        },
+        {
+          "name": "trigger-outside-step-in-for",
+          "text": "    int trigger_time_ms = 17000;\n    for (int step_count = 0; trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n"
+        },
+        {
+          "name": "step-outside-trigger-in-for",
+          "text": "    int step_count = 0;\n    for (int trigger_time_ms = 17000; trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n"
+        },
+        {
+          "name": "reversed-for-initializer",
+          "text": "    for (int step_count = 0, trigger_time_ms = 17000;\n         trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n"
+        },
+        {
+          "name": "reversed-for-update",
+          "text": "    for (int trigger_time_ms = 17000, step_count = 0;\n         trigger_time_ms < 107000;\n         trigger_time_ms += 6000, ++step_count) {\n"
+        },
+        {
+          "name": "assigned-trigger-then-step",
+          "text": "    int trigger_time_ms;\n    int step_count;\n    trigger_time_ms = 17000;\n    step_count = 0;\n    for (; trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n"
+        },
+        {
+          "name": "assigned-step-then-trigger",
+          "text": "    int step_count;\n    int trigger_time_ms;\n    step_count = 0;\n    trigger_time_ms = 17000;\n    for (; trigger_time_ms < 107000;\n         ++step_count, trigger_time_ms += 6000) {\n"
+        }
+      ]
+    }
+  ]
+}
