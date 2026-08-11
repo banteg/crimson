@@ -130,3 +130,24 @@ fuzzy-weighted bytes, and changes the audit to `156/0/3`. The aggregate
 assignment remains the only reference-clean natural form. Together these
 complete sweeps leave the six-instruction Typ-o/default cross-jump as an
 honest compiler residual rather than an untested source-shape lead.
+
+## Current recovered-type replay (2026-08-12)
+
+The recorded mode-tail experiments predated the latest shared identity and UI
+type recovery, so their compiler conclusions were replayed against the current
+source. Fresh regions confirm that the only instruction-count difference is
+still the six-instruction Typ-o/default counter tail; almost every later region
+is a branch-displacement consequence. The Controls aggregate has one separate
+store-order mismatch.
+
+Five current sweeps cover 58 compile-valid variants. All eight mode-tail CFG,
+copy, pointer, reference, and join forms; all three counter-scope forms; all 28
+one- and two-latch `bool` interactions; and all 15 valid inline-helper forms
+remain byte-identical at 85.35%, 393/399 instructions, prefix 166, and
+`162/0/0` references. The four helper-call controls without a definition fail
+as expected. All four Controls scalar store orders still regress to 84.12%,
+388/399 instructions, and `156/0/3` references.
+
+The recovered shared types therefore do not reopen the older source-shape
+hypotheses. The aggregate Controls assignment remains canonical, and the final
+mode arms remain bounded tail-folding debt without an honest source change.
