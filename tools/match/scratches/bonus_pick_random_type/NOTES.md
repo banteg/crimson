@@ -96,3 +96,22 @@ regresses to `70.370370%` and `18/1/0` references because VC6 swaps the
 major/minor register ownership. These results leave the clean nested source as
 the strongest reference-complete reconstruction and further isolate the tail
 placement as a compiler scheduling residual.
+
+## Current-baseline cold-edge replay (2026-08-12)
+
+The native-order load hypothesis was tested together with the inverted stage-4
+edge, rather than replaying either shape alone. Five ordinary local declaration
+orders snapshot `hardcore`, `quest_stage_minor`, and `quest_stage_major` before
+the quest predicates. Three compile byte-identically to the current baseline;
+the other two lose three weighted bytes and one mapped reference. In particular,
+the native load order plus `major != 4` control flow is neutral, so source-level
+temporary ownership does not explain the outlined stage-5 block.
+
+The six predicate layouts and five switch layouts were then replayed against the
+same current baseline. Every reference-complete candidate remains neutral or
+regresses. The only fuzzy-score increase is the already-rejected combined major
+guard (`+3.43` weighted bytes), which has 159 rather than 162 instructions and
+only 18 rather than 20 mapped references because it merges two native Nuke
+comparisons. Across 16 current compile-valid variants, no tradeoff-free source
+improvement exists; retain the 162-instruction, `20/0/0` reconstruction and
+treat the displaced cold edge as a bounded compiler-layout residual.
