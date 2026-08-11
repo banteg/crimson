@@ -170,3 +170,21 @@ native stack ownership. It allocated a fourth vector, shortened the prefix to
 zero, and regressed the whole function to `74.43708609271523%`, so it was
 rejected. The retained source contains only the direct, exact-sibling-backed
 perk publication and leaves the existing widget coordinate lifetime intact.
+
+## Current opening-allocation replay (2026-08-12)
+
+Because the direct perk-index publication changes a tail lifetime in a function
+whose remaining mismatch is global allocation, the earlier opening-vector
+results were replayed rather than assumed to survive. The full current plan
+covers 18 single-site variants, all 105 pairs, and all 200 three-site
+interactions across the two-float constructor, opening panel expression, and
+inline addition helper. A first 160-variant bounded run was superseded by the
+complete 323/323 sweep with no truncation.
+
+No current variant improves the retained source. The best constructor,
+expression, helper, pair, and triple forms are byte-identical at
+`1236.6834437086093/1621` (76.2914%), 378/377 instructions, prefix 10, and
+references `153/0/1`; all remaining variants regress. The one aligned
+reference mismatch therefore remains part of the opening stack/register
+schedule, not an untested constructor interaction. No source change was
+retained.
