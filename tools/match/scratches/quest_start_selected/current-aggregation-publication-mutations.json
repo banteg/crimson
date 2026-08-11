@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "accumulator-publication",
+      "find": "    int entry_count = quest_spawn_count;\n    int total_creatures;\n    int last_spawn_time_ms;\n    quest_spawn_total_creatures = total_creatures = 0;\n    quest_spawn_last_time_ms = last_spawn_time_ms = 0;\n",
+      "replacements": [
+        {
+          "name": "initialized-locals-then-publish",
+          "text": "    int entry_count = quest_spawn_count;\n    int total_creatures = 0;\n    int last_spawn_time_ms = 0;\n    quest_spawn_total_creatures = total_creatures;\n    quest_spawn_last_time_ms = last_spawn_time_ms;\n"
+        },
+        {
+          "name": "assigned-locals-then-publish",
+          "text": "    int entry_count = quest_spawn_count;\n    int total_creatures;\n    int last_spawn_time_ms;\n    total_creatures = 0;\n    last_spawn_time_ms = 0;\n    quest_spawn_total_creatures = total_creatures;\n    quest_spawn_last_time_ms = last_spawn_time_ms;\n"
+        },
+        {
+          "name": "publish-then-read-locals",
+          "text": "    int entry_count = quest_spawn_count;\n    int total_creatures;\n    int last_spawn_time_ms;\n    quest_spawn_total_creatures = 0;\n    total_creatures = quest_spawn_total_creatures;\n    quest_spawn_last_time_ms = 0;\n    last_spawn_time_ms = quest_spawn_last_time_ms;\n"
+        },
+        {
+          "name": "local-first-reversed-chains",
+          "text": "    int entry_count = quest_spawn_count;\n    int total_creatures;\n    int last_spawn_time_ms;\n    total_creatures = quest_spawn_total_creatures = 0;\n    last_spawn_time_ms = quest_spawn_last_time_ms = 0;\n"
+        }
+      ]
+    }
+  ]
+}

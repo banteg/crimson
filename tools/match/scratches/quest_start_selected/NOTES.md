@@ -86,3 +86,12 @@ candidate and native each have 116 instructions with `47/0/0` references.
 `--regions` confines the remaining difference to the two zero stores at the
 start of the aggregation pass. Recovery is classified `semantic-complete` with
 a `compiler` residual.
+
+## Current-baseline accumulator replay (2026-08-11)
+
+The older accumulator-lifetime result predated the retained direct count-field
+ownership change. `current-aggregation-publication-mutations.json` therefore
+replays initialized locals, assigned locals, publish-then-read, and reversed
+chain assignments against the current allocation. All four remain
+byte-identical at 98.28%, 116/116 instructions, and `47/0/0` references. The
+two zero-store register operands are not recovered by that stale interaction.

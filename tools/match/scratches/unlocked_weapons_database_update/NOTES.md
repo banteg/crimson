@@ -200,3 +200,13 @@ would add no exact coverage.
 
 The recorded probe SHA is
 `d4530894e70ee9d8386b4776815877b16faadb39fec1333d04588819cedb64bf`.
+
+## Inline separator boundary audit (2026-08-11)
+
+`title-separator-inline-boundary-mutations.json` tests four forced-inline
+wrappers around the final title-separator draw: pointer and reference interface
+owners, both width/position parameter orders, and a raw-float position
+boundary. Every form is byte-identical at 99.81%, 523/523 instructions, and
+`157/0/0` references. Inlining a natural helper does not move the virtual-table
+load ahead of the integer-to-float conversion; the sibling perks callback has
+the same backend inversion.

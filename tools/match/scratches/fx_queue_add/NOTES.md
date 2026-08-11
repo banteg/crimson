@@ -63,3 +63,11 @@ remaining instruction-order mismatch. Processor Pack reproduces the native
 schedule, but the executable's Rich records reject that compiler profile.
 The retained source is therefore semantic-complete with a `compiler` residual,
 not an open analysis residual.
+
+## Fixed-size aggregate copy replay (2026-08-11)
+
+`color-aggregate-memcpy-mutations.json` tests four fixed-size `memcpy` forms
+for the recovered 16-byte color aggregate. VC6 inlines all four byte-identically
+to direct assignment at 97.44%, 39/39 instructions, and `9/0/0` references.
+The native count-publication interleave is therefore not hidden behind a
+source-level fixed-size copy boundary.

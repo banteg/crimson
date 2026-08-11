@@ -234,3 +234,12 @@ uses the cursor in the final 16x16 loop falls to the same **64.71%**,
 identity and compiler-local count therefore do not explain the final induction
 choice; the source-shape route is saturated pending new compiler or
 translation-unit provenance.
+
+## Typed row and interior-V hybrid audit (2026-08-11)
+
+`final-grid-typed-row-v-anchor-mutations.json` crosses the previously separate
+typed `GrimUV *` row cursor and interior `float *` V-field cursor hypotheses.
+All four ordinary preincrement, outer-increment, indexed, and copied-entry
+forms trigger the same whole-function allocation cliff: the best reaches only
+64.71% with `103/0/21` references. The missing final-grid induction is not a
+typed-row/interior-field interaction.

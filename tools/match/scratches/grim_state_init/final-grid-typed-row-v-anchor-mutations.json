@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-grid-typed-row-v-anchor",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "typed-row-preincrement-v-field",
+          "text": "    {\n        y = 0;\n        GrimUV *row = grim_subrect_table;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = &row->v;\n            row += 16;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "typed-row-outer-increment-v-field",
+          "text": "    {\n        y = 0;\n        GrimUV *row = grim_subrect_table;\n        for (; y < 16; ++y, row += 16) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = &row->v;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "typed-row-indexed-v-field",
+          "text": "    {\n        GrimUV *row = grim_subrect_table;\n        for (y = 0; y < 16; ++y, row += 16) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &row[0].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "typed-row-copy-then-preincrement-v-field",
+          "text": "    {\n        y = 0;\n        GrimUV *row = grim_subrect_table;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            GrimUV *entry = row;\n            row += 16;\n            float *entry_v = &entry->v;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

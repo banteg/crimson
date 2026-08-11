@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-aggregate-memcpy",
+      "find": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n",
+      "replacements": [
+        {
+          "name": "sizeof-member",
+          "text": "#include <string.h>\n\n#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    memcpy(&entry->color, color, sizeof(entry->color));\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "sizeof-type",
+          "text": "#include <string.h>\n\n#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    memcpy(&entry->color, color, sizeof(effect_color_t));\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "literal-size",
+          "text": "#include <string.h>\n\n#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    memcpy(&entry->color, color, 16);\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "copy-memory-region",
+          "text": "#include <string.h>\n\n#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    memcpy((void *)&entry->color, (const void *)color, 16);\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        }
+      ]
+    }
+  ]
+}

@@ -108,3 +108,15 @@ Thus neither extending the native upper-slot owner nor asking VC6 to color a
 new disjoint-lifetime aggregate preserves the otherwise exact allocation.
 The canonical two-vector source remains the honest optimum, and both complete
 interaction matrices are recorded in `experiments.jsonl`.
+
+## Current-baseline pellet allocation probes (2026-08-11)
+
+`predeclared-pellet-vector-mutations.json` tests the missing third-local
+interaction: a dedicated pellet vector declared before, between, or after the
+two sprite vectors. All three forms fall to 90.21%, so declaration order does
+not color a disjoint pellet value into the native upper slot.
+
+`vector-helper-parameter-ownership-mutations.json` tests pointer and reference
+ownership for every parameter of the forced-inline vector helper. All four
+forms are byte-identical to the retained 99.21% object. The residual is not
+hidden in the helper's source-level parameter ownership.
