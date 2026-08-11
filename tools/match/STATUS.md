@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**746/810** functions matched exactly, **157069/341992** code bytes (**45.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**747/810** functions matched exactly, **160657/341992** code bytes (**47.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **308458/341992** code bytes (**90.2%**).
+Fuzzy-weighted alignment is **308462/341992** code bytes (**90.2%**).
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -25,7 +25,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 428 | 350 | 350 | 350 |
 
 Artifact freshness issues:
-- `crimsonland.exe`: **stale** — 15 recorded file inputs changed or missing
+- `crimsonland.exe`: **stale** — 17 recorded file inputs changed or missing
 - `grim.dll`: **stale** — 2 recorded file inputs changed or missing
 
 ## Function dispositions
@@ -96,12 +96,12 @@ Artifact freshness issues:
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 609/671 | 138810/320827 | 43.3% | 287382/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 609/671 |
+| crimsonland.exe | 610/671 | 142398/320827 | 44.4% | 287386/320827 | 89.6% | 671/671 | 320827/320827 | 100.0% | 610/671 |
 | grim.dll | 137/139 | 18259/21165 | 86.3% | 21076/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 137/139 |
 
 ## crimsonland.exe
 
-**609/671** functions, **138810/320827** bytes (**43.3%**), **287382/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **609/671** scratches verified.
+**610/671** functions, **142398/320827** bytes (**44.4%**), **287386/320827** fuzzy-weighted bytes (**89.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **610/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -204,7 +204,7 @@ Artifact freshness issues:
 | wip | demo_purchase_screen_update | 0x0040b740 | 2642 | 2503/2642 | 139 | 698/691 | 94.74% | 136/691 | 190/0/0 |  | demo-purchase-screen-complete-flow |
 | match | demo_purchase_purchase_button_destroy | 0x0040c1a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-purchase-button-empty-destructor |
 | match | demo_purchase_maybe_later_button_destroy | 0x0040c1b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-maybe-later-button-empty-destructor |
-| wip | game_frame_update | 0x0040c1c0 | 3588 | 3584/3588 | 4 | 905/905 | 99.89% | 363/905 | 318/0/0 |  | core-frame-timing-input-and-state-dispatch |
+| match | game_frame_update | 0x0040c1c0 | 3588 | 3588/3588 | 0 | 905/905 | 100.00% | 905/905 | 319/0/0 |  | core-frame-timing-input-and-state-dispatch |
 | match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |
 | match | credits_line_table_global_init | 0x0040cfe0 | 24 | 24/24 | 0 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | credits-line-table-global-initialization |
 | match | credits_line_set | 0x0040d000 | 64 | 64/64 | 0 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |

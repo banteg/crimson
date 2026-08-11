@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mouse-aim-aggregate-identity",
+      "find": "        for (int aim_index = 0; aim_index < 4; aim_index += 2) {\n            float *aim = &frame_cursor_state.aim[aim_index];\n            aim[0] = frame_cursor_state.mouse_x;\n            aim[1] = frame_cursor_state.mouse_y;\n        }",
+      "replacements": [
+        {
+          "name": "split-source-globals",
+          "text": "        for (int aim_index = 0; aim_index < 4; aim_index += 2) {\n            float *aim = &frame_cursor_state.aim[aim_index];\n            aim[0] = ui_mouse_x;\n            aim[1] = ui_mouse_y;\n        }"
+        },
+        {
+          "name": "local-aggregate-pointer",
+          "text": "        frame_cursor_state_t *cursor_state = &frame_cursor_state;\n        for (int aim_index = 0; aim_index < 4; aim_index += 2) {\n            float *aim = &cursor_state->aim[aim_index];\n            aim[0] = cursor_state->mouse_x;\n            aim[1] = cursor_state->mouse_y;\n        }"
+        },
+        {
+          "name": "direct-address-overlay",
+          "text": "        for (int aim_index = 0; aim_index < 4; aim_index += 2) {\n            float *aim =\n                &((frame_cursor_state_t *)&ui_mouse_x)->aim[aim_index];\n            aim[0] = ((frame_cursor_state_t *)&ui_mouse_x)->mouse_x;\n            aim[1] = ((frame_cursor_state_t *)&ui_mouse_x)->mouse_y;\n        }"
+        }
+      ]
+    }
+  ]
+}

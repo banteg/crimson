@@ -79,44 +79,42 @@ joins the final white `grim_set_color` at `0x0040ca96`, so that color reset is
 unconditional. Correcting those two brace placements resolves four of the five
 remaining instruction differences.
 
-Current honest MSVC result: `99.89%`, exact prefix `363/905`, candidate
-`905/905` instructions, and masked references `318/0/0`. The sole remaining
-difference is local load/store scheduling in the two-player aim copy: native
-stores X before loading Y, while VC6 hoists both loads ahead of both stores.
-Aggregate vector assignment, direct indexed aim stores, typed slot views,
-pointer-loop control, component locals, and the natural `set(x, y)` helper were
-tested, but were byte-neutral or regressed the score or reference audit; the
-scalar pointer source is retained. No known native behavior is omitted. The
-candidate uses no volatile, dead-code, register, assembly, or layout
-constraints.
+Exact MSVC result: **100.00%**, exact prefix **905/905**, candidate
+**905/905** instructions, and references **319/0/0**. The final distinction was
+data ownership, not an instruction-scheduler residual. `ui_mouse_x` at
+`0x004871ec`, `ui_mouse_y` at `+0x04`, and the four per-player aim components at
+`+0x08` form one contiguous `frame_cursor_state_t`. Keeping the mouse
+components as separate source objects allowed VC6 to load both before either
+aim store. Accessing source and destination through their shared aggregate
+identity preserves native's X-store-before-Y-load order. The candidate uses no
+volatile state, dead code, register forcing, assembly, or layout constraint.
 
 The one-time full-version menu adjustment now addresses the owning UI element
 through `ui_element_t::pos.x/y` rather than its compatibility scalar aliases.
 This remains byte-neutral.
 
-## Recovery classification audit
+## Exact mouse/aim aggregate
 
-The one focused region preserves the exact 905-instruction count and all 318
-references. Live Binary Ninja confirms it is the two-player mouse-aim copy and
-only the equivalent load/store schedule differs. The complete timing, input,
-state-dispatch, pause, trial, rendering-state, and return policies are accounted
-for.
+`mouse-aim-aggregate-identity-mutations.json` isolates the recovered object
+boundary. Replacing the aggregate mouse reads with the former split globals
+reproduces the **99.89%**, prefix **363/905**, references **318/0/0** residual.
+Both a local pointer to the aggregate and a direct address overlay remain
+**100.00%**, prefix **905/905**, references **319/0/0**. This proves that the
+shared object identity, rather than expression punctuation, supplies the
+native alias boundary. `REFERENCE_ALIASES=frame_cursor_state:ui_mouse_x` maps
+the recovered owning object to its proven native base. No recovery or residual
+override remains.
 
-Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
-retained control-flow corrections improve the score from 99.45% to 99.89% and
-references from 317/0/0 to 318/0/0, with prefix 363/905 and 905/905
-instructions unchanged.
-
-## Recorded aim-copy sweep
+## Historical split-global aim-copy sweeps
 
 `aim-copy-order-mutations.json` evaluated all three natural X/Y assignment
-orders around the two-player aim copy. None improved the score or reference
-audit, so the canonical scalar-pointer spelling remains unchanged and the
+orders around the earlier split-global aim copy. None improved the score or
+reference audit, so the scalar-pointer spelling remained at that stage; the
 negative result is recorded in `experiments.jsonl`.
 
 `aim-copy-typed-view-mutations.json` additionally evaluated six typed
-player/vector cursor views. They are byte-neutral or regress the same localized
-region, so the scalar pointer remains the best evidenced source.
+player/vector cursor views while the source components remained separate.
+They were byte-neutral or regressed the same localized region.
 
 `aim-copy-inline-helper-mutations.json` broadens that search to fourteen
 one- and two-site inline-helper and call-boundary combinations. Alias-aware
@@ -146,11 +144,11 @@ forms (spec
 The ordinary source-pointer component forms are byte-neutral. Direct aggregate
 assignment and `memcpy` materially regress the instruction and reference
 alignment, so none improves the **99.45%**, 905/905, `317/0/0` baseline.
-No source change is retained.
+No source change was retained at that split-global stage.
 
 `mouse-y-accessor-mutations.json` tests three inline/force-inline accessors
 and their interaction with the second aim-component store. Direct accessors
 compile byte-identically at 99.45%; a pointer-backed accessor moves an earlier
 region, loses 285.45 fuzzy-weighted bytes and three resolved references, and
 does not recover the native X-store-before-Y-load order. The accessor boundary
-is recorded as a negative and no source change is retained.
+was recorded as a negative at that split-global stage.

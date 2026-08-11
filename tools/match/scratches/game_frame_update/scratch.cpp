@@ -52,7 +52,6 @@ extern float game_time_s;
 extern float screen_fade_alpha;
 extern float ui_mouse_x;
 extern float ui_mouse_y;
-extern player_aim_screen_xy_t player_aim_screen_x;
 
 extern game_state_id_t game_state_id;
 extern game_state_id_t game_state_prev;
@@ -92,6 +91,14 @@ FILE *crt_fopen(char *path, char *mode);
 int crt_fclose(FILE *fp);
 int crt_rand(void);
 }
+
+struct frame_cursor_state_t {
+    float mouse_x;
+    float mouse_y;
+    float aim[4];
+};
+
+extern "C" frame_cursor_state_t frame_cursor_state;
 
 struct frame_vec2_t {
     float x;
@@ -332,9 +339,9 @@ extern "C" unsigned char game_frame_update(void)
             * config_blob.mouse_sensitivity * 2.0f;
 
         for (int aim_index = 0; aim_index < 4; aim_index += 2) {
-            float *aim = &player_aim_screen_x[aim_index];
-            aim[0] = ui_mouse_x;
-            aim[1] = ui_mouse_y;
+            float *aim = &frame_cursor_state.aim[aim_index];
+            aim[0] = frame_cursor_state.mouse_x;
+            aim[1] = frame_cursor_state.mouse_y;
         }
     }
 
