@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "button-anchor-materialization",
+      "find": "    {\n        demo_trial_vec2_t button_position;\n        button_position.x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_position.x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {",
+      "replacements": [
+        {
+          "name": "nested-field-assignments",
+          "text": "    {\n        demo_trial_vec2_t button_position;\n        float button_y;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = (button_position.x = xy[0] + 22.0f) + 6.0f;\n            position.y = (button_y = xy[1] + 212.0f) + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        },
+        {
+          "name": "constructor-anchor-assignments",
+          "text": "    {\n        demo_trial_vec2_t button_position;\n        float button_y;\n\n        {\n            demo_trial_vec2_t position(\n                (button_position.x = xy[0] + 22.0f) + 6.0f,\n                (button_y = xy[1] + 212.0f) + 6.0f);\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        },
+        {
+          "name": "copy-assignment-anchor-assignments",
+          "text": "    {\n        demo_trial_vec2_t button_position;\n        float button_y;\n\n        {\n            demo_trial_vec2_t position;\n            position = demo_trial_vec2_t(\n                (button_position.x = xy[0] + 22.0f) + 6.0f,\n                (button_y = xy[1] + 212.0f) + 6.0f);\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        },
+        {
+          "name": "purchase-x-before-y-anchor",
+          "text": "    {\n        demo_trial_vec2_t button_position;\n        float button_y;\n\n        {\n            demo_trial_vec2_t position;\n            button_position.x = xy[0] + 22.0f;\n            position.x = button_position.x + 6.0f;\n            button_y = xy[1] + 212.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        }
+      ]
+    }
+  ]
+}

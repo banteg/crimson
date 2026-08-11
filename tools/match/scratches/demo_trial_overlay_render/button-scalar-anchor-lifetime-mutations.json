@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "button-scalar-anchor-lifetime",
+      "find": "    {\n        demo_trial_vec2_t button_position;\n        button_position.x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_position.x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        button_position.x += 326.0f;\n        button_position.y = button_y + 6.0f;\n        if (ui_button_update((float *)&button_position, (ui_button_t *)&maybe_later_button)) {",
+      "replacements": [
+        {
+          "name": "increment-x-second-local",
+          "text": "    {\n        float button_x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        button_x += 326.0f;\n        demo_trial_vec2_t position;\n        position.x = button_x;\n        position.y = button_y + 6.0f;\n        if (ui_button_update((float *)&position, (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "direct-x-second-local",
+          "text": "    {\n        float button_x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        demo_trial_vec2_t position;\n        position.x = button_x + 326.0f;\n        position.y = button_y + 6.0f;\n        if (ui_button_update((float *)&position, (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "final-y-second-local",
+          "text": "    {\n        float button_x = xy[0] + 22.0f;\n        float button_y = xy[1] + 218.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_x + 6.0f;\n            position.y = button_y;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        demo_trial_vec2_t position;\n        position.x = button_x + 326.0f;\n        position.y = button_y;\n        if (ui_button_update((float *)&position, (ui_button_t *)&maybe_later_button)) {"
+        },
+        {
+          "name": "direct-constructed-second-local",
+          "text": "    {\n        float button_x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;\n            position.x = button_x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {\n                shareware_offer_seen_latch = 1;\n                quit_requested = 1;\n                ShellExecuteA(0, \"open\", \"http://buy.crimsonland.com\", 0, 0, SW_SHOWNORMAL);\n            }\n        }\n\n        demo_trial_vec2_t position(button_x + 326.0f, button_y + 6.0f);\n        if (ui_button_update((float *)&position, (ui_button_t *)&maybe_later_button)) {"
+        }
+      ]
+    }
+  ]
+}

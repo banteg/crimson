@@ -131,3 +131,24 @@ forms regress. Replaying the 12 existing button declaration, construction, and
 lifetime probes on the retained source is stable: ordinary declaration and
 constructor forms are neutral, y-first loses one reference, and reusing the
 body vector materially regresses the function.
+
+## 2026-08-11 button lifetime boundary
+
+Live Binary Ninja at `0x00405047..0x004050d6` confirms that native reuses the
+five adjacent local slots as Purchase vector, shared final Y, then Maybe-later
+vector. Extending the earlier text `position` through Purchase recovers that
+tail slot order, but inhibits scalar promotion throughout the message body and
+regresses the function to 83.28%; it is evidence about allocation, not a
+retainable source shape.
+
+Six additional exhaustive, non-truncated mutation sweeps record 20
+compile-clean variants around that boundary. Fixed aggregates change the frame
+and regress by 117.358668 weighted bytes. Purchase copies, scalar anchors, nested
+anchor assignments, first-field publication, and input-seeded Purchase vectors
+are all neutral or worse; the closest reordered publication loses 5.731336 bytes
+and one reference, while the only neutral seed compiles byte-for-byte to the
+retained object. Explicit sibling scopes preserve the `0x124` frame but leave
+Purchase in the upper slot. No tested ordinary lifetime form improves the
+current **98.113208%**, 636/636-instruction, `175/0/0`-reference result, so the
+remaining button slot reversal is bounded without unions, aliases, volatile
+state, dead expressions, or register constraints.
