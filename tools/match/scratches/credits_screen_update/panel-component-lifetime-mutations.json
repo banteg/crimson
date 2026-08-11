@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-component-lifetime",
+      "find": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n",
+      "replacements": [
+        {
+          "name": "named-anchor-y-component-updates",
+          "text": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    float panel_anchor_y = panel_position.y;\n    panel_position.x += 300.0f;\n    panel_position.y = panel_anchor_y + 40.0f;\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-anchor-components",
+          "text": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    float panel_anchor_x = panel_position.x;\n    float panel_anchor_y = panel_position.y;\n    panel_position.x = panel_anchor_x + 300.0f;\n    panel_position.y = panel_anchor_y + 40.0f;\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-anchor-y-set",
+          "text": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    float panel_anchor_y = panel_position.y;\n    panel_position.set(panel_position.x + 300.0f, panel_anchor_y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-vector-anchor-constructor",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    float panel_anchor_y = panel_anchor.y;\n    credits_vec2_t panel_position(\n        panel_anchor.x + 300.0f, panel_anchor_y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-vector-anchor-components",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position;\n    panel_position.x = panel_anchor.x + 300.0f;\n    panel_position.y = panel_anchor.y + 40.0f;\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-source-y-direct-constructor",
+          "text": "    float panel_anchor_y =\n        ui_element_slot_09.pos_y + ui_element_slot_09.vertices[0].y;\n    credits_vec2_t panel_position(\n        ui_element_slot_09.pos_x + ui_element_slot_09.vertices[0].x + 300.0f,\n        panel_anchor_y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-source-components-y-first",
+          "text": "    float panel_anchor_y =\n        ui_element_slot_09.pos_y + ui_element_slot_09.vertices[0].y;\n    float panel_anchor_x =\n        ui_element_slot_09.pos_x + ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position(\n        panel_anchor_x + 300.0f, panel_anchor_y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-source-components-x-first",
+          "text": "    float panel_anchor_x =\n        ui_element_slot_09.pos_x + ui_element_slot_09.vertices[0].x;\n    float panel_anchor_y =\n        ui_element_slot_09.pos_y + ui_element_slot_09.vertices[0].y;\n    credits_vec2_t panel_position(\n        panel_anchor_x + 300.0f, panel_anchor_y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-alias-components",
+          "text": "    const credits_vec2_t &panel_origin =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x;\n    const credits_vec2_t &panel_vertex =\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    float panel_anchor_x = panel_origin.x + panel_vertex.x;\n    float panel_anchor_y = panel_origin.y + panel_vertex.y;\n    credits_vec2_t panel_position(\n        panel_anchor_x + 300.0f, panel_anchor_y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        }
+      ]
+    }
+  ]
+}

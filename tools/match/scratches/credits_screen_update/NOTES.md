@@ -87,3 +87,44 @@ by-value `operator+=` are byte-identical at 98.90%. Naming the returned vector
 adds six instructions and loses 186.78 weighted bytes; taking the operand by
 value adds four instructions and loses 187.24. None induces the native panel-Y
 temporary slot, so the canonical operators remain unchanged.
+
+## Current-baseline temporary audit (2026-08-12)
+
+All seven historical sweep baselines predated the current source even though
+the score happened to be unchanged. Replaying the existing panel-anchor,
+panel-chain, declaration-order, copy-constructor, operator-shape, and real
+two-site hit-position probes reconfirmed the exact current baseline:
+**98.898678%**, 1836.548458/1857 weighted bytes, 454/454 instructions,
+prefix 48, and `175/0/0` references. No historical alternative improves it.
+
+Live native disassembly identifies the allocation precisely. At
+`0x0040d8e5`, native spills the first vector sum's Y component to
+`[esp+0x34]`, which is the frame's top float slot. The same physical slot is
+later the Y half of `hit_position`; candidate instead coalesces the sum with
+the final `panel_position.y` slot at `[esp+0x24]`. Both versions have the same
+0x28-byte frame and the same later hit-test code, so this is a temporary-slot
+choice rather than a missing local or stack-size difference.
+
+Three new current-source sweeps bound the remaining honest levers:
+
+- `panel-component-lifetime-mutations.json` tests nine named scalar,
+  component-update, `set`, vector-anchor, and direct-constructor shapes. The
+  three call-site scalar forms are byte-neutral; the rest regress by at least
+  12.27 weighted bytes.
+- `hit-position-order-interactions.json` tests all five placements of the real
+  function-local `hit_position`, both alone and paired with removal of the
+  phase-local declaration. All ten compilable forms are byte-identical.
+- `vector-temporary-lifetime-mutations.json` tests 66 one- and two-site class
+  interactions: constructor bodies, const and named component returns,
+  default-result objects, `operator+=` spellings, and an empty destructor.
+  Natural constructor, scalar-return, const-return, assignment, and destructor
+  forms are byte-neutral; distinct returned objects add instructions or lose
+  references.
+
+Together with the replayed specifications, 121 bounded current-baseline
+variants leave the single 21-instruction region unchanged. The natural chained
+`a + b + offset` expression moves the final panel into the later scratch slots
+and loses 12.27 weighted bytes; predeclared chained storage loses 8.18 and adds
+one reference. Forcing the native slot would therefore require an artificial
+dependency, volatile spill, or dummy lifetime. None is retained, and the
+classification remains `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

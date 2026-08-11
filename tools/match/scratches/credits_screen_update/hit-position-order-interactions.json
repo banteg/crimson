@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "hit-position-declaration-order",
+      "find": "    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n",
+      "replacements": [
+        {
+          "name": "before-static-buttons",
+          "text": "    credits_vec2_t hit_position;\n    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "before-panel-position",
+          "text": "    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n    credits_vec2_t hit_position;\n    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "after-panel-anchor",
+          "text": "    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t hit_position;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "before-position-copy",
+          "text": "    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t hit_position;\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "after-position-copy",
+          "text": "    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n    credits_vec2_t hit_position;\n"
+        }
+      ]
+    },
+    {
+      "name": "remove-phase-local-hit-position",
+      "find": "    } else if (ui_screen_phase == 1) {\n        credits_vec2_t hit_position;\n",
+      "replacements": [
+        {
+          "name": "reuse-function-local",
+          "text": "    } else if (ui_screen_phase == 1) {\n"
+        }
+      ]
+    }
+  ]
+}

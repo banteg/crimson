@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pair-constructor-shape",
+      "find": "    credits_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n",
+      "replacements": [
+        {
+          "name": "body-x-then-y",
+          "text": "    credits_vec2_t(float x_value, float y_value) {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "body-y-then-x",
+          "text": "    credits_vec2_t(float x_value, float y_value) {\n        y = y_value;\n        x = x_value;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "plus-result-lifetime",
+      "find": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        return credits_vec2_t(x + other.x, y + other.y);\n    }\n",
+      "replacements": [
+        {
+          "name": "const-return-type",
+          "text": "    const credits_vec2_t operator+(const credits_vec2_t &other) const {\n        return credits_vec2_t(x + other.x, y + other.y);\n    }\n"
+        },
+        {
+          "name": "named-component-sums",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        float sum_x = x + other.x;\n        float sum_y = y + other.y;\n        return credits_vec2_t(sum_x, sum_y);\n    }\n"
+        },
+        {
+          "name": "named-component-sums-y-first",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        float sum_y = y + other.y;\n        float sum_x = x + other.x;\n        return credits_vec2_t(sum_x, sum_y);\n    }\n"
+        },
+        {
+          "name": "default-result-x-first",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        credits_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }\n"
+        },
+        {
+          "name": "default-result-y-first",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        credits_vec2_t result;\n        result.y = y + other.y;\n        result.x = x + other.x;\n        return result;\n    }\n"
+        },
+        {
+          "name": "copy-then-components",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        credits_vec2_t result = *this;\n        result.x += other.x;\n        result.y += other.y;\n        return result;\n    }\n"
+        },
+        {
+          "name": "copy-then-plus-equals",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        credits_vec2_t result = *this;\n        result += other;\n        return result;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "plus-equals-result-lifetime",
+      "find": "    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n",
+      "replacements": [
+        {
+          "name": "named-component-sums",
+          "text": "    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        float sum_x = x + other.x;\n        float sum_y = y + other.y;\n        x = sum_x;\n        y = sum_y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "assign-expressions",
+          "text": "    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        x = x + other.x;\n        y = y + other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "y-first",
+          "text": "    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        y += other.y;\n        x += other.x;\n        return *this;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "empty-vector-destructor",
+      "find": "    void set(float x_value, float y_value) {\n        x = x_value;\n        y = y_value;\n    }\n",
+      "replacements": [
+        {
+          "name": "user-declared-empty",
+          "text": "    void set(float x_value, float y_value) {\n        x = x_value;\n        y = y_value;\n    }\n\n    ~credits_vec2_t() {}\n"
+        }
+      ]
+    }
+  ]
+}
