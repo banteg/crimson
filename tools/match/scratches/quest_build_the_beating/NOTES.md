@@ -153,3 +153,18 @@ cutover with SHA-256
 `e92db069a27bda2066069c8065c704b0fdf97f2e125048c7562da5b8f8f4373d`.
 The retained source SHA-256 is
 `74a67a7a2bd56a400f02fdf590329356f86c4d47d5731602646c385e1aa755ca`.
+
+## First-wave entry-publication bound (2026-08-11)
+
+Live native code advances the first repeated-wave entry cursor before forming
+the current X coordinate. `first-wave-entry-publication-mutations.json` tests
+the corresponding preincremented index, postincremented pointer/reference,
+and advance-then-pointer ownership forms while preserving all eight positions,
+triggers, and counts.
+
+All four variants regress: the closest preincremented-index form falls to
+76.51% and prefix 37, while the three pointer/reference forms fall to 66.87%
+and prefix 22. None improves the 95.18%, 166/166-instruction baseline, so the
+retained one-step-ahead X expression remains the strongest natural source.
+The spec SHA-256 is
+`9dc6153f9543253af7e505bd7caa005a96a2282eda04f5a06f03d9eea7d59e28`.

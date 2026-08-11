@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-wave-entry-publication",
+      "find": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        x_offset += 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset - 32),\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 8;\n        ++entry_count;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);",
+      "replacements": [
+        {
+          "name": "preincrement-indexed-previous",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        ++entry_count;\n        spawns[entry_count - 1].pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        spawns[entry_count - 1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawns[entry_count - 1].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count - 1].count = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);"
+        },
+        {
+          "name": "postincrement-pointer",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        quest_entry_original_t *spawn = &spawns[entry_count++];\n        spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);"
+        },
+        {
+          "name": "advance-then-pointer",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        quest_entry_original_t *spawn = &spawns[entry_count];\n        ++entry_count;\n        spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);"
+        },
+        {
+          "name": "postincrement-reference",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        quest_entry_original_t &spawn = spawns[entry_count++];\n        spawn.pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        spawn.template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawn.trigger_time_ms = trigger_time_ms;\n        spawn.count = 8;\n        trigger_time_ms += 100;\n        --remaining;\n    } while (remaining != 0);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "rush-field-cursor",
+      "find": "        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms >\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;",
+      "replacements": [
+        {
+          "name": "unsigned-interior-pointer",
+          "text": "        unsigned int *field_cursor =\n            &highscore_table[0].survival_elapsed_ms;\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms > (int)*field_cursor) {\n                return i;\n            }\n            field_cursor += sizeof(highscore_record_t) / sizeof(*field_cursor);\n        }\n        return highscore_table_count;"
+        },
+        {
+          "name": "signed-interior-pointer",
+          "text": "        int *field_cursor =\n            (int *)&highscore_table[0].survival_elapsed_ms;\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms > *field_cursor) {\n                return i;\n            }\n            field_cursor += sizeof(highscore_record_t) / sizeof(*field_cursor);\n        }\n        return highscore_table_count;"
+        }
+      ]
+    },
+    {
+      "name": "quest-field-cursor",
+      "find": "        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms <\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;",
+      "replacements": [
+        {
+          "name": "unsigned-interior-pointer",
+          "text": "        unsigned int *field_cursor =\n            &highscore_table[0].survival_elapsed_ms;\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms < (int)*field_cursor) {\n                return i;\n            }\n            field_cursor += sizeof(highscore_record_t) / sizeof(*field_cursor);\n        }\n        return highscore_table_count;"
+        },
+        {
+          "name": "signed-interior-pointer",
+          "text": "        int *field_cursor =\n            (int *)&highscore_table[0].survival_elapsed_ms;\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms < *field_cursor) {\n                return i;\n            }\n            field_cursor += sizeof(highscore_record_t) / sizeof(*field_cursor);\n        }\n        return highscore_table_count;"
+        }
+      ]
+    },
+    {
+      "name": "score-field-cursor",
+      "find": "    for (i = 0; i < highscore_table_count; i++) {\n        if (highscore_score_xp > (int)highscore_table[i].score_xp) {\n            return i;\n        }\n    }\n    return highscore_table_count;",
+      "replacements": [
+        {
+          "name": "unsigned-interior-pointer",
+          "text": "    {\n        unsigned int *field_cursor = &highscore_table[0].score_xp;\n        for (i = 0; i < highscore_table_count; i++) {\n            if (highscore_score_xp > (int)*field_cursor) {\n                return i;\n            }\n            field_cursor += sizeof(highscore_record_t) / sizeof(*field_cursor);\n        }\n    }\n    return highscore_table_count;"
+        },
+        {
+          "name": "signed-interior-pointer",
+          "text": "    {\n        int *field_cursor = (int *)&highscore_table[0].score_xp;\n        for (i = 0; i < highscore_table_count; i++) {\n            if (highscore_score_xp > *field_cursor) {\n                return i;\n            }\n            field_cursor += sizeof(highscore_record_t) / sizeof(*field_cursor);\n        }\n    }\n    return highscore_table_count;"
+        }
+      ]
+    }
+  ]
+}

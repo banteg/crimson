@@ -127,3 +127,14 @@ The retained one-line change raises the match from 88.60759493670886% to
 the opening entry's independent derivation/publication schedule plus one
 second-entry `cmp`/`fild` swap. Source SHA-256:
 `32d4b058847212f25f56234c5cfe46d98f52d3f4f93d2ea753cb2553cab981ce`.
+
+## Opening value-lifetime replay (2026-08-11)
+
+Native derives the first wave's trigger and count before its position
+conversions. `opening-value-lifetime-mutations.json` replays all six ordinary
+declaration orders for trigger, count, and current entry against the retained
+helper-before-position source. All six variants are byte-identical at 89.87%,
+79/79 instructions, prefix seven, and `5/0/0` references. Named values do not
+recover the remaining publication schedule, so no source change is retained.
+The spec SHA-256 is
+`c8c9960532fc0b055c092b5e2200a468187d2656905743d377a88fab0076d7fc`.

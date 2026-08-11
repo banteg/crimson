@@ -76,3 +76,17 @@ Three bounded specs record the remaining natural source hypotheses:
 No valid variant improves the baseline, so `scratch.c` remains unchanged.
 Artificial register hints or byte-shaped aliases were not tested: they would
 encode the compiler residual rather than recover additional program semantics.
+
+## Interior field-cursor bound (2026-08-11)
+
+Live Binary Ninja renders each native scan as an `int32_t *` interior cursor:
+the Rush and Quest arms start at `survival_elapsed_ms`, the default arm starts
+at `score_xp`, and all advance by 18 words. The complete 26/26 sweep in
+`field-cursor-mutations.json` tests signed and unsigned interior pointers in
+each arm, every pair, and all three-arm interactions.
+
+Every variant is byte-identical to the 58.82%, 51/51-instruction baseline with
+`4/0/0` references. Explicitly recovering the native pointer presentation does
+not change VC6's `ECX`/`EDX` allocation, so the indexed source remains the
+smaller canonical form. The spec SHA-256 is
+`1553d84e3911a541e69a64512cd0d68db8b5daaeedacab9ce4bfa51a4939a9e2`.
