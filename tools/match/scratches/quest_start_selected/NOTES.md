@@ -95,3 +95,21 @@ replays initialized locals, assigned locals, publish-then-read, and reversed
 chain assignments against the current allocation. All four remain
 byte-identical at 98.28%, 116/116 instructions, and `47/0/0` references. The
 two zero-store register operands are not recovered by that stale interaction.
+
+## Current loop-lifetime interaction bound (2026-08-11)
+
+Live Binary Ninja confirms that native and candidate both zero the eventual
+`EDI` and `EBP` accumulator registers before the loop. The only mismatch is
+that native sources the two initial global stores from those registers while
+VC6 sources both stores from the already-zero `EBX`. This is therefore not a
+missing initialization or accumulator-lifetime instruction.
+
+`current-aggregation-loop-interactions.json` tests the remaining natural
+interaction with the retained direct count-field ownership: six accumulator
+publication forms, four template-id lifetimes, three trigger-time lifetimes,
+and every one- and two-site combination. All 67 planned variants compile and
+none improves the baseline. The 11 neutral single-site forms and every neutral
+interaction retain 98.28%, 116/116 instructions, prefix 80, and `47/0/0`
+references; the non-neutral variants only regress. This closes loop-local
+lifetime interaction as a route to the two native store operands. Spec SHA-256:
+`3041715fe3f9259de5aac7fc90a8cdb2c6064a7663dcc583119aaaf8d8d701ef`.
