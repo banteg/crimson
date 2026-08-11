@@ -167,3 +167,43 @@ The complete sweep is recorded in `experiments.jsonl`. The mutation spec has
 SHA-256 `4ca6313f5f77b6feec937b3f4b5cd38d7e1cffbe9e66483a13bd9242d7c2ba2c`;
 the retained source has SHA-256
 `248f702d2a451704e7eece73b912d2355ccb8c5240d80755fed1a2e86d012dec`.
+
+## Current-baseline opening and publication replay (2026-08-11)
+
+The retained three-corner constructor changes the whole-function allocation
+graph, so the older opening exclusions were replayed rather than assumed. The
+four variants in `opening-fixed-reservation-mutations.json` remain negative on
+the 76.3158% source: every literal or builder-backed fixed-12 form collapses to
+12.11% and 173 candidate instructions. The historical conclusion survives the
+new baseline.
+
+Four fresh complete matrices then test the source explanations not covered by
+that historical sweep:
+
+- `current-opening-derived-count-mutations.json` (SHA-256
+  `e9ecc439ff8c9e10799d1c06c5b8d33c8178c74c8450b9b8c354e5905c906271`)
+  evaluates all 4/4 pointer-, X-, and trigger-induction derivations of the
+  native value 12. The X form advances the exact prefix from five to nine but
+  emits a runtime division, grows to 230 instructions, and falls to 63.32%;
+  the other forms fall farther.
+- `current-fixed-count-loop-interactions.json` (SHA-256
+  `0339eb0ba9c173b9a9a65faeac76819aa12e47e49ce548ac40bc79dc1f80c11e`)
+  evaluates all 14/14 fixed-count, `for`, guarded `do`, countdown, and pair
+  interactions. The two ordinary `for` spellings are byte-neutral alone; no
+  loop form prevents the fixed-count specialization cliff.
+- `current-route-position-publication-mutations.json` (SHA-256
+  `ea72fa26ea1cf47b4fe79560cab8ad7043971a86ee20da9c3c1879a6caa5377b`)
+  evaluates all 26/26 scalar X/Y orders and interactions across the three
+  middle route phases. Every variant loses score, from 3.75 to 11 percentage
+  points, confirming the retained vector publication at each phase.
+- `current-fourth-corner-lifetime-mutations.json` (SHA-256
+  `af273554eda48383d2d722789202ad7e32f7f23d78ba73dab5b060837b23c131`)
+  evaluates all 8/8 scalar, array, and scoped-vector lifetimes around the final
+  `(896, 896)` corner. Six compile byte-identically; both whole-vector copies
+  reproduce the known 51.53% frame/prologue regression.
+
+Across 56 current-baseline evaluations, no variant improves the 76.32%,
+228/228-instruction, prefix-five, `0/0/0` baseline and no tradeoff appears.
+The scratch source is unchanged. The complete 10-line experiment log now has
+SHA-256
+`4ac494a819db93fbd4157354a1945f9ab1e6a233fe437b47641f58cc50d96542`.

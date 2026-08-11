@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "west-position-publication",
+      "find": "        spawn->pos = quest_vec2_t((float)x, 688.0f);\n",
+      "replacements": [
+        {
+          "name": "scalar-x-y",
+          "text": "        spawn->pos.x = (float)x;\n        spawn->pos.y = 688.0f;\n"
+        },
+        {
+          "name": "scalar-y-x",
+          "text": "        spawn->pos.y = 688.0f;\n        spawn->pos.x = (float)x;\n"
+        }
+      ]
+    },
+    {
+      "name": "north-position-publication",
+      "find": "        spawn->pos = quest_vec2_t(400.0f, (float)y);\n",
+      "replacements": [
+        {
+          "name": "scalar-x-y",
+          "text": "        spawn->pos.x = 400.0f;\n        spawn->pos.y = (float)y;\n"
+        },
+        {
+          "name": "scalar-y-x",
+          "text": "        spawn->pos.y = (float)y;\n        spawn->pos.x = 400.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "east-position-publication",
+      "find": "        spawn->pos = quest_vec2_t((float)x, 400.0f);\n",
+      "replacements": [
+        {
+          "name": "scalar-x-y",
+          "text": "        spawn->pos.x = (float)x;\n        spawn->pos.y = 400.0f;\n"
+        },
+        {
+          "name": "scalar-y-x",
+          "text": "        spawn->pos.y = 400.0f;\n        spawn->pos.x = (float)x;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fourth-corner-position",
+      "find": "    builder.spawns[entry_count].pos.x = 896.0f;\n    builder.spawns[entry_count].pos.y = 896.0f;\n",
+      "replacements": [
+        {
+          "name": "two-scalars-x-y",
+          "text": "    float corner_x = 896.0f;\n    float corner_y = 896.0f;\n    builder.spawns[entry_count].pos.x = corner_x;\n    builder.spawns[entry_count].pos.y = corner_y;\n"
+        },
+        {
+          "name": "two-scalars-y-x",
+          "text": "    float corner_y = 896.0f;\n    float corner_x = 896.0f;\n    builder.spawns[entry_count].pos.y = corner_y;\n    builder.spawns[entry_count].pos.x = corner_x;\n"
+        },
+        {
+          "name": "shared-scalar",
+          "text": "    float corner_position = 896.0f;\n    builder.spawns[entry_count].pos.x = corner_position;\n    builder.spawns[entry_count].pos.y = corner_position;\n"
+        },
+        {
+          "name": "named-vector-copy",
+          "text": "    quest_vec2_t corner_position(896.0f, 896.0f);\n    builder.spawns[entry_count].pos = corner_position;\n"
+        },
+        {
+          "name": "named-vector-components",
+          "text": "    quest_vec2_t corner_position(896.0f, 896.0f);\n    builder.spawns[entry_count].pos.x = corner_position.x;\n    builder.spawns[entry_count].pos.y = corner_position.y;\n"
+        },
+        {
+          "name": "scoped-vector-copy",
+          "text": "    {\n        quest_vec2_t corner_position(896.0f, 896.0f);\n        builder.spawns[entry_count].pos = corner_position;\n    }\n"
+        },
+        {
+          "name": "scoped-vector-components",
+          "text": "    {\n        quest_vec2_t corner_position(896.0f, 896.0f);\n        builder.spawns[entry_count].pos.x = corner_position.x;\n        builder.spawns[entry_count].pos.y = corner_position.y;\n    }\n"
+        },
+        {
+          "name": "two-element-array",
+          "text": "    float corner_position[2] = {896.0f, 896.0f};\n    builder.spawns[entry_count].pos.x = corner_position[0];\n    builder.spawns[entry_count].pos.y = corner_position[1];\n"
+        }
+      ]
+    }
+  ]
+}
