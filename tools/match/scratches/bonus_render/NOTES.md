@@ -245,3 +245,25 @@ changes the reference audit from `223/0/6` to `218/0/8`. It is not retained.
 The restored scratch remains 89.93%, 1,087/1,088 instructions, prefix 14, and
 `223/0/6`. The complete 15-line experiment log now has SHA-256
 `8b88b520f5cf72783b1a82e974af7e638fe28e8519e757661132ecba4fc92cb6`.
+
+## Current weapon-zero and particle-owner replay (2026-08-12)
+
+Native `0x00429baa..0x00429d8d` materializes zero in `EBX` before the weapon
+pass, reuses it for the texture stage, loop index initialization, and rotation,
+then compares the player count against the same value before incrementing
+`EBX` as the Telekinetic player index. The historical zero-lifetime matrix
+predated the retained Telekinetic and sprite-loop changes, so all 23 variants
+were replayed against the current 89.93% source. All 16 compile-valid one- to
+four-site combinations remain byte-identical; the seven dependent variants
+without the required declaration fail as expected. Explicitly coupling the
+later player index to unrelated weapon-pass zero arguments would be a synthetic
+dependency and is not a retainable source shape.
+
+The six ordinary aggregate-pointer forms for the glow, sprite, and beam
+particle walks were also replayed against the current source. Every form
+regresses. The closest sprite and beam cursors each lose 5.43 weighted bytes
+while reducing the aligned-reference mismatch count from six to five; the
+other forms lose 7.91--118.33 bytes. This confirms that the current indexed
+loops remain the strongest natural reconstruction. Across 29 current
+evaluations there is no source improvement, so the 1,087/1,088 instruction,
+`223/0/6` baseline is retained unchanged.
