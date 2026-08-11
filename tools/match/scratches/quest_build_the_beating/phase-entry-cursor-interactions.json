@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-wave-entry-cursor",
+      "find": "    trigger_time_ms = 20000;\n    int x = -64;\n    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 8;\n        ++entry_count;\n        trigger_time_ms += 100;\n        x -= 32;\n    } while (x > -320);",
+      "replacements": [
+        {
+          "name": "position-then-advance",
+          "text": "    trigger_time_ms = 20000;\n    int x = -64;\n    quest_entry_original_t *left_spawn = &spawns[entry_count];\n    do {\n        left_spawn->pos = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));\n        ++left_spawn;\n        ++entry_count;\n        left_spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        left_spawn[-1].trigger_time_ms = trigger_time_ms;\n        left_spawn[-1].count = 8;\n        trigger_time_ms += 100;\n        x -= 32;\n    } while (x > -320);"
+        },
+        {
+          "name": "advance-then-previous",
+          "text": "    trigger_time_ms = 20000;\n    int x = -64;\n    quest_entry_original_t *left_spawn = &spawns[entry_count];\n    do {\n        ++left_spawn;\n        ++entry_count;\n        left_spawn[-1].pos = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));\n        left_spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;\n        left_spawn[-1].trigger_time_ms = trigger_time_ms;\n        left_spawn[-1].count = 8;\n        trigger_time_ms += 100;\n        x -= 32;\n    } while (x > -320);"
+        }
+      ]
+    },
+    {
+      "name": "ghost-wave-entry-cursor",
+      "find": "    int y = -64;\n    trigger_time_ms = 40000;\n    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_GHOST_0F;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 4;\n        ++entry_count;\n        trigger_time_ms += 100;\n        y -= 42;\n    } while (y > -316);",
+      "replacements": [
+        {
+          "name": "position-then-advance",
+          "text": "    int y = -64;\n    trigger_time_ms = 40000;\n    quest_entry_original_t *ghost_spawn = &spawns[entry_count];\n    do {\n        ghost_spawn->pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);\n        ++ghost_spawn;\n        ++entry_count;\n        ghost_spawn[-1].template_id = SPAWN_ID_ALIEN_GHOST_0F;\n        ghost_spawn[-1].trigger_time_ms = trigger_time_ms;\n        ghost_spawn[-1].count = 4;\n        trigger_time_ms += 100;\n        y -= 42;\n    } while (y > -316);"
+        },
+        {
+          "name": "advance-then-previous",
+          "text": "    int y = -64;\n    trigger_time_ms = 40000;\n    quest_entry_original_t *ghost_spawn = &spawns[entry_count];\n    do {\n        ++ghost_spawn;\n        ++entry_count;\n        ghost_spawn[-1].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);\n        ghost_spawn[-1].template_id = SPAWN_ID_ALIEN_GHOST_0F;\n        ghost_spawn[-1].trigger_time_ms = trigger_time_ms;\n        ghost_spawn[-1].count = 4;\n        trigger_time_ms += 100;\n        y -= 42;\n    } while (y > -316);"
+        }
+      ]
+    }
+  ]
+}

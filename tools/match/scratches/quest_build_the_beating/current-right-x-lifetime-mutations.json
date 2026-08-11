@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-right-x-lifetime",
+      "find": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        x_offset += 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset - 32),\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;",
+      "replacements": [
+        {
+          "name": "snapshot-offset-before-advance",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        int current_x_offset = x_offset;\n        x_offset += 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width + current_x_offset),\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;"
+        },
+        {
+          "name": "split-snapshot-offset-before-advance",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    int current_x_offset;\n    do {\n        current_x_offset = x_offset;\n        x_offset += 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width + current_x_offset),\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;"
+        },
+        {
+          "name": "snapshot-position-before-advance",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        int current_x = terrain_texture_width + x_offset;\n        x_offset += 32;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)current_x,\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;"
+        },
+        {
+          "name": "postadvance-after-position",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width + x_offset),\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;"
+        },
+        {
+          "name": "snapshot-position-postadvance",
+          "text": "    int trigger_time_ms = 10000;\n    int x_offset = 64;\n    int remaining = 8;\n    do {\n        int current_x = terrain_texture_width + x_offset;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)current_x,\n            (float)(terrain_texture_height / 2));\n        x_offset += 32;\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;"
+        }
+      ]
+    }
+  ]
+}

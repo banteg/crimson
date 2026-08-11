@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-wave-position-owner",
+      "find": "        spawns[entry_count].pos = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));",
+      "replacements": [
+        {
+          "name": "position-reference",
+          "text": "        quest_vec2_t &position = spawns[entry_count].pos;\n        position = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));"
+        },
+        {
+          "name": "position-pointer",
+          "text": "        quest_vec2_t *position = &spawns[entry_count].pos;\n        *position = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));"
+        },
+        {
+          "name": "entry-reference",
+          "text": "        quest_entry_original_t &spawn = spawns[entry_count];\n        spawn.pos = quest_vec2_t(\n            (float)x,\n            (float)(terrain_texture_height / 2));"
+        },
+        {
+          "name": "named-position-value",
+          "text": "        quest_vec2_t position(\n            (float)x,\n            (float)(terrain_texture_height / 2));\n        spawns[entry_count].pos = position;"
+        }
+      ]
+    },
+    {
+      "name": "ghost-wave-position-owner",
+      "find": "        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);",
+      "replacements": [
+        {
+          "name": "position-reference",
+          "text": "        quest_vec2_t &position = spawns[entry_count].pos;\n        position = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);"
+        },
+        {
+          "name": "position-pointer",
+          "text": "        quest_vec2_t *position = &spawns[entry_count].pos;\n        *position = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);"
+        },
+        {
+          "name": "entry-reference",
+          "text": "        quest_entry_original_t &spawn = spawns[entry_count];\n        spawn.pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)y);"
+        },
+        {
+          "name": "named-position-value",
+          "text": "        quest_vec2_t position(\n            (float)(terrain_texture_width / 2),\n            (float)y);\n        spawns[entry_count].pos = position;"
+        }
+      ]
+    }
+  ]
+}

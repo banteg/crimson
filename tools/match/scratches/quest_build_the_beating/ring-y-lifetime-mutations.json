@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ring-y-lifetime",
+      "find": "    do {\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_width + y_offset + 44));",
+      "replacements": [
+        {
+          "name": "named-complete-y",
+          "text": "    do {\n        int ring_y = terrain_texture_width + y_offset + 44;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)ring_y);"
+        },
+        {
+          "name": "named-offset-first-y",
+          "text": "    do {\n        int ring_y = y_offset + terrain_texture_width + 44;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)ring_y);"
+        },
+        {
+          "name": "split-complete-y",
+          "text": "    int ring_y;\n    do {\n        ring_y = terrain_texture_width + y_offset + 44;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)ring_y);"
+        },
+        {
+          "name": "named-base-and-y",
+          "text": "    int ring_y_base = terrain_texture_width + 44;\n    do {\n        int ring_y = ring_y_base + y_offset;\n        spawns[entry_count].pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)ring_y);"
+        }
+      ]
+    }
+  ]
+}

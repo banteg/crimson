@@ -168,3 +168,39 @@ and prefix 22. None improves the 95.18%, 166/166-instruction baseline, so the
 retained one-step-ahead X expression remains the strongest natural source.
 The spec SHA-256 is
 `9dc6153f9543253af7e505bd7caa005a96a2282eda04f5a06f03d9eea7d59e28`.
+
+## Current phase-schedule replay (2026-08-12)
+
+The older cursor and lifetime conclusions predated the retained continuous
+append count and one-step-ahead first-wave X expression, so they were not
+treated as current evidence. A fresh normalized diff isolates the 31.2771-byte
+gap to the first-wave cursor/X advance order, two later phase-entry `lea` / x87
+input-store swaps, one equivalent ring-Y `lea` operand encoding, and the branch
+displacements induced by those byte choices.
+
+Five current-source sweeps evaluate 70 bounded variants:
+
+- `coordinate-expression-order-interactions.json` exhausts all 29 single and
+  paired commutative forms for the first-wave X and ring Y. Every object is
+  byte-identical to the baseline, so expression-tree spelling does not select
+  either LEA encoding.
+- `phase-position-owner-interactions.json` crosses references, pointers,
+  entry owners, and named vector values in the left and ghost phases. All 24
+  variants are byte-identical; naming the destination cannot move the phase
+  entry address ahead of the independent scalar store.
+- `phase-entry-cursor-interactions.json` tests loop-spanning entry cursors in
+  both position-then-advance and advance-then-previous forms. Singles regress
+  by 27 to 31 weighted bytes, and pairs regress by 55 to 70.
+- `current-right-x-lifetime-mutations.json` retests the native-looking
+  pre-advance X snapshot against the current allocator. All five forms lose
+  109 to 113 weighted bytes and one resolved reference, confirming that the
+  retained one-step-ahead expression is a whole-function allocation boundary.
+- `ring-y-lifetime-mutations.json` tests complete, split, reordered, and
+  shared-base ring-Y locals. The first three are byte-identical; sharing the
+  base loses 50 weighted bytes and one reference.
+
+The source remains `617.722891566265/649` weighted bytes
+(`95.18072289156626%`), 166/166 instructions, prefix 39, and `8/0/0`
+references. The current evidence closes the natural expression, destination,
+cursor, and coordinate-lifetime routes without using register hints or
+artificial dependencies; `RESIDUAL=compiler` remains appropriate.
