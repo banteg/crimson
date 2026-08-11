@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "projectile-vector-reference-abi",
+      "find": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nextern \"C\" int projectile_spawn(\n    const vec2f_t *pos,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n",
+      "replacements": [
+        {
+          "name": "const-reference",
+          "text": "#define projectile_spawn projectile_spawn_pointer_decl\n#include \"crimsonland_gameplay.h\"\n#undef projectile_spawn\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nextern \"C\" int projectile_spawn(\n    const vec2f_t &pos_value,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n    const vec2f_t *pos = &pos_value;\n"
+        },
+        {
+          "name": "mutable-reference",
+          "text": "#define projectile_spawn projectile_spawn_pointer_decl\n#include \"crimsonland_gameplay.h\"\n#undef projectile_spawn\n\nextern \"C\" float cos(float angle);\nextern \"C\" float sin(float angle);\n\nextern \"C\" int projectile_spawn(\n    vec2f_t &pos_value,\n    float angle,\n    int type_id,\n    int owner_id)\n{\n    const vec2f_t *pos = &pos_value;\n"
+        }
+      ]
+    }
+  ]
+}

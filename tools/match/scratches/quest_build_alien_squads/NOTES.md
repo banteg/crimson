@@ -89,3 +89,19 @@ coordinates, fluent setters, and `for`-header lifetimes are byte-neutral;
 splitting position and metadata ownership or rebasing indexed publication
 regresses. The retained source SHA-256 is
 `7c29de20218b87fc3d6a2a6fbb55347c66b9f704264800711438fa7ad1e38052`.
+
+## 2026-08-11 repeated-pair position ownership bound
+
+Live native disassembly confirms the sole residual begins where the first
+repeated pair publishes `(-64, -64)` before computing `trigger - 400`; the
+candidate schedules that independent `lea` first. The complete 7/7 single and
+pair sweep in `loop-position-ownership-mutations.json` tests whole-vector
+assignment for either pair member and both ordinary chained scalar assignment
+orders for the first member.
+
+The `y`-through-`x` chain is byte-neutral at 99.07%, while the opposite chain
+falls to 98.15%. Whole-vector assignment falls to 61.88% for the first member,
+60.99% for the second, and 57.27% when combined. No variant improves the
+108/108-instruction baseline or changes its `0/0/0` reference audit, so the
+natural direct coordinate stores remain canonical. The spec SHA-256 is
+`8c98855d0c865817eb742f42236b8aca4775d5e5573280e791e2fe259e6296c2`.

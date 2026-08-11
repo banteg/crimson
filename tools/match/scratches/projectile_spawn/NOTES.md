@@ -130,3 +130,17 @@ SHA-256 is
 Special-member-driven by-value lowering therefore does not recover the native
 four-byte default-damage local, and the canonical scratch retains the
 evidence-backed pointer boundary.
+
+## Recorded vector reference-ABI search
+
+The remaining plausible legacy C++ boundary is a vector reference rather than
+a value or lowered pointer. `vector-reference-abi-mutations.json` masks the
+shared pointer prototype and tests both `const vec2f_t &` and mutable
+`vec2f_t &`, aliasing the reference back to the existing pointer-owned body so
+only parameter lowering and alias analysis change.
+
+Both planned variants are byte-identical to the 71.67% baseline at 114/126
+instructions with `13/0/0` references. A reference ABI therefore does not
+materialize the native default-damage stack slot or its override-backedge
+store. The pointer boundary remains canonical. The spec SHA-256 is
+`a639266f2e0d27ac080c5eeb3fafbb669e42016b070464dc54863e3cacf5d533`.

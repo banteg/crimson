@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-pair-position-owner",
+      "find": "        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n",
+      "replacements": [
+        {
+          "name": "whole-vector-assignment",
+          "text": "        spawn->pos = quest_vec2_t(-64.0f, -64.0f);\n"
+        },
+        {
+          "name": "chained-x-through-y",
+          "text": "        spawn->pos.x = spawn->pos.y = -64.0f;\n"
+        },
+        {
+          "name": "chained-y-through-x",
+          "text": "        spawn->pos.y = spawn->pos.x = -64.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-pair-position-owner",
+      "find": "        spawns[entry_count].pos.x = 1088.0f;\n        spawns[entry_count].pos.y = 1088.0f;\n",
+      "replacements": [
+        {
+          "name": "whole-vector-assignment",
+          "text": "        spawns[entry_count].pos = quest_vec2_t(1088.0f, 1088.0f);\n"
+        }
+      ]
+    }
+  ]
+}
