@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-advance-before-metadata",
+      "find": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E,\n            wave * 8000 + 1500,\n            wave + 6);\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;",
+      "replacements": [
+        {
+          "name": "positions-advance-metadata",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E,\n            wave * 8000 + 1500,\n            wave + 6);"
+        },
+        {
+          "name": "trigger-count-positions-advance-metadata",
+          "text": "        int trigger_time_ms = wave * 8000 + 1500;\n        int spawn_count = wave + 6;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);"
+        },
+        {
+          "name": "count-trigger-positions-advance-metadata",
+          "text": "        int spawn_count = wave + 6;\n        int trigger_time_ms = wave * 8000 + 1500;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);"
+        },
+        {
+          "name": "positions-advance-direct-metadata",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = wave * 8000 + 1500;\n        spawn->count = wave + 6;"
+        },
+        {
+          "name": "trigger-count-positions-advance-direct-metadata",
+          "text": "        int trigger_time_ms = wave * 8000 + 1500;\n        int spawn_count = wave + 6;\n        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    }
+  ]
+}

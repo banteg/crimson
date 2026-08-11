@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-entry-condition-placement",
+      "find": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E,\n            wave * 8000 + 1500,\n            wave + 6);\n        ++builder.count;\n\n        if (wave == 4) {",
+      "replacements": [
+        {
+          "name": "condition-after-y",
+          "text": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        bool is_bonus_wave = wave == 4;\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E,\n            wave * 8000 + 1500,\n            wave + 6);\n        ++builder.count;\n\n        if (is_bonus_wave) {"
+        },
+        {
+          "name": "split-condition-after-y",
+          "text": "        bool is_bonus_wave;\n        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        is_bonus_wave = wave == 4;\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E,\n            wave * 8000 + 1500,\n            wave + 6);\n        ++builder.count;\n\n        if (is_bonus_wave) {"
+        },
+        {
+          "name": "condition-before-y",
+          "text": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        bool is_bonus_wave = wave == 4;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E,\n            wave * 8000 + 1500,\n            wave + 6);\n        ++builder.count;\n\n        if (is_bonus_wave) {"
+        },
+        {
+          "name": "condition-before-entry",
+          "text": "        bool is_bonus_wave = wave == 4;\n        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E,\n            wave * 8000 + 1500,\n            wave + 6);\n        ++builder.count;\n\n        if (is_bonus_wave) {"
+        }
+      ]
+    }
+  ]
+}

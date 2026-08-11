@@ -138,3 +138,41 @@ helper-before-position source. All six variants are byte-identical at 89.87%,
 recover the remaining publication schedule, so no source change is retained.
 The spec SHA-256 is
 `c8c9960532fc0b055c092b5e2200a468187d2656905743d377a88fab0076d7fc`.
+
+## Live residual and owner replay (2026-08-12)
+
+The compiler-residual classification was rechecked rather than accepted from
+the older notes. Fresh native disassembly and the normalized current diff
+isolate three concrete differences: native derives the first trigger and count
+before the record pointer, advances the append count before publishing that
+record's metadata, and schedules the wave-four comparison between the second
+entry's `fild` and `fstp`.
+
+Eight current-source sweeps cover 37 compile-valid variants for those exact
+hypotheses:
+
+- `opening-entry-publication-mutations.json` and
+  `opening-advance-before-metadata-mutations.json` replay metadata after the
+  position stores, including the previously missing append-count advance
+  before metadata. Every form regresses to 77.22% or 78.48% and loses one
+  resolved reference.
+- `opening-value-lifetime-mutations.json` reconfirms all six trigger, count,
+  and entry declaration orders as byte-identical.
+- `optional-wave-condition-mutations.json`,
+  `second-entry-condition-placement-mutations.json`, and
+  `second-entry-y-lifetime-mutations.json` cover direct, named, split, integer,
+  and x87-carried midpoint/condition lifetimes. All ordinary forms are
+  byte-identical; only subtraction-based comparison regresses.
+- `builder-next-opening-interactions.json` tests an inlined postincrementing
+  `builder.next()` owner. The unused helper is neutral, while every valid call
+  interaction regresses to 87.34% or 77.22%.
+- `plain-entry-owner-mutations.json` replaces the builder with the direct entry
+  table and integer append count suggested by the decompiler view. Both
+  declaration orders fall to 29.14% and `3/0/0` references, decisively
+  rejecting that whole-function owner shape.
+
+The source therefore remains at `220.18987341772151/245` weighted bytes
+(`89.87341772151899%`), 79/79 instructions, prefix seven, and `5/0/0`
+references. The current evidence supports the retained builder and publication
+shape; reproducing the remaining independent schedules would require an
+artificial dependency or register constraint.
