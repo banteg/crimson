@@ -1316,3 +1316,26 @@ and
 `4b4bde9426d159966025442c90592175ab36ebebca6cd8d1c2bea88116d0643a`.
 The 65-record experiment ledger SHA-256 is
 `aa3ab938a445014b78d76ce5af77cfea46a2eab242293b7364411356f87fabe2`.
+
+## Repeated projectile and final-clamp boundaries
+
+`multi-plasma-move-delta-mutations.json` tests both component orders while
+moving all five Multi Plasma calls from `scratch_pos` to the native-looking
+`move_delta` object. Both variants hit the same allocation boundary as the
+one-shot cases. X-before-Y is least bad but still loses
+`860.8034332688585` weighted bytes, 23 aligned references, and adds one
+reference mismatch. The 2/2 sweep retains no source change; its spec SHA-256
+is `8b8edfc3f615bd36ed09417af064a3077dc05414b23700f35bdd3b585eaed519`.
+
+At the final world-bound clamp, native advances its player base to the Y field
+at `0x004175ed..0x0041760b`. The complete 4/4
+`world-bound-y-pointer-mutations.json` sweep tests ordinary pointer,
+const-pointer, reference, and existing position-aggregate spellings. All
+three direct Y aliases compile byte-identically; the aggregate form loses
+`3.930609284332604` weighted bytes. No source-level pointer spelling explains
+the native late register advance, so the current direct field access remains.
+The spec SHA-256 is
+`0f6060874ba4ede0c895a376b79c6fb096ee4bf9cf047a24348d09eeff5d8c86`.
+
+The 67-record experiment ledger SHA-256 is
+`d31637b87bfa7d1446c08f34c9cecb7d022fcad043759fc878502eeac0b21402`.

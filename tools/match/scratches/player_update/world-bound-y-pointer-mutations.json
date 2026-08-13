@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "world-bound-y-pointer",
+      "find": "    if (player->position.y < scalar) {\n        player->position.y = scalar;\n    }\n    if ((float)terrain_texture_height - scalar < player->position.y) {\n        player->position.y = (float)terrain_texture_height - scalar;\n    }",
+      "replacements": [
+        {
+          "name": "float-pointer",
+          "text": "    float *position_y = &player->position.y;\n    if (*position_y < scalar) {\n        *position_y = scalar;\n    }\n    if ((float)terrain_texture_height - scalar < *position_y) {\n        *position_y = (float)terrain_texture_height - scalar;\n    }"
+        },
+        {
+          "name": "const-pointer",
+          "text": "    float *const position_y = &player->position.y;\n    if (*position_y < scalar) {\n        *position_y = scalar;\n    }\n    if ((float)terrain_texture_height - scalar < *position_y) {\n        *position_y = (float)terrain_texture_height - scalar;\n    }"
+        },
+        {
+          "name": "float-reference",
+          "text": "    float &position_y = player->position.y;\n    if (position_y < scalar) {\n        position_y = scalar;\n    }\n    if ((float)terrain_texture_height - scalar < position_y) {\n        position_y = (float)terrain_texture_height - scalar;\n    }"
+        },
+        {
+          "name": "position-aggregate",
+          "text": "    if (player_position->y < scalar) {\n        player_position->y = scalar;\n    }\n    if ((float)terrain_texture_height - scalar < player_position->y) {\n        player_position->y = (float)terrain_texture_height - scalar;\n    }"
+        }
+      ]
+    }
+  ]
+}
