@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "orbit-player-standard-expression",
+      "find": "                                creature_pool[creature_index].target_x =\n                                    (float)cos(phase_angle) * distance * 0.85f\n                                    + player_state_table[current_player_index].position.x;\n                                creature_pool[creature_index].target_y =\n                                    (float)sin(phase_angle) * distance * 0.85f\n                                    + player_state_table[current_player_index].position.y;",
+      "replacements": [
+        {
+          "name": "sdk-vector-expression",
+          "text": "                                *(creature_vec2_t *)&creature_pool[\n                                    creature_index\n                                ].target_x =\n                                    *(creature_vec2_t *)&player_state_table[\n                                        current_player_index\n                                    ].position\n                                    + creature_vec2_t(\n                                        (float)cos(phase_angle),\n                                        (float)sin(phase_angle))\n                                        * (distance * 0.85f);"
+        }
+      ]
+    },
+    {
+      "name": "orbit-player-wide-expression",
+      "find": "                            creature_pool[creature_index].target_x =\n                                (float)cos(phase_angle) * distance * 0.9f\n                                + player_state_table[current_player_index].position.x;\n                            creature_pool[creature_index].target_y =\n                                (float)sin(phase_angle) * distance * 0.9f\n                                + player_state_table[current_player_index].position.y;",
+      "replacements": [
+        {
+          "name": "sdk-vector-expression",
+          "text": "                            *(creature_vec2_t *)&creature_pool[\n                                creature_index\n                            ].target_x =\n                                *(creature_vec2_t *)&player_state_table[\n                                    current_player_index\n                                ].position\n                                + creature_vec2_t(\n                                    (float)cos(phase_angle),\n                                    (float)sin(phase_angle))\n                                    * (distance * 0.9f);"
+        }
+      ]
+    },
+    {
+      "name": "orbit-player-tight-expression",
+      "find": "                                creature_pool[creature_index].target_x =\n                                    (float)cos(phase_angle) * distance * 0.55f\n                                    + player_state_table[current_player_index].position.x;\n                                creature_pool[creature_index].target_y =\n                                    (float)sin(phase_angle) * distance * 0.55f\n                                    + player_state_table[current_player_index].position.y;",
+      "replacements": [
+        {
+          "name": "sdk-vector-expression",
+          "text": "                                *(creature_vec2_t *)&creature_pool[\n                                    creature_index\n                                ].target_x =\n                                    *(creature_vec2_t *)&player_state_table[\n                                        current_player_index\n                                    ].position\n                                    + creature_vec2_t(\n                                        (float)cos(phase_angle),\n                                        (float)sin(phase_angle))\n                                        * (distance * 0.55f);"
+        }
+      ]
+    }
+  ]
+}

@@ -620,3 +620,23 @@ the reference audit from `225/0/2` to `205/0/4`. No expression was retained.
 This native island does not explain the remaining frame delta, so the next
 pass should move to another unmatched block rather than manufacture an SDK
 relationship.
+
+## Orbit-player vector-expression boundary
+
+The same live-native check was extended to the three separate orbit-player
+paths: standard, wide, and tight radius. The
+`orbit-player-vector-expression-mutations.json` plan evaluates all 7/7
+non-empty combinations of replacing their
+explicit component arithmetic with the compact vector-expression idiom shown
+in the contemporary mod SDK.
+
+Every combination regresses. The least-bad tight-only form loses
+273.827134079627 weighted bytes and adds 11 instructions; the standard-only
+form loses 372.206010403799 bytes and adds 17 instructions. Applying the SDK
+shape to all three paths loses 525.453243230490 bytes and adds 31 instructions.
+Reference fidelity also worsens in every case. The SDK remains useful evidence
+for ordinary public vector idioms, but this result supplies no evidence that
+these 1.9.93 internals used that expression shape. No source change is retained.
+
+The complete spec SHA-256 is
+`84db46fc3f70ae5c9d466f064ca9d6a9bb59ceedb6b355dd10e1a5ff7f07a2c3`.
