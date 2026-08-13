@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-impact-jitter-lifetime",
+      "find": "                                        int jitter = crt_rand() & 3;\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter);\n                                        projectile->position.y +=\n                                            (float)(sin(heading) * jitter);",
+      "replacements": [
+        {
+          "name": "float-jitter",
+          "text": "                                        float jitter =\n                                            (float)(crt_rand() & 3);\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter);\n                                        projectile->position.y +=\n                                            (float)(sin(heading) * jitter);"
+        },
+        {
+          "name": "double-jitter",
+          "text": "                                        double jitter =\n                                            (double)(crt_rand() & 3);\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter);\n                                        projectile->position.y +=\n                                            (float)(sin(heading) * jitter);"
+        },
+        {
+          "name": "float-jitter-double-heading",
+          "text": "                                        float jitter =\n                                            (float)(crt_rand() & 3);\n                                        double heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter);\n                                        projectile->position.y +=\n                                            (float)(sin(heading) * jitter);"
+        },
+        {
+          "name": "named-float-conversion",
+          "text": "                                        int jitter = crt_rand() & 3;\n                                        float jitter_scale = (float)jitter;\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter_scale);\n                                        projectile->position.y +=\n                                            (float)(sin(heading) * jitter_scale);"
+        },
+        {
+          "name": "float-jitter-vector-result",
+          "text": "                                        float jitter =\n                                            (float)(crt_rand() & 3);\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile_vec2_t jitter_delta(\n                                            (float)(cos(heading) * jitter),\n                                            (float)(sin(heading) * jitter));\n                                        projectile->position += jitter_delta;"
+        }
+      ]
+    }
+  ]
+}

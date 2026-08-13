@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-impact-jitter-operand-order",
+      "find": "                                        int jitter = crt_rand() & 3;\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter);\n                                        projectile->position.y +=\n                                            (float)(sin(heading) * jitter);",
+      "replacements": [
+        {
+          "name": "double-jitter-reversed-y",
+          "text": "                                        double jitter =\n                                            (double)(crt_rand() & 3);\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter);\n                                        projectile->position.y +=\n                                            (float)(jitter * sin(heading));"
+        },
+        {
+          "name": "double-jitter-reversed-products",
+          "text": "                                        double jitter =\n                                            (double)(crt_rand() & 3);\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(jitter * cos(heading));\n                                        projectile->position.y +=\n                                            (float)(jitter * sin(heading));"
+        },
+        {
+          "name": "double-jitter-named-y",
+          "text": "                                        double jitter =\n                                            (double)(crt_rand() & 3);\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter);\n                                        double jitter_y =\n                                            sin(heading) * jitter;\n                                        projectile->position.y +=\n                                            (float)jitter_y;"
+        },
+        {
+          "name": "int-plus-double-jitter",
+          "text": "                                        int jitter = crt_rand() & 3;\n                                        double jitter_scale =\n                                            (double)jitter;\n                                        float heading =\n                                            projectile->angle - 1.5707964f;\n                                        projectile->position.x +=\n                                            (float)(cos(heading) * jitter_scale);\n                                        projectile->position.y +=\n                                            (float)(sin(heading) * jitter_scale);"
+        }
+      ]
+    }
+  ]
+}

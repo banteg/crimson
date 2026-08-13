@@ -1087,3 +1087,40 @@ and do not reopen these ranked islands without new native evidence. A fresh
 hypothesis should start outside the covered decal, Plasma-child, and particle
 geometry regions and must improve its bounded region without trading references
 or already-matched blocks.
+
+## Primary-impact jitter lifetime boundary
+
+The next uncovered native fragment at `0x004211b8..0x004211ee` keeps the
+primary-impact jitter integer in a stack slot, converts it with `fild`, and
+reuses the converted value across the cosine and sine position updates. The
+current source's ordinary `int jitter = crt_rand() & 3` instead lets VC6 load
+the heading before materializing the integer, so this was a concrete x87
+lifetime hypothesis rather than a frame-size guess.
+
+Three complete plans close the local surface. The 5/5 lifetime sweep (spec SHA
+`3affdcc608216d87b02ac1d7902aa5f4423ff565cb2e2ec457cc9fe7640b1446`)
+found that `double jitter` gains 11.2989 weighted bytes and preserves
+references at `417/0/18`, but removes three candidate instructions from an
+already-short `2176/2203` build. Float and named-conversion forms gain only
+5.0451 bytes, remove one instruction, and the latter forms also worsen
+references. Its one compile failure was an invalid vector `+=` spelling for
+the plain `vec2f_t` reconstruction and is digest-bound by mutation-error audit
+record 69.
+
+All 4/4 operand-order variants compile identically to `double jitter` (spec
+SHA `6a93b175aa7ec86ce0ee83570635f4451628c40b40cbe4d694e159271200ecc4`),
+so reassociation does not recover the missing native operations. A complete
+15/15 interaction sweep against the three native-looking decal scale vectors
+(spec SHA
+`40c6463c12b2d09f32e5a12d5ab460caee3361a81e5d4c7fc8d5f724668d6af2`)
+raises the best fuzzy delta to 20.4110 bytes, but still removes one instruction
+and worsens references to `416/0/20`; larger combinations regress sharply.
+
+No form is retained. The canonical result remains `5269.3071/8409`
+(`62.6627084%`), `2176/2203` instructions, and `417/0/18` references with
+source SHA
+`3c354f7b530d8308e7cab67ae303a1b4f219b0df3ee869c38d0d5b364adbb923`.
+The recorded evidence log SHA is
+`faf9651342c6d65877064cb7c8dbabe5e6138db55ed63d4db628e29756dfddb7`.
+Do not retain the attractive `double` form unless a separate native-backed
+change recovers the three lost instructions without degrading references.
