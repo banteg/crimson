@@ -352,3 +352,19 @@ remain 1,408/1,422 and 10; the reference audit improves from **`485/0/4`** to
 slot-31 vector-add spelling were both rejected after losing weighted bytes;
 neither changed the retained source. Source SHA-256 is
 `bf1cf806240dfd538343e3bf2df182e760a3aed85b14425013e44287c0b42384`.
+
+## Narrow preserve-Y and atlas-row boundary
+
+The remaining controls-panel seam was replayed from the current epoch rather
+than inherited from its historical score. All four narrow vector-lifetime
+spellings regressed by at least 190 weighted bytes. Live native inspection
+also confirmed the apparently redundant Y preservation, so deleting or
+folding that store would contradict the target.
+
+A second 12-way menu permuted the independent atlas-row aggregate writes at
+the three unresolved reference sites. Every ordering regressed; the least-bad
+variant lost 5.11 weighted bytes and worsened the reference audit. The three
+reference mismatches are therefore scheduling/alignment effects, not evidence
+for a different aggregate order. No source was retained. The current baseline
+remains **89.25795%**, 1,408/1,422 instructions, prefix 10, and `488/0/3`
+references.

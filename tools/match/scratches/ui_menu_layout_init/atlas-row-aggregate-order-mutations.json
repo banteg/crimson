@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "atlas-row-aggregate-order",
+      "find": "    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);",
+      "replacements": [
+        {
+          "name": "0-1-3-2",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);"
+        },
+        {
+          "name": "0-2-1-3",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);"
+        },
+        {
+          "name": "0-2-3-1",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);"
+        },
+        {
+          "name": "0-3-1-2",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);"
+        },
+        {
+          "name": "0-3-2-1",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);"
+        },
+        {
+          "name": "1-0-2-3",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);"
+        },
+        {
+          "name": "1-0-3-2",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);"
+        },
+        {
+          "name": "1-2-0-3",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);"
+        },
+        {
+          "name": "1-2-3-0",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);"
+        },
+        {
+          "name": "2-0-1-3",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);"
+        },
+        {
+          "name": "2-1-0-3",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);"
+        },
+        {
+          "name": "3-0-1-2",
+          "text": "    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);"
+        }
+      ]
+    }
+  ]
+}
