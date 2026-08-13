@@ -223,7 +223,13 @@ directory or the original ZIP and replay its calibrated exports with:
 ```sh
 uv run crimson match mod-sdk --sdk /path/to/cl_mod_sdk_v1 --check
 uv run crimson match mod-sdk --sdk /path/to/cl_mod_sdk_v1.zip --check --json
+uv run crimson match sdk-oracle --sdk /path/to/cl_mod_sdk_v1.zip --check
 ```
+
+If the original package is no longer local, retrieve the pinned capture from
+the Internet Archive URL recorded as `package.archive.archived_url` in the
+manifest. An extracted `cl_mod_sdk_v1/` at the repository root is ignored by
+Git and is the first default source checked by both commands.
 
 The replay compiles each example `DllMain.cpp` with its release `/MT /W3 /GX
 /O2` code-generation flags under `msvc6.5pp`, verifies the resulting COFF
@@ -240,6 +246,16 @@ local-lifetime idioms. This does **not** make the SDK source for game internals
 or make build 9044 provenance for `crimsonland.exe`; the game's owned C/C++
 records remain build 9782. Linux ports and the remake use different engines and
 are not source-shape oracles for this target.
+
+The separate `sdk-oracle` lane compiles the untouched `r_roks.cpp`, selects
+only its externally defined `?r...` functions, and searches executable DLL
+sections with relocation-masked object fingerprints. Unique linked caller
+xrefs disambiguate identical record/play helper bodies. The pinned specimen
+maps all 25 application-owned functions (14,548 bytes and 3,911 instructions)
+back to `cl_crimsonroks.dll` at normalized instruction identity; CRT and
+compiler-generated helpers are excluded by construction. These measurements
+are calibration evidence only and never contribute to the 1.9.93 game matching
+score or `STATUS.md`.
 
 Run the compiler through `wibo`. Put `wibo` on `PATH`, set
 `WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple

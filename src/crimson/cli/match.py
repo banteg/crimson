@@ -489,6 +489,50 @@ def cmd_match_mod_sdk(
         raise typer.Exit(code=1)
 
 
+@match_app.command("sdk-oracle")
+def cmd_match_sdk_oracle(
+    sdk: Path | None = typer.Option(
+        None,
+        "--sdk",
+        help="MOD SDK directory or cl_mod_sdk_v1.zip; defaults to the repo cache, CRIMSON_MOD_SDK, or Downloads",
+    ),
+    manifest: Path = typer.Option(
+        mod_sdk.DEFAULT_MOD_SDK_MANIFEST,
+        "--manifest",
+        help="pinned MOD SDK provenance manifest",
+    ),
+    match_root: Path = typer.Option(
+        matchlib.DEFAULT_MATCH_ROOT,
+        "--match-root",
+        help="tools/match root containing cl.sh and compiler profiles",
+    ),
+    project: str | None = typer.Option(
+        None,
+        "--project",
+        help="oracle project; inferred when the manifest has exactly one",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail unless every authored function maps exactly"),
+) -> None:
+    """Map authenticated example source functions into the shipped MOD DLL."""
+    try:
+        report = mod_sdk.build_mod_sdk_oracle(
+            sdk,
+            manifest_path=manifest,
+            match_root=match_root,
+            project_name=project,
+        )
+    except Exception as exc:
+        typer.echo(f"MOD SDK oracle failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+    if as_json:
+        typer.echo(json.dumps(mod_sdk.mod_sdk_oracle_report_payload(report), indent=2, sort_keys=True))
+    else:
+        typer.echo(mod_sdk.render_mod_sdk_oracle_report(report))
+    if check and not report.ok:
+        raise typer.Exit(code=1)
+
+
 @match_app.command("archive")
 def cmd_match_archive(
     archive: Path = typer.Argument(..., help="candidate COFF .lib archive"),

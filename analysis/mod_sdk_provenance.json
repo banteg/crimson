@@ -8,6 +8,8 @@
     "root": "cl_mod_sdk_v1",
     "archive": {
       "filename": "cl_mod_sdk_v1.zip",
+      "original_url": "http://crimsonland.com/cl_mod_sdk_v1.zip",
+      "archived_url": "https://web.archive.org/web/20100922094228id_/http://crimsonland.com/cl_mod_sdk_v1.zip",
       "size": 1948180,
       "sha256": "f81cc70ebe29cf9576b251e8723802dedd7abdd7b6b00a8d15c503ed8ceb786c"
     },
@@ -152,7 +154,12 @@
       "exports": [
         {"name": "CMOD_GetMod", "symbol": "_CMOD_GetMod"},
         {"name": "CMOD_GetInfo", "symbol": "_CMOD_GetInfo"}
-      ]
+      ],
+      "oracle": {
+        "source": "cl_crimsonroks/src/r_roks.cpp",
+        "symbol_prefix": "?r",
+        "expected_functions": 25
+      }
     }
   ],
   "calibration": {

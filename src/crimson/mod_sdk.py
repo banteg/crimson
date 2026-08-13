@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import re
+import struct
 import subprocess
 import tempfile
 import zipfile
@@ -42,6 +43,55 @@ class ModSdkReport:
     @property
     def failed(self) -> tuple[ModSdkCheck, ...]:
         return tuple(check for check in self.checks if not check.passed)
+
+
+@dataclass(frozen=True, slots=True)
+class ModSdkOracleFunction:
+    name: str
+    symbol: str
+    size: int
+    instructions: int
+    target_instructions: int
+    target_va: int | None
+    fingerprint_candidates: tuple[int, ...]
+    evidence: str | None
+    normalized_ratio: float | None
+
+    @property
+    def exact(self) -> bool:
+        return (
+            self.target_va is not None
+            and self.normalized_ratio == 1.0
+            and self.instructions > 0
+            and self.target_instructions == self.instructions
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ModSdkOracleReport:
+    source: Path
+    source_kind: str
+    release: str
+    archive_sha256: str
+    project: str
+    source_path: str
+    compiler_product_id: int
+    compiler_build: int
+    expected_functions: int
+    provenance_checks: int
+    functions: tuple[ModSdkOracleFunction, ...]
+
+    @property
+    def mapped(self) -> tuple[ModSdkOracleFunction, ...]:
+        return tuple(function for function in self.functions if function.target_va is not None)
+
+    @property
+    def exact(self) -> tuple[ModSdkOracleFunction, ...]:
+        return tuple(function for function in self.functions if function.exact)
+
+    @property
+    def ok(self) -> bool:
+        return len(self.functions) == self.expected_functions and len(self.exact) == self.expected_functions
 
 
 def _relative_path(value: object, *, label: str) -> str:
@@ -119,6 +169,20 @@ def load_mod_sdk_manifest(path: Path = DEFAULT_MOD_SDK_MANIFEST) -> dict[str, An
                 for value in source_files
             ),
         }
+        oracle = project.get("oracle")
+        if oracle is not None:
+            if not isinstance(oracle, dict):
+                raise TypeError(f"{path}: project {name!r} oracle must be an object")
+            oracle = cast(dict[str, Any], oracle)
+            referenced_paths.add(
+                _relative_path(oracle.get("source"), label=f"projects[{index}].oracle.source"),
+            )
+            symbol_prefix = oracle.get("symbol_prefix")
+            if not isinstance(symbol_prefix, str) or not symbol_prefix:
+                raise TypeError(f"{path}: project {name!r} oracle.symbol_prefix must be non-empty")
+            expected_functions = oracle.get("expected_functions")
+            if not isinstance(expected_functions, int) or expected_functions <= 0:
+                raise TypeError(f"{path}: project {name!r} oracle.expected_functions must be positive")
         unknown = sorted(referenced_paths - artifact_paths)
         if unknown:
             raise ValueError(f"{path}: project {name!r} references unpinned artifacts {unknown}")
@@ -196,6 +260,7 @@ def resolve_mod_sdk_source(source: Path | None = None) -> Path:
     candidates = [Path(configured).expanduser()] if configured else []
     candidates.extend(
         (
+            matchlib.REPO_ROOT / "cl_mod_sdk_v1",
             Path.home() / "Downloads" / "cl_mod_sdk_v1",
             Path.home() / "Downloads" / "cl_mod_sdk_v1.zip",
         ),
@@ -488,6 +553,320 @@ def validate_mod_sdk(
     )
 
 
+_IMAGE_SCN_MEM_EXECUTE = 0x20000000
+
+
+def _oracle_display_name(symbol: str) -> str:
+    if match := re.match(r"^\?([^@]+)@@", symbol):
+        return match.group(1)
+    return symbol.removeprefix("_")
+
+
+def _oracle_relocation_mask(function: matchlib.ObjectFunction) -> frozenset[int]:
+    return frozenset(
+        offset
+        for reference in function.relocation_references
+        for offset in range(reference.offset, min(reference.offset + 4, len(function.data)))
+    )
+
+
+def _longest_unmasked_run(data: bytes, masked: frozenset[int]) -> tuple[int, int] | None:
+    runs: list[tuple[int, int]] = []
+    start: int | None = None
+    for offset in range(len(data) + 1):
+        if offset < len(data) and offset not in masked:
+            if start is None:
+                start = offset
+        elif start is not None:
+            runs.append((start, offset))
+            start = None
+    if not runs:
+        return None
+    return max(runs, key=lambda run: run[1] - run[0])
+
+
+def _find_masked_fingerprint_hits(
+    function: matchlib.ObjectFunction,
+    segments: tuple[tuple[int, bytes], ...],
+) -> tuple[int, ...]:
+    """Find linked copies while ignoring four-byte x86 COFF relocation words."""
+
+    masked = _oracle_relocation_mask(function)
+    run = _longest_unmasked_run(function.data, masked)
+    if run is None:
+        return ()
+    anchor_start, anchor_end = run
+    anchor = function.data[anchor_start:anchor_end]
+    hits: set[int] = set()
+    for segment_va, segment_data in segments:
+        search_from = 0
+        while (anchor_offset := segment_data.find(anchor, search_from)) >= 0:
+            function_offset = anchor_offset - anchor_start
+            if (
+                function_offset >= 0
+                and function_offset + len(function.data) <= len(segment_data)
+                and all(
+                    offset in masked or segment_data[function_offset + offset] == value
+                    for offset, value in enumerate(function.data)
+                )
+            ):
+                hits.add(segment_va + function_offset)
+            search_from = anchor_offset + 1
+    return tuple(sorted(hits))
+
+
+def _resolve_oracle_addresses(
+    functions: dict[str, matchlib.ObjectFunction],
+    fingerprint_hits: dict[str, tuple[int, ...]],
+    image: matchlib.LoadedImage,
+) -> tuple[dict[str, int], dict[str, str]]:
+    """Resolve unique fingerprints, then split collisions with linked caller xrefs."""
+
+    resolved = {
+        symbol: hits[0]
+        for symbol, hits in fingerprint_hits.items()
+        if len(hits) == 1
+    }
+    evidence = {symbol: "masked-fingerprint" for symbol in resolved}
+    changed = True
+    while changed:
+        changed = False
+        votes: dict[str, set[int]] = {}
+        for caller_symbol, caller_va in tuple(resolved.items()):
+            for reference in functions[caller_symbol].relocation_references:
+                if (
+                    reference.symbol_name not in functions
+                    or reference.relocation_type != matchlib.IMAGE_REL_I386_REL32
+                ):
+                    continue
+                displacement_offset = caller_va - image.image_base + reference.offset
+                if not 0 <= displacement_offset <= len(image.mapped) - 4:
+                    continue
+                displacement = struct.unpack_from("<i", image.mapped, displacement_offset)[0]
+                destination = caller_va + reference.offset + 4 + displacement
+                if destination in fingerprint_hits[reference.symbol_name]:
+                    votes.setdefault(reference.symbol_name, set()).add(destination)
+        for symbol, destinations in votes.items():
+            if symbol in resolved or len(destinations) != 1:
+                continue
+            resolved[symbol] = next(iter(destinations))
+            evidence[symbol] = "masked-fingerprint+caller-xref"
+            changed = True
+    return resolved, evidence
+
+
+def _executable_segments(binary_path: Path, image: matchlib.LoadedImage) -> tuple[tuple[int, bytes], ...]:
+    try:
+        import pefile
+    except ModuleNotFoundError as exc:
+        raise RuntimeError("pefile is required for MOD SDK calibration; run `uv sync --dev`") from exc
+
+    pe = pefile.PE(data=binary_path.read_bytes(), fast_load=True)
+    segments: list[tuple[int, bytes]] = []
+    for raw_section in pe.sections:
+        section = cast(Any, raw_section)
+        if int(section.Characteristics) & _IMAGE_SCN_MEM_EXECUTE == 0:
+            continue
+        start = int(section.VirtualAddress)
+        size = int(section.Misc_VirtualSize)
+        segments.append((image.image_base + start, image.mapped[start : start + size]))
+    if not segments:
+        raise ValueError(f"{binary_path}: no executable PE sections")
+    return tuple(segments)
+
+
+def _compile_oracle_project(
+    project: dict[str, Any],
+    *,
+    reader: _PackageReader,
+    source: Path,
+    source_kind: str,
+    release: str,
+    archive_sha256: str,
+    provenance_checks: int,
+    match_root: Path,
+) -> ModSdkOracleReport:
+    name = str(project["name"])
+    compiler = cast(dict[str, Any], project["compiler"])
+    oracle = cast(dict[str, Any], project["oracle"])
+    oracle_source = str(oracle["source"])
+    with tempfile.TemporaryDirectory(prefix=f"crimson-sdk-oracle-{name}-") as temp_name:
+        temp = Path(temp_name)
+        copied: dict[str, bytes] = {}
+        for source_path in (*project["source_files"], oracle_source):
+            source_path = str(source_path)
+            basename = PurePosixPath(source_path).name
+            data = reader.read(source_path)
+            if basename in copied and copied[basename] != data:
+                raise ValueError(f"project {name!r} has colliding source basename {basename!r}")
+            copied[basename] = data
+            (temp / basename).write_bytes(data)
+        binary_path = temp / PurePosixPath(str(project["binary"])).name
+        binary_path.write_bytes(reader.read(str(project["binary"])))
+
+        source_name = PurePosixPath(oracle_source).name
+        command = [
+            str(match_root.resolve() / "cl.sh"),
+            "/c",
+            *map(str, compiler["flags"]),
+            *(
+                argument
+                for define in compiler["defines"]
+                for argument in ("/D", str(define))
+            ),
+            source_name,
+        ]
+        environment = dict(os.environ)
+        environment["MSVC_VER"] = str(compiler["profile"])
+        environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(temp)
+        completed = subprocess.run(
+            command,
+            cwd=temp,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        obj_path = temp / Path(source_name).with_suffix(".obj")
+        if completed.returncode or not obj_path.is_file():
+            detail = " ".join(
+                line.strip()
+                for line in (completed.stdout + completed.stderr).splitlines()
+                if line.strip()
+            )
+            raise RuntimeError(detail or f"compiler exited {completed.returncode}")
+
+        obj = matchlib.parse_coff_object(obj_path.read_bytes())
+        product_id = int(compiler["product_id"])
+        build = int(compiler["build"])
+        expected_comp_id = (product_id << 16) | build
+        comp_ids = [symbol.value for symbol in obj.symbols if symbol.name == "@comp.id"]
+        if comp_ids != [expected_comp_id]:
+            actual = ",".join(f"0x{value:08x}" for value in comp_ids) or "missing"
+            raise ValueError(f"expected compiler record 0x{expected_comp_id:08x}, got {actual}")
+
+        symbol_prefix = str(oracle["symbol_prefix"])
+        symbols = [
+            symbol
+            for symbol in obj.symbols
+            if symbol.name.startswith(symbol_prefix)
+            and symbol.section_number > 0
+            and symbol.symbol_type & matchlib.SYM_TYPE_FUNCTION
+            and symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+        ]
+        expected_functions = int(oracle["expected_functions"])
+        if len(symbols) != expected_functions:
+            raise ValueError(
+                f"project {name!r} expected {expected_functions} authored functions, found {len(symbols)}",
+            )
+        functions = {
+            symbol.name: matchlib.extract_object_function(obj, symbol.name)
+            for symbol in symbols
+        }
+        image = matchlib.load_image(binary_path)
+        segments = _executable_segments(binary_path, image)
+        fingerprint_hits = {
+            symbol: _find_masked_fingerprint_hits(function, segments)
+            for symbol, function in functions.items()
+        }
+        resolved, evidence = _resolve_oracle_addresses(functions, fingerprint_hits, image)
+
+        rows: list[ModSdkOracleFunction] = []
+        for symbol, function in functions.items():
+            candidate_lines = matchlib.disassemble_normalized_function(
+                function.data,
+                relocation_offsets=function.relocation_offsets,
+                relocation_references=function.relocation_references,
+                address_range=(image.image_base, image.image_base + image.size_of_image),
+            )
+            target_va = resolved.get(symbol)
+            ratio: float | None = None
+            target_instructions = 0
+            if target_va is not None:
+                target = image.function_bytes(target_va, target_va + len(function.data))
+                result = matchlib.match_function(
+                    target,
+                    function,
+                    image=image,
+                    target_va=target_va,
+                )
+                ratio = result.ratio
+                target_instructions = len(result.target_lines)
+            rows.append(
+                ModSdkOracleFunction(
+                    name=_oracle_display_name(symbol),
+                    symbol=symbol,
+                    size=len(function.data),
+                    instructions=len(candidate_lines),
+                    target_instructions=target_instructions,
+                    target_va=target_va,
+                    fingerprint_candidates=fingerprint_hits[symbol],
+                    evidence=evidence.get(symbol),
+                    normalized_ratio=ratio,
+                ),
+            )
+
+    return ModSdkOracleReport(
+        source=source,
+        source_kind=source_kind,
+        release=release,
+        archive_sha256=archive_sha256,
+        project=name,
+        source_path=oracle_source,
+        compiler_product_id=product_id,
+        compiler_build=build,
+        expected_functions=expected_functions,
+        provenance_checks=provenance_checks,
+        functions=tuple(rows),
+    )
+
+
+def build_mod_sdk_oracle(
+    source: Path | None = None,
+    *,
+    manifest_path: Path = DEFAULT_MOD_SDK_MANIFEST,
+    match_root: Path = matchlib.DEFAULT_MATCH_ROOT,
+    project_name: str | None = None,
+) -> ModSdkOracleReport:
+    """Map application-owned example source into its authenticated shipped DLL."""
+
+    payload = load_mod_sdk_manifest(manifest_path)
+    resolved_source = resolve_mod_sdk_source(source)
+    provenance = validate_mod_sdk(
+        resolved_source,
+        manifest_path=manifest_path,
+        match_root=match_root,
+    )
+    if not provenance.ok:
+        failures = "; ".join(
+            f"{check.component}:{check.kind} {check.detail}"
+            for check in provenance.failed[:3]
+        )
+        raise ValueError(f"MOD SDK provenance gate failed: {failures}")
+    projects = [
+        cast(dict[str, Any], project)
+        for project in payload["projects"]
+        if isinstance(project, dict) and project.get("oracle") is not None
+    ]
+    if project_name is not None:
+        projects = [project for project in projects if project.get("name") == project_name]
+    if len(projects) != 1:
+        available = ", ".join(str(project["name"]) for project in projects) or "none"
+        raise ValueError(f"select exactly one MOD SDK oracle project (available: {available})")
+    package = cast(dict[str, Any], payload["package"])
+    reader = _PackageReader(resolved_source, str(package["root"]))
+    return _compile_oracle_project(
+        projects[0],
+        reader=reader,
+        source=resolved_source,
+        source_kind=reader.kind,
+        release=str(package["release"]),
+        archive_sha256=str(package["archive"]["sha256"]),
+        provenance_checks=len(provenance.checks),
+        match_root=match_root,
+    )
+
+
 def mod_sdk_report_payload(report: ModSdkReport) -> dict[str, Any]:
     return {
         "ok": report.ok,
@@ -513,6 +892,52 @@ def mod_sdk_report_payload(report: ModSdkReport) -> dict[str, Any]:
     }
 
 
+def mod_sdk_oracle_report_payload(report: ModSdkOracleReport) -> dict[str, Any]:
+    return {
+        "schema": 1,
+        "kind": "crimsonland-mod-sdk-source-binary-oracle",
+        "ok": report.ok,
+        "source": str(report.source),
+        "source_kind": report.source_kind,
+        "release": report.release,
+        "archive_sha256": report.archive_sha256,
+        "project": report.project,
+        "source_path": report.source_path,
+        "compiler": {
+            "product_id": report.compiler_product_id,
+            "build": report.compiler_build,
+        },
+        "counted_in_game_score": False,
+        "summary": {
+            "provenance_checks": report.provenance_checks,
+            "application_functions": len(report.functions),
+            "expected_functions": report.expected_functions,
+            "mapped": len(report.mapped),
+            "exact": len(report.exact),
+            "exact_bytes": sum(function.size for function in report.exact),
+            "exact_instructions": sum(function.instructions for function in report.exact),
+        },
+        "functions": [
+            {
+                "name": function.name,
+                "symbol": function.symbol,
+                "target": f"0x{function.target_va:08x}" if function.target_va is not None else None,
+                "bytes": function.size,
+                "instructions": function.instructions,
+                "target_instructions": function.target_instructions,
+                "fingerprint_candidates": [
+                    f"0x{address:08x}"
+                    for address in function.fingerprint_candidates
+                ],
+                "evidence": function.evidence,
+                "normalized_match": function.normalized_ratio,
+                "exact": function.exact,
+            }
+            for function in report.functions
+        ],
+    }
+
+
 def render_mod_sdk_report(report: ModSdkReport) -> str:
     state = "ok" if report.ok else "failed"
     lines = [
@@ -533,4 +958,32 @@ def render_mod_sdk_report(report: ModSdkReport) -> str:
     lines.extend(f"  + {claim}" for claim in report.oracle_scope)
     lines.append("excluded claims:")
     lines.extend(f"  - {claim}" for claim in report.excluded_claims)
+    return "\n".join(lines)
+
+
+def render_mod_sdk_oracle_report(report: ModSdkOracleReport) -> str:
+    state = "ok" if report.ok else "failed"
+    lines = [
+        f"sdk-oracle={state} release={report.release} project={report.project}",
+        f"source={report.source} ({report.source_kind})",
+        (
+            f"provenance-checks={report.provenance_checks} "
+            f"application-functions={len(report.functions)}/{report.expected_functions} "
+            f"mapped={len(report.mapped)} exact={len(report.exact)}"
+        ),
+        (
+            f"exact-code={sum(function.size for function in report.exact)} bytes/"
+            f"{sum(function.instructions for function in report.exact)} instructions "
+            "game-score=excluded"
+        ),
+    ]
+    for function in report.functions:
+        target = f"0x{function.target_va:08x}" if function.target_va is not None else "unmapped"
+        ratio = f"{function.normalized_ratio:.2%}" if function.normalized_ratio is not None else "n/a"
+        lines.append(
+            f"{target} {function.name} match={ratio} "
+            f"insns={function.target_instructions}/{function.instructions} "
+            f"fingerprints={len(function.fingerprint_candidates)} "
+            f"evidence={function.evidence or 'none'}",
+        )
     return "\n".join(lines)
