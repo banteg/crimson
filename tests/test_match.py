@@ -23,6 +23,9 @@ from crimson.match import (
     WORKER_CLAIM_KIND,
     WORKER_OUTCOME_FILE,
     WORKER_OUTCOME_KIND,
+    BasicBlock,
+    CfgAlignment,
+    CfgBlockPair,
     CoffObject,
     CoffRelocation,
     CoffSection,
@@ -103,6 +106,7 @@ from crimson.match import (
     normalize_function,
     parse_coff_object,
     parse_compiler_listing_spans,
+    parse_compiler_listing_stack_layout,
     prune_placeholder_aliases,
     render_compiler_listing_result,
     render_compiler_scan_rows,
@@ -129,6 +133,7 @@ from crimson.match import (
     scratch_experiment_epoch,
     sort_profile_statuses,
     sort_triage_rows,
+    stack_frame_diagnostic_payload,
     triage_row_payload,
     validate_claimed_changes,
     validate_match_claim,
@@ -2480,8 +2485,61 @@ def test_cfg_alignment_anchors_reordered_exact_blocks() -> None:
         "unmatched_candidate": 0,
         "edge_consistent_pairs": 0,
         "edge_conflicts": 0,
+        "heuristic_edge_consistent_pairs": 0,
+        "heuristic_edge_conflicts": 0,
+        "edge_unchecked_pairs": 3,
     }
     assert match_result_payload(result)["cfg_alignment"] == payload
+
+
+def test_stack_frame_diagnostic_reports_one_prologue_delta() -> None:
+    result = MatchResult(
+        ratio=0.5,
+        prefix_instructions=0,
+        target_lines=("sub esp, 0xf4", "push ebx", "ret"),
+        candidate_lines=("sub esp, 0xc4", "push ebx", "ret"),
+    )
+
+    payload = stack_frame_diagnostic_payload(result)
+
+    assert payload == {
+        "target_prologue_allocation_bytes": 0xF4,
+        "candidate_prologue_allocation_bytes": 0xC4,
+        "target_minus_candidate_bytes": 0x30,
+        "classification": "native-frame-larger",
+        "caveat": (
+            "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot "
+            "coloring; its delta does not imply missing source locals byte-for-byte."
+        ),
+    }
+    assert match_result_payload(result)["stack_frame"] == payload
+
+
+def test_cfg_summary_separates_heuristic_edge_conflicts() -> None:
+    block = BasicBlock(
+        index=0,
+        start_instruction=0,
+        end_instruction=1,
+        start_offset=0,
+        end_offset=1,
+        start_address=0,
+        end_address=1,
+        lines=("ret",),
+        successors=(),
+        fallthrough=None,
+    )
+    alignment = CfgAlignment(
+        target_blocks=(block,),
+        candidate_blocks=(block,),
+        pairs=(CfgBlockPair(0, 0, "exact-ambiguous", 1.0, True, False),),
+        unmatched_target=(),
+        unmatched_candidate=(),
+    )
+
+    summary = cfg_alignment_payload(alignment)["summary"]
+
+    assert summary["edge_conflicts"] == 0
+    assert summary["heuristic_edge_conflicts"] == 1
 
 
 def test_region_hints_are_cautious_and_composable() -> None:
@@ -5518,6 +5576,29 @@ def test_parse_compiler_listing_spans_tracks_source_schedule() -> None:
     assert spans[1].instruction_offsets == (5,)
 
 
+def test_parse_compiler_listing_stack_layout_tracks_aliases_and_temporaries() -> None:
+    layout = parse_compiler_listing_stack_layout(
+        "_TEXT\tSEGMENT\r\n"
+        "_value$ = -16\r\n"
+        "_alias$42 = -16\r\n"
+        "$T43 = -8\r\n"
+        "_example PROC NEAR\r\n"
+        "; 10 : {\r\n"
+        "  00000\t83 ec 10\t sub esp, 16\r\n",
+        symbol="example",
+    )
+
+    assert layout.prologue_allocation_bytes == 16
+    assert [(symbol.name, symbol.offset, symbol.generated) for symbol in layout.symbols] == [
+        ("_value$", -16, False),
+        ("_alias$42", -16, False),
+        ("$T43", -8, True),
+    ]
+    assert layout.distinct_slots == 2
+    assert layout.reused_slots == 1
+    assert layout.generated_temporaries == 1
+
+
 def test_compiler_listing_proves_object_function_equivalence(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     match_root = repo_root / "tools" / "match"
@@ -5538,9 +5619,17 @@ def test_compiler_listing_proves_object_function_equivalence(tmp_path: Path) -> 
     assert result.spans
     assert payload["object_function_equivalent"] is True
     assert payload["machine_rows"] > 0
+    assert set(payload["stack_layout"]) == {
+        "prologue_allocation_bytes",
+        "symbol_count",
+        "distinct_slots",
+        "reused_slots",
+        "generated_temporaries",
+    }
     assert "object_function_equivalent=yes" in render_compiler_listing_result(result)
     metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
     assert metadata["object_function_equivalent"] is True
+    assert "symbols" in metadata["stack_layout"]
     assert "does not recover original local names" in metadata["caveat"]
 
 

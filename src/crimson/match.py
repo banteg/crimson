@@ -2934,19 +2934,23 @@ def align_basic_blocks(result: MatchResult) -> CfgAlignment:
         unmatched_target.remove(target_index)
         unmatched_candidate.remove(candidate_index)
 
-    paired_target_to_candidate = {pair.target_block: pair.candidate_block for pair in pairs}
-    paired_candidates = set(paired_target_to_candidate.values())
+    anchored_target_to_candidate = {
+        pair.target_block: pair.candidate_block
+        for pair in pairs
+        if pair.kind == "exact"
+    }
+    anchored_candidates = set(anchored_target_to_candidate.values())
     checked_pairs: list[CfgBlockPair] = []
     for pair in pairs:
         target_successors = {
-            paired_target_to_candidate[successor]
+            anchored_target_to_candidate[successor]
             for successor in target[pair.target_block].successors
-            if successor in paired_target_to_candidate
+            if successor in anchored_target_to_candidate
         }
         candidate_successors = {
             successor
             for successor in candidate[pair.candidate_block].successors
-            if successor in paired_candidates
+            if successor in anchored_candidates
         }
         edge_consistent = (
             target_successors == candidate_successors
@@ -2997,12 +3001,28 @@ def _basic_block_location_payload(block: BasicBlock) -> dict[str, Any]:
 
 
 def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
-    edge_consistent = sum(pair.edge_consistent is True for pair in alignment.pairs)
-    edge_conflicts = sum(pair.edge_consistent is False for pair in alignment.pairs)
+    edge_consistent = sum(
+        pair.kind == "exact" and pair.edge_consistent is True
+        for pair in alignment.pairs
+    )
+    edge_conflicts = sum(
+        pair.kind == "exact" and pair.edge_consistent is False
+        for pair in alignment.pairs
+    )
+    heuristic_edge_consistent = sum(
+        pair.kind != "exact" and pair.edge_consistent is True
+        for pair in alignment.pairs
+    )
+    heuristic_edge_conflicts = sum(
+        pair.kind != "exact" and pair.edge_consistent is False
+        for pair in alignment.pairs
+    )
+    edge_unchecked = sum(pair.edge_consistent is None for pair in alignment.pairs)
     return {
         "method": (
             "diagnostic-only: unique exact normalized block fingerprints, followed by greedy "
-            "structurally identical pairs with at least 55% instruction similarity"
+            "structurally identical pairs with at least 55% instruction similarity; edges are "
+            "checked only against unique exact anchors"
         ),
         "summary": {
             "target_blocks": len(alignment.target_blocks),
@@ -3014,6 +3034,9 @@ def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
             "unmatched_candidate": len(alignment.unmatched_candidate),
             "edge_consistent_pairs": edge_consistent,
             "edge_conflicts": edge_conflicts,
+            "heuristic_edge_consistent_pairs": heuristic_edge_consistent,
+            "heuristic_edge_conflicts": heuristic_edge_conflicts,
+            "edge_unchecked_pairs": edge_unchecked,
         },
         "pairs": [
             {
@@ -3361,6 +3384,44 @@ def diff_region_payload(region: DiffRegion) -> dict[str, Any]:
     }
 
 
+_PROLOGUE_STACK_ALLOCATION_RE = re.compile(r"^sub esp, (0x[0-9a-f]+|\d+)$")
+
+
+def _prologue_stack_allocation(lines: tuple[str, ...]) -> int | None:
+    for line in lines[:16]:
+        if match := _PROLOGUE_STACK_ALLOCATION_RE.match(line):
+            return int(match.group(1), 0)
+    return None
+
+
+def stack_frame_diagnostic_payload(result: MatchResult) -> dict[str, Any] | None:
+    """Compare explicit prologue allocation without multiplying it into local claims."""
+
+    target = _prologue_stack_allocation(result.target_lines)
+    candidate = _prologue_stack_allocation(result.candidate_lines)
+    if target is None and candidate is None:
+        return None
+    delta = target - candidate if target is not None and candidate is not None else None
+    if delta is None:
+        classification = "incomparable-prologue"
+    elif delta > 0:
+        classification = "native-frame-larger"
+    elif delta < 0:
+        classification = "candidate-frame-larger"
+    else:
+        classification = "same-prologue-allocation"
+    return {
+        "target_prologue_allocation_bytes": target,
+        "candidate_prologue_allocation_bytes": candidate,
+        "target_minus_candidate_bytes": delta,
+        "classification": classification,
+        "caveat": (
+            "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot "
+            "coloring; its delta does not imply missing source locals byte-for-byte."
+        ),
+    }
+
+
 def match_result_payload(
     result: MatchResult,
     *,
@@ -3380,6 +3441,7 @@ def match_result_payload(
             "unresolved": result.masked_operand_audit.unresolved_count,
             "mismatch": result.masked_operand_audit.mismatch_count,
         },
+        "stack_frame": stack_frame_diagnostic_payload(result),
         "regions": [diff_region_payload(region) for region in regions],
         "cfg_alignment": cfg_alignment_payload(cfg) if cfg is not None else None,
     }
@@ -3864,6 +3926,32 @@ class CompilerListingSpan:
 
 
 @dataclass(frozen=True, slots=True)
+class CompilerListingStackSymbol:
+    name: str
+    offset: int
+    generated: bool
+
+
+@dataclass(frozen=True, slots=True)
+class CompilerListingStackLayout:
+    prologue_allocation_bytes: int | None
+    symbols: tuple[CompilerListingStackSymbol, ...]
+
+    @property
+    def distinct_slots(self) -> int:
+        return len({symbol.offset for symbol in self.symbols})
+
+    @property
+    def reused_slots(self) -> int:
+        counts = Counter(symbol.offset for symbol in self.symbols)
+        return sum(count > 1 for count in counts.values())
+
+    @property
+    def generated_temporaries(self) -> int:
+        return sum(symbol.generated for symbol in self.symbols)
+
+
+@dataclass(frozen=True, slots=True)
 class CompilerListingResult:
     listing_path: Path
     metadata_path: Path
@@ -3878,6 +3966,7 @@ class CompilerListingResult:
     function_bytes: int
     relocations: int
     spans: tuple[CompilerListingSpan, ...]
+    stack_layout: CompilerListingStackLayout
 
 
 @dataclass(frozen=True, slots=True)
@@ -4854,6 +4943,12 @@ def compile_scratch(
 
 _COMPILER_LISTING_SOURCE_RE = re.compile(r"^;\s*(\d+)\s+:")
 _COMPILER_LISTING_INSTRUCTION_RE = re.compile(r"^\s*([0-9A-Fa-f]{5,8})\t")
+_COMPILER_LISTING_PROC_RE = re.compile(r"^(\S+)\s+PROC\b")
+_COMPILER_LISTING_STACK_SYMBOL_RE = re.compile(r"^(\S+)\s*=\s*(-\d+)\s*$")
+_COMPILER_LISTING_STACK_ALLOCATION_RE = re.compile(
+    r"\bsub\s+esp,\s+(\d+|0[0-9A-Fa-f]+H)\b",
+    re.IGNORECASE,
+)
 
 
 def parse_compiler_listing_spans(text: str) -> tuple[CompilerListingSpan, ...]:
@@ -4882,6 +4977,52 @@ def parse_compiler_listing_spans(text: str) -> tuple[CompilerListingSpan, ...]:
             instruction_offsets.append(int(instruction_match.group(1), 16))
     flush()
     return tuple(spans)
+
+
+def parse_compiler_listing_stack_layout(
+    text: str,
+    *,
+    symbol: str,
+) -> CompilerListingStackLayout:
+    """Recover the candidate compiler's stack aliases without claiming native names."""
+
+    lines = text.splitlines()
+    accepted_symbols = {symbol, symbol.removeprefix("_")}
+    accepted_symbols |= {f"_{value}" for value in accepted_symbols}
+    proc_index: int | None = None
+    for index, line in enumerate(lines):
+        match = _COMPILER_LISTING_PROC_RE.match(line)
+        if match and match.group(1) in accepted_symbols:
+            proc_index = index
+            break
+    if proc_index is None:
+        return CompilerListingStackLayout(None, ())
+
+    segment_index = max(
+        (
+            index
+            for index, line in enumerate(lines[:proc_index])
+            if line.rstrip().endswith("SEGMENT")
+        ),
+        default=proc_index,
+    )
+    symbols = tuple(
+        CompilerListingStackSymbol(
+            name=match.group(1),
+            offset=int(match.group(2)),
+            generated=match.group(1).startswith("$T"),
+        )
+        for line in lines[segment_index + 1 : proc_index]
+        if (match := _COMPILER_LISTING_STACK_SYMBOL_RE.match(line))
+    )
+
+    allocation: int | None = None
+    for line in lines[proc_index + 1 : proc_index + 41]:
+        if match := _COMPILER_LISTING_STACK_ALLOCATION_RE.search(line):
+            token = match.group(1)
+            allocation = int(token[:-1], 16) if token.upper().endswith("H") else int(token)
+            break
+    return CompilerListingStackLayout(allocation, symbols)
 
 
 def generate_compiler_listing(
@@ -4972,7 +5113,12 @@ def generate_compiler_listing(
             )
         listing_data = temp_listing.read_bytes()
 
-    spans = parse_compiler_listing_spans(listing_data.decode("latin1"))
+    listing_text = listing_data.decode("latin1")
+    spans = parse_compiler_listing_spans(listing_text)
+    stack_layout = parse_compiler_listing_stack_layout(
+        listing_text,
+        symbol=config.symbol or config.function,
+    )
     _write_bytes_atomic(output, listing_data)
     payload = {
         "schema": 1,
@@ -4999,9 +5145,25 @@ def generate_compiler_listing(
             }
             for span in spans
         ],
+        "stack_layout": {
+            "prologue_allocation_bytes": stack_layout.prologue_allocation_bytes,
+            "symbol_count": len(stack_layout.symbols),
+            "distinct_slots": stack_layout.distinct_slots,
+            "reused_slots": stack_layout.reused_slots,
+            "generated_temporaries": stack_layout.generated_temporaries,
+            "symbols": [
+                {
+                    "name": symbol.name,
+                    "offset": symbol.offset,
+                    "generated": symbol.generated,
+                }
+                for symbol in stack_layout.symbols
+            ],
+        },
         "caveat": (
             "Source-line scheduling comes from the reconstructed source and selected compiler; "
-            "it does not recover original local names or prove native variable lifetimes."
+            "stack symbols and aliases describe only that candidate compilation. This does not "
+            "recover original local names or prove native variable lifetimes."
         ),
     }
     _write_text_atomic(metadata_path, json.dumps(payload, indent=2, sort_keys=True) + "\n")
@@ -5019,6 +5181,7 @@ def generate_compiler_listing(
         function_bytes=len(canonical_function.data),
         relocations=len(canonical_function.relocation_references),
         spans=spans,
+        stack_layout=stack_layout,
     )
 
 
@@ -5039,6 +5202,13 @@ def compiler_listing_payload(result: CompilerListingResult) -> dict[str, Any]:
         "relocations": result.relocations,
         "source_spans": len(result.spans),
         "machine_rows": sum(len(span.instruction_offsets) for span in result.spans),
+        "stack_layout": {
+            "prologue_allocation_bytes": result.stack_layout.prologue_allocation_bytes,
+            "symbol_count": len(result.stack_layout.symbols),
+            "distinct_slots": result.stack_layout.distinct_slots,
+            "reused_slots": result.stack_layout.reused_slots,
+            "generated_temporaries": result.stack_layout.generated_temporaries,
+        },
     }
 
 
@@ -5049,7 +5219,12 @@ def render_compiler_listing_result(result: CompilerListingResult) -> str:
         f"function={result.function} compiler={result.compiler} cflags={result.cflags}\n"
         f"object_function_equivalent=yes bytes={result.function_bytes} "
         f"relocations={result.relocations} source_spans={payload['source_spans']} "
-        f"machine_rows={payload['machine_rows']}"
+        f"machine_rows={payload['machine_rows']}\n"
+        f"stack-allocation={result.stack_layout.prologue_allocation_bytes} "
+        f"symbols={len(result.stack_layout.symbols)} "
+        f"slots={result.stack_layout.distinct_slots} "
+        f"reused-slots={result.stack_layout.reused_slots} "
+        f"generated-temporaries={result.stack_layout.generated_temporaries}"
     )
 
 

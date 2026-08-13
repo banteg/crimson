@@ -1917,6 +1917,19 @@ def cmd_match_inspect(
         typer.echo("matcher: missing scratch")
     evidence = payload.get("mismatch_evidence")
     if evidence:
+        frame = evidence.get("stack_frame")
+        if frame:
+            target_frame = frame["target_prologue_allocation_bytes"]
+            candidate_frame = frame["candidate_prologue_allocation_bytes"]
+            delta = frame["target_minus_candidate_bytes"]
+            delta_text = f"{delta:+d}" if delta is not None else "-"
+            typer.echo(
+                "frame: prologue-allocation="
+                f"{target_frame if target_frame is not None else '-'}/"
+                f"{candidate_frame if candidate_frame is not None else '-'} "
+                f"delta={delta_text} "
+                f"classification={frame['classification']} diagnostic-only",
+            )
         cfg = evidence.get("cfg_alignment")
         if cfg:
             summary = cfg["summary"]
@@ -1926,7 +1939,9 @@ def cmd_match_inspect(
                 f"exact={summary['exact_pairs']} ambiguous={summary['exact_ambiguous_pairs']} "
                 f"similar={summary['similar_pairs']} "
                 f"unmatched={summary['unmatched_target']}/{summary['unmatched_candidate']} "
-                f"edge-conflicts={summary['edge_conflicts']}",
+                f"edge-conflicts={summary['edge_conflicts']} "
+                f"edge-checked={summary['edge_consistent_pairs'] + summary['edge_conflicts']} "
+                f"heuristic-edge-conflicts={summary['heuristic_edge_conflicts']}",
             )
             residual_pairs = sorted(
                 (

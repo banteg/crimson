@@ -741,7 +741,15 @@ Hints such as `possible-control-flow-shape`,
 `possible-x87-lifetime-or-ordering`, and
 `possible-stack-frame-or-lifetime` are triage aids, not proof. Use native
 decompilation, call/reference evidence, and plausible source shape before
-changing a scratch.
+changing a scratch. `match inspect` also reports the target and candidate
+prologue allocation once, with their signed delta. Treat that as a root-cause
+clue: one frame-size difference can shift every later stack operand and must
+not be counted as dozens of independent missing locals.
+
+CFG edge consistency is evaluated only through unique exact block anchors.
+Duplicate exact and similar blocks are still shown, but their greedy pairing
+is reported separately as heuristic conflicts instead of inflating the
+anchored edge-conflict count in switch-heavy functions.
 
 Generate the selected VC compiler's mixed source/machine listing when a
 residual looks like source-line scheduling, stack-slot reuse, or an x87/local
@@ -756,10 +764,13 @@ uv run crimson match listing tools/match/scratches/projectile_update \
 The command recompiles with `/FAsc` in an isolated directory and refuses to
 publish the listing unless the extracted object function, including
 relocations, equals the canonical build. The adjacent JSON records both object
-hashes, the function hash, source-line spans, and machine offsets. These spans
-describe how the selected compiler scheduled the reconstructed source; they do
-not recover original local names or prove native variable lifetimes. Use them
-alongside the CFG anchors and live native stack/data-flow evidence.
+hashes, the function hash, source-line spans, machine offsets, prologue
+allocation, and the compiler listing's named/generated stack aliases. The
+stack summary counts distinct and reused offsets so allocation pressure is
+visible without pretending every alias is a distinct local. These spans and
+symbols describe how the selected compiler scheduled the reconstructed source;
+they do not recover original local names or prove native variable lifetimes.
+Use them alongside the CFG anchors and live native stack/data-flow evidence.
 
 The status pipeline caches unchanged results and evaluates stale scratches in
 parallel. A cache entry is invalidated by the scratch source/config, compiler
