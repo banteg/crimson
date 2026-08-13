@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sdk-vector-constructor-body",
+      "find": "    projectile_render_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "assign-x-then-y",
+          "text": "    projectile_render_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "sdk-vector-add-qualifier",
+      "find": "    projectile_render_vec2_t operator+(\n        const projectile_render_vec2_t &other) const",
+      "replacements": [
+        {
+          "name": "non-const-member",
+          "text": "    projectile_render_vec2_t operator+(\n        const projectile_render_vec2_t &other)"
+        }
+      ]
+    },
+    {
+      "name": "sdk-vector-subtract-qualifier",
+      "find": "    projectile_render_vec2_t operator-(\n        const projectile_render_vec2_t &other) const",
+      "replacements": [
+        {
+          "name": "non-const-member",
+          "text": "    projectile_render_vec2_t operator-(\n        const projectile_render_vec2_t &other)"
+        }
+      ]
+    },
+    {
+      "name": "sdk-vector-free-scale",
+      "find": "    projectile_render_vec2_t operator*(float scale) const\n    {\n        return projectile_render_vec2_t(x * scale, y * scale);\n    }",
+      "replacements": [
+        {
+          "name": "free-scalar-first",
+          "text": "    friend projectile_render_vec2_t operator*(\n        const projectile_render_vec2_t &value, float scale)\n    {\n        return projectile_render_vec2_t(\n            scale * value.x, scale * value.y);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "sdk-vector-length-reciprocal",
+      "find": "    float length() const\n    {\n        return (float)sqrt(x * x + y * y);\n    }",
+      "replacements": [
+        {
+          "name": "reciprocal-roundtrip",
+          "text": "    float length() const\n    {\n        float reciprocal =\n            1.0f / (float)sqrt(x * x + y * y);\n        return 1.0f / reciprocal;\n    }"
+        }
+      ]
+    }
+  ]
+}

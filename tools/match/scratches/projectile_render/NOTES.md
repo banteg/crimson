@@ -1051,3 +1051,39 @@ score and produces `443/0/12` references; all three paired forms lose 63.754
 bytes and produce `442/0/12`. The apparent native ownership split therefore
 does not survive whole-function VC6 allocation in any honest source spelling
 tested here, and no source change is retained.
+
+## Vector source-shape and Assault input bounds (2026-08-13)
+
+The pinned 2003 mod SDK is useful here only as a source-shape oracle: it uses a
+different engine lineage and does not establish 1.9.93 implementation or
+compiler provenance. Its `vec2_t` nevertheless motivated bounded checks of the
+remaining vector-class surface rather than importing SDK internals.
+
+`vector-destructor-lifetime-mutations.json` tests the empty user-defined
+destructor present in an exact sibling. The sole variant loses 137.182
+fuzzy-weighted bytes, six candidate instructions, and three good references.
+
+`sdk-vector-source-shape-mutations.json` exhausts all 31 interactions among the
+SDK-style constructor body, non-const arithmetic members, free scalar multiply,
+and reciprocal length spelling. Constructor, qualifier, and multiply changes
+are byte-neutral; every combination containing reciprocal length adds 17
+instructions but loses 33.806 fuzzy-weighted bytes. The neutral forms do not
+explain the native frame debt and are not retained.
+
+Live native Assault paths also preserve vector inputs across their local draw
+sequences, so `assault-input-value-boundary-mutations.json` exhausts the seven
+single and combined component-construction spellings for current position,
+beam width, and origin. Width is byte-neutral; current loses 23.732 weighted
+bytes; origin loses 57.722 weighted bytes and four good references; combined
+forms regress further. No source change is retained. The baseline remains
+58.55062648154419%, 7348.689129698611 weighted bytes, 2885/3021 instructions,
+and `448/0/10` references.
+
+The recorded spec SHA-256 values are
+`aeed2e3ffd2c86c13ee9fef450dd16ad7c4de5e2c9f5b5932a774f24e52c6d97`,
+`e3c9e223077ead4480766fccac9dd4ddb6595a5dc828b82dbdb35c42d4658d4e`,
+and `6e74dc966eb5fadb77741b21730c2c78c456bb050c4a8cd4a0aa79a1e74aac04`.
+The unchanged source SHA-256 is
+`f8f7879af5f78325ea0772cbd6644b3660234c83deca7ad24c9dc5be8f80cd70`;
+the updated experiment log SHA-256 is
+`89c13a36811c78cb33581e6bbe11710765a081bf5a39b793e689eb888707506a`.

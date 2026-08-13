@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "assault-current-input-value",
+      "find": "                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t current;",
+      "replacements": [
+        {
+          "name": "constructed-components",
+          "text": "                camera_offset\n                + projectile_render_vec2_t(\n                    projectile->position.x,\n                    projectile->position.y);\n            projectile_render_vec2_t current;"
+        }
+      ]
+    },
+    {
+      "name": "assault-width-input-value",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0 = current - half_width;",
+      "replacements": [
+        {
+          "name": "constructed-components",
+          "text": "            projectile_render_vec2_t half_width(\n                projectile->pos.tail.velocity.x,\n                projectile->pos.tail.velocity.y);\n            point0 = current - half_width;"
+        }
+      ]
+    },
+    {
+      "name": "assault-origin-input-value",
+      "find": "                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            projectile_render_vec2_t origin;",
+      "replacements": [
+        {
+          "name": "constructed-components",
+          "text": "                camera_offset\n                + projectile_render_vec2_t(\n                    projectile->pos.origin.x,\n                    projectile->pos.origin.y);\n            projectile_render_vec2_t origin;"
+        }
+      ]
+    }
+  ]
+}
