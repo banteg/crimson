@@ -1729,9 +1729,9 @@ extern "C" void player_update(void)
                 int rocket_count = 0;
                 if (0.0f < player->ammo) {
                     do {
-                        scratch_pos.x = movement_input.x + player_position->x;
-                        scratch_pos.y = movement_input.y + player_position->y;
-                        fx_spawn_secondary_projectile(&scratch_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
+                        move_delta.y = movement_input.y + player_position->y;
+                        move_delta.x = movement_input.x + player_position->x;
+                        fx_spawn_secondary_projectile(&move_delta, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
                         rocket_heading = rocket_heading + movement_heading;
                         ++rocket_count;
                     } while ((float)rocket_count < player->ammo);
@@ -1747,10 +1747,9 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.34f;
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
-                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);
+                move_delta.y = movement_input.y + player_position->y;
+                move_delta.x = movement_input.x + player_position->x;
+                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);
             } else if (player->weapon_id == WEAPON_ID_SEEKER_ROCKETS) {
                 random_offset.x = (float)cos(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
@@ -1772,10 +1771,9 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.243f;
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
-                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
+                move_delta.y = movement_input.y + player_position->y;
+                move_delta.x = movement_input.x + player_position->x;
+                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MEAN_MINIGUN) {
                 player_update_vec2_t spawn_pos;
                 spawn_pos.x = movement_input.x + player_position->x;

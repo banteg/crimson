@@ -1065,6 +1065,67 @@ changed instructions from 33/33 to 21/21, and gains both exact references.
 No other region regresses. Retained source SHA-256 is
 `782b2be5b47e1d9278833bea8cfd6c2e5f23a6a6c35b7517e5d8f94144d4e680`.
 
+## Mode-1 heading publication boundary
+
+Native publishes the mode-1 `1.0f` movement heading at `0x00414577`, after
+pushing the forward-key argument and immediately before the virtual input
+call. The recovered source publishes the same value earlier, before the two
+turn-speed clamps. Moving that assignment to the native-looking source point
+is not an isolated recovery: the complete three-variant plan in
+`mode-one-heading-publication-mutations.json` (spec SHA-256
+`b5807bf43ada31d325c94d35915a077b46b9e548f8a335397335089eb8ca802b`)
+loses 15.726 weighted bytes and three resolved references. Removing the early
+publication alone also removes one candidate instruction and loses 14.486
+weighted bytes. The current placement remains the strongest whole-function
+source shape; no duplicate store or artificial dependency is retained.
+
+## Secondary-projectile position lifetime
+
+The next unmatched native block exposed a repeatable value-ownership clue.
+Binary Ninja names the position passed by the Mini-Rocket Swarmer loop at
+`0x004170da..0x00417125` as `var_10`. The same `-0x10` stack object is passed
+by the Rocket Minigun and Seeker Rockets branches at
+`0x004171bb..0x004171d6` and `0x004172d7..0x004172f2`. The verified VC6
+listing maps the scratch's existing `move_delta` vector to that exact stack
+object. Its velocity value is dead before each call, so reusing it for the
+spawn position is an ordinary non-overlapping lifetime, not a codegen-only
+alias. Native evaluates the Y sum before the X sum, so the retained source
+uses that order.
+
+For the swarm loop, both X-first and Y-first `move_delta` forms gain
+7.863119709795 weighted bytes without changing the 4,064 instruction count,
+prefix, or references; the Y-first spelling is retained because it follows
+native evaluation order. The complete two-variant plan is recorded in
+`mini-rocket-swarmer-move-delta-mutations.json` (spec SHA-256
+`cdf8b861dc02ae01af7c675b09c233bcb9b966ac3c7065bce75c36d70ca22206`).
+Changing only the old `scratch_pos` assignment order loses the same 7.863
+bytes. Introducing a new block-local vector is much worse: all three tested
+forms add an instruction, reduce the exact prefix from seven to one, lose 44
+resolved references, add ten mismatches, and lose 834.632 weighted bytes.
+
+The adjacent three-site interaction plan in
+`secondary-projectile-move-delta-mutations.json` exhaustively evaluates all
+26 variants through three changes (spec SHA-256
+`12fcd01fe74402a9ed424bce1ec7a35c0523c359cc6b68cfb703f3fa7d247aaf`).
+Rocket Launcher, Rocket Minigun, and Seeker Rockets each gain 15.726239419588
+weighted bytes independently. Rocket Minigun plus Seeker Rockets is a clean
+additive winner at +31.452478839177 and is retained. Reusing the object at all
+three sites triggers a compiler interaction: it removes six instructions,
+loses one resolved reference, and gains only 11.396 weighted bytes, so the
+native-looking Rocket Launcher change is deliberately not retained. The
+Rocket Launcher plus Seeker pair also loses 4.342 weighted bytes and six
+instructions. These complete interaction results bound the tempting broad
+rewrite.
+
+Together the three retained value lifetimes raise the canonical build from
+`63.1680773881499%` to `63.4099153567110%`: weighted bytes rise from
+10,269.234340991536 to 10,308.549939540508 and the gap falls from
+5,987.765659008464 to 5,948.450060459492. Candidate/native instruction counts
+remain 4,064/4,206, the exact prefix remains seven instructions, and the
+reference audit remains `805/0/2`. A zero-delta current-epoch probe records
+source SHA-256
+`540f1e2c81a4e3ae206b6f905538772adc768c74e0b2b35ef59e6bfb8108d379`.
+
 ## Structural residual handoff (2026-08-13)
 
 Native and candidate both allocate `0x48` bytes. The candidate listing has 44

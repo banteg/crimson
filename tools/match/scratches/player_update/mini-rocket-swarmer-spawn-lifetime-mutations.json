@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mini-rocket-swarmer-loop-spawn-lifetime",
+      "find": "                        scratch_pos.x = movement_input.x + player_position->x;\n                        scratch_pos.y = movement_input.y + player_position->y;\n                        fx_spawn_secondary_projectile(&scratch_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);",
+      "replacements": [
+        {
+          "name": "local-x-before-y",
+          "text": "                        player_update_vec2_t spawn_pos;\n                        spawn_pos.x = movement_input.x + player_position->x;\n                        spawn_pos.y = movement_input.y + player_position->y;\n                        fx_spawn_secondary_projectile(&spawn_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        },
+        {
+          "name": "local-y-before-x",
+          "text": "                        player_update_vec2_t spawn_pos;\n                        spawn_pos.y = movement_input.y + player_position->y;\n                        spawn_pos.x = movement_input.x + player_position->x;\n                        fx_spawn_secondary_projectile(&spawn_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        },
+        {
+          "name": "local-aggregate",
+          "text": "                        player_update_vec2_t spawn_pos = {\n                            movement_input.x + player_position->x,\n                            movement_input.y + player_position->y\n                        };\n                        fx_spawn_secondary_projectile(&spawn_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        }
+      ]
+    }
+  ]
+}

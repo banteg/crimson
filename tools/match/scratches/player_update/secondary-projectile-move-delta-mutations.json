@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "rocket-launcher-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);",
+      "replacements": [
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);"
+        },
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);"
+        }
+      ]
+    },
+    {
+      "name": "rocket-minigun-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);",
+      "replacements": [
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);"
+        },
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);"
+        }
+      ]
+    },
+    {
+      "name": "seeker-rockets-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);",
+      "replacements": [
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        },
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        }
+      ]
+    }
+  ]
+}

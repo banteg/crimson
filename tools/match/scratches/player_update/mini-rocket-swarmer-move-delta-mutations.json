@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mini-rocket-swarmer-loop-move-delta",
+      "find": "                        scratch_pos.x = movement_input.x + player_position->x;\n                        scratch_pos.y = movement_input.y + player_position->y;\n                        fx_spawn_secondary_projectile(&scratch_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                        move_delta.x = movement_input.x + player_position->x;\n                        move_delta.y = movement_input.y + player_position->y;\n                        fx_spawn_secondary_projectile(&move_delta, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                        move_delta.y = movement_input.y + player_position->y;\n                        move_delta.x = movement_input.x + player_position->x;\n                        fx_spawn_secondary_projectile(&move_delta, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        }
+      ]
+    }
+  ]
+}

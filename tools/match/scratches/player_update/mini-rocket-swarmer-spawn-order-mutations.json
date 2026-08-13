@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mini-rocket-swarmer-loop-spawn-order",
+      "find": "                        scratch_pos.x = movement_input.x + player_position->x;\n                        scratch_pos.y = movement_input.y + player_position->y;\n                        fx_spawn_secondary_projectile(&scratch_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);",
+      "replacements": [
+        {
+          "name": "assign-y-before-x",
+          "text": "                        scratch_pos.y = movement_input.y + player_position->y;\n                        scratch_pos.x = movement_input.x + player_position->x;\n                        fx_spawn_secondary_projectile(&scratch_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);"
+        }
+      ]
+    }
+  ]
+}

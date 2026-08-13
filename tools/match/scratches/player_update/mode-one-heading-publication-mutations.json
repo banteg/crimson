@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mode-one-remove-entry-heading",
+      "find": "            bool turned = false;\n            movement_heading = 1.0f;\n            if (player->turn_speed < 1.0f) {",
+      "replacements": [
+        {
+          "name": "remove-entry-publication",
+          "text": "            bool turned = false;\n            if (player->turn_speed < 1.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "mode-one-add-movement-heading",
+      "find": "                turned = true;\n            }\n\n            if (grim_interface_ptr->grim_is_key_active(\n                    player->input.move_key_forward)",
+      "replacements": [
+        {
+          "name": "publish-before-movement-dispatch",
+          "text": "                turned = true;\n            }\n\n            movement_heading = 1.0f;\n            if (grim_interface_ptr->grim_is_key_active(\n                    player->input.move_key_forward)"
+        }
+      ]
+    }
+  ]
+}
