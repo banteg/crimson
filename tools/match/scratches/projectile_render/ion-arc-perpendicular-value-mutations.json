@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ion-arc-perpendicular-value",
+      "find": "                    float old_arc_x = arc.x;\n                    arc.x = -arc.y;\n                    arc.y = old_arc_x;",
+      "replacements": [
+        {
+          "name": "assigned-constructor-result",
+          "text": "                    arc = projectile_render_vec2_t(-arc.y, arc.x);"
+        },
+        {
+          "name": "named-constructor-result",
+          "text": "                    projectile_render_vec2_t perpendicular(\n                        -arc.y, arc.x);\n                    arc = perpendicular;"
+        },
+        {
+          "name": "member-built-result",
+          "text": "                    projectile_render_vec2_t perpendicular;\n                    perpendicular.x = -arc.y;\n                    perpendicular.y = arc.x;\n                    arc = perpendicular;"
+        },
+        {
+          "name": "preserved-x-constructor-result",
+          "text": "                    float old_arc_x = arc.x;\n                    arc = projectile_render_vec2_t(-arc.y, old_arc_x);"
+        },
+        {
+          "name": "named-preserved-x-result",
+          "text": "                    float old_arc_x = arc.x;\n                    projectile_render_vec2_t perpendicular(\n                        -arc.y, old_arc_x);\n                    arc = perpendicular;"
+        }
+      ]
+    }
+  ]
+}

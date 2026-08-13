@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "end-position-owner",
+      "find": "            projectile_render_vec2_t end_pos =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;",
+      "replacements": [
+        {
+          "name": "direct-player-record",
+          "text": "            projectile_render_vec2_t end_pos =\n                *(projectile_render_vec2_t *)&player->position\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;"
+        }
+      ]
+    },
+    {
+      "name": "start-position-owner",
+      "find": "            float start_heading = heading - 0.150915f;\n            projectile_render_vec2_t start_pos =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(start_heading), (float)sin(start_heading))\n                    * 15.0f;\n            projectile_render_vec2_t half_width =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;\n            projectile_render_vec2_t start_screen =\n                camera_offset + start_pos;",
+      "replacements": [
+        {
+          "name": "mutate-player-copy-direct-use",
+          "text": "            float start_heading = heading - 0.150915f;\n            player_pos +=\n                projectile_render_vec2_t(\n                    (float)cos(start_heading), (float)sin(start_heading))\n                * 15.0f;\n            projectile_render_vec2_t half_width =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;\n            projectile_render_vec2_t start_screen =\n                camera_offset + player_pos;"
+        },
+        {
+          "name": "mutate-player-copy-then-copy",
+          "text": "            float start_heading = heading - 0.150915f;\n            player_pos +=\n                projectile_render_vec2_t(\n                    (float)cos(start_heading), (float)sin(start_heading))\n                * 15.0f;\n            projectile_render_vec2_t start_pos = player_pos;\n            projectile_render_vec2_t half_width =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;\n            projectile_render_vec2_t start_screen =\n                camera_offset + start_pos;"
+        },
+        {
+          "name": "mutate-player-copy-reference-alias",
+          "text": "            float start_heading = heading - 0.150915f;\n            player_pos +=\n                projectile_render_vec2_t(\n                    (float)cos(start_heading), (float)sin(start_heading))\n                * 15.0f;\n            projectile_render_vec2_t &start_pos = player_pos;\n            projectile_render_vec2_t half_width =\n                projectile_render_vec2_t(\n                    (float)cos(player->aim_heading),\n                    (float)sin(player->aim_heading))\n                * 1.1f;\n            projectile_render_vec2_t start_screen =\n                camera_offset + start_pos;"
+        }
+      ]
+    }
+  ]
+}

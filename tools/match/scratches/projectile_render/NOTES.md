@@ -1021,3 +1021,33 @@ shape but does not explain the allocation debt. The retained source SHA-256 is
 A zero-delta replay binds the retained result to the current epoch; the updated
 experiment log SHA-256 is
 `c0f60b6051bb5d73192ddfd5ff17e28af9dd12f871a14754e237b6558986cd0c`.
+
+## Ion arc perpendicular value boundary (2026-08-13)
+
+Live native `0x00424bfb` normalizes the arc vector, saves its old x component,
+negates y into x, and writes the saved x into y. This is the same in-place
+perpendicular operation already expressed by the manual component assignments;
+the recovered SDK's return-by-value vector idioms are evidence for a bounded
+check, not evidence that this site used one.
+
+`ion-arc-perpendicular-value-mutations.json` exhausts five constructor,
+assignment, and named-result spellings. All five regress. The least damaging
+form loses 84.445 fuzzy-weighted bytes, adds three candidate instructions, and
+changes references from `448/0/10` to `441/0/12`; the other four lose 152.414
+bytes. No source change is retained.
+
+## Sharpshooter player-position ownership interaction (2026-08-13)
+
+Live native `0x00422d63..0x00422df5` first copies the player position to a
+stack pair, computes the long ray endpoint directly from the player record,
+then mutates the saved pair in place for the short ray start. Earlier probes
+had tested the two ownership choices separately, so
+`sharpshooter-player-position-lifetime-interactions.json` evaluates the full
+seven-variant single/pair interaction on the current baseline.
+
+All variants regress. Each copied-start-only form loses 38.252 fuzzy-weighted
+bytes and four good references; the direct-record endpoint loses the same
+score and produces `443/0/12` references; all three paired forms lose 63.754
+bytes and produce `442/0/12`. The apparent native ownership split therefore
+does not survive whole-function VC6 allocation in any honest source spelling
+tested here, and no source change is retained.
