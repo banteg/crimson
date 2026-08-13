@@ -194,3 +194,18 @@ aggregate scores. The fully behavior-preserving combinations were evaluated
 and regressed. This is a useful guardrail for future harness work: ranked
 mutation evidence still requires a semantic review before a winner is
 retained.
+
+## Stage-one position construction boundary
+
+Live native inspection at `0x00408de0` confirmed that VC6 materializes all
+three stage-one point-bonus positions in adjacent stack pairs before the
+calls: `(260, 260)`, `(260, 300)`, and `(260, 340)`. A 15-variant current-epoch
+menu crossed natural default/value constructors with assignment from a
+constructed temporary at those three sites. Every constructor-backed variant
+was byte-neutral. Seven deliberately dependent call-site variants without the
+constructor definition failed to compile and are explicitly audited rather
+than counted as matching evidence.
+
+This bounds the obvious construction syntax while preserving the recovered
+semantics. No source changed; the baseline remains **76.75597%**, 686/695
+instructions, prefix 6, and `169/0/1` references.
