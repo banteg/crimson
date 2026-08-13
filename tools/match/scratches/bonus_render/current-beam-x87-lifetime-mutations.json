@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "beam-width-height-lifetime",
+      "find": "            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width =\n                half_width * particle_pool[beam_index].scale_x * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;",
+      "replacements": [
+        {
+          "name": "separate-half-height",
+          "text": "            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            float half_height =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width =\n                half_width * particle_pool[beam_index].scale_x * 7.0f;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "unscaled-width-local",
+          "text": "            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float unscaled_half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            float half_width =\n                unscaled_half_width\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "compound-phase-then-width",
+          "text": "            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            phase_size += 15.0f;\n            phase_size *= particle_pool[beam_index].scale_x;\n            phase_size *= 7.0f;\n            half_width *= particle_pool[beam_index].scale_x;\n            half_width *= 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "separate-height-compound-width",
+          "text": "            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            float half_height =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width *= particle_pool[beam_index].scale_x;\n            half_width *= 7.0f;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "named-scale",
+          "text": "            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            float beam_scale =\n                particle_pool[beam_index].scale_x * 7.0f;\n            phase_size = (phase_size + 15.0f) * beam_scale;\n            half_width *= beam_scale;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "pointer-owned-width",
+          "text": "            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            float *half_width_owner = &half_width;\n            phase_size =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            *half_width_owner =\n                *half_width_owner\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        }
+      ]
+    }
+  ]
+}

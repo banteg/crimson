@@ -298,7 +298,6 @@ extern "C" void bonus_render(void)
         }
     }
 
-    particle_t *particle = particle_pool;
     if (config_flame_glow_enabled) {
         grim_interface_ptr->grim_set_config_var(0x13, 5u);
         grim_interface_ptr->grim_set_config_var(0x14, 2u);
@@ -312,13 +311,13 @@ extern "C" void bonus_render(void)
         for (int particle_index = 0;
              particle_index < 0x80;
              ++particle_index) {
-            particle_t *glow =
-                &particle[particle_index];
-            if (glow->active
+            if (particle_pool[particle_index].active
                 && particle_index % 2 == 0
-                && glow->style_id != 8) {
+                && particle_pool[particle_index].style_id != 8) {
                 float half_size =
-                    ((float)sin((1.0f - glow->progress) * 1.5707964f)
+                    ((float)sin(
+                         (1.0f - particle_pool[particle_index].progress)
+                         * 1.5707964f)
                          + 0.1f)
                         * 55.0f
                     + 4.0f;
@@ -327,8 +326,12 @@ extern "C" void bonus_render(void)
                 }
                 float size = half_size + half_size;
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + glow->pos_x - half_size,
-                    camera_offset_y + glow->pos_y - half_size,
+                    camera_offset_x
+                        + particle_pool[particle_index].pos_x
+                        - half_size,
+                    camera_offset_y
+                        + particle_pool[particle_index].pos_y
+                        - half_size,
                     size,
                     size);
             }
@@ -346,19 +349,21 @@ extern "C" void bonus_render(void)
     for (int sprite_index = 0;
          sprite_index < 0x80;
          ++sprite_index) {
-            particle_t *sprite =
-                &particle[sprite_index];
-        if (sprite->active && sprite->style_id != 8) {
-            grim_interface_ptr->grim_set_rotation(sprite->rotation);
+        if (particle_pool[sprite_index].active
+            && particle_pool[sprite_index].style_id != 8) {
+            grim_interface_ptr->grim_set_rotation(
+                particle_pool[sprite_index].rotation);
             grim_interface_ptr->grim_set_color(
-                sprite->color_r,
-                sprite->color_g,
-                sprite->color_b,
-                sprite->color_a);
+                particle_pool[sprite_index].color_r,
+                particle_pool[sprite_index].color_g,
+                particle_pool[sprite_index].color_b,
+                particle_pool[sprite_index].color_a);
             float half_size =
-                (float)sin((1.0f - sprite->progress) * 1.5707964f)
+                (float)sin(
+                    (1.0f - particle_pool[sprite_index].progress)
+                    * 1.5707964f)
                 * 24.0f;
-            if (sprite->style_id == 1) {
+            if (particle_pool[sprite_index].style_id == 1) {
                 half_size *= 0.8f;
             }
             if (half_size < 2.0f) {
@@ -366,8 +371,12 @@ extern "C" void bonus_render(void)
             }
             float size = half_size + half_size;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + sprite->pos_x - half_size,
-                camera_offset_y + sprite->pos_y - half_size,
+                camera_offset_x
+                    + particle_pool[sprite_index].pos_x
+                    - half_size,
+                camera_offset_y
+                    + particle_pool[sprite_index].pos_y
+                    - half_size,
                 size,
                 size);
         }
@@ -380,25 +389,32 @@ extern "C" void bonus_render(void)
     for (int beam_index = 0;
          beam_index < 0x80;
          ++beam_index) {
-            particle_t *beam =
-                &particle[beam_index];
-        if (beam->active && beam->style_id == 8) {
+        if (particle_pool[beam_index].active
+            && particle_pool[beam_index].style_id == 8) {
             grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, beam->color_a);
-            float phase_size = (float)sin(beam->rotation) * 3.0f;
+                1.0f,
+                1.0f,
+                1.0f,
+                particle_pool[beam_index].color_a);
+            float phase_size =
+                (float)sin(particle_pool[beam_index].rotation) * 3.0f;
             float half_width = 15.0f - phase_size;
             phase_size =
                 (phase_size + 15.0f)
-                * beam->scale_x
+                * particle_pool[beam_index].scale_x
                 * 7.0f;
             half_width =
-                half_width * beam->scale_x * 7.0f;
+                half_width * particle_pool[beam_index].scale_x * 7.0f;
             float half_height = phase_size;
             float height = half_height + half_height;
             float width = half_width + half_width;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + beam->pos_x - half_width,
-                camera_offset_y + beam->pos_y - half_height,
+                camera_offset_x
+                    + particle_pool[beam_index].pos_x
+                    - half_width,
+                camera_offset_y
+                    + particle_pool[beam_index].pos_y
+                    - half_height,
                 width,
                 height);
         }

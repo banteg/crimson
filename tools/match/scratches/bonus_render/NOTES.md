@@ -267,3 +267,50 @@ other forms lose 7.91--118.33 bytes. This confirms that the current indexed
 loops remain the strongest natural reconstruction. Across 29 current
 evaluations there is no source improvement, so the 1,087/1,088 instruction,
 `223/0/6` baseline is retained unchanged.
+
+## Direct particle-pool ownership recovery (2026-08-14)
+
+A fresh live comparison revisited the three particle passes after the retained
+sprite-effect owner correction. Native keeps independent interior-field
+induction anchors for the glow, sprite, and beam walks. The source still hid
+all three behind a shared `particle` pointer and branch-local aggregate aliases;
+VC6 consequently selected different record bases even though each loop body
+was otherwise equivalent.
+
+Publishing each field directly from `particle_pool[index]` is the same natural
+global-array spelling already retained for `sprite_effect_pool`. It improves
+all three passes independently and additively without changing instruction
+count or control flow:
+
+- glow ownership adds **18.795402** weighted bytes and changes references from
+  `223/0/6` to `225/0/4`;
+- sprite ownership adds another **41.349885** weighted bytes and changes
+  references to `227/0/2`;
+- beam ownership adds another **26.313563** weighted bytes and closes the
+  reference audit at `229/0/0`.
+
+Together the corrections raise the match from **89.931034%**
+(`3676.380690/4088`, gap `411.619310`) to **92.045977%**
+(`3762.839540/4088`, gap `325.160460`). Candidate and native remain
+1,087/1,088 instructions with prefix 14. Removing the now-unused shared alias
+is byte-neutral.
+
+`particle-direct-index-ablation-mutations.json` (SHA-256
+`fb0a17c6c36e429397b1cd049d4e2c596dd6abf39136bea9e80b286abcf2b33d`)
+records all 7/7 one-, two-, and three-pass ablations. Each branch-local pointer
+loses exactly its measured contribution and two references; the three-site
+ablation returns exactly to the former 89.931034%, `223/0/6` baseline. This
+rules out a whole-function alignment accident.
+
+The remaining beam x87 region was replayed against the recovered owner shape.
+`current-beam-x87-lifetime-mutations.json` (SHA-256
+`ae04dc0d7328a2900e7c12afc06ef806b581ce78217affbb5471d0046e6423ce`)
+tests six separate-height, unscaled-width, compound, named-scale, and pointer
+lifetimes. Three are byte-neutral; two lose 26.313563 weighted bytes and one
+adds three instructions while losing 16.444683. None reproduces native's
+unscaled-width spill/reload schedule, so the canonical scalar form remains.
+
+The retained source SHA-256 is
+`9795760dd93f87c8e9389371e5599033fe8a398fa952f05ae14b9cde1958ac54`.
+With all aligned references now resolved, the scratch remains
+`semantic-complete` with only a compiler residual.

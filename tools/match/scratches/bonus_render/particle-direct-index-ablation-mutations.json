@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "glow-direct-index-owner",
+      "find": "            if (particle_pool[particle_index].active\n                && particle_index % 2 == 0\n                && particle_pool[particle_index].style_id != 8) {\n                float half_size =\n                    ((float)sin(\n                         (1.0f - particle_pool[particle_index].progress)\n                         * 1.5707964f)\n                         + 0.1f)\n                        * 55.0f\n                    + 4.0f;\n                if (half_size < 16.0f) {\n                    half_size = 16.0f;\n                }\n                float size = half_size + half_size;\n                grim_interface_ptr->grim_draw_quad(\n                    camera_offset_x\n                        + particle_pool[particle_index].pos_x\n                        - half_size,\n                    camera_offset_y\n                        + particle_pool[particle_index].pos_y\n                        - half_size,\n                    size,\n                    size);\n            }",
+      "replacements": [
+        {
+          "name": "branch-local-pointer",
+          "text": "            particle_t *glow =\n                &particle_pool[particle_index];\n            if (glow->active\n                && particle_index % 2 == 0\n                && glow->style_id != 8) {\n                float half_size =\n                    ((float)sin((1.0f - glow->progress) * 1.5707964f)\n                         + 0.1f)\n                        * 55.0f\n                    + 4.0f;\n                if (half_size < 16.0f) {\n                    half_size = 16.0f;\n                }\n                float size = half_size + half_size;\n                grim_interface_ptr->grim_draw_quad(\n                    camera_offset_x + glow->pos_x - half_size,\n                    camera_offset_y + glow->pos_y - half_size,\n                    size,\n                    size);\n            }"
+        }
+      ]
+    },
+    {
+      "name": "sprite-direct-index-owner",
+      "find": "        if (particle_pool[sprite_index].active\n            && particle_pool[sprite_index].style_id != 8) {\n            grim_interface_ptr->grim_set_rotation(\n                particle_pool[sprite_index].rotation);\n            grim_interface_ptr->grim_set_color(\n                particle_pool[sprite_index].color_r,\n                particle_pool[sprite_index].color_g,\n                particle_pool[sprite_index].color_b,\n                particle_pool[sprite_index].color_a);\n            float half_size =\n                (float)sin(\n                    (1.0f - particle_pool[sprite_index].progress)\n                    * 1.5707964f)\n                * 24.0f;\n            if (particle_pool[sprite_index].style_id == 1) {\n                half_size *= 0.8f;\n            }\n            if (half_size < 2.0f) {\n                half_size = 2.0f;\n            }\n            float size = half_size + half_size;\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x\n                    + particle_pool[sprite_index].pos_x\n                    - half_size,\n                camera_offset_y\n                    + particle_pool[sprite_index].pos_y\n                    - half_size,\n                size,\n                size);\n        }",
+      "replacements": [
+        {
+          "name": "branch-local-pointer",
+          "text": "        particle_t *sprite =\n            &particle_pool[sprite_index];\n        if (sprite->active && sprite->style_id != 8) {\n            grim_interface_ptr->grim_set_rotation(sprite->rotation);\n            grim_interface_ptr->grim_set_color(\n                sprite->color_r,\n                sprite->color_g,\n                sprite->color_b,\n                sprite->color_a);\n            float half_size =\n                (float)sin((1.0f - sprite->progress) * 1.5707964f)\n                * 24.0f;\n            if (sprite->style_id == 1) {\n                half_size *= 0.8f;\n            }\n            if (half_size < 2.0f) {\n                half_size = 2.0f;\n            }\n            float size = half_size + half_size;\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + sprite->pos_x - half_size,\n                camera_offset_y + sprite->pos_y - half_size,\n                size,\n                size);\n        }"
+        }
+      ]
+    },
+    {
+      "name": "beam-direct-index-owner",
+      "find": "        if (particle_pool[beam_index].active\n            && particle_pool[beam_index].style_id == 8) {\n            grim_interface_ptr->grim_set_color(\n                1.0f,\n                1.0f,\n                1.0f,\n                particle_pool[beam_index].color_a);\n            float phase_size =\n                (float)sin(particle_pool[beam_index].rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * particle_pool[beam_index].scale_x\n                * 7.0f;\n            half_width =\n                half_width * particle_pool[beam_index].scale_x * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x\n                    + particle_pool[beam_index].pos_x\n                    - half_width,\n                camera_offset_y\n                    + particle_pool[beam_index].pos_y\n                    - half_height,\n                width,\n                height);\n        }",
+      "replacements": [
+        {
+          "name": "branch-local-pointer",
+          "text": "        particle_t *beam =\n            &particle_pool[beam_index];\n        if (beam->active && beam->style_id == 8) {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 1.0f, 1.0f, beam->color_a);\n            float phase_size = (float)sin(beam->rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * beam->scale_x\n                * 7.0f;\n            half_width =\n                half_width * beam->scale_x * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + beam->pos_x - half_width,\n                camera_offset_y + beam->pos_y - half_height,\n                width,\n                height);\n        }"
+        }
+      ]
+    }
+  ]
+}
