@@ -27,6 +27,7 @@ from crimson.match import (
     CoffRelocation,
     CoffSection,
     CoffSymbol,
+    DisassemblyLine,
     FunctionManifest,
     FunctionSymbol,
     ImageTotals,
@@ -57,9 +58,12 @@ from crimson.match import (
     _scratch_build_key,
     _ScratchIncludeResolver,
     address_in_matching_scope,
+    align_basic_blocks,
     apply_naming_suggestions,
+    build_basic_blocks,
     build_compiler_scan_rows,
     build_match_shard_plan,
+    cfg_alignment_payload,
     claimed_scratch_paths,
     collect_image_totals,
     collect_naming_debt,
@@ -70,6 +74,7 @@ from crimson.match import (
     collect_triage_rows,
     common_prefix_length,
     compile_scratch,
+    compiler_listing_payload,
     compiler_scan_row_payload,
     compiler_scan_summary,
     diff_region_payload,
@@ -80,6 +85,7 @@ from crimson.match import (
     evaluate_source_overlay,
     evaluate_source_probe,
     extract_object_function,
+    generate_compiler_listing,
     inspect_match_function,
     is_analyzer_placeholder,
     load_function_manifest,
@@ -96,7 +102,9 @@ from crimson.match import (
     native_json_program_sha256,
     normalize_function,
     parse_coff_object,
+    parse_compiler_listing_spans,
     prune_placeholder_aliases,
+    render_compiler_listing_result,
     render_compiler_scan_rows,
     render_image_total_rows,
     render_naming_debt_summary,
@@ -2399,6 +2407,81 @@ def test_diff_command_json_includes_region_evidence(monkeypatch: pytest.MonkeyPa
     payload = json.loads(completed.output)
     assert payload == match_result_payload(result, region_context=1, max_regions=1)
     assert payload["regions"][0]["target_bytes"]["address_start"] == 0x401001
+
+
+def test_basic_blocks_recover_local_successors_and_fallthrough() -> None:
+    lines = (
+        DisassemblyLine(0x0, 0x401000, "cmp eax, 0x0", 2),
+        DisassemblyLine(0x2, 0x401002, "je L8", 2),
+        DisassemblyLine(0x4, 0x401004, "inc eax", 1),
+        DisassemblyLine(0x5, 0x401005, "jmp La", 3),
+        DisassemblyLine(0x8, 0x401008, "dec eax", 1),
+        DisassemblyLine(0x9, 0x401009, "jmp La", 1),
+        DisassemblyLine(0xA, 0x40100A, "ret", 1),
+    )
+
+    blocks = build_basic_blocks(lines)
+
+    assert [(block.start_offset, block.end_offset) for block in blocks] == [
+        (0x0, 0x4),
+        (0x4, 0x8),
+        (0x8, 0xA),
+        (0xA, 0xB),
+    ]
+    assert blocks[0].successors == (2, 1)
+    assert blocks[0].fallthrough == 1
+    assert blocks[1].successors == (3,)
+    assert blocks[2].successors == (3,)
+    assert blocks[3].successors == ()
+
+
+def test_cfg_alignment_anchors_reordered_exact_blocks() -> None:
+    target = (
+        DisassemblyLine(0, 0x401000, "mov eax, 0x1", 5),
+        DisassemblyLine(5, 0x401005, "ret", 1),
+        DisassemblyLine(6, 0x401006, "inc eax", 1),
+        DisassemblyLine(7, 0x401007, "ret", 1),
+        DisassemblyLine(8, 0x401008, "dec eax", 1),
+        DisassemblyLine(9, 0x401009, "ret", 1),
+    )
+    candidate = (
+        DisassemblyLine(0, 0, "mov eax, 0x1", 5),
+        DisassemblyLine(5, 5, "ret", 1),
+        DisassemblyLine(6, 6, "dec eax", 1),
+        DisassemblyLine(7, 7, "ret", 1),
+        DisassemblyLine(8, 8, "inc eax", 1),
+        DisassemblyLine(9, 9, "ret", 1),
+    )
+    result = MatchResult(
+        ratio=0.8,
+        prefix_instructions=2,
+        target_lines=tuple(line.text for line in target),
+        candidate_lines=tuple(line.text for line in candidate),
+        target_disassembly=target,
+        candidate_disassembly=candidate,
+    )
+
+    alignment = align_basic_blocks(result)
+    payload = cfg_alignment_payload(alignment)
+
+    assert [(pair.target_block, pair.candidate_block) for pair in alignment.pairs] == [
+        (0, 0),
+        (1, 2),
+        (2, 1),
+    ]
+    assert alignment.exact_pairs == 3
+    assert payload["summary"] == {
+        "target_blocks": 3,
+        "candidate_blocks": 3,
+        "exact_pairs": 3,
+        "exact_ambiguous_pairs": 0,
+        "similar_pairs": 0,
+        "unmatched_target": 0,
+        "unmatched_candidate": 0,
+        "edge_consistent_pairs": 0,
+        "edge_conflicts": 0,
+    }
+    assert match_result_payload(result)["cfg_alignment"] == payload
 
 
 def test_region_hints_are_cautious_and_composable() -> None:
@@ -5415,6 +5498,48 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
     assert environments[0]["CRIMSON_MATCH_INCLUDE_OVERLAY"] == str(overlay)
     assert "CRIMSON_MATCH_INCLUDE_OVERLAY" not in environments[1]
+
+
+def test_parse_compiler_listing_spans_tracks_source_schedule() -> None:
+    spans = parse_compiler_listing_spans(
+        "; 10   :     int value = input;\r\n"
+        "; 11   :     ++value;\r\n"
+        "  00000\t8b 44 24 04\t mov eax, DWORD PTR _input$[esp-4]\r\n"
+        "  00004\t40\t\t inc eax\r\n"
+        "; 12   :     return value;\r\n"
+        "  00005\tc3\t\t ret 0\r\n",
+    )
+
+    assert spans[0].source_lines == (10, 11)
+    assert spans[0].instruction_offsets == (0, 4)
+    assert spans[1].source_lines == (12,)
+    assert spans[1].instruction_offsets == (5,)
+
+
+def test_compiler_listing_proves_object_function_equivalence(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    match_root = repo_root / "tools" / "match"
+    if not (match_root / "compilers" / "msvc6.5" / "Bin" / "CL.EXE").is_file():
+        pytest.skip("local msvc6.5 compiler is required")
+    if not (match_root / "bin" / "wibo").is_file():
+        pytest.skip("local wibo is required")
+    config = load_scratch_config(match_root / "scratches" / "fx_queue_add")
+    output = tmp_path / "fx_queue_add.cod"
+
+    result = generate_compiler_listing(config, match_root, output=output)
+    payload = compiler_listing_payload(result)
+
+    assert result.listing_path == output.resolve()
+    assert result.metadata_path.is_file()
+    assert result.function == "fx_queue_add"
+    assert result.function_bytes > 0
+    assert result.spans
+    assert payload["object_function_equivalent"] is True
+    assert payload["machine_rows"] > 0
+    assert "object_function_equivalent=yes" in render_compiler_listing_result(result)
+    metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
+    assert metadata["object_function_equivalent"] is True
+    assert "does not recover original local names" in metadata["caveat"]
 
 
 def test_msvc7_platform_header_fallbacks_compile(tmp_path: Path) -> None:

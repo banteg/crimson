@@ -388,7 +388,10 @@ directories; it does not compile the full corpus. It starts with exact Binary
 Ninja commands and can save a bounded live evidence bundle under the ignored
 `tools/match/.cache/evidence/` tree. It then reports the address-matched IDA
 and Ghidra snapshots, the best scratch, recovery metadata, and a bounded first
-mismatch region.
+mismatch region. For non-exact scratches it also aligns conservative basic-
+block anchors and reports reordered exact blocks, structurally compatible
+similar blocks, unmatched blocks, and conflicting paired edges. This CFG view
+is diagnostic only and never contributes to the exact-match score.
 
 ## Parallel Matching Batches
 
@@ -712,6 +715,24 @@ Hints such as `possible-control-flow-shape`,
 `possible-stack-frame-or-lifetime` are triage aids, not proof. Use native
 decompilation, call/reference evidence, and plausible source shape before
 changing a scratch.
+
+Generate the selected VC compiler's mixed source/machine listing when a
+residual looks like source-line scheduling, stack-slot reuse, or an x87/local
+lifetime boundary:
+
+```sh
+uv run crimson match listing tools/match/scratches/player_update
+uv run crimson match listing tools/match/scratches/projectile_update \
+  --output /tmp/projectile_update.cod --json
+```
+
+The command recompiles with `/FAsc` in an isolated directory and refuses to
+publish the listing unless the extracted object function, including
+relocations, equals the canonical build. The adjacent JSON records both object
+hashes, the function hash, source-line spans, and machine offsets. These spans
+describe how the selected compiler scheduled the reconstructed source; they do
+not recover original local names or prove native variable lifetimes. Use them
+alongside the CFG anchors and live native stack/data-flow evidence.
 
 The status pipeline caches unchanged results and evaluates stale scratches in
 parallel. A cache entry is invalidated by the scratch source/config, compiler

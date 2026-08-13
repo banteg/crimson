@@ -984,6 +984,63 @@ class DiffRegion:
 
 
 @dataclass(frozen=True, slots=True)
+class BasicBlock:
+    index: int
+    start_instruction: int
+    end_instruction: int
+    start_offset: int
+    end_offset: int
+    start_address: int
+    end_address: int
+    lines: tuple[str, ...]
+    successors: tuple[int, ...]
+    fallthrough: int | None
+
+    @property
+    def canonical_lines(self) -> tuple[str, ...]:
+        return tuple(BRANCH_TARGET_RE.sub("LOCAL", line) for line in self.lines)
+
+    @property
+    def terminator(self) -> str:
+        return self.lines[-1].partition(" ")[0] if self.lines else ""
+
+    @property
+    def instruction_count(self) -> int:
+        return self.end_instruction - self.start_instruction
+
+
+@dataclass(frozen=True, slots=True)
+class CfgBlockPair:
+    target_block: int
+    candidate_block: int
+    kind: str
+    ratio: float
+    structure_match: bool
+    edge_consistent: bool | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CfgAlignment:
+    target_blocks: tuple[BasicBlock, ...]
+    candidate_blocks: tuple[BasicBlock, ...]
+    pairs: tuple[CfgBlockPair, ...]
+    unmatched_target: tuple[int, ...]
+    unmatched_candidate: tuple[int, ...]
+
+    @property
+    def exact_pairs(self) -> int:
+        return sum(pair.kind == "exact" for pair in self.pairs)
+
+    @property
+    def exact_ambiguous_pairs(self) -> int:
+        return sum(pair.kind == "exact-ambiguous" for pair in self.pairs)
+
+    @property
+    def similar_pairs(self) -> int:
+        return sum(pair.kind == "similar" for pair in self.pairs)
+
+
+@dataclass(frozen=True, slots=True)
 class MatchDump:
     target_lines: tuple[DisassemblyLine, ...]
     candidate_lines: tuple[DisassemblyLine, ...]
@@ -2711,6 +2768,281 @@ def common_prefix_length(target_lines: tuple[str, ...], candidate_lines: tuple[s
     return min(len(target_lines), len(candidate_lines))
 
 
+def _local_branch_offsets(line: DisassemblyLine) -> tuple[int, ...]:
+    return tuple(int(match.group(1), 16) for match in BRANCH_TARGET_RE.finditer(line.text))
+
+
+def _block_terminates(line: DisassemblyLine) -> bool:
+    mnemonic = line.text.partition(" ")[0]
+    return mnemonic.startswith(("j", "loop")) or mnemonic in {"ret", "retf", "iret", "int3"}
+
+
+def _has_fallthrough(line: DisassemblyLine) -> bool:
+    mnemonic = line.text.partition(" ")[0]
+    return mnemonic not in {"jmp", "ret", "retf", "iret", "int3"}
+
+
+def build_basic_blocks(lines: tuple[DisassemblyLine, ...]) -> tuple[BasicBlock, ...]:
+    """Recover a bounded intraprocedural block graph from normalized disassembly."""
+
+    if not lines:
+        return ()
+    index_by_offset = {line.offset: index for index, line in enumerate(lines)}
+    leaders = {0}
+    for index, line in enumerate(lines):
+        leaders.update(
+            index_by_offset[offset]
+            for offset in _local_branch_offsets(line)
+            if offset in index_by_offset
+        )
+        if _block_terminates(line) and index + 1 < len(lines):
+            leaders.add(index + 1)
+    starts = sorted(leaders)
+    ranges = [
+        (start, starts[index + 1] if index + 1 < len(starts) else len(lines))
+        for index, start in enumerate(starts)
+    ]
+    block_by_offset = {
+        lines[start].offset: index
+        for index, (start, _end) in enumerate(ranges)
+    }
+    blocks: list[BasicBlock] = []
+    for block_index, (start, end) in enumerate(ranges):
+        first = lines[start]
+        last = lines[end - 1]
+        successor_indices: list[int] = []
+        mnemonic = last.text.partition(" ")[0]
+        if mnemonic.startswith(("j", "loop")):
+            successor_indices.extend(
+                block_by_offset[offset]
+                for offset in _local_branch_offsets(last)
+                if offset in block_by_offset
+            )
+        fallthrough = block_index + 1 if _has_fallthrough(last) and block_index + 1 < len(ranges) else None
+        if fallthrough is not None:
+            successor_indices.append(fallthrough)
+        blocks.append(
+            BasicBlock(
+                index=block_index,
+                start_instruction=start,
+                end_instruction=end,
+                start_offset=first.offset,
+                end_offset=last.offset + last.size,
+                start_address=first.address,
+                end_address=last.address + last.size,
+                lines=tuple(line.text for line in lines[start:end]),
+                successors=tuple(dict.fromkeys(successor_indices)),
+                fallthrough=fallthrough,
+            ),
+        )
+    return tuple(blocks)
+
+
+def _cfg_predecessor_counts(blocks: tuple[BasicBlock, ...]) -> tuple[int, ...]:
+    counts = [0] * len(blocks)
+    for block in blocks:
+        for successor in block.successors:
+            counts[successor] += 1
+    return tuple(counts)
+
+
+def _cfg_block_shape(block: BasicBlock, predecessor_count: int) -> tuple[str, int, bool, int]:
+    return (
+        block.terminator,
+        len(block.successors),
+        block.fallthrough is not None,
+        predecessor_count,
+    )
+
+
+def align_basic_blocks(result: MatchResult) -> CfgAlignment:
+    """Align exact CFG anchors and conservative similar blocks for diagnostics only."""
+
+    target = build_basic_blocks(result.target_disassembly)
+    candidate = build_basic_blocks(result.candidate_disassembly)
+    target_predecessors = _cfg_predecessor_counts(target)
+    candidate_predecessors = _cfg_predecessor_counts(candidate)
+    unmatched_target = set(range(len(target)))
+    unmatched_candidate = set(range(len(candidate)))
+    pairs: list[CfgBlockPair] = []
+
+    target_fingerprints: dict[tuple[tuple[str, ...], tuple[str, int, bool, int]], list[int]] = {}
+    candidate_fingerprints: dict[tuple[tuple[str, ...], tuple[str, int, bool, int]], list[int]] = {}
+    for index, block in enumerate(target):
+        key = block.canonical_lines, _cfg_block_shape(block, target_predecessors[index])
+        target_fingerprints.setdefault(key, []).append(index)
+    for index, block in enumerate(candidate):
+        key = block.canonical_lines, _cfg_block_shape(block, candidate_predecessors[index])
+        candidate_fingerprints.setdefault(key, []).append(index)
+    for key in sorted(
+        target_fingerprints.keys() & candidate_fingerprints.keys(),
+        key=lambda value: (value[0], value[1]),
+    ):
+        target_indices = target_fingerprints[key]
+        candidate_indices = candidate_fingerprints[key]
+        if len(target_indices) != 1 or len(candidate_indices) != 1:
+            continue
+        target_index = target_indices[0]
+        candidate_index = candidate_indices[0]
+        pairs.append(
+            CfgBlockPair(
+                target_block=target_index,
+                candidate_block=candidate_index,
+                kind="exact",
+                ratio=1.0,
+                structure_match=True,
+            ),
+        )
+        unmatched_target.remove(target_index)
+        unmatched_candidate.remove(candidate_index)
+
+    similar: list[tuple[float, float, int, int, bool]] = []
+    target_denominator = max(1, len(target) - 1)
+    candidate_denominator = max(1, len(candidate) - 1)
+    for target_index in unmatched_target:
+        target_block = target[target_index]
+        target_shape = _cfg_block_shape(target_block, target_predecessors[target_index])
+        for candidate_index in unmatched_candidate:
+            candidate_block = candidate[candidate_index]
+            candidate_shape = _cfg_block_shape(candidate_block, candidate_predecessors[candidate_index])
+            structure_match = target_shape == candidate_shape
+            if not structure_match:
+                continue
+            ratio = difflib.SequenceMatcher(
+                a=target_block.canonical_lines,
+                b=candidate_block.canonical_lines,
+                autojunk=False,
+            ).ratio()
+            if ratio < 0.55:
+                continue
+            order_distance = abs(
+                target_index / target_denominator - candidate_index / candidate_denominator,
+            )
+            similar.append((ratio, -order_distance, target_index, candidate_index, structure_match))
+    for ratio, _order, target_index, candidate_index, structure_match in sorted(similar, reverse=True):
+        if target_index not in unmatched_target or candidate_index not in unmatched_candidate:
+            continue
+        pairs.append(
+            CfgBlockPair(
+                target_block=target_index,
+                candidate_block=candidate_index,
+                kind="exact-ambiguous" if ratio == 1.0 else "similar",
+                ratio=ratio,
+                structure_match=structure_match,
+            ),
+        )
+        unmatched_target.remove(target_index)
+        unmatched_candidate.remove(candidate_index)
+
+    paired_target_to_candidate = {pair.target_block: pair.candidate_block for pair in pairs}
+    paired_candidates = set(paired_target_to_candidate.values())
+    checked_pairs: list[CfgBlockPair] = []
+    for pair in pairs:
+        target_successors = {
+            paired_target_to_candidate[successor]
+            for successor in target[pair.target_block].successors
+            if successor in paired_target_to_candidate
+        }
+        candidate_successors = {
+            successor
+            for successor in candidate[pair.candidate_block].successors
+            if successor in paired_candidates
+        }
+        edge_consistent = (
+            target_successors == candidate_successors
+            if target_successors or candidate_successors
+            else None
+        )
+        checked_pairs.append(replace(pair, edge_consistent=edge_consistent))
+
+    return CfgAlignment(
+        target_blocks=target,
+        candidate_blocks=candidate,
+        pairs=tuple(sorted(checked_pairs, key=lambda pair: pair.target_block)),
+        unmatched_target=tuple(sorted(unmatched_target)),
+        unmatched_candidate=tuple(sorted(unmatched_candidate)),
+    )
+
+
+def _basic_block_payload(block: BasicBlock) -> dict[str, Any]:
+    return {
+        "index": block.index,
+        "instructions": {
+            "start": block.start_instruction,
+            "end": block.end_instruction,
+            "count": block.instruction_count,
+        },
+        "bytes": {"start": block.start_offset, "end": block.end_offset},
+        "addresses": {"start": block.start_address, "end": block.end_address},
+        "terminator": block.terminator,
+        "successors": list(block.successors),
+        "fallthrough": block.fallthrough,
+        "lines": list(block.lines),
+    }
+
+
+def _basic_block_location_payload(block: BasicBlock) -> dict[str, Any]:
+    return {
+        "index": block.index,
+        "instructions": {
+            "start": block.start_instruction,
+            "end": block.end_instruction,
+            "count": block.instruction_count,
+        },
+        "bytes": {"start": block.start_offset, "end": block.end_offset},
+        "addresses": {"start": block.start_address, "end": block.end_address},
+        "terminator": block.terminator,
+        "successors": list(block.successors),
+    }
+
+
+def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
+    edge_consistent = sum(pair.edge_consistent is True for pair in alignment.pairs)
+    edge_conflicts = sum(pair.edge_consistent is False for pair in alignment.pairs)
+    return {
+        "method": (
+            "diagnostic-only: unique exact normalized block fingerprints, followed by greedy "
+            "structurally identical pairs with at least 55% instruction similarity"
+        ),
+        "summary": {
+            "target_blocks": len(alignment.target_blocks),
+            "candidate_blocks": len(alignment.candidate_blocks),
+            "exact_pairs": alignment.exact_pairs,
+            "exact_ambiguous_pairs": alignment.exact_ambiguous_pairs,
+            "similar_pairs": alignment.similar_pairs,
+            "unmatched_target": len(alignment.unmatched_target),
+            "unmatched_candidate": len(alignment.unmatched_candidate),
+            "edge_consistent_pairs": edge_consistent,
+            "edge_conflicts": edge_conflicts,
+        },
+        "pairs": [
+            {
+                "target_block": pair.target_block,
+                "candidate_block": pair.candidate_block,
+                "kind": pair.kind,
+                "match_ratio": pair.ratio,
+                "structure_match": pair.structure_match,
+                "edge_consistent": pair.edge_consistent,
+                "target": _basic_block_location_payload(
+                    alignment.target_blocks[pair.target_block],
+                ),
+                "candidate": _basic_block_location_payload(
+                    alignment.candidate_blocks[pair.candidate_block],
+                ),
+            }
+            for pair in alignment.pairs
+        ],
+        "unmatched_target": [
+            _basic_block_payload(alignment.target_blocks[index])
+            for index in alignment.unmatched_target
+        ],
+        "unmatched_candidate": [
+            _basic_block_payload(alignment.candidate_blocks[index])
+            for index in alignment.unmatched_candidate
+        ],
+    }
+
+
 def _masked_reference_status(
     target_references: tuple[MaskedReference, ...],
     candidate_references: tuple[MaskedReference, ...],
@@ -3036,6 +3368,7 @@ def match_result_payload(
     max_regions: int | None = None,
 ) -> dict[str, Any]:
     regions = diff_regions(result, context=region_context, max_regions=max_regions) if result.ratio != 1.0 else []
+    cfg = align_basic_blocks(result) if result.target_disassembly or result.candidate_disassembly else None
     return {
         "exact": result.exact,
         "match_ratio": result.ratio,
@@ -3048,6 +3381,7 @@ def match_result_payload(
             "mismatch": result.masked_operand_audit.mismatch_count,
         },
         "regions": [diff_region_payload(region) for region in regions],
+        "cfg_alignment": cfg_alignment_payload(cfg) if cfg is not None else None,
     }
 
 
@@ -3519,6 +3853,29 @@ class ProbeResult:
         if self.baseline.ratio is None or self.probe.ratio is None:
             return None
         return self.probe.ratio - self.baseline.ratio
+
+
+@dataclass(frozen=True, slots=True)
+class CompilerListingSpan:
+    source_lines: tuple[int, ...]
+    instruction_offsets: tuple[int, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class CompilerListingResult:
+    listing_path: Path
+    metadata_path: Path
+    scratch: Path
+    function: str
+    compiler: str
+    cflags: str
+    canonical_object: Path
+    canonical_object_sha256: str
+    diagnostic_object_sha256: str
+    function_sha256: str
+    function_bytes: int
+    relocations: int
+    spans: tuple[CompilerListingSpan, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -4491,6 +4848,207 @@ def compile_scratch(
         json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
     )
     return obj_path
+
+
+_COMPILER_LISTING_SOURCE_RE = re.compile(r"^;\s*(\d+)\s+:")
+_COMPILER_LISTING_INSTRUCTION_RE = re.compile(r"^\s*([0-9A-Fa-f]{5,8})\t")
+
+
+def parse_compiler_listing_spans(text: str) -> tuple[CompilerListingSpan, ...]:
+    source_lines: list[int] = []
+    instruction_offsets: list[int] = []
+    spans: list[CompilerListingSpan] = []
+
+    def flush() -> None:
+        if instruction_offsets:
+            spans.append(
+                CompilerListingSpan(
+                    source_lines=tuple(dict.fromkeys(source_lines)),
+                    instruction_offsets=tuple(instruction_offsets),
+                ),
+            )
+            instruction_offsets.clear()
+            source_lines.clear()
+
+    for line in text.splitlines():
+        if source_match := _COMPILER_LISTING_SOURCE_RE.match(line):
+            if instruction_offsets:
+                flush()
+            source_lines.append(int(source_match.group(1)))
+            continue
+        if instruction_match := _COMPILER_LISTING_INSTRUCTION_RE.match(line):
+            instruction_offsets.append(int(instruction_match.group(1), 16))
+    flush()
+    return tuple(spans)
+
+
+def generate_compiler_listing(
+    config: ScratchConfig,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    output: Path | None = None,
+) -> CompilerListingResult:
+    """Generate a VC source/assembly listing and prove its function object is unchanged."""
+
+    import subprocess
+    import tempfile
+
+    if config.archive is not None or config.import_thunk is not None:
+        raise ValueError("compiler listings require a source-backed scratch")
+    match_root = match_root.resolve()
+    source = config.directory / config.source
+    validate_scratch_source(source)
+    staged_source_text = _apply_auto_inline_boundaries(
+        source.read_bytes().decode("latin1"),
+        config.auto_inline_off,
+        source=source,
+    )
+    _validate_scratch_source_text(staged_source_text, source)
+    canonical_path = compile_scratch(config, match_root)
+    canonical_object_data = canonical_path.read_bytes()
+    canonical_object = parse_coff_object(canonical_object_data)
+    canonical_function = extract_object_function(
+        canonical_object,
+        config.symbol,
+        extent=config.archive_extent,
+        end_symbol=config.archive_end_symbol,
+        size=config.archive_size,
+    )
+    source_sha256 = hashlib.sha256(staged_source_text.encode("latin1")).hexdigest()
+    if output is None:
+        output = (
+            match_root
+            / ".cache"
+            / "listings"
+            / config.directory.name
+            / f"{_scratch_profile_digest(config)}-{source_sha256[:12]}"
+            / Path(config.source).with_suffix(".cod").name
+        )
+    output = output.resolve()
+    metadata_path = output.with_suffix(".json")
+
+    with tempfile.TemporaryDirectory(prefix=f"crimson-listing-{config.directory.name}-") as temp_name:
+        temp = Path(temp_name)
+        temp_source = temp / Path(config.source).name
+        temp_object = temp / Path(config.source).with_suffix(".obj").name
+        temp_listing = temp / "listing.cod"
+        temp_source.write_bytes(staged_source_text.encode("latin1"))
+        command = [
+            str(match_root / "cl.sh"),
+            "/c",
+            *shlex.split(config.cflags),
+            "/FAsc",
+            f"/Fa{temp_listing.name}",
+            temp_source.name,
+        ]
+        environment = dict(os.environ)
+        environment["MSVC_VER"] = config.compiler
+        environment.pop("CRIMSON_MATCH_INCLUDE_OVERLAY", None)
+        if config.include_overlay is not None:
+            environment["CRIMSON_MATCH_INCLUDE_OVERLAY"] = str(config.include_overlay.resolve())
+        completed = subprocess.run(
+            command,
+            cwd=temp,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0 or not temp_object.is_file() or not temp_listing.is_file():
+            raise RuntimeError(f"listing compile failed:\n{completed.stdout}{completed.stderr}")
+        diagnostic_object_data = temp_object.read_bytes()
+        diagnostic_function = extract_object_function(
+            parse_coff_object(diagnostic_object_data),
+            config.symbol,
+            extent=config.archive_extent,
+            end_symbol=config.archive_end_symbol,
+            size=config.archive_size,
+        )
+        if diagnostic_function != canonical_function:
+            raise ValueError(
+                "listing compile changed the extracted object function; refusing misleading diagnostics",
+            )
+        listing_data = temp_listing.read_bytes()
+
+    spans = parse_compiler_listing_spans(listing_data.decode("latin1"))
+    _write_bytes_atomic(output, listing_data)
+    payload = {
+        "schema": 1,
+        "kind": "crimson-compiler-listing",
+        "scratch": str(config.directory.resolve()),
+        "function": config.function,
+        "source": config.source,
+        "source_sha256": source_sha256,
+        "compiler": config.compiler,
+        "cflags": config.cflags,
+        "listing_flags": ["/FAsc"],
+        "listing_sha256": hashlib.sha256(listing_data).hexdigest(),
+        "canonical_object": str(canonical_path.resolve()),
+        "canonical_object_sha256": hashlib.sha256(canonical_object_data).hexdigest(),
+        "diagnostic_object_sha256": hashlib.sha256(diagnostic_object_data).hexdigest(),
+        "object_function_equivalent": True,
+        "function_sha256": hashlib.sha256(canonical_function.data).hexdigest(),
+        "function_bytes": len(canonical_function.data),
+        "relocations": len(canonical_function.relocation_references),
+        "spans": [
+            {
+                "source_lines": list(span.source_lines),
+                "instruction_offsets": list(span.instruction_offsets),
+            }
+            for span in spans
+        ],
+        "caveat": (
+            "Source-line scheduling comes from the reconstructed source and selected compiler; "
+            "it does not recover original local names or prove native variable lifetimes."
+        ),
+    }
+    _write_text_atomic(metadata_path, json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    return CompilerListingResult(
+        listing_path=output,
+        metadata_path=metadata_path,
+        scratch=config.directory,
+        function=config.function,
+        compiler=config.compiler,
+        cflags=config.cflags,
+        canonical_object=canonical_path,
+        canonical_object_sha256=hashlib.sha256(canonical_object_data).hexdigest(),
+        diagnostic_object_sha256=hashlib.sha256(diagnostic_object_data).hexdigest(),
+        function_sha256=hashlib.sha256(canonical_function.data).hexdigest(),
+        function_bytes=len(canonical_function.data),
+        relocations=len(canonical_function.relocation_references),
+        spans=spans,
+    )
+
+
+def compiler_listing_payload(result: CompilerListingResult) -> dict[str, Any]:
+    return {
+        "listing": str(result.listing_path),
+        "metadata": str(result.metadata_path),
+        "scratch": str(result.scratch),
+        "function": result.function,
+        "compiler": result.compiler,
+        "cflags": result.cflags,
+        "canonical_object": str(result.canonical_object),
+        "canonical_object_sha256": result.canonical_object_sha256,
+        "diagnostic_object_sha256": result.diagnostic_object_sha256,
+        "object_function_equivalent": True,
+        "function_sha256": result.function_sha256,
+        "function_bytes": result.function_bytes,
+        "relocations": result.relocations,
+        "source_spans": len(result.spans),
+        "machine_rows": sum(len(span.instruction_offsets) for span in result.spans),
+    }
+
+
+def render_compiler_listing_result(result: CompilerListingResult) -> str:
+    payload = compiler_listing_payload(result)
+    return (
+        f"listing={payload['listing']} metadata={payload['metadata']}\n"
+        f"function={result.function} compiler={result.compiler} cflags={result.cflags}\n"
+        f"object_function_equivalent=yes bytes={result.function_bytes} "
+        f"relocations={result.relocations} source_spans={payload['source_spans']} "
+        f"machine_rows={payload['machine_rows']}"
+    )
 
 
 def _exception_summary(exc: Exception) -> str:

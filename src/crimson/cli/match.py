@@ -372,6 +372,38 @@ def cmd_match_dump(
         emit("candidate", dump.candidate_lines)
 
 
+@match_app.command("listing")
+def cmd_match_listing(
+    directory: Path = typer.Argument(..., help="source-backed scratch directory"),
+    match_root: Path = typer.Option(
+        matchlib.DEFAULT_MATCH_ROOT,
+        "--match-root",
+        help="tools/match root",
+    ),
+    output: Path | None = typer.Option(
+        None,
+        "--output",
+        help="output .cod path; defaults to the ignored match cache",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+) -> None:
+    """Emit a source/assembly compiler listing after proving object equivalence."""
+    try:
+        config = matchlib.load_scratch_config(directory.resolve())
+        result = matchlib.generate_compiler_listing(
+            config,
+            match_root,
+            output=output,
+        )
+    except Exception as exc:
+        typer.echo(f"listing failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+    if as_json:
+        typer.echo(json.dumps(matchlib.compiler_listing_payload(result), indent=2, sort_keys=True))
+    else:
+        typer.echo(matchlib.render_compiler_listing_result(result))
+
+
 @match_app.command("validate")
 def cmd_match_validate(
     source: Path = typer.Argument(..., help="scratch source file or directory"),
@@ -1833,6 +1865,41 @@ def cmd_match_inspect(
         typer.echo("matcher: missing scratch")
     evidence = payload.get("mismatch_evidence")
     if evidence:
+        cfg = evidence.get("cfg_alignment")
+        if cfg:
+            summary = cfg["summary"]
+            typer.echo(
+                "cfg: "
+                f"blocks={summary['target_blocks']}/{summary['candidate_blocks']} "
+                f"exact={summary['exact_pairs']} ambiguous={summary['exact_ambiguous_pairs']} "
+                f"similar={summary['similar_pairs']} "
+                f"unmatched={summary['unmatched_target']}/{summary['unmatched_candidate']} "
+                f"edge-conflicts={summary['edge_conflicts']}",
+            )
+            residual_pairs = sorted(
+                (
+                    pair
+                    for pair in cfg["pairs"]
+                    if pair["kind"] != "exact" or pair["edge_consistent"] is False
+                ),
+                key=lambda pair: (
+                    pair["edge_consistent"] is not False,
+                    pair["kind"] == "exact-ambiguous",
+                    pair["match_ratio"],
+                    pair["target_block"],
+                ),
+            )
+            for pair in residual_pairs[:12]:
+                target_block = pair["target"]
+                candidate_block = pair["candidate"]
+                typer.echo(
+                    f"  {pair['kind']} target=b{target_block['index']} "
+                    f"0x{target_block['addresses']['start']:08x} "
+                    f"candidate=b{candidate_block['index']} "
+                    f"+0x{candidate_block['bytes']['start']:x} "
+                    f"match={pair['match_ratio']:.1%} "
+                    f"edges={pair['edge_consistent']}",
+                )
         for index, region in enumerate(evidence["regions"], start=1):
             typer.echo(
                 f"mismatch {index}: target={region['target_instructions']['start']}:"
