@@ -817,13 +817,19 @@ This is the strongest defer candidate among the five large residuals. Native
 and candidate allocate the same `0x74`-byte frame and differ by only eight
 instructions across 5,421/5,413 instructions. Their CFGs differ by six blocks
 (1,176/1,170), with only 16/10 unmatched blocks and no edge conflict through
-the 70 pairs checked against unique exact anchors.
+the 63 checked edges among 80 order-bounded exact anchors.
 
-The apparent 354 edge conflicts are explicitly heuristic: 1,048 duplicate
-exact pairs make greedy switch-block pairing non-unique. They are not evidence
-for hundreds of wrong branches. The verified candidate listing likewise has
+The matcher reports only 13 heuristic edge conflicts: 1,053 duplicate-exact
+pairs make greedy switch-block pairing non-unique. They are not evidence for
+wrong branches. The verified candidate listing likewise has
 65 aliases over eight slots, two reused slots, and 11 compiler-generated
 temporaries; the equal prologue allocation rules out missing frame space.
+
+The two largest unmatched islands are already-covered source surfaces. Native
+block 17 (`0x004492c2`) is the runtime binding-copy loop exercised by the cursor
+and ownership replays, while block 23 is the item-reset loop. The remaining
+unmatched tail consists predominantly of tiny repeated switch blocks. No fresh
+source hypothesis follows from the corrected alignment.
 
 Advice for the next agent: do not spend the 1.9.93 pass forcing stack slots or
 repairing duplicate-switch heuristic conflicts. The semantic and reference

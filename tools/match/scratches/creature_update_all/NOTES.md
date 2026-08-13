@@ -576,10 +576,11 @@ source SHA-256 is
 ## Structural residual handoff (2026-08-13)
 
 The remaining structural difference is small and sharply bounded. Native and
-candidate both have 197 CFG blocks, with 34 unique exact, 10 duplicate-exact,
-84 similar, and 69/69 unmatched blocks. Neither unique-anchor validation nor
-heuristic pairing finds an edge conflict. Native allocates `0x7c` bytes versus
-the candidate's `0x6c`, leaving a `+0x10` native frame delta.
+candidate both have 197 CFG blocks, with 31 unique exact, 13 duplicate-exact,
+84 similar, and 69/69 unmatched blocks. All 31 unique exact pairs are trusted
+anchors. Neither anchored validation nor heuristic pairing finds an edge
+conflict. Native allocates `0x7c` bytes versus the candidate's `0x6c`, leaving
+a `+0x10` native frame delta.
 
 The verified VC6 listing contains 17 aliases at 17 distinct offsets, no reused
 slot, and seven compiler-generated temporaries. The already-retained initial
@@ -587,10 +588,17 @@ distance, contact-impact, and target-heading SDK expressions moved the frame
 and instruction schedule in the native direction; the remaining `+0x10` makes
 another real value-object lifetime plausible, but does not identify one.
 
-Advice for the next agent: inspect an unmatched native block first and require
-evidence for a specific temporary-returning vector boundary before changing
-the source. Measure that one region and the whole function together. Do not
-revisit artificial hoists, movement vectors that contradict native's direct
-global stores, scaled-index coercion, or speculative compiler profiles merely
-to manufacture 16 bytes. The current experiment epoch is historical-only, so
-one fresh Binary Ninja-bounded hypothesis is warranted; frame padding is not.
+The current largest unmatched islands do not expose a fresh boundary. Block
+163 (`0x0042733a..0x004273cd`) is the retained contact subtraction,
+normalization, and impact addition; live Binary Ninja shows the player-position
+reload and the two value objects already present in the source. Block 104 is
+the movement/spawn-slot region whose native velocity writes are direct globals,
+and block 59 is the exhausted tethered-target distance. Blocks 176/177 are the
+fully swept corpse-queue arms.
+
+Advice for the next agent: inspect a different unmatched native block and
+require evidence for a specific temporary-returning vector boundary before
+changing the source. Measure that region and the whole function together. Do
+not revisit the ranked contact, movement, tether, or corpse islands; artificial
+hoists, scaled-index coercion, and speculative compiler profiles do not justify
+manufacturing the remaining 16 bytes.

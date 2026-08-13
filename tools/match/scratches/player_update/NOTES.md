@@ -1072,18 +1072,23 @@ aliases over 12 distinct slots, five reused slots, and no compiler-generated
 temporary aliases. The seven-instruction exact prefix and equal prologue
 allocation rule out "missing frame size" as the explanation for this residual.
 
-Native/candidate have 485/478 CFG blocks, with 159 unique exact pairs, 130
-duplicate-exact pairs, 106 similar pairs, and 90/83 unmatched blocks. One edge
-conflict survives unique-anchor validation; 19 more belong only to greedy
-heuristic pairing. Native also has 142 more instructions while the reference
-audit is already `805/0/2`, so the remaining useful search surface is
-structural, not a broad data-symbol recovery problem.
+Native/candidate have 485/478 CFG blocks, with 147 unique exact pairs, 145
+duplicate-exact pairs, 104 similar pairs, and 89/82 unmatched blocks. The
+order-bounded monotonic filter trusts 143 of the exact pairs as anchors. No
+anchored edge conflict survives; 14 conflicts belong only to greedy heuristic
+pairing.
 
-Advice for the next agent: begin at the single anchored edge conflict or an
-unmatched native block and look for an independently observed branch owner,
-callback reload, or source value lifetime. Do not add, widen, or hoist locals:
-the frame already matches, and such edits can only reshuffle a correct
-allocation. Preserve the existing exact prefix and reference audit as hard
-guardrails. The old sweeps are historical for this baseline, so a fresh
-native-backed structural probe is allowed; another free-form lifetime sweep is
-not evidence that the function is stalled.
+The former single "anchored" conflict at native block 137/candidate block 133
+was diagnostic fallout. Its candidate successor had been paired with a
+repeated input-check block roughly 40 blocks later, so predecessor shape made
+an unrelated edge look contradictory. Removing predecessor-only uniqueness and
+bounding anchors by block order clears it without any source change. The equal
+`0x48` frames and the already-exhausted entry-health lifetime matrix leave no
+source-backed local-hoist hypothesis here.
+
+Advice for the next agent: start from a genuinely unmatched native block and
+look for an independently observed branch owner, callback reload, or source
+value lifetime. Do not reopen the old edge conflict or add, widen, or hoist
+locals: the frame already matches, and such edits can only reshuffle a correct
+allocation. Preserve the existing exact prefix and `805/0/2` reference audit as
+hard guardrails.
