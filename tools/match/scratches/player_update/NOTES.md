@@ -1266,3 +1266,26 @@ source SHA-256 is
 `e8ddebbc2c4205d404e56b18e3c44c63ca66fb7163b84f7c43defe10bdababd7`;
 the experiment ledger SHA-256 is
 `f835cef25565454e286060327092ce99c1699c6ee1e0c8849aae4e142af0991c`.
+
+## Pistol projectile-position lifetime
+
+The Pistol call at `0x0041604a..0x0041606b` constructs its projectile
+position at the native `esp+0x48` object already identified as
+`move_delta`. Native evaluates the Y component before X, then stores both
+components into that shared object before `projectile_spawn`. The prior
+scratch introduced a block-local `spawn_pos` for the call.
+
+`pistol-move-delta-mutations.json` completely tests both component orders
+(2/2 variants). Both source orders gain `7.861218568665208` weighted bytes
+with unchanged instruction count, prefix, and references. The retained
+Y-before-X form follows the observed native evaluation order. The spec
+SHA-256 is
+`e976b1e25c7ed9e0016e62cd3bb3a7e8c965817875f459edbee4c9d02ca5834e`.
+
+The canonical build is now 4,066/4,206 instructions at
+`64.02321083172147%`: 10,408.25338491296 weighted bytes, a
+5,848.7466150870405-byte gap, prefix 7, and `805/0/2` references. The retained
+source SHA-256 is
+`839be5ceb85906b000b00505fd11f6b0fbccba5b94b2c982a891160c641d4000`;
+the experiment ledger SHA-256 is
+`98d1d6cdb528ca61925af4bf623acebaaa766ede50c2f2a28f3c4bba1b13abbf`.

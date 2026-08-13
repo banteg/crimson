@@ -1261,11 +1261,10 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_b = 0.5f;
                 sprite_effect_pool[effect_index].color_a = 0.213f;
             } else if (player->weapon_id == WEAPON_ID_PISTOL) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                move_delta.y = movement_input.y + player_position->y;
+                move_delta.x = movement_input.x + player_position->x;
                 projectile_spawn(
-                    &spawn_pos,
+                    &move_delta,
                     angle_step,
                     PROJECTILE_TYPE_PISTOL,
                     owner_id);
