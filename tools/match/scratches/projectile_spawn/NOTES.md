@@ -144,3 +144,26 @@ instructions with `13/0/0` references. A reference ABI therefore does not
 materialize the native default-damage stack slot or its override-backedge
 store. The pointer boundary remains canonical. The spec SHA-256 is
 `a639266f2e0d27ac080c5eeb3fafbb669e42016b070464dc54863e3cacf5d533`.
+
+## MOD SDK pool-sentinel transfer
+
+The authenticated `rSpawnProj`, `rSpawnRock`, and `rSpawnPart` source/DLL
+pairs use a pointer plus a last-entry sentinel. That is a useful house-style
+hypothesis, but the game target and its exact `creature_alloc_slot`,
+`creature_spawn_slot_alloc`, and `bonus_alloc_slot` neighbors instead support
+the current one-past pool bound.
+
+`sdk-pool-sentinel-mutations.json` records complete 5/5 coverage of the SDK
+last-entry loop, its break form, the exact-game `for` spelling, and declaration
+interactions. The one-past `for` loop and unused last-entry declaration are
+byte-identical to the 71.67%, 114/126-instruction, `13/0/0` baseline. The SDK
+`while (projectile != end)` form keeps the same normalized score and instruction
+count only because the bound operand is masked, but the reference audit falls
+to `12/0/1`: it names `projectile_pool[0x5f]` where native names the one-past
+`projectile_pool[0x60]`. Replacing the shared initialize edge with an SDK-style
+break falls to 65.82%, 111 instructions, and `11/0/0` references.
+
+No source change is retained. This establishes the MOD SDK as a bounded
+source-style prior rather than authority over 1.9.93 semantics. The spec
+SHA-256 is
+`08d6958a585819a0840c1f4ac02863acacc8982ff047bcd86d2d48ec4686ed5e`.

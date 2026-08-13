@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sdk-pool-end-declaration",
+      "find": "    projectile_t *projectile;\n    projectile_t *spawned;\n",
+      "replacements": [
+        {
+          "name": "declare-last-entry",
+          "text": "    projectile_t *projectile;\n    projectile_t *end;\n    projectile_t *spawned;\n"
+        }
+      ]
+    },
+    {
+      "name": "pool-scan-shape",
+      "find": "    index = 0;\n    projectile = projectile_pool;\n    while ((int)projectile < (int)&projectile_pool[0x60]) {\n        if (!projectile->active) {\n            result = index;\n            goto initialize;\n        }\n        ++projectile;\n        ++index;\n    }\n    result = 0x5f;\n",
+      "replacements": [
+        {
+          "name": "sdk-last-entry-while",
+          "text": "    index = 0;\n    projectile = projectile_pool;\n    end = &projectile_pool[0x5f];\n    while (projectile != end) {\n        if (!projectile->active) {\n            result = index;\n            goto initialize;\n        }\n        ++projectile;\n        ++index;\n    }\n    result = 0x5f;\n",
+          "requires": [
+            "sdk-pool-end-declaration/declare-last-entry"
+          ]
+        },
+        {
+          "name": "sdk-last-entry-break",
+          "text": "    index = 0;\n    projectile = projectile_pool;\n    end = &projectile_pool[0x5f];\n    while (projectile != end) {\n        if (!projectile->active) {\n            break;\n        }\n        ++projectile;\n        ++index;\n    }\n    result = index;\n",
+          "requires": [
+            "sdk-pool-end-declaration/declare-last-entry"
+          ]
+        },
+        {
+          "name": "exact-game-for-loop",
+          "text": "    index = 0;\n    for (projectile = projectile_pool;\n         (int)projectile < (int)&projectile_pool[0x60];\n         ++projectile) {\n        if (!projectile->active) {\n            result = index;\n            goto initialize;\n        }\n        ++index;\n    }\n    result = 0x5f;\n"
+        }
+      ]
+    }
+  ]
+}

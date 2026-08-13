@@ -828,7 +828,7 @@ def build_mod_sdk_oracle(
     match_root: Path = matchlib.DEFAULT_MATCH_ROOT,
     project_name: str | None = None,
 ) -> ModSdkOracleReport:
-    """Map application-owned example source into its authenticated shipped DLL."""
+    """Map manifest-selected authored source into its authenticated shipped DLL."""
 
     payload = load_mod_sdk_manifest(manifest_path)
     resolved_source = resolve_mod_sdk_source(source)
@@ -910,7 +910,7 @@ def mod_sdk_oracle_report_payload(report: ModSdkOracleReport) -> dict[str, Any]:
         "counted_in_game_score": False,
         "summary": {
             "provenance_checks": report.provenance_checks,
-            "application_functions": len(report.functions),
+            "authored_functions": len(report.functions),
             "expected_functions": report.expected_functions,
             "mapped": len(report.mapped),
             "exact": len(report.exact),
@@ -968,7 +968,7 @@ def render_mod_sdk_oracle_report(report: ModSdkOracleReport) -> str:
         f"source={report.source} ({report.source_kind})",
         (
             f"provenance-checks={report.provenance_checks} "
-            f"application-functions={len(report.functions)}/{report.expected_functions} "
+            f"authored-functions={len(report.functions)}/{report.expected_functions} "
             f"mapped={len(report.mapped)} exact={len(report.exact)}"
         ),
         (

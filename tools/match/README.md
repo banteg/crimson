@@ -251,11 +251,20 @@ The separate `sdk-oracle` lane compiles the untouched `r_roks.cpp`, selects
 only its externally defined `?r...` functions, and searches executable DLL
 sections with relocation-masked object fingerprints. Unique linked caller
 xrefs disambiguate identical record/play helper bodies. The pinned specimen
-maps all 25 application-owned functions (14,548 bytes and 3,911 instructions)
-back to `cl_crimsonroks.dll` at normalized instruction identity; CRT and
-compiler-generated helpers are excluded by construction. These measurements
+maps all 25 externally defined `r_roks.cpp` functions (14,548 bytes and 3,911
+instructions) back to `cl_crimsonroks.dll` at normalized instruction identity;
+CRT and compiler-generated helpers are excluded by construction. The separate
+`DllMain.cpp` export calibration remains part of `mod-sdk`. These measurements
 are calibration evidence only and never contribute to the 1.9.93 game matching
 score or `STATUS.md`.
+
+Treat SDK idioms as hypotheses, not target semantics. The first bounded
+transfer to `projectile_spawn` tested the exact MOD helpers' last-entry pool
+sentinel against the game's one-past bound. The SDK sentinel preserves the
+headline normalized ratio but loses the audited pool-end reference, while the
+one-past `for` spelling used by exact game allocators is byte-identical to the
+current candidate. Keep the stronger target and exact-neighbor evidence when
+the two lineages disagree.
 
 Run the compiler through `wibo`. Put `wibo` on `PATH`, set
 `WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple

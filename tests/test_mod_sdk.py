@@ -18,12 +18,16 @@ from crimson.match import (
 )
 from crimson.mod_sdk import (
     DEFAULT_MOD_SDK_MANIFEST,
+    ModSdkOracleFunction,
+    ModSdkOracleReport,
     _find_masked_fingerprint_hits,
     _pe_linker_version,
     _resolve_oracle_addresses,
     _rich_records,
     load_mod_sdk_manifest,
+    mod_sdk_oracle_report_payload,
     mod_sdk_report_payload,
+    render_mod_sdk_oracle_report,
     render_mod_sdk_report,
     validate_mod_sdk,
 )
@@ -178,6 +182,39 @@ def test_sdk_oracle_uses_caller_xref_to_split_identical_bodies() -> None:
 
     assert resolved[callee.name] == callee_va
     assert evidence[callee.name] == "masked-fingerprint+caller-xref"
+
+
+def test_sdk_oracle_report_calls_manifest_selection_authored_functions(tmp_path: Path) -> None:
+    function = ModSdkOracleFunction(
+        name="rExample",
+        symbol="?rExample@@YAXXZ",
+        size=1,
+        instructions=1,
+        target_instructions=1,
+        target_va=0x10001000,
+        fingerprint_candidates=(0x10001000,),
+        evidence="masked-fingerprint",
+        normalized_ratio=1.0,
+    )
+    report = ModSdkOracleReport(
+        source=tmp_path,
+        source_kind="directory",
+        release="2003-08-14",
+        archive_sha256="00" * 32,
+        project="example",
+        source_path="example.cpp",
+        compiler_product_id=49,
+        compiler_build=9044,
+        expected_functions=1,
+        provenance_checks=1,
+        functions=(function,),
+    )
+
+    payload = mod_sdk_oracle_report_payload(report)
+
+    assert payload["summary"]["authored_functions"] == 1
+    assert "application_functions" not in payload["summary"]
+    assert "authored-functions=1/1" in render_mod_sdk_oracle_report(report)
 
 
 def test_mod_sdk_provenance_validates_directory_and_reports_drift(tmp_path: Path) -> None:
