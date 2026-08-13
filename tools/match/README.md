@@ -752,7 +752,9 @@ unique anchors: that can cross-pair repeated loop latches merely because their
 surrounding incoming edges differ. Unique exact pairs also have to be within 5%
 normalized block-order distance and belong to a monotonic backbone before edge
 validation trusts them; exact but distant or reordered pairs remain visible
-without anchoring an unrelated successor.
+without anchoring an unrelated successor. The text report therefore prints
+`anchors=` separately from `exact=`; only the former contributes to the
+anchored edge-conflict count.
 Duplicate exact, displaced exact, and similar blocks are still shown, but their
 edge results are reported separately as heuristic conflicts instead of
 inflating the anchored edge-conflict count in switch-heavy or multi-pass

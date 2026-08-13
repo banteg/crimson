@@ -1937,7 +1937,7 @@ def cmd_match_inspect(
                 "cfg: "
                 f"blocks={summary['target_blocks']}/{summary['candidate_blocks']} "
                 f"exact={summary['exact_pairs']} ambiguous={summary['exact_ambiguous_pairs']} "
-                f"similar={summary['similar_pairs']} "
+                f"similar={summary['similar_pairs']} anchors={summary['edge_anchor_pairs']} "
                 f"unmatched={summary['unmatched_target']}/{summary['unmatched_candidate']} "
                 f"edge-conflicts={summary['edge_conflicts']} "
                 f"edge-checked={summary['edge_consistent_pairs'] + summary['edge_conflicts']} "
