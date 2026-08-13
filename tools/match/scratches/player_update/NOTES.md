@@ -1064,3 +1064,26 @@ native `0x0041708b` (197 bytes), improves by 47.28 weighted bytes, reduces
 changed instructions from 33/33 to 21/21, and gains both exact references.
 No other region regresses. Retained source SHA-256 is
 `782b2be5b47e1d9278833bea8cfd6c2e5f23a6a6c35b7517e5d8f94144d4e680`.
+
+## Structural residual handoff (2026-08-13)
+
+Native and candidate both allocate `0x48` bytes. The candidate listing has 44
+aliases over 12 distinct slots, five reused slots, and no compiler-generated
+temporary aliases. The seven-instruction exact prefix and equal prologue
+allocation rule out "missing frame size" as the explanation for this residual.
+
+Native/candidate have 485/478 CFG blocks, with 159 unique exact pairs, 130
+duplicate-exact pairs, 106 similar pairs, and 90/83 unmatched blocks. One edge
+conflict survives unique-anchor validation; 19 more belong only to greedy
+heuristic pairing. Native also has 142 more instructions while the reference
+audit is already `805/0/2`, so the remaining useful search surface is
+structural, not a broad data-symbol recovery problem.
+
+Advice for the next agent: begin at the single anchored edge conflict or an
+unmatched native block and look for an independently observed branch owner,
+callback reload, or source value lifetime. Do not add, widen, or hoist locals:
+the frame already matches, and such edits can only reshuffle a correct
+allocation. Preserve the existing exact prefix and reference audit as hard
+guardrails. The old sweeps are historical for this baseline, so a fresh
+native-backed structural probe is allowed; another free-form lifetime sweep is
+not evidence that the function is stalled.

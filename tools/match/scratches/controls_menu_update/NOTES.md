@@ -810,3 +810,26 @@ The unchanged source SHA-256 is
 `377d5fc3a10b21f64307532ef9f4c60d53bbff2ee6546d317807895f9bde7964`.
 The updated `experiments.jsonl` SHA-256 is
 `582f217c30dbc55926d241ffbe00e653c248042842d3831d3501172ad03727a4`.
+
+## Structural residual handoff (2026-08-13)
+
+This is the strongest defer candidate among the five large residuals. Native
+and candidate allocate the same `0x74`-byte frame and differ by only eight
+instructions across 5,421/5,413 instructions. Their CFGs differ by six blocks
+(1,176/1,170), with only 16/10 unmatched blocks and no edge conflict through
+the 70 pairs checked against unique exact anchors.
+
+The apparent 354 edge conflicts are explicitly heuristic: 1,048 duplicate
+exact pairs make greedy switch-block pairing non-unique. They are not evidence
+for hundreds of wrong branches. The verified candidate listing likewise has
+65 aliases over eight slots, two reused slots, and 11 compiler-generated
+temporaries; the equal prologue allocation rules out missing frame space.
+
+Advice for the next agent: do not spend the 1.9.93 pass forcing stack slots or
+repairing duplicate-switch heuristic conflicts. The semantic and reference
+audit above already accounts for the remaining nine references, including six
+compiler-local tables. Keep this function as a regression fixture for CFG and
+listing diagnostics and defer exact-match work unless live native evidence
+appears in one of the 16 unmatched target blocks. If it is reopened, an edit
+must preserve the 172-instruction exact prefix, the `1559/0/9` reference audit,
+and the equal `0x74` frame.

@@ -572,3 +572,25 @@ of 6.977712407131 weighted bytes. Candidate instructions move from 1,298 to
 `fxch`; references remain `225/0/2` and the prefix remains zero. The retained
 source SHA-256 is
 `b22a92a6656ebba289c6a0356ffee44033f46ecf595593b2397a72f7d0b0b8c0`.
+
+## Structural residual handoff (2026-08-13)
+
+The remaining structural difference is small and sharply bounded. Native and
+candidate both have 197 CFG blocks, with 34 unique exact, 10 duplicate-exact,
+84 similar, and 69/69 unmatched blocks. Neither unique-anchor validation nor
+heuristic pairing finds an edge conflict. Native allocates `0x7c` bytes versus
+the candidate's `0x6c`, leaving a `+0x10` native frame delta.
+
+The verified VC6 listing contains 17 aliases at 17 distinct offsets, no reused
+slot, and seven compiler-generated temporaries. The already-retained initial
+distance, contact-impact, and target-heading SDK expressions moved the frame
+and instruction schedule in the native direction; the remaining `+0x10` makes
+another real value-object lifetime plausible, but does not identify one.
+
+Advice for the next agent: inspect an unmatched native block first and require
+evidence for a specific temporary-returning vector boundary before changing
+the source. Measure that one region and the whole function together. Do not
+revisit artificial hoists, movement vectors that contradict native's direct
+global stores, scaled-index coercion, or speculative compiler profiles merely
+to manufacture 16 bytes. The current experiment epoch is historical-only, so
+one fresh Binary Ninja-bounded hypothesis is warranted; frame padding is not.

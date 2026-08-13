@@ -975,3 +975,29 @@ instructions with the same `448/0/10` reference audit.
 
 The retained source has SHA-256
 `ca0add177b6fdef14fa5477c7883ab2a49996cb4c095fd59102f0f97a298146b`.
+
+## Structural residual handoff (2026-08-13)
+
+This function has the largest allocation debt in the top residual set. Native
+allocates `0x19c` bytes and the candidate allocates `0x128`, a `+0x74` native
+delta visible in the first instruction. The verified VC6 listing reports 139
+aliases over only 39 distinct slots, 37 reused slots, and 42 generated
+temporaries. Alias count is therefore especially misleading here: it does not
+mean that a source reconstruction with 100 more named locals is missing.
+
+Native/candidate have 214/213 CFG blocks, but only 42 unique exact pairs, 24
+duplicate-exact pairs, and 67 similar pairs; 81/80 blocks remain unmatched.
+Unlike the other frame-larger targets, seven conflicts survive validation
+through unique exact anchors. Six additional conflicts come only from greedy
+heuristic pairing and should not drive source edits.
+
+Advice for the next agent: start with the seven anchored CFG conflicts and the
+unmatched native islands, then ask whether one native-visible vector temporary,
+callback lifetime, or branch owner explains both local scheduling and part of
+the `+0x74` allocation. The large generated-temporary count makes genuine
+return-by-value/operator boundaries plausible, but the frame delta alone does
+not prove any particular one. Reject local hoists or aggregate temporaries that
+only inflate the prologue, and reject score-only gains that lose references or
+an exact anchor. Current experiment evidence is historical-only, so a new
+bounded native-backed probe is appropriate; replaying old allocation guesses
+is not.

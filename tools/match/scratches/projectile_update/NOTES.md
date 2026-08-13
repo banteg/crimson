@@ -1043,3 +1043,29 @@ adds two candidate instructions (`2174` to `2176` of `2203`), and improves
 references from `416/0/18` to `417/0/18`. The selected region rises from
 145.5161 to 151.3511 weighted bytes. The retained source SHA-256 is
 `3c354f7b530d8308e7cab67ae303a1b4f219b0df3ee869c38d0d5b364adbb923`.
+
+## Structural residual handoff (2026-08-13)
+
+The current candidate allocates `0xc4` bytes in its prologue while native
+allocates `0xf4`, a native-minus-candidate delta of `+0x30`. This is the first
+mismatch and is a whole-function allocation signal, not evidence for twelve
+missing four-byte source locals. The verified VC6 listing makes that warning
+concrete: 80 named/generated aliases collapse onto 28 distinct stack slots,
+24 of those slots are reused, and only eight aliases are compiler-generated
+temporaries.
+
+CFG alignment is structurally close but still incomplete: native/candidate
+have 287/283 blocks, with 80 unique exact pairs, 40 duplicate-exact pairs,
+95 similar pairs, and 72/68 unmatched blocks. There are no conflicts through
+unique exact anchors; the two conflicts produced by greedy non-unique pairing
+are heuristic only.
+
+Advice for the next agent: treat the `+0x30` frame delta as one upstream
+lifetime clue and search the unmatched native islands for another independently
+visible SDK-style value boundary, callback reload, or loop owner. A candidate
+is worth recording only when the native instruction schedule supports it and
+it improves the bounded region without trading references or already-matched
+blocks. Do not add or hoist locals merely to reach `0xf4`, and do not count the
+many shifted stack operands as separate recovery gaps. The checked-in sweeps
+are historical for the current baseline, so this function is eligible for a
+fresh native-backed hypothesis; it is not proven stalled.
