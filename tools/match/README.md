@@ -212,6 +212,35 @@ object-local evidence separates an engine translation unit from the confirmed
 import-library contribution. Rich-header aggregate counts alone are provider
 ancestry, not a compiler-selection target.
 
+### 2003 MOD SDK calibration oracle
+
+The separately published `Crimsonland MOD SDK 1.0` release is useful as a
+bounded source-style oracle. `analysis/mod_sdk_provenance.json` pins the
+2003-08-14 archive, public API and type headers, example sources, Visual Studio
+project recipes, and shipped example DLLs without vendoring the SDK. Validate a
+directory or the original ZIP and replay its calibrated exports with:
+
+```sh
+uv run crimson match mod-sdk --sdk /path/to/cl_mod_sdk_v1 --check
+uv run crimson match mod-sdk --sdk /path/to/cl_mod_sdk_v1.zip --check --json
+```
+
+The replay compiles each example `DllMain.cpp` with its release `/MT /W3 /GX
+/O2` code-generation flags under `msvc6.5pp`, verifies the resulting COFF
+producer record as product 49/build 9044, and requires normalized-instruction
+identity for `CMOD_GetMod` and `CMOD_GetInfo` in both shipped DLLs. The release
+recipe's `/YX` and `/FD` PCH/program-database flags are omitted because they do
+not describe code generation; the resulting exported functions nevertheless
+reproduce exactly. The DLL Rich records independently carry build 9044 and the
+VC6 linker build 8447.
+
+Use the pinned `ClMod.h`, `cltypes.h`, and `r_roks.cpp` for exact contemporary
+API declarations and the developer's `vec2_t`, `mat3_t`, color, expression, and
+local-lifetime idioms. This does **not** make the SDK source for game internals
+or make build 9044 provenance for `crimsonland.exe`; the game's owned C/C++
+records remain build 9782. Linux ports and the remake use different engines and
+are not source-shape oracles for this target.
+
 Run the compiler through `wibo`. Put `wibo` on `PATH`, set
 `WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple
 Silicon, the `wibo-macos` x86_64 release runs under Rosetta 2. Download the

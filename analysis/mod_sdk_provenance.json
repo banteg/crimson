@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "kind": "crimsonland-mod-sdk-provenance",
+  "package": {
+    "name": "Crimsonland MOD SDK 1.0",
+    "release": "2003-08-14",
+    "minimum_game_version": "1.93",
+    "root": "cl_mod_sdk_v1",
+    "archive": {
+      "filename": "cl_mod_sdk_v1.zip",
+      "size": 1948180,
+      "sha256": "f81cc70ebe29cf9576b251e8723802dedd7abdd7b6b00a8d15c503ed8ceb786c"
+    },
+    "artifacts": [
+      {
+        "path": "readme.txt",
+        "role": "release-metadata",
+        "size": 1581,
+        "sha256": "bc7835bb04ef9fbc58f9fb9ff71f882334db4b9dbc0b45b4b6e711f83975b088"
+      },
+      {
+        "path": "ClMod.h",
+        "role": "public-api",
+        "size": 16756,
+        "sha256": "62125a83cdc983fd5ed8bcf892b48f505c2b2ba5f9aba686ba3912ad2a17860d"
+      },
+      {
+        "path": "cl_crimsonroks/cl_crimsonroks.dsp",
+        "role": "release-build-recipe",
+        "size": 4509,
+        "sha256": "a51483f294e978d610351e3e326709c031cf6f231e72b48f628a7cbebedc8ea3"
+      },
+      {
+        "path": "cl_crimsonroks/src/ClMod.h",
+        "role": "public-api",
+        "size": 16756,
+        "sha256": "62125a83cdc983fd5ed8bcf892b48f505c2b2ba5f9aba686ba3912ad2a17860d"
+      },
+      {
+        "path": "cl_crimsonroks/src/DllMain.cpp",
+        "role": "calibration-source",
+        "size": 1696,
+        "sha256": "4e79e898ddfc6e5a4be7e1e59d7b8f82215e50e4bc0c7d0c6f48ae0a90a0c833"
+      },
+      {
+        "path": "cl_crimsonroks/src/cltypes.h",
+        "role": "source-shape-oracle",
+        "size": 5593,
+        "sha256": "f56d2713518c010ce3ed8c76508678c7e5beff79a6d8a25fd7e736114bdb860f"
+      },
+      {
+        "path": "cl_crimsonroks/src/r_roks.cpp",
+        "role": "source-shape-oracle",
+        "size": 29965,
+        "sha256": "77e57070d72940ab3b965d30730bbfb3f51cfc819f351c86d72fc48e79038948"
+      },
+      {
+        "path": "cl_crimsonroks/src/r_roks.h",
+        "role": "calibration-header",
+        "size": 4519,
+        "sha256": "92fe15a36a3508749f6639bfcc6465e26442ca4daf804c49b80b9f2d4fb11a07"
+      },
+      {
+        "path": "cl_nullmod/cl_nullmod.dsp",
+        "role": "release-build-recipe",
+        "size": 4236,
+        "sha256": "6d0d235af5c73351a5a35a3d724a3c2b186c49c87d1d94e574e5eb8b1e819dd1"
+      },
+      {
+        "path": "cl_nullmod/src/ClMod.h",
+        "role": "public-api",
+        "size": 16756,
+        "sha256": "62125a83cdc983fd5ed8bcf892b48f505c2b2ba5f9aba686ba3912ad2a17860d"
+      },
+      {
+        "path": "cl_nullmod/src/DllMain.cpp",
+        "role": "calibration-source",
+        "size": 1580,
+        "sha256": "60707efd1e4b21d68f7d24ff1b824d20179e385bc0b58044843e12fce49189eb"
+      },
+      {
+        "path": "cl_nullmod/src/cltypes.h",
+        "role": "source-shape-oracle",
+        "size": 5593,
+        "sha256": "f56d2713518c010ce3ed8c76508678c7e5beff79a6d8a25fd7e736114bdb860f"
+      },
+      {
+        "path": "mods/cl_nullmod.dll",
+        "role": "calibration-binary",
+        "size": 53248,
+        "sha256": "54f9c20e0e97b81ff60122e41d015670a73b2f3d6edaeb26216dd5ffd57e42ff"
+      },
+      {
+        "path": "mods/cl_crimsonroks.dll",
+        "role": "calibration-binary",
+        "size": 81920,
+        "sha256": "c143dea0d7af5b4d4947191323561c211331c513b299b07647cca570756b41e1"
+      }
+    ]
+  },
+  "projects": [
+    {
+      "name": "cl_nullmod",
+      "binary": "mods/cl_nullmod.dll",
+      "source": "cl_nullmod/src/DllMain.cpp",
+      "source_files": [
+        "cl_nullmod/src/DllMain.cpp",
+        "cl_nullmod/src/ClMod.h",
+        "cl_nullmod/src/cltypes.h"
+      ],
+      "compiler": {
+        "profile": "msvc6.5pp",
+        "product_id": 49,
+        "build": 9044,
+        "flags": ["/MT", "/W3", "/GX", "/O2"],
+        "defines": ["WIN32", "NDEBUG", "_WINDOWS", "_MBCS", "_USRDLL", "CL_NULLMOD_EXPORTS"],
+        "recipe_only_flags": ["/YX", "/FD"]
+      },
+      "linker_version": [6, 0],
+      "rich_records": [
+        {"product_id": 49, "build": 9044, "count": 1},
+        {"product_id": 4, "build": 8447, "count": 1}
+      ],
+      "exports": [
+        {"name": "CMOD_GetMod", "symbol": "_CMOD_GetMod"},
+        {"name": "CMOD_GetInfo", "symbol": "_CMOD_GetInfo"}
+      ]
+    },
+    {
+      "name": "cl_crimsonroks",
+      "binary": "mods/cl_crimsonroks.dll",
+      "source": "cl_crimsonroks/src/DllMain.cpp",
+      "source_files": [
+        "cl_crimsonroks/src/DllMain.cpp",
+        "cl_crimsonroks/src/ClMod.h",
+        "cl_crimsonroks/src/cltypes.h",
+        "cl_crimsonroks/src/r_roks.h"
+      ],
+      "compiler": {
+        "profile": "msvc6.5pp",
+        "product_id": 49,
+        "build": 9044,
+        "flags": ["/MT", "/W3", "/GX", "/O2"],
+        "defines": ["WIN32", "NDEBUG", "_WINDOWS", "_MBCS", "_USRDLL", "CL_CRIMSONROKS_EXPORTS"],
+        "recipe_only_flags": ["/YX", "/FD"]
+      },
+      "linker_version": [6, 0],
+      "rich_records": [
+        {"product_id": 49, "build": 9044, "count": 2},
+        {"product_id": 4, "build": 8447, "count": 1}
+      ],
+      "exports": [
+        {"name": "CMOD_GetMod", "symbol": "_CMOD_GetMod"},
+        {"name": "CMOD_GetInfo", "symbol": "_CMOD_GetInfo"}
+      ]
+    }
+  ],
+  "calibration": {
+    "oracle_scope": [
+      "Exact 2003-era Crimsonland API declarations and the developer's vec2_t, mat3_t, and color source idioms.",
+      "VC6 Processor Pack build 9044 code generation for the shipped MOD SDK release recipes.",
+      "Normalized instruction reproduction of CMOD_GetMod and CMOD_GetInfo in both shipped example DLLs."
+    ],
+    "excluded_claims": [
+      "The SDK is not source for Crimsonland 1.9.93 game internals.",
+      "The SDK's build-9044 compiler is not compiler provenance for crimsonland.exe, whose game-owned records are build 9782.",
+      "Linux ports and the remake use different engines and are not source-shape oracles for this target."
+    ]
+  }
+}

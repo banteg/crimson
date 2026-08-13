@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 import typer
 
-from .. import library_match, match_experiments, match_mutation
+from .. import library_match, match_experiments, match_mutation, mod_sdk
 from .. import library_provenance as provenance
 from .. import match as matchlib
 
@@ -409,6 +409,50 @@ def cmd_match_provenance(
         typer.echo(json.dumps(provenance.provenance_report_payload(report), indent=2, sort_keys=True))
     else:
         typer.echo(provenance.render_provenance_report(report))
+    if check and not report.ok:
+        raise typer.Exit(code=1)
+
+
+@match_app.command("mod-sdk")
+def cmd_match_mod_sdk(
+    sdk: Path | None = typer.Option(
+        None,
+        "--sdk",
+        help="MOD SDK directory or cl_mod_sdk_v1.zip; defaults to CRIMSON_MOD_SDK or Downloads",
+    ),
+    manifest: Path = typer.Option(
+        mod_sdk.DEFAULT_MOD_SDK_MANIFEST,
+        "--manifest",
+        help="pinned MOD SDK provenance manifest",
+    ),
+    match_root: Path = typer.Option(
+        matchlib.DEFAULT_MATCH_ROOT,
+        "--match-root",
+        help="tools/match root containing cl.sh and compiler profiles",
+    ),
+    provenance_only: bool = typer.Option(
+        False,
+        "--provenance-only",
+        help="verify package, recipe, DLL, and Rich metadata without recompiling exports",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail when provenance or calibration differs"),
+) -> None:
+    """Verify the 2003 MOD SDK and calibrate its source/compiler pair."""
+    try:
+        report = mod_sdk.validate_mod_sdk(
+            sdk,
+            manifest_path=manifest,
+            match_root=match_root,
+            compile_exports=not provenance_only,
+        )
+    except Exception as exc:
+        typer.echo(f"MOD SDK calibration failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+    if as_json:
+        typer.echo(json.dumps(mod_sdk.mod_sdk_report_payload(report), indent=2, sort_keys=True))
+    else:
+        typer.echo(mod_sdk.render_mod_sdk_report(report))
     if check and not report.ok:
         raise typer.Exit(code=1)
 
