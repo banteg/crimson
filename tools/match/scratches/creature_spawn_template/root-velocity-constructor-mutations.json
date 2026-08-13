@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-constructor",
+      "find": "struct creature_spawn_vec2_t {\n    float x;\n    float y;\n\n    void set(float x_value, float y_value)",
+      "replacements": [
+        {
+          "name": "member-initializer-constructor",
+          "text": "struct creature_spawn_vec2_t {\n    float x;\n    float y;\n\n    creature_spawn_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    void set(float x_value, float y_value)"
+        },
+        {
+          "name": "body-constructor",
+          "text": "struct creature_spawn_vec2_t {\n    float x;\n    float y;\n\n    creature_spawn_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    void set(float x_value, float y_value)"
+        }
+      ]
+    },
+    {
+      "name": "root-velocity-construction",
+      "find": "    creature = &creature_pool[root_slot_idx];\n    creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};",
+      "replacements": [
+        {
+          "name": "constructor-after-pointer",
+          "text": "    creature = &creature_pool[root_slot_idx];\n    creature_spawn_vec2_t root_velocity(0.0f, 0.0f);"
+        },
+        {
+          "name": "constructor-before-pointer",
+          "text": "    creature_spawn_vec2_t root_velocity(0.0f, 0.0f);\n    creature = &creature_pool[root_slot_idx];"
+        }
+      ]
+    }
+  ]
+}

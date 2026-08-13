@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "root-velocity-scope",
+      "find": "    creature = &creature_pool[root_slot_idx];\n    creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;",
+      "replacements": [
+        {
+          "name": "initialized-before-pointer",
+          "text": "    creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};\n    creature = &creature_pool[root_slot_idx];\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;"
+        },
+        {
+          "name": "inner-scope-initializer",
+          "text": "    creature = &creature_pool[root_slot_idx];\n    {\n        creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};\n\n        creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n        *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n        *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;\n    }"
+        },
+        {
+          "name": "inner-scope-set",
+          "text": "    creature = &creature_pool[root_slot_idx];\n    {\n        creature_spawn_vec2_t root_velocity;\n        root_velocity.set(0.0f, 0.0f);\n\n        creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n        *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n        *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;\n    }"
+        },
+        {
+          "name": "inner-scope-components",
+          "text": "    creature = &creature_pool[root_slot_idx];\n    {\n        creature_spawn_vec2_t root_velocity;\n        root_velocity.x = 0.0f;\n        root_velocity.y = 0.0f;\n\n        creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n        *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n        *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;\n    }"
+        }
+      ]
+    }
+  ]
+}

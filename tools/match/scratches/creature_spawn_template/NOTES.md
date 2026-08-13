@@ -940,3 +940,20 @@ regressed, while moving the neighboring template-`0x12` child aggregate tint
 across health/max-health or to the stat tail also regressed; none is retained.
 The retained source SHA-256 is
 `2fbbe9585b7095d29e06e3cd00e73c1902a6337f4709afa8ddec7142f1c77acc`.
+
+## Root-velocity stack-color boundary
+
+Live native inspection isolated the root creature initialization around the
+zero velocity and generated root offset. Native colors the three adjacent
+stack words as zero X, zero Y, then generated offset, while the candidate
+uses the first word for the offset and the next two for zero velocity. The
+semantic stores, instruction count, and later dataflow already agree.
+
+Three bounded menus tested ordinary ways the source could have induced the
+native coloring: changing the velocity object's scope, adding default/value
+constructors and assigning a temporary, and varying the local vector type.
+Every valid variant was byte-neutral; constructor-dependent variants without
+the matching constructor were intentionally retained and audited as invalid
+mutation plans. No source change is justified. The baseline remains
+**88.734177%**, 3,161/3,159 instructions, prefix 23, and `357/0/1`
+references.
