@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "corpse-motion-owner-lifetime",
+      "find": "                                double corpse_heading =\n                                    creature_pool[creature_index].heading - 1.5707964f;\n                                creature_pool[creature_index].vel_x =\n                                    (float)cos(corpse_heading) * *lifecycle_stage\n                                    * frame_dt * 9.0f;\n                                creature_pool[creature_index].vel_y =\n                                    (float)sin(corpse_heading) * *lifecycle_stage\n                                    * frame_dt * 9.0f;\n                                position->x -= creature_pool[creature_index].vel_x;\n                                position->y -= creature_pool[creature_index].vel_y;",
+      "replacements": [
+        {
+          "name": "named-motion-value",
+          "text": "                                float corpse_lifecycle_value = *lifecycle_stage;\n                                double corpse_heading =\n                                    creature_pool[creature_index].heading - 1.5707964f;\n                                creature_pool[creature_index].vel_x =\n                                    (float)cos(corpse_heading) * corpse_lifecycle_value\n                                    * frame_dt * 9.0f;\n                                creature_pool[creature_index].vel_y =\n                                    (float)sin(corpse_heading) * corpse_lifecycle_value\n                                    * frame_dt * 9.0f;\n                                position->x -= creature_pool[creature_index].vel_x;\n                                position->y -= creature_pool[creature_index].vel_y;"
+        },
+        {
+          "name": "velocity-pointer-owner",
+          "text": "                                vec2f_t *corpse_velocity =\n                                    &creature_pool[creature_index].velocity;\n                                double corpse_heading =\n                                    creature_pool[creature_index].heading - 1.5707964f;\n                                corpse_velocity->x =\n                                    (float)cos(corpse_heading) * *lifecycle_stage\n                                    * frame_dt * 9.0f;\n                                corpse_velocity->y =\n                                    (float)sin(corpse_heading) * *lifecycle_stage\n                                    * frame_dt * 9.0f;\n                                position->x -= corpse_velocity->x;\n                                position->y -= corpse_velocity->y;"
+        },
+        {
+          "name": "velocity-reference-owner",
+          "text": "                                vec2f_t &corpse_velocity =\n                                    creature_pool[creature_index].velocity;\n                                double corpse_heading =\n                                    creature_pool[creature_index].heading - 1.5707964f;\n                                corpse_velocity.x =\n                                    (float)cos(corpse_heading) * *lifecycle_stage\n                                    * frame_dt * 9.0f;\n                                corpse_velocity.y =\n                                    (float)sin(corpse_heading) * *lifecycle_stage\n                                    * frame_dt * 9.0f;\n                                position->x -= corpse_velocity.x;\n                                position->y -= corpse_velocity.y;"
+        },
+        {
+          "name": "named-value-pointer-owner",
+          "text": "                                float corpse_lifecycle_value = *lifecycle_stage;\n                                vec2f_t *corpse_velocity =\n                                    &creature_pool[creature_index].velocity;\n                                double corpse_heading =\n                                    creature_pool[creature_index].heading - 1.5707964f;\n                                corpse_velocity->x =\n                                    (float)cos(corpse_heading) * corpse_lifecycle_value\n                                    * frame_dt * 9.0f;\n                                corpse_velocity->y =\n                                    (float)sin(corpse_heading) * corpse_lifecycle_value\n                                    * frame_dt * 9.0f;\n                                position->x -= corpse_velocity->x;\n                                position->y -= corpse_velocity->y;"
+        },
+        {
+          "name": "named-value-reference-owner",
+          "text": "                                float corpse_lifecycle_value = *lifecycle_stage;\n                                vec2f_t &corpse_velocity =\n                                    creature_pool[creature_index].velocity;\n                                double corpse_heading =\n                                    creature_pool[creature_index].heading - 1.5707964f;\n                                corpse_velocity.x =\n                                    (float)cos(corpse_heading) * corpse_lifecycle_value\n                                    * frame_dt * 9.0f;\n                                corpse_velocity.y =\n                                    (float)sin(corpse_heading) * corpse_lifecycle_value\n                                    * frame_dt * 9.0f;\n                                position->x -= corpse_velocity.x;\n                                position->y -= corpse_velocity.y;"
+        },
+        {
+          "name": "vector-value-owner",
+          "text": "                                double corpse_heading =\n                                    creature_pool[creature_index].heading - 1.5707964f;\n                                creature_vec2_t corpse_velocity(\n                                    (float)cos(corpse_heading) * *lifecycle_stage\n                                        * frame_dt * 9.0f,\n                                    (float)sin(corpse_heading) * *lifecycle_stage\n                                        * frame_dt * 9.0f);\n                                *(creature_vec2_t *)&creature_pool[\n                                    creature_index\n                                ].velocity = corpse_velocity;\n                                position->x -= corpse_velocity.x;\n                                position->y -= corpse_velocity.y;"
+        }
+      ]
+    }
+  ]
+}

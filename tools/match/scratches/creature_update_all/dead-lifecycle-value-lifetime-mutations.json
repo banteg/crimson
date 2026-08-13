@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "dead-lifecycle-value-lifetime",
+      "find": "                    } else if (*lifecycle_stage > 0.0f) {\n                        *lifecycle_stage -= frame_dt * 28.0f;\n                        if (*lifecycle_stage <= 0.0f) {",
+      "replacements": [
+        {
+          "name": "named-next-value",
+          "text": "                    } else if (*lifecycle_stage > 0.0f) {\n                        float next_lifecycle_stage =\n                            *lifecycle_stage - frame_dt * 28.0f;\n                        *lifecycle_stage = next_lifecycle_stage;\n                        if (next_lifecycle_stage <= 0.0f) {"
+        },
+        {
+          "name": "declared-next-value",
+          "text": "                    } else if (*lifecycle_stage > 0.0f) {\n                        float next_lifecycle_stage;\n                        next_lifecycle_stage =\n                            *lifecycle_stage - frame_dt * 28.0f;\n                        *lifecycle_stage = next_lifecycle_stage;\n                        if (next_lifecycle_stage <= 0.0f) {"
+        },
+        {
+          "name": "named-current-value",
+          "text": "                    } else if (*lifecycle_stage > 0.0f) {\n                        float next_lifecycle_stage = *lifecycle_stage;\n                        next_lifecycle_stage -= frame_dt * 28.0f;\n                        *lifecycle_stage = next_lifecycle_stage;\n                        if (next_lifecycle_stage <= 0.0f) {"
+        },
+        {
+          "name": "named-delta-and-next",
+          "text": "                    } else if (*lifecycle_stage > 0.0f) {\n                        float lifecycle_delta = frame_dt * 28.0f;\n                        float next_lifecycle_stage =\n                            *lifecycle_stage - lifecycle_delta;\n                        *lifecycle_stage = next_lifecycle_stage;\n                        if (next_lifecycle_stage <= 0.0f) {"
+        },
+        {
+          "name": "named-next-compare-published",
+          "text": "                    } else if (*lifecycle_stage > 0.0f) {\n                        float next_lifecycle_stage =\n                            *lifecycle_stage - frame_dt * 28.0f;\n                        *lifecycle_stage = next_lifecycle_stage;\n                        if (*lifecycle_stage <= 0.0f) {"
+        },
+        {
+          "name": "named-delta-compound-publish",
+          "text": "                    } else if (*lifecycle_stage > 0.0f) {\n                        float lifecycle_delta = frame_dt * 28.0f;\n                        *lifecycle_stage -= lifecycle_delta;\n                        if (*lifecycle_stage <= 0.0f) {"
+        }
+      ]
+    }
+  ]
+}

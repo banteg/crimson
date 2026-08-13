@@ -640,3 +640,36 @@ these 1.9.93 internals used that expression shape. No source change is retained.
 
 The complete spec SHA-256 is
 `84db46fc3f70ae5c9d466f064ca9d6a9bb59ceedb6b355dd10e1a5ff7f07a2c3`.
+
+## Dead-lifecycle and corpse-motion value bounds (2026-08-14)
+
+Live native `0x00427468..0x00427489` homes the decremented lifecycle value
+before publishing and comparing it. The six-form
+`dead-lifecycle-value-lifetime-mutations.json` sweep tests named and separately
+declared next values, named deltas, and published-value comparisons. Four
+forms are byte-identical. Retaining a mutable current value adds two
+instructions, loses 6.257484 weighted bytes and one aligned reference; naming
+both the delta and next value removes one instruction and loses 6.977712
+bytes. The native home is therefore already reproduced as a compiler
+temporary rather than a missing source local.
+
+Native corpse motion at `0x00427678..0x004276c7` also reuses the two-component
+velocity address for its stores and position subtraction. The six-form
+`corpse-motion-owner-lifetime-mutations.json` sweep tests pointer and reference
+owners, a named motion value, their interactions, and a true vector-value
+temporary. Pointer and reference ownership are byte-identical. The named
+value preserves the fuzzy score but loses one aligned reference; combining it
+with either owner loses 8.084945 weighted bytes and the same reference. The
+vector temporary adds three instructions, loses 193.106155 bytes, and drops
+nine aligned references.
+
+No source change is retained. The baseline remains 54.91088357982556%,
+2,926.750094804703/5,330 weighted bytes, 1,299/1,338 instructions, prefix 0,
+and `225/0/2` references. Recorded spec SHA-256 values are
+`b5a300f3e14de505a3895c2f47e498db19ae3cf4cd4b6a6119d53a9eb256023b`
+and
+`7bb00bb7776331252126048206443e29a3b53b7c728df3804a56fad32a6253f0`.
+The unchanged source SHA-256 is
+`b22a92a6656ebba289c6a0356ffee44033f46ecf595593b2397a72f7d0b0b8c0`;
+the updated experiment log SHA-256 is
+`0ad00946eb4434e2a26d94cef5e58ac3758af9ffbf6bbdbf869265025b18c84f`.
