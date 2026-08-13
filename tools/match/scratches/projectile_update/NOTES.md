@@ -1055,17 +1055,35 @@ concrete: 80 named/generated aliases collapse onto 28 distinct stack slots,
 temporaries.
 
 CFG alignment is structurally close but still incomplete: native/candidate
-have 287/283 blocks, with 80 unique exact pairs, 40 duplicate-exact pairs,
-95 similar pairs, and 72/68 unmatched blocks. There are no conflicts through
-unique exact anchors; the two conflicts produced by greedy non-unique pairing
-are heuristic only.
+have 287/283 blocks, with 76 unique exact pairs, 45 duplicate-exact pairs,
+95 similar pairs, and 71/67 unmatched blocks. All 76 unique exact pairs survive
+the order-bounded anchor filter. There are no anchored edge conflicts; the two
+conflicts produced by greedy non-unique pairing are heuristic only.
 
-Advice for the next agent: treat the `+0x30` frame delta as one upstream
-lifetime clue and search the unmatched native islands for another independently
-visible SDK-style value boundary, callback reload, or loop owner. A candidate
-is worth recording only when the native instruction schedule supports it and
-it improves the bounded region without trading references or already-matched
-blocks. Do not add or hoist locals merely to reach `0xf4`, and do not count the
-many shifted stack operands as separate recovery gaps. The checked-in sweeps
-are historical for the current baseline, so this function is eligible for a
-fresh native-backed hypothesis; it is not proven stalled.
+The largest unmatched target island, block 97 at
+`0x0042163d..0x0042174e`, is the already-recovered three-decal loop. Native
+materializes the scaled X/Y pair before each of the 1.5x, 2x, and 2.5x
+destination vectors. Because the earlier scale-vector experiment predated the
+current three-destination source, the schema-1
+`primary-decal-scale-replay-mutations.json` plan replays every subset on the
+current baseline. Its SHA-256 is
+`391f9e3a225d2d2c3e537339670726df617059f3d2cfa5220da8c1db65e5e5db`.
+
+All 7/7 variants completed. Each single-site form gains a small amount of
+fuzzy weight (`+9.1110`, `+5.2722`, and `+5.2722` bytes) but worsens references
+from `417/0/18` to `416/0/20`. Two-site interactions lose between `100.7363`
+and `119.9218` weighted bytes, and the native-looking all-three form loses
+`172.1300` while references fall to `405/0/20`. There is no tradeoff-free
+winner, so the source remains unchanged. The updated `experiments.jsonl`
+SHA-256 is
+`4701e2d756c3342893633fad8109ce9fc233097629c176e0499ef7d3ef556e11`.
+
+The next two large unmatched islands are also closed surfaces: block 55 is the
+retained Bloody Mess offset/destination split, while block 74 is the rejected
+Plasma Cannon child-position staging. Block 256 is the retained particle-hit
+geometry. Advice for the next agent: treat the `+0x30` frame delta as one
+upstream lifetime clue, but do not add or hoist locals merely to reach `0xf4`
+and do not reopen these ranked islands without new native evidence. A fresh
+hypothesis should start outside the covered decal, Plasma-child, and particle
+geometry regions and must improve its bounded region without trading references
+or already-matched blocks.
