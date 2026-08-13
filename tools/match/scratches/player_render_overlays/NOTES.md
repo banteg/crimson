@@ -292,3 +292,22 @@ Together the two retained changes raise the weighted score from
 `625.364829` to `582.508519` bytes. Prefix remains 9. The retained source
 SHA-256 is
 `9efd2e9e07c0aeb04382f612b9566db8c3d44f3451ee13f4a040b837057a071b`.
+
+## Current-epoch lifetime replay
+
+The four retained half-size recoveries changed the scratch epoch after the
+earlier lifetime and target-trail sweeps. Six native-grounded families were
+therefore replayed against the current 87.2870% baseline: localized UV/recoil
+and target lifetimes, function-local declaration order, target-direction
+component lifetimes, target-trail helper/operand shapes, multiplayer tint
+ownership, and shield/muzzle offset assignment. All 33 planned variants
+compiled and are recorded under baseline epoch
+`cb77c1b4eb99af933fce4f3312ff4da36640e77a970ff108754f989d562ce2be`.
+
+Fourteen variants are byte- and metric-neutral. Ten variants gain the same
+1.748029 fuzzy-weighted bytes only by removing one candidate instruction,
+moving the already-short 1,141-instruction candidate farther from the 1,148
+native instructions; all ten are rejected as explicit instruction-count
+tradeoffs. The remaining variants are neutral in score with a reference-only
+change or regress. No tradeoff-free winner exists, so canonical source and the
+`329/0/0` reference audit remain unchanged.
