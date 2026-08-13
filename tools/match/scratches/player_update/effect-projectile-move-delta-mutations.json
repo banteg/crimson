@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shrinkifier-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_SHRINKIFIER,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_SHRINKIFIER,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_SHRINKIFIER,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "assault-rifle-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_ASSAULT_RIFLE,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ASSAULT_RIFLE,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ASSAULT_RIFLE,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "submachine-gun-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_SUBMACHINE_GUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_SUBMACHINE_GUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_SUBMACHINE_GUN,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "gauss-gun-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_GAUSS_GUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_GAUSS_GUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_GAUSS_GUN,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "mean-minigun-move-delta",
+      "find": "                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PISTOL,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PISTOL,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PISTOL,\n                    owner_id);"
+        }
+      ]
+    }
+  ]
+}

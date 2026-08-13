@@ -1289,3 +1289,30 @@ source SHA-256 is
 `839be5ceb85906b000b00505fd11f6b0fbccba5b94b2c982a891160c641d4000`;
 the experiment ledger SHA-256 is
 `98d1d6cdb528ca61925af4bf623acebaaa766ede50c2f2a28f3c4bba1b13abbf`.
+
+## One-shot projectile lifetime boundary
+
+The neighboring one-shot native calls also build their positions at the
+`esp+0x48` object, but spelling that reuse in the current translation unit is
+not an admissible recovery. `simple-projectile-move-delta-mutations.json`
+tests both component orders for Plasma Rifle, Pulse Gun, Blade Gun, Splitter
+Gun, Ion Rifle, Ion Minigun, Ion Cannon, Plasma Cannon, and Plasma Minigun.
+`effect-projectile-move-delta-mutations.json` does the same for Shrinkifier,
+Assault Rifle, Submachine Gun, Gauss Gun, and Mean Minigun. Both sweeps are
+complete: 18/18 and 10/10 single-site variants, respectively.
+
+Every variant crosses a whole-function allocation boundary. The least-bad
+simple variant loses `833.2891682785303` weighted bytes, 24 aligned
+references, and adds one reference mismatch. The least-bad effect-bearing
+variant loses `825.4279497098651` weighted bytes with the same reference
+damage; several variants also remove instructions. No source form is
+retained. This is the same sharp failure mode seen beyond three recovered
+pellet loops, so apparent local stack agreement is insufficient evidence for
+another source edit at this epoch.
+
+The spec SHA-256 values are
+`bc145d27fa4cba14c755d3ef4850fb199021222987a466095d8d5284e5b18de8`
+and
+`4b4bde9426d159966025442c90592175ab36ebebca6cd8d1c2bea88116d0643a`.
+The 65-record experiment ledger SHA-256 is
+`aa3ab938a445014b78d76ce5af77cfea46a2eab242293b7364411356f87fabe2`.

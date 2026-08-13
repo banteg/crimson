@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-rifle-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_RIFLE) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_RIFLE) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_RIFLE) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "pulse-gun-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_PULSE_GUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PULSE_GUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PULSE_GUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PULSE_GUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PULSE_GUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PULSE_GUN,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "blade-gun-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_BLADE_GUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_BLADE_GUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_BLADE_GUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_BLADE_GUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_BLADE_GUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_BLADE_GUN,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "splitter-gun-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_SPLITTER_GUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_SPLITTER_GUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_SPLITTER_GUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_SPLITTER_GUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_SPLITTER_GUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_SPLITTER_GUN,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "ion-rifle-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_ION_RIFLE) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_RIFLE,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_ION_RIFLE) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_RIFLE,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_ION_RIFLE) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_RIFLE,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "ion-minigun-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_ION_MINIGUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_MINIGUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_ION_MINIGUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_MINIGUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_ION_MINIGUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_MINIGUN,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "ion-cannon-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_ION_CANNON) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_CANNON,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_ION_CANNON) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_CANNON,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_ION_CANNON) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_ION_CANNON,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "plasma-cannon-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_CANNON) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_CANNON,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_CANNON) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_CANNON,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_CANNON) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_CANNON,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "plasma-minigun-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_MINIGUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_MINIGUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_MINIGUN,\n                    owner_id);"
+        }
+      ]
+    }
+  ]
+}
