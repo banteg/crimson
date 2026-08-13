@@ -1342,10 +1342,10 @@ extern "C" void player_update(void)
 
                 int pellet_count = 12;
                 do {
-                    scratch_pos.x = movement_input.x + player_position->x;
-                    scratch_pos.y = movement_input.y + player_position->y;
+                    move_delta.y = movement_input.y + player_position->y;
+                    move_delta.x = movement_input.x + player_position->x;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos,
+                        &move_delta,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
@@ -1368,10 +1368,10 @@ extern "C" void player_update(void)
 
                 int pellet_count = 4;
                 do {
-                    scratch_pos.x = movement_input.x + player_position->x;
-                    scratch_pos.y = movement_input.y + player_position->y;
+                    move_delta.y = movement_input.y + player_position->y;
+                    move_delta.x = movement_input.x + player_position->x;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos,
+                        &move_delta,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
@@ -1405,10 +1405,10 @@ extern "C" void player_update(void)
 
                 int pellet_count = 12;
                 do {
-                    scratch_pos.x = movement_input.x + player_position->x;
-                    scratch_pos.y = movement_input.y + player_position->y;
+                    move_delta.y = movement_input.y + player_position->y;
+                    move_delta.x = movement_input.x + player_position->x;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos,
+                        &move_delta,
                         (float)(crt_rand() % 200 - 100) * 0.004f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,

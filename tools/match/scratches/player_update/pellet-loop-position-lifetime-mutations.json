@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-bullets-pellet-position",
+      "find": "                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &scratch_pos,\n                    scalar,\n                    PROJECTILE_TYPE_FIRE_BULLETS,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    scalar,\n                    PROJECTILE_TYPE_FIRE_BULLETS,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    scalar,\n                    PROJECTILE_TYPE_FIRE_BULLETS,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "shotgun-pellet-position",
+      "find": "                int pellet_count = 12;\n                do {\n                    scratch_pos.x = movement_input.x + player_position->x;\n                    scratch_pos.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &scratch_pos,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                int pellet_count = 12;\n                do {\n                    move_delta.x = movement_input.x + player_position->x;\n                    move_delta.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                int pellet_count = 12;\n                do {\n                    move_delta.y = movement_input.y + player_position->y;\n                    move_delta.x = movement_input.x + player_position->x;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "jackhammer-pellet-position",
+      "find": "                int pellet_count = 4;\n                do {\n                    scratch_pos.x = movement_input.x + player_position->x;\n                    scratch_pos.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &scratch_pos,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                int pellet_count = 4;\n                do {\n                    move_delta.x = movement_input.x + player_position->x;\n                    move_delta.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                int pellet_count = 4;\n                do {\n                    move_delta.y = movement_input.y + player_position->y;\n                    move_delta.x = movement_input.x + player_position->x;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "sawed-off-pellet-position",
+      "find": "                    scratch_pos.x = movement_input.x + player_position->x;\n                    scratch_pos.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &scratch_pos,\n                        (float)(crt_rand() % 200 - 100) * 0.004f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                    move_delta.x = movement_input.x + player_position->x;\n                    move_delta.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.004f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                    move_delta.y = movement_input.y + player_position->y;\n                    move_delta.x = movement_input.x + player_position->x;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.004f\n                            + angle_step,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "ion-shotgun-pellet-position",
+      "find": "                    scratch_pos.x = movement_input.x + player_position->x;\n                    scratch_pos.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &scratch_pos,\n                        (float)(crt_rand() % 200 - 100) * 0.0026f\n                            + angle_step,\n                        PROJECTILE_TYPE_ION_MINIGUN,\n                        owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                    move_delta.x = movement_input.x + player_position->x;\n                    move_delta.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.0026f\n                            + angle_step,\n                        PROJECTILE_TYPE_ION_MINIGUN,\n                        owner_id);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                    move_delta.y = movement_input.y + player_position->y;\n                    move_delta.x = movement_input.x + player_position->x;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.0026f\n                            + angle_step,\n                        PROJECTILE_TYPE_ION_MINIGUN,\n                        owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "gauss-shotgun-pellet-position",
+      "find": "                    scratch_pos.x = movement_input.x + player_position->x;\n                    scratch_pos.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &scratch_pos,\n                        (float)(crt_rand() % 200 - 100) * 0.002f\n                            + angle_step,\n                        PROJECTILE_TYPE_GAUSS_GUN,\n                        owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                    move_delta.x = movement_input.x + player_position->x;\n                    move_delta.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.002f\n                            + angle_step,\n                        PROJECTILE_TYPE_GAUSS_GUN,\n                        owner_id);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                    move_delta.y = movement_input.y + player_position->y;\n                    move_delta.x = movement_input.x + player_position->x;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)(crt_rand() % 200 - 100) * 0.002f\n                            + angle_step,\n                        PROJECTILE_TYPE_GAUSS_GUN,\n                        owner_id);"
+        }
+      ]
+    }
+  ]
+}

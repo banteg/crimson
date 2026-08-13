@@ -1224,3 +1224,45 @@ source SHA-256 is
 `e360e8b623467388f6779bb5bf58e3dc4c16339e2130ab862567aefb4a0bae4b`;
 the experiment ledger SHA-256 is
 `8234fe00b1621d90c167f06ce805b53d2165491f9cbe068403d89a5bdbb4676e`.
+
+## Shotgun-family pellet-position lifetimes
+
+The same native stack owner appears in the other randomized pellet loops.
+Shotgun (`0x00416345..0x0041638a`), Jackhammer
+(`0x00416459..0x0041649e`), Sawed-off Shotgun
+(`0x004165df..0x00416624`), Ion Shotgun
+(`0x00416b25..0x00416b6a`), and Gauss Shotgun
+(`0x00416cde..0x00416d23`) all build their call position at the
+`esp+0x48` `move_delta` base. Fire Bullets does likewise at
+`0x00415dd3..0x00415df2`. The previous scratch used `scratch_pos` at
+`esp+0x40` in all six loops.
+
+`pellet-loop-position-lifetime-mutations.json` exhaustively tests both
+component orders at each site (12/12 singles). The five shotgun loops each
+gain `15.722437137332236` weighted bytes with Y-before-X source order; their
+X-before-Y forms gain `11.791827852997812`. Fire Bullets instead gains
+`7.861218568665208` with X-before-Y and `3.930609284332604` with the reverse.
+Every single preserves 4,066/4,206 instructions, prefix 7, and `805/0/2`
+references. The spec SHA-256 is
+`1d3cbb43ba712fe7f96fdda969955ca8fb6066d3761d08ad947733631a7228bd`.
+
+The complete 63/63 winner-orientation matrix in
+`pellet-loop-position-interaction-mutations.json` finds a sharp compiler
+allocation boundary. Singles, pairs, and triples remain additive. Every
+three-site subset drawn from the five shotgun loops ties at the maximum
+`+47.16731141199307` weighted bytes. Every four-, five-, or six-site form
+instead loses at least 782 weighted bytes, 24 aligned references, and adds a
+reference mismatch despite unchanged instruction count. The retained
+Shotgun, Jackhammer, and Sawed-off trio is the coherent adjacent-family member
+of that tied best set; Fire Bullets, Ion Shotgun, and Gauss Shotgun remain at
+their stronger baseline forms rather than crossing the global allocation
+cliff. The interaction spec SHA-256 is
+`a5269de3d03a5806717e05532fe80edf45d4ecf61802d8c2cc3980992755a682`.
+
+The canonical build is now 4,066/4,206 instructions at
+`63.97485493230174%`: 10,400.392166344294 weighted bytes, a
+5,856.607833655706-byte gap, prefix 7, and `805/0/2` references. The retained
+source SHA-256 is
+`e8ddebbc2c4205d404e56b18e3c44c63ca66fb7163b84f7c43defe10bdababd7`;
+the experiment ledger SHA-256 is
+`f835cef25565454e286060327092ce99c1699c6ee1e0c8849aae4e142af0991c`.
