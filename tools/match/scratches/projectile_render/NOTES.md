@@ -985,19 +985,39 @@ aliases over only 39 distinct slots, 37 reused slots, and 42 generated
 temporaries. Alias count is therefore especially misleading here: it does not
 mean that a source reconstruction with 100 more named locals is missing.
 
-Native/candidate have 214/213 CFG blocks, but only 42 unique exact pairs, 24
+Native/candidate have 214/213 CFG blocks, with 34 unique exact pairs, 32
 duplicate-exact pairs, and 67 similar pairs; 81/80 blocks remain unmatched.
-Unlike the other frame-larger targets, seven conflicts survive validation
-through unique exact anchors. Six additional conflicts come only from greedy
-heuristic pairing and should not drive source edits.
+Predecessor counts had incorrectly made two repeated loop latches look unique
+and cross-paired distant rendering passes. After excluding that unstable input
+from anchor identity, only three real conflicts remained, all in one type gate;
+the recovery below clears those three. The two remaining greedy-pair conflicts
+are heuristic only and should not drive source edits.
 
-Advice for the next agent: start with the seven anchored CFG conflicts and the
-unmatched native islands, then ask whether one native-visible vector temporary,
-callback lifetime, or branch owner explains both local scheduling and part of
-the `+0x74` allocation. The large generated-temporary count makes genuine
-return-by-value/operator boundaries plausible, but the frame delta alone does
-not prove any particular one. Reject local hoists or aggregate temporaries that
-only inflate the prologue, and reject score-only gains that lose references or
-an exact anchor. Current experiment evidence is historical-only, so a new
-bounded native-backed probe is appropriate; replaying old allocation guesses
-is not.
+Advice for the next agent: search unmatched native islands for a native-visible
+vector temporary, callback lifetime, or branch owner that explains both local
+scheduling and part of the `+0x74` allocation. The large generated-temporary
+count makes genuine return-by-value/operator boundaries plausible, but the
+frame delta alone does not prove any particular one. Reject local hoists or
+aggregate temporaries that only inflate the prologue, and reject score-only
+gains that lose references or an exact anchor.
+
+## Ion family gate order
+
+The corrected CFG diagnostic reduced the former seven-conflict headline to
+three unique-anchor conflicts clustered at native `0x004243d5..0x004244ae`.
+Live native disassembly shows the shared ion/fire gate comparing type IDs in
+the order `0x16`, `0x15`, `0x17`, `0x2d`: Ion Minigun, Ion Rifle, Ion Cannon,
+then Fire Bullets. The candidate tested Rifle before Minigun.
+
+The one-variant `ion-type-gate-order-mutations.json` sweep (spec SHA-256
+`136d7b9fb384122510a75aea9b2b525e66ad915a9643c945ae3e9870fc8856d2`)
+records the native order as a complete bounded probe. It adds
+17.0010 fuzzy-weighted bytes, raises the ratio from `58.4151710%` to
+`58.5506265%`, and clears all three anchored CFG conflicts without changing
+the 2,885/3,021 instruction count or `448/0/10` reference audit. The frame
+remains `0x19c` native versus `0x128` candidate, so this closes a real branch
+shape but does not explain the allocation debt. The retained source SHA-256 is
+`f8f7879af5f78325ea0772cbd6644b3660234c83deca7ad24c9dc5be8f80cd70`.
+A zero-delta replay binds the retained result to the current epoch; the updated
+experiment log SHA-256 is
+`c0f60b6051bb5d73192ddfd5ff17e28af9dd12f871a14754e237b6558986cd0c`.

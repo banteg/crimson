@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ion-type-gate-order",
+      "find": "        if (!(type_id == PROJECTILE_TYPE_ION_RIFLE\n            || type_id == PROJECTILE_TYPE_ION_MINIGUN\n            || type_id == PROJECTILE_TYPE_ION_CANNON\n            || type_id == PROJECTILE_TYPE_FIRE_BULLETS)) {\n",
+      "replacements": [
+        {
+          "name": "native-minigun-before-rifle",
+          "text": "        if (!(type_id == PROJECTILE_TYPE_ION_MINIGUN\n            || type_id == PROJECTILE_TYPE_ION_RIFLE\n            || type_id == PROJECTILE_TYPE_ION_CANNON\n            || type_id == PROJECTILE_TYPE_FIRE_BULLETS)) {\n"
+        }
+      ]
+    }
+  ]
+}

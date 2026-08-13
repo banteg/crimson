@@ -710,8 +710,8 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        if (!(type_id == PROJECTILE_TYPE_ION_RIFLE
-            || type_id == PROJECTILE_TYPE_ION_MINIGUN
+        if (!(type_id == PROJECTILE_TYPE_ION_MINIGUN
+            || type_id == PROJECTILE_TYPE_ION_RIFLE
             || type_id == PROJECTILE_TYPE_ION_CANNON
             || type_id == PROJECTILE_TYPE_FIRE_BULLETS)) {
             continue;
