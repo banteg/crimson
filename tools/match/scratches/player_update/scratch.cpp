@@ -75,7 +75,10 @@ int fx_spawn_particle(
     float angle,
     const vec2f_t *move,
     float intensity);
-int fx_spawn_particle_slow(const vec2f_t *pos, float angle);
+int fx_spawn_particle_slow(
+    const vec2f_t *pos,
+    float angle,
+    const vec2f_t *movement);
 int fx_spawn_secondary_projectile(
     const vec2f_t *pos,
     float angle,
@@ -1800,27 +1803,28 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                move_delta.y = movement_input.y + player_position->y;
+                move_delta.x = movement_input.x + player_position->x;
                 projectile_spawn(
-                    &spawn_pos,
+                    &move_delta,
                     angle_step,
                     PROJECTILE_TYPE_PLAGUE_SPREADER,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_RAINBOW_GUN) {
-                player_update_vec2_t spawn_pos;
-                spawn_pos.x = movement_input.x + player_position->x;
-                spawn_pos.y = movement_input.y + player_position->y;
+                move_delta.y = movement_input.y + player_position->y;
+                move_delta.x = movement_input.x + player_position->x;
                 projectile_spawn(
-                    &spawn_pos,
+                    &move_delta,
                     angle_step,
                     PROJECTILE_TYPE_RAINBOW_GUN,
                     owner_id);
             } else if (player->weapon_id == WEAPON_ID_BUBBLEGUN) {
-                scratch_pos.x = movement_input.x + player_position->x;
-                scratch_pos.y = movement_input.y + player_position->y;
-                fx_spawn_particle_slow(&scratch_pos, angle_step - 1.5707964f);
+                move_delta.x = movement_input.x + player_position->x;
+                move_delta.y = movement_input.y + player_position->y;
+                fx_spawn_particle_slow(
+                    &move_delta,
+                    angle_step - 1.5707964f,
+                    &player->movement);
                 scalar = 0.15f;
             }
 

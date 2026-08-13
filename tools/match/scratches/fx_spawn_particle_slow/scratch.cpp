@@ -12,7 +12,8 @@ typedef struct particle_scale_t {
 
 extern "C" int fx_spawn_particle_slow(
     const vec2f_t *pos,
-    float angle)
+    float angle,
+    const vec2f_t *unused)
 {
     particle_scale_t scale;
     int index = 0;

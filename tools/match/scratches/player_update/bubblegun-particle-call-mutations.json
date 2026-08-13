@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-slow-prototype",
+      "find": "int fx_spawn_particle_slow(const vec2f_t *pos, float angle);",
+      "replacements": [
+        {
+          "name": "add-movement-parameter",
+          "text": "int fx_spawn_particle_slow(\n    const vec2f_t *pos,\n    float angle,\n    const vec2f_t *movement);"
+        }
+      ]
+    },
+    {
+      "name": "bubblegun-particle-call",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_BUBBLEGUN) {\n                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                fx_spawn_particle_slow(&scratch_pos, angle_step - 1.5707964f);\n                scalar = 0.15f;\n            }",
+      "replacements": [
+        {
+          "name": "pass-movement-current-position",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_BUBBLEGUN) {\n                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                fx_spawn_particle_slow(\n                    &scratch_pos,\n                    angle_step - 1.5707964f,\n                    &player->movement);\n                scalar = 0.15f;\n            }",
+          "requires": [
+            "particle-slow-prototype/add-movement-parameter"
+          ]
+        },
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_BUBBLEGUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                fx_spawn_particle_slow(\n                    &move_delta,\n                    angle_step - 1.5707964f,\n                    &player->movement);\n                scalar = 0.15f;\n            }",
+          "requires": [
+            "particle-slow-prototype/add-movement-parameter"
+          ]
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_BUBBLEGUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                fx_spawn_particle_slow(\n                    &move_delta,\n                    angle_step - 1.5707964f,\n                    &player->movement);\n                scalar = 0.15f;\n            }",
+          "requires": [
+            "particle-slow-prototype/add-movement-parameter"
+          ]
+        }
+      ]
+    }
+  ]
+}

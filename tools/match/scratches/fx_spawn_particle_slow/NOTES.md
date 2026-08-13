@@ -21,3 +21,11 @@ removing the stale byte-pointer cast with unchanged codegen.
 The destination velocity stores now use the canonical `particle_t::velocity`
 components as well. The constructor remains exact at 67/67 instructions and
 19/0/0 references.
+
+The native call contract includes a third `const vec2f_t *unused` parameter.
+Its sole call at `player_update+0x34b8` (`0x00417458`) first pushes
+`&player->movement` and cleans 12 bytes after the call. The callee reads only
+the position and angle, so naming the recovered trailing parameter `unused`
+preserves the exact behavior. The name map and both scratches now agree on
+this three-argument signature; the callee remains exact at 67/67 instructions
+and 19/0/0 references.

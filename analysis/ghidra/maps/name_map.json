@@ -2655,7 +2655,7 @@
     "program": "crimsonland.exe",
     "address": "0x00420240",
     "name": "fx_spawn_particle_slow",
-    "signature": "int fx_spawn_particle_slow(const vec2f_t *pos, float angle)",
+    "signature": "int fx_spawn_particle_slow(const vec2f_t *pos, float angle, const vec2f_t *unused)",
     "comment": "spawns a slow entry in particle_pool"
   },
   {

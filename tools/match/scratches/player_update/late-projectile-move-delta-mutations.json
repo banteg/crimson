@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mean-minigun-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_MEAN_MINIGUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PISTOL,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_MEAN_MINIGUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PISTOL,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_MEAN_MINIGUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PISTOL,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "plague-spreader-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLAGUE_SPREADER,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLAGUE_SPREADER,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_PLAGUE_SPREADER,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "rainbow-gun-move-delta",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_RAINBOW_GUN) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_RAINBOW_GUN,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-x-before-y",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_RAINBOW_GUN) {\n                move_delta.x = movement_input.x + player_position->x;\n                move_delta.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_RAINBOW_GUN,\n                    owner_id);"
+        },
+        {
+          "name": "reuse-y-before-x",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_RAINBOW_GUN) {\n                move_delta.y = movement_input.y + player_position->y;\n                move_delta.x = movement_input.x + player_position->x;\n                projectile_spawn(\n                    &move_delta,\n                    angle_step,\n                    PROJECTILE_TYPE_RAINBOW_GUN,\n                    owner_id);"
+        }
+      ]
+    }
+  ]
+}

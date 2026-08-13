@@ -1126,6 +1126,50 @@ reference audit remains `805/0/2`. A zero-delta current-epoch probe records
 source SHA-256
 `540f1e2c81a4e3ae206b6f905538772adc768c74e0b2b35ef59e6bfb8108d379`.
 
+## Bubblegun particle call and late projectile lifetimes
+
+The Bubblegun native block at `0x0041742c..0x0041745d` passes three cdecl
+arguments to `fx_spawn_particle_slow`, then cleans 12 bytes. The previously
+recovered source declared only two arguments. The missing third argument is
+`&player->movement`: native forms that address with `lea eax, [edi+0x1c]`
+before publishing the position and angle. The exactly matched callee does not
+read the argument, and the neighboring `fx_spawn_particle` already exposes the
+same trailing unused vector parameter, so this is a recovered legacy call
+contract rather than a speculative behavior change. The map and callee scratch
+now record it as `const vec2f_t *unused`.
+
+The constrained Bubblegun plan in
+`bubblegun-particle-call-mutations.json` (spec SHA-256
+`edc4b037793548a8a0b0837353ceb5acfec13a118560be0c03a6d71be9a891d3`)
+tested the call contract together with both plausible source orders for the
+native `var_10` position lifetime. Adding the third argument while continuing
+to use `scratch_pos` gains 9.299431832800 weighted bytes. Reusing
+`move_delta`, assigning X before Y in source, gains 17.160650401465 and adds
+the two missing candidate instructions without changing prefix or references;
+that form is retained. The Y-first spelling loses 53.590 weighted bytes and
+two resolved references. A prototype-only plan was authoring-invalid because
+it deliberately left a two-argument call and could not compile; its mutation
+error is digest-bound and audited rather than counted as matching evidence.
+
+Three adjacent late projectile branches were then tested as one bounded
+interaction in `late-projectile-move-delta-mutations.json` (spec SHA-256
+`45d93da8039fb3f7240e390953393c79a97526ea0c9ca5cdfd1be384c770d1c9`).
+The complete 26-variant matrix retains `move_delta` for Plague Spreader and
+Rainbow Gun, with native's Y-before-X evaluation order, for a clean
++15.722437137332 weighted-byte gain and unchanged instruction/reference
+counts. Applying the lifetime at all three sites is not valid as a broad
+cleanup: the compiler interaction removes six instructions and at least one
+resolved reference. Mean Minigun is therefore left at its stronger current
+shape, while single-site and pairwise negatives remain recorded in the plan.
+
+Together these changes raise the canonical build from `63.4099153567110%` to
+`63.6121856866538%`: weighted bytes rise from 10,308.549939540508 to
+10,341.433027079305 and the gap falls from 5,948.450060459492 to
+5,915.566972920695. Candidate/native instruction counts become 4,066/4,206,
+the exact prefix remains seven instructions, and the reference audit remains
+`805/0/2`. A zero-delta current-epoch probe records source SHA-256
+`6fcf62fe2db95a977486f99cd42a8b8e75d6544aaf11fe36736759525f80a44d`.
+
 ## Structural residual handoff (2026-08-13)
 
 Native and candidate both allocate `0x48` bytes. The candidate listing has 44
