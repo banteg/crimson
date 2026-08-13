@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-multiply-definition",
+      "find": "    credits_secret_vec2_t operator*(float scale) const\n    {\n        return credits_secret_vec2_t(x * scale, y * scale);\n    }\n\n    credits_secret_vec2_t &operator+=(\n        const credits_secret_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    credits_secret_vec2_t &operator*=(float scale)\n    {\n        x *= scale;\n        y *= scale;\n        return *this;\n    }\n};\n",
+      "replacements": [
+        {
+          "name": "member-scalar-first",
+          "text": "    credits_secret_vec2_t operator*(float scale) const\n    {\n        return credits_secret_vec2_t(scale * x, scale * y);\n    }\n\n    credits_secret_vec2_t &operator+=(\n        const credits_secret_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    credits_secret_vec2_t &operator*=(float scale)\n    {\n        x *= scale;\n        y *= scale;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "member-nonconst-scalar-first",
+          "text": "    credits_secret_vec2_t operator*(float scale)\n    {\n        return credits_secret_vec2_t(scale * x, scale * y);\n    }\n\n    credits_secret_vec2_t &operator+=(\n        const credits_secret_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    credits_secret_vec2_t &operator*=(float scale)\n    {\n        x *= scale;\n        y *= scale;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "sdk-free-vector-times-scalar",
+          "text": "    credits_secret_vec2_t &operator+=(\n        const credits_secret_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    credits_secret_vec2_t &operator*=(float scale)\n    {\n        x *= scale;\n        y *= scale;\n        return *this;\n    }\n};\n\ninline credits_secret_vec2_t operator*(\n    const credits_secret_vec2_t &value,\n    float scale)\n{\n    return credits_secret_vec2_t(scale * value.x, scale * value.y);\n}\n"
+        }
+      ]
+    }
+  ]
+}

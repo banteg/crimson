@@ -151,3 +151,18 @@ reference fidelity. The complete spec SHA-256 is
 These negative results close the natural source-lifetime explanation for the
 first mismatch without volatile state, padding, or forced dependencies. The
 canonical source and metrics remain unchanged.
+
+## Mod SDK vector-multiply shape
+
+The archived mod SDK passes its 34/34 provenance checks as a source for exact
+public declarations and developer-facing vector idioms. It is not evidence for
+the game's 1.9.93 internal source or compiler, and the Linux port and remake
+remain excluded because they use different engines.
+
+Within that narrow scope, `sdk-vector-multiply-shape-mutations.json` tests the
+SDK free `vector * scalar` operator plus scalar-first const and non-const member
+forms against the current member operator. All 3/3 variants are byte-identical
+to the 83.855799%, 638/638, `154/0/0` baseline. Operator declaration shape
+therefore does not explain this scratch's stack-coloring residual, and no source
+change is retained. The complete spec SHA-256 is
+`41686a78bc3b20637b638ac954f25d53e251c6592a8c82244693402e07726495`.
