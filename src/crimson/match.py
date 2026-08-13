@@ -1017,6 +1017,7 @@ class CfgBlockPair:
     ratio: float
     structure_match: bool
     edge_consistent: bool | None = None
+    edge_anchor: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -2871,6 +2872,75 @@ def _cfg_exact_anchor_shape(block: BasicBlock) -> tuple[str, int, bool]:
     )
 
 
+def _cfg_monotonic_exact_anchor_indices(
+    pairs: list[CfgBlockPair],
+    *,
+    target_count: int,
+    candidate_count: int,
+) -> frozenset[int]:
+    """Select a conservative monotonic backbone from unique exact pairs."""
+
+    exact_indices = sorted(
+        (index for index, pair in enumerate(pairs) if pair.kind == "exact"),
+        key=lambda index: pairs[index].target_block,
+    )
+    if not exact_indices:
+        return frozenset()
+
+    target_denominator = max(1, target_count - 1)
+    candidate_denominator = max(1, candidate_count - 1)
+    max_order_distance = 0.05
+    exact_indices = [
+        index
+        for index in exact_indices
+        if abs(
+            pairs[index].target_block / target_denominator
+            - pairs[index].candidate_block / candidate_denominator,
+        )
+        <= max_order_distance
+    ]
+    if not exact_indices:
+        return frozenset()
+    lengths = [1] * len(exact_indices)
+    local_costs = [
+        abs(
+            pairs[index].target_block / target_denominator
+            - pairs[index].candidate_block / candidate_denominator,
+        )
+        for index in exact_indices
+    ]
+    costs = local_costs.copy()
+    previous: list[int | None] = [None] * len(exact_indices)
+
+    for current, pair_index in enumerate(exact_indices):
+        current_pair = pairs[pair_index]
+        for earlier in range(current):
+            earlier_pair = pairs[exact_indices[earlier]]
+            if earlier_pair.candidate_block >= current_pair.candidate_block:
+                continue
+            proposed_length = lengths[earlier] + 1
+            proposed_cost = costs[earlier] + local_costs[current]
+            if proposed_length > lengths[current] or (
+                proposed_length == lengths[current] and proposed_cost < costs[current]
+            ):
+                lengths[current] = proposed_length
+                costs[current] = proposed_cost
+                previous[current] = earlier
+
+    tail = min(
+        range(len(exact_indices)),
+        key=lambda index: (-lengths[index], costs[index], pairs[exact_indices[index]].target_block),
+    )
+    selected: set[int] = set()
+    while True:
+        selected.add(exact_indices[tail])
+        predecessor = previous[tail]
+        if predecessor is None:
+            break
+        tail = predecessor
+    return frozenset(selected)
+
+
 def align_basic_blocks(result: MatchResult) -> CfgAlignment:
     """Align exact CFG anchors and conservative similar blocks for diagnostics only."""
 
@@ -2950,14 +3020,17 @@ def align_basic_blocks(result: MatchResult) -> CfgAlignment:
         unmatched_target.remove(target_index)
         unmatched_candidate.remove(candidate_index)
 
+    anchor_indices = _cfg_monotonic_exact_anchor_indices(
+        pairs,
+        target_count=len(target),
+        candidate_count=len(candidate),
+    )
     anchored_target_to_candidate = {
-        pair.target_block: pair.candidate_block
-        for pair in pairs
-        if pair.kind == "exact"
+        pairs[index].target_block: pairs[index].candidate_block for index in anchor_indices
     }
     anchored_candidates = set(anchored_target_to_candidate.values())
     checked_pairs: list[CfgBlockPair] = []
-    for pair in pairs:
+    for pair_index, pair in enumerate(pairs):
         target_successors = {
             anchored_target_to_candidate[successor]
             for successor in target[pair.target_block].successors
@@ -2973,7 +3046,13 @@ def align_basic_blocks(result: MatchResult) -> CfgAlignment:
             if target_successors or candidate_successors
             else None
         )
-        checked_pairs.append(replace(pair, edge_consistent=edge_consistent))
+        checked_pairs.append(
+            replace(
+                pair,
+                edge_consistent=edge_consistent,
+                edge_anchor=pair_index in anchor_indices,
+            ),
+        )
 
     return CfgAlignment(
         target_blocks=target,
@@ -3018,19 +3097,19 @@ def _basic_block_location_payload(block: BasicBlock) -> dict[str, Any]:
 
 def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
     edge_consistent = sum(
-        pair.kind == "exact" and pair.edge_consistent is True
+        pair.edge_anchor and pair.edge_consistent is True
         for pair in alignment.pairs
     )
     edge_conflicts = sum(
-        pair.kind == "exact" and pair.edge_consistent is False
+        pair.edge_anchor and pair.edge_consistent is False
         for pair in alignment.pairs
     )
     heuristic_edge_consistent = sum(
-        pair.kind != "exact" and pair.edge_consistent is True
+        not pair.edge_anchor and pair.edge_consistent is True
         for pair in alignment.pairs
     )
     heuristic_edge_conflicts = sum(
-        pair.kind != "exact" and pair.edge_consistent is False
+        not pair.edge_anchor and pair.edge_consistent is False
         for pair in alignment.pairs
     )
     edge_unchecked = sum(pair.edge_consistent is None for pair in alignment.pairs)
@@ -3038,8 +3117,9 @@ def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
         "method": (
             "diagnostic-only: unique exact normalized block contents and outgoing shape, "
             "followed by greedy structurally identical pairs with at least 55% instruction "
-            "similarity; edges are checked only against unique exact anchors; predecessor "
-            "counts never make duplicate blocks unique"
+            "similarity; edges are checked only against a monotonic backbone of unique exact "
+            "pairs within 5% normalized order distance; predecessor counts never make "
+            "duplicate blocks unique"
         ),
         "summary": {
             "target_blocks": len(alignment.target_blocks),
@@ -3047,6 +3127,7 @@ def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
             "exact_pairs": alignment.exact_pairs,
             "exact_ambiguous_pairs": alignment.exact_ambiguous_pairs,
             "similar_pairs": alignment.similar_pairs,
+            "edge_anchor_pairs": sum(pair.edge_anchor for pair in alignment.pairs),
             "unmatched_target": len(alignment.unmatched_target),
             "unmatched_candidate": len(alignment.unmatched_candidate),
             "edge_consistent_pairs": edge_consistent,
@@ -3062,6 +3143,7 @@ def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
                 "kind": pair.kind,
                 "match_ratio": pair.ratio,
                 "structure_match": pair.structure_match,
+                "edge_anchor": pair.edge_anchor,
                 "edge_consistent": pair.edge_consistent,
                 "target": _basic_block_location_payload(
                     alignment.target_blocks[pair.target_block],

@@ -2475,12 +2475,14 @@ def test_cfg_alignment_anchors_reordered_exact_blocks() -> None:
         (2, 1),
     ]
     assert alignment.exact_pairs == 3
+    assert sum(pair.edge_anchor for pair in alignment.pairs) == 1
     assert payload["summary"] == {
         "target_blocks": 3,
         "candidate_blocks": 3,
         "exact_pairs": 3,
         "exact_ambiguous_pairs": 0,
         "similar_pairs": 0,
+        "edge_anchor_pairs": 1,
         "unmatched_target": 0,
         "unmatched_candidate": 0,
         "edge_consistent_pairs": 0,

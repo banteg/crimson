@@ -749,10 +749,14 @@ not be counted as dozens of independent missing locals.
 CFG edge consistency is evaluated only through unique exact block anchors.
 Predecessor counts never turn otherwise duplicate instruction blocks into
 unique anchors: that can cross-pair repeated loop latches merely because their
-surrounding incoming edges differ. Duplicate exact and similar blocks are still
-shown, but their greedy pairing is reported separately as heuristic conflicts
-instead of inflating the anchored edge-conflict count in switch-heavy or
-multi-pass functions.
+surrounding incoming edges differ. Unique exact pairs also have to be within 5%
+normalized block-order distance and belong to a monotonic backbone before edge
+validation trusts them; exact but distant or reordered pairs remain visible
+without anchoring an unrelated successor.
+Duplicate exact, displaced exact, and similar blocks are still shown, but their
+edge results are reported separately as heuristic conflicts instead of
+inflating the anchored edge-conflict count in switch-heavy or multi-pass
+functions.
 
 Generate the selected VC compiler's mixed source/machine listing when a
 residual looks like source-line scheduling, stack-slot reuse, or an x87/local
