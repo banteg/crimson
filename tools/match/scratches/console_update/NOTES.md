@@ -94,3 +94,17 @@ ready branch, so explicit ownership of the comparison operands is not the
 source of the native paired shrink-wrap region. The spec SHA-256 is
 `ed044ff7fb725b0619e6b6d1ca03e5cc7510989b19cb9e0795761a2f952fade1`,
 and no source change is retained.
+
+## Neighboring translation-unit probe
+
+`probe_neighbor_translation_unit.cpp` compiles the recovered console island in
+native address order: history apply, command execution, update, then render.
+The result is byte-identical to the standalone 90.0506% baseline at 297/296
+instructions with a six-instruction prefix and `64/0/0` references. Its source
+SHA-256 is
+`67d708cdc15f842a7b188db248ef735ebe014fdb0a14a089cfc6c38b62de59da`.
+
+Ordinary neighboring function order and same-translation-unit optimizer context
+therefore do not reproduce the native paired `ESI`/`EDI` shrink-wrap region.
+The probe is retained as a reproducible negative bound; canonical source remains
+unchanged.
