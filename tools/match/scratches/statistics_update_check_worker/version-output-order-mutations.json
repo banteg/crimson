@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "version-output-declaration-order",
+      "find": "    int major;\n    int minor;\n    int patch;",
+      "replacements": [
+        {
+          "name": "major-patch-minor",
+          "text": "    int major;\n    int patch;\n    int minor;"
+        },
+        {
+          "name": "minor-major-patch",
+          "text": "    int minor;\n    int major;\n    int patch;"
+        },
+        {
+          "name": "minor-patch-major",
+          "text": "    int minor;\n    int patch;\n    int major;"
+        },
+        {
+          "name": "patch-major-minor",
+          "text": "    int patch;\n    int major;\n    int minor;"
+        },
+        {
+          "name": "patch-minor-major",
+          "text": "    int patch;\n    int minor;\n    int major;"
+        }
+      ]
+    }
+  ]
+}

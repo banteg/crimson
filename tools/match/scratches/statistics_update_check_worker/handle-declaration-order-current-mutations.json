@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "handle-declaration-order",
+      "find": "    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;",
+      "replacements": [
+        {
+          "name": "internet-request-connection",
+          "text": "    HINTERNET internet = 0;\n    HINTERNET request = 0;\n    HINTERNET connection = 0;"
+        },
+        {
+          "name": "connection-internet-request",
+          "text": "    HINTERNET connection = 0;\n    HINTERNET internet = 0;\n    HINTERNET request = 0;"
+        },
+        {
+          "name": "connection-request-internet",
+          "text": "    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    HINTERNET internet = 0;"
+        },
+        {
+          "name": "request-internet-connection",
+          "text": "    HINTERNET request = 0;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;"
+        },
+        {
+          "name": "request-connection-internet",
+          "text": "    HINTERNET request = 0;\n    HINTERNET connection = 0;\n    HINTERNET internet = 0;"
+        }
+      ]
+    }
+  ]
+}

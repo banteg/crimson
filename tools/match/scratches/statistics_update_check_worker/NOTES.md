@@ -167,3 +167,19 @@ spec SHA-256 is
 `9e925517304a4f1176fd58d4a90f196ebfdec89a9a02dbf50a64be0a5ad5dd90`;
 the comment-only retained source SHA-256 is
 `f395f87f40fec1c326807bc4a031dacea4c20ea122aa5b6e49c975048661dd3a`.
+
+## Current declaration-order controls
+
+Two strict current-epoch sweeps test whether the residual worker stack layout
+comes from otherwise independent declarations. The
+`version-output-order-mutations.json` plan exhausts the five other permutations
+of the major, minor, and
+patch output locals. `handle-declaration-order-current-mutations.json` exhausts
+the five other permutations of the internet, connection, and request handles.
+All 10/10 variants are byte-identical to the 78.378378%, 373/367,
+`106/0/0` baseline, so declaration order is not a live lever for either group.
+
+The complete spec SHA-256 values are
+`278508252dea1ee5e78d13ccb7765ce4288e3485bdaf0f516c4755fd05fdc5a1`
+and
+`1012aca08a892cd83de144a52caf424709d3313864f2a546760db4db1903002c`.
