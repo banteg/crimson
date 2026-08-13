@@ -957,3 +957,25 @@ the matching constructor were intentionally retained and audited as invalid
 mutation plans. No source change is justified. The baseline remains
 **88.734177%**, 3,161/3,159 instructions, prefix 23, and `357/0/1`
 references.
+
+## Template 0x13 root stat publication
+
+Live native inspection narrowed the residual at `0x00431276..0x004312bd` to
+the final component of the root tint copy. Both sides already publish red,
+green, and blue before health. Native then stores health, speed, reward, and
+only afterward alpha; the candidate published alpha between speed and reward.
+
+`template-13-root-stat-publication-order-mutations.json` exhausts all seven
+remaining placements of the aggregate tint copy around the behavior-equivalent
+`health`, `move_speed`, and `reward_value` stores while preserving the recovered
+early tint construction. Publishing the aggregate after all three stats is the
+sole improving shape. It gains 4.461708860759 weighted bytes, from
+12,510.631645569620/14,099 (`88.73417721518987%`) to
+12,515.093354430379/14,099 (`88.76582278481012%`). Candidate/native
+instructions remain 3,161/3,159, the prefix remains 23, and references remain
+`357/0/1`.
+
+The retained source SHA-256 is
+`55b39c9935bb4ed7692a585685325756b86e6b906f5dbdaffbaed6ec65460070`;
+the mutation-spec SHA-256 is
+`4ccd659e78fcb160927fd58af49c0692a9c1d9f6b769aa26bc61b94a8def8675`.

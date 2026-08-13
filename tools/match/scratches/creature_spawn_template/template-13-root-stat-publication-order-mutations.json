@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-13-root-stat-publication-order",
+      "find": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                creature->health = 200.0f;\n                *(creature_tint_t *)&creature->color = child_tint;\n                creature->move_speed = 2.0f;\n                creature->reward_value = 600.0f;",
+      "replacements": [
+        {
+          "name": "publish-before-health-speed-reward",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                *(creature_tint_t *)&creature->color = child_tint;\n                creature->health = 200.0f;\n                creature->move_speed = 2.0f;\n                creature->reward_value = 600.0f;"
+        },
+        {
+          "name": "publish-after-health-speed-before-reward",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                creature->health = 200.0f;\n                creature->move_speed = 2.0f;\n                *(creature_tint_t *)&creature->color = child_tint;\n                creature->reward_value = 600.0f;"
+        },
+        {
+          "name": "publish-after-health-speed-reward",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                creature->health = 200.0f;\n                creature->move_speed = 2.0f;\n                creature->reward_value = 600.0f;\n                *(creature_tint_t *)&creature->color = child_tint;"
+        },
+        {
+          "name": "publish-before-health-reward-speed",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                *(creature_tint_t *)&creature->color = child_tint;\n                creature->health = 200.0f;\n                creature->reward_value = 600.0f;\n                creature->move_speed = 2.0f;"
+        },
+        {
+          "name": "publish-after-health-before-reward-speed",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                creature->health = 200.0f;\n                *(creature_tint_t *)&creature->color = child_tint;\n                creature->reward_value = 600.0f;\n                creature->move_speed = 2.0f;"
+        },
+        {
+          "name": "publish-after-health-reward-before-speed",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                creature->health = 200.0f;\n                creature->reward_value = 600.0f;\n                *(creature_tint_t *)&creature->color = child_tint;\n                creature->move_speed = 2.0f;"
+        },
+        {
+          "name": "publish-after-health-reward-speed",
+          "text": "                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);\n                creature->health = 200.0f;\n                creature->reward_value = 600.0f;\n                creature->move_speed = 2.0f;\n                *(creature_tint_t *)&creature->color = child_tint;"
+        }
+      ]
+    }
+  ]
+}
