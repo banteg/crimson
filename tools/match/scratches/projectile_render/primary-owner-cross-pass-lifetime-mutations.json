@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-owner-declaration",
+      "find": "    grim_interface_ptr->grim_bind_texture(projectile_texture, 0);\n    grim_interface_ptr->grim_begin_batch();\n\n    for (projectile_index = 0;",
+      "replacements": [
+        {
+          "name": "after-local",
+          "text": "    grim_interface_ptr->grim_bind_texture(projectile_texture, 0);\n    grim_interface_ptr->grim_begin_batch();\n\n    projectile_t *primary_loop_owner_after;\n    for (projectile_index = 0;",
+          "requires": [
+            "primary-owner-producer/after-local",
+            "fire-owner-consumer/after-local"
+          ]
+        },
+        {
+          "name": "before-alias",
+          "text": "    grim_interface_ptr->grim_bind_texture(projectile_texture, 0);\n    grim_interface_ptr->grim_begin_batch();\n\n    projectile_t *primary_loop_owner_before;\n    for (projectile_index = 0;",
+          "requires": [
+            "primary-owner-producer/before-alias",
+            "fire-owner-consumer/before-alias"
+          ]
+        },
+        {
+          "name": "direct-hoisted",
+          "text": "    grim_interface_ptr->grim_bind_texture(projectile_texture, 0);\n    grim_interface_ptr->grim_begin_batch();\n\n    projectile_t *projectile;\n    for (projectile_index = 0;",
+          "requires": [
+            "primary-owner-producer/direct-hoisted",
+            "fire-owner-consumer/direct-hoisted"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "primary-owner-producer",
+      "find": "        projectile_t *projectile = &projectile_pool[projectile_index];\n        projectile_tail_t *primary = &projectile->pos.tail;",
+      "replacements": [
+        {
+          "name": "after-local",
+          "text": "        projectile_t *projectile = &projectile_pool[projectile_index];\n        primary_loop_owner_after = projectile;\n        projectile_tail_t *primary = &projectile->pos.tail;",
+          "requires": [
+            "primary-owner-declaration/after-local",
+            "fire-owner-consumer/after-local"
+          ]
+        },
+        {
+          "name": "before-alias",
+          "text": "        primary_loop_owner_before =\n            &projectile_pool[projectile_index];\n        projectile_t *projectile = primary_loop_owner_before;\n        projectile_tail_t *primary = &projectile->pos.tail;",
+          "requires": [
+            "primary-owner-declaration/before-alias",
+            "fire-owner-consumer/before-alias"
+          ]
+        },
+        {
+          "name": "direct-hoisted",
+          "text": "        projectile = &projectile_pool[projectile_index];\n        projectile_tail_t *primary = &projectile->pos.tail;",
+          "requires": [
+            "primary-owner-declaration/direct-hoisted",
+            "fire-owner-consumer/direct-hoisted"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fire-owner-consumer",
+      "find": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];",
+      "replacements": [
+        {
+          "name": "after-local",
+          "text": "    projectile_t *fire_type_owner = primary_loop_owner_after;",
+          "requires": [
+            "primary-owner-declaration/after-local",
+            "primary-owner-producer/after-local"
+          ]
+        },
+        {
+          "name": "before-alias",
+          "text": "    projectile_t *fire_type_owner = primary_loop_owner_before;",
+          "requires": [
+            "primary-owner-declaration/before-alias",
+            "primary-owner-producer/before-alias"
+          ]
+        },
+        {
+          "name": "direct-hoisted",
+          "text": "    projectile_t *fire_type_owner = projectile;",
+          "requires": [
+            "primary-owner-declaration/direct-hoisted",
+            "primary-owner-producer/direct-hoisted"
+          ]
+        }
+      ]
+    }
+  ]
+}

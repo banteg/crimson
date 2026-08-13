@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-overlay-loop-invariants",
+      "find": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && fire_type_owner->pos.tail.vy.type_id\n                == PROJECTILE_TYPE_FIRE_BULLETS\n            && projectile->pos.tail.vy.life_timer == 0.4f) {",
+      "replacements": [
+        {
+          "name": "typed-type-local",
+          "text": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    projectile_type_id_t fire_overlay_type =\n        PROJECTILE_TYPE_FIRE_BULLETS;\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && fire_type_owner->pos.tail.vy.type_id == fire_overlay_type\n            && projectile->pos.tail.vy.life_timer == 0.4f) {"
+        },
+        {
+          "name": "int-type-local",
+          "text": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    int fire_overlay_type = PROJECTILE_TYPE_FIRE_BULLETS;\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && (int)fire_type_owner->pos.tail.vy.type_id == fire_overlay_type\n            && projectile->pos.tail.vy.life_timer == 0.4f) {"
+        },
+        {
+          "name": "life-local",
+          "text": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    float fire_overlay_life = 0.4f;\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && fire_type_owner->pos.tail.vy.type_id\n                == PROJECTILE_TYPE_FIRE_BULLETS\n            && projectile->pos.tail.vy.life_timer == fire_overlay_life) {"
+        },
+        {
+          "name": "typed-type-then-life",
+          "text": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    projectile_type_id_t fire_overlay_type =\n        PROJECTILE_TYPE_FIRE_BULLETS;\n    float fire_overlay_life = 0.4f;\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && fire_type_owner->pos.tail.vy.type_id == fire_overlay_type\n            && projectile->pos.tail.vy.life_timer == fire_overlay_life) {"
+        },
+        {
+          "name": "life-then-typed-type",
+          "text": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    float fire_overlay_life = 0.4f;\n    projectile_type_id_t fire_overlay_type =\n        PROJECTILE_TYPE_FIRE_BULLETS;\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && fire_type_owner->pos.tail.vy.type_id == fire_overlay_type\n            && projectile->pos.tail.vy.life_timer == fire_overlay_life) {"
+        },
+        {
+          "name": "int-type-then-life",
+          "text": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    int fire_overlay_type = PROJECTILE_TYPE_FIRE_BULLETS;\n    float fire_overlay_life = 0.4f;\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && (int)fire_type_owner->pos.tail.vy.type_id == fire_overlay_type\n            && projectile->pos.tail.vy.life_timer == fire_overlay_life) {"
+        },
+        {
+          "name": "life-then-int-type",
+          "text": "    projectile_t *fire_type_owner = &projectile_pool[0x5f];\n    float fire_overlay_life = 0.4f;\n    int fire_overlay_type = PROJECTILE_TYPE_FIRE_BULLETS;\n    for (projectile_index = 0;\n         projectile_index < 0x60;\n         ++projectile_index) {\n        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && (int)fire_type_owner->pos.tail.vy.type_id == fire_overlay_type\n            && projectile->pos.tail.vy.life_timer == fire_overlay_life) {"
+        }
+      ]
+    }
+  ]
+}

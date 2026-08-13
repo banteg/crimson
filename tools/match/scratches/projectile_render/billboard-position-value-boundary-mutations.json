@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pistol-billboard-position",
+      "find": "        if (type_id == PROJECTILE_TYPE_PISTOL) {\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 3.0f,\n                camera_offset_y + projectile->pos.pos_y - 3.0f,\n                6.0f,\n                6.0f);",
+      "replacements": [
+        {
+          "name": "base-vector-then-subtract",
+          "text": "        if (type_id == PROJECTILE_TYPE_PISTOL) {\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos -= 3.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                6.0f,\n                6.0f);"
+        },
+        {
+          "name": "combined-vector",
+          "text": "        if (type_id == PROJECTILE_TYPE_PISTOL) {\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - 3.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                6.0f,\n                6.0f);"
+        },
+        {
+          "name": "base-scalars-then-subtract",
+          "text": "        if (type_id == PROJECTILE_TYPE_PISTOL) {\n            float draw_x = camera_offset_x + projectile->pos_x;\n            float draw_y = camera_offset_y + projectile->pos.pos_y;\n            draw_x -= 3.0f;\n            draw_y -= 3.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_x,\n                draw_y,\n                6.0f,\n                6.0f);"
+        },
+        {
+          "name": "final-scalars",
+          "text": "        if (type_id == PROJECTILE_TYPE_PISTOL) {\n            float draw_x = camera_offset_x + projectile->pos_x - 3.0f;\n            float draw_y = camera_offset_y + projectile->pos.pos_y - 3.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_x,\n                draw_y,\n                6.0f,\n                6.0f);"
+        }
+      ]
+    },
+    {
+      "name": "type-four-billboard-position",
+      "find": "        } else if ((int)type_id == 4) {\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 4.0f,\n                camera_offset_y + projectile->pos.pos_y - 4.0f,\n                8.0f,\n                8.0f);",
+      "replacements": [
+        {
+          "name": "base-vector-then-subtract",
+          "text": "        } else if ((int)type_id == 4) {\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos -= 4.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                8.0f,\n                8.0f);"
+        },
+        {
+          "name": "combined-vector",
+          "text": "        } else if ((int)type_id == 4) {\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - 4.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                8.0f,\n                8.0f);"
+        },
+        {
+          "name": "base-scalars-then-subtract",
+          "text": "        } else if ((int)type_id == 4) {\n            float draw_x = camera_offset_x + projectile->pos_x;\n            float draw_y = camera_offset_y + projectile->pos.pos_y;\n            draw_x -= 4.0f;\n            draw_y -= 4.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_x,\n                draw_y,\n                8.0f,\n                8.0f);"
+        },
+        {
+          "name": "final-scalars",
+          "text": "        } else if ((int)type_id == 4) {\n            float draw_x = camera_offset_x + projectile->pos_x - 4.0f;\n            float draw_y = camera_offset_y + projectile->pos.pos_y - 4.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_x,\n                draw_y,\n                8.0f,\n                8.0f);"
+        }
+      ]
+    },
+    {
+      "name": "default-billboard-position",
+      "find": "        } else {\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 2.0f,\n                camera_offset_y + projectile->pos.pos_y - 2.0f,\n                4.0f,\n                4.0f);",
+      "replacements": [
+        {
+          "name": "base-vector-then-subtract",
+          "text": "        } else {\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos -= 2.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                4.0f,\n                4.0f);"
+        },
+        {
+          "name": "combined-vector",
+          "text": "        } else {\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - 2.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                4.0f,\n                4.0f);"
+        },
+        {
+          "name": "base-scalars-then-subtract",
+          "text": "        } else {\n            float draw_x = camera_offset_x + projectile->pos_x;\n            float draw_y = camera_offset_y + projectile->pos.pos_y;\n            draw_x -= 2.0f;\n            draw_y -= 2.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_x,\n                draw_y,\n                4.0f,\n                4.0f);"
+        },
+        {
+          "name": "final-scalars",
+          "text": "        } else {\n            float draw_x = camera_offset_x + projectile->pos_x - 2.0f;\n            float draw_y = camera_offset_y + projectile->pos.pos_y - 2.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_x,\n                draw_y,\n                4.0f,\n                4.0f);"
+        }
+      ]
+    }
+  ]
+}

@@ -1087,3 +1087,31 @@ The unchanged source SHA-256 is
 `f8f7879af5f78325ea0772cbd6644b3660234c83deca7ad24c9dc5be8f80cd70`;
 the updated experiment log SHA-256 is
 `89c13a36811c78cb33581e6bbe11710765a081bf5a39b793e689eb888707506a`.
+
+## Overlay ownership and billboard value bounds (2026-08-14)
+
+Three current-baseline sweeps close the remaining source-shaped ownership
+hypotheses around the Fire overlay and billboard passes. The seven typed,
+integer, lifetime, and declaration-order variants in
+`fire-overlay-loop-invariant-mutations.json` are all byte-identical. The 12
+variants in `billboard-position-value-boundary-mutations.json` likewise leave
+all scalar boundary spellings byte-identical, while each aggregate vector
+temporary adds seven instructions, loses 823.782314 to 836.517981
+fuzzy-weighted bytes, and sharply worsens reference alignment.
+
+`primary-owner-cross-pass-lifetime-mutations.json` then tests all three
+complete ways of carrying the primary projectile owner into the later Fire
+pass. Each emits the same six extra instructions, loses 181.541633 weighted
+bytes, and changes references from `448/0/10` to `438/0/16`. The native-looking
+cross-pass owner therefore does not survive whole-function VC6 allocation as
+an honest source improvement.
+
+No source change is retained. The baseline remains 58.55062648154419%,
+7,348.689129698611/12,551 weighted bytes, 2,885/3,021 instructions, prefix 0,
+and `448/0/10` references. Recorded spec SHA-256 values are
+`ab4d94a4b488e48f7b819639e6d3af554de03ee072bcd8361877767ba7f14019`,
+`14c30425652cd366516599d8e6a80dd0b4c3a5f18a696ef0e2a13707df498b4d`,
+and
+`7a7e3b0203239dace6adaf364416c37e792ae610715ca0c19d48c0db683773b2`.
+The updated experiment log SHA-256 is
+`d6330d3e89f0a6debce638bb1097ba29dd2d3e3b630ff34b6c69316e089eec7e`.
