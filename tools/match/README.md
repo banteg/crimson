@@ -486,6 +486,15 @@ uv run crimson match status --image crimsonland.exe --json
 uv run crimson match status --recovery semantic-complete --residual compiler
 ```
 
+The generated board also ranks the non-exact residual frontier by fuzzy-gap
+bytes. Its experiment evidence is tied to the current scratch epoch:
+`current-stalled` requires at least three complete, error-free, non-improving
+sweeps against the current inputs, while `historical-only` means the recorded
+search belongs to an older source, configuration, dependency, or binary
+baseline. Never treat a historical `stalled` flag as a reason to skip fresh
+source analysis. Recovery and residual labels describe the current assessment;
+they are not proof that every source shape or compiler lifetime has been tried.
+
 Use address-keyed triage to rank both scratch-backed and still-uncovered native
 functions. Triage resolves scratch `FUNCTION` values through the manifest and
 joins by `(image, address)`, so a raw-address scratch or stale recovered name

@@ -41,6 +41,7 @@ from crimson.match import (
     ObjectRelocationReference,
     ProbeResult,
     ReferenceCatalog,
+    ResidualFrontierRow,
     ScratchConfig,
     ScratchStatus,
     TriageExperimentEvidence,
@@ -63,6 +64,7 @@ from crimson.match import (
     collect_image_totals,
     collect_naming_debt,
     collect_native_link_statuses,
+    collect_residual_frontier_rows,
     collect_resolved_name_references,
     collect_scratch_statuses,
     collect_triage_rows,
@@ -102,6 +104,7 @@ from crimson.match import (
     render_native_link_status_markdown,
     render_probe_result,
     render_profile_table,
+    render_residual_frontier_markdown,
     render_resolved_name_reference_summary,
     render_status_markdown,
     render_status_rows,
@@ -109,6 +112,7 @@ from crimson.match import (
     render_status_table,
     render_triage_rows,
     repair_provider_comments,
+    residual_frontier_summary_payload,
     resolve_function,
     resolve_function_with_scope_hint,
     rewrite_placeholder_references,
@@ -4369,6 +4373,84 @@ def test_render_status_rows_includes_prefix() -> None:
     ) in markdown
 
 
+def test_residual_frontier_distinguishes_current_and_historical_evidence() -> None:
+    def status(
+        function: str,
+        address: int,
+        target_size: int,
+        ratio: float,
+    ) -> ScratchStatus:
+        return ScratchStatus(
+            config=ScratchConfig(
+                directory=Path(function),
+                function=function,
+                image="crimsonland.exe",
+                compiler="msvc6.5",
+                cflags="/O2 /GB /W3 /GR-",
+                source="scratch.cpp",
+                end_va=None,
+                symbol=None,
+                note="",
+                recovery="semantic-complete",
+                residuals=("compiler",),
+            ),
+            address=address,
+            target_size=target_size,
+            ratio=ratio,
+            prefix_instructions=0,
+            target_instructions=10,
+            candidate_instructions=10,
+            error=None,
+        )
+
+    current = status("current", 0x401000, 1000, 0.5)
+    historical = status("historical", 0x402000, 500, 0.5)
+    unexplored = status("unexplored", 0x403000, 100, 0.5)
+    rows = [
+        ResidualFrontierRow(
+            current,
+            TriageExperimentEvidence(
+                records=4,
+                current_records=3,
+                no_improvement_streak=3,
+                flags=("stalled",),
+            ),
+        ),
+        ResidualFrontierRow(
+            historical,
+            TriageExperimentEvidence(
+                records=9,
+                historical_records=9,
+                no_improvement_streak=0,
+                flags=("stalled", "historical-only"),
+            ),
+        ),
+        ResidualFrontierRow(unexplored),
+    ]
+
+    assert rows[0].evidence_state == "current-stalled"
+    assert rows[1].evidence_state == "historical-only"
+    assert rows[2].evidence_state == "unexplored"
+    summary = residual_frontier_summary_payload(rows)
+    assert summary["fuzzy_gap_bytes"] == 800
+    assert summary["evidence"]["current-stalled"] == {
+        "functions": 1,
+        "fuzzy_gap_bytes": 500,
+    }
+    markdown = "\n".join(render_residual_frontier_markdown(rows))
+    assert "Current-baseline experiments cover **1 functions / 500 gap bytes**" in markdown
+    assert "**1 / 250** are historical-only" in markdown
+    assert "**1 / 50** have no recorded experiments" in markdown
+    assert "| 2 | crimsonland.exe | historical | 250 |" in markdown
+
+    collected = collect_residual_frontier_rows([current, historical, unexplored])
+    assert [row.status.config.function for row in collected] == [
+        "current",
+        "historical",
+        "unexplored",
+    ]
+
+
 def _write_native_link_fixture(
     repo_root: Path,
     *,
@@ -4962,12 +5044,14 @@ def test_triage_surfaces_and_sorts_recorded_search_evidence() -> None:
         "probes": 1,
         "evaluated_variants": 12,
         "unique_variants": 10,
-        "unique_specs": 3,
-        "no_improvement_streak": 3,
-        "current_inconclusive_sweeps": 0,
-        "flags": ["stalled"],
-        "errors": 0,
-    }
+            "unique_specs": 3,
+            "no_improvement_streak": 3,
+            "current_inconclusive_sweeps": 0,
+            "current_errored_variants": 0,
+            "strict_errors": 0,
+            "flags": ["stalled"],
+            "errors": 0,
+        }
     rendered = render_triage_rows([explored])[0]
     assert rendered[-4:-1] == ("2/4/10", "3", "stalled")
 

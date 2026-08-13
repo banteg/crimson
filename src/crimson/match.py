@@ -3460,6 +3460,8 @@ class TriageExperimentEvidence:
     unique_specs: int = 0
     no_improvement_streak: int = 0
     current_inconclusive_sweeps: int = 0
+    current_errored_variants: int = 0
+    strict_errors: int = 0
     flags: tuple[str, ...] = ()
     errors: int = 0
 
@@ -3481,6 +3483,24 @@ class TriageRow:
     @property
     def fuzzy_gap_bytes(self) -> float:
         return max(0.0, self.target_size - self.fuzzy_weighted_bytes)
+
+
+@dataclass(frozen=True, slots=True)
+class ResidualFrontierRow:
+    status: ScratchStatus
+    experiments: TriageExperimentEvidence = TriageExperimentEvidence()
+
+    @property
+    def evidence_state(self) -> str:
+        if not self.experiments.current_records:
+            return "historical-only" if self.experiments.records else "unexplored"
+        if self.experiments.strict_errors:
+            return "current-error"
+        if self.experiments.current_inconclusive_sweeps:
+            return "current-inconclusive"
+        if "stalled" in self.experiments.flags:
+            return "current-stalled"
+        return "current-active"
 
 
 @dataclass(frozen=True, slots=True)
@@ -7387,6 +7407,8 @@ def triage_experiment_evidence(status: ScratchStatus | None) -> TriageExperiment
         unique_specs=int(row["unique_specs"]),
         no_improvement_streak=int(row["no_improvement_streak"]),
         current_inconclusive_sweeps=int(row["current_inconclusive_sweeps"]),
+        current_errored_variants=int(row["current_errored_variants"]),
+        strict_errors=int(row["strict_errors"]),
         flags=tuple(str(flag) for flag in row["flags"]),
         errors=len(errors),
     )
@@ -8240,11 +8262,179 @@ def triage_row_payload(row: TriageRow) -> dict[str, Any]:
             "unique_specs": row.experiments.unique_specs,
             "no_improvement_streak": row.experiments.no_improvement_streak,
             "current_inconclusive_sweeps": row.experiments.current_inconclusive_sweeps,
+            "current_errored_variants": row.experiments.current_errored_variants,
+            "strict_errors": row.experiments.strict_errors,
             "flags": list(row.experiments.flags),
             "errors": row.experiments.errors,
         },
         "best_scratch": scratch_status_payload(row.best_status) if row.best_status is not None else None,
     }
+
+
+def collect_residual_frontier_rows(
+    statuses: Collection[ScratchStatus],
+) -> list[ResidualFrontierRow]:
+    """Select one best non-exact scratch per native target with epoch-aware evidence."""
+
+    best_by_target: dict[tuple[str, int | str], ScratchStatus] = {}
+    for status in statuses:
+        target: tuple[str, int | str] = (
+            status.config.image,
+            status.address if status.address else status.config.function,
+        )
+        best = best_by_target.get(target)
+        if best is None or _status_rank(status) > _status_rank(best):
+            best_by_target[target] = status
+
+    rows = [
+        ResidualFrontierRow(
+            status=status,
+            experiments=triage_experiment_evidence(status),
+        )
+        for status in best_by_target.values()
+        if status.state in {"audit", "wip"}
+    ]
+    return sorted(
+        rows,
+        key=lambda row: (
+            -row.status.fuzzy_gap_bytes,
+            -row.status.target_size,
+            row.status.config.image,
+            row.status.address,
+            row.status.config.function,
+        ),
+    )
+
+
+def residual_frontier_summary_payload(
+    rows: Collection[ResidualFrontierRow],
+) -> dict[str, Any]:
+    ordered = sorted(rows, key=lambda row: row.status.fuzzy_gap_bytes, reverse=True)
+    total_gap = sum(row.status.fuzzy_gap_bytes for row in ordered)
+
+    def grouped(field: str) -> dict[str, dict[str, float | int]]:
+        labels: dict[str, list[ResidualFrontierRow]] = {}
+        for row in ordered:
+            if field == "evidence":
+                values = (row.evidence_state,)
+            elif field == "recovery":
+                values = (scratch_recovery(row.status),)
+            else:
+                values = row.status.config.residuals or ("unspecified",)
+            for value in values:
+                labels.setdefault(value, []).append(row)
+        return {
+            label: {
+                "functions": len(group_rows),
+                "fuzzy_gap_bytes": sum(row.status.fuzzy_gap_bytes for row in group_rows),
+            }
+            for label, group_rows in sorted(labels.items())
+        }
+
+    def top_share(limit: int) -> float:
+        if not total_gap:
+            return 0.0
+        return sum(row.status.fuzzy_gap_bytes for row in ordered[:limit]) / total_gap
+
+    return {
+        "functions": len(ordered),
+        "fuzzy_gap_bytes": total_gap,
+        "top_5_gap_share": top_share(5),
+        "top_10_gap_share": top_share(10),
+        "evidence": grouped("evidence"),
+        "recovery": grouped("recovery"),
+        "residuals": grouped("residuals"),
+    }
+
+
+def render_residual_frontier_markdown(
+    rows: Collection[ResidualFrontierRow],
+) -> list[str]:
+    if not rows:
+        return []
+    ordered = sorted(
+        rows,
+        key=lambda row: (
+            -row.status.fuzzy_gap_bytes,
+            -row.status.target_size,
+            row.status.config.image,
+            row.status.address,
+        ),
+    )
+    summary = residual_frontier_summary_payload(ordered)
+    evidence = summary["evidence"]
+
+    def evidence_metric(label: str, key: str) -> float | int:
+        metrics = evidence.get(label, {})
+        return metrics.get(key, 0)
+
+    current_labels = (
+        "current-active",
+        "current-error",
+        "current-inconclusive",
+        "current-stalled",
+    )
+    current_functions = sum(int(evidence_metric(label, "functions")) for label in current_labels)
+    current_gap = sum(float(evidence_metric(label, "fuzzy_gap_bytes")) for label in current_labels)
+    historical_functions = int(evidence_metric("historical-only", "functions"))
+    historical_gap = float(evidence_metric("historical-only", "fuzzy_gap_bytes"))
+    unexplored_functions = int(evidence_metric("unexplored", "functions"))
+    unexplored_gap = float(evidence_metric("unexplored", "fuzzy_gap_bytes"))
+
+    lines = [
+        "## Residual frontier",
+        "",
+        (
+            f"**{summary['functions']}** non-exact scratch-backed functions hold "
+            f"**{summary['fuzzy_gap_bytes']:.0f} fuzzy-gap bytes**. The top 5 hold "
+            f"**{summary['top_5_gap_share']:.1%}** of that gap; the top 10 hold "
+            f"**{summary['top_10_gap_share']:.1%}**."
+        ),
+        "",
+        (
+            f"Current-baseline experiments cover **{current_functions} functions / "
+            f"{current_gap:.0f} gap bytes**; **{historical_functions} / {historical_gap:.0f}** "
+            f"are historical-only; **{unexplored_functions} / {unexplored_gap:.0f}** have no "
+            "recorded experiments."
+        ),
+        "",
+        (
+            "Evidence labels are baseline-epoch aware. `current-stalled` means at least three "
+            "complete, error-free, non-improving mutation sweeps against the current inputs. "
+            "`historical-only` is not stalled and must not suppress a fresh source analysis. "
+            "Recovery and residual labels describe the present source assessment; they do not "
+            "prove that compiler search is exhausted."
+        ),
+        "",
+        (
+            "| rank | image | function | fuzzy gap | recovery | residual | evidence | "
+            "current/all | streak | flags |"
+        ),
+        "|---:|---|---|---:|---|---|---|---:|---:|---|",
+    ]
+    for rank, row in enumerate(ordered, start=1):
+        status = row.status
+        experiments = row.experiments
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    str(rank),
+                    status.config.image,
+                    status.config.function,
+                    f"{status.fuzzy_gap_bytes:.0f}",
+                    scratch_recovery(status),
+                    ",".join(status.config.residuals) or "unspecified",
+                    row.evidence_state,
+                    f"{experiments.current_records}/{experiments.records}",
+                    str(experiments.no_improvement_streak),
+                    ",".join(experiments.flags) or "-",
+                ),
+            )
+            + " |",
+        )
+    lines.append("")
+    return lines
 
 
 def render_status_rows(
@@ -9252,6 +9442,11 @@ def render_status_markdown(
         "",
     ]
     lines.extend(render_native_link_status_markdown(native_statuses))
+    lines.extend(
+        render_residual_frontier_markdown(
+            collect_residual_frontier_rows(statuses),
+        ),
+    )
     if dispositions:
         disposition_counts = Counter(row["disposition"] for row in dispositions)
         disposition_summary = ", ".join(
