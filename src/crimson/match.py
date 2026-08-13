@@ -2855,6 +2855,22 @@ def _cfg_block_shape(block: BasicBlock, predecessor_count: int) -> tuple[str, in
     )
 
 
+def _cfg_exact_anchor_shape(block: BasicBlock) -> tuple[str, int, bool]:
+    """Return only stable outgoing shape for unique exact anchor discovery.
+
+    Predecessor counts are intentionally excluded. Repeated loop latches can
+    trade incoming edges as surrounding reconstruction changes; using that
+    count to make otherwise duplicate instruction blocks unique can cross-pair
+    distant loops and manufacture anchored edge conflicts.
+    """
+
+    return (
+        block.terminator,
+        len(block.successors),
+        block.fallthrough is not None,
+    )
+
+
 def align_basic_blocks(result: MatchResult) -> CfgAlignment:
     """Align exact CFG anchors and conservative similar blocks for diagnostics only."""
 
@@ -2866,13 +2882,13 @@ def align_basic_blocks(result: MatchResult) -> CfgAlignment:
     unmatched_candidate = set(range(len(candidate)))
     pairs: list[CfgBlockPair] = []
 
-    target_fingerprints: dict[tuple[tuple[str, ...], tuple[str, int, bool, int]], list[int]] = {}
-    candidate_fingerprints: dict[tuple[tuple[str, ...], tuple[str, int, bool, int]], list[int]] = {}
+    target_fingerprints: dict[tuple[tuple[str, ...], tuple[str, int, bool]], list[int]] = {}
+    candidate_fingerprints: dict[tuple[tuple[str, ...], tuple[str, int, bool]], list[int]] = {}
     for index, block in enumerate(target):
-        key = block.canonical_lines, _cfg_block_shape(block, target_predecessors[index])
+        key = block.canonical_lines, _cfg_exact_anchor_shape(block)
         target_fingerprints.setdefault(key, []).append(index)
     for index, block in enumerate(candidate):
-        key = block.canonical_lines, _cfg_block_shape(block, candidate_predecessors[index])
+        key = block.canonical_lines, _cfg_exact_anchor_shape(block)
         candidate_fingerprints.setdefault(key, []).append(index)
     for key in sorted(
         target_fingerprints.keys() & candidate_fingerprints.keys(),
@@ -3020,9 +3036,10 @@ def cfg_alignment_payload(alignment: CfgAlignment) -> dict[str, Any]:
     edge_unchecked = sum(pair.edge_consistent is None for pair in alignment.pairs)
     return {
         "method": (
-            "diagnostic-only: unique exact normalized block fingerprints, followed by greedy "
-            "structurally identical pairs with at least 55% instruction similarity; edges are "
-            "checked only against unique exact anchors"
+            "diagnostic-only: unique exact normalized block contents and outgoing shape, "
+            "followed by greedy structurally identical pairs with at least 55% instruction "
+            "similarity; edges are checked only against unique exact anchors; predecessor "
+            "counts never make duplicate blocks unique"
         ),
         "summary": {
             "target_blocks": len(alignment.target_blocks),

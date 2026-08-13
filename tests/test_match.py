@@ -2542,6 +2542,52 @@ def test_cfg_summary_separates_heuristic_edge_conflicts() -> None:
     assert summary["heuristic_edge_conflicts"] == 1
 
 
+def test_cfg_alignment_does_not_make_duplicate_blocks_unique_by_predecessors() -> None:
+    target = (
+        DisassemblyLine(0, 0x401000, "je L8", 2),
+        DisassemblyLine(2, 0x401002, "jmp L8", 2),
+        DisassemblyLine(4, 0x401004, "jmp L8", 4),
+        DisassemblyLine(8, 0x401008, "inc esi", 1),
+        DisassemblyLine(9, 0x401009, "jmp Lc", 3),
+        DisassemblyLine(12, 0x40100C, "je L14", 2),
+        DisassemblyLine(14, 0x40100E, "jmp L14", 6),
+        DisassemblyLine(20, 0x401014, "inc esi", 1),
+        DisassemblyLine(21, 0x401015, "jmp L18", 3),
+        DisassemblyLine(24, 0x401018, "ret", 1),
+    )
+    candidate = (
+        DisassemblyLine(0, 0, "je L8", 2),
+        DisassemblyLine(2, 2, "jmp L14", 2),
+        DisassemblyLine(4, 4, "jmp L14", 4),
+        DisassemblyLine(8, 8, "inc esi", 1),
+        DisassemblyLine(9, 9, "jmp Lc", 3),
+        DisassemblyLine(12, 12, "je L14", 2),
+        DisassemblyLine(14, 14, "jmp L8", 6),
+        DisassemblyLine(20, 20, "inc esi", 1),
+        DisassemblyLine(21, 21, "jmp L18", 3),
+        DisassemblyLine(24, 24, "ret", 1),
+    )
+    result = MatchResult(
+        ratio=0.8,
+        prefix_instructions=1,
+        target_lines=tuple(line.text for line in target),
+        candidate_lines=tuple(line.text for line in candidate),
+        target_disassembly=target,
+        candidate_disassembly=candidate,
+    )
+
+    alignment = align_basic_blocks(result)
+    duplicate_pairs = [
+        pair
+        for pair in alignment.pairs
+        if alignment.target_blocks[pair.target_block].canonical_lines
+        == ("inc esi", "jmp LOCAL")
+    ]
+
+    assert len(duplicate_pairs) == 2
+    assert all(pair.kind == "exact-ambiguous" for pair in duplicate_pairs)
+
+
 def test_region_hints_are_cautious_and_composable() -> None:
     hints = _region_hints(
         ("fld dword [ebp-0x4]", "fstp dword [ebp-0x8]", "jne L10"),

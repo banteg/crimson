@@ -747,9 +747,12 @@ clue: one frame-size difference can shift every later stack operand and must
 not be counted as dozens of independent missing locals.
 
 CFG edge consistency is evaluated only through unique exact block anchors.
-Duplicate exact and similar blocks are still shown, but their greedy pairing
-is reported separately as heuristic conflicts instead of inflating the
-anchored edge-conflict count in switch-heavy functions.
+Predecessor counts never turn otherwise duplicate instruction blocks into
+unique anchors: that can cross-pair repeated loop latches merely because their
+surrounding incoming edges differ. Duplicate exact and similar blocks are still
+shown, but their greedy pairing is reported separately as heuristic conflicts
+instead of inflating the anchored edge-conflict count in switch-heavy or
+multi-pass functions.
 
 Generate the selected VC compiler's mixed source/machine listing when a
 residual looks like source-line scheduling, stack-slot reuse, or an x87/local
