@@ -77,3 +77,20 @@ The spec SHA-256 is
 `4d21d3c8a0c719c7af709a3a630aedeca779e40568d015ca46f014616095dc33`.
 The remaining save-placement mismatch is therefore not controlled by source
 ownership of the submission arms, and no source change is retained.
+
+## Submission input-ownership sweep
+
+`submission-input-ownership-mutations.json` tests six ordinary spellings at
+the first submitted-line comparison: named input-buffer and history-line
+pointers, both named operands, a named comparison result, a truthy comparison,
+and value-initialization of the history node. The comparison-result, truthy,
+and value-initialized-node forms are byte-identical to the 90.05% baseline at
+297/296 instructions with `64/0/0` references.
+
+Naming the input pointer, alone or with the history line, regresses to 87.35%.
+Naming only the history line emits two extra instructions and regresses to
+89.08%. None delays the candidate's entry `ESI` save or keeps `EDI` through the
+ready branch, so explicit ownership of the comparison operands is not the
+source of the native paired shrink-wrap region. The spec SHA-256 is
+`ed044ff7fb725b0619e6b6d1ca03e5cc7510989b19cb9e0795761a2f952fade1`,
+and no source change is retained.

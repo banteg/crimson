@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "submission-input-ownership",
+      "find": "        if (console_input_ready) {\n            if (strcmp(history_head->line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n",
+      "replacements": [
+        {
+          "name": "named-input-for-compare",
+          "text": "        if (console_input_ready) {\n            char *input = console_input_buffer();\n            if (strcmp(history_head->line, input) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n"
+        },
+        {
+          "name": "named-history-line-for-compare",
+          "text": "        if (console_input_ready) {\n            char *history_line = history_head->line;\n            if (strcmp(history_line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n"
+        },
+        {
+          "name": "named-both-compare-operands",
+          "text": "        if (console_input_ready) {\n            char *input = console_input_buffer();\n            char *history_line = history_head->line;\n            if (strcmp(history_line, input) != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n"
+        },
+        {
+          "name": "named-compare-result",
+          "text": "        if (console_input_ready) {\n            int different =\n                strcmp(history_head->line, console_input_buffer());\n            if (different != 0) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n"
+        },
+        {
+          "name": "truthy-compare-result",
+          "text": "        if (console_input_ready) {\n            if (strcmp(history_head->line, console_input_buffer())) {\n                console_history_entry_t *entry = new console_history_entry_t;\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n"
+        },
+        {
+          "name": "value-initialized-history-node",
+          "text": "        if (console_input_ready) {\n            if (strcmp(history_head->line, console_input_buffer()) != 0) {\n                console_history_entry_t *entry =\n                    new console_history_entry_t();\n                entry->line = strdup_malloc(console_input_buffer());\n                entry->next = history_head;\n                history_head = entry;\n            }\n"
+        }
+      ]
+    }
+  ]
+}
