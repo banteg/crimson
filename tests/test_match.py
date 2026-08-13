@@ -5131,6 +5131,8 @@ def test_triage_surfaces_and_sorts_recorded_search_evidence() -> None:
             "no_improvement_streak": 3,
             "current_inconclusive_sweeps": 0,
             "current_errored_variants": 0,
+            "audited_errored_variants": 0,
+            "mutation_error_audits": 0,
             "strict_errors": 0,
             "flags": ["stalled"],
             "errors": 0,

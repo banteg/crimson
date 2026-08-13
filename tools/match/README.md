@@ -597,6 +597,20 @@ or overlapping sites fail before compilation. Specs use byte-exact source
 spans and should be regenerated or reviewed after reformatting or refactoring
 the scratch.
 
+When one replacement only compiles with another, encode that relationship on
+the replacement instead of knowingly scheduling invalid variants. `requires`
+and `conflicts` contain `site/replacement` keys; constrained combinations are
+excluded from both the plan and its possible-variant count:
+
+```json
+{
+  "name": "reuse-shared",
+  "text": "return shared",
+  "requires": ["owner/declare-shared"],
+  "conflicts": ["qualifier/make-const"]
+}
+```
+
 ```sh
 uv run crimson match mutate tools/match/scratches/player_update \
   --spec /tmp/player-update-mutations.json --jobs 8 --top 20
@@ -656,6 +670,19 @@ sweep. Truncated or errored sweeps are inconclusive and break that streak. It is
 a prompt to change or falsify the current hypothesis, not a claim that the
 function is unmatchable. `--check` rejects malformed or internally inconsistent
 JSONL; `--strict` also rejects current-baseline evaluation errors.
+
+After manually confirming that compile failures came from an invalid mutation
+plan (for example, a replacement used a local that its plan never declared),
+append a digest-bound audit rather than deleting or rewriting the sweep:
+
+```sh
+uv run crimson match experiment-audit tools/match/scratches/player_update \
+  --record 12 --reason "replacement referenced an undeclared local"
+```
+
+The audited variants remain visible as errors and keep the sweep inconclusive,
+but no longer fail `experiments --strict`. Never use this for compiler,
+environment, or unexplained evaluation failures; repair and rerun those instead.
 
 The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the

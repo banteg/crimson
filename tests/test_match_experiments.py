@@ -4,10 +4,15 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
 from typer.testing import CliRunner
 
 from crimson.cli.match import match_app
-from crimson.match_experiments import summarize_experiments
+from crimson.match_experiments import (
+    build_mutation_error_audit,
+    mutation_error_evidence_sha256,
+    summarize_experiments,
+)
 
 
 def _result(
@@ -134,6 +139,8 @@ def test_experiment_summary_surfaces_repeats_stalls_and_tradeoffs(
         "stalled_scratches": 0,
         "current_inconclusive_sweeps": 0,
         "current_errored_variants": 0,
+        "audited_errored_variants": 0,
+        "mutation_error_audits": 0,
         "errors": 0,
         "strict_errors": 0,
     }
@@ -272,3 +279,87 @@ def test_strict_errors_only_apply_to_the_current_baseline_epoch(
     )
     assert current["summary"]["current_errored_variants"] == 1
     assert len(current["strict_errors"]) == 1
+
+
+def test_audited_invalid_plan_errors_remain_inconclusive_but_not_strict(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "scratches" / "audited" / "experiments.jsonl"
+    current_epoch = "b" * 64
+    failed = _result("failed", -1)
+    failed["status"]["state"] = "error"
+    _write_jsonl(
+        log,
+        [{"baseline_epoch": current_epoch, **_sweep("failed", [failed])}],
+    )
+    audit = build_mutation_error_audit(
+        log,
+        target_record=1,
+        current_epoch=current_epoch,
+        reason="replacement referenced a local that the plan never declared",
+        recorded_at="2026-08-13T00:00:00+00:00",
+    )
+    with log.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(audit) + "\n")
+
+    payload = summarize_experiments(
+        tmp_path,
+        current_epochs={log.parent.resolve(): current_epoch},
+    )
+
+    row = payload["rows"][0]
+    assert payload["strict_errors"] == []
+    assert row["current_errored_variants"] == 0
+    assert row["audited_errored_variants"] == 1
+    assert row["mutation_error_audits"] == 1
+    assert row["current_inconclusive_sweeps"] == 1
+    assert "audited-plan-errors" in row["flags"]
+    assert "stalled" not in row["flags"]
+
+
+def test_experiment_audit_command_appends_digest_bound_review(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    scratch = tmp_path / "scratches" / "audited"
+    scratch.mkdir(parents=True)
+    log = scratch / "experiments.jsonl"
+    current_epoch = "b" * 64
+    failed = _result("failed", -1)
+    failed["status"]["state"] = "error"
+    _write_jsonl(
+        log,
+        [{"baseline_epoch": current_epoch, **_sweep("failed", [failed])}],
+    )
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.load_scratch_config",
+        lambda directory: type("Config", (), {"directory": directory})(),
+    )
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.scratch_experiment_epoch",
+        lambda config, match_root: current_epoch,
+    )
+
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "experiment-audit",
+            str(scratch),
+            "--record",
+            "1",
+            "--reason",
+            "replacement referenced an undeclared local",
+            "--match-root",
+            str(tmp_path),
+            "--json",
+        ],
+    )
+
+    assert completed.exit_code == 0
+    appended = json.loads(completed.output)[0]
+    records = [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
+    assert records[-1] == appended
+    assert appended["kind"] == "mutation-error-audit"
+    assert appended["target_record"] == 1
+    assert appended["baseline_epoch"] == current_epoch
+    assert appended["error_evidence_sha256"] == mutation_error_evidence_sha256(records[0])

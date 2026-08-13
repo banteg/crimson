@@ -895,6 +895,58 @@ def cmd_match_experiments(
         raise typer.Exit(code=1)
 
 
+@match_app.command("experiment-audit")
+def cmd_match_experiment_audit(
+    directory: Path = typer.Argument(..., help="scratch directory containing experiments.jsonl"),
+    target_records: list[int] = typer.Option(
+        ...,
+        "--record",
+        min=1,
+        help="one-based mutation-sweep record to audit; repeat as needed",
+    ),
+    reason: str = typer.Option(
+        ...,
+        "--reason",
+        help="why the compile failures came from an invalid mutation plan",
+    ),
+    match_root: Path = typer.Option(
+        matchlib.DEFAULT_MATCH_ROOT,
+        "--match-root",
+        help="tools/match root",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="emit appended records as JSON"),
+) -> None:
+    """Append digest-bound audits for reviewed invalid-plan mutation errors."""
+    try:
+        if len(target_records) != len(set(target_records)):
+            raise ValueError("--record values must be unique")
+        config = matchlib.load_scratch_config(directory.resolve())
+        path = config.directory / match_experiments.EXPERIMENT_FILE
+        current_epoch = matchlib.scratch_experiment_epoch(config, match_root)
+        recorded_at = datetime.now(UTC).isoformat()
+        records = [
+            match_experiments.build_mutation_error_audit(
+                path,
+                target_record=target_record,
+                current_epoch=current_epoch,
+                reason=reason,
+                recorded_at=recorded_at,
+            )
+            for target_record in target_records
+        ]
+        with path.open("a", encoding="utf-8") as handle:
+            for record in records:
+                handle.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
+    except Exception as exc:
+        typer.echo(f"experiment audit failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+    if as_json:
+        typer.echo(json.dumps(records, indent=2, sort_keys=True))
+    else:
+        targets = ",".join(str(record["target_record"]) for record in records)
+        typer.echo(f"audited={path} records={targets} classification=invalid-mutation-plan")
+
+
 @match_app.command("profiles")
 def cmd_match_profiles(
     directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),

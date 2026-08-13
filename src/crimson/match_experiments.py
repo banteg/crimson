@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from collections import Counter
 from collections.abc import Collection, Mapping
@@ -8,6 +9,8 @@ from typing import Any, cast
 
 EXPERIMENT_FILE = "experiments.jsonl"
 EXPERIMENT_SCHEMA = 1
+MUTATION_ERROR_AUDIT_KIND = "mutation-error-audit"
+MUTATION_ERROR_AUDIT_CLASSIFICATION = "invalid-mutation-plan"
 EXPERIMENT_SORTS = frozenset(
     {
         "errors",
@@ -181,6 +184,123 @@ def _valid_epoch(value: object) -> bool:
     )
 
 
+def mutation_error_evidence(record: dict[str, Any]) -> tuple[dict[str, Any], ...]:
+    results = record.get("results")
+    if _experiment_kind(record) != "mutation-sweep" or not isinstance(results, list):
+        return ()
+    evidence: list[dict[str, Any]] = []
+    for result_index, result in enumerate(results, start=1):
+        if not isinstance(result, dict):
+            continue
+        status = result.get("status")
+        if not isinstance(status, dict) or status.get("state") != "error":
+            continue
+        evidence.append(
+            {
+                "result": result_index,
+                "label": result.get("label"),
+                "source_sha256": result.get("source_sha256"),
+                "error": status.get("error"),
+            },
+        )
+    return tuple(evidence)
+
+
+def mutation_error_evidence_sha256(record: dict[str, Any]) -> str:
+    evidence = mutation_error_evidence(record)
+    return hashlib.sha256(
+        json.dumps(evidence, separators=(",", ":"), sort_keys=True).encode(),
+    ).hexdigest()
+
+
+def build_mutation_error_audit(
+    path: Path,
+    *,
+    target_record: int,
+    current_epoch: str,
+    reason: str,
+    recorded_at: str,
+) -> dict[str, Any]:
+    records, errors = load_experiment_log(path)
+    if errors:
+        raise ValueError(errors[0])
+    if target_record < 1 or target_record > len(records):
+        raise ValueError(f"{path}: target record {target_record} does not exist")
+    target = records[target_record - 1]
+    if _experiment_kind(target) != "mutation-sweep":
+        raise ValueError(f"{path}:{target_record}: target is not a mutation sweep")
+    evidence = mutation_error_evidence(target)
+    if not evidence:
+        raise ValueError(f"{path}:{target_record}: target has no errored variants")
+    if target.get("baseline_epoch") != current_epoch:
+        raise ValueError(f"{path}:{target_record}: target does not belong to the current baseline epoch")
+    if not reason.strip():
+        raise ValueError("mutation error audit requires a reason")
+    if any(
+        _experiment_kind(record) == MUTATION_ERROR_AUDIT_KIND
+        and record.get("target_record") == target_record
+        for record in records
+    ):
+        raise ValueError(f"{path}:{target_record}: mutation errors are already audited")
+    return {
+        "schema": EXPERIMENT_SCHEMA,
+        "kind": MUTATION_ERROR_AUDIT_KIND,
+        "recorded_at": recorded_at,
+        "baseline_epoch": current_epoch,
+        "target_record": target_record,
+        "classification": MUTATION_ERROR_AUDIT_CLASSIFICATION,
+        "errored_variants": len(evidence),
+        "error_evidence_sha256": mutation_error_evidence_sha256(target),
+        "reason": reason.strip(),
+    }
+
+
+def _validated_mutation_error_audits(
+    records: list[dict[str, Any]],
+    *,
+    path: Path,
+    errors: list[str],
+) -> dict[int, dict[str, Any]]:
+    audits: dict[int, dict[str, Any]] = {}
+    for record_index, record in enumerate(records, start=1):
+        if _experiment_kind(record) != MUTATION_ERROR_AUDIT_KIND:
+            continue
+        context = f"{path}:{record_index}"
+        target_index = _non_negative_int(record.get("target_record"))
+        if target_index is None or target_index < 1 or target_index >= record_index:
+            errors.append(f"{context}: mutation error audit requires an earlier target_record")
+            continue
+        target = records[target_index - 1]
+        if _experiment_kind(target) != "mutation-sweep":
+            errors.append(f"{context}: audited target {target_index} is not a mutation sweep")
+            continue
+        evidence = mutation_error_evidence(target)
+        if not evidence:
+            errors.append(f"{context}: audited target {target_index} has no errored variants")
+            continue
+        if record.get("classification") != MUTATION_ERROR_AUDIT_CLASSIFICATION:
+            errors.append(f"{context}: unsupported mutation error classification")
+            continue
+        if not isinstance(record.get("reason"), str) or not str(record["reason"]).strip():
+            errors.append(f"{context}: mutation error audit requires a reason")
+            continue
+        if record.get("baseline_epoch") != target.get("baseline_epoch"):
+            errors.append(f"{context}: mutation error audit epoch differs from its target")
+            continue
+        expected_digest = mutation_error_evidence_sha256(target)
+        if record.get("error_evidence_sha256") != expected_digest:
+            errors.append(f"{context}: mutation error evidence digest differs from its target")
+            continue
+        if record.get("errored_variants") != len(evidence):
+            errors.append(f"{context}: audited errored_variants differs from its target")
+            continue
+        if target_index in audits:
+            errors.append(f"{context}: duplicate audit for target record {target_index}")
+            continue
+        audits[target_index] = record
+    return audits
+
+
 def _non_improving_sweep_inconclusive_reasons(
     record: dict[str, Any],
     *,
@@ -221,6 +341,11 @@ def summarize_experiment_log(
     classify_epochs: bool = False,
 ) -> tuple[dict[str, Any], list[str]]:
     records, errors = load_experiment_log(path)
+    mutation_error_audits = _validated_mutation_error_audits(
+        records,
+        path=path,
+        errors=errors,
+    )
     kinds: Counter[str] = Counter()
     current_kinds: Counter[str] = Counter()
     mutation_improvements: list[bool] = []
@@ -245,6 +370,7 @@ def summarize_experiment_log(
     exact_winners = 0
     current_inconclusive_sweeps = 0
     current_errored_variants = 0
+    audited_errored_variants = 0
 
     for record_index, record in enumerate(records, start=1):
         context = f"{path}:{record_index}"
@@ -344,7 +470,11 @@ def summarize_experiment_log(
                         _inferred_tradeoffs(typed_result, baseline_status),
                     )
             if is_current:
-                current_errored_variants += record_errored_variants
+                errors_audited = record_index in mutation_error_audits
+                if errors_audited:
+                    audited_errored_variants += record_errored_variants
+                else:
+                    current_errored_variants += record_errored_variants
                 if best_improves:
                     current_mutation_outcomes.append(True)
                     inconclusive_reasons = (
@@ -363,7 +493,7 @@ def summarize_experiment_log(
                     )
                 if inconclusive_reasons:
                     current_inconclusive_sweeps += 1
-                if record_errored_variants:
+                if record_errored_variants and not errors_audited:
                     strict_errors.append(
                         f"{context}: current mutation sweep has "
                         f"{record_errored_variants} errored variants",
@@ -400,6 +530,8 @@ def summarize_experiment_log(
         flags.append("metric-tradeoffs")
     if errored_variants:
         flags.append("variant-errors")
+    if audited_errored_variants:
+        flags.append("audited-plan-errors")
     if current_inconclusive_sweeps:
         flags.append("inconclusive-sweeps")
     if classify_epochs and records and not current_records:
@@ -436,6 +568,8 @@ def summarize_experiment_log(
             "no_improvement_streak": no_improvement_streak,
             "current_inconclusive_sweeps": current_inconclusive_sweeps,
             "current_errored_variants": current_errored_variants,
+            "audited_errored_variants": audited_errored_variants,
+            "mutation_error_audits": len(mutation_error_audits),
             "unique_specs": len(spec_shas),
             "repeated_spec_runs": repeated_spec_runs,
             "latest_recorded_at": latest_recorded_at,
@@ -532,6 +666,12 @@ def summarize_experiments(
             "current_errored_variants": sum(
                 int(row["current_errored_variants"]) for row in rows
             ),
+            "audited_errored_variants": sum(
+                int(row["audited_errored_variants"]) for row in rows
+            ),
+            "mutation_error_audits": sum(
+                int(row["mutation_error_audits"]) for row in rows
+            ),
             "errors": len(errors),
             "strict_errors": len(strict_errors),
         },
@@ -595,6 +735,8 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
             f"sweep-wins={summary['improving_sweeps']} exact={summary['exact_winners']} "
             f"stalled={summary['stalled_scratches']} "
             f"inconclusive={summary['current_inconclusive_sweeps']} "
+            f"audited-plan-errors={summary['mutation_error_audits']}/"
+            f"{summary['audited_errored_variants']} "
             f"errors={summary['errors']} strict-errors={summary['strict_errors']}"
         ),
     )

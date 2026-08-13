@@ -3795,6 +3795,8 @@ class TriageExperimentEvidence:
     no_improvement_streak: int = 0
     current_inconclusive_sweeps: int = 0
     current_errored_variants: int = 0
+    audited_errored_variants: int = 0
+    mutation_error_audits: int = 0
     strict_errors: int = 0
     flags: tuple[str, ...] = ()
     errors: int = 0
@@ -7966,6 +7968,8 @@ def triage_experiment_evidence(status: ScratchStatus | None) -> TriageExperiment
         no_improvement_streak=int(row["no_improvement_streak"]),
         current_inconclusive_sweeps=int(row["current_inconclusive_sweeps"]),
         current_errored_variants=int(row["current_errored_variants"]),
+        audited_errored_variants=int(row["audited_errored_variants"]),
+        mutation_error_audits=int(row["mutation_error_audits"]),
         strict_errors=int(row["strict_errors"]),
         flags=tuple(str(flag) for flag in row["flags"]),
         errors=len(errors),
@@ -8821,6 +8825,8 @@ def triage_row_payload(row: TriageRow) -> dict[str, Any]:
             "no_improvement_streak": row.experiments.no_improvement_streak,
             "current_inconclusive_sweeps": row.experiments.current_inconclusive_sweeps,
             "current_errored_variants": row.experiments.current_errored_variants,
+            "audited_errored_variants": row.experiments.audited_errored_variants,
+            "mutation_error_audits": row.experiments.mutation_error_audits,
             "strict_errors": row.experiments.strict_errors,
             "flags": list(row.experiments.flags),
             "errors": row.experiments.errors,

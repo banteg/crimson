@@ -18,6 +18,8 @@ MUTATION_SPEC_SCHEMA = 1
 class MutationReplacement:
     name: str
     text: str
+    requires: tuple[str, ...] = ()
+    conflicts: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,9 +160,29 @@ def _parse_replacement(value: object, *, site_name: str, index: int) -> Mutation
     text = value.get("text")
     if not isinstance(text, str):
         raise TypeError(f"site {site_name!r} replacement {index} text must be a string")
+    constraints: dict[str, tuple[str, ...]] = {}
+    for key in ("requires", "conflicts"):
+        raw_constraints = value.get(key, [])
+        if not isinstance(raw_constraints, list):
+            raise TypeError(
+                f"site {site_name!r} replacement {index} {key} must be non-empty strings",
+            )
+        parsed_constraints: list[str] = []
+        for item in raw_constraints:
+            if not isinstance(item, str) or not item:
+                raise TypeError(
+                    f"site {site_name!r} replacement {index} {key} "
+                    "must be non-empty strings",
+                )
+            parsed_constraints.append(item)
+        if len(parsed_constraints) != len(set(parsed_constraints)):
+            raise ValueError(f"site {site_name!r} replacement {index} repeats {key}")
+        constraints[key] = tuple(parsed_constraints)
     return MutationReplacement(
         name=_required_string(value.get("name"), context=f"site {site_name!r} replacement {index} name"),
         text=text,
+        requires=constraints["requires"],
+        conflicts=constraints["conflicts"],
     )
 
 
@@ -216,6 +238,34 @@ def load_mutation_spec(path: Path) -> MutationSpec:
                 occurrence=raw_occurrence,
             ),
         )
+    replacement_keys = {
+        f"{site.name}/{replacement.name}"
+        for site in sites
+        for replacement in site.replacements
+    }
+    for site in sites:
+        for replacement in site.replacements:
+            key = f"{site.name}/{replacement.name}"
+            constraints = (*replacement.requires, *replacement.conflicts)
+            unknown = sorted(set(constraints) - replacement_keys)
+            if unknown:
+                raise ValueError(f"{path}: replacement {key!r} references unknown choices {unknown}")
+            if key in constraints:
+                raise ValueError(f"{path}: replacement {key!r} cannot constrain itself")
+            same_site_requirements = [
+                required
+                for required in replacement.requires
+                if required.partition("/")[0] == site.name
+            ]
+            if same_site_requirements:
+                raise ValueError(
+                    f"{path}: replacement {key!r} cannot require another choice at the same site",
+                )
+            contradictory = sorted(set(replacement.requires) & set(replacement.conflicts))
+            if contradictory:
+                raise ValueError(
+                    f"{path}: replacement {key!r} both requires and conflicts with {contradictory}",
+                )
     return MutationSpec(sites=tuple(sites), sha256=hashlib.sha256(raw).hexdigest())
 
 
@@ -271,6 +321,24 @@ def _variant_counts_by_changes(
     return tuple(counts)
 
 
+def _valid_replacement_combination(
+    selected_sites: tuple[_ResolvedSite, ...],
+    replacement_indices: tuple[int, ...],
+) -> bool:
+    replacements = tuple(
+        site.site.replacements[index]
+        for site, index in zip(selected_sites, replacement_indices, strict=True)
+    )
+    keys = {
+        f"{site.site.name}/{replacement.name}"
+        for site, replacement in zip(selected_sites, replacements, strict=True)
+    }
+    return all(
+        set(replacement.requires) <= keys and not set(replacement.conflicts) & keys
+        for replacement in replacements
+    )
+
+
 def generate_mutation_variants(
     source_text: str,
     spec: MutationSpec,
@@ -284,13 +352,33 @@ def generate_mutation_variants(
         raise ValueError("max_variants must be at least 1")
     resolved = _resolve_sites(source_text, spec)
     max_changes = min(max_changes, len(resolved))
-    possible_by_changes = _possible_variant_counts(resolved, max_changes)
+    constrained = any(
+        replacement.requires or replacement.conflicts
+        for site in resolved
+        for replacement in site.site.replacements
+    )
+    possible_by_changes = (
+        [0] * max_changes
+        if constrained
+        else list(_possible_variant_counts(resolved, max_changes))
+    )
     variants: list[MutationVariant] = []
 
     for change_count in range(1, max_changes + 1):
         for selected_sites in itertools.combinations(resolved, change_count):
             alternatives = [range(len(site.site.replacements)) for site in selected_sites]
             for replacement_indices in itertools.product(*alternatives):
+                if constrained:
+                    if not _valid_replacement_combination(selected_sites, replacement_indices):
+                        continue
+                    possible_by_changes[change_count - 1] += 1
+                if len(variants) == max_variants:
+                    if constrained:
+                        continue
+                    return MutationBatch(
+                        variants=tuple(variants),
+                        possible_by_changes=tuple(possible_by_changes),
+                    )
                 edits: list[tuple[int, int, str]] = []
                 choices: list[MutationChoice] = []
                 for site, replacement_index in zip(selected_sites, replacement_indices, strict=True):
@@ -315,14 +403,9 @@ def generate_mutation_variants(
                         choices=tuple(choices),
                     ),
                 )
-                if len(variants) == max_variants:
-                    return MutationBatch(
-                        variants=tuple(variants),
-                        possible_by_changes=possible_by_changes,
-                    )
     return MutationBatch(
         variants=tuple(variants),
-        possible_by_changes=possible_by_changes,
+        possible_by_changes=tuple(possible_by_changes),
     )
 
 
