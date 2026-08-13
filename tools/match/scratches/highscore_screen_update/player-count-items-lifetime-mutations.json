@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "player-count-items-before-static",
+      "find": "        static highscore_list_widget_t player_count_list;\n        {\n            char *player_count_items[2] = {\n                \"1 player\",\n                \"2 players\",\n            };",
+      "replacements": [
+        {
+          "name": "initialize-before-static",
+          "text": "        char *player_count_items[2] = {\n            \"1 player\",\n            \"2 players\",\n        };\n        static highscore_list_widget_t player_count_list;\n        {"
+        }
+      ]
+    }
+  ]
+}

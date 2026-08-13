@@ -506,3 +506,23 @@ Candidate instructions remain 1,969/2,004, the prefix remains 45, and the
 reference audit remains `594/0/4`. Focused validation passes. Retained source
 SHA-256:
 `6a26b945e7b298a18b77089fbe82778726cc0b3bbfd9bbcd516165691889d9f9`.
+
+## Player-count item lifetime replay (2026-08-13)
+
+The second-largest unmatched CFG island is native block 138 at
+`0x00443623..0x0044369c`. Native stores the two local item pointers for
+`"1 player"` and `"2 players"` before entering the player-count list's
+local-static initialization guard, whereas the current candidate initializes
+the array after that guard. This is the same lifetime family rejected on an
+older baseline above, so it was replayed once against the current source rather
+than treated as a new recovery.
+
+The complete one-variant
+`player-count-items-lifetime-mutations.json` plan has SHA-256
+`98b24c5911cc79a94d12a678448e185e6667ccdc9cabad8288967e25caedc930`.
+Moving the initialized array before the static guard loses `52.523534`
+fuzzy-weighted bytes, collapses the exact prefix from 45 instructions to one,
+and worsens references from `594/0/4` to `586/0/5`. No source change is
+retained. The current-baseline record is complete and error-free; the updated
+`experiments.jsonl` SHA-256 is
+`10bdf8f2902eba6357813259e6c08c83f781c936dbb3bc960d91df7dee4999ab`.
