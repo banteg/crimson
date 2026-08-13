@@ -74,6 +74,7 @@ from crimson.match import (
     diff_regions,
     disassemble_normalized_function,
     evaluate_profile_matrix,
+    evaluate_scratch,
     evaluate_source_overlay,
     evaluate_source_probe,
     extract_object_function,
@@ -5391,6 +5392,104 @@ def test_msvc7_platform_header_fallbacks_compile(tmp_path: Path) -> None:
 
     assert obj_path.is_file()
     assert extract_object_function(parse_coff_object(obj_path.read_bytes())).data
+
+
+@pytest.mark.parametrize(
+    ("function", "symbol", "source", "reference_aliases"),
+    (
+        (
+            "0x10032fc1",
+            "grim_jpeg_pass2_fs_dither",
+            "grim_jpeg_quant2_source.c",
+            (("grim_jpeg_fill_inverse_cmap", "d3dx_jpeg_fill_inverse_cmap"),),
+        ),
+        (
+            "0x10033505",
+            "grim_jpeg_select_component_color_counts",
+            "grim_jpeg_quant1_source.c",
+            (
+                (
+                    "?rgb_order@?1??grim_jpeg_select_component_color_counts@@9@9",
+                    "d3dx_jpeg_quant1_rgb_order",
+                ),
+            ),
+        ),
+        (
+            "0x10033da6",
+            "grim_jpeg_start_pass_one_quantizer",
+            "grim_jpeg_quant1_source.c",
+            (
+                ("grim_jpeg_color_quantize", "d3dx_jpeg_color_quantize"),
+                ("grim_jpeg_color_quantize3", "d3dx_jpeg_color_quantize3"),
+                ("grim_jpeg_quantize_ordered_dither", "d3dx_jpeg_quantize_ordered_dither"),
+                ("grim_jpeg_quantize3_ordered_dither", "d3dx_jpeg_quantize3_ordered_dither"),
+                ("grim_jpeg_quantize_fs_dither", "d3dx_jpeg_quantize_fs_dither"),
+                ("grim_jpeg_create_color_index", "d3dx_jpeg_create_color_index"),
+                (
+                    "grim_jpeg_create_ordered_dither_tables",
+                    "d3dx_jpeg_create_ordered_dither_tables",
+                ),
+                ("grim_jpeg_alloc_fs_workspace_quant1", "d3dx_jpeg_alloc_fs_workspace"),
+                ("grim_jpeg_zero_far", "d3dx_jpeg_zero_far"),
+            ),
+        ),
+        (
+            "0x100332e1",
+            "grim_jpeg_start_pass_two_quantizer",
+            "grim_jpeg_quant2_source.c",
+            (
+                ("grim_jpeg_prescan_quantize", "d3dx_jpeg_prescan_quantize"),
+                (
+                    "grim_jpeg_finish_pass_one_quant2",
+                    "d3dx_jpeg_finish_quantizer_pass_one",
+                ),
+                ("grim_jpeg_pass2_no_dither", "d3dx_jpeg_pass2_no_dither"),
+                ("grim_jpeg_pass2_fs_dither", "d3dx_jpeg_pass2_fs_dither"),
+                ("grim_jpeg_finish_pass_two_quant2", "grim_jpeg_source_noop"),
+                ("grim_jpeg_zero_far", "d3dx_jpeg_zero_far"),
+                ("grim_jpeg_init_error_limit", "d3dx_jpeg_init_error_limit"),
+            ),
+        ),
+    ),
+)
+def test_xp_ddk_9178_reproduces_d3dx_quantizer_controls(
+    tmp_path: Path,
+    function: str,
+    symbol: str,
+    source: str,
+    reference_aliases: tuple[tuple[str, str], ...],
+) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    match_root = repo_root / "tools" / "match"
+    compiler_bin = match_root / "compilers" / "msvc7.0ddk" / "Bin"
+    compiler = next(
+        (path for path in (compiler_bin / "CL.EXE", compiler_bin / "cl.exe") if path.is_file()),
+        None,
+    )
+    wibo = match_root / "bin" / "wibo"
+    if compiler is None or not wibo.is_file():
+        pytest.skip("local Windows XP DDK build-9178 compiler and wibo are required")
+
+    config = ScratchConfig(
+        directory=tmp_path / symbol,
+        function=function,
+        image="grim.dll",
+        compiler="msvc7.0ddk",
+        cflags="/O1 /G6 /W3 /GR- /MD",
+        source=str(match_root / "shared" / source),
+        end_va=None,
+        symbol=symbol,
+        note="xp-ddk-9178-source-control",
+        reference_aliases=reference_aliases,
+    )
+    config.directory.mkdir()
+
+    status = evaluate_scratch(config, match_root)
+
+    assert status.error is None
+    assert status.state == "match"
+    assert status.masked_unresolved == 0
+    assert status.masked_mismatches == 0
 
 
 def test_compile_scratch_stages_auto_inline_boundaries(

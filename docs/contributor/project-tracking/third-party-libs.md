@@ -42,9 +42,30 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
   those, 118 EXE functions and 548 Grim functions identify a single archive
   symbol.
 
+- Evidence: the archive's COFF members contain 134 `Utc13_CPP` product-29
+  build-9178 records, one `Utc13_C` product-28 build-9178 record, one older
+  product-28 build-8685 record, and one product-18 build-8444 assembly record.
+  The exact Windows XP DDK 5.1.2600 x86 compiler has C1/C1XX 13.00.9176, C2
+  13.00.9178, and LINK/ML 7.00.9210. This identifies the archive's 9178 code as
+  XP-DDK/VC7-generation provider output, not a VC6 C2 stamp or evidence of a
+  partial game-source migration.
+
+- Evidence: product 25 build 9210 is `Implib700` metadata from the same VC7
+  tool generation. The final images instead record `Linker600` product 4 build
+  8447 and optional-header linker version 6.0, so VC7-generated input objects
+  and a VC6 final link are compatible rather than contradictory.
+
 - Status: exact DirectX 8.1 SDK archive confirmed for both images. The
   remaining unmatched functions are a boundary/symbol-recovery problem, not a
   reason to recreate D3DX from decompilation.
+
+- Status: the exact build-9178 compiler was replayed against the four faithful
+  IJG source reconstructions that previously differed only in byte-clear or
+  independent-store scheduling. All four now compile byte-exact (1,285 bytes,
+  453 instructions, and 19 resolved references). Their archive-member
+  scratches remain canonical because they preserve the original objects
+  directly. The same compiler produced no exact or improved profile across
+  the 61 current game-owned WIPs.
 
 - Native provider: both images now link the pinned archive.
   Crimsonland resolves its recovered `D3DXVec2Normalize` name to the

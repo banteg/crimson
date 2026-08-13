@@ -3,13 +3,13 @@
 Native target: `grim.dll` at `0x10033da6`, 202 bytes and 72 normalized
 instructions.
 
-The recovered IJG 6a pass initializer selects the non-dithered, ordered, or
-Floyd-Steinberg quantizer, creates the color index or ordered-dither tables as
-needed, clears the FS workspaces, and resets row parity. All nine archive-local
-references resolve.
+The pinned DirectX 8.1 archive identifies this body in `jquant1.obj` and
+records `@comp.id=0x001d23da` (product 29, build 9178). The canonical scratch
+uses that original member directly and is byte-exact with all nine
+archive-local references resolved.
 
-The local profile reproduces 71 of 72 aligned instructions. Build 9178 clears
-the byte-sized odd-row flag with `and` before publishing the method pointer;
-the available compiler schedules an equivalent `mov` clear after that store.
-The source is retained as `semantic-complete` with a `compiler` residual and no
-volatile scheduling constraint.
+The earlier faithful IJG 6a source reconstruction reproduced 71 of 72 aligned
+instructions under the 13.10.3077 surrogate. The exact Windows XP DDK
+13.00.9176/9178 profile emits the native `and` clear before the method-pointer
+store and reproduces all 202 bytes and 72 instructions without a scheduling
+constraint.

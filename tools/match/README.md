@@ -44,18 +44,27 @@ engine backend can replace the whole function.
 
 ## Toolchain
 
-Current PE evidence points to a VC6-family final link for
-`crimsonland.exe`:
+Current PE evidence identifies a VC6-family final link for both images, with
+compiler records inherited from several input providers:
 
-- PE optional-header linker version is `6.0`.
-- its Rich header contains 137 product-10/build-9782 C records and 34
-  product-11/build-9782 C++ records, consistent with the VC6 SP6 code
-  generator.
+- The PE optional-header linker version is `6.0`, and the Rich header records
+  product 4 (`Linker600`) build 8447. Product 25 build 9210 is `Implib700`
+  input metadata, not the final linker.
+- Products 10 and 11 are the `Utc12_C` and `Utc12_CPP` object-producer IDs.
+  They are one compiler-pipeline stamp per object, not separate C1/C1XX
+  frontend records paired with a second C2 record. The executable contains
+  137 product-10/build-9782 C records and 34 product-11/build-9782 C++
+  records, consistent with VC6 SP6-generated objects.
+- Products 28 and 29 are `Utc13_C` and `Utc13_CPP`. Build 9178 is the
+  VC7-generation `c2.dll` 13.00.9178 shipped in the Windows XP DDK 5.1.2600,
+  paired with the 13.00.9176 frontend and 7.00.9210 tool family. These records
+  are not a hidden VC6 backend companion to the build-9782 objects.
 - controlled Processor Pack compiles instead stamp C and C++ objects as
   product 48 and 49 with build 9044. A stock VC6 link preserves those distinct
   records, and neither occurs in `crimsonland.exe`.
 - the image has a 2011-02-01 PE timestamp, so this looks like an old-code
-  toolchain used for a later packaged/relinked binary.
+  toolchain used for a later packaged or relinked binary. The timestamp alone
+  does not prove that a relink occurred.
 
 The Rich headers also contain import-library and static-object records, so do
 not treat every C/C++ product record as game-code compiler provenance. In
@@ -109,6 +118,49 @@ Platform SDK. The repository's `third_party/headers/` fallbacks therefore
 provide the Win32 declarations used by the corpus and preserve both C vtable
 declarations and C++ COM inheritance. The focused matcher test compiles that
 surface, including inherited Direct3D calls, with the sparse profile.
+
+### XP DDK build-9178 attribution control
+
+The exact DirectX 8.1 `d3dx8.lib` already pinned by this repository carries
+134 product-29/build-9178 C++ members, one product-28/build-9178 C member, one
+older product-28/build-8685 member, and one product-18/build-8444 assembly
+member. Its code and relocations match the native D3DX ranges in both images.
+The large `Utc13` population is therefore established provider ancestry; it
+does not imply that Grim2D or game source was partially migrated to VC7.
+
+The preserved Windows XP DDK 5.1.2600 media was verified locally. The outer
+archive SHA-512 is
+`9a71263f003382d8713dbd02b0185e201b2e460e975bc611cbe1f2d708bf3fb0903666d5f84577ec63c063398e7023d2da3f9b2b829f5ac0fdd297f2f97eaf13`;
+the contained ISO SHA-512 is
+`2ed5128aeda9b4708523d1f93b3e26d20a00b22531da7530c4eac22b61ec94440c54661b55e657097c9c0ce740c972c332b3958d2ede2e04305047f7494f5cac`.
+Its own `X86DBINS.INF` maps the following phase files:
+
+| file | version | MD5 |
+| --- | ---: | --- |
+| `cl.exe` | 13.00.9176 | `63d33681a8ea99f3d9a871cfdf5f0e02` |
+| `c1.dll` | 13.00.9176 | `71a08ff8448e990e5dd65f16488e1935` |
+| `c1xx.dll` | 13.00.9176 | `ee48a14b0757d5a39d587058d2bdd4ae` |
+| `c2.dll` | 13.00.9178 | `d8388fb47144f176f1a4f808100b4da4` |
+| `link.exe` | 7.00.9210 | `0f614a5fafdf36a155fe83989189e1e4` |
+| `ml.exe` | 7.00.9210 | `78aac4b5784393fbb4a4b51d1a02d231` |
+
+The ignored local profile is named `msvc7.0ddk`; the older `msvc7.0` profile
+actually reports 13.10.3077 and is only a VC7.1 code-generation surrogate.
+Only the compiler-phase binaries above are claimed exact. The profile reuses
+the matcher's reconstruction-header surface, with a private `minwindef.h`
+shadow that spells 64-bit integers as `__int64` for CL 13.00; it is not a claim
+that the game's complete original DDK/SDK include environment was recovered.
+Replaying the four source reconstructions that had isolated build-9178
+scheduling debt makes all four exact under `msvc7.0ddk /O1 /G6`: the
+Floyd-Steinberg mapper, component-color selector, and both quantizer pass
+initializers reproduce 1,285 bytes and 453 instructions with all 19 references
+resolved. Their canonical scratches remain bound to the original archive
+members, which is stronger provenance than a recompile.
+
+A complete compiler scan of the current 61 game-owned WIPs produced zero exact
+or improved build-9178 profiles and zero evaluation errors. Do not sweep or
+promote `msvc7.0ddk` for the port scope without new object-local evidence;
+retain `msvc6.5 /O2 /GB` as the game-code search profile.
 
 ### Grim build-8047 attribution control
 

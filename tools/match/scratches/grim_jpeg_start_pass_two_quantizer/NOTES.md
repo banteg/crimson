@@ -3,13 +3,12 @@
 Native target: `grim.dll` at `0x100332e1`, 258 bytes and 92 normalized
 instructions.
 
-The recovered IJG 6a initializer selects prescan or second-pass methods,
-validates the colormap, allocates and clears Floyd-Steinberg state, initializes
-the error limiter, and clears all 32 histogram planes when required. All eight
-archive-local references resolve and the candidate has the exact instruction
-count at 97.83%.
+The pinned DirectX 8.1 archive identifies this body in `jquant2.obj` and
+records `@comp.id=0x001d23da` (product 29, build 9178). The canonical scratch
+uses that original member directly and is byte-exact with all eight
+archive-local references resolved.
 
-Two equivalent byte clears are the complete residual: build 9178 emits `and`
-for `on_odd_row` and `needs_zeroed`, while CL 13.10.3077 emits `mov`. The
-official source remains `semantic-complete` with a `compiler` residual; it is
-not rewritten as bitwise self-mutation merely to select those opcodes.
+The earlier faithful IJG 6a source reconstruction reached 97.83% under the
+13.10.3077 surrogate. The exact Windows XP DDK 13.00.9176/9178 profile emits
+the native `and` clears for `on_odd_row` and `needs_zeroed` and reproduces all
+258 bytes and 92 instructions without bitwise source mutation.

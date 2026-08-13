@@ -155,11 +155,12 @@ colormap construction, ordered-dither table construction, the generic and
 three-component plain and ordered kernels, and quantizer initialization. They
 come directly from IJG 6a's `jquant1.c`, with object-local helpers and the RGB
 preference and base-dither tables bound to their pinned archive addresses. The
-installed `msvc7.0` profile actually reports CL 13.10.3077; it is a
-code-generation surrogate for the provider's product-29/build-9178 objects,
-not that exact backend. Four faithful neighboring bodies remain explicitly
-semantic-complete because that available compiler differs in one-byte clear
-selection, independent-store scheduling, or inner-loop register allocation.
+installed `msvc7.0` profile actually reports CL 13.10.3077 and was only a
+code-generation surrogate for the provider's product-29/build-9178 objects.
+The exact Windows XP DDK 13.00.9176/9178 profile now reproduces the component
+color selector and one-pass initializer byte-for-byte from the same faithful
+source. Their canonical scratches use the pinned archive members directly,
+preserving stronger original-object provenance.
 
 Eleven two-pass quantizer routines recover the histogram prescan, box
 tightening and median cut, representative-color and palette selection,
@@ -170,9 +171,12 @@ those exact bodies, with every object-local reference bound through the
 uniquely matching `jquant2.obj` member. Its no-op second-pass finalizer folds
 to the already-counted shared return leaf rather than becoming a duplicate
 scratch. The
-full Floyd-Steinberg mapper and pass initializer remain semantic-complete at
-99.03% and 97.83% respectively; their exact instruction counts and references
-leave only build-9178 byte-clear selection and scheduling as compiler debt.
+full Floyd-Steinberg mapper and pass initializer were semantic-complete at
+99.03% and 97.83% respectively under the old 13.10.3077 surrogate; their exact
+instruction counts and references correctly isolated build-9178 byte-clear
+selection and scheduling. The exact XP-DDK profile makes both source controls
+byte-exact, while the canonical scratches retain the original `jquant2.obj`
+archive member.
 
 Eight separately emitted JAZ one-pass quantizer bodies now come directly from
 the pinned IJG 6a `jquant1.c`: component color-count selection, color-index

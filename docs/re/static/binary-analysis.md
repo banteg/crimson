@@ -11,7 +11,8 @@ Static analysis findings for `crimsonland.exe` and `grim.dll` to aid decompilati
 
 | Property | crimsonland.exe | grim.dll |
 |----------|-----------------|----------|
-| Compiler family | Visual C++ 6 | Visual C++ 6, with older static/import-library members |
+| Final linker | Visual C++ 6, `Linker600` 6.00.8447 | Visual C++ 6, `Linker600` 6.00.8447 |
+| Compiler inputs | VC6 `Utc12` plus VC7-generation provider objects | VC6 `Utc12` plus VC7-generation provider objects |
 | PE timestamp | 2011-02-01 07:13:37 UTC | 2011-02-01 07:25:24 UTC |
 | Image base | 0x00400000 (fixed) | 0x10000000 |
 | Entry point | 0x00463026 | 0x1000a9e9 |
@@ -28,6 +29,12 @@ superseded by object-level evidence:
 - the executable's optional-header linker version is 6.0;
 - its Rich header contains product-10/product-11 build-9782 records consistent
   with the VC6 SP6 code generator;
+- product-28/product-29 build-9178 records identify VC7-generation objects
+  produced by the Windows XP DDK's 13.00.9176/9178 compiler, while product 25
+  build 9210 is `Implib700` metadata rather than the final linker;
+- the exact pinned DirectX 8.1 `d3dx8.lib` carries those build-9178 compiler
+  records and matches the native D3DX ranges, establishing library-provider
+  ancestry without implying a partial game-source migration;
 - controlled Processor Pack objects use product 48/49 build 9044, which is
   absent from the executable; and
 - the build-8047 records in `grim.dll` can be reproduced from members of the
@@ -37,9 +44,11 @@ superseded by object-level evidence:
 An authentic VS6 RTM compile reports build 8168, ruling out RTM as a hidden
 8047 compiler. Corpus-wide comparison also produces identical output from the
 available 8966 and 9782 optimizers across all current Crimsonland and Grim
-scratches. Matching therefore uses `msvc6.5 /O2 /GB` as the compact canonical
-profile; alternate compiler profiles are search controls, not provenance
-claims.
+scratches. The exact XP-DDK build-9178 compiler closes four historical D3DX
+source controls, but produces no exact or improved result across the current
+61 game-owned WIPs. Matching therefore uses `msvc6.5 /O2 /GB` as the compact
+canonical profile; alternate compiler profiles are search controls, not
+provenance claims.
 
 See `tools/match/README.md` in the repository for the compiler inventory,
 hashes, Rich-header controls, and current corpus comparison.

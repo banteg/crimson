@@ -3,14 +3,12 @@
 Native target: `grim.dll` at `0x10032fc1`, 622 bytes and 206 normalized
 instructions.
 
-The recovered IJG 6a mapper alternates scan direction, applies the error-limit
-table, uses the inverse-colormap cache, and propagates all three components'
-Floyd-Steinberg errors. Its archive-local inverse-map reference resolves and
-the available compiler emits the exact 206-instruction count at 99.03%.
+The pinned DirectX 8.1 archive identifies this body in `jquant2.obj` and
+records `@comp.id=0x001d23da` (product 29, build 9178). The canonical scratch
+uses that original member directly and is byte-exact with its archive-local
+inverse-map reference resolved.
 
-The only differing region is the independent odd-row byte clear: build 9178
-selects `and` and schedules it before the right-to-left pointer adjustment,
-while CL 13.10.3077 selects `mov` and schedules it after that adjustment. The
-official source order is retained as `semantic-complete` with a `compiler`
-residual; no volatile store or artificial dependency forces the provider's
-schedule.
+The earlier faithful IJG 6a source reconstruction reached 99.03% under the
+13.10.3077 surrogate. The exact Windows XP DDK 13.00.9176/9178 profile selects
+the native `and` clear and schedule and reproduces all 622 bytes and 206
+instructions with no source shaping.
