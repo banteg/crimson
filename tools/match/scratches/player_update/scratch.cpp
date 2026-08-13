@@ -1789,10 +1789,10 @@ extern "C" void player_update(void)
             } else if (player->weapon_id == WEAPON_ID_PLASMA_SHOTGUN) {
                 int pellet_count = 14;
                 do {
-                    scratch_pos.x = movement_input.x + player_position->x;
-                    scratch_pos.y = movement_input.y + player_position->y;
+                    move_delta.x = movement_input.x + player_position->x;
+                    move_delta.y = movement_input.y + player_position->y;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos,
+                        &move_delta,
                         (float)((crt_rand() & 0xff) - 0x80) * 0.002f
                             + angle_step,
                         PROJECTILE_TYPE_PLASMA_MINIGUN,

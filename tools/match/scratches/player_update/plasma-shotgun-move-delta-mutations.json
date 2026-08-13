@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-shotgun-loop-move-delta",
+      "find": "                    scratch_pos.x = movement_input.x + player_position->x;\n                    scratch_pos.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &scratch_pos,\n                        (float)((crt_rand() & 0xff) - 0x80) * 0.002f\n                            + angle_step,\n                        PROJECTILE_TYPE_PLASMA_MINIGUN,\n                        owner_id);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-x-before-y",
+          "text": "                    move_delta.x = movement_input.x + player_position->x;\n                    move_delta.y = movement_input.y + player_position->y;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)((crt_rand() & 0xff) - 0x80) * 0.002f\n                            + angle_step,\n                        PROJECTILE_TYPE_PLASMA_MINIGUN,\n                        owner_id);"
+        },
+        {
+          "name": "reuse-move-delta-y-before-x",
+          "text": "                    move_delta.y = movement_input.y + player_position->y;\n                    move_delta.x = movement_input.x + player_position->x;\n                    int projectile_index = projectile_spawn(\n                        &move_delta,\n                        (float)((crt_rand() & 0xff) - 0x80) * 0.002f\n                            + angle_step,\n                        PROJECTILE_TYPE_PLASMA_MINIGUN,\n                        owner_id);"
+        }
+      ]
+    }
+  ]
+}

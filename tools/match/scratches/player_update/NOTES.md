@@ -1197,3 +1197,30 @@ value lifetime. Do not reopen the old edge conflict or add, widen, or hoist
 locals: the frame already matches, and such edits can only reshuffle a correct
 allocation. Preserve the existing exact prefix and `805/0/2` reference audit as
 hard guardrails.
+
+## Plasma Shotgun pellet-position lifetime
+
+The Plasma Shotgun loop supplies another independent use of the native
+`var_10` position object. At `0x0041733b..0x0041737f`, native builds the
+pellet position at the same `esp+0x48` base used by the recovered
+`move_delta` lifetime in the neighboring projectile branches. The previous
+scratch instead passed `scratch_pos` from `esp+0x40`. Both values are dead at
+this boundary, so reusing `move_delta` recovers the observed non-overlapping
+object lifetime without introducing an alias or changing behavior.
+
+`plasma-shotgun-move-delta-mutations.json` evaluates both component orders.
+The retained X-before-Y source spelling moves the candidate position to the
+native stack object and gains `11.791827852995993` fuzzy-weighted bytes with
+unchanged instruction count, prefix, and references. The Y-before-X spelling
+loses `15.722437137332236` weighted bytes and one aligned reference, so the
+complete 2/2 sweep selects the native-backed X-before-Y source form. The spec
+SHA-256 is
+`e2f612ab367df86ff0670174fb5b0b72e9e4ee7aa93d2ec7b89a8776d9ddf303`.
+
+The canonical build is now 4,066/4,206 instructions at
+`63.68471953578336%`: 10,353.224854932301 weighted bytes, a
+5,903.775145067699-byte gap, prefix 7, and `805/0/2` references. The retained
+source SHA-256 is
+`e360e8b623467388f6779bb5bf58e3dc4c16339e2130ab862567aefb4a0bae4b`;
+the experiment ledger SHA-256 is
+`8234fe00b1621d90c167f06ce805b53d2165491f9cbe068403d89a5bdbb4676e`.
