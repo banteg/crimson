@@ -979,3 +979,32 @@ The retained source SHA-256 is
 `55b39c9935bb4ed7692a585685325756b86e6b906f5dbdaffbaed6ec65460070`;
 the mutation-spec SHA-256 is
 `4ccd659e78fcb160927fd58af49c0692a9c1d9f6b769aa26bc61b94a8def8675`.
+
+## Root velocity and template-0x11 publication bounds (2026-08-14)
+
+Four current-baseline menus test whether the successful template-0x13 root
+tint recovery generalizes to the root velocity or the template-0x11 lizard
+family. It does not. Every one of the seven root-velocity Y publication
+placements deletes four candidate instructions, loses 2,849.376128 weighted
+bytes, and destroys the 23-instruction exact prefix. This strongly preserves
+the existing aggregate zero-velocity publication boundary.
+
+The four template-0x11 tint-construction placements all regress: the two
+earliest moves lose 4.461709 weighted bytes, construction after health loses
+26.770253, and construction before the type store loses 100.121989 while
+adding one instruction. Of six tint-publication placements, after health,
+size, or speed is byte-identical; the other three lose 4.461709 to 142.774684
+weighted bytes. Of seven child-flag schedules, three are byte-identical and
+the rest lose 4.461709 or 8.923418 bytes. References remain `357/0/1` except
+for the most disruptive tint publication, which loses two aligned references.
+
+No source change is retained. The baseline remains 88.76582278481012%,
+12,515.093354430379/14,099 weighted bytes, 3,161/3,159 instructions, prefix 23,
+and `357/0/1` references. Recorded spec SHA-256 values are
+`cebc65c6924862f848035431feaf89764be29f784e66f806cdcd55a95652ff49`,
+`9107dfb1333b350bfdd0b8fcc95d7e28a2ba18d9e54abda97bcec5a569e86ddb`,
+`662ddf3ece07f97a9b0393b13d0c3c50fb3480bf57a53f9eaf9a03a927e53f40`,
+and
+`7785eb5c8a2cc3c733b33e30030c4c694ea957ef4ad7bdf42af4a9409f26c456`.
+The updated experiment log SHA-256 is
+`a023c9c44210fba34ef5fcfe99eeb4fca065acf329f2779cfdb4429dfa81f215`.

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "root-velocity-y-publication",
+      "find": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;\n    creature->collision_flag = 0;\n    creature->collision_timer = 0.0f;\n    creature->active = 1;\n    creature->force_target = 0;\n    creature->state_flag = 1;\n    creature->lifecycle_stage = 16.0f;",
+      "replacements": [
+        {
+          "name": "split-before-flags",
+          "text": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    creature->velocity.x = root_velocity.x;\n    creature->velocity.y = root_velocity.y;\n    creature->collision_flag = 0;\n    creature->collision_timer = 0.0f;\n    creature->active = 1;\n    creature->force_target = 0;\n    creature->state_flag = 1;\n    creature->lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "y-after-collision-flag",
+          "text": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    creature->velocity.x = root_velocity.x;\n    creature->collision_flag = 0;\n    creature->velocity.y = root_velocity.y;\n    creature->collision_timer = 0.0f;\n    creature->active = 1;\n    creature->force_target = 0;\n    creature->state_flag = 1;\n    creature->lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "y-after-collision-timer",
+          "text": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    creature->velocity.x = root_velocity.x;\n    creature->collision_flag = 0;\n    creature->collision_timer = 0.0f;\n    creature->velocity.y = root_velocity.y;\n    creature->active = 1;\n    creature->force_target = 0;\n    creature->state_flag = 1;\n    creature->lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "y-after-active",
+          "text": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    creature->velocity.x = root_velocity.x;\n    creature->collision_flag = 0;\n    creature->collision_timer = 0.0f;\n    creature->active = 1;\n    creature->velocity.y = root_velocity.y;\n    creature->force_target = 0;\n    creature->state_flag = 1;\n    creature->lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "y-after-force-target",
+          "text": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    creature->velocity.x = root_velocity.x;\n    creature->collision_flag = 0;\n    creature->collision_timer = 0.0f;\n    creature->active = 1;\n    creature->force_target = 0;\n    creature->velocity.y = root_velocity.y;\n    creature->state_flag = 1;\n    creature->lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "y-after-state-flag",
+          "text": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    creature->velocity.x = root_velocity.x;\n    creature->collision_flag = 0;\n    creature->collision_timer = 0.0f;\n    creature->active = 1;\n    creature->force_target = 0;\n    creature->state_flag = 1;\n    creature->velocity.y = root_velocity.y;\n    creature->lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "y-after-lifecycle-stage",
+          "text": "    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    creature->velocity.x = root_velocity.x;\n    creature->collision_flag = 0;\n    creature->collision_timer = 0.0f;\n    creature->active = 1;\n    creature->force_target = 0;\n    creature->state_flag = 1;\n    creature->lifecycle_stage = 16.0f;\n    creature->velocity.y = root_velocity.y;"
+        }
+      ]
+    }
+  ]
+}

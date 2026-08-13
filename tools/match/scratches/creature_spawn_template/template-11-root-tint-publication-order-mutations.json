@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-11-root-tint-publication",
+      "find": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->health = 1500.0f;\n            creature->move_speed = 2.1f;\n            creature->reward_value = 1000.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->size = 69.0f;\n            creature->contact_damage = 150.0f;\n            creature->max_health = 1500.0f;",
+      "replacements": [
+        {
+          "name": "before-health",
+          "text": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            *(creature_tint_t *)&creature->color = tint;\n            creature->health = 1500.0f;\n            creature->move_speed = 2.1f;\n            creature->reward_value = 1000.0f;\n            creature->size = 69.0f;\n            creature->contact_damage = 150.0f;\n            creature->max_health = 1500.0f;"
+        },
+        {
+          "name": "after-health",
+          "text": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->health = 1500.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->move_speed = 2.1f;\n            creature->reward_value = 1000.0f;\n            creature->size = 69.0f;\n            creature->contact_damage = 150.0f;\n            creature->max_health = 1500.0f;"
+        },
+        {
+          "name": "after-speed",
+          "text": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->health = 1500.0f;\n            creature->move_speed = 2.1f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->reward_value = 1000.0f;\n            creature->size = 69.0f;\n            creature->contact_damage = 150.0f;\n            creature->max_health = 1500.0f;"
+        },
+        {
+          "name": "after-size",
+          "text": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->health = 1500.0f;\n            creature->move_speed = 2.1f;\n            creature->reward_value = 1000.0f;\n            creature->size = 69.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->contact_damage = 150.0f;\n            creature->max_health = 1500.0f;"
+        },
+        {
+          "name": "after-damage",
+          "text": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->health = 1500.0f;\n            creature->move_speed = 2.1f;\n            creature->reward_value = 1000.0f;\n            creature->size = 69.0f;\n            creature->contact_damage = 150.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->max_health = 1500.0f;"
+        },
+        {
+          "name": "after-max-health",
+          "text": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->health = 1500.0f;\n            creature->move_speed = 2.1f;\n            creature->reward_value = 1000.0f;\n            creature->size = 69.0f;\n            creature->contact_damage = 150.0f;\n            creature->max_health = 1500.0f;\n            *(creature_tint_t *)&creature->color = tint;"
+        }
+      ]
+    }
+  ]
+}

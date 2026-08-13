@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-11-root-tint-construction",
+      "find": "            creature->type_id = CREATURE_TYPE_LIZARD;\n            creature->position.x = pos->x;\n            creature->position.y = pos->y;\n            creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;\n            tint.set(0.99f, 0.99f, 0.21f, 1.0f);",
+      "replacements": [
+        {
+          "name": "before-ai-mode",
+          "text": "            creature->type_id = CREATURE_TYPE_LIZARD;\n            creature->position.x = pos->x;\n            creature->position.y = pos->y;\n            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;"
+        },
+        {
+          "name": "before-position",
+          "text": "            creature->type_id = CREATURE_TYPE_LIZARD;\n            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->position.x = pos->x;\n            creature->position.y = pos->y;\n            creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;"
+        },
+        {
+          "name": "before-type",
+          "text": "            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->type_id = CREATURE_TYPE_LIZARD;\n            creature->position.x = pos->x;\n            creature->position.y = pos->y;\n            creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;"
+        },
+        {
+          "name": "after-health",
+          "text": "            creature->type_id = CREATURE_TYPE_LIZARD;\n            creature->position.x = pos->x;\n            creature->position.y = pos->y;\n            creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;",
+          "requires": [
+            "template-11-after-health-construction/after-health"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "template-11-after-health-construction",
+      "find": "            creature->health = 1500.0f;\n            creature->move_speed = 2.1f;",
+      "replacements": [
+        {
+          "name": "after-health",
+          "text": "            creature->health = 1500.0f;\n            tint.set(0.99f, 0.99f, 0.21f, 1.0f);\n            creature->move_speed = 2.1f;",
+          "requires": [
+            "template-11-root-tint-construction/after-health"
+          ]
+        }
+      ]
+    }
+  ]
+}

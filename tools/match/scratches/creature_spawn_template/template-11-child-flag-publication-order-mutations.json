@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-11-child-flag-publication",
+      "find": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                creature->active = 1;\n                creature->state_flag = 1;\n                creature->lifecycle_stage = 16.0f;\n                creature->attack_cooldown = 0.0f;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                chain_link_idx = child_slot_idx;",
+      "replacements": [
+        {
+          "name": "collision-after-active",
+          "text": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->active = 1;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                creature->state_flag = 1;\n                creature->lifecycle_stage = 16.0f;\n                creature->attack_cooldown = 0.0f;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                chain_link_idx = child_slot_idx;"
+        },
+        {
+          "name": "collision-after-state",
+          "text": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->active = 1;\n                creature->state_flag = 1;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                creature->lifecycle_stage = 16.0f;\n                creature->attack_cooldown = 0.0f;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                chain_link_idx = child_slot_idx;"
+        },
+        {
+          "name": "collision-after-lifecycle",
+          "text": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->active = 1;\n                creature->state_flag = 1;\n                creature->lifecycle_stage = 16.0f;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                creature->attack_cooldown = 0.0f;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                chain_link_idx = child_slot_idx;"
+        },
+        {
+          "name": "collision-after-attack",
+          "text": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->active = 1;\n                creature->state_flag = 1;\n                creature->lifecycle_stage = 16.0f;\n                creature->attack_cooldown = 0.0f;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                chain_link_idx = child_slot_idx;"
+        },
+        {
+          "name": "collision-after-type",
+          "text": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->active = 1;\n                creature->state_flag = 1;\n                creature->lifecycle_stage = 16.0f;\n                creature->attack_cooldown = 0.0f;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                chain_link_idx = child_slot_idx;"
+        },
+        {
+          "name": "collision-after-stats",
+          "text": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->active = 1;\n                creature->state_flag = 1;\n                creature->lifecycle_stage = 16.0f;\n                creature->attack_cooldown = 0.0f;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                chain_link_idx = child_slot_idx;"
+        },
+        {
+          "name": "all-flags-after-stats",
+          "text": "                chain_target_offset = chain_target_offset + 0x40;\n                locals.formation_offset = locals.formation_offset + 2;\n                creature->type_id = CREATURE_TYPE_LIZARD;\n                creature->move_speed = 2.4f;\n                creature->size = 50.0f;\n                creature->contact_damage = 14.0f;\n                creature->collision_flag = 0;\n                creature->collision_timer = 0.0f;\n                creature->active = 1;\n                creature->state_flag = 1;\n                creature->lifecycle_stage = 16.0f;\n                creature->attack_cooldown = 0.0f;\n                chain_link_idx = child_slot_idx;"
+        }
+      ]
+    }
+  ]
+}
