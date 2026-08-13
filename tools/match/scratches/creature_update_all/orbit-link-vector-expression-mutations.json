@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "orbit-link-target-expression",
+      "find": "                                float orbit_heading =\n                                    creature_pool[creature_index].orbit_angle\n                                    + creature_pool[creature_index].heading;\n                                creature_pool[creature_index].target_x =\n                                    (float)cos(orbit_heading)\n                                    * creature_pool[creature_index].orbit_radius.radius\n                                    + creature_pool[linked_index].pos_x;\n                                creature_pool[creature_index].target_y =\n                                    (float)sin(orbit_heading)\n                                    * creature_pool[creature_index].orbit_radius.radius\n                                    + creature_pool[linked_index].pos_y;\n",
+      "replacements": [
+        {
+          "name": "sdk-expression",
+          "text": "                                float orbit_heading =\n                                    creature_pool[creature_index].orbit_angle\n                                    + creature_pool[creature_index].heading;\n                                *(creature_vec2_t *)&creature_pool[\n                                    creature_index\n                                ].target_x =\n                                    *(creature_vec2_t *)&creature_pool[\n                                        linked_index\n                                    ].position\n                                    + creature_vec2_t(\n                                        (float)cos(orbit_heading),\n                                        (float)sin(orbit_heading))\n                                        * creature_pool[\n                                            creature_index\n                                        ].orbit_radius.radius;\n"
+        },
+        {
+          "name": "named-direction",
+          "text": "                                float orbit_heading =\n                                    creature_pool[creature_index].orbit_angle\n                                    + creature_pool[creature_index].heading;\n                                creature_vec2_t orbit_direction(\n                                    (float)cos(orbit_heading),\n                                    (float)sin(orbit_heading));\n                                *(creature_vec2_t *)&creature_pool[\n                                    creature_index\n                                ].target_x =\n                                    *(creature_vec2_t *)&creature_pool[\n                                        linked_index\n                                    ].position\n                                    + orbit_direction * creature_pool[\n                                        creature_index\n                                    ].orbit_radius.radius;\n"
+        },
+        {
+          "name": "named-offset",
+          "text": "                                float orbit_heading =\n                                    creature_pool[creature_index].orbit_angle\n                                    + creature_pool[creature_index].heading;\n                                creature_vec2_t orbit_offset =\n                                    creature_vec2_t(\n                                        (float)cos(orbit_heading),\n                                        (float)sin(orbit_heading))\n                                    * creature_pool[\n                                        creature_index\n                                    ].orbit_radius.radius;\n                                *(creature_vec2_t *)&creature_pool[\n                                    creature_index\n                                ].target_x =\n                                    *(creature_vec2_t *)&creature_pool[\n                                        linked_index\n                                    ].position + orbit_offset;\n"
+        },
+        {
+          "name": "named-target",
+          "text": "                                float orbit_heading =\n                                    creature_pool[creature_index].orbit_angle\n                                    + creature_pool[creature_index].heading;\n                                creature_vec2_t orbit_target =\n                                    *(creature_vec2_t *)&creature_pool[\n                                        linked_index\n                                    ].position\n                                    + creature_vec2_t(\n                                        (float)cos(orbit_heading),\n                                        (float)sin(orbit_heading))\n                                        * creature_pool[\n                                            creature_index\n                                        ].orbit_radius.radius;\n                                *(creature_vec2_t *)&creature_pool[\n                                    creature_index\n                                ].target_x = orbit_target;\n"
+        }
+      ]
+    }
+  ]
+}

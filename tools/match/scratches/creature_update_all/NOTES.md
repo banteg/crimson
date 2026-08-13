@@ -602,3 +602,21 @@ changing the source. Measure that region and the whole function together. Do
 not revisit the ranked contact, movement, tether, or corpse islands; artificial
 hoists, scaled-index coercion, and speculative compiler profiles do not justify
 manufacturing the remaining 16 bytes.
+
+## Orbit-link vector-expression boundary
+
+A fresh live pass selected a different unmatched block at
+`0x00426a8a..0x00426abf`. Native computes the linked creature's orbit
+direction with duplicated `fcos`/`fsin`, scales it by radius, adds the linked
+position, and stores target X/Y directly. The 2003 mod SDK supplies useful
+contemporary vector-expression idioms, but it is not evidence of shared game
+internals or compiler provenance; it was used only to formulate ordinary
+source-shape probes.
+
+The recorded four-way menu tested the compact SDK-style expression plus
+named direction, offset, and target temporaries. All four regressed. The
+least-bad form lost 378.49 weighted bytes, added 11 instructions, and worsened
+the reference audit from `225/0/2` to `205/0/4`. No expression was retained.
+This native island does not explain the remaining frame delta, so the next
+pass should move to another unmatched block rather than manufacture an SDK
+relationship.
