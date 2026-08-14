@@ -43,6 +43,20 @@
       ]
     },
     {
+      "name": "grim-mono-text-island",
+      "scratch": "grim_draw_text_mono",
+      "members": [
+        {
+          "function": "grim_draw_quad_points",
+          "symbol": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z"
+        },
+        {
+          "function": "grim_draw_text_mono",
+          "symbol": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z"
+        }
+      ]
+    },
+    {
       "name": "grim-jaz-decode-island",
       "scratch": "grim_jaz_decompress_payload",
       "members": [

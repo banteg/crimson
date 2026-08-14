@@ -120,8 +120,7 @@ tools/match/scratches/grim_draw_quad/build/msvc6.5/cfac7c3eeebe8520/scratch.obj
 tools/match/scratches/grim_submit_vertex_raw/build/msvc6.5/528b0c1469a20e5e/scratch.obj
 tools/match/scratches/grim_submit_quad_raw/build/msvc6.5/8f093975f80747d2/scratch.obj
 tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/9475e8886a6c8051/scratch.obj
-tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj
-tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj
+tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj
 tools/match/scratches/grim_measure_text_width/build/msvc6.5/b601781bd804f376/scratch.obj
 tools/match/scratches/grim_draw_text_small/build/msvc6.5/680928f0dbbf7b92/scratch.obj
 tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/62779ab124db7c83/scratch.obj

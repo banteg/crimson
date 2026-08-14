@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**749/810** functions matched exactly (**92.5%**), **164524/341992** code bytes (**48.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**750/810** functions matched exactly (**92.6%**), **165558/341992** code bytes (**48.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **309564/341992** code bytes (**90.5%**).
+Fuzzy-weighted alignment is **309622/341992** code bytes (**90.5%**).
 
-Remaining exact-match debt is **61 functions**, **177468 code bytes**, and **32428 fuzzy-gap bytes**.
+Remaining exact-match debt is **60 functions**, **176434 code bytes**, and **32370 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -19,7 +19,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
 | crimsonland.exe | current | 671 | 663 | 3 | passed | yes | yes | no | 0 | 1297 | 97 |
-| grim.dll | current | 139 | 133 | 3 | passed | yes | yes | no | 0 | 268 | 53 |
+| grim.dll | current | 139 | 132 | 4 | passed | yes | yes | no | 0 | 268 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -28,9 +28,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**61** non-exact scratch-backed functions hold **32428 fuzzy-gap bytes**. The top 5 hold **63.2%** of that gap; the top 10 hold **80.0%**.
+**60** non-exact scratch-backed functions hold **32370 fuzzy-gap bytes**. The top 5 hold **63.3%** of that gap; the top 10 hold **80.1%**.
 
-Current-baseline experiments cover **23 functions / 20920 gap bytes**; **38 / 11508** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **26 functions / 21030 gap bytes**; **34 / 11339** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -69,34 +69,33 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 31 | crimsonland.exe | creature_apply_damage | 98 | semantic-complete | compiler | historical-only | 0/5 | 0 | historical-only |
 | 32 | crimsonland.exe | console_update | 90 | semantic-complete | compiler | historical-only | 0/4 | 0 | historical-only |
 | 33 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-inconclusive | 7/15 | 0 | repeated-variants,repeated-specs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 34 | grim.dll | grim_draw_text_mono | 58 | semantic-complete | compiler | historical-only | 0/7 | 0 | repeated-variants,variant-errors,historical-only |
-| 35 | crimsonland.exe | highscore_rank_index | 55 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
-| 36 | crimsonland.exe | sfx_update_mute_fades | 51 | semantic-complete | compiler | historical-only | 0/3 | 0 | historical-only |
-| 37 | crimsonland.exe | player_reset_all | 48 | semantic-complete | compiler,references | historical-only | 0/8 | 0 | repeated-variants,variant-errors,historical-only |
-| 38 | crimsonland.exe | quest_build_nagolipoli | 46 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 39 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | historical-only | 0/14 | 0 | variant-errors,historical-only |
-| 40 | crimsonland.exe | ui_element_render | 45 | semantic-complete | compiler | historical-only | 0/14 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 41 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 42 | crimsonland.exe | quest_build_spiders_inc | 38 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,variant-errors,historical-only |
-| 43 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 2/5 | 2 | variant-errors |
-| 44 | crimsonland.exe | typo_gameplay_update_and_render | 33 | semantic-complete | compiler | current-active | 1/4 | 1 | variant-errors |
-| 45 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/2 | 0 | historical-only |
-| 46 | crimsonland.exe | quest_build_the_beating | 31 | semantic-complete | compiler | historical-only | 0/14 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 47 | grim.dll | grim_state_init | 31 | semantic-complete | compiler | historical-only | 0/35 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 48 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | historical-only | 0/12 | 0 | metric-tradeoffs,historical-only |
-| 49 | crimsonland.exe | quest_build_the_lizquidation | 25 | semantic-complete | compiler | current-active | 1/18 | 1 | repeated-variants,repeated-specs,variant-errors |
-| 50 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | historical-only | 0/19 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 51 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-inconclusive | 4/14 | 1 | repeated-variants,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 52 | crimsonland.exe | quest_build_gauntlet | 10 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 53 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | current-active | 2/20 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 54 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | historical-only | 0/6 | 0 | variant-errors,historical-only |
-| 55 | crimsonland.exe | quest_start_selected | 7 | semantic-complete | compiler | current-active | 1/5 | 1 | repeated-variants |
-| 56 | crimsonland.exe | gameplay_reset_state | 5 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
-| 57 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | historical-only | 0/6 | 0 | repeated-variants,historical-only |
-| 58 | crimsonland.exe | quest_build_the_gang_wars | 5 | semantic-complete | compiler | historical-only | 0/8 | 0 | historical-only |
-| 59 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-active | 1/26 | 1 | repeated-variants,repeated-specs,metric-tradeoffs |
-| 60 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | current-active | 1/20 | 1 | metric-tradeoffs |
-| 61 | crimsonland.exe | fx_queue_add | 4 | semantic-complete | compiler | current-active | 1/6 | 1 | repeated-variants,variant-errors |
+| 34 | crimsonland.exe | highscore_rank_index | 55 | semantic-complete | compiler | current-active | 1/6 | 1 | variant-errors |
+| 35 | crimsonland.exe | sfx_update_mute_fades | 51 | semantic-complete | compiler | historical-only | 0/3 | 0 | historical-only |
+| 36 | crimsonland.exe | player_reset_all | 48 | semantic-complete | compiler,references | current-active | 1/9 | 1 | repeated-variants,variant-errors |
+| 37 | crimsonland.exe | quest_build_nagolipoli | 46 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 38 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | historical-only | 0/14 | 0 | variant-errors,historical-only |
+| 39 | crimsonland.exe | ui_element_render | 45 | semantic-complete | compiler | historical-only | 0/14 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 40 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 41 | crimsonland.exe | quest_build_spiders_inc | 38 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,variant-errors,historical-only |
+| 42 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 2/5 | 2 | variant-errors |
+| 43 | crimsonland.exe | typo_gameplay_update_and_render | 33 | semantic-complete | compiler | current-active | 1/4 | 1 | variant-errors |
+| 44 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/2 | 0 | historical-only |
+| 45 | crimsonland.exe | quest_build_the_beating | 31 | semantic-complete | compiler | historical-only | 0/14 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 46 | grim.dll | grim_state_init | 31 | semantic-complete | compiler | historical-only | 0/35 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 47 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | historical-only | 0/12 | 0 | metric-tradeoffs,historical-only |
+| 48 | crimsonland.exe | quest_build_the_lizquidation | 25 | semantic-complete | compiler | current-active | 1/18 | 1 | repeated-variants,repeated-specs,variant-errors |
+| 49 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | historical-only | 0/19 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 50 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-inconclusive | 4/14 | 1 | repeated-variants,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 51 | crimsonland.exe | quest_build_gauntlet | 10 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 52 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | current-active | 2/20 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
+| 53 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-active | 1/7 | 1 | variant-errors |
+| 54 | crimsonland.exe | quest_start_selected | 7 | semantic-complete | compiler | current-active | 1/5 | 1 | repeated-variants |
+| 55 | crimsonland.exe | gameplay_reset_state | 5 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
+| 56 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | historical-only | 0/6 | 0 | repeated-variants,historical-only |
+| 57 | crimsonland.exe | quest_build_the_gang_wars | 5 | semantic-complete | compiler | historical-only | 0/8 | 0 | historical-only |
+| 58 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-active | 1/26 | 1 | repeated-variants,repeated-specs,metric-tradeoffs |
+| 59 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | current-active | 1/20 | 1 | metric-tradeoffs |
+| 60 | crimsonland.exe | fx_queue_add | 4 | semantic-complete | compiler | current-active | 1/6 | 1 | repeated-variants,variant-errors |
 
 ## Function dispositions
 
@@ -167,7 +166,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 612/671 | 146265/320827 | 45.6% | 288488/320827 | 89.9% | 671/671 | 320827/320827 | 100.0% | 612/671 |
-| grim.dll | 137/139 | 18259/21165 | 86.3% | 21076/21165 | 99.6% | 139/139 | 21165/21165 | 100.0% | 137/139 |
+| grim.dll | 138/139 | 19293/21165 | 91.2% | 21134/21165 | 99.9% | 139/139 | 21165/21165 | 100.0% | 138/139 |
 
 ## crimsonland.exe
 
@@ -849,7 +848,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 ## grim.dll
 
-**137/139** functions (**98.6%**), **18259/21165** bytes (**86.3%**), **21076/21165** fuzzy-weighted bytes (**99.6%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **137/139** scratches verified.
+**138/139** functions (**99.3%**), **19293/21165** bytes (**91.2%**), **21134/21165** fuzzy-weighted bytes (**99.9%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **138/139** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -981,7 +980,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | grim_submit_quad_raw | 0x10008eb0 | 91 | 91/91 | 0 | 25/25 | 100.00% | 25/25 | 7/0/0 |  | grim2d-raw-quad-submit |
 | match | grim_draw_rect_outline | 0x10008f10 | 356 | 356/356 | 0 | 125/125 | 100.00% | 125/125 | 8/0/0 |  | grim2d-outlined-rectangle |
 | match | grim_draw_quad_points | 0x10009080 | 554 | 554/554 | 0 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
-| wip | grim_draw_text_mono | 0x100092b0 | 1034 | 976/1034 | 58 | 298/308 | 94.39% | 6/308 | 41/0/0 |  | grim2d-mono-font-draw |
+| match | grim_draw_text_mono | 0x100092b0 | 1034 | 1034/1034 | 0 | 308/308 | 100.00% | 308/308 | 41/0/0 |  | grim2d-mono-font-draw |
 | match | grim_measure_text_width | 0x100096c0 | 98 | 98/98 | 0 | 45/45 | 100.00% | 45/45 | 2/0/0 |  | grim2d-small-font-measurement |
 | match | grim_draw_text_small | 0x10009730 | 515 | 515/515 | 0 | 153/153 | 100.00% | 153/153 | 18/0/0 |  | grim2d-small-font-draw |
 | match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 52/52 | 0 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |

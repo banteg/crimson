@@ -1,5 +1,5 @@
 {
-  "audit_digest": "ef2a15756fbc3dee20452a0fd949427900652b38cc9c58bbfa7422148886af05",
+  "audit_digest": "2a0f1d1a30264e9886c8b03c66c18a066f270827dd918abdf68fff88ba67ef30",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -197,12 +197,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffb8000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -360,12 +365,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff8000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -448,12 +458,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40038000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -533,7 +548,7 @@
   "default_libraries": [
     {
       "name": "LIBC",
-      "object_count": 125,
+      "object_count": 124,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/b933394e24eca8dd/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/f3d37ff0bdab2452/scratch.obj",
@@ -574,12 +589,11 @@
         "tools/match/scratches/grim_draw_fullscreen_quad/build/msvc6.5/5e32ab4f891eb52e/scratch.obj",
         "tools/match/scratches/grim_draw_line/build/msvc6.5/e0687a1558158451/scratch.obj",
         "tools/match/scratches/grim_draw_quad/build/msvc6.5/cfac7c3eeebe8520/scratch.obj",
-        "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
         "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
         "tools/match/scratches/grim_draw_quad_xy/build/msvc6.5/92cdb9c7fd6dddaa/scratch.obj",
         "tools/match/scratches/grim_draw_rect_filled/build/msvc6.5/7c8037634ebfd189/scratch.obj",
         "tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/9475e8886a6c8051/scratch.obj",
-        "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+        "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
         "tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/62779ab124db7c83/scratch.obj",
         "tools/match/scratches/grim_draw_text_small/build/msvc6.5/680928f0dbbf7b92/scratch.obj",
         "tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/185e7d6937e599c3/scratch.obj",
@@ -676,7 +690,7 @@
     },
     {
       "name": "OLDNAMES",
-      "object_count": 131,
+      "object_count": 130,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/b933394e24eca8dd/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/f3d37ff0bdab2452/scratch.obj",
@@ -718,12 +732,11 @@
         "tools/match/scratches/grim_draw_fullscreen_quad/build/msvc6.5/5e32ab4f891eb52e/scratch.obj",
         "tools/match/scratches/grim_draw_line/build/msvc6.5/e0687a1558158451/scratch.obj",
         "tools/match/scratches/grim_draw_quad/build/msvc6.5/cfac7c3eeebe8520/scratch.obj",
-        "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
         "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
         "tools/match/scratches/grim_draw_quad_xy/build/msvc6.5/92cdb9c7fd6dddaa/scratch.obj",
         "tools/match/scratches/grim_draw_rect_filled/build/msvc6.5/7c8037634ebfd189/scratch.obj",
         "tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/9475e8886a6c8051/scratch.obj",
-        "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+        "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
         "tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/62779ab124db7c83/scratch.obj",
         "tools/match/scratches/grim_draw_text_small/build/msvc6.5/680928f0dbbf7b92/scratch.obj",
         "tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/185e7d6937e599c3/scratch.obj",
@@ -827,7 +840,7 @@
         "tools/match/scratches/grim_draw_fullscreen_color/build/msvc6.5/7a5420f7706a3fa1/scratch.obj",
         "tools/match/scratches/grim_draw_rect_filled/build/msvc6.5/7c8037634ebfd189/scratch.obj",
         "tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/9475e8886a6c8051/scratch.obj",
-        "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+        "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
         "tools/match/scratches/grim_end_batch/build/msvc6.5/68d0f438768ddf1f/scratch.obj",
         "tools/match/scratches/grim_find_texture_by_name/build/msvc6.5/1fc8e90cedbd3497/scratch.obj",
         "tools/match/scratches/grim_flush_batch/build/msvc6.5/a9713624d11e11bf/scratch.obj",
@@ -2178,11 +2191,16 @@
           "comdat_key": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z",
           "comdat_selection": 1,
           "function": "grim_draw_quad_points",
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 560,
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ],
@@ -2268,11 +2286,16 @@
           "comdat_key": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z",
           "comdat_selection": 1,
           "function": "grim_draw_text_mono",
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
-          "logical_section_size": 1024,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "logical_section_size": 1040,
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ],
@@ -6635,12 +6658,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffb8000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -6852,12 +6880,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff8000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -6963,12 +6996,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001c000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ],
@@ -7048,12 +7086,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40038000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -7079,12 +7122,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4003e000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ],
@@ -7097,12 +7145,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40048000000000000000",
           "comdat_selection": 2,
-          "function": "grim_draw_text_mono",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ],
@@ -8403,13 +8456,6 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
       "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj"
     },
     {
@@ -8444,7 +8490,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj"
+      "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj"
     },
     {
       "directives": [
@@ -9963,13 +10009,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -10166,13 +10217,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -10279,13 +10335,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -10351,13 +10412,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -10423,13 +10489,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -10714,8 +10785,13 @@
           "weak": false
         },
         {
-          "function": "grim_draw_text_mono",
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -10886,13 +10962,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -11133,11 +11214,16 @@
           "comdat_key": "?grim_draw_quad_points@IGrim2D_cpp@@UAEXMMMMMMMM@Z",
           "comdat_selection": 1,
           "function": "grim_draw_quad_points",
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
           "logical_section_size": 560,
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ],
@@ -11258,11 +11344,16 @@
           "comdat_key": "?grim_draw_text_mono@IGrim2D_cpp@@UAEXMMPAD@Z",
           "comdat_selection": 1,
           "function": "grim_draw_text_mono",
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
           "kind": "section",
-          "logical_section_size": 1024,
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "logical_section_size": 1040,
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ],
@@ -11701,8 +11792,13 @@
       "name": "?grim_font2_uv_u@@3PAUGrimMonoPoint@@A",
       "referenced_by": [
         {
-          "function": "grim_draw_text_mono",
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -11794,8 +11890,13 @@
       "name": "?grim_font_scale@@3MA",
       "referenced_by": [
         {
-          "function": "grim_draw_text_mono",
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -11825,8 +11926,13 @@
       "name": "?grim_font_texture@@3PAUIDirect3DBaseTexture8@@A",
       "referenced_by": [
         {
-          "function": "grim_draw_text_mono",
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -11856,8 +11962,13 @@
       "name": "?grim_font_texture_bound@@3EA",
       "referenced_by": [
         {
-          "function": "grim_draw_text_mono",
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -14799,18 +14910,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "grim_draw_quad_rotated_matrix",
           "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_text_mono",
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -16687,13 +16798,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -16845,13 +16961,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -16931,13 +17052,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -17202,13 +17328,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         }
       ]
@@ -17279,13 +17410,18 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
+          "function": "grim_draw_quad_rotated_matrix",
+          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
         },
         {
-          "function": "grim_draw_quad_rotated_matrix",
-          "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
@@ -18378,7 +18514,7 @@
     "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 133,
+    "object_count": 132,
     "reference_exports_closed": true,
     "resolved_symbols": 268,
     "unresolved_by_category": {
@@ -19081,11 +19217,6 @@
           "weak": false
         },
         {
-          "function": "grim_draw_quad_points",
-          "object": "tools/match/scratches/grim_draw_quad_points/build/msvc6.5/2f0396ca60c8d113/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "grim_draw_quad_rotated_matrix",
           "object": "tools/match/scratches/grim_draw_quad_rotated_matrix/build/msvc6.5/d1c2d2192fb0c26c/scratch.obj",
           "weak": false
@@ -19106,8 +19237,13 @@
           "weak": false
         },
         {
-          "function": "grim_draw_text_mono",
-          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/2de36817d3aabc3e/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_draw_quad_points",
+            "grim_draw_text_mono"
+          ],
+          "object": "tools/match/scratches/grim_draw_text_mono/build/msvc6.5/6660ea22a29333e8/translation_unit.obj",
+          "translation_unit": "grim-mono-text-island",
           "weak": false
         },
         {
