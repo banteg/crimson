@@ -71,3 +71,29 @@ for the recovered 16-byte color aggregate. VC6 inlines all four byte-identically
 to direct assignment at 97.44%, 39/39 instructions, and `9/0/0` references.
 The native count-publication interleave is therefore not hidden behind a
 source-level fixed-size copy boundary.
+
+## Original value-signature boundary (2026-08-14)
+
+The recovered original header declares this lineage as
+`AddDecal(int, vec2_t, float, float, float, color_t)`. Its SHA-256 is
+`41fa136d8de7cd17c69b10f428ec78e37763d98896ca34990a061015801c8fda`;
+the MOD SDK header supplying ordinary `vec2_t` and `color_t` value classes has
+SHA-256
+`f56d2713518c010ce3ed8c76508678c7e5beff79a6d8a25fd7e736114bdb860f`.
+All three live native callers clean six argument words (`add esp, 0x18`), which
+confirms the recovered argument boundary but does not distinguish value objects
+from pointer-lowered aggregates by itself.
+
+`original-value-abi-mutations.json` therefore compiles the original-style
+position and color value forms independently and together under the calibrated
+stock VC6 profile. Position by value falls to 72.73%, 38/39 instructions,
+prefix 3, and `4/0/3` references. Color by value falls to 72.00%, 36/39,
+prefix 3, and `9/0/0`. Passing both by value falls to 59.46%, 35/39, prefix 3,
+and `5/0/2`. All three move the first mismatch from instruction 22 to
+instruction 3; none is a tradeoff candidate. The spec SHA-256 is
+`ab6554db35a41ed28dadcdcde2b9de2f941e03942ff82e9d2bacd42ad966fa0c`.
+
+The old declaration is useful provenance for the semantic aggregate identities,
+but transplanting its value signature does not reproduce the 1.9.93 body. Keep
+the current pointer-lowered compiler-facing source; the remaining publication
+interleave stays classified as a compiler residual.
