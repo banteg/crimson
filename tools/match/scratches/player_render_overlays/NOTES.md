@@ -311,3 +311,19 @@ native instructions; all ten are rejected as explicit instruction-count
 tradeoffs. The remaining variants are neutral in score with a reference-only
 change or regress. No tradeoff-free winner exists, so canonical source and the
 `329/0/0` reference audit remain unchanged.
+
+## Authenticated SDK vector-subtraction boundary
+
+The mod SDK `cltypes.h` defines `vec2_t::operator-(const vec2_t &)` but no
+vector-minus-scalar overload. The three remaining scratch expressions that
+subtract `half_size` from a vector were therefore replayed with an explicit
+`vec2_t(half_size, half_size)` operand, individually and in every pair/triple
+combination, against the current baseline.
+
+All seven variants compile to the same result: the fuzzy score rises by
+1.748029 weighted bytes, but the candidate loses one instruction and moves
+from `1,141/1,148` to `1,140/1,148`. Prefix and the `329/0/0` reference audit
+are unchanged. The authenticated spelling is therefore rejected as an
+instruction-count tradeoff rather than retained for its score-only gain. This
+also closes the invented scalar overload as a matching lead without changing
+canonical source.

@@ -243,3 +243,19 @@ All four ordinary preincrement, outer-increment, indexed, and copied-entry
 forms trigger the same whole-function allocation cliff: the best reaches only
 64.71% with `103/0/21` references. The missing final-grid induction is not a
 typed-row/interior-field interaction.
+
+## Texture-predecessor translation-unit closure
+
+`grim_draw_text_mono` proved that VC6 global-optimizer state can depend on an
+immediate predecessor, so this scratch was compiled after its complete native
+texture predecessor chain: name comparison, named lookup, free-slot lookup,
+and file loading. The combined source preserves native address order and the
+canonical target profile.
+
+The result is byte-identical to the standalone **98.35294%**, 425/425,
+prefix-397, `166/0/0` candidate. Its wrapper SHA-256 is
+`34b5f49f640965d3dfd1c88a1e4aaa5048559aa5f1b6381e94ebb6e3661d22e7`;
+the dependency-aware source-tree SHA-256 is
+`f91b9bf5812ec40f70f17b04f65b3ec68c42f2a96ac20400efa7624d92f60276`.
+The final-grid induction is therefore not another immediate-predecessor TU
+effect.

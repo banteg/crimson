@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "alive-shadow-half-size",
+      "find": "        - half_size;",
+      "replacements": [
+        {
+          "name": "sdk-vector-subtract",
+          "text": "        - player_render_vec2_t(half_size, half_size);"
+        }
+      ]
+    },
+    {
+      "name": "weapon-flash-quarter-size",
+      "find": "                - half_size\n                + effect_offset;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "sdk-vector-subtract",
+          "text": "                - player_render_vec2_t(half_size, half_size)\n                + effect_offset;"
+        }
+      ]
+    },
+    {
+      "name": "weapon-flash-half-size",
+      "find": "                - half_size\n                + effect_offset;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "sdk-vector-subtract",
+          "text": "                - player_render_vec2_t(half_size, half_size)\n                + effect_offset;"
+        }
+      ]
+    }
+  ]
+}

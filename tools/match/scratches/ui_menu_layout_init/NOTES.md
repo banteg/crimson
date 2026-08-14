@@ -385,3 +385,17 @@ providing a byte-level calibration point for the layout.
 aggregate owner is retained. The first remaining mismatch is now the commuted
 base/index encoding in the first responsive transform loop, followed by the
 already documented temporary and aggregate schedules.
+
+## Post-owner preserve-Y replay
+
+The aggregate owner changed the baseline after the earlier controls-panel
+probe, so the four ordinary spellings of native's narrow-screen Y reload were
+replayed against the current epoch. The staged variants add one or two
+instructions but lose 183.68--186.46 fuzzy-weighted bytes. Both aggregate
+forms add five instructions and lose 195.78 bytes. Prefix and the clean
+`528/0/0` reference audit are unchanged in every case.
+
+Native's load/store pair is still visible, but no tested typed aggregate or
+scalar lifetime recovers it without a much larger scheduling regression. The
+canonical source therefore remains **93.92226%**, 1,408/1,422 instructions,
+prefix 370, and `528/0/0` references.

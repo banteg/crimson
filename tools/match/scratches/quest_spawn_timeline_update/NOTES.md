@@ -102,3 +102,17 @@ with `13/0/0` references. Its localized delta is the documented folded
 template-field interior pointer/home store plus resulting register and x87
 scheduling. The scratch is classified `semantic-complete` with a `compiler`
 residual.
+
+## Authenticated SDK vector identity replay
+
+The MOD SDK `vec2_t` differs from the local value class in three concrete ways:
+anonymous-union `x/y` plus `v[2]` storage, an assignment-body scalar
+constructor, and a non-const member `operator+`. The seven complete single,
+pair, and three-way combinations in `original-vector-type-mutations.json`
+replay those exact features at the only inlined vector-add region.
+
+Every combination is byte-identical to the current **91.22807%**, 113/115,
+prefix-51, `13/0/0` candidate. The authenticated class spelling therefore does
+not restore the folded template-field pointer/home store, and no cosmetic type
+rewrite is retained. The spec SHA-256 is
+`96fca03448be5ca6d9a3cf5fe98a825f584838dca866eea5da537409b218f0bd`.
