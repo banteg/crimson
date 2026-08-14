@@ -224,11 +224,15 @@ def probe_error_evidence(record: dict[str, Any]) -> dict[str, Any] | None:
         return None
     if probe.get("state") != "error":
         return None
-    return {
+    evidence = {
         "label": record.get("label"),
         "source_sha256": record.get("source_sha256"),
         "error": probe.get("error"),
     }
+    source_tree_sha256 = record.get("source_tree_sha256")
+    if source_tree_sha256 is not None:
+        evidence["source_tree_sha256"] = source_tree_sha256
+    return evidence
 
 
 def probe_error_evidence_sha256(record: dict[str, Any]) -> str:

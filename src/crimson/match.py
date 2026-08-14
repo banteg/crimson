@@ -4006,6 +4006,8 @@ class ProbeResult:
     probe: ScratchStatus
     source_sha256: str
     label: str | None = None
+    source_tree_sha256: str | None = None
+    source_dependencies: tuple[str, ...] = ()
 
     @property
     def fuzzy_delta_bytes(self) -> float:
@@ -4547,6 +4549,90 @@ def _experiment_epoch_path_label(path: Path, match_root: Path) -> str:
     if resolved.is_relative_to(REPO_ROOT):
         return f"repo/{resolved.relative_to(REPO_ROOT).as_posix()}"
     return f"external/{resolved.name}"
+
+
+def source_probe_tree_fingerprint(
+    config: ScratchConfig,
+    source_text: str,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+) -> tuple[str, tuple[str, ...]]:
+    """Hash a probe wrapper together with every resolved local include.
+
+    Probe sources are often one-line translation-unit wrappers.  Hashing only
+    that wrapper makes two experiments look identical when an included source
+    or header changes, so retain both the direct source hash and this complete
+    dependency-tree fingerprint.
+    """
+
+    match_root = match_root.resolve()
+    resolver = _ScratchIncludeResolver(match_root)
+
+    def direct_dependencies(
+        text: str,
+        *,
+        including_parent: Path | None,
+        source: bool,
+    ) -> tuple[Path, ...]:
+        dependencies: list[Path] = []
+        seen: set[Path] = set()
+        for match in LOCAL_INCLUDE_RE.finditer(text):
+            include_name = Path(match.group(1).replace("\\", "/"))
+            candidates = [include_dir / include_name for include_dir in resolver.include_dirs]
+            if not source and including_parent is not None:
+                candidates.insert(0, including_parent / include_name)
+            dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
+            if dependency is None:
+                continue
+            resolved = dependency.resolve()
+            if resolved not in seen:
+                seen.add(resolved)
+                dependencies.append(resolved)
+        return tuple(dependencies)
+
+    pending = list(
+        direct_dependencies(
+            source_text,
+            including_parent=None,
+            source=True,
+        ),
+    )
+    dependencies: set[Path] = set()
+    while pending:
+        dependency = pending.pop()
+        if dependency in dependencies:
+            continue
+        dependencies.add(dependency)
+        try:
+            dependency_text = dependency.read_text(encoding="latin1")
+        except OSError:
+            continue
+        pending.extend(
+            direct_dependencies(
+                dependency_text,
+                including_parent=dependency.parent,
+                source=False,
+            ),
+        )
+
+    digest = hashlib.sha256(b"crimson-source-probe-tree-v1\0")
+    digest.update(Path(config.source).name.encode())
+    digest.update(b"\0source\0")
+    digest.update(source_text.encode())
+    labels: list[str] = []
+    for dependency in sorted(
+        dependencies,
+        key=lambda value: _experiment_epoch_path_label(value, match_root),
+    ):
+        label = _experiment_epoch_path_label(dependency, match_root)
+        labels.append(label)
+        digest.update(b"\0path\0")
+        digest.update(label.encode())
+        digest.update(b"\0sha256\0")
+        try:
+            digest.update(hashlib.sha256(dependency.read_bytes()).hexdigest().encode())
+        except OSError:
+            digest.update(b"missing")
+    return digest.hexdigest(), tuple(labels)
 
 
 def scratch_experiment_epoch(
@@ -5439,11 +5525,18 @@ def evaluate_source_probe(
         source_text,
         match_root=match_root,
     )
+    source_tree_sha256, source_dependencies = source_probe_tree_fingerprint(
+        baseline_config,
+        source_text,
+        match_root,
+    )
     return ProbeResult(
         baseline=baseline,
         probe=probe,
         source_sha256=hashlib.sha256(source_text.encode()).hexdigest(),
         label=label,
+        source_tree_sha256=source_tree_sha256,
+        source_dependencies=source_dependencies,
     )
 
 
@@ -8873,6 +8966,8 @@ def probe_result_payload(result: ProbeResult) -> dict[str, Any]:
     return {
         "label": result.label,
         "source_sha256": result.source_sha256,
+        "source_tree_sha256": result.source_tree_sha256 or result.source_sha256,
+        "source_dependencies": list(result.source_dependencies),
         "tradeoffs": list(fuzzy_score_tradeoffs(result.baseline, result.probe)),
         "baseline": baseline,
         "probe": probe,
@@ -8916,6 +9011,7 @@ def render_probe_result(result: ProbeResult) -> str:
             f"{result.probe.masked_unresolved - result.baseline.masked_unresolved:+d}/"
             f"{result.probe.masked_mismatches - result.baseline.masked_mismatches:+d}"),
         f"source_sha256={result.source_sha256}",
+        f"source_tree_sha256={result.source_tree_sha256 or result.source_sha256}",
     ]
     if tradeoffs:
         lines.append(f"warnings={','.join(tradeoffs)}")

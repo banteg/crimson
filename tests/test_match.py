@@ -6098,6 +6098,56 @@ def test_source_probe_uses_temporary_shadow_without_touching_scratch(
     assert "delta: match=+25.00% fuzzy=+25" in render_probe_result(result)
 
 
+def test_source_probe_fingerprints_resolved_include_tree(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    match_root = tmp_path / "match"
+    include_root = match_root / "include"
+    include_root.mkdir(parents=True)
+    dependency = include_root / "probe_dependency.h"
+    dependency.write_text("first dependency\n", encoding="utf-8")
+    scratch = match_root / "scratches" / "foo"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.cpp").write_text("baseline\n", encoding="utf-8")
+    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
+    config = ScratchConfig(
+        directory=scratch,
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+
+    def fake_evaluate(probe_config: ScratchConfig, root: Path) -> ScratchStatus:
+        del root
+        return ScratchStatus(
+            config=probe_config,
+            address=0x401000,
+            target_size=10,
+            ratio=0.75,
+            prefix_instructions=2,
+            target_instructions=4,
+            candidate_instructions=4,
+            error=None,
+        )
+
+    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+    wrapper = '#include "probe_dependency.h"\n'
+    first = evaluate_source_probe(config, wrapper, match_root=match_root)
+    dependency.write_text("second dependency\n", encoding="utf-8")
+    second = evaluate_source_probe(config, wrapper, match_root=match_root)
+
+    assert first.source_sha256 == second.source_sha256
+    assert first.source_tree_sha256 != second.source_tree_sha256
+    assert first.source_dependencies == ("match/include/probe_dependency.h",)
+    assert second.source_dependencies == first.source_dependencies
+
+
 def test_source_overlay_can_shadow_an_included_match_header(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -6202,6 +6252,8 @@ def test_probe_command_records_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
     assert recorded["schema"] == 1
     assert recorded["kind"] == "probe"
+    assert recorded["source_tree_sha256"] == "abc"
+    assert recorded["source_dependencies"] == []
     assert len(recorded["baseline_epoch"]) == 64
     assert recorded["recorded_at"].endswith("+00:00")
     assert recorded["label"] == "trial"
