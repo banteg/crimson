@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bonus-run-state-owner",
+      "find": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" bonus_id_t bonus_pick_random_type(void)",
+      "replacements": [
+        {
+          "name": "authenticated-game-aggregate",
+          "text": "#include \"crimsonland_gameplay.h\"\n\n#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n\nextern \"C\" bonus_id_t bonus_pick_random_type(void)"
+        }
+      ]
+    }
+  ]
+}

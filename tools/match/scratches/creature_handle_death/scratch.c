@@ -2,8 +2,12 @@
 
 #include "crimsonland_gameplay.h"
 
-extern vec2f_t survival_recent_death_pos[3];
-extern int survival_recent_death_count;
+#include "crimsonland_game_state_owner.h"
+
+#define survival_recent_death_positions \
+    gameplay_run_state.survival_recent_death_pos
+#define survival_recent_death_count \
+    gameplay_run_state.survival_recent_death_count
 extern unsigned char survival_reward_fire_seen;
 extern unsigned char survival_reward_handout_enabled;
 extern int creature_kill_count;
@@ -26,9 +30,9 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
 
     if (survival_recent_death_count < 6) {
         if (survival_recent_death_count < 3) {
-            survival_recent_death_pos[survival_recent_death_count].x =
+            survival_recent_death_positions[survival_recent_death_count].x =
                 creature->position.x;
-            survival_recent_death_pos[survival_recent_death_count].y =
+            survival_recent_death_positions[survival_recent_death_count].y =
                 creature->position.y;
         }
         ++survival_recent_death_count;

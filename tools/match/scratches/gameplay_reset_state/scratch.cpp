@@ -104,6 +104,9 @@ void projectile_reset_pools(void);
 void terrain_generate_random(void);
 int crt_rand(void);
 
+#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER
+#include "crimsonland_game_state_owner.h"
+
 void gameplay_reset_state(void)
 {
     player_overlay_suppressed_latch = 0;

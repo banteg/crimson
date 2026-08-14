@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "creature-record-owner",
+      "find": "    creature_t *creature = &creature_pool[creature_id];\n",
+      "replacements": [
+        {
+          "name": "direct-index-all-fields",
+          "text": "#define creature (&creature_pool[creature_id])\n"
+        }
+      ]
+    }
+  ]
+}

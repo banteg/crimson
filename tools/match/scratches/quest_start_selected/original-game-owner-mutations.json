@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-run-state-owner",
+      "find": "extern \"C\" void quest_start_selected(int tier, int index)",
+      "replacements": [
+        {
+          "name": "authenticated-game-aggregate",
+          "text": "#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n\nextern \"C\" void quest_start_selected(int tier, int index)"
+        }
+      ]
+    }
+  ]
+}

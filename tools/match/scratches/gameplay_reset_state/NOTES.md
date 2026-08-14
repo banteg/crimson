@@ -50,15 +50,16 @@ the native negative field offsets and post-increment `anim_phase` store. The
 native sound-table scheduling is recovered by placing the lizard and second
 spider's second death sound after their animation constants.
 
-The current honest VC6.5 result is 99.02%: 307/307 instructions and references
-`213/0/0`. Only two independent scheduling swaps remain. Native places the two
-one-byte perk/bonus flags before the 256-byte weapon-usage `memset`, and places
-the second `-1.0f` vector-temporary store between the two dwords of the
-eight-byte player auxiliary clear. All six natural orderings of the camera,
-flags, and clear operations, plus reusable-temporary and scalar-clear variants,
-were checked; they either retain these swaps or diverge more broadly. The
-plausible source is retained instead of adding volatile state, dummy
-dependencies, hard-coded addresses, or artificial register constraints.
+The current honest VC6.5 result is 99.67%: 307/307 instructions, prefix
+219/307, and references `215/0/0`. The authenticated target-era `game_t`
+declaration proves that the gameplay fields form one aggregate rooted at
+`survival_reward_handout_enabled`. Restoring that ownership makes VC6 schedule
+the two one-byte perk/bonus flags before the 256-byte weapon-usage `memset`, as
+native does. The sole residual is now the second `-1.0f` vector-temporary store:
+native places it between the two dwords of the eight-byte player auxiliary
+clear, while the candidate emits the two zero stores together. Reusable
+temporary, scalar-clear, helper, and ordering variants either retain the swap
+or diverge more broadly.
 
 ## Port parity
 
@@ -72,16 +73,14 @@ pool residue. Captured residue remains authoritative for original replays.
 
 ## Recovery classification audit
 
-Focused regions confirm the exact 307-instruction count and all 213 references.
-The only residuals are the two independent schedules documented above: native
-places the perk/bonus byte stores before the weapon-usage clear and interleaves
-one move-target temporary store with the two player-auxiliary dwords. Live
-Binary Ninja exposes the same objects and values, with no missing reset phase
-or unresolved field.
+Focused regions confirm the exact 307-instruction count and all 215 references.
+The only residual is the move-target temporary / player-auxiliary clear
+interleave documented above. Live Binary Ninja exposes the same objects and
+values, with no missing reset phase or unresolved field.
 
-Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. Before
-and after classification remain 99.02%, prefix 165/307, 307/307
-instructions, and references 213/0/0.
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. Current
+closure is 99.67%, prefix 219/307, 307/307 instructions, and references
+`215/0/0`.
 
 `reset-schedule-interactions-mutations.json` subsequently evaluated all 35
 single and pair combinations across the flag/camera/weapon-clear ordering and
@@ -112,7 +111,7 @@ surrounding `extern "C"` block makes the consumer request that exact identity.
 The body remains 99.02%, 307/307 instructions, prefix 165, and `213/0/0`
 references; the change affects only the COFF relocation name.
 
-## Current auxiliary-clear shape replay (2026-08-12)
+## Pre-owner auxiliary-clear shape replay (2026-08-12)
 
 The current native diff still contains exactly the two documented scheduling
 regions. `current-player-aux-clear-shape-mutations.json` (SHA-256
@@ -126,6 +125,18 @@ all three lose **56.174578 weighted bytes**, one instruction, and one resolved
 reference. The typed aggregate loses **66.332174 weighted bytes** and grows to
 310 instructions. The canonical `memset` therefore remains the only tested
 shape that produces the native zero-register clear and surrounding allocation.
-Current source remains **99.022801%**, 307/307 instructions, prefix 165, and
-`213/0/0` references; its SHA-256 is
+At that baseline the source remained **99.022801%**, 307/307 instructions,
+prefix 165, and `213/0/0` references; its SHA-256 was
 `27f4cb995e409e10a182ffd0d97a8ffc5e9e401f78becaf72ff1d0d6c273b641`.
+
+## Authenticated gameplay-state owner (2026-08-14)
+
+The target-era `game_t` declaration and the contiguous data block at
+`0x00486fa8` agree after removing the obsolete `master_scale` member. The
+shared `gameplay_run_state_original_t` records that complete layout and maps
+the already recovered semantic names back through one aggregate owner.
+`original-game-owner-full-mutations.json` records the one-site result: +10.68
+weighted bytes, +54 prefix instructions, two additional resolved references,
+and no instruction or reference tradeoff. The same authenticated owner is
+byte-neutral in nine other state-heavy consumers, which bounds the win to the
+reset's global scheduling rather than a broad matching artifice.

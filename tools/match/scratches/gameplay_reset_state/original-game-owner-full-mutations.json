@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "gameplay-run-state-owner",
+      "find": "int crt_rand(void);\n\nvoid gameplay_reset_state(void)",
+      "replacements": [
+        {
+          "name": "authenticated-game-aggregate",
+          "text": "int crt_rand(void);\n\n#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n\nvoid gameplay_reset_state(void)"
+        }
+      ]
+    }
+  ]
+}

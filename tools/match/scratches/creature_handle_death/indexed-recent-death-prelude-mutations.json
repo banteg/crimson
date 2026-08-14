@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "indexed-recent-death-prelude",
+      "find": "    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_pool[creature_id];\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n\n    if (survival_recent_death_count < 6) {\n        if (survival_recent_death_count < 3) {\n            survival_recent_death_positions[survival_recent_death_count].x =\n                creature->position.x;\n            survival_recent_death_positions[survival_recent_death_count].y =\n                creature->position.y;\n        }\n        ++survival_recent_death_count;\n        if (survival_recent_death_count == 3) {\n            survival_reward_fire_seen = 0;\n            survival_reward_handout_enabled = 0;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "pointer-after-indexed-prelude",
+          "text": "    int creature_flags = creature_pool[creature_id].flags;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature_pool[creature_id].position,\n            (bonus_id_t)creature_pool[creature_id].bonus_args.bonus_id,\n            creature_pool[creature_id].bonus_args.duration_override\n        );\n    }\n\n    if (survival_recent_death_count < 6) {\n        if (survival_recent_death_count < 3) {\n            survival_recent_death_positions[survival_recent_death_count].x =\n                creature_pool[creature_id].position.x;\n            survival_recent_death_positions[survival_recent_death_count].y =\n                creature_pool[creature_id].position.y;\n        }\n        ++survival_recent_death_count;\n        if (survival_recent_death_count == 3) {\n            survival_reward_fire_seen = 0;\n            survival_reward_handout_enabled = 0;\n        }\n    }\n\n    creature_t *creature = &creature_pool[creature_id];\n"
+        },
+        {
+          "name": "pointer-after-indexed-recent-death",
+          "text": "    int creature_flags = creature_pool[creature_id].flags;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        creature_t *bonus_creature = &creature_pool[creature_id];\n        bonus_spawn_at(\n            &bonus_creature->position,\n            (bonus_id_t)bonus_creature->bonus_args.bonus_id,\n            bonus_creature->bonus_args.duration_override\n        );\n    }\n\n    if (survival_recent_death_count < 6) {\n        if (survival_recent_death_count < 3) {\n            survival_recent_death_positions[survival_recent_death_count].x =\n                creature_pool[creature_id].position.x;\n            survival_recent_death_positions[survival_recent_death_count].y =\n                creature_pool[creature_id].position.y;\n        }\n        ++survival_recent_death_count;\n        if (survival_recent_death_count == 3) {\n            survival_reward_fire_seen = 0;\n            survival_reward_handout_enabled = 0;\n        }\n    }\n\n    creature_t *creature = &creature_pool[creature_id];\n"
+        },
+        {
+          "name": "top-declaration-assignment-after-prelude",
+          "text": "    creature_t *creature;\n    int creature_flags = creature_pool[creature_id].flags;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature_pool[creature_id].position,\n            (bonus_id_t)creature_pool[creature_id].bonus_args.bonus_id,\n            creature_pool[creature_id].bonus_args.duration_override\n        );\n    }\n\n    if (survival_recent_death_count < 6) {\n        if (survival_recent_death_count < 3) {\n            survival_recent_death_positions[survival_recent_death_count].x =\n                creature_pool[creature_id].position.x;\n            survival_recent_death_positions[survival_recent_death_count].y =\n                creature_pool[creature_id].position.y;\n        }\n        ++survival_recent_death_count;\n        if (survival_recent_death_count == 3) {\n            survival_reward_fire_seen = 0;\n            survival_reward_handout_enabled = 0;\n        }\n    }\n\n    creature = &creature_pool[creature_id];\n"
+        }
+      ]
+    }
+  ]
+}

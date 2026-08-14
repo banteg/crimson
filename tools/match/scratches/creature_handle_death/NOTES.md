@@ -2,8 +2,8 @@
 
 Native target: `crimsonland.exe` at `0x0041e910` (834 bytes).
 
-Current honest VC6.5 result: 87.96% normalized match, 6/204-instruction exact prefix,
-203/204 candidate instructions, and 82/0/0 reference audit.
+Current honest VC6.5 result: 89.49% normalized match, 6/204-instruction exact
+prefix, 205/204 candidate instructions, and 85/0/0 reference audit.
 
 Binary Ninja and the MSVC candidate establish:
 
@@ -47,18 +47,19 @@ the normalized score from 84.73% to 87.96%, moves the exact prefix from 5 to 6
 instructions, adds one candidate instruction, and clears the reference audit
 from 80/0/1 to 82/0/0.
 
-The honest residual is now confined to two related compiler choices. The
-candidate common-subexpressions the byte-scaled creature offset with `shl`,
-where native retains the element index for two scaled memory operands. It also
-coalesces the two recent-death-count reloads; their absence shifts later branch
-labels.
+The authenticated target-era `game_t` layout proves that the three recent-death
+positions and their count are adjacent members of the gameplay-state owner.
+Restoring that ownership recovers both native count reloads and three additional
+resolved references. The honest residual is now one opening compiler choice:
+the candidate common-subexpressions the byte-scaled creature offset with `shl`,
+where native retains the element index for two scaled memory operands. That one
+extra instruction shifts all later branch labels.
 MSVC 6.5pp, MSVC 7.0, `/G6`, and volatility experiments diverged elsewhere and
 were rejected rather than retained as matching aids.
 
-The recent-death write uses the canonical `vec2f_t` component names, but keeps
-the two direct global-indexed stores shown by native HLIL. This is byte-neutral:
-VC6 still coalesces the index reloads in this isolated candidate, while the
-native body reloads the mutable global for each component and the increment.
+The recent-death write uses the canonical `vec2f_t` component names through the
+shared gameplay-state aggregate. VC6 now emits the native mutable count reload
+for each component and the increment.
 
 An address-keyed Binary Ninja local type now preserves the `creature_t *`
 induction result at `0x0041e91d`. The native death body consequently renders
@@ -75,15 +76,13 @@ in bug-preserving mode; corrected mode deliberately keeps last-hit-owner XP.
 
 The preceding native recovery accounts for every guard, call, RNG draw,
 constant, record mutation, XP branch, and effect path. The focused mismatch
-regions reduce to the opening indexed-address common-subexpression plus two
-native reloads of `survival_recent_death_count` that VC6 coalesces in this
-translation unit.
+region reduces to the opening indexed-address common-subexpression.
 
 Native stores centroid X to `survival_recent_death_pos` at `0x0041e958` and Y
 to `survival_recent_death_pos+4` at `0x0041e968`, with a count reload between
-them. The retained opening source shape gives the matcher enough aligned
-context to pair both operands correctly, so the current reference audit is
-clean at `82/0/0`.
+them. The retained aggregate source gives the matcher enough ownership and
+aligned context to pair all three accesses correctly, so the current reference
+audit is clean at `85/0/0`.
 
 Classification remains `RECOVERY=semantic-complete`,
 `RESIDUAL=compiler`.
@@ -104,10 +103,11 @@ The new bounded searches record:
   staging, and aggregate-copy forms were neutral, while pointer forms that
   force reloads regressed;
 - three storage-layout variants in
-  `recent-death-storage-layout-mutations.json`; modeling the adjacent 24-byte
-  position array and count at `+0x18` as one aggregate restored instructions
-  but lost 44.35 weighted bytes, so the port keeps the independently evidenced
-  globals;
+  `recent-death-storage-layout-mutations.json`; against the retained opening
+  source, modeling the adjacent 24-byte position array and count as one
+  aggregate gains 12.72 weighted bytes, restores both count reloads, and adds
+  three resolved references with no tradeoff. The shared full `game_t` owner is
+  byte-identical to that focused aggregate and is retained;
 - 24 inline-context variants in `opening-inline-context-mutations.json`; the
   direct pool flag read was the sole winner, adding 26.95 weighted bytes and
   clearing the audit;
@@ -119,3 +119,9 @@ The new bounded searches record:
 The two pre-retention opening specs intentionally preserve the source spans
 used for their recorded historical sweeps. The post-retention spec is the
 current reusable scaffold.
+
+Four follow-up opening-address and direct-index owner searches confirm the
+remaining boundary. Directly indexing all fields regresses to 72.82% and 208
+instructions; moving or rebinding the record pointer after the bonus or
+recent-death preludes also regresses. A C++ reference is byte-identical to the
+retained pointer. No register coercion or artificial lifetime is kept.

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "creature-opening-owner",
+      "find": "    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_pool[creature_id];\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {",
+      "replacements": [
+        {
+          "name": "pointer-then-direct-condition",
+          "text": "    creature_t *creature = &creature_pool[creature_id];\n    if ((creature_pool[creature_id].flags\n            & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {"
+        },
+        {
+          "name": "reference-owner-direct-condition",
+          "text": "    creature_t &creature_ref = creature_pool[creature_id];\n    creature_t *creature = &creature_ref;\n    if ((creature_pool[creature_id].flags\n            & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {"
+        },
+        {
+          "name": "reference-owner-named-flags",
+          "text": "    creature_t &creature_ref = creature_pool[creature_id];\n    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_ref;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {"
+        },
+        {
+          "name": "base-pointer-increment",
+          "text": "    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_pool[0];\n    creature += creature_id;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {"
+        },
+        {
+          "name": "pointer-addition-direct-condition",
+          "text": "    creature_t *creature = creature_pool + creature_id;\n    if ((creature_pool[creature_id].flags\n            & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {"
+        },
+        {
+          "name": "const-index-copy",
+          "text": "    const int index = creature_id;\n    int creature_flags = creature_pool[index].flags;\n    creature_t *creature = &creature_pool[index];\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {"
+        },
+        {
+          "name": "unsigned-index-copy",
+          "text": "    unsigned int index = (unsigned int)creature_id;\n    int creature_flags = creature_pool[index].flags;\n    creature_t *creature = &creature_pool[index];\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {"
+        }
+      ]
+    }
+  ]
+}

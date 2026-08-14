@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "survival-run-state-owner",
+      "find": "extern \"C\" void demo_mode_start(void);\n\nextern \"C\" void survival_update(void)",
+      "replacements": [
+        {
+          "name": "authenticated-game-aggregate",
+          "text": "extern \"C\" void demo_mode_start(void);\n\n#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n\nextern \"C\" void survival_update(void)"
+        }
+      ]
+    }
+  ]
+}

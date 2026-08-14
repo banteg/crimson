@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "recent-death-owner",
+      "find": "typedef struct survival_recent_death_state_t {\n    vec2f_t positions[3];\n    int count;\n} survival_recent_death_state_t;\nextern survival_recent_death_state_t survival_recent_death_pos;\n#define survival_recent_death_positions survival_recent_death_pos.positions\n#define survival_recent_death_count survival_recent_death_pos.count",
+      "replacements": [
+        {
+          "name": "authenticated-full-game-aggregate",
+          "text": "#include \"crimsonland_game_state_owner.h\"\n#define survival_recent_death_positions \\\n    gameplay_run_state.survival_recent_death_pos\n#define survival_recent_death_count \\\n    gameplay_run_state.survival_recent_death_count"
+        }
+      ]
+    }
+  ]
+}
