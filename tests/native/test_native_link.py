@@ -501,6 +501,7 @@ def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> N
     assert [cluster.name for cluster in config.clusters] == [
         "grim-slot-state-accessors",
         "grim-draw-line-island",
+        "grim-mono-text-island",
         "grim-jaz-decode-island",
     ]
     assert [member.function for member in config.clusters[0].members] == [
@@ -515,6 +516,10 @@ def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> N
         "grim_draw_line_quad",
     ]
     assert [member.function for member in config.clusters[2].members] == [
+        "grim_draw_quad_points",
+        "grim_draw_text_mono",
+    ]
+    assert [member.function for member in config.clusters[3].members] == [
         "grim_jaz_decode_scope_init",
         "grim_zlib_status_is_error",
         "grim_zlib_decompress_alloc",
