@@ -843,9 +843,9 @@ def test_default_crimsonland_link_manifest_records_structural_executable() -> No
     assert manifest["output"]["pe"] == {
         "characteristics": 271,
         "dll": False,
-        "entry_point_rva": 323934,
+        "entry_point_rva": 324446,
         "image_base": 0x00400000,
-        "image_size": 868352,
+        "image_size": 876544,
         "machine": matchlib.IMAGE_FILE_MACHINE_I386,
         "optional_magic": 0x10B,
         "section_count": 4,
