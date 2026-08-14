@@ -6176,6 +6176,7 @@ def collect_scratch_statuses(
     jobs: int = DEFAULT_MATCH_JOBS,
     scope: str | None = None,
     directories: Collection[Path] | None = None,
+    force: bool = False,
 ) -> list[ScratchStatus]:
     if jobs < 1:
         raise ValueError("jobs must be positive")
@@ -6219,13 +6220,17 @@ def collect_scratch_statuses(
             address = function.address
         except ValueError:
             address = 0
-        cached = _load_cached_status(
-            config,
-            address=address,
-            image_path=image_path,
-            manifest=manifest,
-            match_root=match_root,
-            include_resolver=include_resolver,
+        cached = (
+            None
+            if force
+            else _load_cached_status(
+                config,
+                address=address,
+                image_path=image_path,
+                manifest=manifest,
+                match_root=match_root,
+                include_resolver=include_resolver,
+            )
         )
         if cached is not None:
             statuses_by_directory[config.directory] = cached
@@ -6244,7 +6249,12 @@ def collect_scratch_statuses(
         try:
             function, start, end = resolve_function(manifest, config.function, end_override=config.end_va)
             target_data = image.function_bytes(start, end)
-            obj_path = compile_scratch(config, match_root, include_resolver=include_resolver)
+            obj_path = compile_scratch(
+                config,
+                match_root,
+                include_resolver=include_resolver,
+                force=force,
+            )
             obj = parse_coff_object(obj_path.read_bytes())
             candidate = extract_object_function(
                 obj,

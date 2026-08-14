@@ -6661,7 +6661,9 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
         match_root: Path,
         *,
         include_resolver: _ScratchIncludeResolver | None = None,
+        force: bool = False,
     ) -> Path:
+        del force
         observed["compiler"] = config.compiler
         observed["cflags"] = config.cflags
         observed["calls"] = observed.get("calls", 0) + 1
@@ -6683,10 +6685,18 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
 
     statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2", jobs=1)
     cached_statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2", jobs=1)
+    fresh_statuses = collect_scratch_statuses(
+        tmp_path,
+        compiler="msvc6.5",
+        cflags="/O2",
+        jobs=1,
+        force=True,
+    )
 
     assert statuses[0].state == "match"
     assert cached_statuses[0].state == "match"
-    assert observed == {"compiler": "msvc6.5", "cflags": "/O2", "calls": 1}
+    assert fresh_statuses[0].state == "match"
+    assert observed == {"compiler": "msvc6.5", "cflags": "/O2", "calls": 2}
 
 
 def test_collect_status_can_limit_evaluation_to_selected_directories(
@@ -6728,7 +6738,9 @@ def test_collect_status_can_limit_evaluation_to_selected_directories(
         match_root: Path,
         *,
         include_resolver: _ScratchIncludeResolver | None = None,
+        force: bool = False,
     ) -> Path:
+        del force
         compiled.append(config.function)
         return config.directory / "scratch.obj"
 

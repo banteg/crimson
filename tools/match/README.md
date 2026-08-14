@@ -541,7 +541,13 @@ uv run crimson match status --image crimsonland.exe --state wip \
 uv run crimson match status --summary-only
 uv run crimson match status --image crimsonland.exe --json
 uv run crimson match status --recovery semantic-complete --residual compiler
+uv run crimson match status --summary-only --check --fresh -j 8
 ```
+
+Use `--fresh` for a periodic independent audit. It bypasses both compiled-object
+and matcher-result caches, rebuilds every selected scratch, and then applies the
+normal exact-reference and metadata checks. Ordinary recovery work should keep
+the cached path; the fresh run is intentionally much slower.
 
 The generated board also ranks the non-exact residual frontier by fuzzy-gap
 bytes. Its experiment evidence is tied to the current scratch epoch:

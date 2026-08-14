@@ -1216,6 +1216,11 @@ def cmd_match_status(
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
     summary_only: bool = typer.Option(False, "--summary-only", help="print totals without scratch rows"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    fresh: bool = typer.Option(
+        False,
+        "--fresh",
+        help="bypass cached objects and match statuses for an independent rebuild",
+    ),
     scope: Literal["port", "all"] = typer.Option(
         matchlib.DEFAULT_MATCH_SCOPE,
         "--scope",
@@ -1231,6 +1236,7 @@ def cmd_match_status(
         cflags=cflags,
         jobs=jobs,
         scope=scope,
+        force=fresh,
     )
     totals = matchlib.collect_image_totals(statuses, scope=scope)
     selected_totals = [total for total in totals if image is None or total.image == image]
