@@ -259,3 +259,20 @@ the dependency-aware source-tree SHA-256 is
 `f91b9bf5812ec40f70f17b04f65b3ec68c42f2a96ac20400efa7624d92f60276`.
 The final-grid induction is therefore not another immediate-predecessor TU
 effect.
+
+## Full texture-island translation-unit closure
+
+The narrower predecessor replay was expanded to every recovered texture
+function before `grim_state_init` in native address order: texture init and
+release, extension testing, JAZ decode, file loading, name comparison, named
+lookup, free-slot lookup, and internal loading. Scratch-local identities are
+renamed only where independently recovered files would otherwise collide.
+
+The complete island remains byte-identical to the standalone **98.35294%**,
+425/425-instruction, prefix-397, `166/0/0` candidate. The recorded wrapper
+SHA-256 is
+`d64707f54626d29fe6477e9bd2b98e8b2ed7b144f2cc98bc2b2300f8e8af1fc2`;
+its dependency-aware source-tree SHA-256 is
+`1f5ef2a340009ce0a4e54f2949b32eb59815b9621a29d58d994f8f218cee4d88`.
+This closes the broader texture-island optimizer-context hypothesis without
+changing the canonical source.
