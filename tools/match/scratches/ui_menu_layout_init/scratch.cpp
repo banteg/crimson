@@ -181,6 +181,8 @@ void ui_callback_noop(void);
 }
 
 #include "crimsonland_textures_owner.h"
+#define CRIMSONLAND_USE_ORIGINAL_GFXS_OWNER
+#include "crimsonland_gfxs_owner.h"
 
 static __forceinline void copy_layer(
     ui_layout_element_t &element,

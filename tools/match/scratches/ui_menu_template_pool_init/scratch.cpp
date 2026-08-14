@@ -72,6 +72,10 @@ extern "C" ui_template_block_cpp_t ui_menu_item_subtemplate_block_04;
 extern "C" ui_template_block_cpp_t ui_menu_item_subtemplate_block_05;
 extern "C" ui_template_block_cpp_t ui_menu_item_subtemplate_block_06;
 
+#define CRIMSONLAND_GFX_BLOCK_TYPE ui_template_block_cpp_t
+#define CRIMSONLAND_USE_ORIGINAL_GFXS_OWNER
+#include "crimsonland_gfxs_owner.h"
+
 extern "C" void ui_menu_template_pool_init(void)
 {
     ui_template_slot_cpp_t *cursor = ui_template_pool_block_00.slots;

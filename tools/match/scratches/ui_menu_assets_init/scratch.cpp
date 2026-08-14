@@ -46,6 +46,10 @@ extern "C" ui_menu_template_t ui_menu_item_element;
 extern "C" ui_menu_template_t ui_menu_panel_template;
 extern "C" ui_menu_template_t ui_menu_item_subtemplate_block_01[6];
 
+#define CRIMSONLAND_GFX_BLOCK_TYPE ui_menu_template_t
+#define CRIMSONLAND_USE_ORIGINAL_GFXS_OWNER
+#include "crimsonland_gfxs_owner.h"
+
 extern "C" void ui_menu_layout_init(void);
 
 extern "C" void ui_menu_assets_init(void)
@@ -85,7 +89,7 @@ extern "C" void ui_menu_assets_init(void)
         256.0f,
         &offset.x);
 
-    ui_menu_template_t *subtemplates = ui_menu_item_subtemplate_block_01;
+    ui_menu_template_t *subtemplates = &gfxs.ui_menuPanelTall;
     subtemplates[0] = ui_menu_panel_template;
     subtemplates[0].quad_mode = 8;
     subtemplates[0].slots[7] = subtemplates[0].slots[3];
