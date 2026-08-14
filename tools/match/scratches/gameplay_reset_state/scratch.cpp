@@ -1,4 +1,5 @@
 #include "crimsonland_gameplay.h"
+
 #include "grim2d_cpp.h"
 
 #include <string.h>
@@ -104,6 +105,8 @@ void projectile_reset_pools(void);
 void terrain_generate_random(void);
 int crt_rand(void);
 
+#define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
+#include "crimsonland_terrain_owner.h"
 #define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER
 #include "crimsonland_game_state_owner.h"
 

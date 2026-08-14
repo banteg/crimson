@@ -1,6 +1,9 @@
 #include <math.h>
 
 #include "crimsonland_gameplay.h"
+
+#define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
+#include "crimsonland_terrain_owner.h"
 #include "grim2d_cpp.h"
 
 typedef vec2f_t player_update_vec2_t;

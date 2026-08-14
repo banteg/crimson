@@ -51,6 +51,9 @@ int fx_spawn_sprite(
     float scale);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
+#include "crimsonland_terrain_owner.h"
+
 extern "C" void player_fire_weapon(
     const vec2f_t *aim,
     char fire_requested,

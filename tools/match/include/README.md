@@ -14,3 +14,9 @@ that is clearer.
 objects in the original `gfxs_t`.  A scratch can override
 `CRIMSONLAND_GFX_BLOCK_TYPE` when its exact constructor-facing class view is
 more specific than the shared recovered block type.
+
+`crimsonland_terrain_owner.h` restores the authenticated 2003 `terrain_t`
+aggregate rooted at `terrain_render_target`: the render target, dimensions,
+three selectors, and sixteen terrain texture handles.  Exact producer and
+consumer calibrations guard the recovered member offsets before WIP scratches
+opt in to the aggregate names.

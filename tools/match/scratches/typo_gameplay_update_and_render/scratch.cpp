@@ -2,6 +2,9 @@
 #include <string.h>
 
 #include "crimsonland_gameplay.h"
+
+#define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
+#include "crimsonland_terrain_owner.h"
 #include "grim2d_cpp.h"
 
 extern IGrim2D_cpp *grim_interface_ptr;

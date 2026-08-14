@@ -1,5 +1,8 @@
 #include "crimsonland_gameplay.h"
 
+#define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
+#include "crimsonland_terrain_owner.h"
+
 struct quest_timeline_vec2_t {
     float x;
     float y;

@@ -1,4 +1,5 @@
 #include "crimsonland_gameplay.h"
+
 #include "grim2d_cpp.h"
 
 extern IGrim2D_cpp *grim_interface_ptr;
@@ -34,6 +35,9 @@ extern quest_meta_t quest_meta_terrain_desc_unlock_gt_0x13;
 extern quest_meta_t quest_meta_terrain_desc_unlock_gt_0x1d;
 extern quest_meta_t quest_meta_terrain_desc_unlock_gt_0x27;
 }
+
+#define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
+#include "crimsonland_terrain_owner.h"
 
 extern "C" void terrain_generate_random(void)
 {

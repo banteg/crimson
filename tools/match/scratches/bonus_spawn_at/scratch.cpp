@@ -1,5 +1,8 @@
 #include "crimsonland_gameplay.h"
 
+#define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
+#include "crimsonland_terrain_owner.h"
+
 extern "C" bonus_entry_t *bonus_spawn_at(
     vec2f_t *pos,
     bonus_id_t bonus_id,
