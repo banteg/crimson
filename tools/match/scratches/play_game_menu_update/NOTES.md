@@ -278,3 +278,20 @@ grew the frame from 0x2c to 0x34, emitted four extra instructions, and
 regressed the match to 89.35% without moving the opening temporary. The
 canonical scoped object remains retained. Spec SHA-256:
 `18bdd85cd8aa0633514ef80e82966439ffd136114497e2d20aebcac0fd200129`.
+
+## Original drop-list constructor recovery (2026-08-14)
+
+Live native initialization at `0x0044f57f..0x0044f5aa` writes the player-count
+drop-list in the same member order as the recovered 2003 `gdiDropList_t`
+constructor. `original-drop-list-constructor-mutations.json` confirms that the
+historical `open = selected_index = 0` chain is byte-identical to the 99.74%,
+777/777-instruction, prefix-120, `321/0/0` baseline. Reversing the chain keeps
+the masked instruction score unchanged but degrades the audit to `319/0/2`.
+
+The authenticated chain is retained as the only audit-clean source spelling.
+Source SHA-256 is
+`e8277e2b4e7ebb4d98e347672b20f41586f9a26a5debc0e0ad6d758b9ba89af0`;
+spec SHA-256 is
+`495045c5923a9a16210ff1e411b9aea1d4700a320099751a1424ae30fc56f4c6`;
+the 17-record ledger SHA-256 is
+`e79c8d9e9365b5de64a1675c1059dc723cabe14b01fd5e4c126de9607dfe8a46`.

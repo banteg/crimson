@@ -76,8 +76,7 @@ struct highscore_list_widget_t {
         enabled = true;
         active_index = 0;
         hovered = false;
-        selected_index = 0;
-        open = 0;
+        open = selected_index = 0;
         item_count = 0;
         items = 0;
     }

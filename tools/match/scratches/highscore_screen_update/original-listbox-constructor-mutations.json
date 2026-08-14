@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "original-listbox-column-clear",
+      "find": "        int *column = column_offsets;\n        int *end = column_offsets + 2;\n        while (column != end) {\n            *column++ = 0;\n        }\n",
+      "replacements": [
+        {
+          "name": "original-eight-byte-memset",
+          "text": "        memset(column_offsets, 0, 8);\n"
+        },
+        {
+          "name": "typed-two-entry-memset",
+          "text": "        memset(column_offsets, 0, sizeof(int) * 2);\n"
+        },
+        {
+          "name": "whole-array-memset",
+          "text": "        memset(column_offsets, 0, sizeof(column_offsets));\n"
+        }
+      ]
+    }
+  ]
+}

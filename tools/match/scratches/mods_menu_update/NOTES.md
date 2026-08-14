@@ -245,3 +245,25 @@ result improves from **94.290123%** to **94.444444%**, reduces the fuzzy gap by
 **`184/0/0`**. The remaining localized regions are the documented stack-slot
 and frame-size residue. Current source SHA-256 is
 `58f6b7611309ee0c9275c67a83b117952fd85824dfab0d9bd58e152a01044fdf`.
+
+## Original listbox constructor transfer (2026-08-14)
+
+The recovered `gdiListBox_t` declaration in the 2003 header clears exactly
+eight bytes of its eight-entry `columnWidth` array. Live native disassembly at
+`0x0040ec43..0x0040ec5c` independently confirms that this caller zeroes only
+the first two dwords before registering the local-static destructor.
+
+`original-listbox-constructor-mutations.json` tests the literal historical
+`memset(column_offsets, 0, 8)`, an equivalent typed two-entry clear, and the
+tempting whole-array correction. Both two-entry forms are byte-identical to
+the retained 94.44%, 648/648-instruction, `184/0/0` result. Clearing all eight
+entries loses `144.387006` fuzzy-weighted bytes, grows to 650 instructions,
+and worsens references to `170/0/1`.
+
+The exact historical literal is retained because it recovers authenticated
+source without changing a target metric. Source SHA-256 is
+`8e43e2e0c58fac41585c44cd059fff456aa7a6fd16e602015d1d59a4dd9257b4`;
+spec SHA-256 is
+`6b096de434002e9466c10784ee41ee94046e81c56cd660fbe9796b0342a78e03`;
+the 14-record ledger SHA-256 is
+`d8e6701cf8d2c4c669ac3a6990200cde183815efb9ea6fe8c53c2580d97eae92`.

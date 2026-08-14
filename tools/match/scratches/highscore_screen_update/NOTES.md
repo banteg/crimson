@@ -526,3 +526,32 @@ and worsens references from `594/0/4` to `586/0/5`. No source change is
 retained. The current-baseline record is complete and error-free; the updated
 `experiments.jsonl` SHA-256 is
 `10bdf8f2902eba6357813259e6c08c83f781c936dbb3bc960d91df7dee4999ab`.
+
+## Original UI constructor boundary (2026-08-14)
+
+The authenticated 2003 header supplies both `gdiListBox_t` and
+`gdiDropList_t` constructors, but the current native caller proves that their
+source spellings transfer differently. Native `0x00442ca0..0x00442ca8`
+zeros exactly the first two listbox-column dwords. Nevertheless, replacing
+the retained bounded pointer walk with either the historical literal
+`memset(..., 8)` or its typed equivalent loses `54.993267` weighted bytes,
+one candidate instruction, and three resolved references. A whole-array clear
+loses `253.016429` weighted bytes and raises the audit to `543/0/17`.
+The pointer walk therefore remains the stronger 1.9.93 compiler-facing source.
+
+By contrast, the three native drop-list guards store `enabled`, `active_index`,
+`hovered`, `selected_index`, `open`, `item_count`, and `items` in precisely
+the order produced by the historical `open = selected_index = 0` chain. That
+exact chain is byte- and reference-neutral at 78.43%, 1,969/2,004
+instructions, prefix 45, and `594/0/4`; reversing it preserves masked bytes
+but creates six additional reference mismatches. The historical chain is
+retained as the uniquely audit-clean source spelling.
+
+The listbox and drop-list spec SHA-256 values are
+`980601e62e2cd7e162a4999934cc50d354a0f6bd50e9f22156b281f75f991858`
+and
+`495045c5923a9a16210ff1e411b9aea1d4700a320099751a1424ae30fc56f4c6`.
+Retained source SHA-256 is
+`2b81c0b2bfbf376734455e98336eec3bc43702cffe15fd16e36a967c6e14e2dc`;
+the 22-record ledger SHA-256 is
+`9ab3997ea2a87e05f10ff804b27280173066bfb93983d4d0dfb8739a20f75139`.

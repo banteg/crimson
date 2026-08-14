@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "original-drop-list-zero-chain",
+      "find": "        enabled = true;\n        active_index = 0;\n        hovered = false;\n        selected_index = 0;\n        open = 0;\n        item_count = 0;\n        items = 0;\n",
+      "replacements": [
+        {
+          "name": "original-open-selected-chain",
+          "text": "        enabled = true;\n        active_index = 0;\n        hovered = false;\n        open = selected_index = 0;\n        item_count = 0;\n        items = 0;\n"
+        },
+        {
+          "name": "reversed-selected-open-chain",
+          "text": "        enabled = true;\n        active_index = 0;\n        hovered = false;\n        selected_index = open = 0;\n        item_count = 0;\n        items = 0;\n"
+        }
+      ]
+    }
+  ]
+}
