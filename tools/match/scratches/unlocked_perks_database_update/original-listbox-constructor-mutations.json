@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "original-listbox-constructor",
+      "find": "        memset(column_offsets, 0, 8);\n",
+      "replacements": [
+        {
+          "name": "two-entry-loop",
+          "text": "        for (int index = 0; index < 2; ++index) {\n            column_offsets[index] = 0;\n        }\n"
+        },
+        {
+          "name": "two-int-memset",
+          "text": "        memset(column_offsets, 0, sizeof(int) * 2);\n"
+        },
+        {
+          "name": "whole-array-memset",
+          "text": "        memset(column_offsets, 0, sizeof(column_offsets));\n"
+        }
+      ]
+    }
+  ]
+}

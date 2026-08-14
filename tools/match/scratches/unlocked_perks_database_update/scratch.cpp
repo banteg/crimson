@@ -1,6 +1,8 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
 
+#include <string.h>
+
 extern IGrim2D_cpp *grim_interface_ptr;
 
 #ifndef CRIMSON_DATABASE_UI_TYPES
@@ -37,9 +39,7 @@ struct database_scrollbar_t {
 
     database_scrollbar_t()
     {
-        for (int index = 0; index < 2; ++index) {
-            column_offsets[index] = 0;
-        }
+        memset(column_offsets, 0, 8);
     }
 
     ~database_scrollbar_t() {}

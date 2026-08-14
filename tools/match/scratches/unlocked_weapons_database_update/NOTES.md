@@ -210,3 +210,22 @@ boundary. Every form is byte-identical at 99.81%, 523/523 instructions, and
 `157/0/0` references. Inlining a natural helper does not move the virtual-table
 load ahead of the integer-to-float conversion; the sibling perks callback has
 the same backend inversion.
+
+## Original `gdiListBox_t` constructor recovery (2026-08-14)
+
+The recovered original `Crimson.h` identifies the function-local scrollbar as
+the historical `gdiListBox_t` layout and supplies its exact constructor:
+`memset(columnWidth, 0, 8)`. The header SHA-256 is
+`41fa136d8de7cd17c69b10f428ec78e37763d98896ca34990a061015801c8fda`.
+This explains why only the first two integer column widths are initialized;
+the literal eight-byte length is source behavior, not a decompiler guess.
+
+Live native initialization zeroes the same two dwords while publishing the
+local-static guard and destructor. Replacing the previously recovered
+two-entry loop with the literal original `memset` is byte-identical at 99.81%,
+523/523 instructions, prefix 74, and `157/0/0` references, so the original
+expression is retained. `sizeof(int) * 2` is also byte-identical, while the
+tempting whole-array clear falls to 80.53%, moves the first mismatch to
+instruction 15, and leaves `117/0/4` references. The complete replay is in
+`original-listbox-constructor-mutations.json` (SHA-256
+`3e870ed0db01b516070ab5695cf9e4192d064ec9d5d89759fb9ca6cd0a94de8f`).
