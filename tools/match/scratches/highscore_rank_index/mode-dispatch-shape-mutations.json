@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mode-dispatch-shape",
+      "find": "int highscore_rank_index(void)\n{\n    int i;\n\n    if (config_game_mode == GAME_MODE_RUSH) {\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms >\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    }\n\n    if (config_game_mode == GAME_MODE_QUEST) {\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms <\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    }\n\n    for (i = 0; i < highscore_table_count; i++) {\n        if (highscore_score_xp > (int)highscore_table[i].score_xp) {\n            return i;\n        }\n    }\n    return highscore_table_count;\n}",
+      "replacements": [
+        {
+          "name": "else-if-else",
+          "text": "int highscore_rank_index(void)\n{\n    int i;\n\n    if (config_game_mode == GAME_MODE_RUSH) {\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms >\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    } else if (config_game_mode == GAME_MODE_QUEST) {\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms <\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    } else {\n        for (i = 0; i < highscore_table_count; i++) {\n            if (highscore_score_xp > (int)highscore_table[i].score_xp) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    }\n}"
+        },
+        {
+          "name": "nested-if-else",
+          "text": "int highscore_rank_index(void)\n{\n    int i;\n\n    if (config_game_mode == GAME_MODE_RUSH) {\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms >\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    } else {\n        if (config_game_mode == GAME_MODE_QUEST) {\n            for (i = 0; i < highscore_table_count; i++) {\n                if (survival_elapsed_ms <\n                    (int)highscore_table[i].survival_elapsed_ms) {\n                    return i;\n                }\n            }\n            return highscore_table_count;\n        } else {\n            for (i = 0; i < highscore_table_count; i++) {\n                if (highscore_score_xp > (int)highscore_table[i].score_xp) {\n                    return i;\n                }\n            }\n            return highscore_table_count;\n        }\n    }\n}"
+        },
+        {
+          "name": "switch-cases",
+          "text": "int highscore_rank_index(void)\n{\n    int i;\n\n    switch (config_game_mode) {\n    case GAME_MODE_RUSH:\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms >\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    case GAME_MODE_QUEST:\n        for (i = 0; i < highscore_table_count; i++) {\n            if (survival_elapsed_ms <\n                (int)highscore_table[i].survival_elapsed_ms) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    default:\n        for (i = 0; i < highscore_table_count; i++) {\n            if (highscore_score_xp > (int)highscore_table[i].score_xp) {\n                return i;\n            }\n        }\n        return highscore_table_count;\n    }\n}"
+        }
+      ]
+    }
+  ]
+}

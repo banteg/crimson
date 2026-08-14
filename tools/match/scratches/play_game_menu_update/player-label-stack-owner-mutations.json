@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "player-label-declaration",
+      "find": "    static play_game_button_t tutorial_button;\n\n    play_game_vec2_t position =",
+      "replacements": [
+        {
+          "name": "declare-before-opening-position",
+          "text": "    static play_game_button_t tutorial_button;\n\n    char *player_count_labels[4];\n    play_game_vec2_t position ="
+        },
+        {
+          "name": "declare-before-tutorial-button",
+          "text": "    char *player_count_labels[4];\n    static play_game_button_t tutorial_button;\n\n    play_game_vec2_t position ="
+        }
+      ]
+    },
+    {
+      "name": "player-label-initialization",
+      "find": "    char *player_count_labels[4] = {\n        \"1 player\", \"2 players\", \"3 players\", \"4 players\"\n    };",
+      "replacements": [
+        {
+          "name": "assign-elements-in-order",
+          "text": "    player_count_labels[0] = \"1 player\";\n    player_count_labels[1] = \"2 players\";\n    player_count_labels[2] = \"3 players\";\n    player_count_labels[3] = \"4 players\";"
+        },
+        {
+          "name": "assign-pointers-through-cursor",
+          "text": "    char **player_label_cursor = player_count_labels;\n    player_label_cursor[0] = \"1 player\";\n    player_label_cursor[1] = \"2 players\";\n    player_label_cursor[2] = \"3 players\";\n    player_label_cursor[3] = \"4 players\";"
+        }
+      ]
+    }
+  ]
+}

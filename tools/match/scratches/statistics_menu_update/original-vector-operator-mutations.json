@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-add-operator",
+      "find": "    statistics_vec2_t operator+(const statistics_vec2_t &other) const\n    {\n        return statistics_vec2_t(x + other.x, other.y + y);\n    }",
+      "replacements": [
+        {
+          "name": "nonconst-current-order",
+          "text": "    statistics_vec2_t operator+(const statistics_vec2_t &other)\n    {\n        return statistics_vec2_t(x + other.x, other.y + y);\n    }"
+        },
+        {
+          "name": "original-nonconst-operator",
+          "text": "    statistics_vec2_t operator+(const statistics_vec2_t &other)\n    {\n        return statistics_vec2_t(x + other.x, y + other.y);\n    }"
+        }
+      ]
+    }
+  ]
+}

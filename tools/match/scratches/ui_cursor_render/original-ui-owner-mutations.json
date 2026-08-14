@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ui-runtime-owner",
+      "find": "#include \"crimsonland_gameplay.h\"\n#include \"grim2d_cpp.h\"",
+      "replacements": [
+        {
+          "name": "authenticated-ui-aggregate",
+          "text": "#include \"crimsonland_gameplay.h\"\n#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER\n#include \"crimsonland_ui_state_owner.h\"\n#include \"grim2d_cpp.h\""
+        }
+      ]
+    }
+  ]
+}

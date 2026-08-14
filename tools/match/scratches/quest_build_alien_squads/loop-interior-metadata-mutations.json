@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-wave-metadata-owner",
+      "find": "        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms - 400;\n        spawn->count = 1;",
+      "replacements": [
+        {
+          "name": "trigger-field-cursor-after-position",
+          "text": "        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        int *spawn_trigger = &spawn->trigger_time_ms;\n        spawn_trigger[-1] = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn_trigger[0] = trigger_time_ms - 400;\n        spawn_trigger[1] = 1;"
+        },
+        {
+          "name": "metadata-cursor-after-position",
+          "text": "        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        int *spawn_metadata = &spawn->template_id;\n        spawn_metadata[0] = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn_metadata[1] = trigger_time_ms - 400;\n        spawn_metadata[2] = 1;"
+        },
+        {
+          "name": "trigger-field-cursor-before-position",
+          "text": "        int *spawn_trigger = &spawn->trigger_time_ms;\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        spawn_trigger[-1] = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn_trigger[0] = trigger_time_ms - 400;\n        spawn_trigger[1] = 1;"
+        },
+        {
+          "name": "metadata-cursor-before-position",
+          "text": "        int *spawn_metadata = &spawn->template_id;\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        spawn_metadata[0] = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn_metadata[1] = trigger_time_ms - 400;\n        spawn_metadata[2] = 1;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-first-wave-field-cursor",
+      "find": "    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n    } while (--waves_remaining != 0);",
+      "replacements": [
+        {
+          "name": "trigger-pointer-resynchronized",
+          "text": "    int *trigger_cursor = &spawns[spawn_index].trigger_time_ms;\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        *trigger_cursor = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n        trigger_cursor = &spawns[spawn_index].trigger_time_ms;\n    } while (--waves_remaining != 0);"
+        },
+        {
+          "name": "trigger-pointer-stride",
+          "text": "    int *trigger_cursor = &spawns[spawn_index].trigger_time_ms;\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        spawns[spawn_index].pos = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        *trigger_cursor = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n        trigger_cursor += sizeof(quest_entry_original_t) / sizeof(int);\n    } while (--waves_remaining != 0);"
+        },
+        {
+          "name": "position-pointer-resynchronized",
+          "text": "    quest_vec2_t *position_cursor = &spawns[spawn_index].pos;\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        *position_cursor = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n        position_cursor = &spawns[spawn_index].pos;\n    } while (--waves_remaining != 0);"
+        },
+        {
+          "name": "position-pointer-stride",
+          "text": "    quest_vec2_t *position_cursor = &spawns[spawn_index].pos;\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;\n    do {\n        *position_cursor = quest_vec2_t(\n            1174.0f,\n            (float)terrain_texture_height * 0.5f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;\n        ++spawn_index;\n        trigger_time_ms += 4000;\n        position_cursor = (quest_vec2_t *)(\n            (char *)position_cursor + sizeof(quest_entry_original_t));\n    } while (--waves_remaining != 0);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ui-owner-declaration",
+      "find": "#include \"grim2d_cpp.h\"\n",
+      "replacements": [
+        {
+          "name": "authenticated-ui-owner",
+          "text": "#include \"grim2d_cpp.h\"\n#include \"crimsonland_ui_state_owner.h\"\n"
+        }
+      ]
+    },
+    {
+      "name": "ui-owner-macros",
+      "find": "#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n",
+      "replacements": [
+        {
+          "name": "authenticated-ui-owner",
+          "text": "#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER\n#include \"crimsonland_ui_state_owner.h\"\n"
+        }
+      ]
+    },
+    {
+      "name": "player-aux-owner",
+      "find": "    memset(player_aux_timer, 0, sizeof(player_aux_timer));",
+      "replacements": [
+        {
+          "name": "authenticated-ui-member",
+          "text": "    memset(\n        ui_runtime_state.player_aux_timer,\n        0,\n        sizeof(ui_runtime_state.player_aux_timer));"
+        }
+      ]
+    }
+  ]
+}

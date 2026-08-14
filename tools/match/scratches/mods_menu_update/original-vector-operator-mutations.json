@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-add-operator",
+      "find": "    mods_vec2_t operator+(const mods_vec2_t &other) const\n    {\n        return mods_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "original-nonconst-operator",
+          "text": "    mods_vec2_t operator+(const mods_vec2_t &other)\n    {\n        return mods_vec2_t(x + other.x, y + other.y);\n    }"
+        }
+      ]
+    }
+  ]
+}

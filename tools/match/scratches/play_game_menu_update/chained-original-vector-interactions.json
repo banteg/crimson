@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "original-union-storage",
+          "text": "    union {\n        struct { float x, y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "vector-constructor",
+      "find": "    play_game_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    play_game_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "vector-add-shape",
+      "find": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const\n    {\n        return play_game_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "original-nonconst-direct-return",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)\n    {\n        return play_game_vec2_t(x + other.x, y + other.y);\n    }"
+        },
+        {
+          "name": "original-nonconst-named-result",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)\n    {\n        play_game_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        },
+        {
+          "name": "original-nonconst-default-result",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)\n    {\n        play_game_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }"
+        },
+        {
+          "name": "const-named-result",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const\n    {\n        play_game_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "opening-chain",
+      "find": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    position = position + play_game_vec2_t(330.0f, 50.0f);",
+      "replacements": [
+        {
+          "name": "label-before-three-term-sum",
+          "text": "    tutorial_button.label = \"Tutorial\";\n    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x\n        + play_game_vec2_t(330.0f, 50.0f);"
+        }
+      ]
+    }
+  ]
+}

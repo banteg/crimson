@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "paired-wave-cursor",
+      "find": "    quest_entry_original_t *spawn = &spawns[entry_count];\n    int trigger_time_ms = 36200;\n    while (trigger_time_ms < 83000) {\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms - 400;\n        spawn->count = 1;\n        ++entry_count;\n\n        spawns[entry_count].pos.x = 1088.0f;\n        spawns[entry_count].pos.y = 1088.0f;\n        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawns[entry_count].trigger_time_ms = trigger_time_ms;\n        spawns[entry_count].count = 1;\n        ++entry_count;\n\n        trigger_time_ms += 1800;\n        spawn = &spawns[entry_count];\n    }",
+      "replacements": [
+        {
+          "name": "single-cursor-increment-each-record",
+          "text": "    quest_entry_original_t *spawn = &spawns[entry_count];\n    int trigger_time_ms = 36200;\n    while (trigger_time_ms < 83000) {\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms - 400;\n        spawn->count = 1;\n        ++spawn;\n        ++entry_count;\n\n        spawn->pos.x = 1088.0f;\n        spawn->pos.y = 1088.0f;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n        ++spawn;\n        ++entry_count;\n\n        trigger_time_ms += 1800;\n    }"
+        },
+        {
+          "name": "single-cursor-tail-increment",
+          "text": "    quest_entry_original_t *spawn = &spawns[entry_count];\n    int trigger_time_ms = 36200;\n    while (trigger_time_ms < 83000) {\n        spawn[0].pos.x = -64.0f;\n        spawn[0].pos.y = -64.0f;\n        spawn[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn[0].trigger_time_ms = trigger_time_ms - 400;\n        spawn[0].count = 1;\n        ++entry_count;\n\n        spawn[1].pos.x = 1088.0f;\n        spawn[1].pos.y = 1088.0f;\n        spawn[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn[1].trigger_time_ms = trigger_time_ms;\n        spawn[1].count = 1;\n        ++entry_count;\n\n        trigger_time_ms += 1800;\n        spawn += 2;\n    }"
+        },
+        {
+          "name": "cursor-count-derived-return",
+          "text": "    quest_entry_original_t *spawn = &spawns[entry_count];\n    int trigger_time_ms = 36200;\n    while (trigger_time_ms < 83000) {\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = -64.0f;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms - 400;\n        spawn->count = 1;\n        ++spawn;\n\n        spawn->pos.x = 1088.0f;\n        spawn->pos.y = 1088.0f;\n        spawn->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n        ++spawn;\n\n        trigger_time_ms += 1800;\n    }\n    entry_count = (int)(spawn - spawns);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-special-members",
+      "find": "struct reset_vec2_t {\n    float x;\n    float y;\n\n    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n};",
+      "replacements": [
+        {
+          "name": "explicit-copy-assignment",
+          "text": "struct reset_vec2_t {\n    float x;\n    float y;\n\n    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    reset_vec2_t &operator=(const reset_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n};"
+        },
+        {
+          "name": "explicit-copy-assignment-y-first",
+          "text": "struct reset_vec2_t {\n    float x;\n    float y;\n\n    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    reset_vec2_t &operator=(const reset_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n        return *this;\n    }\n};"
+        },
+        {
+          "name": "by-value-copy-assignment",
+          "text": "struct reset_vec2_t {\n    float x;\n    float y;\n\n    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    reset_vec2_t &operator=(reset_vec2_t other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n};"
+        },
+        {
+          "name": "explicit-copy-constructor",
+          "text": "struct reset_vec2_t {\n    float x;\n    float y;\n\n    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n    reset_vec2_t(const reset_vec2_t &other) : x(other.x), y(other.y) {}\n};"
+        },
+        {
+          "name": "default-plus-copy-assignment",
+          "text": "struct reset_vec2_t {\n    float x;\n    float y;\n\n    reset_vec2_t() {}\n    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    reset_vec2_t &operator=(const reset_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n};"
+        }
+      ]
+    },
+    {
+      "name": "move-target-owner",
+      "find": "        *(reset_vec2_t *)&player->move_target =\n            reset_vec2_t(-1.0f, -1.0f);",
+      "replacements": [
+        {
+          "name": "named-reference",
+          "text": "        reset_vec2_t &move_target =\n            *(reset_vec2_t *)&player->move_target;\n        move_target = reset_vec2_t(-1.0f, -1.0f);"
+        },
+        {
+          "name": "named-pointer",
+          "text": "        reset_vec2_t *move_target =\n            (reset_vec2_t *)&player->move_target;\n        *move_target = reset_vec2_t(-1.0f, -1.0f);"
+        },
+        {
+          "name": "typed-subobject-pointer",
+          "text": "        reset_vec2_t *move_target =\n            (reset_vec2_t *)&player->move_target_x;\n        *move_target = reset_vec2_t(-1.0f, -1.0f);"
+        }
+      ]
+    }
+  ]
+}

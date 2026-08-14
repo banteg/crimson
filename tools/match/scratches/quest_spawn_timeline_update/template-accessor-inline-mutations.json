@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-accessor-definition",
+      "find": "};\n\nextern \"C\" int frame_dt_ms;",
+      "replacements": [
+        {
+          "name": "inline-pointer-accessor",
+          "text": "};\n\nstatic __inline int *quest_spawn_template_ptr(\n    quest_spawn_entry_t *entry)\n{\n    return &entry->template_id;\n}\n\nextern \"C\" int frame_dt_ms;"
+        },
+        {
+          "name": "forceinline-pointer-accessor",
+          "text": "};\n\nstatic __forceinline int *quest_spawn_template_ptr(\n    quest_spawn_entry_t *entry)\n{\n    return &entry->template_id;\n}\n\nextern \"C\" int frame_dt_ms;"
+        },
+        {
+          "name": "ordinary-pointer-accessor",
+          "text": "};\n\nstatic int *quest_spawn_template_ptr(quest_spawn_entry_t *entry)\n{\n    return &entry->template_id;\n}\n\nextern \"C\" int frame_dt_ms;"
+        }
+      ]
+    },
+    {
+      "name": "template-accessor-call",
+      "find": "            int *template_id = &entry->template_id;\n",
+      "replacements": [
+        {
+          "name": "call-pointer-accessor",
+          "text": "            int *template_id = quest_spawn_template_ptr(entry);\n"
+        }
+      ]
+    }
+  ]
+}

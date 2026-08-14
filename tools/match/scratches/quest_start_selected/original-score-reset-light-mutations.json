@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "active-score-reset-shape",
+      "find": "    highscore_active_record.hardcore_marker = 0;\n    highscore_active_record.survival_elapsed_ms = 0;\n    highscore_active_record.score_xp = 0;\n    highscore_active_record.quest_stage_minor = 0;\n    highscore_active_record.quest_stage_major = 0;\n    highscore_active_record.game_mode_id = 0;\n    highscore_active_record.most_used_weapon_id = 0;\n    highscore_active_record.creature_kill_count = 0;\n    highscore_active_record.shots_hit = 0;\n    highscore_active_record.shots_fired = 0;\n    highscore_active_record.date_checksum = 0;\n    highscore_active_record.year_offset = 0;\n    highscore_active_record.month = 0;\n    highscore_active_record.day = 0;\n    highscore_active_record.flags = 0;",
+      "replacements": [
+        {
+          "name": "original-reset-light-chains",
+          "text": "    highscore_active_record.hardcore_marker = 0;\n    highscore_active_record.score_xp =\n        highscore_active_record.survival_elapsed_ms = 0;\n    highscore_active_record.game_mode_id =\n        highscore_active_record.quest_stage_major =\n        highscore_active_record.quest_stage_minor = 0;\n    highscore_active_record.most_used_weapon_id = 0;\n    highscore_active_record.shots_fired =\n        highscore_active_record.shots_hit =\n        highscore_active_record.creature_kill_count = 0;\n    highscore_active_record.day =\n        highscore_active_record.month =\n        highscore_active_record.year_offset =\n        highscore_active_record.date_checksum = 0;\n    highscore_active_record.flags = 0;"
+        },
+        {
+          "name": "grouped-forward-chains",
+          "text": "    highscore_active_record.hardcore_marker = 0;\n    highscore_active_record.survival_elapsed_ms =\n        highscore_active_record.score_xp = 0;\n    highscore_active_record.quest_stage_minor =\n        highscore_active_record.quest_stage_major =\n        highscore_active_record.game_mode_id = 0;\n    highscore_active_record.most_used_weapon_id = 0;\n    highscore_active_record.creature_kill_count =\n        highscore_active_record.shots_hit =\n        highscore_active_record.shots_fired = 0;\n    highscore_active_record.date_checksum =\n        highscore_active_record.year_offset =\n        highscore_active_record.month =\n        highscore_active_record.day = 0;\n    highscore_active_record.flags = 0;"
+        }
+      ]
+    }
+  ]
+}

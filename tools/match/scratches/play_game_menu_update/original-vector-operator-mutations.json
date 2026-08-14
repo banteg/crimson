@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-add-operator",
+      "find": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const\n    {\n        return play_game_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "original-nonconst-operator",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)\n    {\n        return play_game_vec2_t(x + other.x, y + other.y);\n    }"
+        }
+      ]
+    }
+  ]
+}

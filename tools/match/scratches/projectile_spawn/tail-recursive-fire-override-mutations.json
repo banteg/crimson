@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-override-source-shape",
+      "find": "    if (!bonus_spawn_guard) {\n        while (\n            (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3)\n            && (\n                ++highscore_record_shots_fired,\n                type_id != PROJECTILE_TYPE_FIRE_BULLETS\n                    && (player_state_table[0].fire_bullets_timer > 0.0f\n                        || player_state_table[1].fire_bullets_timer > 0.0f)\n            )\n        ) {\n            type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "nested-tail-recursive-return",
+          "text": "    if (!bonus_spawn_guard) {\n        if (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {\n            ++highscore_record_shots_fired;\n            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS\n                && (player_state_table[0].fire_bullets_timer > 0.0f\n                    || player_state_table[1].fire_bullets_timer > 0.0f)) {\n                return projectile_spawn(\n                    pos, angle, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "combined-tail-recursive-return",
+          "text": "    if (!bonus_spawn_guard\n        && (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3)) {\n        ++highscore_record_shots_fired;\n        if (type_id != PROJECTILE_TYPE_FIRE_BULLETS\n            && (player_state_table[0].fire_bullets_timer > 0.0f\n                || player_state_table[1].fire_bullets_timer > 0.0f)) {\n            return projectile_spawn(\n                pos, angle, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);\n        }\n    }\n"
+        },
+        {
+          "name": "comma-tail-recursive-return",
+          "text": "    if (!bonus_spawn_guard\n        && (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3)\n        && (++highscore_record_shots_fired,\n            type_id != PROJECTILE_TYPE_FIRE_BULLETS)\n        && (player_state_table[0].fire_bullets_timer > 0.0f\n            || player_state_table[1].fire_bullets_timer > 0.0f)) {\n        return projectile_spawn(\n            pos, angle, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

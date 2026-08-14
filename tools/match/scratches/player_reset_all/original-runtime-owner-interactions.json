@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "gameplay-run-state-owner",
+      "find": "#include \"crimsonland_gameplay.h\"\n",
+      "replacements": [
+        {
+          "name": "authenticated-game-aggregate",
+          "text": "#include \"crimsonland_gameplay.h\"\n#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n"
+        }
+      ]
+    },
+    {
+      "name": "ui-runtime-state-owner",
+      "find": "void player_reset_all(void)\n",
+      "replacements": [
+        {
+          "name": "authenticated-ui-aggregate",
+          "text": "#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER\n#include \"crimsonland_ui_state_owner.h\"\n\nvoid player_reset_all(void)\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-grid-helper-definition",
+      "find": "extern GrimUV grim_subrect_table[256];\n\nvoid grim_state_init(void)\n",
+      "replacements": [
+        {
+          "name": "shared-counter-references",
+          "text": "extern GrimUV grim_subrect_table[256];\n\nstatic __forceinline void init_final_grid_refs(\n    GrimUV *table, int &x, int &y)\n{\n    y = 0;\n    float *row_v_cursor = &table[0].v;\n    for (; y < 16; ++y) {\n        float row_v = (float)y * 0.0625f;\n        x = 0;\n        float *entry_v = row_v_cursor;\n        row_v_cursor += 32;\n        for (; x < 16; entry_v += 2, ++x) {\n            entry_v[-1] = (float)x * 0.0625f;\n            entry_v[0] = row_v;\n        }\n    }\n}\n\nvoid grim_state_init(void)\n"
+        },
+        {
+          "name": "shared-counter-pointers",
+          "text": "extern GrimUV grim_subrect_table[256];\n\nstatic __forceinline void init_final_grid_ptrs(\n    GrimUV *table, int *x, int *y)\n{\n    *y = 0;\n    float *row_v_cursor = &table[0].v;\n    for (; *y < 16; ++*y) {\n        float row_v = (float)*y * 0.0625f;\n        *x = 0;\n        float *entry_v = row_v_cursor;\n        row_v_cursor += 32;\n        for (; *x < 16; entry_v += 2, ++*x) {\n            entry_v[-1] = (float)*x * 0.0625f;\n            entry_v[0] = row_v;\n        }\n    }\n}\n\nvoid grim_state_init(void)\n"
+        },
+        {
+          "name": "helper-local-counters",
+          "text": "extern GrimUV grim_subrect_table[256];\n\nstatic __forceinline void init_final_grid_locals(GrimUV *table)\n{\n    int local_x;\n    int local_y = 0;\n    float *row_v_cursor = &table[0].v;\n    for (; local_y < 16; ++local_y) {\n        float row_v = (float)local_y * 0.0625f;\n        local_x = 0;\n        float *entry_v = row_v_cursor;\n        row_v_cursor += 32;\n        for (; local_x < 16; entry_v += 2, ++local_x) {\n            entry_v[-1] = (float)local_x * 0.0625f;\n            entry_v[0] = row_v;\n        }\n    }\n}\n\nvoid grim_state_init(void)\n"
+        },
+        {
+          "name": "implicit-table-shared-counters",
+          "text": "extern GrimUV grim_subrect_table[256];\n\nstatic __forceinline void init_final_grid_global(int &x, int &y)\n{\n    y = 0;\n    float *row_v_cursor = &grim_subrect_table[0].v;\n    for (; y < 16; ++y) {\n        float row_v = (float)y * 0.0625f;\n        x = 0;\n        float *entry_v = row_v_cursor;\n        row_v_cursor += 32;\n        for (; x < 16; entry_v += 2, ++x) {\n            entry_v[-1] = (float)x * 0.0625f;\n            entry_v[0] = row_v;\n        }\n    }\n}\n\nvoid grim_state_init(void)\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-helper-call",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "call-shared-counter-references",
+          "text": "    init_final_grid_refs(grim_subrect_table, x, y);\n"
+        },
+        {
+          "name": "call-shared-counter-pointers",
+          "text": "    init_final_grid_ptrs(grim_subrect_table, &x, &y);\n"
+        },
+        {
+          "name": "call-helper-local-counters",
+          "text": "    init_final_grid_locals(grim_subrect_table);\n"
+        },
+        {
+          "name": "call-implicit-table-shared-counters",
+          "text": "    init_final_grid_global(x, y);\n"
+        }
+      ]
+    }
+  ]
+}

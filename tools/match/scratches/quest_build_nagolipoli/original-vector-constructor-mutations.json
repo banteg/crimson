@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "original-vector-constructor",
+      "find": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n",
+      "replacements": [
+        {
+          "name": "assignment-body",
+          "text": "    quest_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "assignment-body-original-names",
+          "text": "    quest_vec2_t(float _x, float _y)\n    {\n        x = _x;\n        y = _y;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

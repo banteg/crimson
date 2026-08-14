@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-constructor",
+      "find": "    bonus_hud_color_t(\n        float r_value,\n        float g_value,\n        float b_value,\n        float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value)\n    {\n    }",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    bonus_hud_color_t(\n        float r_value,\n        float g_value,\n        float b_value,\n        float a_value)\n    {\n        r = r_value;\n        g = g_value;\n        b = b_value;\n        a = a_value;\n    }"
+        }
+      ]
+    }
+  ]
+}

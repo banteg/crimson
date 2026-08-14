@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-constructor",
+      "find": "    creature_render_color_t(\n        float r_value, float g_value, float b_value, float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    creature_render_color_t(\n        float r_value, float g_value, float b_value, float a_value)\n    {\n        r = r_value;\n        g = g_value;\n        b = b_value;\n        a = a_value;\n    }"
+        }
+      ]
+    }
+  ]
+}

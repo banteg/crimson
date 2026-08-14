@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-constructor",
+      "find": "    perk_selection_color_t(\n        float red,\n        float green,\n        float blue,\n        float alpha)\n        : r(red), g(green), b(blue), a(alpha) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    perk_selection_color_t(\n        float red,\n        float green,\n        float blue,\n        float alpha)\n    {\n        r = red;\n        g = green;\n        b = blue;\n        a = alpha;\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "default-damage-retry-shape",
+      "find": "    float default_damage = 1.0f;\n    int index;\n    int result;\n    projectile_t *projectile;\n    projectile_t *spawned;\n\n    if (!bonus_spawn_guard) {\n        while (\n            (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3)\n            && (\n                ++highscore_record_shots_fired,\n                type_id != PROJECTILE_TYPE_FIRE_BULLETS\n                    && (player_state_table[0].fire_bullets_timer > 0.0f\n                        || player_state_table[1].fire_bullets_timer > 0.0f)\n            )\n        ) {\n            type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-while-continue-after-type",
+          "text": "    float default_damage = 1.0f;\n    int index;\n    int result;\n    projectile_t *projectile;\n    projectile_t *spawned;\n\n    if (!bonus_spawn_guard) {\n        while (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {\n            ++highscore_record_shots_fired;\n            if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                break;\n            }\n            if (player_state_table[0].fire_bullets_timer > 0.0f\n                || player_state_table[1].fire_bullets_timer > 0.0f) {\n                type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n                default_damage = 1.0f;\n                continue;\n            }\n            break;\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-while-continue-before-type",
+          "text": "    float default_damage = 1.0f;\n    int index;\n    int result;\n    projectile_t *projectile;\n    projectile_t *spawned;\n\n    if (!bonus_spawn_guard) {\n        while (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {\n            ++highscore_record_shots_fired;\n            if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                break;\n            }\n            if (player_state_table[0].fire_bullets_timer > 0.0f\n                || player_state_table[1].fire_bullets_timer > 0.0f) {\n                default_damage = 1.0f;\n                type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n                continue;\n            }\n            break;\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-while-inverted-timer-break",
+          "text": "    float default_damage = 1.0f;\n    int index;\n    int result;\n    projectile_t *projectile;\n    projectile_t *spawned;\n\n    if (!bonus_spawn_guard) {\n        while (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {\n            ++highscore_record_shots_fired;\n            if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {\n                break;\n            }\n            if (player_state_table[0].fire_bullets_timer <= 0.0f\n                && player_state_table[1].fire_bullets_timer <= 0.0f) {\n                break;\n            }\n            type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n            default_damage = 1.0f;\n        }\n    }\n"
+        },
+        {
+          "name": "retry-label-after-type",
+          "text": "    float default_damage = 1.0f;\n    int index;\n    int result;\n    projectile_t *projectile;\n    projectile_t *spawned;\n\n    if (!bonus_spawn_guard) {\nfire_override_retry:\n        if (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {\n            ++highscore_record_shots_fired;\n            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS\n                && (player_state_table[0].fire_bullets_timer > 0.0f\n                    || player_state_table[1].fire_bullets_timer > 0.0f)) {\n                type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n                default_damage = 1.0f;\n                goto fire_override_retry;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "retry-label-before-type",
+          "text": "    float default_damage = 1.0f;\n    int index;\n    int result;\n    projectile_t *projectile;\n    projectile_t *spawned;\n\n    if (!bonus_spawn_guard) {\nfire_override_retry:\n        if (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {\n            ++highscore_record_shots_fired;\n            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS\n                && (player_state_table[0].fire_bullets_timer > 0.0f\n                    || player_state_table[1].fire_bullets_timer > 0.0f)) {\n                default_damage = 1.0f;\n                type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n                goto fire_override_retry;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ui-runtime-state-owner",
+      "find": "extern \"C\" void play_game_menu_update(void)",
+      "replacements": [
+        {
+          "name": "authenticated-ui-aggregate",
+          "text": "#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER\n#include \"crimsonland_ui_state_owner.h\"\n\nextern \"C\" void play_game_menu_update(void)"
+        }
+      ]
+    }
+  ]
+}

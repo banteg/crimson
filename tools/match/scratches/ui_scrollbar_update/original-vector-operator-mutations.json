@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-add-operator",
+      "find": "    scrollbar_vec2_t operator+(const scrollbar_vec2_t &other) const\n    {\n        return scrollbar_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "original-nonconst-operator",
+          "text": "    scrollbar_vec2_t operator+(const scrollbar_vec2_t &other)\n    {\n        return scrollbar_vec2_t(x + other.x, y + other.y);\n    }"
+        }
+      ]
+    }
+  ]
+}

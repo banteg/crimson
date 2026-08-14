@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "player-aux-memset-ownership",
+      "find": "    memset(player_aux_timer, 0, sizeof(player_aux_timer));",
+      "replacements": [
+        {
+          "name": "address-of-array",
+          "text": "    memset(&player_aux_timer, 0, sizeof(player_aux_timer));"
+        },
+        {
+          "name": "first-element",
+          "text": "    memset(&player_aux_timer[0], 0, sizeof(player_aux_timer));"
+        },
+        {
+          "name": "literal-eight",
+          "text": "    memset(player_aux_timer, 0, 8);"
+        },
+        {
+          "name": "first-element-literal-eight",
+          "text": "    memset(&player_aux_timer[0], 0, 8);"
+        },
+        {
+          "name": "void-pointer",
+          "text": "    memset((void *)player_aux_timer, 0, sizeof(player_aux_timer));"
+        },
+        {
+          "name": "char-pointer",
+          "text": "    memset((char *)player_aux_timer, 0, sizeof(player_aux_timer));"
+        },
+        {
+          "name": "element-count-expression",
+          "text": "    memset(player_aux_timer, 0, 2 * sizeof(float));"
+        }
+      ]
+    }
+  ]
+}

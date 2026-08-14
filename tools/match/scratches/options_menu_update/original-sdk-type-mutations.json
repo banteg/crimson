@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "original-union-storage",
+          "text": "    union {\n        struct { float x, y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "vector-constructor",
+      "find": "    options_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    options_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "vector-add-operator",
+      "find": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }",
+      "replacements": [
+        {
+          "name": "original-inline-operator",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other)\n    {\n        return options_vec2_t(x + other.x, y + other.y);\n    }"
+        }
+      ]
+    }
+  ]
+}

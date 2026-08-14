@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "button-force-flags-constructor",
+      "find": "        force_wide = false;\n        force_small = false;",
+      "replacements": [
+        {
+          "name": "original-small-wide-chain",
+          "text": "        force_small = force_wide = false;"
+        },
+        {
+          "name": "opposite-wide-small-chain",
+          "text": "        force_wide = force_small = false;"
+        }
+      ]
+    }
+  ]
+}

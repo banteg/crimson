@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "player-label-declaration",
+      "find": "    static play_game_button_t tutorial_button;",
+      "replacements": [
+        {
+          "name": "declare-before-opening-position",
+          "text": "    static play_game_button_t tutorial_button;\n    char *player_count_labels[4];"
+        }
+      ]
+    },
+    {
+      "name": "opening-separate-origin",
+      "find": "    play_game_vec2_t position =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    position = position + play_game_vec2_t(330.0f, 50.0f);",
+      "replacements": [
+        {
+          "name": "named-origin-default-position-assignment",
+          "text": "    play_game_vec2_t origin =\n        *(play_game_vec2_t *)&ui_element_slot_11.pos_x\n        + *(play_game_vec2_t *)&ui_element_slot_11.vertices[0].x;\n    tutorial_button.label = \"Tutorial\";\n    play_game_vec2_t position;\n    position = origin + play_game_vec2_t(330.0f, 50.0f);"
+        }
+      ]
+    },
+    {
+      "name": "player-label-initialization",
+      "find": "    char *player_count_labels[4] = {\n        \"1 player\", \"2 players\", \"3 players\", \"4 players\"\n    };",
+      "replacements": [
+        {
+          "name": "assign-elements-in-order",
+          "text": "    player_count_labels[0] = \"1 player\";\n    player_count_labels[1] = \"2 players\";\n    player_count_labels[2] = \"3 players\";\n    player_count_labels[3] = \"4 players\";"
+        }
+      ]
+    },
+    {
+      "name": "vector-add-qualifier",
+      "find": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const",
+      "replacements": [
+        {
+          "name": "original-nonconst-member",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)"
+        }
+      ]
+    }
+  ]
+}

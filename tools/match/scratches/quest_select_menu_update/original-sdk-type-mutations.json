@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "original-union-storage",
+          "text": "    union {\n        struct { float x, y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "vector-constructor",
+      "find": "    quest_select_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    quest_select_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "vector-add-operator",
+      "find": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        return quest_select_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "original-nonconst-operator",
+          "text": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other)\n    {\n        return quest_select_vec2_t(x + other.x, y + other.y);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "color-constructor",
+      "find": "    quest_select_color_t(\n        float red,\n        float green,\n        float blue,\n        float alpha)\n        : r(red), g(green), b(blue), a(alpha) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    quest_select_color_t(\n        float red,\n        float green,\n        float blue,\n        float alpha)\n    {\n        r = red;\n        g = green;\n        b = blue;\n        a = alpha;\n    }"
+        }
+      ]
+    }
+  ]
+}
