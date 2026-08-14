@@ -2317,10 +2317,11 @@ def disassemble_normalized_function(
     relocation_offsets = relocation_offsets or frozenset()
     relocation_by_offset = {reference.offset: reference for reference in relocation_references}
     size = len(data)
+    instructions = tuple(md.disasm(data, base_address))
     direct_branch_targets = (
         frozenset(
             int(operand.imm)
-            for instruction in md.disasm(data, base_address)
+            for instruction in instructions
             if capstone.CS_GRP_JUMP in instruction.groups
             or capstone.CS_GRP_CALL in instruction.groups
             for operand in instruction.operands
@@ -2464,7 +2465,7 @@ def disassemble_normalized_function(
         )
 
     lines: list[DisassemblyLine] = []
-    for insn in md.disasm(data, base_address):
+    for insn in instructions:
         insn_offset = insn.address - base_address
         is_branch = capstone.CS_GRP_JUMP in insn.groups or capstone.CS_GRP_CALL in insn.groups
         imm_relocation = relocation_in_span(insn_offset + insn.imm_offset, insn.imm_size) if insn.imm_offset else None
@@ -2555,6 +2556,20 @@ def disassemble_normalized_function(
                 text=f"{insn.mnemonic} {', '.join(operands)}".strip(),
                 size=insn.size,
                 masked_references=tuple(masked_references),
+            ),
+        )
+    decoded_end = (
+        instructions[-1].address - base_address + instructions[-1].size
+        if instructions
+        else 0
+    )
+    for offset in range(decoded_end, len(data)):
+        lines.append(
+            DisassemblyLine(
+                offset=offset,
+                address=base_address + offset,
+                text=f"db 0x{data[offset]:02x}",
+                size=1,
             ),
         )
     return _strip_trailing_padding_lines(tuple(lines))

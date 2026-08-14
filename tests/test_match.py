@@ -1356,6 +1356,23 @@ def test_normalize_strips_untargeted_padding_after_tail_jump() -> None:
     ) == ("jmp ADDR",)
 
 
+def test_match_function_keeps_undecodable_tail_bytes_visible() -> None:
+    result = match_function(
+        bytes.fromhex("c30f"),
+        ObjectFunction(
+            name="_foo",
+            data=bytes.fromhex("c3f2"),
+            relocation_offsets=frozenset(),
+        ),
+        image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0),
+        target_va=0x401000,
+    )
+
+    assert result.target_lines == ("ret", "db 0x0f")
+    assert result.candidate_lines == ("ret", "db 0xf2")
+    assert not result.exact
+
+
 def test_common_prefix_length() -> None:
     assert common_prefix_length(("push ebp", "mov ebp, esp"), ("push ebp", "ret")) == 1
     assert common_prefix_length(("push ebp",), ("push ebp", "ret")) == 1
