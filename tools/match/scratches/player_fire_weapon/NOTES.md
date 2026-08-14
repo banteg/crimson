@@ -138,3 +138,13 @@ first mismatch from instruction 245 to the prologue. Across 16 compile-valid
 variants, no returned aggregate preserves the native frame or existing exact
 prefix. The destination-writing helper remains the strongest natural source,
 and the three pellet stack operands remain a compiler coloring residual.
+
+## Original vector type replay (2026-08-14)
+
+The exact MOD SDK union storage and assignment-body scalar constructor were
+replayed independently and together in
+`original-vector-type-mutations.json`. All three variants are byte-identical at
+99.21%, 378/378 instructions, prefix 245, and `142/0/0` references. Neither
+authenticated type spelling changes the pellet result's stack color, so no
+source edit is retained. The spec SHA-256 is
+`164c7a7dc645c3dcd7a8516cad1b74b7c76a375fa19f3130e0bc5b9cde29be24`.

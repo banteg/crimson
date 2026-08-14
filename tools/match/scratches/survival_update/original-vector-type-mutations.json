@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "survival-vector-type",
+      "find": "struct survival_vec2_t {\n    float x;\n    float y;\n\n    survival_vec2_t &operator+=(const survival_vec2_t &other)",
+      "replacements": [
+        {
+          "name": "original-empty-default-constructor",
+          "text": "struct survival_vec2_t {\n    float x;\n    float y;\n\n    survival_vec2_t() {}\n\n    survival_vec2_t &operator+=(const survival_vec2_t &other)"
+        },
+        {
+          "name": "original-default-and-scalar-constructors",
+          "text": "struct survival_vec2_t {\n    float x;\n    float y;\n\n    survival_vec2_t() {}\n    survival_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    survival_vec2_t &operator+=(const survival_vec2_t &other)"
+        },
+        {
+          "name": "original-union-and-default-constructor",
+          "text": "struct survival_vec2_t {\n    union {\n        struct { float x, y; };\n        float v[2];\n    };\n\n    survival_vec2_t() {}\n\n    survival_vec2_t &operator+=(const survival_vec2_t &other)"
+        },
+        {
+          "name": "original-union-and-constructor-pair",
+          "text": "struct survival_vec2_t {\n    union {\n        struct { float x, y; };\n        float v[2];\n    };\n\n    survival_vec2_t() {}\n    survival_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    survival_vec2_t &operator+=(const survival_vec2_t &other)"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-vector-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "original-union-storage",
+          "text": "    union {\n        struct { float x, y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "fire-vector-scalar-constructor",
+      "find": "    typo_fire_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    typo_fire_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        }
+      ]
+    }
+  ]
+}

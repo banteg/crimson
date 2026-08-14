@@ -85,3 +85,15 @@ falls to 83.33% and moves the first mismatch into the prologue while retaining
 the 504-instruction count and all 139 references. Inlining a helper local does
 not reproduce native reuse of the dead centroid slot, so no source change is
 retained.
+
+## Original vector type replay (2026-08-14)
+
+The authenticated MOD SDK `vec2_t` adds an empty default constructor, a scalar
+constructor, and union-backed component/array storage to the same two-float
+value used by the game. `original-vector-type-mutations.json` replays the four
+default/scalar and plain/union combinations against the current stack-coloring
+residual. Every form is byte-identical at 98.21%, 504/504 instructions, prefix
+102, and `139/0/0` references. The native reuse of the dead centroid slot is
+therefore not controlled by those original type declarations. No source change
+is retained. The spec SHA-256 is
+`95f8382be19a7b54ec4338b0927e914e458bbc3926aff6bdcc3b7eac994e60d5`.

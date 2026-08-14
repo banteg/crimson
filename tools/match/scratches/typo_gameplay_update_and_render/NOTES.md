@@ -118,3 +118,13 @@ three-sweep no-improvement streak. The experiment ledger therefore marks this
 target `stalled`: the remaining two-slot permutation is bounded as a VC6
 allocation residual unless a different recovered type or translation-unit
 constraint supplies new evidence.
+
+## Original vector type replay (2026-08-14)
+
+`original-vector-type-mutations.json` supplies the exact MOD SDK union-backed
+`vec2_t` storage and assignment-body scalar constructor, independently and
+together. All three variants are byte-identical to the 98.43%, 508/508,
+prefix-33, `194/0/0` baseline. The remaining panel/spawn slot permutation is
+not hidden in either authenticated type distinction, so the current source is
+retained. The spec SHA-256 is
+`5f0706e3b25d87ed8107e2a7b7ccda10eb715affd8187d402c9dd92c2d8b1aa8`.
