@@ -9748,7 +9748,7 @@ def _native_input_staleness(
             conflicting_files.add(key)
 
     root = repo_root.resolve()
-    changed_files = 0
+    changed_files: list[str] = []
     escaped_files = 0
     for (label, projection), expected_sha256 in sorted(
         expected_files.items(),
@@ -9775,10 +9775,10 @@ def _native_input_staleness(
                 )
             ):
                 continue
-            changed_files += 1
+            changed_files.append(label)
             continue
         if actual_sha256 != expected_sha256:
-            changed_files += 1
+            changed_files.append(label)
 
     expected_bundles: dict[tuple[str, tuple[str, ...]], str] = {}
     conflicting_bundles: set[tuple[str, tuple[str, ...]]] = set()
@@ -9811,7 +9811,12 @@ def _native_input_staleness(
 
     reasons: list[str] = []
     if changed_files:
-        reasons.append(f"{changed_files} recorded file inputs changed or missing")
+        displayed = ", ".join(changed_files[:4])
+        if len(changed_files) > 4:
+            displayed += f", ... (+{len(changed_files) - 4} more)"
+        reasons.append(
+            f"{len(changed_files)} recorded file inputs changed or missing: {displayed}",
+        )
     if conflicting_files:
         reasons.append(f"{len(conflicting_files)} file inputs have conflicting digests")
     if non_repository_files:

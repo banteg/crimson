@@ -4839,6 +4839,7 @@ def test_native_link_status_labels_changed_or_mixed_artifacts_stale(tmp_path: Pa
     assert status.artifact_state == "stale"
     assert "artifact audit digests disagree" in status.artifact_note
     assert "1 recorded file inputs changed or missing" in status.artifact_note
+    assert "canonical.cpp" in status.artifact_note
     markdown = "\n".join(render_native_link_status_markdown([status]))
     assert "Gate values in `stale` rows are historical snapshots" in markdown
     assert "`grim.dll`: **stale**" in markdown
@@ -4974,6 +4975,7 @@ def test_native_link_status_detects_changed_data_definitions(tmp_path: Path) -> 
 
     assert status.artifact_state == "stale"
     assert "1 recorded file inputs changed or missing" in status.artifact_note
+    assert "definitions.json" in status.artifact_note
 
 
 def test_native_link_status_detects_changed_companion_artifact(tmp_path: Path) -> None:
