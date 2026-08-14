@@ -104,6 +104,9 @@ void ui_menu_main_click_controls(void);
 void ui_menu_click_back_contextual(void);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" void options_menu_update(void)
 {
     options_vec2_t panel_position =

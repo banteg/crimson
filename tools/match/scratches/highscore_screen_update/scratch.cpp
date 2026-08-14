@@ -185,6 +185,9 @@ void statistics_update_check_worker(void *);
 void crt_beginthread(void (*function)(void *), unsigned int stack_size, void *arg);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" void highscore_screen_update(void)
 {
     highscore_color_t quest_color;

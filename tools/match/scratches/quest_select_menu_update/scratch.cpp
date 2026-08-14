@@ -118,6 +118,9 @@ void sfx_play(int sfx_id, float gain);
 void sfx_mute_all(int sfx_id);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" void quest_select_menu_update(void)
 {
     quest_select_vec2_t panel_position;

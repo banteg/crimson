@@ -119,6 +119,8 @@ void sfx_mute_all(int sfx_id);
 void ui_menu_click_back_contextual(void);
 }
 
+#include "crimsonland_textures_owner.h"
+
 static __inline int play_game_quest_count(void)
 {
     int count = 0;
@@ -157,7 +159,8 @@ extern "C" void play_game_menu_update(void)
     position.x += ui_element_slot_11.render_offset_x - 64.0f;
     play_game_vec2_t base_position = position;
 
-    grim_interface_ptr->grim_bind_texture(ui_item_texts_texture, 0);
+    grim_interface_ptr->grim_bind_texture(
+        texture_handles.ui_item_texts_texture, 0);
     grim_interface_ptr->grim_set_uv(0.0f, 0.125f, 1.0f, 0.25f);
     grim_interface_ptr->grim_set_config_var(0x15, 1u);
     grim_interface_ptr->grim_draw_quad(

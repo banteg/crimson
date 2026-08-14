@@ -48,6 +48,9 @@ int texture_get_or_load(char *name, char *path);
 int texture_get_or_load_alt(char *path);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" int load_textures_step(void)
 {
     if (startup_texture_load_stage == 0) {

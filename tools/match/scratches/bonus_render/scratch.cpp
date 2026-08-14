@@ -40,6 +40,9 @@ void bonus_apply(int player_index, bonus_entry_t *entry);
 void effects_render(void);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 static __inline void bonus_render_clamp(float *value)
 {
     if (*value < 0.0f) {

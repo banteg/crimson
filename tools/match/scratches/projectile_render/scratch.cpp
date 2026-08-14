@@ -20,6 +20,9 @@ vec2f_t *__stdcall D3DXVec2Normalize(
     const vec2f_t *src);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 struct projectile_render_vec2_t {
     float x;
     float y;

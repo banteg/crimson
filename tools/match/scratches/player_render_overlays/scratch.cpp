@@ -71,6 +71,9 @@ vec2f_t *__stdcall D3DXVec2Normalize(
     const vec2f_t *src);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 static __inline void player_render_set_uv(player_render_vec2_t *table, int frame)
 {
     render_scratch_f0 = table[frame];

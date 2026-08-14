@@ -54,6 +54,9 @@ void ui_draw_progress_bar(
     float *rgba);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" void bonus_hud_slot_update_and_render(
     float *y,
     int slot_index,

@@ -96,6 +96,8 @@ void ui_scrollbar_update(float *xy, float *state);
 bool ui_button_update(float *xy, ui_button_t *button);
 }
 
+#include "crimsonland_textures_owner.h"
+
 extern "C" void unlocked_weapons_database_update(void)
 {
     int weapon_id = -1;
@@ -260,7 +262,8 @@ extern "C" void unlocked_weapons_database_update(void)
         position.y += 22.0f;
         position.x += 32.0f;
         position.y += 26.0f;
-        grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);
+        grim_interface_ptr->grim_bind_texture(
+            texture_handles.ui_weapon_icons_texture, 0);
         grim_interface_ptr->grim_set_sub_rect(
             8, 2, 1, weapon_table[weapon_id].hud_icon_id << 1);
         grim_interface_ptr->grim_begin_batch();

@@ -180,6 +180,8 @@ void quest_select_menu_update(void);
 void ui_callback_noop(void);
 }
 
+#include "crimsonland_textures_owner.h"
+
 static __forceinline void copy_layer(
     ui_layout_element_t &element,
     const ui_menu_item_subtemplate_block_t &layer)
@@ -372,15 +374,15 @@ extern "C" void ui_menu_layout_init(void)
         ui_sign_crimson.pos.y = 60.0f;
     }
 
-    ui_item_texts_texture =
+    texture_handles.ui_item_texts_texture =
         texture_get_or_load_alt("ui\\ui_itemTexts.jaz");
-    ui_text_reaper_texture =
+    texture_handles.ui_text_reaper_texture =
         texture_get_or_load_alt("ui\\ui_textReaper.jaz");
-    ui_text_controls_texture =
+    texture_handles.ui_text_controls_texture =
         texture_get_or_load_alt("ui\\ui_textControls.jaz");
-    ui_text_pick_perk_texture =
+    texture_handles.ui_text_pick_perk_texture =
         texture_get_or_load_alt("ui\\ui_textPickAPerk.jaz");
-    ui_text_well_done_texture =
+    texture_handles.ui_text_well_done_texture =
         texture_get_or_load_alt("ui\\ui_textWellDone.jaz");
 
     copy_layer(
@@ -492,7 +494,8 @@ extern "C" void ui_menu_layout_init(void)
             if (i == 6) {
                 atlas_row = 6;
             }
-            table[i]->layers[1].texture_handle = ui_item_texts_texture;
+            table[i]->layers[1].texture_handle =
+                texture_handles.ui_item_texts_texture;
             *(ui_layout_vec2_t *)&table[i]->layers[1].slot_00.u =
                 ui_layout_vec2_t(0.0f, (float)atlas_row * 0.125f);
             *(ui_layout_vec2_t *)&table[i]->layers[1].slot_01.u =
@@ -506,7 +509,8 @@ extern "C" void ui_menu_layout_init(void)
                     0.0f,
                     (float)(atlas_row + 1) * 0.125f);
         } else {
-            table[i]->layers[1].texture_handle = ui_item_texts_texture;
+            table[i]->layers[1].texture_handle =
+                texture_handles.ui_item_texts_texture;
             *(ui_layout_vec2_t *)&table[i]->layers[1].slot_00.u =
                 ui_layout_vec2_t(0.0f, (float)atlas_row * 0.125f);
             *(ui_layout_vec2_t *)&table[i]->layers[1].slot_01.u =
@@ -577,7 +581,7 @@ extern "C" void ui_menu_layout_init(void)
         270.0f,
         -38.0f);
     ui_element_slot_32_layout_c.layers[1].texture_handle =
-        ui_item_texts_texture;
+        texture_handles.ui_item_texts_texture;
     set_atlas_row(ui_element_slot_32_layout_c, 7);
     ui_element_slot_32_layout_c.on_activate =
         ui_menu_click_back_contextual;

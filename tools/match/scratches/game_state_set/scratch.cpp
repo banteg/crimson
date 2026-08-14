@@ -76,6 +76,9 @@ void unlocked_perks_database_update(void);
 void credits_screen_update(void);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" void game_state_set(game_state_id_t state_id)
 {
     ui_elements_reset_state();

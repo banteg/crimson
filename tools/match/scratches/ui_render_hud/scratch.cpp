@@ -74,6 +74,9 @@ void bonus_hud_slot_update_and_render(
     float alpha);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" void ui_render_hud(float transition_alpha)
 {
     if (cv_uiTransparency->value >= 0.0f

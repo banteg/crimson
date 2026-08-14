@@ -95,6 +95,9 @@ void ui_draw_textured_quad(
     int x, int y, int width, int height, int texture_id);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 static __forceinline void init_button(
     ui_button_t &button,
     void (*destroy)(void))

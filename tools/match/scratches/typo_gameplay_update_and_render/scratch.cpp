@@ -63,6 +63,9 @@ void sfx_play_exclusive(int sfx_id);
 void hud_update_and_render(void);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 static __inline void clamp01(float *value)
 {
     if (*value < 0.0f) {

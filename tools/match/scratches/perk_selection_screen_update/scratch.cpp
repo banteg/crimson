@@ -112,6 +112,9 @@ bool ui_button_update(float *xy, ui_button_t *button);
 void perk_apply(int perk_id);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
+#include "crimsonland_textures_owner.h"
+
 extern "C" void perk_selection_screen_update(void)
 {
     gameplay_render_world();
