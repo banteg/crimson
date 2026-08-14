@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "button-force-flags",
+      "find": "        force_wide = false;\n        force_small = false;",
+      "replacements": [
+        {
+          "name": "original-force-small-wide-chain",
+          "text": "        force_small = force_wide = false;"
+        },
+        {
+          "name": "opposite-force-wide-small-chain",
+          "text": "        force_wide = force_small = false;"
+        },
+        {
+          "name": "small-then-wide-statements",
+          "text": "        force_small = false;\n        force_wide = false;"
+        }
+      ]
+    }
+  ]
+}

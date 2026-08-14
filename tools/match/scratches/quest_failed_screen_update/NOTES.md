@@ -140,3 +140,20 @@ prefix 292, and `151/0/0` references, improving the weighted score by
 the recorded spec SHA-256 is
 `67e09f4bd65f16ecba15be49b9fd260e4f523e1d4a60a22b99bb6f58dfafb40e`.
 The former compiler-residual classification is removed.
+
+## Original button constructor recovery (2026-08-14)
+
+The recovered 2003 `gdiButton_t` constructor spells its adjacent force flags
+as `forceSmall = forceBig = false`. The complete three-variant
+`original-button-constructor-mutations.json` sweep maps that to
+`force_small = force_wide = false` and keeps this function exact at 292/292
+instructions with `151/0/0` references. Reversing the chain, or using separate
+small-first stores, preserves the masked byte score but creates six reference
+mismatches, so neither was retained.
+
+Source SHA-256 is
+`12f093230d3ebb8ffdc14b6782864774c7ef7d04df4dbb5b1f3479765e25f199`;
+spec SHA-256 is
+`76a16f9d972be8d6ce684316670cb98df682916a901b120ce589c63d204121fb`;
+the experiment ledger SHA-256 is
+`ec98a6055474cb04dabd79f62e5cd8246e3ba4a57cdc876f414f8cac33fff145`.

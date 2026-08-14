@@ -32,3 +32,19 @@ masked references `80/0/0`, using Microsoft Visual C++ 6.5 with
 The strict reference audit names both static button objects, their compiler
 guard, and their destructor thunks. The fakematch validator passes.
 
+## Original button constructor recovery (2026-08-14)
+
+The recovered 2003 `gdiButton_t` constructor spells its adjacent force flags
+as `forceSmall = forceBig = false`. The complete three-variant
+`original-button-constructor-mutations.json` sweep maps that to
+`force_small = force_wide = false` and keeps this function exact at 254/254
+instructions with `80/0/0` references. Reversing the chain, or using separate
+small-first stores, preserves the masked byte score but creates four reference
+mismatches, so neither was retained.
+
+Source SHA-256 is
+`1554a1a403144d773258f28762f40176a798e47228aae01ee7bb5a1880020d7d`;
+spec SHA-256 is
+`76a16f9d972be8d6ce684316670cb98df682916a901b120ce589c63d204121fb`;
+the experiment ledger SHA-256 is
+`05edef89a655236439e38b2688ca8e6537b499bcf75a4d6d6f74e60010fa4540`.

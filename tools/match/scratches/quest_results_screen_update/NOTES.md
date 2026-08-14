@@ -418,3 +418,20 @@ the retained source, closing the final `0x0041151a..0x0041155d` region without
 a tradeoff. The scratch is now **100.00%**, with **1,168/1,168** instructions,
 an exact **1,168-instruction prefix**, and **`468/0/0`** references. The former
 `RECOVERY=semantic-complete` / `RESIDUAL=compiler` classification is removed.
+
+## Original button constructor recovery (2026-08-14)
+
+The recovered 2003 `gdiButton_t` constructor spells its adjacent force flags
+as `forceSmall = forceBig = false`. The complete three-variant
+`original-button-constructor-mutations.json` sweep maps that to
+`force_small = force_wide = false` and keeps this function exact at
+1,168/1,168 instructions with `468/0/0` references. Reversing the chain, or
+using separate small-first stores, preserves the masked byte score but creates
+ten reference mismatches, so neither was retained.
+
+Source SHA-256 is
+`0edf12f64b4602aef06905341d4ceb2934f43a26648b82ce2a48f3f9293a106d`;
+spec SHA-256 is
+`76a16f9d972be8d6ce684316670cb98df682916a901b120ce589c63d204121fb`;
+the experiment ledger SHA-256 is
+`7dbb8566af694f5c4e7c721ea75c56caffd5ecd9918e1fb3b45d97287ccc34fd`.

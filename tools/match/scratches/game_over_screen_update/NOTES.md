@@ -42,3 +42,20 @@ persisted as the integer `first_non_space`. Binary Ninja consequently renders
 the validation loop as `game_over_name_input_buffer[first_non_space]` instead
 of an untyped absolute base plus a `void *` offset. This presentation cleanup
 does not change the exact matching source.
+
+## Original button constructor recovery (2026-08-14)
+
+The recovered 2003 `gdiButton_t` constructor spells its adjacent force flags
+as `forceSmall = forceBig = false`. The complete three-variant
+`original-button-constructor-mutations.json` sweep maps that to
+`force_small = force_wide = false` and keeps this function exact at 471/471
+instructions with `215/0/0` references. Reversing the chain, or using separate
+small-first stores, preserves the masked byte score but creates eight reference
+mismatches, so neither was retained.
+
+Source SHA-256 is
+`b84fe74a41e641aba485b9549f7e05cd2003693b06f84b2b6d801d0d05bc98c9`;
+spec SHA-256 is
+`76a16f9d972be8d6ce684316670cb98df682916a901b120ce589c63d204121fb`;
+the experiment ledger SHA-256 is
+`d37bc5a138ecd2be020b420faac0f6ef24934d70a46bcdc1451d9493a53cb392`.

@@ -52,8 +52,7 @@ struct profile_button_t {
     profile_button_t()
     {
         enabled = true;
-        force_wide = false;
-        force_small = false;
+        force_small = force_wide = false;
         alpha = 1.0f;
         click_anim = 0;
         label = 0;

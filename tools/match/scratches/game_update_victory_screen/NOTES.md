@@ -34,3 +34,20 @@ volatile state, fake references, or register-shaping constructs are used.
 Both chained panel expressions now name the recovered UI element and vertex
 position aggregates; the function remains exact at 447/447 instructions and
 189 resolved references.
+
+## Original button constructor recovery (2026-08-14)
+
+The recovered 2003 `gdiButton_t` constructor spells its adjacent force flags
+as `forceSmall = forceBig = false`. The complete three-variant
+`original-button-constructor-mutations.json` sweep maps that to
+`force_small = force_wide = false` and keeps this function exact at 447/447
+instructions with `189/0/0` references. Reversing the chain, or using separate
+small-first stores, preserves the masked byte score but creates eight reference
+mismatches, so neither was retained.
+
+Source SHA-256 is
+`64f52f26c9aeb420a5e9b32278921fcbb14c4d8ef3c3935d7a799eac53f49822`;
+spec SHA-256 is
+`76a16f9d972be8d6ce684316670cb98df682916a901b120ce589c63d204121fb`;
+the experiment ledger SHA-256 is
+`427055e984bb6d828a4dcbd948e222730fdcf2017593f53d1e718369ababda8b`.
