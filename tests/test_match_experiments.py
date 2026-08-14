@@ -10,7 +10,9 @@ from typer.testing import CliRunner
 from crimson.cli.match import match_app
 from crimson.match_experiments import (
     build_mutation_error_audit,
+    build_probe_error_audit,
     mutation_error_evidence_sha256,
+    probe_error_evidence_sha256,
     summarize_experiments,
 )
 
@@ -141,6 +143,8 @@ def test_experiment_summary_surfaces_repeats_stalls_and_tradeoffs(
         "current_errored_variants": 0,
         "audited_errored_variants": 0,
         "mutation_error_audits": 0,
+        "audited_probe_errors": 0,
+        "probe_error_audits": 0,
         "errors": 0,
         "strict_errors": 0,
     }
@@ -332,6 +336,44 @@ def test_audited_invalid_plan_errors_remain_inconclusive_but_not_strict(
     assert "stalled" not in row["flags"]
 
 
+def test_audited_invalid_probe_source_is_not_a_strict_error(tmp_path: Path) -> None:
+    log = tmp_path / "scratches" / "audited_probe" / "experiments.jsonl"
+    current_epoch = "b" * 64
+    failed_probe = {
+        "schema": 1,
+        "kind": "probe",
+        "recorded_at": "2026-08-14T00:00:00+00:00",
+        "baseline_epoch": current_epoch,
+        "label": "broken-include",
+        "source_sha256": "a" * 64,
+        "baseline": {"function": "foo", "image": "crimsonland.exe", "state": "wip"},
+        "probe": {"state": "error", "error": "missing probe-only include"},
+        "delta": {"fuzzy_weighted_bytes": -1},
+    }
+    _write_jsonl(log, [failed_probe])
+    audit = build_probe_error_audit(
+        log,
+        target_record=1,
+        current_epoch=current_epoch,
+        reason="probe source used a path unavailable in the shadow build",
+        recorded_at="2026-08-14T00:01:00+00:00",
+    )
+    assert audit["error_evidence_sha256"] == probe_error_evidence_sha256(failed_probe)
+    with log.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(audit) + "\n")
+
+    payload = summarize_experiments(
+        tmp_path,
+        current_epochs={log.parent.resolve(): current_epoch},
+    )
+
+    row = payload["rows"][0]
+    assert payload["strict_errors"] == []
+    assert row["audited_probe_errors"] == 1
+    assert row["probe_error_audits"] == 1
+    assert "audited-probe-errors" in row["flags"]
+
+
 def test_experiment_audit_command_appends_digest_bound_review(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -378,3 +420,53 @@ def test_experiment_audit_command_appends_digest_bound_review(
     assert appended["target_record"] == 1
     assert appended["baseline_epoch"] == current_epoch
     assert appended["error_evidence_sha256"] == mutation_error_evidence_sha256(records[0])
+
+
+def test_experiment_audit_command_dispatches_errored_probes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    scratch = tmp_path / "scratches" / "audited_probe"
+    scratch.mkdir(parents=True)
+    log = scratch / "experiments.jsonl"
+    current_epoch = "b" * 64
+    failed_probe = {
+        "schema": 1,
+        "kind": "probe",
+        "baseline_epoch": current_epoch,
+        "label": "broken-include",
+        "source_sha256": "a" * 64,
+        "baseline": {"function": "foo", "image": "crimsonland.exe", "state": "wip"},
+        "probe": {"state": "error", "error": "missing probe-only include"},
+        "delta": {"fuzzy_weighted_bytes": -1},
+    }
+    _write_jsonl(log, [failed_probe])
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.load_scratch_config",
+        lambda directory: type("Config", (), {"directory": directory})(),
+    )
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.scratch_experiment_epoch",
+        lambda config, match_root: current_epoch,
+    )
+
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "experiment-audit",
+            str(scratch),
+            "--record",
+            "1",
+            "--reason",
+            "probe include path was invalid in the shadow build",
+            "--match-root",
+            str(tmp_path),
+            "--json",
+        ],
+    )
+
+    assert completed.exit_code == 0
+    appended = json.loads(completed.output)[0]
+    assert appended["kind"] == "probe-error-audit"
+    assert appended["classification"] == "invalid-probe-source"
+    assert appended["error_evidence_sha256"] == probe_error_evidence_sha256(failed_probe)

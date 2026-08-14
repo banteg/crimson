@@ -951,7 +951,7 @@ def cmd_match_experiment_audit(
     reason: str = typer.Option(
         ...,
         "--reason",
-        help="why the compile failures came from an invalid mutation plan",
+        help="why the failures came from an invalid mutation plan or probe source",
     ),
     match_root: Path = typer.Option(
         matchlib.DEFAULT_MATCH_ROOT,
@@ -960,7 +960,7 @@ def cmd_match_experiment_audit(
     ),
     as_json: bool = typer.Option(False, "--json", help="emit appended records as JSON"),
 ) -> None:
-    """Append digest-bound audits for reviewed invalid-plan mutation errors."""
+    """Append digest-bound audits for reviewed mutation or probe source errors."""
     try:
         if len(target_records) != len(set(target_records)):
             raise ValueError("--record values must be unique")
@@ -968,16 +968,30 @@ def cmd_match_experiment_audit(
         path = config.directory / match_experiments.EXPERIMENT_FILE
         current_epoch = matchlib.scratch_experiment_epoch(config, match_root)
         recorded_at = datetime.now(UTC).isoformat()
-        records = [
-            match_experiments.build_mutation_error_audit(
-                path,
-                target_record=target_record,
-                current_epoch=current_epoch,
-                reason=reason,
-                recorded_at=recorded_at,
+        source_records, source_errors = match_experiments.load_experiment_log(path)
+        if source_errors:
+            raise ValueError(source_errors[0])
+        records = []
+        for target_record in target_records:
+            if target_record < 1 or target_record > len(source_records):
+                raise ValueError(f"{path}: target record {target_record} does not exist")
+            builder = (
+                match_experiments.build_probe_error_audit
+                if match_experiments.probe_error_evidence(
+                    source_records[target_record - 1],
+                )
+                is not None
+                else match_experiments.build_mutation_error_audit
             )
-            for target_record in target_records
-        ]
+            records.append(
+                builder(
+                    path,
+                    target_record=target_record,
+                    current_epoch=current_epoch,
+                    reason=reason,
+                    recorded_at=recorded_at,
+                ),
+            )
         with path.open("a", encoding="utf-8") as handle:
             for record in records:
                 handle.write(json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n")
@@ -988,7 +1002,8 @@ def cmd_match_experiment_audit(
         typer.echo(json.dumps(records, indent=2, sort_keys=True))
     else:
         targets = ",".join(str(record["target_record"]) for record in records)
-        typer.echo(f"audited={path} records={targets} classification=invalid-mutation-plan")
+        classifications = ",".join(str(record["classification"]) for record in records)
+        typer.echo(f"audited={path} records={targets} classifications={classifications}")
 
 
 @match_app.command("profiles")

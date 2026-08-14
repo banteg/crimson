@@ -11,6 +11,8 @@ EXPERIMENT_FILE = "experiments.jsonl"
 EXPERIMENT_SCHEMA = 1
 MUTATION_ERROR_AUDIT_KIND = "mutation-error-audit"
 MUTATION_ERROR_AUDIT_CLASSIFICATION = "invalid-mutation-plan"
+PROBE_ERROR_AUDIT_KIND = "probe-error-audit"
+PROBE_ERROR_AUDIT_CLASSIFICATION = "invalid-probe-source"
 EXPERIMENT_SORTS = frozenset(
     {
         "errors",
@@ -216,6 +218,26 @@ def mutation_error_evidence_sha256(record: dict[str, Any]) -> str:
     ).hexdigest()
 
 
+def probe_error_evidence(record: dict[str, Any]) -> dict[str, Any] | None:
+    probe = record.get("probe")
+    if _experiment_kind(record) != "probe" or not isinstance(probe, dict):
+        return None
+    if probe.get("state") != "error":
+        return None
+    return {
+        "label": record.get("label"),
+        "source_sha256": record.get("source_sha256"),
+        "error": probe.get("error"),
+    }
+
+
+def probe_error_evidence_sha256(record: dict[str, Any]) -> str:
+    evidence = probe_error_evidence(record)
+    return hashlib.sha256(
+        json.dumps(evidence, separators=(",", ":"), sort_keys=True).encode(),
+    ).hexdigest()
+
+
 def build_mutation_error_audit(
     path: Path,
     *,
@@ -258,6 +280,46 @@ def build_mutation_error_audit(
     }
 
 
+def build_probe_error_audit(
+    path: Path,
+    *,
+    target_record: int,
+    current_epoch: str,
+    reason: str,
+    recorded_at: str,
+) -> dict[str, Any]:
+    records, errors = load_experiment_log(path)
+    if errors:
+        raise ValueError(errors[0])
+    if target_record < 1 or target_record > len(records):
+        raise ValueError(f"{path}: target record {target_record} does not exist")
+    target = records[target_record - 1]
+    if _experiment_kind(target) != "probe":
+        raise ValueError(f"{path}:{target_record}: target is not a probe")
+    if probe_error_evidence(target) is None:
+        raise ValueError(f"{path}:{target_record}: target is not an errored probe")
+    if target.get("baseline_epoch") != current_epoch:
+        raise ValueError(f"{path}:{target_record}: target does not belong to the current baseline epoch")
+    if not reason.strip():
+        raise ValueError("probe error audit requires a reason")
+    if any(
+        _experiment_kind(record) == PROBE_ERROR_AUDIT_KIND
+        and record.get("target_record") == target_record
+        for record in records
+    ):
+        raise ValueError(f"{path}:{target_record}: probe error is already audited")
+    return {
+        "schema": EXPERIMENT_SCHEMA,
+        "kind": PROBE_ERROR_AUDIT_KIND,
+        "recorded_at": recorded_at,
+        "baseline_epoch": current_epoch,
+        "target_record": target_record,
+        "classification": PROBE_ERROR_AUDIT_CLASSIFICATION,
+        "error_evidence_sha256": probe_error_evidence_sha256(target),
+        "reason": reason.strip(),
+    }
+
+
 def _validated_mutation_error_audits(
     records: list[dict[str, Any]],
     *,
@@ -296,6 +358,48 @@ def _validated_mutation_error_audits(
             continue
         if record.get("errored_variants") != len(evidence):
             errors.append(f"{context}: audited errored_variants differs from its target")
+            continue
+        if target_index in audits:
+            errors.append(f"{context}: duplicate audit for target record {target_index}")
+            continue
+        audits[target_index] = record
+    return audits
+
+
+def _validated_probe_error_audits(
+    records: list[dict[str, Any]],
+    *,
+    path: Path,
+    errors: list[str],
+) -> dict[int, dict[str, Any]]:
+    audits: dict[int, dict[str, Any]] = {}
+    for record_index, record in enumerate(records, start=1):
+        if _experiment_kind(record) != PROBE_ERROR_AUDIT_KIND:
+            continue
+        context = f"{path}:{record_index}"
+        target_index = _non_negative_int(record.get("target_record"))
+        if target_index is None or target_index < 1 or target_index >= record_index:
+            errors.append(f"{context}: probe error audit requires an earlier target_record")
+            continue
+        target = records[target_index - 1]
+        if _experiment_kind(target) != "probe":
+            errors.append(f"{context}: audited target {target_index} is not a probe")
+            continue
+        if probe_error_evidence(target) is None:
+            errors.append(f"{context}: audited target {target_index} is not an errored probe")
+            continue
+        if record.get("classification") != PROBE_ERROR_AUDIT_CLASSIFICATION:
+            errors.append(f"{context}: unsupported probe error classification")
+            continue
+        if not isinstance(record.get("reason"), str) or not str(record["reason"]).strip():
+            errors.append(f"{context}: probe error audit requires a reason")
+            continue
+        if record.get("baseline_epoch") != target.get("baseline_epoch"):
+            errors.append(f"{context}: probe error audit epoch differs from its target")
+            continue
+        expected_digest = probe_error_evidence_sha256(target)
+        if record.get("error_evidence_sha256") != expected_digest:
+            errors.append(f"{context}: probe error evidence digest differs from its target")
             continue
         if target_index in audits:
             errors.append(f"{context}: duplicate audit for target record {target_index}")
@@ -349,6 +453,11 @@ def summarize_experiment_log(
         path=path,
         errors=errors,
     )
+    probe_error_audits = _validated_probe_error_audits(
+        records,
+        path=path,
+        errors=errors,
+    )
     kinds: Counter[str] = Counter()
     current_kinds: Counter[str] = Counter()
     mutation_improvements: list[bool] = []
@@ -374,6 +483,7 @@ def summarize_experiment_log(
     current_inconclusive_sweeps = 0
     current_errored_variants = 0
     audited_errored_variants = 0
+    audited_probe_errors = 0
 
     for record_index, record in enumerate(records, start=1):
         context = f"{path}:{record_index}"
@@ -513,7 +623,10 @@ def summarize_experiment_log(
                 if isinstance(baseline, dict) and baseline.get("state") == "error":
                     strict_errors.append(f"{context}: current probe baseline is an error")
                 if isinstance(probe, dict) and probe.get("state") == "error":
-                    strict_errors.append(f"{context}: current probe result is an error")
+                    if record_index in probe_error_audits:
+                        audited_probe_errors += 1
+                    else:
+                        strict_errors.append(f"{context}: current probe result is an error")
 
     no_improvement_streak = 0
     for outcome in reversed(current_mutation_outcomes):
@@ -535,6 +648,8 @@ def summarize_experiment_log(
         flags.append("variant-errors")
     if audited_errored_variants:
         flags.append("audited-plan-errors")
+    if audited_probe_errors:
+        flags.append("audited-probe-errors")
     if current_inconclusive_sweeps:
         flags.append("inconclusive-sweeps")
     if classify_epochs and records and not current_records:
@@ -573,6 +688,8 @@ def summarize_experiment_log(
             "current_errored_variants": current_errored_variants,
             "audited_errored_variants": audited_errored_variants,
             "mutation_error_audits": len(mutation_error_audits),
+            "audited_probe_errors": audited_probe_errors,
+            "probe_error_audits": len(probe_error_audits),
             "unique_specs": len(spec_shas),
             "repeated_spec_runs": repeated_spec_runs,
             "latest_recorded_at": latest_recorded_at,
@@ -675,6 +792,12 @@ def summarize_experiments(
             "mutation_error_audits": sum(
                 int(row["mutation_error_audits"]) for row in rows
             ),
+            "audited_probe_errors": sum(
+                int(row["audited_probe_errors"]) for row in rows
+            ),
+            "probe_error_audits": sum(
+                int(row["probe_error_audits"]) for row in rows
+            ),
             "errors": len(errors),
             "strict_errors": len(strict_errors),
         },
@@ -740,6 +863,8 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
             f"inconclusive={summary['current_inconclusive_sweeps']} "
             f"audited-plan-errors={summary['mutation_error_audits']}/"
             f"{summary['audited_errored_variants']} "
+            f"audited-probe-errors={summary['probe_error_audits']}/"
+            f"{summary['audited_probe_errors']} "
             f"errors={summary['errors']} strict-errors={summary['strict_errors']}"
         ),
     )

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "reset-vector-storage",
+      "find": "struct reset_vec2_t {\n    float x;\n    float y;\n\n    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n};",
+      "replacements": [
+        {
+          "name": "authenticated-union-and-body-constructor",
+          "text": "struct reset_vec2_t {\n    union {\n        struct {\n            float x;\n            float y;\n        };\n        float v[2];\n    };\n\n    reset_vec2_t() {}\n    reset_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n};"
+        }
+      ]
+    },
+    {
+      "name": "ui-state-owner",
+      "find": "#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"",
+      "replacements": [
+        {
+          "name": "authenticated-ui-owner",
+          "text": "#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER\n#include \"crimsonland_game_state_owner.h\"\n#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER\n#include \"crimsonland_ui_state_owner.h\""
+        }
+      ]
+    }
+  ]
+}

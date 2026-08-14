@@ -711,6 +711,12 @@ The audited variants remain visible as errors and keep the sweep inconclusive,
 but no longer fail `experiments --strict`. Never use this for compiler,
 environment, or unexplained evaluation failures; repair and rerun those instead.
 
+The same command accepts an errored probe record when the failure is traced to
+an invalid probe-only source shape, such as an include path that cannot exist in
+the shadow build. It appends a separate digest-bound `probe-error-audit`; the
+failed probe remains visible, but no longer poisons strict validation after the
+source error has been corrected and the intended probe rerun successfully.
+
 The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the
 baseline without increasing reference debt, regressing the exact prefix or

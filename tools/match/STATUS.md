@@ -30,7 +30,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 **60** non-exact scratch-backed functions hold **32370 fuzzy-gap bytes**. The top 5 hold **63.3%** of that gap; the top 10 hold **80.1%**.
 
-Current-baseline experiments cover **49 functions / 30052 gap bytes**; **11 / 2318** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **54 functions / 30319 gap bytes**; **6 / 2051** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -56,43 +56,43 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 18 | crimsonland.exe | ui_scrollbar_update | 314 | semantic-complete | compiler | current-active | 2/38 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
 | 19 | crimsonland.exe | statistics_update_check_worker | 297 | semantic-complete | compiler | current-active | 2/13 | 2 | repeated-variants,metric-tradeoffs,variant-errors |
 | 20 | crimsonland.exe | game_state_set | 272 | semantic-complete | compiler | current-active | 3/15 | 2 | repeated-specs,variant-errors |
-| 21 | crimsonland.exe | quest_build_survival_of_the_fastest | 204 | semantic-complete | compiler | current-active | 1/11 | 1 | repeated-variants,repeated-specs |
+| 21 | crimsonland.exe | quest_build_survival_of_the_fastest | 204 | semantic-complete | compiler | current-active | 2/12 | 1 | repeated-variants,repeated-specs |
 | 22 | crimsonland.exe | perk_apply | 202 | semantic-complete | compiler | historical-only | 0/7 | 0 | repeated-specs,metric-tradeoffs,historical-only |
 | 23 | crimsonland.exe | statistics_menu_update | 194 | semantic-complete | compiler | current-stalled | 3/15 | 3 | repeated-variants,stalled,metric-tradeoffs |
 | 24 | crimsonland.exe | perk_selection_screen_update | 167 | semantic-complete | compiler | current-stalled | 4/7 | 4 | repeated-variants,stalled,metric-tradeoffs,variant-errors |
 | 25 | crimsonland.exe | mods_menu_update | 145 | semantic-complete | compiler | current-stalled | 9/23 | 9 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
 | 26 | crimsonland.exe | quest_select_menu_update | 141 | semantic-complete | compiler | current-stalled | 4/52 | 4 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
 | 27 | crimsonland.exe | demo_purchase_screen_update | 135 | semantic-complete | compiler | current-active | 2/10 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 28 | crimsonland.exe | quest_build_the_unblitzkrieg | 131 | semantic-complete | compiler | historical-only | 0/11 | 0 | variant-errors,historical-only |
+| 28 | crimsonland.exe | quest_build_the_unblitzkrieg | 131 | semantic-complete | compiler | current-active | 1/12 | 0 | variant-errors |
 | 29 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 2/7 | 1 | repeated-variants,repeated-specs,metric-tradeoffs |
 | 30 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | current-stalled | 4/8 | 4 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
 | 31 | crimsonland.exe | creature_apply_damage | 98 | semantic-complete | compiler | historical-only | 0/5 | 0 | historical-only |
 | 32 | crimsonland.exe | console_update | 90 | semantic-complete | compiler | historical-only | 0/4 | 0 | historical-only |
 | 33 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-inconclusive | 7/15 | 0 | repeated-variants,repeated-specs,variant-errors,audited-plan-errors,inconclusive-sweeps |
 | 34 | crimsonland.exe | highscore_rank_index | 55 | semantic-complete | compiler | current-active | 2/7 | 2 | variant-errors |
-| 35 | crimsonland.exe | sfx_update_mute_fades | 51 | semantic-complete | compiler | historical-only | 0/3 | 0 | historical-only |
+| 35 | crimsonland.exe | sfx_update_mute_fades | 51 | semantic-complete | compiler | current-active | 1/4 | 1 | repeated-variants,repeated-specs |
 | 36 | crimsonland.exe | player_reset_all | 48 | semantic-complete | compiler,references | current-active | 2/10 | 2 | repeated-variants,variant-errors |
-| 37 | crimsonland.exe | quest_build_nagolipoli | 46 | semantic-complete | compiler | current-active | 1/17 | 1 | repeated-variants,repeated-specs,variant-errors |
+| 37 | crimsonland.exe | quest_build_nagolipoli | 46 | semantic-complete | compiler | current-active | 2/18 | 1 | repeated-variants,repeated-specs,variant-errors |
 | 38 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | current-stalled | 5/19 | 4 | repeated-variants,stalled,metric-tradeoffs,variant-errors |
 | 39 | crimsonland.exe | ui_element_render | 45 | semantic-complete | compiler | current-active | 1/15 | 1 | repeated-variants,repeated-specs,variant-errors |
-| 40 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 41 | crimsonland.exe | quest_build_spiders_inc | 38 | semantic-complete | compiler | historical-only | 0/9 | 0 | repeated-variants,variant-errors,historical-only |
+| 40 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 4/12 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 41 | crimsonland.exe | quest_build_spiders_inc | 38 | semantic-complete | compiler | current-stalled | 7/16 | 6 | repeated-variants,repeated-specs,stalled,variant-errors |
 | 42 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 2/5 | 2 | variant-errors |
 | 43 | crimsonland.exe | typo_gameplay_update_and_render | 33 | semantic-complete | compiler | current-active | 1/4 | 1 | variant-errors |
 | 44 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-inconclusive | 2/4 | 0 | variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 45 | crimsonland.exe | quest_build_the_beating | 31 | semantic-complete | compiler | current-active | 1/15 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
+| 45 | crimsonland.exe | quest_build_the_beating | 31 | semantic-complete | compiler | current-active | 2/16 | 1 | repeated-specs,metric-tradeoffs,variant-errors |
 | 46 | grim.dll | grim_state_init | 31 | semantic-complete | compiler | current-inconclusive | 2/37 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
 | 47 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 1/13 | 0 | metric-tradeoffs |
 | 48 | crimsonland.exe | quest_build_the_lizquidation | 25 | semantic-complete | compiler | current-active | 1/18 | 1 | repeated-variants,repeated-specs,variant-errors |
-| 49 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | current-stalled | 3/22 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
-| 50 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-inconclusive | 4/14 | 1 | repeated-variants,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 51 | crimsonland.exe | quest_build_gauntlet | 10 | semantic-complete | compiler | historical-only | 0/11 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 49 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | current-stalled | 6/25 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-probe-errors |
+| 50 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-inconclusive | 5/15 | 1 | repeated-variants,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 51 | crimsonland.exe | quest_build_gauntlet | 10 | semantic-complete | compiler | current-inconclusive | 11/22 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
 | 52 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | current-inconclusive | 12/30 | 4 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
 | 53 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-active | 2/8 | 1 | variant-errors |
-| 54 | crimsonland.exe | quest_start_selected | 7 | semantic-complete | compiler | current-active | 3/7 | 2 | repeated-variants,metric-tradeoffs |
-| 55 | crimsonland.exe | gameplay_reset_state | 5 | semantic-complete | compiler | current-inconclusive | 5/10 | 2 | variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 56 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | current-stalled | 4/10 | 3 | repeated-variants,stalled |
-| 57 | crimsonland.exe | quest_build_the_gang_wars | 5 | semantic-complete | compiler | current-active | 2/10 | 1 | - |
+| 54 | crimsonland.exe | quest_start_selected | 7 | semantic-complete | compiler | current-active | 4/8 | 2 | repeated-variants,metric-tradeoffs |
+| 55 | crimsonland.exe | gameplay_reset_state | 5 | semantic-complete | compiler | current-inconclusive | 7/12 | 4 | repeated-variants,stalled,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 56 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | current-stalled | 5/11 | 3 | repeated-variants,stalled |
+| 57 | crimsonland.exe | quest_build_the_gang_wars | 5 | semantic-complete | compiler | current-active | 3/11 | 1 | - |
 | 58 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 4/29 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
 | 59 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | current-stalled | 4/23 | 3 | stalled,metric-tradeoffs |
 | 60 | crimsonland.exe | fx_queue_add | 4 | semantic-complete | compiler | current-active | 1/6 | 1 | repeated-variants,variant-errors |
