@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "a976a52cb78a6faf0419ee311fb804d67b3982e9abf8cca60357eb1901af51fe",
+  "audit_digest": "2577657bee0448a228033fd0338289e1c1e59d790655b5607714ea040ba962d6",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -79310,7 +79310,7 @@
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "2b81c0b2bfbf376734455e98336eec3bc43702cffe15fd16e36a967c6e14e2dc"
+          "sha256": "5c5a0dac1a7156682089b43ddea93802314c7ea190b0e00cf01adced8061684d"
         },
         {
           "path": "tools/match/scratches/highscore_screen_update/scratch.conf",
@@ -79366,7 +79366,7 @@
           "canonical_config_sha256": "539a1b82db4443514aa0899f3e47e7652f8701395fb02a43fdcf8a3b14ca0651",
           "canonical_scratch": "tools/match/scratches/highscore_screen_update",
           "canonical_source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-          "canonical_source_sha256": "2b81c0b2bfbf376734455e98336eec3bc43702cffe15fd16e36a967c6e14e2dc",
+          "canonical_source_sha256": "5c5a0dac1a7156682089b43ddea93802314c7ea190b0e00cf01adced8061684d",
           "effective_end": 4473642,
           "end": 4473642,
           "function": "highscore_screen_update",
@@ -79399,7 +79399,7 @@
       "object_sha256": "bc2276ccca81571cb2432d81ef5130aa3f4281cf607252ed45b6b1e1690108cd",
       "scratch": "tools/match/scratches/highscore_screen_update",
       "source": "tools/match/scratches/highscore_screen_update/scratch.cpp",
-      "source_sha256": "2b81c0b2bfbf376734455e98336eec3bc43702cffe15fd16e36a967c6e14e2dc",
+      "source_sha256": "5c5a0dac1a7156682089b43ddea93802314c7ea190b0e00cf01adced8061684d",
       "target_size": 8026,
       "translation_unit": {
         "kind": "isolated",
@@ -83915,7 +83915,7 @@
         {
           "path": "tools/match/scratches/options_menu_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "7322ce7d6dac93a9c7b8be2bc04ac0000e30d51aa35d4a0edc4caffa13f50bb1"
+          "sha256": "9e22ded7a442f31cc0e704fea0b5f160f7e9c0fd8b3bbc834be3508c4bc134f0"
         },
         {
           "path": "tools/match/scratches/options_menu_update/scratch.conf",
@@ -83966,7 +83966,7 @@
           "canonical_config_sha256": "e6a813183f75619bd5f6d2fa3aeb367a386ea586e1e8b70938fe3633499e9968",
           "canonical_scratch": "tools/match/scratches/options_menu_update",
           "canonical_source": "tools/match/scratches/options_menu_update/scratch.cpp",
-          "canonical_source_sha256": "7322ce7d6dac93a9c7b8be2bc04ac0000e30d51aa35d4a0edc4caffa13f50bb1",
+          "canonical_source_sha256": "9e22ded7a442f31cc0e704fea0b5f160f7e9c0fd8b3bbc834be3508c4bc134f0",
           "effective_end": 4488229,
           "end": 4488229,
           "function": "options_menu_update",
@@ -83999,7 +83999,7 @@
       "object_sha256": "ced6c8565d55845bbb659b4af0dcc673be3840c7189cf58b26c6af85d983f8e6",
       "scratch": "tools/match/scratches/options_menu_update",
       "source": "tools/match/scratches/options_menu_update/scratch.cpp",
-      "source_sha256": "7322ce7d6dac93a9c7b8be2bc04ac0000e30d51aa35d4a0edc4caffa13f50bb1",
+      "source_sha256": "9e22ded7a442f31cc0e704fea0b5f160f7e9c0fd8b3bbc834be3508c4bc134f0",
       "target_size": 1621,
       "translation_unit": {
         "kind": "isolated",
@@ -84763,7 +84763,7 @@
         {
           "path": "tools/match/scratches/quest_select_menu_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "ae0fab510014475e27fc1881d2469e73b50694e7b64b4b9ae765b0e1513ff3a8"
+          "sha256": "64ed74379946c5e3ecff30d40a44feed092bd37d46f49c33cd571fa1dad9710b"
         },
         {
           "path": "tools/match/scratches/quest_select_menu_update/scratch.conf",
@@ -84819,7 +84819,7 @@
           "canonical_config_sha256": "9b1befa7af4c7006ad128a9fcd4913f057661d8d7e07978dfb1a0c53c7bcc750",
           "canonical_scratch": "tools/match/scratches/quest_select_menu_update",
           "canonical_source": "tools/match/scratches/quest_select_menu_update/scratch.cpp",
-          "canonical_source_sha256": "ae0fab510014475e27fc1881d2469e73b50694e7b64b4b9ae765b0e1513ff3a8",
+          "canonical_source_sha256": "64ed74379946c5e3ecff30d40a44feed092bd37d46f49c33cd571fa1dad9710b",
           "effective_end": 4491948,
           "end": 4491948,
           "function": "quest_select_menu_update",
@@ -84852,7 +84852,7 @@
       "object_sha256": "8c8847a136f4046a5ba3af79686f3683b46a642183424352bc9bf932baceb092",
       "scratch": "tools/match/scratches/quest_select_menu_update",
       "source": "tools/match/scratches/quest_select_menu_update/scratch.cpp",
-      "source_sha256": "ae0fab510014475e27fc1881d2469e73b50694e7b64b4b9ae765b0e1513ff3a8",
+      "source_sha256": "64ed74379946c5e3ecff30d40a44feed092bd37d46f49c33cd571fa1dad9710b",
       "target_size": 3436,
       "translation_unit": {
         "kind": "isolated",
@@ -86750,7 +86750,7 @@
         {
           "path": "tools/match/scratches/play_game_menu_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "e8277e2b4e7ebb4d98e347672b20f41586f9a26a5debc0e0ad6d758b9ba89af0"
+          "sha256": "8e66da3f6217056ee352c4a9b3515c95b04191275e66a5a01959b86dbbc143f1"
         },
         {
           "path": "tools/match/scratches/play_game_menu_update/scratch.conf",
@@ -86801,7 +86801,7 @@
           "canonical_config_sha256": "f381579628bd36f473e374985f46525385bd83655b98bf905d013cf195402964",
           "canonical_scratch": "tools/match/scratches/play_game_menu_update",
           "canonical_source": "tools/match/scratches/play_game_menu_update/scratch.cpp",
-          "canonical_source_sha256": "e8277e2b4e7ebb4d98e347672b20f41586f9a26a5debc0e0ad6d758b9ba89af0",
+          "canonical_source_sha256": "8e66da3f6217056ee352c4a9b3515c95b04191275e66a5a01959b86dbbc143f1",
           "effective_end": 4520486,
           "end": 4520486,
           "function": "play_game_menu_update",
@@ -86834,7 +86834,7 @@
       "object_sha256": "88f8a18a868a781e8a0466f789ddb52fe9fe5245dd9b2a0a56605c7a769d5b25",
       "scratch": "tools/match/scratches/play_game_menu_update",
       "source": "tools/match/scratches/play_game_menu_update/scratch.cpp",
-      "source_sha256": "e8277e2b4e7ebb4d98e347672b20f41586f9a26a5debc0e0ad6d758b9ba89af0",
+      "source_sha256": "8e66da3f6217056ee352c4a9b3515c95b04191275e66a5a01959b86dbbc143f1",
       "target_size": 3238,
       "translation_unit": {
         "kind": "isolated",

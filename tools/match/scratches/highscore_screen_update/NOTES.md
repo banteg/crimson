@@ -555,3 +555,23 @@ Retained source SHA-256 is
 `2b81c0b2bfbf376734455e98336eec3bc43702cffe15fd16e36a967c6e14e2dc`;
 the 22-record ledger SHA-256 is
 `9ab3997ea2a87e05f10ff804b27280173066bfb93983d4d0dfb8739a20f75139`.
+
+## Original checkbox constructor recovery (2026-08-14)
+
+Both high-score checkboxes reproduce the recovered 2003 `gdiCheckBox_t`
+constructor order. Native stores checked, disabled, hover, and label at
+`0x00442aa4..0x00442abf` for Hardcore and
+`0x004432d2..0x004432ed` for online scores. The complete three-variant
+`original-checkbox-constructor-mutations.json` sweep finds the historical
+`disabled = checked = false` chain byte- and reference-neutral at 78.43%,
+1,969/2,004 instructions, prefix 45, and `594/0/4` references.
+
+Reversing the chain keeps the masked byte score but raises the audit to
+`590/0/8`; moving the label first loses `16.161087` weighted bytes and reaches
+`586/0/8`. The authenticated audit-clean chain is retained. Current source
+SHA-256 is
+`5c5a0dac1a7156682089b43ddea93802314c7ea190b0e00cf01adced8061684d`;
+spec SHA-256 is
+`d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
+the 23-record ledger SHA-256 is
+`253b79e2cae95e8b4701df483304925c1565c27b1f7ea18e7672088fec77ef7f`.

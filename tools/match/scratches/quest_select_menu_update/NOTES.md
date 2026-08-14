@@ -294,3 +294,22 @@ mode, checkbox, controls-vector, unlock-branch, and assignment shapes regress.
 The residual remains a set of localized independent-store, register, and call
 scheduling differences, so the `semantic-complete` / `compiler` classification
 and source are unchanged.
+
+## Original checkbox constructor recovery (2026-08-14)
+
+The quest-select Hardcore checkbox follows the recovered 2003
+`gdiCheckBox_t` constructor. Native `0x0044839d..0x004483b8` stores checked,
+disabled, hover, and label in that order. The complete three-variant
+`original-checkbox-constructor-mutations.json` sweep confirms that the exact
+historical `disabled = checked = false` chain is byte-identical to the 95.89%,
+803/803-instruction, prefix-nine, `282/0/0` baseline.
+
+The opposite chain preserves masked bytes but worsens references to
+`280/0/2`; moving the label first loses `8.557908` weighted bytes and reaches
+`278/0/2`. The authenticated audit-clean chain is retained. Current source
+SHA-256 is
+`64ed74379946c5e3ecff30d40a44feed092bd37d46f49c33cd571fa1dad9710b`;
+spec SHA-256 is
+`d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
+the experiment ledger SHA-256 is
+`a68703fff6aa2cebef322220f3a9c467b6aad93742d16b0cd3253e52dba20d52`.

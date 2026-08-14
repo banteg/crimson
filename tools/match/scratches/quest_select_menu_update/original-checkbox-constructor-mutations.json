@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "checkbox-constructor",
+      "find": "        checked = false;\n        disabled = false;\n        hovered = false;\n        label = 0;",
+      "replacements": [
+        {
+          "name": "original-disabled-checked-chain",
+          "text": "        disabled = checked = false;\n        hovered = false;\n        label = 0;"
+        },
+        {
+          "name": "opposite-checked-disabled-chain",
+          "text": "        checked = disabled = false;\n        hovered = false;\n        label = 0;"
+        },
+        {
+          "name": "label-first",
+          "text": "        label = 0;\n        checked = false;\n        disabled = false;\n        hovered = false;"
+        }
+      ]
+    }
+  ]
+}

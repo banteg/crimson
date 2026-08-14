@@ -51,8 +51,7 @@ struct quest_select_checkbox_t {
 
     quest_select_checkbox_t()
     {
-        checked = false;
-        disabled = false;
+        disabled = checked = false;
         hovered = false;
         label = 0;
     }

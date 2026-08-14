@@ -295,3 +295,22 @@ spec SHA-256 is
 `495045c5923a9a16210ff1e411b9aea1d4700a320099751a1424ae30fc56f4c6`;
 the 17-record ledger SHA-256 is
 `e79c8d9e9365b5de64a1675c1059dc723cabe14b01fd5e4c126de9607dfe8a46`.
+
+## Original checkbox constructor recovery (2026-08-14)
+
+The residual Hardcore checkbox at `0x004d7658` follows the recovered 2003
+`gdiCheckBox_t` constructor. Native `0x0044ef34..0x0044ef4c` stores checked,
+disabled, hover, and label in that order. The complete three-variant
+`original-checkbox-constructor-mutations.json` sweep confirms that the exact
+historical `disabled = checked = false` chain is byte-identical to the 99.74%,
+777/777-instruction, prefix-120, `321/0/0` baseline.
+
+The opposite chain preserves masked bytes but degrades references to
+`319/0/2`; moving the label first loses `8.334620` weighted bytes, shortens the
+prefix to 87, and reaches `317/0/2`. The authenticated audit-clean chain is
+retained. Current source SHA-256 is
+`8e66da3f6217056ee352c4a9b3515c95b04191275e66a5a01959b86dbbc143f1`;
+spec SHA-256 is
+`d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
+the 18-record ledger SHA-256 is
+`32847c2e238be6a7ae4fcf58efed0bbdaf8f390de5289367a5f5b9b7a529729a`.

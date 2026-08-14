@@ -188,3 +188,22 @@ references `153/0/1`; all remaining variants regress. The one aligned
 reference mismatch therefore remains part of the opening stack/register
 schedule, not an untested constructor interaction. No source change was
 retained.
+
+## Original checkbox constructor recovery (2026-08-14)
+
+The recovered 2003 `gdiCheckBox_t` constructor uses the chain
+`disable = enabled = false`. Live native initialization at
+`0x004477d5..0x004477ed` writes the checked/enabled byte first, then the
+disabled and hover bytes, and finally the label pointer. The complete
+three-variant `original-checkbox-constructor-mutations.json` sweep confirms
+that the historical `disabled = checked = false` spelling is byte-identical
+to the 76.29%, 378/377-instruction, prefix-10, `153/0/1` baseline.
+
+The opposite chain preserves the masked byte score but worsens references to
+`151/0/3`; moving the label first loses `8.588079` weighted bytes and leaves
+`149/0/3`. The authenticated audit-clean chain is retained. Source SHA-256 is
+`9e22ded7a442f31cc0e704fea0b5f160f7e9c0fd8b3bbc834be3508c4bc134f0`;
+spec SHA-256 is
+`d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
+the experiment ledger SHA-256 is
+`5857d76a639bf6b36b86df969516e986a108244f3334ef2eaa7ef68c6500b72c`.

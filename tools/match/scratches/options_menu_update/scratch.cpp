@@ -28,8 +28,7 @@ struct options_checkbox_t {
 
     options_checkbox_t()
     {
-        checked = false;
-        disabled = false;
+        disabled = checked = false;
         hovered = false;
         label = 0;
     }
