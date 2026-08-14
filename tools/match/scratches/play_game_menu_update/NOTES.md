@@ -325,3 +325,14 @@ variants is byte-identical at 99.74%, 777/777 instructions, prefix 120, and
 localized opening-sum stack-coloring decision rather than a recoverable vector
 declaration detail. No source change is retained. Spec SHA-256 is
 `ac13a2fc95d66da0116c5a19c0374cdec8350abb55443405039b4dd6e372ee0b`.
+
+## Persisted status-owner boundary (2026-08-14)
+
+The original `gameStatus_t` declaration confirms that the quest and mode play
+counters are members of the persisted `game_status_blob`. Replacing this
+callback's already tuned field aliases with direct aggregate member expressions
+is nevertheless a measured regression: 99.74% to 93.55%, four fewer resolved
+references, and no compensating native gain. The recorded
+`original-game-status-owner-mutations.json` result therefore rejects that
+source transplant for this 1.9.93 consumer; the current compiler-facing aliases
+remain the stronger native match.

@@ -284,6 +284,9 @@ static __forceinline void translate_layer(
     }
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER
+#include "crimsonland_ui_state_owner.h"
+
 extern "C" void ui_menu_layout_init(void)
 {
     int i;

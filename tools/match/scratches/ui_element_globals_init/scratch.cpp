@@ -107,6 +107,9 @@ static __forceinline void construct_ui_element_inline(ui_element_t *element)
     element->active = 0;
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER
+#include "crimsonland_ui_state_owner.h"
+
 extern "C" void ui_element_globals_init(void)
 {
     construct_ui_element_inline(&ui_sign_crimson);

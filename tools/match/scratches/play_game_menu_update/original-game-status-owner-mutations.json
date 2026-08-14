@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "persisted-game-status-owner",
+      "find": "extern \"C\" void play_game_menu_update(void)",
+      "replacements": [
+        {
+          "name": "authenticated-game-status-aggregate",
+          "text": "#define CRIMSONLAND_USE_ORIGINAL_GAME_STATUS_OWNER\n#include \"crimsonland_game_status_owner.h\"\n\nextern \"C\" void play_game_menu_update(void)"
+        }
+      ]
+    }
+  ]
+}

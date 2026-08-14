@@ -21,3 +21,8 @@ pair and `layers[3]` array. This removes the three `(char *)element + 0x3c`,
 used only to reach the `+0x2f8` and `+0x314` fields. The named
 `hover_amount` and `direction_flag` stores remain exact at 135/135 with all
 121 references.
+
+The authenticated full `ui_t` owner is also byte-neutral here. Addressing all
+41 elements and the perk prompt through the aggregate still matches 135/135
+instructions and `121/0/0` references. This exact constructor calibrates the
+owner used by `ui_menu_layout_init`; it is not a score-only type overlay.

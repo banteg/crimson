@@ -26,15 +26,15 @@ the prompt owner's second `0xe8` subtemplate layer at `+0x124`, loads
 `ui\ui_textLevelUp.jaz`, and applies separate four-vertex prompt/text
 transforms.
 
-Current MSVC 6.5 `/O2 /GB` result: **85.49%**, with 10 exact prefix
-instructions, 1,422 native instructions versus 1,404 candidate instructions,
-and reference audit **449 resolved / 0 unresolved / 19 mismatched**. The
-candidate has the native `0x68`-byte frame. Remaining differences are dominated
-by VC6 scheduling and temporary-slot allocation across the aggregate
-position/atlas assignments and the prompt transform. The recovered element
-graph, callbacks, assets, coordinates, atlas rows, responsive branches, and
-final layout pass are complete. No volatile qualifiers, fake dependencies,
-dead expressions, padding, or inline assembly are used to coerce the match.
+Current MSVC 6.5 `/O2 /GB` result: **93.92%**, with 370 exact prefix
+instructions, 1,422 native instructions versus 1,408 candidate instructions,
+and a clean **528/0/0** reference audit. The candidate has the native
+`0x68`-byte frame. Remaining differences are dominated by VC6 scheduling and
+temporary-slot allocation across the responsive transforms, aggregate
+position/atlas assignments, and prompt transform. The recovered element graph,
+callbacks, assets, coordinates, atlas rows, responsive branches, and final
+layout pass are complete. No volatile qualifiers, fake dependencies, dead
+expressions, padding, or inline assembly are used to coerce the match.
 
 The shared `ui_element_t` now exposes the three position/hover pairs as
 `vec2f_t` unions and the complete render payload as three typed
@@ -368,3 +368,20 @@ reference mismatches are therefore scheduling/alignment effects, not evidence
 for a different aggregate order. No source was retained. The current baseline
 remains **89.25795%**, 1,408/1,422 instructions, prefix 10, and `488/0/3`
 references.
+
+## Authenticated `ui_t` owner (2026-08-14)
+
+The recovered 2003 `ui_t` declaration fixes the ownership and member order of
+the target block rooted at `ui_mouse_blocked` (`0x004871cc`). Its scalar prefix,
+41 contiguous `0x318`-byte elements, 41-entry element-pointer table, perk
+prompt element, and prompt timer all land exactly on the independently mapped
+1.9.93 addresses. The exact `ui_element_globals_init` constructor remains
+135/135 with `121/0/0` references when expressed through that aggregate,
+providing a byte-level calibration point for the layout.
+
+`original-ui-owner-mutations.json` records the effect on this consumer:
+**+337.62 weighted bytes**, prefix **10 to 370**, instructions unchanged at
+1,408/1,422, and references **488/0/3 to 528/0/0**, with no tradeoff. The
+aggregate owner is retained. The first remaining mismatch is now the commuted
+base/index encoding in the first responsive transform loop, followed by the
+already documented temporary and aggregate schedules.
