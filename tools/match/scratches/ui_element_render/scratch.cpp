@@ -19,6 +19,11 @@ struct ui_render_vec2_t {
         x = x_value;
         y = y_value;
     }
+
+    ui_render_vec2_t operator+(const ui_render_vec2_t &other)
+    {
+        return ui_render_vec2_t(x + other.x, y + other.y);
+    }
 };
 
 struct ui_render_matrix_t {
@@ -243,11 +248,9 @@ extern "C" void ui_element_render(ui_element_t *element)
                 &element->pos_x,
                 &element->rot_m00);
         } else {
-            ui_render_vec2_t render_pos;
-            render_pos.x =
-                element->render_offset_x + element->pos_x;
-            render_pos.y =
-                element->render_offset_y + element->pos_y;
+            ui_render_vec2_t render_pos =
+                *(ui_render_vec2_t *)&element->pos
+                + *(ui_render_vec2_t *)&element->render_offset_x;
             grim_interface_ptr->grim_submit_vertices_offset(
                 ui_element_counter_quad(element), 4, &render_pos.x);
         }

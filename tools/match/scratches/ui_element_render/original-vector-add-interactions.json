@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "original-vector-add-operator",
+      "find": "    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n",
+      "replacements": [
+        {
+          "name": "sdk-nonconst-operator",
+          "text": "    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    ui_render_vec2_t operator+(const ui_render_vec2_t &other)\n    {\n        return ui_render_vec2_t(x + other.x, y + other.y);\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "panel-zero-vector-add",
+      "find": "            render_pos.set(\n                element->pos_x + element->render_offset_x,\n                element->render_offset_y + element->pos_y);",
+      "replacements": [
+        {
+          "name": "offset-plus-position",
+          "text": "            render_pos =\n                *(ui_render_vec2_t *)&element->render_offset_x\n                + *(ui_render_vec2_t *)&element->pos;",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        },
+        {
+          "name": "position-plus-offset",
+          "text": "            render_pos =\n                *(ui_render_vec2_t *)&element->pos\n                + *(ui_render_vec2_t *)&element->render_offset_x;",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "panel-two-vector-add",
+      "find": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->render_offset_y + element->pos_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "offset-plus-position",
+          "text": "                render_pos =\n                    *(ui_render_vec2_t *)&element->render_offset_x\n                    + *(ui_render_vec2_t *)&element->pos;\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        },
+        {
+          "name": "position-plus-offset",
+          "text": "                render_pos =\n                    *(ui_render_vec2_t *)&element->pos\n                    + *(ui_render_vec2_t *)&element->render_offset_x;\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 2), 4, &render_pos.x);",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "panel-four-vector-add",
+      "find": "                render_pos.set(\n                    element->render_offset_x + element->pos_x,\n                    element->render_offset_y + element->pos_y);\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "offset-plus-position",
+          "text": "                render_pos =\n                    *(ui_render_vec2_t *)&element->render_offset_x\n                    + *(ui_render_vec2_t *)&element->pos;\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        },
+        {
+          "name": "position-plus-offset",
+          "text": "                render_pos =\n                    *(ui_render_vec2_t *)&element->pos\n                    + *(ui_render_vec2_t *)&element->render_offset_x;\n                grim_interface_ptr->grim_submit_vertices_offset(\n                    ui_element_quad(element, 4), 4, &render_pos.x);",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "counter-vector-add",
+      "find": "            ui_render_vec2_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;",
+      "replacements": [
+        {
+          "name": "offset-plus-position",
+          "text": "            ui_render_vec2_t render_pos =\n                *(ui_render_vec2_t *)&element->render_offset_x\n                + *(ui_render_vec2_t *)&element->pos;",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        },
+        {
+          "name": "position-plus-offset",
+          "text": "            ui_render_vec2_t render_pos =\n                *(ui_render_vec2_t *)&element->pos\n                + *(ui_render_vec2_t *)&element->render_offset_x;",
+          "requires": [
+            "original-vector-add-operator/sdk-nonconst-operator"
+          ]
+        }
+      ]
+    }
+  ]
+}

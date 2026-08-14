@@ -200,3 +200,25 @@ No source change is retained. The current result remains **97.50%**,
 521/521 instructions, prefix 332, and references `65/0/0`; the remaining
 four regions are bounded compiler scheduling differences rather than missing
 recovered behavior.
+
+## Original vector addition recovery (2026-08-14)
+
+The authenticated 2003 MOD SDK `vec2_t` defines a non-const `operator+` that
+returns `vec2_t(x + v.x, y + v.y)`. The counter path consumes two adjacent
+two-float aggregates already recovered as `element->pos` and
+`element->render_offset_x`, so spelling that operation through the original
+vector interface is source-backed rather than a register or lifetime hint.
+
+`original-vector-add-interactions.json` exhaustively evaluates all 81
+operator/callsite combinations. Using the original operator only for the
+counter submit raises the weighted result from 1756.061/1801 (**97.50%**) to
+1762.975/1801 (**97.89%**) while preserving 521/521 instructions, prefix 332,
+and references `65/0/0`. Applying it to any panel submit regresses, so those
+sites retain their independently evidenced `set` reuse shape.
+
+Two follow-up current-baseline sweeps close the nearby alternatives.
+`original-vector-plus-equals-mutations.json` evaluates all 81 combinations of
+the SDK `operator+=` at the four submit sites; the operator declaration alone
+is neutral and every use regresses. `shared-panel-counter-position-mutations.json`
+tests one function-wide position owner; it grows to 525 instructions, loses a
+reference, and falls to 91.59%. Neither negative shape is retained.

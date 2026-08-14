@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-render-position-declaration",
+      "find": "    int texture_handle = element->texture_handle;\n",
+      "replacements": [
+        {
+          "name": "before-texture-handle",
+          "text": "    ui_render_vec2_t render_pos;\n    int texture_handle = element->texture_handle;\n",
+          "requires": [
+            "panel-render-position-declaration/reuse-shared",
+            "counter-render-position-declaration/reuse-shared"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "panel-render-position-declaration",
+      "find": "        } else if (element->use_offset_render == 1) {\n            ui_render_vec2_t render_pos;\n",
+      "replacements": [
+        {
+          "name": "reuse-shared",
+          "text": "        } else if (element->use_offset_render == 1) {\n",
+          "requires": [
+            "shared-render-position-declaration/before-texture-handle",
+            "counter-render-position-declaration/reuse-shared"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "counter-render-position-declaration",
+      "find": "            ui_render_vec2_t render_pos =\n                *(ui_render_vec2_t *)&element->pos\n                + *(ui_render_vec2_t *)&element->render_offset_x;",
+      "replacements": [
+        {
+          "name": "reuse-shared",
+          "text": "            render_pos =\n                *(ui_render_vec2_t *)&element->pos\n                + *(ui_render_vec2_t *)&element->render_offset_x;",
+          "requires": [
+            "shared-render-position-declaration/before-texture-handle",
+            "panel-render-position-declaration/reuse-shared"
+          ]
+        }
+      ]
+    }
+  ]
+}
