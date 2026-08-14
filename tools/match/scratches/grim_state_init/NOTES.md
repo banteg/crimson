@@ -276,3 +276,27 @@ its dependency-aware source-tree SHA-256 is
 `1f5ef2a340009ce0a4e54f2949b32eb59815b9621a29d58d994f8f218cee4d88`.
 This closes the broader texture-island optimizer-context hypothesis without
 changing the canonical source.
+
+## Final-grid type and stack-coloring audit (2026-08-14)
+
+`final-grid-original-type-interactions.json` crosses the target-era `GrimUV`
+union/storage spelling, its constructor body, the recovered `GrimDepth`
+constructor body, and the native-looking final 16x16 row cursor. The three
+original type and constructor spellings are byte-neutral on their own. Every
+combination containing the native-looking cursor falls to the same **64.71%**,
+425/425-instruction, prefix-zero, `103/21/0` object. The original aggregate
+definitions therefore do not restore the native induction schedule.
+
+`final-grid-matrix-cursor-interaction.json` repeats the test with the complete
+`GrimUV[16][16]` storage declaration and first-row pointer publication. Its
+only valid three-site combination reaches the identical allocation cliff, so
+flat-versus-matrix ownership is also closed.
+
+A direct object diff identifies the mechanism. The uniform row cursor lets
+VC6 shrink the stack frame from native `0x14` bytes to `0x10` and coalesce the
+outer and inner integer-to-float conversion spills at `[esp+0xc]`. Native keeps
+the outer `y` spill at `[esp+0xc]` and the inner `x` spill at `[esp+0x10]`.
+The retained row-from-index spelling preserves that native frame and all 397
+preceding exact instructions, leaving only the final loop's backend induction
+choice. Artificial address-taking, volatility, or dummy dependencies would
+force layout rather than recover source and are not justified.

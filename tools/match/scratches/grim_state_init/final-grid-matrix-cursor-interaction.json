@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-grid-matrix-storage",
+      "find": "extern GrimUV grim_subrect_table[256];\n",
+      "replacements": [
+        {
+          "name": "sixteen-by-sixteen",
+          "text": "extern GrimUV grim_subrect_table[16][16];\n",
+          "requires": [
+            "final-grid-matrix-publication/first-row",
+            "final-grid-matrix-native-cursor/advance-row-before-inner-loop"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final-grid-matrix-publication",
+      "find": "    grim_subrect_ptr_table[16] = grim_subrect_table;\n",
+      "replacements": [
+        {
+          "name": "first-row",
+          "text": "    grim_subrect_ptr_table[16] = grim_subrect_table[0];\n",
+          "requires": [
+            "final-grid-matrix-storage/sixteen-by-sixteen",
+            "final-grid-matrix-native-cursor/advance-row-before-inner-loop"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final-grid-matrix-native-cursor",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "advance-row-before-inner-loop",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0][0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+          "requires": [
+            "final-grid-matrix-storage/sixteen-by-sixteen",
+            "final-grid-matrix-publication/first-row"
+          ]
+        }
+      ]
+    }
+  ]
+}

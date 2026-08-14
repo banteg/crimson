@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "uv-original-storage-shape",
+      "find": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n};\n",
+      "replacements": [
+        {
+          "name": "assignment-body",
+          "text": "struct GrimUV {\n    float u;\n    float v;\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value)\n    {\n        u = u_value;\n        v = v_value;\n    }\n};\n"
+        },
+        {
+          "name": "union-storage-initializer-list",
+          "text": "struct GrimUV {\n    union {\n        struct {\n            float u;\n            float v;\n        };\n        float values[2];\n    };\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value) : u(u_value), v(v_value) {}\n};\n"
+        },
+        {
+          "name": "union-storage-assignment-body",
+          "text": "struct GrimUV {\n    union {\n        struct {\n            float u;\n            float v;\n        };\n        float values[2];\n    };\n\n    GrimUV() {}\n    GrimUV(float u_value, float v_value)\n    {\n        u = u_value;\n        v = v_value;\n    }\n};\n"
+        }
+      ]
+    },
+    {
+      "name": "depth-original-constructor-shape",
+      "find": "    GrimDepth() {}\n    GrimDepth(float z_value, float rhw_value)\n        : z(z_value), rhw(rhw_value) {}\n",
+      "replacements": [
+        {
+          "name": "assignment-body",
+          "text": "    GrimDepth() {}\n    GrimDepth(float z_value, float rhw_value)\n    {\n        z = z_value;\n        rhw = rhw_value;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-native-cursor",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "advance-row-before-inner-loop",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}
