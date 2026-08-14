@@ -2,6 +2,9 @@
 
 #include "crimsonland_gameplay.h"
 
+#define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+#include "crimsonland_config_owner.h"
+
 extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
 {
     bonus_entry_t *entry;

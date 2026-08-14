@@ -6,6 +6,9 @@
 #undef creature_apply_damage
 #undef fx_queue_add_rotated
 
+#define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+#include "crimsonland_config_owner.h"
+
 struct creature_vec2_t {
     float x;
     float y;

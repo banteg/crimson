@@ -2,6 +2,8 @@
 
 #include "crimsonland_gameplay.h"
 
+#define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+#include "crimsonland_config_owner.h"
 #define CRIMSONLAND_USE_ORIGINAL_TERRAIN_OWNER
 #include "crimsonland_terrain_owner.h"
 

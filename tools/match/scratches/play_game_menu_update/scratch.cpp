@@ -1,6 +1,9 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
 
+#define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+#include "crimsonland_config_owner.h"
+
 extern IGrim2D_cpp *grim_interface_ptr;
 
 struct play_game_vec2_t {

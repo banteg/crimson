@@ -20,3 +20,8 @@ aggregate rooted at `terrain_render_target`: the render target, dimensions,
 three selectors, and sixteen terrain texture handles.  Exact producer and
 consumer calibrations guard the recovered member offsets before WIP scratches
 opt in to the aggregate names.
+
+`crimsonland_config_owner.h` restores the authenticated 1.9.93 `config_t`
+owner rooted at `config_blob`.  Its opt-in aliases replace the independently
+recovered game-mode, hardcore, and violence-disable symbols with their proven
+interior members without changing the compiler-facing layout.

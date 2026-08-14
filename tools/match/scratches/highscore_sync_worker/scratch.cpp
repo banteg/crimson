@@ -18,6 +18,9 @@ extern int online_sync_status;
 extern unsigned char highscore_batch_sync_mode;
 extern char s_empty_string;
 
+#define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+#include "crimsonland_config_owner.h"
+
 extern "C" unsigned char game_is_full_version(void);
 extern "C" int crt_rand(void);
 extern "C" void highscore_load_table_thunk(void);

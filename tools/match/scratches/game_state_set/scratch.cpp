@@ -1,6 +1,9 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
 
+#define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+#include "crimsonland_config_owner.h"
+
 struct game_state_vec2_t {
     float x;
     float y;
