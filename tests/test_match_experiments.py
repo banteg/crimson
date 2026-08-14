@@ -155,6 +155,21 @@ def test_experiment_summary_surfaces_repeats_stalls_and_tradeoffs(
     ]
 
 
+def test_experiment_summary_backfills_neutral_tradeoff_from_old_record(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "scratches" / "foo" / "experiments.jsonl"
+    result = _result("variant-a", 0, mismatch_delta=1)
+    result["tradeoffs"] = []
+    _write_jsonl(log, [_sweep("spec-a", [result])])
+
+    payload = summarize_experiments(tmp_path)
+
+    assert payload["summary"]["neutral_variants"] == 1
+    assert payload["summary"]["tradeoff_variants"] == 1
+    assert payload["rows"][0]["flags"] == ["metric-tradeoffs"]
+
+
 def test_experiment_summary_check_rejects_malformed_logs(tmp_path: Path) -> None:
     log = tmp_path / "scratches" / "stalled" / "experiments.jsonl"
     _write_jsonl(

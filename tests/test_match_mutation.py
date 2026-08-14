@@ -22,6 +22,7 @@ from crimson.match_mutation import (
     load_mutation_spec,
     mutation_evaluation_payload,
     mutation_sweep_payload,
+    render_mutation_sweep,
 )
 
 
@@ -326,6 +327,53 @@ def test_mutation_payload_warns_when_fuzzy_gain_regresses_other_metrics(
     assert payload["metric_best_improves"] is True
     assert payload["best_improves"] is False
     assert payload["winner"] is None
+
+
+def test_mutation_payload_warns_when_fuzzy_tie_regresses_references(
+    tmp_path: Path,
+) -> None:
+    config = _config(tmp_path)
+    baseline = _status(config, 0.5)
+    candidate = replace(
+        _status(replace(config, directory=Path("/tmp/shadow")), 0.5),
+        masked_ok=3,
+        masked_mismatches=1,
+    )
+    evaluation = MutationEvaluation(
+        variant=MutationVariant(
+            label="bound/last-entry",
+            source_text="last-entry",
+            source_sha256="variant",
+            choices=(
+                MutationChoice(
+                    site="bound",
+                    replacement="last-entry",
+                    replacement_index=1,
+                ),
+            ),
+        ),
+        status=candidate,
+        baseline=baseline,
+    )
+    sweep = MutationSweep(
+        spec=MutationSpec(sites=(), sha256="spec"),
+        baseline=baseline,
+        evaluations=(evaluation,),
+        possible_by_changes=(1,),
+        planned_by_changes=(1,),
+    )
+
+    expected = ["reference-debt-increased", "resolved-references-decreased"]
+    assert mutation_evaluation_payload(evaluation)["tradeoffs"] == expected
+    payload = mutation_sweep_payload(sweep)
+    assert payload["tradeoff_variants"] == 1
+    assert payload["best_tradeoffs"] == expected
+    assert payload["metric_best_improves"] is False
+    assert payload["best_improves"] is False
+    assert payload["winner"] is None
+    rendered = render_mutation_sweep(sweep)
+    assert "tradeoffs=1" in rendered
+    assert "[warn:reference-debt-increased,resolved-references-decreased]" in rendered
 
 
 def test_mutate_cli_writes_only_a_tradeoff_free_improving_winner(

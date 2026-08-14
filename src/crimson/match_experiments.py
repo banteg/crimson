@@ -113,17 +113,20 @@ def _inferred_tradeoffs(
     result: dict[str, Any],
     baseline: dict[str, Any] | None,
 ) -> tuple[str, ...]:
+    warnings: list[str] = []
     explicit = result.get("tradeoffs")
     if isinstance(explicit, list):
         explicit_strings = [item for item in explicit if isinstance(item, str)]
         if len(explicit_strings) == len(explicit):
-            return tuple(dict.fromkeys(explicit_strings))
+            warnings.extend(explicit_strings)
 
     delta = result.get("delta")
-    if not isinstance(delta, dict) or (_number(delta.get("fuzzy_weighted_bytes")) or 0.0) <= 0:
-        return ()
+    if not isinstance(delta, dict):
+        return tuple(dict.fromkeys(warnings))
+    fuzzy_delta = _number(delta.get("fuzzy_weighted_bytes"))
+    if fuzzy_delta is None or fuzzy_delta < 0:
+        return tuple(dict.fromkeys(warnings))
 
-    warnings: list[str] = []
     references = delta.get("references")
     if isinstance(references, dict):
         unresolved = _number(references.get("unresolved")) or 0.0
@@ -151,7 +154,7 @@ def _inferred_tradeoffs(
             and abs(candidate - target) > abs(baseline_candidate - baseline_target)
         ):
             warnings.append("instruction-count-further-from-target")
-    return tuple(warnings)
+    return tuple(dict.fromkeys(warnings))
 
 
 def _variant_key(result: dict[str, Any]) -> tuple[str, str, str] | None:

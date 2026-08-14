@@ -163,6 +163,10 @@ to `12/0/1`: it names `projectile_pool[0x5f]` where native names the one-past
 `projectile_pool[0x60]`. Replacing the shared initialize edge with an SDK-style
 break falls to 65.82%, 111 instructions, and `11/0/0` references.
 
+Mutation reporting now treats that byte-neutral `12/0/1` result as an explicit
+reference tradeoff; relocation masking can no longer make this shape appear
+warning-free merely because its normalized score ties the baseline.
+
 No source change is retained. This establishes the MOD SDK as a bounded
 source-style prior rather than authority over 1.9.93 semantics. The spec
 SHA-256 is

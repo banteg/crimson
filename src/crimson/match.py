@@ -8705,7 +8705,9 @@ def fuzzy_score_tradeoffs(
     baseline: ScratchStatus,
     candidate: ScratchStatus,
 ) -> tuple[str, ...]:
-    if candidate.fuzzy_weighted_bytes <= baseline.fuzzy_weighted_bytes:
+    # A byte-neutral result can still be worse: relocation masking may hide a
+    # changed reference target from the headline fuzzy score.
+    if candidate.fuzzy_weighted_bytes < baseline.fuzzy_weighted_bytes:
         return ()
 
     warnings: list[str] = []

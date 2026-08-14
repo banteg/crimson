@@ -579,9 +579,11 @@ JSON document to stdout, so their output can be piped directly to tools such as
 Probe a source-shape experiment without editing the tracked scratch. The
 baseline and shadow build use the same selected compiler profile, and the
 report shows deltas for fuzzy bytes, instruction count, prefix, and references.
-When fuzzy bytes improve while reference debt, resolved-reference coverage,
-prefix, first mismatch, or instruction-count shape regresses, the report
-labels the result with explicit tradeoff warnings.
+When fuzzy bytes improve or remain tied while reference debt,
+resolved-reference coverage, prefix, first mismatch, or instruction-count
+shape regresses, the report labels the result with explicit tradeoff warnings.
+This matters because relocation masking can leave the headline score unchanged
+even when a candidate names the wrong native target.
 
 ```sh
 uv run crimson match probe tools/match/scratches/player_update \
@@ -712,9 +714,9 @@ environment, or unexplained evaluation failures; repair and rerun those instead.
 The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the
 baseline without increasing reference debt, regressing the exact prefix or
-first mismatch, or moving the instruction count farther from native. Higher
-fuzzy-scoring tradeoffs remain ranked and recorded with warnings but are never
-selected as the retained winner. Combine `--write-best` with
+first mismatch, or moving the instruction count farther from native. Higher or
+byte-neutral fuzzy-scoring tradeoffs remain ranked and recorded with warnings
+but are never selected as the retained winner. Combine `--write-best` with
 `--require-improvement` in scripted searches.
 
 Sweep one scratch across installed compilers and one or more flag sets. Options
