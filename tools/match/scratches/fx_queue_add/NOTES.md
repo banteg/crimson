@@ -97,3 +97,14 @@ The old declaration is useful provenance for the semantic aggregate identities,
 but transplanting its value signature does not reproduce the 1.9.93 body. Keep
 the current pointer-lowered compiler-facing source; the remaining publication
 interleave stays classified as a compiler residual.
+
+## Processor Pack alias closure (2026-08-14)
+
+A corpus compiler scan found an exact 39/39-instruction, `10/0/0` result under
+the `msvc6.0pp` alias. This is the same build-9044 Processor Pack optimizer
+already rejected above, not new object provenance: all installed `*pp`
+profiles stamp product 48/49 build 9044, and those records are absent from
+`crimsonland.exe`. `scratch.conf` now marks every installed Processor Pack
+alias disproven so the default corpus scan no longer reports this known
+source-shape lead as an actionable exact compiler candidate. The canonical
+build-9782 result remains 97.44%, 39/39 instructions, and `9/0/0` references.
