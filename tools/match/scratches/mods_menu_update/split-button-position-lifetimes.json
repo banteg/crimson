@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-button-position-declaration",
+      "find": "    mods_vec2_t button_position;\n    if (mods_menu_selected_info != 0",
+      "replacements": [
+        {
+          "name": "split-scoped-positions",
+          "text": "    if (mods_menu_selected_info != 0",
+          "requires": [
+            "launch-button-position/scope-local",
+            "main-menu-button-position/scope-local"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "launch-button-position",
+      "find": "        button_position.x = button_origin.x + 58.0f;\n        button_position.y = button_origin.y + 232.0f;",
+      "replacements": [
+        {
+          "name": "scope-local",
+          "text": "        mods_vec2_t button_position;\n        button_position.x = button_origin.x + 58.0f;\n        button_position.y = button_origin.y + 232.0f;",
+          "requires": [
+            "shared-button-position-declaration/split-scoped-positions",
+            "main-menu-button-position/scope-local"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "main-menu-button-position",
+      "find": "    button_position.x = button_origin.x + 58.0f;\n    button_position.y = button_origin.y + 266.0f;",
+      "replacements": [
+        {
+          "name": "scope-local",
+          "text": "    mods_vec2_t button_position;\n    button_position.x = button_origin.x + 58.0f;\n    button_position.y = button_origin.y + 266.0f;",
+          "requires": [
+            "shared-button-position-declaration/split-scoped-positions",
+            "launch-button-position/scope-local"
+          ]
+        }
+      ]
+    }
+  ]
+}

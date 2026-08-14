@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mods-vector-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "original-union-storage",
+          "text": "    union {\n        struct { float x, y; };\n        float v[2];\n    };",
+          "requires": [
+            "mods-vector-add-qualifier/original-nonconst-member"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mods-vector-scalar-constructor",
+      "find": "    mods_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value)\n    {\n    }",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    mods_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }",
+          "requires": [
+            "mods-vector-add-qualifier/original-nonconst-member"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mods-vector-add-qualifier",
+      "find": "    mods_vec2_t operator+(const mods_vec2_t &other) const",
+      "replacements": [
+        {
+          "name": "original-nonconst-member",
+          "text": "    mods_vec2_t operator+(const mods_vec2_t &other)"
+        }
+      ]
+    }
+  ]
+}

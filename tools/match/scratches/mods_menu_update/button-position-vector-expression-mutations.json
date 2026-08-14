@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "launch-button-position-expression",
+      "find": "        button_position.x = button_origin.x + 58.0f;\n        button_position.y = button_origin.y + 232.0f;",
+      "replacements": [
+        {
+          "name": "vector-add-assignment",
+          "text": "        button_position =\n            button_origin + mods_vec2_t(58.0f, 232.0f);"
+        }
+      ]
+    },
+    {
+      "name": "main-menu-button-position-expression",
+      "find": "    button_position.x = button_origin.x + 58.0f;\n    button_position.y = button_origin.y + 266.0f;",
+      "replacements": [
+        {
+          "name": "vector-add-assignment",
+          "text": "    button_position =\n        button_origin + mods_vec2_t(58.0f, 266.0f);"
+        }
+      ]
+    }
+  ]
+}

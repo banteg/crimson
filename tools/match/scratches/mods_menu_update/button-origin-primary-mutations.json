@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-primary-owner",
+      "find": "    mods_vec2_t position =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    position = position + mods_vec2_t(300.0f, 40.0f);\n    position.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + position.x + 64.0f;\n    position.y += 4.0f;\n    mods_vec2_t button_origin = position;",
+      "replacements": [
+        {
+          "name": "button-origin-primary-copy-construct-position",
+          "text": "    mods_vec2_t button_origin =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    button_origin = button_origin + mods_vec2_t(300.0f, 40.0f);\n    button_origin.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + button_origin.x + 64.0f;\n    button_origin.y += 4.0f;\n    mods_vec2_t position = button_origin;"
+        },
+        {
+          "name": "button-origin-primary-assign-position",
+          "text": "    mods_vec2_t position;\n    mods_vec2_t button_origin =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    button_origin = button_origin + mods_vec2_t(300.0f, 40.0f);\n    button_origin.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + button_origin.x + 64.0f;\n    button_origin.y += 4.0f;\n    position = button_origin;"
+        },
+        {
+          "name": "button-origin-primary-both-assigned",
+          "text": "    mods_vec2_t position;\n    mods_vec2_t button_origin;\n    button_origin =\n        *(mods_vec2_t *)&ui_element_slot_09.pos_x\n        + *(mods_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    button_origin = button_origin + mods_vec2_t(300.0f, 40.0f);\n    button_origin.x =\n        ui_element_slot_09.render_offset_x - 240.0f\n        + button_origin.x + 64.0f;\n    button_origin.y += 4.0f;\n    position = button_origin;"
+        }
+      ]
+    }
+  ]
+}

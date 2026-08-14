@@ -267,3 +267,33 @@ spec SHA-256 is
 `6b096de434002e9466c10784ee41ee94046e81c56cd660fbe9796b0342a78e03`;
 the 14-record ledger SHA-256 is
 `d8e6701cf8d2c4c669ac3a6990200cde183815efb9ea6fe8c53c2580d97eae92`.
+
+## Native stack ownership and original vector shape (2026-08-14)
+
+Fresh compiler listing metadata and live native local-variable evidence agree
+that `_finddata_t` already occupies the native absolute stack slot at
+`[esp-0x118]`. The candidate's `0x160` frame versus native `0x144` frame is
+therefore not a missing `_finddata_t` layout: the entire 28-byte delta is in
+the lower vector, button, and generated-temporary coloring.
+
+The exact MOD SDK vector union storage, assignment-body scalar constructor,
+and non-const `operator+` qualifier were replayed alone and in every
+interaction by `original-vector-type-mutations.json` and
+`original-vector-operator-shape-mutations.json`. All seven variants are
+byte-identical at 94.44%, 648/648 instructions, and `184/0/0` references.
+
+Three further ownership families bound the remaining natural source shapes.
+Making `button_origin` the primary long-lived object regresses every variant
+to 93.06%; splitting the two `button_position` lifetimes is byte-neutral; and
+directly initializing either or both button vectors is also byte-neutral.
+Writing the main position as a vector sum gains 12.48 fuzzy-weighted bytes but
+grows the candidate from 648 to 652 instructions, so it is rejected as an
+explicit instruction-count tradeoff. No source change is retained.
+
+Spec SHA-256 values are
+`c41cd0c071e1dc2ee5123a5002a4b9e66919143db4e7df176fe11204ea5b07ec`,
+`437d758b984fc2774801f06d2826eb361c6bec6e9ee0b870320443a58a62d0a6`,
+`f1faef27cd2575f44cff927ac33e713d8a4051441644631f146b14e13f9e8fc8`,
+`e2da6eb6849bf9a4e2e838747414b30dbc204764b0ebef9eff85bb8565e75296`,
+`e9ae3e3127ff3048733404817b0b9960858af1ccf5a5dc8ba5360d8969254187`,
+and `c3a394c6afd49bb797b52e44db330f1840ff8abcdde8171f9b83a351537a2574`.
