@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "play-game-vector-storage",
+      "find": "    float x;\n    float y;",
+      "replacements": [
+        {
+          "name": "original-union-storage",
+          "text": "    union {\n        struct { float x, y; };\n        float v[2];\n    };"
+        }
+      ]
+    },
+    {
+      "name": "play-game-vector-scalar-constructor",
+      "find": "    play_game_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "original-assignment-body",
+          "text": "    play_game_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "play-game-vector-add-qualifier",
+      "find": "    play_game_vec2_t operator+(const play_game_vec2_t &other) const",
+      "replacements": [
+        {
+          "name": "original-nonconst-member",
+          "text": "    play_game_vec2_t operator+(const play_game_vec2_t &other)"
+        }
+      ]
+    }
+  ]
+}

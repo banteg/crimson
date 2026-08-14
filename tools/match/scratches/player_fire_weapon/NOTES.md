@@ -148,3 +148,18 @@ replayed independently and together in
 authenticated type spelling changes the pellet result's stack color, so no
 source edit is retained. The spec SHA-256 is
 `164c7a7dc645c3dcd7a8516cad1b74b7c76a375fa19f3130e0bc5b9cde29be24`.
+
+## Original shotgun vector identity replay (2026-08-14)
+
+The recovered shotgun helper result and its local vector objects were replayed
+with their original class identity while preserving the flattened C ABI at
+the three external call boundaries. The valid complete transfer is
+byte-identical at 99.21%, 378/378 instructions, prefix 245, and `142/0/0`
+references, so class identity does not alter the remaining pellet stack color.
+
+An earlier invalid plan attempted to redeclare the existing C-linkage sprite
+function with class-pointer parameters and produced C2733. That failed record
+is explicitly paired with a `mutation-error-audit`; the corrected spec casts
+only at the recovered flattened-header boundary. No source edit is retained.
+Spec SHA-256 is
+`e11e5c09656ca8befe7f1bd1be143d33ff4ae1ca40c31871e9fa8f1058398815`.

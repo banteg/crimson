@@ -314,3 +314,14 @@ spec SHA-256 is
 `d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
 the 18-record ledger SHA-256 is
 `32847c2e238be6a7ae4fcf58efed0bbdaf8f390de5289367a5f5b9b7a529729a`.
+
+## Original vector type replay (2026-08-14)
+
+`original-vector-type-mutations.json` replays the exact MOD SDK union
+storage, assignment-body scalar constructor, and non-const `operator+`
+qualifier independently and in all four interactions. Every one of the seven
+variants is byte-identical at 99.74%, 777/777 instructions, prefix 120, and
+`321/0/0` references. The final mismatch therefore remains the already
+localized opening-sum stack-coloring decision rather than a recoverable vector
+declaration detail. No source change is retained. Spec SHA-256 is
+`ac13a2fc95d66da0116c5a19c0374cdec8350abb55443405039b4dd6e372ee0b`.

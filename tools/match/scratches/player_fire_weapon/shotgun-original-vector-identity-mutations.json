@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "typed-vector-result",
+      "find": "static __forceinline void typo_fire_vec_add(\n    vec2f_t *out,",
+      "replacements": [
+        {
+          "name": "original-class-result",
+          "text": "static __forceinline void typo_fire_vec_add(\n    typo_fire_vec2_t *out,",
+          "requires": [
+            "typed-shotgun-locals/original-class-locals",
+            "flattened-first-sprite-interface/cast-at-recovered-boundary",
+            "flattened-second-sprite-interface/cast-at-recovered-boundary",
+            "flattened-projectile-interface/cast-at-recovered-boundary"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "typed-shotgun-locals",
+      "find": "                vec2f_t effect_velocity;\n                vec2f_t effect_position;",
+      "replacements": [
+        {
+          "name": "original-class-locals",
+          "text": "                typo_fire_vec2_t effect_velocity;\n                typo_fire_vec2_t effect_position;",
+          "requires": [
+            "typed-vector-result/original-class-result",
+            "flattened-first-sprite-interface/cast-at-recovered-boundary",
+            "flattened-second-sprite-interface/cast-at-recovered-boundary",
+            "flattened-projectile-interface/cast-at-recovered-boundary"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flattened-first-sprite-interface",
+      "find": "                int effect_index = fx_spawn_sprite(\n                    &effect_position,\n                    &effect_velocity,\n                    1.0f);",
+      "replacements": [
+        {
+          "name": "cast-at-recovered-boundary",
+          "text": "                int effect_index = fx_spawn_sprite(\n                    (const vec2f_t *)&effect_position,\n                    (const vec2f_t *)&effect_velocity,\n                    1.0f);",
+          "requires": [
+            "typed-vector-result/original-class-result",
+            "typed-shotgun-locals/original-class-locals",
+            "flattened-second-sprite-interface/cast-at-recovered-boundary",
+            "flattened-projectile-interface/cast-at-recovered-boundary"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flattened-second-sprite-interface",
+      "find": "                effect_index = fx_spawn_sprite(\n                    &effect_velocity,\n                    &effect_position,\n                    2.0f);",
+      "replacements": [
+        {
+          "name": "cast-at-recovered-boundary",
+          "text": "                effect_index = fx_spawn_sprite(\n                    (const vec2f_t *)&effect_velocity,\n                    (const vec2f_t *)&effect_position,\n                    2.0f);",
+          "requires": [
+            "typed-vector-result/original-class-result",
+            "typed-shotgun-locals/original-class-locals",
+            "flattened-first-sprite-interface/cast-at-recovered-boundary",
+            "flattened-projectile-interface/cast-at-recovered-boundary"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flattened-projectile-interface",
+      "find": "                    int projectile_index = projectile_spawn(\n                        &effect_velocity,",
+      "replacements": [
+        {
+          "name": "cast-at-recovered-boundary",
+          "text": "                    int projectile_index = projectile_spawn(\n                        (const vec2f_t *)&effect_velocity,",
+          "requires": [
+            "typed-vector-result/original-class-result",
+            "typed-shotgun-locals/original-class-locals",
+            "flattened-first-sprite-interface/cast-at-recovered-boundary",
+            "flattened-second-sprite-interface/cast-at-recovered-boundary"
+          ]
+        }
+      ]
+    }
+  ]
+}
