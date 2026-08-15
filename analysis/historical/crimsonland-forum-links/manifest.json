@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "kind": "historical-crimsonland-forum-link-recovery",
+  "archived_at": "2026-08-15",
+  "source_page": {
+    "url": "http://koti.mbnet.fi/temper/crimsonland/",
+    "capture_timestamp": "20020615144308",
+    "manifest": "analysis/historical/koti-mbnet-crimsonland/manifest.json"
+  },
+  "links": [
+    {
+      "service": "MuroBBS",
+      "original_url": "http://www.muropaketti.com/murobbs/showthread.php?s=ca154809feae4ff9173468f83ef53074&threadid=118962",
+      "identifier": "threadid=118962",
+      "state": "not-recovered",
+      "conclusion": "The 2022 bulk crawl requested the migrated /threads/118962/ URL, but the server returned HTTP 404 with the message 'Viestiketjua ei löytynyt.' The title-sorted CDX block has no Crimsonland match, and the public Wayback index has no capture of the original thread ID.",
+      "bulk_archive": {
+        "item": "https://archive.org/details/murobbs.muropaketti.com_20220411",
+        "cdx": {
+          "filename": "murobbs.muropaketti.com_20220411.cdx.gz",
+          "size": 86542523,
+          "sha1": "a7051f00fe8bdaf453b502685574e0e9d43e969c"
+        },
+        "numeric_block": {
+          "byte_range": "7692374-7799694",
+          "artifact": "analysis/historical/crimsonland-forum-links/captures/murobbs-numeric.cdx.gz",
+          "size": 107321,
+          "sha256": "67aff6c322109b99e6be186f176d440ec052fdd7ea4826d8e69d5a58d5d27933"
+        },
+        "title_block": {
+          "byte_range": "54882700-55074165",
+          "artifact": "analysis/historical/crimsonland-forum-links/captures/murobbs-title.cdx.gz",
+          "size": 191466,
+          "sha256": "d546a227b0fa486650a948a8147205d92fac1e1fe790931e03f8d55e16fb6f83",
+          "crimsonland_matches": 0
+        },
+        "record": {
+          "url": "https://murobbs.muropaketti.com/threads/118962/",
+          "timestamp": "20220411133544",
+          "status": 404,
+          "mime": "text/html",
+          "digest": "6G34P62XE4MFKPNZB2SPEMHZPNNXOH57",
+          "filename": "murobbs.muropaketti.com_20220411/murobbs.muropaketti.com-00000.warc.gz",
+          "offset": 1941443259,
+          "length": 13469,
+          "warc_artifact": "analysis/historical/crimsonland-forum-links/captures/murobbs-118962.warc.gz",
+          "warc_sha256": "1079f4b8cb29113dbf63c20aeed0d75494b8a707566c3acdc7fca187ad44491b"
+        }
+      },
+      "wayback": {
+        "prefix_query": "https://web.archive.org/cdx/search/cdx?url=www.muropaketti.com%2Fmurobbs%2Fshowthread.php&matchType=prefix&output=txt&fl=timestamp%2Coriginal%2Cstatuscode%2Cdigest&filter=statuscode%3A200",
+        "artifact": "analysis/historical/crimsonland-forum-links/captures/murobbs-wayback.cdx.txt",
+        "artifact_size": 581,
+        "artifact_sha256": "cb1ca5710bd672e9d4b8b685e6e1bd4b714d2652d864b686026c002268a27ed2",
+        "target_matches": 0
+      }
+    },
+    {
+      "service": "Pelit.fi",
+      "original_url": "http://www.pelit.fi/keskustelu/keskusteluboard.asp?u=u&ketju_id=398570&alue_id=10&ryhma_id=1",
+      "identifier": "ketju_id=398570",
+      "state": "not-recovered",
+      "conclusion": "The public Wayback prefix index and exact www/non-www queries contain no capture of the thread. The current Pelit forum search requires authentication, so a migrated private copy cannot be ruled out.",
+      "wayback": {
+        "prefix_query": "https://web.archive.org/cdx/search/cdx?url=www.pelit.fi%2Fkeskustelu%2Fkeskusteluboard.asp&matchType=prefix&output=txt&fl=timestamp%2Coriginal%2Cstatuscode%2Cdigest&filter=statuscode%3A200",
+        "prefix_artifact": "analysis/historical/crimsonland-forum-links/captures/pelit-wayback-prefix.cdx.txt",
+        "prefix_result_bytes": 0,
+        "prefix_artifact_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exact_www_query": "https://web.archive.org/cdx/search/cdx?url=www.pelit.fi%2Fkeskustelu%2Fkeskusteluboard.asp%3Fu%3Du%26ketju_id%3D398570%26alue_id%3D10%26ryhma_id%3D1&matchType=exact&output=json",
+        "exact_www_artifact": "analysis/historical/crimsonland-forum-links/captures/pelit-wayback-exact-www.json",
+        "exact_bare_query": "https://web.archive.org/cdx/search/cdx?url=pelit.fi%2Fkeskustelu%2Fkeskusteluboard.asp%3Fu%3Du%26ketju_id%3D398570%26alue_id%3D10%26ryhma_id%3D1&matchType=exact&output=json",
+        "exact_bare_artifact": "analysis/historical/crimsonland-forum-links/captures/pelit-wayback-exact-bare.json",
+        "exact_artifact_size": 3,
+        "exact_artifact_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "target_matches": 0
+      },
+      "common_crawl": {
+        "exact_url_indexes_checked": [
+          "CC-MAIN-2008-2009",
+          "CC-MAIN-2012",
+          "CC-MAIN-2013"
+        ],
+        "target_matches": 0,
+        "note": "These are sampled exact-URL checks, not an exhaustive wildcard search."
+      }
+    }
+  ],
+  "pelit_catalog": [
+    {
+      "id": 85854,
+      "url": "https://apajalista.net/id?id=85854",
+      "filename": "CLAND117.ZIP",
+      "version": "1.1.7",
+      "listed_size": "7,2 Mt",
+      "listed_date": "2002-05-23",
+      "payload": "not-hosted",
+      "checksum": null,
+      "artifact": "analysis/historical/crimsonland-forum-links/captures/apajalista-85854.html",
+      "artifact_size": 16128,
+      "artifact_sha256": "7f1e576a1762ee7d386605e8f70865342bcda978db9296d5c5d7f6ddda180a42"
+    },
+    {
+      "id": 85855,
+      "url": "https://apajalista.net/id?id=85855",
+      "filename": "CLAND130.ZIP",
+      "version": "1.3.0",
+      "listed_size": "9,5 Mt",
+      "listed_date": "2002-07-24",
+      "payload": "not-hosted",
+      "checksum": null,
+      "artifact": "analysis/historical/crimsonland-forum-links/captures/apajalista-85855.html",
+      "artifact_size": 19591,
+      "artifact_sha256": "ff31aea9e895e860d8af1e4f16e9548ca28b0e3213a97bf4b3a2766883fc5db2"
+    }
+  ],
+  "supporting_artifacts": [
+    {
+      "path": "analysis/historical/crimsonland-forum-links/captures/murobbs.cdx.idx",
+      "size": 85178,
+      "sha256": "5e7a07851381f7c45428c00ee574de5c88c6d49070bcf3bdd7953099b98d806a"
+    },
+    {
+      "path": "analysis/historical/crimsonland-forum-links/captures/murobbs.metadata.json",
+      "size": 6846,
+      "sha256": "006598f91acf3dede115818811947cefd291e06032005b7c34c75e5471ccd70b"
+    }
+  ],
+  "next_leads": [
+    "Search the authenticated current Pelit forum for ketju_id 398570, Crimsonland, and CLAND117.ZIP.",
+    "Ask Pelit or the Finnish web archive whether restricted historical forum data or the CLAND117.ZIP payload survives.",
+    "Look for private MuroBBS exports predating the 2022 crawl; the public bulk archive only proves that migrated ID 118962 was gone by crawl time."
+  ]
+}

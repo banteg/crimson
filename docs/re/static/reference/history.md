@@ -36,11 +36,11 @@ under ignored artifact directories. The archive retained four images from the
 | 1.0.2 | recovered | Original ZIP preserved on the project asset host. |
 | 1.1.1 | missing | Release notes on the 2002 page. |
 | 1.1.6 | missing | Release notes on the 2002 page. |
-| 1.1.7 | missing | Release notes on the 2002 page. |
+| 1.1.7 | missing | Release notes plus Pelit catalog record `CLAND117.ZIP`, dated 2002-05-23; no payload survives there. |
 | 1.2.1 | missing | Release notes on the 2002 page. |
 | 1.2.2 | missing | Full and no-music links survive; Wayback only retained later 404 responses. |
 | 1.2.4 | missing | Mentioned retrospectively by the 1.3.0 and 1.4.0 readmes. |
-| 1.3.0 | recovered | Original ZIP and readme dated 2002-07-11. |
+| 1.3.0 | recovered | Original ZIP and readme dated 2002-07-11; Pelit catalog record `CLAND130.ZIP` is dated 2002-07-24. |
 | 1.4.0 | recovered | Original ZIP and readme dated 2002-09-16. |
 
 Recovered packages are deliberately stored under ignored `game_bins/`, with
@@ -48,6 +48,27 @@ their retrieval URLs, sizes, and SHA-256 hashes committed in the manifest.
 Two historical Reflexive installers and the independently archived 1.9.9 ZIP
 are preserved alongside them; the two installer versions remain undetermined
 rather than inferred from upload metadata.
+
+## Linked forum threads
+
+The June 2002 page links to Pelit.fi thread `398570` and MuroBBS thread
+`118962`. Neither thread has been recovered. The evidence and ignored raw
+artifacts are inventoried in
+[`analysis/historical/crimsonland-forum-links/`](../../../../analysis/historical/crimsonland-forum-links/manifest.json).
+
+The April 2022 MuroBBS bulk crawl does contain a record for the migrated URL
+`/threads/118962/`, but the archived response is HTTP 404 and says the thread
+was not found. The neighboring title-sorted CDX block contains no Crimsonland
+record, and public Wayback results contain no capture of the original thread
+ID. This makes the bulk archive evidence of a pre-crawl gap, not a recovered
+copy of the discussion.
+
+Pelit.fi's public Wayback prefix and exact-URL indexes contain no capture of
+thread `398570`. Its file catalog does independently preserve records for
+`CLAND117.ZIP` (1.1.7, 7.2 MB, 2002-05-23) and `CLAND130.ZIP` (1.3.0, 9.5 MB,
+2002-07-24), but neither catalog record has a downloadable payload or checksum.
+The current Pelit forum search requires authentication, so a migrated private
+thread remains an open lead.
 
 ## Useful behavioral evidence
 

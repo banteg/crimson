@@ -139,8 +139,8 @@
     },
     {
       "version": "1.1.7",
-      "evidence": "2002-06-15 page release notes",
-      "reason": "No package URL or surviving capture found."
+      "evidence": "2002-06-15 page release notes and Pelit catalog record 85854 for CLAND117.ZIP (7.2 MB, 2002-05-23)",
+      "reason": "The catalog record survives, but it contains no hosted payload or checksum."
     },
     {
       "version": "1.2.1",
