@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fixed-counter-layout",
+      "find": "    int x;\n    int y;\n",
+      "replacements": [
+        {
+          "name": "struct-y-x",
+          "text": "    struct GridCounters { int y; int x; } grid_counters;\n#define y grid_counters.y\n#define x grid_counters.x\n"
+        },
+        {
+          "name": "struct-x-y",
+          "text": "    struct GridCounters { int x; int y; } grid_counters;\n#define y grid_counters.y\n#define x grid_counters.x\n"
+        },
+        {
+          "name": "array-y-x",
+          "text": "    int grid_counters[2];\n#define y grid_counters[0]\n#define x grid_counters[1]\n"
+        },
+        {
+          "name": "array-x-y",
+          "text": "    int grid_counters[2];\n#define x grid_counters[0]\n#define y grid_counters[1]\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-cursor-direct-y",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "cursor-direct-y",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

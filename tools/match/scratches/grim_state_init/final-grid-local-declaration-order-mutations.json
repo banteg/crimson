@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-local-declarations",
+      "find": "    int x;\n    int y;\n",
+      "replacements": [
+        {
+          "name": "row-entry-before-counters",
+          "text": "    float *row_v_cursor;\n    float *entry_v;\n    int x;\n    int y;\n"
+        },
+        {
+          "name": "counters-before-row-entry",
+          "text": "    int x;\n    int y;\n    float *row_v_cursor;\n    float *entry_v;\n"
+        },
+        {
+          "name": "row-between-counters",
+          "text": "    int x;\n    float *row_v_cursor;\n    int y;\n    float *entry_v;\n"
+        },
+        {
+          "name": "entry-between-counters",
+          "text": "    int x;\n    float *entry_v;\n    int y;\n    float *row_v_cursor;\n"
+        },
+        {
+          "name": "title-before-counters",
+          "text": "    char *default_title;\n    int x;\n    int y;\n"
+        },
+        {
+          "name": "title-between-counters",
+          "text": "    int x;\n    char *default_title;\n    int y;\n"
+        },
+        {
+          "name": "title-after-counters",
+          "text": "    int x;\n    int y;\n    char *default_title;\n"
+        }
+      ]
+    },
+    {
+      "name": "title-declaration-site",
+      "find": "    char *default_title = \"Grim - No Title\";\n",
+      "replacements": [
+        {
+          "name": "assignment-only",
+          "text": "    default_title = \"Grim - No Title\";\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-function-pointers",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "cursor-direct-y-use-function-pointers",
+          "text": "    {\n        y = 0;\n        row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            x = 0;\n            entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-direct-y-local-pointers",
+          "text": "    {\n        y = 0;\n        float *final_row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            x = 0;\n            float *final_entry_v = final_row_v_cursor;\n            final_row_v_cursor += 32;\n            for (; x < 16; final_entry_v += 2, ++x) {\n                final_entry_v[-1] = (float)x * 0.0625f;\n                final_entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

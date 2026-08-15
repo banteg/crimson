@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**750/810** functions matched exactly (**92.6%**), **165558/341992** code bytes (**48.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**751/810** functions matched exactly (**92.7%**), **167430/341992** code bytes (**49.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **309632/341992** code bytes (**90.5%**).
+Fuzzy-weighted alignment is **309663/341992** code bytes (**90.5%**).
 
-Remaining exact-match debt is **60 functions**, **176434 code bytes**, and **32360 fuzzy-gap bytes**.
+Remaining exact-match debt is **59 functions**, **174562 code bytes**, and **32329 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -28,9 +28,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**60** non-exact scratch-backed functions hold **32360 fuzzy-gap bytes**. The top 5 hold **63.3%** of that gap; the top 10 hold **80.2%**.
+**59** non-exact scratch-backed functions hold **32329 fuzzy-gap bytes**. The top 5 hold **63.4%** of that gap; the top 10 hold **80.2%**.
 
-Current-baseline experiments cover **27 functions / 5179 gap bytes**; **33 / 27181** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **26 functions / 5148 gap bytes**; **33 / 27181** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -81,21 +81,20 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 43 | crimsonland.exe | typo_gameplay_update_and_render | 33 | semantic-complete | compiler | historical-only | 0/4 | 0 | variant-errors,historical-only |
 | 44 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
 | 45 | crimsonland.exe | quest_build_the_beating | 31 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 46 | grim.dll | grim_state_init | 31 | semantic-complete | compiler | current-inconclusive | 6/41 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 47 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 1/13 | 0 | metric-tradeoffs |
-| 48 | crimsonland.exe | quest_build_the_lizquidation | 22 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 49 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | current-stalled | 6/25 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-probe-errors |
-| 50 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | historical-only | 0/15 | 0 | repeated-variants,variant-errors,historical-only |
-| 51 | crimsonland.exe | quest_build_gauntlet | 10 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 52 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | historical-only | 0/30 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 53 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-active | 2/10 | 2 | variant-errors |
-| 54 | crimsonland.exe | quest_start_selected | 7 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-variants,metric-tradeoffs,historical-only |
-| 55 | crimsonland.exe | gameplay_reset_state | 5 | semantic-complete | compiler | current-active | 1/13 | 1 | repeated-variants,variant-errors |
-| 56 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | current-stalled | 5/11 | 3 | repeated-variants,stalled |
-| 57 | crimsonland.exe | quest_build_the_gang_wars | 5 | semantic-complete | compiler | historical-only | 0/11 | 0 | historical-only |
-| 58 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 4/29 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
-| 59 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | historical-only | 0/23 | 0 | metric-tradeoffs,historical-only |
-| 60 | crimsonland.exe | fx_queue_add | 4 | semantic-complete | compiler | current-active | 1/6 | 1 | repeated-variants,variant-errors |
+| 46 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 1/13 | 0 | metric-tradeoffs |
+| 47 | crimsonland.exe | quest_build_the_lizquidation | 22 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
+| 48 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | current-stalled | 6/25 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-probe-errors |
+| 49 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | historical-only | 0/15 | 0 | repeated-variants,variant-errors,historical-only |
+| 50 | crimsonland.exe | quest_build_gauntlet | 10 | semantic-complete | compiler | historical-only | 0/22 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 51 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | historical-only | 0/30 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 52 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-active | 2/10 | 2 | variant-errors |
+| 53 | crimsonland.exe | quest_start_selected | 7 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-variants,metric-tradeoffs,historical-only |
+| 54 | crimsonland.exe | gameplay_reset_state | 5 | semantic-complete | compiler | current-active | 1/13 | 1 | repeated-variants,variant-errors |
+| 55 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | current-stalled | 5/11 | 3 | repeated-variants,stalled |
+| 56 | crimsonland.exe | quest_build_the_gang_wars | 5 | semantic-complete | compiler | historical-only | 0/11 | 0 | historical-only |
+| 57 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 4/29 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
+| 58 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | historical-only | 0/23 | 0 | metric-tradeoffs,historical-only |
+| 59 | crimsonland.exe | fx_queue_add | 4 | semantic-complete | compiler | current-active | 1/6 | 1 | repeated-variants,variant-errors |
 
 ## Function dispositions
 
@@ -166,7 +165,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 612/671 | 146265/320827 | 45.6% | 288498/320827 | 89.9% | 671/671 | 320827/320827 | 100.0% | 612/671 |
-| grim.dll | 138/139 | 19293/21165 | 91.2% | 21134/21165 | 99.9% | 139/139 | 21165/21165 | 100.0% | 138/139 |
+| grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
@@ -848,7 +847,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 ## grim.dll
 
-**138/139** functions (**99.3%**), **19293/21165** bytes (**91.2%**), **21134/21165** fuzzy-weighted bytes (**99.9%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **138/139** scratches verified.
+**139/139** functions (**100.0%**), **21165/21165** bytes (**100.0%**), **21165/21165** fuzzy-weighted bytes (**100.0%**), **139/139** reproducible candidates covering **21165/21165** bytes (**100.0%**), **139/139** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -892,7 +891,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | grim_find_texture_by_name | 0x10005170 | 68 | 68/68 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | grim-texture-name-lookup |
 | match | grim_find_free_texture_slot | 0x100051c0 | 28 | 28/28 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | grim-texture-slot-allocation |
 | match | grim_load_texture_internal | 0x100051e0 | 265 | 265/265 | 0 | 80/80 | 100.00% | 80/80 | 14/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | grim-texture-file-load |
-| wip | grim_state_init | 0x100052f0 | 1872 | 1841/1872 | 31 | 425/425 | 98.35% | 397/425 | 166/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-global-state-and-atlas-defaults |
+| match | grim_state_init | 0x100052f0 | 1872 | 1872/1872 | 0 | 425/425 | 100.00% | 425/425 | 166/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-global-state-and-atlas-defaults |
 | match | grim_lookup_blob_load | 0x10005a40 | 146 | 146/146 | 0 | 51/51 | 100.00% | 51/51 | 15/0/0 |  | grim-lookup-blob-lifecycle |
 | match | grim_lookup_blob_find | 0x10005ae0 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-search |
 | match | grim_lookup_blob_size_for_path | 0x10005b80 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-size |

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-grid-counter-reset-placement",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "cursor-header-x-y-reset-x-increment",
+          "text": "    {\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (x = 0, y = 0; y < 16; ++y, x = 0) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-header-y-x-reset-x-increment",
+          "text": "    {\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (y = 0, x = 0; y < 16; ++y, x = 0) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-header-x-y-reset-x-before-y",
+          "text": "    {\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (x = 0, y = 0; y < 16; x = 0, ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-x-y-before-loop-reset-increment",
+          "text": "    {\n        x = 0;\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y, x = 0) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-y-x-before-loop-reset-increment",
+          "text": "    {\n        y = 0;\n        x = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y, x = 0) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-header-x-y-direct-y",
+          "text": "    {\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (x = 0, y = 0; y < 16; ++y, x = 0) {\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-header-y-x-direct-y",
+          "text": "    {\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (y = 0, x = 0; y < 16; ++y, x = 0) {\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

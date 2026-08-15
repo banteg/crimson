@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "remove-top-counters",
+      "find": "    int x;\n    int y;\n\n",
+      "replacements": [
+        {
+          "name": "declare-in-first-for",
+          "text": "",
+          "requires": [
+            "font-grid-for-init-counters/vc6-leaked-for-scope"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "font-grid-for-init-counters",
+      "find": "    {\n        y = 0;\n        float *row_v_cursor = &grim_font2_uv_u[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "vc6-leaked-for-scope",
+          "text": "    float *font_row_v_cursor = &grim_font2_uv_u[0].v;\n    for (int y = 0, x; y < 16; ++y) {\n        float row_v = (float)y * 0.0625f;\n        x = 0;\n        float *entry_v = font_row_v_cursor;\n        font_row_v_cursor += 32;\n        for (; x < 16; entry_v += 2, ++x) {\n            entry_v[-1] = (float)x * 0.0625f;\n            entry_v[0] = row_v;\n        }\n    }\n",
+          "requires": [
+            "remove-top-counters/declare-in-first-for"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final-grid-native-cursor",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "cursor-row-value",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-direct-y",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

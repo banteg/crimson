@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "font-shared-row-local-column",
+      "find": "    {\n        y = 0;\n        float *row_v_cursor = &grim_font2_uv_u[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "direct-y-local-column",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_font2_uv_u[0].v;\n        for (; y < 16; ++y) {\n            int column = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; column < 16; entry_v += 2, ++column) {\n                entry_v[-1] = (float)column * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "two-shared-row-local-column",
+      "find": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table_0[0].v;\n        for (; y < 2; ++y) {\n            float row_v = (float)y * 0.5f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 4;\n            for (; x < 2; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.5f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "direct-y-local-column",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table_0[0].v;\n        for (; y < 2; ++y) {\n            int column = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 4;\n            for (; column < 2; entry_v += 2, ++column) {\n                entry_v[-1] = (float)column * 0.5f;\n                entry_v[0] = (float)y * 0.5f;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "four-shared-row-local-column",
+      "find": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table_1[0].v;\n        for (; y < 4; ++y) {\n            float row_v = (float)y * 0.25f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 8;\n            for (; x < 4; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.25f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "direct-y-local-column",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table_1[0].v;\n        for (; y < 4; ++y) {\n            int column = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 8;\n            for (; column < 4; entry_v += 2, ++column) {\n                entry_v[-1] = (float)column * 0.25f;\n                entry_v[0] = (float)y * 0.25f;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "eight-shared-row-local-column",
+      "find": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table_2[0].v;\n        for (; y < 8; ++y) {\n            float row_v = (float)y * 0.125f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 16;\n            for (; x < 8; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.125f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "direct-y-local-column",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table_2[0].v;\n        for (; y < 8; ++y) {\n            int column = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 16;\n            for (; column < 8; entry_v += 2, ++column) {\n                entry_v[-1] = (float)column * 0.125f;\n                entry_v[0] = (float)y * 0.125f;\n            }\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "sixteen-shared-row-local-column",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "direct-y-local-column-cursor",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            int column = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; column < 16; entry_v += 2, ++column) {\n                entry_v[-1] = (float)column * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

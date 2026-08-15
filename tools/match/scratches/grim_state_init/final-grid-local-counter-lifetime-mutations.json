@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-grid-local-counter-lifetime",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "block-local-y-inner-local-x",
+          "text": "    {\n        int y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "block-local-y-inner-x-after-cursors",
+          "text": "    {\n        int y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            int x = 0;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "both-block-local-y-before-x",
+          "text": "    {\n        int y = 0;\n        int x;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "both-block-local-x-before-y",
+          "text": "    {\n        int x;\n        int y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "for-local-y-x",
+          "text": "    {\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (int y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "named-row-column-locals",
+          "text": "    {\n        int row = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; row < 16; ++row) {\n            float row_v = (float)row * 0.0625f;\n            int column = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; column < 16; entry_v += 2, ++column) {\n                entry_v[-1] = (float)column * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "local-y-shared-x",
+          "text": "    {\n        int final_y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; final_y < 16; ++final_y) {\n            float row_v = (float)final_y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "shared-y-local-x",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            int final_x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; final_x < 16; entry_v += 2, ++final_x) {\n                entry_v[-1] = (float)final_x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "block-locals-direct-y",
+          "text": "    {\n        int y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            int x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "local-y-shared-x-direct-y",
+          "text": "    {\n        int final_y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; final_y < 16; ++final_y) {\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)final_y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "shared-y-local-x-direct-y",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            int final_x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; final_x < 16; entry_v += 2, ++final_x) {\n                entry_v[-1] = (float)final_x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

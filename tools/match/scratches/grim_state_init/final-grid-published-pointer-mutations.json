@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-grid-control",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "published-pointer-native-cursors",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_ptr_table[16][0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "published-pointer-row-from-index",
+          "text": "    {\n        GrimUV *table = grim_subrect_ptr_table[16];\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "local-table-native-cursors",
+          "text": "    {\n        GrimUV *table = grim_subrect_table;\n        y = 0;\n        float *row_v_cursor = &table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "do-while-count",
+          "text": "    {\n        y = 0;\n        do {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            x = 0;\n            do {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n                entry_v += 2;\n                ++x;\n            } while (x < 16);\n            ++y;\n        } while (y < 16);\n    }\n"
+        },
+        {
+          "name": "do-while-published-cursors",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_ptr_table[16]->v;\n        do {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            do {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n                entry_v += 2;\n                ++x;\n            } while (x < 16);\n            ++y;\n        } while (y < 16);\n    }\n"
+        },
+        {
+          "name": "not-equal-count",
+          "text": "    {\n        for (y = 0; y != 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x != 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "while-count-native-cursors",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        while (y < 16) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            while (x < 16) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n                entry_v += 2;\n                ++x;\n            }\n            ++y;\n        }\n    }\n"
+        },
+        {
+          "name": "published-then-index",
+          "text": "    {\n        GrimUV *table = grim_subrect_ptr_table[16];\n        y = 0;\n        float *row_v_cursor = &table->v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

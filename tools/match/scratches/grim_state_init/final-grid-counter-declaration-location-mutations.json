@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "remove-top-counter-declarations",
+      "find": "    int x;\n    int y;\n\n",
+      "replacements": [
+        {
+          "name": "move-to-atlas",
+          "text": "",
+          "requires": [
+            "insert-atlas-counter-declarations/before-font-memset"
+          ]
+        },
+        {
+          "name": "move-after-font-memset",
+          "text": "\n",
+          "requires": [
+            "insert-atlas-counter-declarations/after-font-memset"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "insert-atlas-counter-declarations",
+      "find": "    memset(grim_font2_glyph_widths, 0, sizeof(grim_font2_glyph_widths));\n    {\n",
+      "replacements": [
+        {
+          "name": "before-font-memset",
+          "text": "    int x;\n    int y;\n\n    memset(grim_font2_glyph_widths, 0, sizeof(grim_font2_glyph_widths));\n    {\n",
+          "requires": [
+            "remove-top-counter-declarations/move-to-atlas"
+          ]
+        },
+        {
+          "name": "after-font-memset",
+          "text": "    memset(grim_font2_glyph_widths, 0, sizeof(grim_font2_glyph_widths));\n\n    int x;\n    int y;\n    {\n",
+          "requires": [
+            "remove-top-counter-declarations/move-after-font-memset"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final-grid-native-cursor",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "cursor-row-value",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "cursor-direct-y",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

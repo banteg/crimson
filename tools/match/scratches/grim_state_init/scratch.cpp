@@ -139,13 +139,12 @@ void grim_state_init(void)
         y = 0;
         float *row_v_cursor = &grim_font2_uv_u[0].v;
         for (; y < 16; ++y) {
-            float row_v = (float)y * 0.0625f;
-            x = 0;
+            int column = 0;
             float *entry_v = row_v_cursor;
             row_v_cursor += 32;
-            for (; x < 16; entry_v += 2, ++x) {
-                entry_v[-1] = (float)x * 0.0625f;
-                entry_v[0] = row_v;
+            for (; column < 16; entry_v += 2, ++column) {
+                entry_v[-1] = (float)column * 0.0625f;
+                entry_v[0] = (float)y * 0.0625f;
             }
         }
     }
@@ -170,13 +169,12 @@ void grim_state_init(void)
         y = 0;
         float *row_v_cursor = &grim_subrect_table_0[0].v;
         for (; y < 2; ++y) {
-            float row_v = (float)y * 0.5f;
-            x = 0;
+            int column = 0;
             float *entry_v = row_v_cursor;
             row_v_cursor += 4;
-            for (; x < 2; entry_v += 2, ++x) {
-                entry_v[-1] = (float)x * 0.5f;
-                entry_v[0] = row_v;
+            for (; column < 2; entry_v += 2, ++column) {
+                entry_v[-1] = (float)column * 0.5f;
+                entry_v[0] = (float)y * 0.5f;
             }
         }
     }
@@ -184,13 +182,12 @@ void grim_state_init(void)
         y = 0;
         float *row_v_cursor = &grim_subrect_table_1[0].v;
         for (; y < 4; ++y) {
-            float row_v = (float)y * 0.25f;
-            x = 0;
+            int column = 0;
             float *entry_v = row_v_cursor;
             row_v_cursor += 8;
-            for (; x < 4; entry_v += 2, ++x) {
-                entry_v[-1] = (float)x * 0.25f;
-                entry_v[0] = row_v;
+            for (; column < 4; entry_v += 2, ++column) {
+                entry_v[-1] = (float)column * 0.25f;
+                entry_v[0] = (float)y * 0.25f;
             }
         }
     }
@@ -198,23 +195,25 @@ void grim_state_init(void)
         y = 0;
         float *row_v_cursor = &grim_subrect_table_2[0].v;
         for (; y < 8; ++y) {
-            float row_v = (float)y * 0.125f;
-            x = 0;
+            int column = 0;
             float *entry_v = row_v_cursor;
             row_v_cursor += 16;
-            for (; x < 8; entry_v += 2, ++x) {
-                entry_v[-1] = (float)x * 0.125f;
-                entry_v[0] = row_v;
+            for (; column < 8; entry_v += 2, ++column) {
+                entry_v[-1] = (float)column * 0.125f;
+                entry_v[0] = (float)y * 0.125f;
             }
         }
     }
     {
-        for (y = 0; y < 16; ++y) {
-            float row_v = (float)y * 0.0625f;
-            float *entry_v = &grim_subrect_table[y * 16].v;
-            for (x = 0; x < 16; entry_v += 2, ++x) {
-                entry_v[-1] = (float)x * 0.0625f;
-                entry_v[0] = row_v;
+        y = 0;
+        float *row_v_cursor = &grim_subrect_table[0].v;
+        for (; y < 16; ++y) {
+            int column = 0;
+            float *entry_v = row_v_cursor;
+            row_v_cursor += 32;
+            for (; column < 16; entry_v += 2, ++column) {
+                entry_v[-1] = (float)column * 0.0625f;
+                entry_v[0] = (float)y * 0.0625f;
             }
         }
     }

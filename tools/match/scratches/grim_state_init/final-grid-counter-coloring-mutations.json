@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "counter-declaration-initialization",
+      "find": "    int x;\n    int y;\n",
+      "replacements": [
+        {
+          "name": "initialize-x",
+          "text": "    int x = 0;\n    int y;\n"
+        },
+        {
+          "name": "initialize-y",
+          "text": "    int x;\n    int y = 0;\n"
+        },
+        {
+          "name": "initialize-x-y",
+          "text": "    int x = 0;\n    int y = 0;\n"
+        },
+        {
+          "name": "comma-x-y",
+          "text": "    int x, y;\n"
+        },
+        {
+          "name": "comma-y-x",
+          "text": "    int y, x;\n"
+        },
+        {
+          "name": "comma-initialize-x-y",
+          "text": "    int x = 0, y = 0;\n"
+        }
+      ]
+    },
+    {
+      "name": "character-map-counter-identity",
+      "find": "    for (x = 0; x < 256; ++x) {\n        grim_font2_char_map[x] = (unsigned char)x;\n    }\n",
+      "replacements": [
+        {
+          "name": "shared-y",
+          "text": "    for (y = 0; y < 256; ++y) {\n        grim_font2_char_map[y] = (unsigned char)y;\n    }\n"
+        },
+        {
+          "name": "block-local-index",
+          "text": "    for (int index = 0; index < 256; ++index) {\n        grim_font2_char_map[index] = (unsigned char)index;\n    }\n"
+        },
+        {
+          "name": "block-local-x",
+          "text": "    for (int x = 0; x < 256; ++x) {\n        grim_font2_char_map[x] = (unsigned char)x;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "final-grid-cursor-direct-y",
+      "find": "    {\n        for (y = 0; y < 16; ++y) {\n            float row_v = (float)y * 0.0625f;\n            float *entry_v = &grim_subrect_table[y * 16].v;\n            for (x = 0; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = row_v;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "cursor-direct-y",
+          "text": "    {\n        y = 0;\n        float *row_v_cursor = &grim_subrect_table[0].v;\n        for (; y < 16; ++y) {\n            x = 0;\n            float *entry_v = row_v_cursor;\n            row_v_cursor += 32;\n            for (; x < 16; entry_v += 2, ++x) {\n                entry_v[-1] = (float)x * 0.0625f;\n                entry_v[0] = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        }
+      ]
+    }
+  ]
+}

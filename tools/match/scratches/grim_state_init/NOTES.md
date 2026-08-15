@@ -300,3 +300,67 @@ The retained row-from-index spelling preserves that native frame and all 397
 preceding exact instructions, leaving only the final loop's backend induction
 choice. Artificial address-taking, volatility, or dummy dependencies would
 force layout rather than recover source and are not justified.
+
+## Published-pointer, successor-TU, and cursor-reuse audit (2026-08-15)
+
+Live Binary Ninja initially skipped this function
+(`ExceedFunctionAnalysisTimeSkipReason`), so `bn decompile` / `bn il` returned
+an empty body. Forced analysis recovers HLIL and confirms the 16x16 tail is the
+same V-field row/entry cursor shape as the 2x2, 4x4, and 8x8 grids: `y` in
+`ESI`, row cursor in `EDX` advanced by `0x80` before the inner loop, inner `x`
+in `ECX` spilled at `[esp+0x10]`, and `cmp esi, 0x10` / `jl`.
+
+`final-grid-published-pointer-mutations.json` tests eight previously untried
+final-loop forms. Walking the already-published `grim_subrect_ptr_table[16]`
+pointer, a local `GrimUV *table`, `do/while`, `!=`, and `while` either stay
+byte-identical at **98.35%** / prefix **397** / `refs=166/0/0` or fall to the
+same **64.71%** / prefix-zero / `103/0/21` allocation cliff. No tradeoff-free
+improvement.
+
+`probe_successor_translation_unit.cpp` compiles `grim_state_init` with the
+immediately following `grim_lookup_blob_load`. The object is byte-identical to
+the standalone candidate but loses three resolved references. A parameterized
+shared helper for all four grids, including `__forceinline`, is worse
+(**81.82%** / **64.71%**). `final-grid-cursor-reuse-mutations.json` then
+swaps the 8x8 and 16x16 control shapes and reuses the 8x8 row cursor into the
+16x16 loop; the best result is again byte-identical, and every native-looking
+16x16 cursor still cliffs.
+
+A later `GrimUV(*)[16]` view of the existing 256-entry table is also
+byte-neutral unless the native cursor is reintroduced. The remaining residual
+is still the final-loop backend induction: VC6 strength-reduces
+`&grim_subrect_table[y * 16].v` to a row-end comparison and advances the row
+after the inner loop. Emitting the native `add edx, 0x80` / `cmp esi, 0x10`
+schedule on that last grid changes whole-function allocation. Do not force
+that layout with volatility or dummy liveness.
+
+## Exact atlas-counter lifetime recovery (2026-08-15)
+
+The collapsed scores hid a useful backend clue. A final-grid row cursor with
+the `v` store written directly from `y` emits the native 425-instruction
+control shape and preserves all 166 resolved references. Its only material
+difference is global stack coloring: VC6 assigns outer `y` to `[esp+0x10]`
+and inner `x` to `[esp+0xc]`, the reverse of native, across the font atlas and
+all four subrect grids. Initializer order, declaration order and location,
+`register`, `long` / `__int32`, cursor scheduling, and row-value statement
+order do not reverse those homes.
+
+A mixed-scope diagnostic isolates the constraint. Keeping the shared outer
+`y` but declaring a local inner counter only in the final grid makes the
+entire 16x16 tail byte-exact: `y` stays at `[esp+0xc]` and the local counter
+uses `[esp+0x10]`. The earlier cursor loops still coalesce their shared inner
+counter with `y`, so that isolated form reaches 97.18% rather than matching.
+
+`all-grid-shared-row-local-column-mutations.json` applies the same ordinary
+source lifetime to every atlas initializer: retain the shared outer `y`, use
+a block-local `column` for each inner loop, and write the invariant row value
+directly from `y`. All 31 combinations were evaluated. Four combinations are
+exact, including the coherent five-grid form retained in `scratch.cpp`.
+That source produces **100.00%**, an exact **425/425** instruction prefix,
+and references **166/0/0**. The fakematch validator passes.
+
+For historical provenance, the archived official Grim2D 1.2.1 SDK package
+contains the authenticated older DLL but no engine source. Its older state
+initializer uses the same V-field cursor family and coalesces its conversion
+spills, which is consistent with the observed VC6 behavior but does not by
+itself identify the later source lifetime.

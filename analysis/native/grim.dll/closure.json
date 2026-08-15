@@ -1,5 +1,5 @@
 {
-  "audit_digest": "2a0f1d1a30264e9886c8b03c66c18a066f270827dd918abdf68fff88ba67ef30",
+  "audit_digest": "197d0c9e5bafe652e66ed1f5c80cc07d5ffe242de26195fb57c4d7ca585f8456",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -5410,7 +5410,7 @@
           "comdat_selection": 1,
           "function": "grim_state_init",
           "kind": "section",
-          "logical_section_size": 1888,
+          "logical_section_size": 1872,
           "object": "tools/match/scratches/grim_state_init/build/msvc6.5/874ace8a2492ea38/scratch.obj",
           "section": ".text",
           "size": null,
@@ -15880,7 +15880,7 @@
           "comdat_selection": 1,
           "function": "grim_state_init",
           "kind": "section",
-          "logical_section_size": 1888,
+          "logical_section_size": 1872,
           "object": "tools/match/scratches/grim_state_init/build/msvc6.5/874ace8a2492ea38/scratch.obj",
           "section": ".text",
           "size": null,
