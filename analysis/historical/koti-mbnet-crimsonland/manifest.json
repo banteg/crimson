@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "kind": "historical-crimsonland-site-archive",
+  "original_url": "http://koti.mbnet.fi/temper/crimsonland/",
+  "archived_at": "2026-08-15",
+  "index": {
+    "path": "analysis/historical/koti-mbnet-crimsonland/cdx.json",
+    "query": "https://web.archive.org/cdx/search/cdx?url=koti.mbnet.fi%2Ftemper%2Fcrimsonland&matchType=prefix&output=json&fl=timestamp%2Coriginal%2Cstatuscode%2Cmimetype%2Cdigest%2Clength&filter=statuscode%3A200",
+    "root_capture_count": 33,
+    "distinct_root_revisions": 5
+  },
+  "revisions": [
+    {
+      "timestamp": "20020615144308",
+      "path": "analysis/historical/koti-mbnet-crimsonland/captures/20020615144308.html",
+      "size": 11702,
+      "sha256": "19f724fd18df18e202d35a8bca9ae84d8d442fcca61e4d6bdb5a7f736d2de04c",
+      "summary": "Freeware 1.2.2 download page and release notes through 2002-05-30."
+    },
+    {
+      "timestamp": "20021004145339",
+      "path": "analysis/historical/koti-mbnet-crimsonland/captures/20021004145339.html",
+      "size": 3918,
+      "sha256": "421d62b7a6e87384581359b3ae6e30c52cbcefadc893f6fd0937311fa534e9ae",
+      "summary": "Crimsonland will be back placeholder."
+    },
+    {
+      "timestamp": "20030416022502",
+      "path": "analysis/historical/koti-mbnet-crimsonland/captures/20030416022502.html",
+      "size": 10126,
+      "sha256": "62e605e5a4d1a65cb699cd033ec7b8c99ca087088b383bf3823255740e7288bf",
+      "summary": "Reflexive publishing announcement dated 2002-12-16."
+    },
+    {
+      "timestamp": "20030812091428",
+      "path": "analysis/historical/koti-mbnet-crimsonland/captures/20030812091428.html",
+      "size": 110,
+      "sha256": "fac6a88a334b600d883d76686d8ac7cf6fce3d4236dde380f9200178222165f2",
+      "summary": "Redirect to crimsonland.reflexive.net/crimsonland."
+    },
+    {
+      "timestamp": "20060206072831",
+      "path": "analysis/historical/koti-mbnet-crimsonland/captures/20060206072831.html",
+      "size": 87,
+      "sha256": "de0849d02c275febf7a14cb1a380a126038ddf833302e0fe6103764643dc2bef",
+      "summary": "Redirect to www.crimsonland.com."
+    }
+  ],
+  "assets": [
+    {
+      "timestamp": "20030124102448",
+      "original": "http://koti.mbnet.fi/temper/crimsonland/10tons.jpg",
+      "path": "analysis/historical/koti-mbnet-crimsonland/assets/10tons.jpg",
+      "size": 3356,
+      "sha256": "6449fa777d1282275bf4945de7e804e07ca6191964bf1a4a5bf43cdb28a99465"
+    },
+    {
+      "timestamp": "20030124111632",
+      "original": "http://koti.mbnet.fi/temper/crimsonland/menuNewsOn.jpg",
+      "path": "analysis/historical/koti-mbnet-crimsonland/assets/menuNewsOn.jpg",
+      "size": 4263,
+      "sha256": "dbe5b5b450f617831ac9cc4006c12ddbd35ecb925df83ca3a3e46fda4d3ba052"
+    },
+    {
+      "timestamp": "20030124113413",
+      "original": "http://koti.mbnet.fi/temper/crimsonland/menuTop.jpg",
+      "path": "analysis/historical/koti-mbnet-crimsonland/assets/menuTop.jpg",
+      "size": 2420,
+      "sha256": "5acf3807753c1145661c8579e385017e8861cde6016649b6a49600fcfd01b89f"
+    },
+    {
+      "timestamp": "20030124120138",
+      "original": "http://koti.mbnet.fi/temper/crimsonland/signCrimson.jpg",
+      "path": "analysis/historical/koti-mbnet-crimsonland/assets/signCrimson.jpg",
+      "size": 14341,
+      "sha256": "7a032964470e68885e205db275aa45f798c90e57482f4b9b93bab1db6db85914"
+    }
+  ],
+  "release_artifacts": [
+    {
+      "version": "1.0.2",
+      "path": "game_bins/crimsonland/historical/freeware/crimsonland_v1.0.2.zip",
+      "source": "https://paq.crimson.banteg.xyz/freeware/crimsonland_v1.0.2.zip",
+      "size": 2308947,
+      "sha256": "e9c1fc02e00c3b070f173ca54df98f6e549aa407204478b0c949cc21b40689e0",
+      "zip_test": "ok"
+    },
+    {
+      "version": "1.3.0",
+      "path": "game_bins/crimsonland/historical/freeware/crimsonland_v1.3.0.zip",
+      "source": "https://paq.crimson.banteg.xyz/freeware/crimsonland_v1.3.0.zip",
+      "size": 9852180,
+      "sha256": "82153fe1c023945161c8bafb961856f992e469269e5023031f7cc9467a04c426",
+      "zip_test": "ok"
+    },
+    {
+      "version": "1.4.0",
+      "path": "game_bins/crimsonland/historical/freeware/crimsonland_v1.4.0.zip",
+      "source": "https://paq.crimson.banteg.xyz/freeware/crimsonland_v1.4.0.zip",
+      "size": 7860441,
+      "sha256": "fc8f786a0553b9807d2a4d247e4932280cc57ffd18dfea6c859b542fed38acfb",
+      "zip_test": "ok"
+    },
+    {
+      "version": "1.9.9",
+      "path": "game_bins/crimsonland/historical/shareware/cland199.zip",
+      "source": "https://archive.org/download/suomipelit-cland199.zip/cland199.zip",
+      "size": 6708111,
+      "sha256": "deeb915660fdc78df6eeff343aa7a5c894704eac1b04c71a69a44692de401522",
+      "zip_test": "ok"
+    },
+    {
+      "version": "undetermined-2003-04-25",
+      "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2003.exe",
+      "source": "https://archive.org/download/CrimsonlandSetup/CrimsonlandSetup.exe",
+      "size": 7291066,
+      "sha256": "f3f85f1ea647b5173583d49eea80cba28fd449ba84d90736b4e845ff082e6e2b",
+      "pe_timestamp": "2003-04-25T04:45:51Z"
+    },
+    {
+      "version": "undetermined-2004-04-08",
+      "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2004.exe",
+      "source": "https://archive.org/download/Crimsonland/CrimsonlandSetup.exe",
+      "size": 7271169,
+      "sha256": "3be3fc79f2d5611c2bb5820035f29b4bced1e6410d0a2af14ddf73ddbdda8a2d",
+      "pe_timestamp": "2004-04-08T17:38:47Z"
+    }
+  ],
+  "unrecovered": [
+    {
+      "version": "1.1.1",
+      "evidence": "2002-06-15 page release notes",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.1.6",
+      "evidence": "2002-06-15 page release notes",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.1.7",
+      "evidence": "2002-06-15 page release notes",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.2.1",
+      "evidence": "2002-06-15 page release notes",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.2.2",
+      "evidence": "crimsonland_v122.zip and crimsonland_v122_nomusic.zip links on the 2002-06-15 page",
+      "reason": "Wayback has only 2012 HTTP 404 captures for both package URLs."
+    },
+    {
+      "version": "1.2.4",
+      "evidence": "Mentioned by the 1.3.0 and 1.4.0 readmes",
+      "reason": "No package URL or surviving capture found."
+    }
+  ]
+}

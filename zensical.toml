@@ -95,6 +95,7 @@ nav = [
       ]},
       { "Reference" = [
         { "Overview" = "re/static/reference/index.md" },
+        { "Early Crimsonland history" = "re/static/reference/history.md" },
         { "Weapon table" = "re/static/reference/weapon-table.md" },
         { "Weapon ID map" = "re/static/reference/weapon-id-map.md" },
         { "UI weapon icons" = "re/static/reference/ui-weapon-icons.md" },

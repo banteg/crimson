@@ -9,6 +9,7 @@ tags:
 
 Lookup tables, IDs, and data mappings from static analysis.
 
+- [Early Crimsonland history](history.md)
 - [Weapon table](weapon-table.md)
 - [Weapon ID map](weapon-id-map.md)
 - [UI weapon icons](ui-weapon-icons.md)

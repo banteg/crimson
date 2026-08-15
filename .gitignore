@@ -1,4 +1,6 @@
 /game_bins/
+/analysis/historical/*/captures/
+/analysis/historical/*/assets/
 /cl_mod_sdk_v1/
 /artifacts/
 /_site/
