@@ -90,3 +90,17 @@ Every variant is byte-identical to the 58.82%, 51/51-instruction baseline with
 not change VC6's `ECX`/`EDX` allocation, so the indexed source remains the
 smaller canonical form. The spec SHA-256 is
 `1553d84e3911a541e69a64512cd0d68db8b5daaeedacab9ce4bfa51a4939a9e2`.
+
+## Indexed count-only snapshot bound (2026-08-15)
+
+The earlier block-local sweep paired a cached count with an explicit record
+cursor, so it did not isolate whether count ownership alone could recover the
+native `ECX` allocation while leaving the indexed table expression intact.
+`count-snapshot-only-mutations.json` tests that missing source shape in all
+three mode arms against the current source epoch.
+
+The complete one-variant sweep regresses from 51 to 50 instructions and from
+78.2353 to 60.5743 fuzzy-weighted bytes, while references remain clean at
+`4/0/0`. VC6 coalesces a later count load without changing the underlying
+count/cursor register choice. No source change is retained. The spec SHA-256 is
+`607c71b0269e0e063863c66eb64eeec1fbbb2eff97c72d5e802313689e22e27e`.
