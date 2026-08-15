@@ -176,3 +176,15 @@ The source therefore remains at `220.18987341772151/245` weighted bytes
 references. The current evidence supports the retained builder and publication
 shape; reproducing the remaining independent schedules would require an
 artificial dependency or register constraint.
+
+## Profile override revalidation (2026-08-15)
+
+The retained source has changed enough that the historical `/G6` override is
+no longer the strongest profile. A fresh same-compiler comparison under
+MSVC 6.5 gives the canonical `/O2 /GB /W3 /GR-` profile
+`223.2911392405063/245` weighted bytes (91.14%), versus
+`220.18987341772151/245` (89.87%) under `/G6`. Both emit 79/79 instructions,
+prefix seven, and `5/0/0` references. Removing the stale override therefore
+recovers 3.1012658227848 weighted bytes without an instruction, prefix, or
+reference tradeoff and restores the executable's provenance-backed default
+profile.
