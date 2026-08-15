@@ -442,7 +442,7 @@ tools/match/scratches/quest_build_deja_vu/build/msvc6.5/af0e79b5b2af94aa/scratch
 tools/match/scratches/quest_build_target_practice/build/msvc6.5/ee9afec2edd8252f/scratch.obj
 tools/match/scratches/quest_build_major_alien_breach/build/msvc6.5/20c6410fedc7c9a5/scratch.obj
 tools/match/scratches/quest_build_land_of_lizards/build/msvc6.5/451339edf3b2a03b/scratch.obj
-tools/match/scratches/quest_build_the_lizquidation/build/msvc6.5/1a5e20e66736f8c4/scratch.obj
+tools/match/scratches/quest_build_the_lizquidation/build/msvc6.5/60103a357171fa77/scratch.obj
 tools/match/scratches/quest_build_zombie_time/build/msvc6.5/020b640a5558fc6f/scratch.obj
 tools/match/scratches/quest_build_frontline_assault/build/msvc6.5/a731a87abdca3559/scratch.obj
 tools/match/scratches/quest_build_the_collaboration/build/msvc6.5/1db2b938500ff33d/scratch.obj
