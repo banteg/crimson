@@ -9,10 +9,10 @@
 #define grim_lookup_blob_loaded grim_lookup_blob_loaded_successor_probe
 #define grim_lookup_blob grim_lookup_blob_successor_probe
 #define grim_lookup_blob_size grim_lookup_blob_size_successor_probe
-#include "../scratches/grim_state_init/scratch.cpp"
+#include "../../native/recovered/grim/state/state_init.cpp"
 #undef grim_lookup_blob_loaded
 #undef grim_lookup_blob
 #undef grim_lookup_blob_size
-#include "../scratches/grim_lookup_blob_load/scratch.cpp"
+#include "../../native/recovered/grim/codec/lookup_blob_load.cpp"
 
 #endif

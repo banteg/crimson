@@ -1,0 +1,1632 @@
+{
+  "schema": 1,
+  "kind": "crimson-recovered-source-layout",
+  "image": "grim.dll",
+  "root": "tools/native/recovered/grim",
+  "modules": [
+    {
+      "name": "api",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/api/dll_main.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_dll_main"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/api/get_interface.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_interface"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "app",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/app/app_cleanup.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_app_cleanup"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/app_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_app_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/app_on_tick.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/native/providers/sources/grim_app_on_tick"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/app_pump.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_app_pump"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/app_shutdown.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_app_shutdown"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/app_tick.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_app_tick"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/default_device_callback.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_default_device_callback"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/get_version.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_version"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/init_system.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_init_system"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/missing_frame_callback.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_missing_frame_callback"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/noop.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_noop"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/release.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_release"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/run_loop.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_run_loop"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/set_paused.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_paused"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/app/shutdown.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_shutdown"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codec",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/codec/decode_jaz_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_decode_jaz_texture"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/codec/jaz_decode.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "grim-jaz-decode-island"
+          },
+          "configs": [
+            "tools/match/scratches/grim_jaz_decode_scope_init",
+            "tools/match/scratches/grim_zlib_status_is_error",
+            "tools/match/scratches/grim_zlib_decompress_alloc",
+            "tools/match/scratches/grim_jaz_decompress_payload"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/codec/jaz_jpeg_error_exit.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_jaz_jpeg_error_exit"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/codec/lookup_blob_find.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_lookup_blob_find"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/codec/lookup_blob_load.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_lookup_blob_load"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/codec/lookup_blob_size_for_path.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_lookup_blob_size_for_path"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/codec/path_has_extension.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_path_has_extension"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "config",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/config/advanced_dialog.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_advanced_config_dialog_proc"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/apply.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_apply_config"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/apply_settings.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_apply_settings"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/blob_load.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_config_blob_load"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/blob_save.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_config_blob_save"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/defaults_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_config_defaults_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/defaults_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_config_defaults_init_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/dialog.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_config_dialog_proc"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/get_float.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_config_float"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/get_var.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_config_var"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/parental_lock_dialog.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_parental_lock_dialog_proc"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/populate_display_modes.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_config_dialog_populate_display_modes"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/config/set_var.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_config_var"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "device",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/device/apply_render_state.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_apply_render_state"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/clear_color.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_clear_color"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/create_geometry_buffers.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_create_geometry_buffers"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/d3d_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_d3d_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/d3d_shutdown.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_d3d_shutdown"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/get_error_text.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_error_text"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/is_texture_format_supported.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_is_texture_format_supported"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/release_geometry_buffers.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_release_geometry_buffers"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/restore_after_activation.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_restore_device_after_activation"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/set_render_target.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_render_target"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/set_texture_stage_ops.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_texture_stage_ops"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/device/try_reset.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_try_reset_device"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/input/flush_input.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_flush_input"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_joystick_pov.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_joystick_pov"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_joystick_x.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_joystick_x"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_joystick_y.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_joystick_y"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_joystick_z.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_joystick_z"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_key_char.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_key_char"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_mouse_dx.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_mouse_dx"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_mouse_dx_indexed.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_mouse_dx_indexed"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_mouse_dy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_mouse_dy"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_mouse_dy_indexed.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_mouse_dy_indexed"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_mouse_wheel_delta.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_mouse_wheel_delta"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_mouse_x.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_mouse_x"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/get_mouse_y.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_mouse_y"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/is_joystick_button_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_is_joystick_button_down"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/is_key_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_is_key_active"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/is_key_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_is_key_down"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/is_mouse_button_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_is_mouse_button_down"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_button_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_button_down"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_configure_axis.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_configure_axis"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_down_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_down_active"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_enum_device.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_enum_device"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_left_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_left_active"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_poll.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_poll"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_right_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_right_active"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_shutdown.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_shutdown"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/joystick_up_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_joystick_up_active"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/keyboard_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_keyboard_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/keyboard_key_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_keyboard_key_down"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/keyboard_poll.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_keyboard_poll"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/keyboard_shutdown.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_keyboard_shutdown"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/mouse_button_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_mouse_button_down"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/mouse_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_mouse_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/mouse_poll.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_mouse_poll"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/mouse_shutdown.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_mouse_shutdown"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/set_key_char_buffer.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_key_char_buffer"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/set_mouse_pos.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_mouse_pos"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/was_key_pressed.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_was_key_pressed"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/input/was_mouse_button_pressed.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_was_mouse_button_pressed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "render",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/render/begin_batch.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_begin_batch"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/bind_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_bind_texture"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_circle_filled.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_circle_filled"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_circle_outline.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_circle_outline"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_fullscreen_color.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_fullscreen_color"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_fullscreen_quad.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_fullscreen_quad"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_quad.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_quad"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_quad_rotated_matrix.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_quad_rotated_matrix"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_quad_xy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_quad_xy"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_rect_filled.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_rect_filled"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_rect_outline.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_rect_outline"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_text_mono_fmt.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_text_mono_fmt"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_text_small.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_text_small"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/draw_text_small_fmt.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_text_small_fmt"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/end_batch.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_end_batch"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/flush_batch.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_flush_batch"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/line.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "grim-draw-line-island"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_line",
+            "tools/match/scratches/grim_line_vector_dtor",
+            "tools/match/scratches/grim_draw_line_quad"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/measure_text_width.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_measure_text_width"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/mono_text.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "grim-mono-text-island"
+          },
+          "configs": [
+            "tools/match/scratches/grim_draw_quad_points",
+            "tools/match/scratches/grim_draw_text_mono"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_atlas_frame.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_atlas_frame"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_color.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_color"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_color_ptr.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_color_ptr"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_color_slot.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_color_slot"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_rotation.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_rotation"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_sub_rect.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_sub_rect"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_uv.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_uv"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/set_uv_point.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_uv_point"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/submit_quad_raw.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_submit_quad_raw"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/submit_vertex_raw.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_submit_vertex_raw"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/submit_vertices_offset.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_submit_vertices_offset"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/submit_vertices_offset_color.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_submit_vertices_offset_color"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/submit_vertices_transform.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_submit_vertices_transform"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/render/submit_vertices_transform_color.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_submit_vertices_transform_color"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "runtime",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_01.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_01"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_01_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_01_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_02.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_02"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_02_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_02_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_03.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_03"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_03_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_03_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_04.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_04"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_04_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_04_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_05.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_05"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_05_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_05_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_06.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_06"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_06_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_06_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_07.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_07"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_07_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_07_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_08.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_08"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_08_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_08_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_09.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_09"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_09_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_09_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_10.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_10"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_10_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_10_thunk"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_12.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_12"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_12_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_crt_empty_initializer_slot_12_thunk"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "state",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/state/slot_state.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "grim-slot-state-accessors"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_slot_float",
+            "tools/match/scratches/grim_get_slot_int",
+            "tools/match/scratches/grim_set_slot_float",
+            "tools/match/scratches/grim_set_slot_int"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/state/state_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_state_init"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "texture",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/texture/backup.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_backup_textures"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/create_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_create_texture"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/destroy_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_destroy_texture"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/find_by_name.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_find_texture_by_name"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/find_free_slot.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_find_free_texture_slot"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/get_handle.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_texture_handle"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_texture_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/load.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_load_texture"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/load_file.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_texture_load_file"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/load_internal.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_load_texture_internal"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/name_equals.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_texture_name_equals"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/recreate.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_recreate_texture"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/release.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_texture_release"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/restore.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_restore_textures"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/save_screenshot.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_save_screenshot"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/save_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_save_texture"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/texture/select_format.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_select_texture_format"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "timing",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/timing/get_fps.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_fps"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/timing/get_frame_dt.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_frame_dt"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/timing/get_time_ms.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_get_time_ms"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/timing/init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_timing_init"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/timing/set_time_ms.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_set_time_ms"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/timing/update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_timing_update"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "window",
+      "layout_evidence": "inferred-subsystem",
+      "sources": [
+        {
+          "path": "tools/native/recovered/grim/window/create.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_window_create"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/window/destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_window_destroy"
+          ]
+        },
+        {
+          "path": "tools/native/recovered/grim/window/window_proc.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_window_proc"
+          ]
+        }
+      ]
+    }
+  ]
+}

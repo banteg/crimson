@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "55d3ac8ca98efb0423bc7daae1c2579ca74dd852707425e6ae2444ee65796621",
+      "sha256": "43fbef1ad1bddb691e50bf3125e3fccd3ed0e9f961927ca25e0baf9ae9dc1655",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"
@@ -472,7 +472,7 @@
           "note": "The pinned DirectX 8.1 SDK dinput8 archive supplies the canonical DirectInput data-format objects."
         },
         {
-          "path": "tools/match/scratches/grim_mouse_init/scratch.cpp",
+          "path": "tools/native/recovered/grim/input/mouse_init.cpp",
           "note": "The exact recovered input initializers retain the SDK data-format references."
         }
       ],
@@ -503,7 +503,7 @@
           "note": "The pinned DirectX 8.1 SDK supplies the exact DirectInput GUID and data-format definitions referenced by the recovered input backends."
         },
         {
-          "path": "tools/match/scratches/grim_mouse_init/scratch.cpp",
+          "path": "tools/native/recovered/grim/input/mouse_init.cpp",
           "note": "The exact recovered input initializers retain the SDK GUID and data-format references."
         }
       ],

@@ -18,6 +18,17 @@ one-function translation units remain the default so pooling, inlining,
 constructor ordering, and static symbol changes cannot disturb established
 evidence.
 
+Recovered Grim-owned bodies now live under
+`tools/native/recovered/grim/`. The module directories form a plausible
+logical source layout, not a claim about historical filenames or physical
+objects. They cover all 139 canonical Grim functions and 41 additional
+recovered platform/provider functions. Scratch directories keep their matcher
+configuration and experimental evidence while their `SOURCE` fields bind to
+the central body. The accompanying `layout.json` distinguishes inferred
+subsystem grouping from native-proven translation-unit ownership and is
+checked against all 171 source files and 180 source/config bindings in the
+native-link tests.
+
 The executable has three explicitly modeled exceptions in
 `tools/native/translation_units/crimsonland.exe.json`. VC6 generates each
 quest, bonus, or perk metadata array's initializer, registrar, and finalizer
@@ -33,12 +44,14 @@ that lowers the byte ratio or adds unresolved or mismatched references. This
 is source-provenance modeling, not a linker alias: the object retains the
 compiler-generated local symbols and local relocations.
 
-The Grim configuration also models three proven source islands. The JAZ island
-combines its contiguous constructor, zlib-status helper, allocation method,
-and payload method in native address order under one `/GX /MD` provider. Each
-member remains an exact match against its isolated baseline, and the combined
-COFF object internalizes the helper-to-method calls without changing the
-function inventory.
+The Grim configuration models four proven source islands: the slot-state
+accessors, line renderer and local vector destructor, monochrome text renderer,
+and JAZ decoder. The JAZ island combines its contiguous constructor,
+zlib-status helper, allocation method, and payload method in native address
+order under one `/GX /MD` provider. Each member of all four islands remains an
+exact match against its isolated reference boundary, and the combined COFF
+objects retain their compiler-generated local symbols and internal calls
+without changing the function inventory.
 
 Grim has one explicit link-time exception in
 `tools/native/linker_aliases/grim.dll.json`. Both native cleanup calls in

@@ -283,8 +283,14 @@ chmod +x tools/match/bin/wibo
 
 Create `tools/match/scratches/<function>/` with:
 
-- `scratch.cpp`: candidate implementation
 - `scratch.conf`: shell variables consumed by `match.sh`
+- a candidate implementation, normally `scratch.cpp`
+
+`SOURCE` is resolved relative to the scratch directory and may point at a
+shared canonical body elsewhere in the repository. This is how
+`tools/native/recovered/grim/` keeps recovered source centralized while each
+function retains its own matcher configuration and evidence. Omitting
+`SOURCE` keeps the `scratch.cpp` default.
 
 Minimum config:
 

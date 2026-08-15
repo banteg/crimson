@@ -527,6 +527,95 @@ def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> N
     ]
 
 
+def test_recovered_grim_source_layout_preserves_evidence_boundaries() -> None:
+    layout_path = (
+        matchlib.REPO_ROOT / "tools/native/recovered/grim/layout.json"
+    )
+    payload = json.loads(layout_path.read_text(encoding="utf-8"))
+    root = (matchlib.REPO_ROOT / payload["root"]).resolve()
+    translation_units = load_native_translation_unit_config(
+        DEFAULT_TRANSLATION_UNIT_CONFIGS["grim.dll"],
+        image="grim.dll",
+    )
+    clusters = {cluster.name: cluster for cluster in translation_units.clusters}
+
+    assert payload["schema"] == 1
+    assert payload["kind"] == "crimson-recovered-source-layout"
+    assert payload["image"] == "grim.dll"
+    assert [module["name"] for module in payload["modules"]] == [
+        "api",
+        "app",
+        "codec",
+        "config",
+        "device",
+        "input",
+        "render",
+        "runtime",
+        "state",
+        "texture",
+        "timing",
+        "window",
+    ]
+
+    seen_sources: set[Path] = set()
+    seen_configs: set[Path] = set()
+    proven_clusters: set[str] = set()
+    for module in payload["modules"]:
+        assert module["layout_evidence"] == "inferred-subsystem"
+        for source_row in module["sources"]:
+            source = (matchlib.REPO_ROOT / source_row["path"]).resolve()
+            assert source.is_relative_to(root)
+            assert source.is_file()
+            assert source not in seen_sources
+            seen_sources.add(source)
+
+            functions: list[str] = []
+            for config_name in source_row["configs"]:
+                config_dir = (matchlib.REPO_ROOT / config_name).resolve()
+                assert config_dir not in seen_configs
+                seen_configs.add(config_dir)
+                config = matchlib.load_scratch_config(config_dir)
+                assert config.image == "grim.dll"
+                assert (config.directory / config.source).resolve() == source
+                functions.append(config.function)
+
+            ownership = source_row["physical_ownership"]
+            if ownership["kind"] == "native-translation-unit":
+                cluster_name = ownership["cluster"]
+                cluster = clusters[cluster_name]
+                assert functions == [
+                    member.function for member in cluster.members
+                ]
+                proven_clusters.add(cluster_name)
+            else:
+                assert ownership == {"kind": "unproven-isolated-object"}
+                assert len(functions) == 1
+
+    assert seen_sources == set(root.glob("*/*.cpp"))
+    object_manifest = json.loads(
+        (
+            matchlib.REPO_ROOT / "analysis/native/grim.dll/objects.json"
+        ).read_text(encoding="utf-8"),
+    )
+    canonical_rows = [
+        function
+        for object_row in object_manifest["objects"]
+        for function in object_row["functions"]
+    ]
+    assert len(canonical_rows) == 139
+    assert {
+        (matchlib.REPO_ROOT / row["canonical_source"]).resolve()
+        for row in canonical_rows
+    } <= seen_sources
+    assert {
+        (matchlib.REPO_ROOT / row["canonical_config"]).resolve().parent
+        for row in canonical_rows
+    } <= seen_configs
+    assert len(seen_sources) == 171
+    assert len(seen_configs) == 180
+    assert proven_clusters == set(clusters)
+
+
 def test_linker_alias_config_normalizes_evidence_addresses(tmp_path: Path) -> None:
     path = tmp_path / "grim.dll.json"
     path.write_text(
@@ -651,9 +740,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     ]
     assert len(config.archives) == 7
     archives = {archive.id: archive for archive in config.archives}
-    assert archives["grim-recovered-platform-vc6"].size == 111148
+    assert archives["grim-recovered-platform-vc6"].size == 111418
     assert archives["grim-recovered-platform-vc6"].sha256 == (
-        "55d3ac8ca98efb0423bc7daae1c2579ca74dd852707425e6ae2444ee65796621"
+        "43fbef1ad1bddb691e50bf3125e3fccd3ed0e9f961927ca25e0baf9ae9dc1655"
     )
     assert (
         archives["grim-recovered-platform-vc6"].provenance.derived_artifact
