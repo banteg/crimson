@@ -489,6 +489,11 @@ and `blocked`; hypotheses use the normalized `analysis`, `references`,
 blocked outcomes require evidence. `worker-check --require-outcome` rejects
 missing, malformed, or stale-batch outcomes.
 
+Before recording `falsified` or `blocked` for a source-shape or compiler
+residual, complete the [local-minimum escape protocol](#escaping-local-match-minima)
+and put its residual card in the scratch notes. A collapsed aggregate score or
+several non-improving single-site sweeps are not sufficient evidence of a wall.
+
 Keep final integration coordinator-owned. A worker can export an uncommitted
 patch, including newly created scratches, with:
 
@@ -673,7 +678,10 @@ shape. Time budgets are soft: the current batch finishes, then no more variants
 are scheduled. Reports show evaluated/planned/possible coverage at each
 mutation depth and call out interaction combinations that were never
 evaluated. Ranked candidates also show movement of the first native mismatch
-byte offset.
+byte offset. This ordering selects a safe canonical winner; it is not a search
+completeness proof. A globally degrading variant can still be the strongest
+diagnostic result when it makes one native region exact or reveals a consistent
+whole-function register or stack-slot recoloring.
 
 Pass `--record` to append one `kind=mutation-sweep` entry containing the full
 evaluated result set, spec SHA-256, coverage, scores, and improving winner to
@@ -730,6 +738,71 @@ first mismatch, or moving the instruction count farther from native. Higher or
 byte-neutral fuzzy-scoring tradeoffs remain ranked and recorded with warnings
 but are never selected as the retained winner. Combine `--write-best` with
 `--require-improvement` in scripted searches.
+
+### Escaping Local Match Minima
+
+The exact-match score is the acceptance criterion, not the only search signal.
+Do not treat `winner=null`, `best_improves=false`, a prefix regression, or a
+large fuzzy-score drop as negative evidence until the assembly difference is
+classified. VC register allocation can change across an entire function while
+the mutated source makes the intended loop or block byte-exact.
+
+Before describing a residual as a compiler wall, backend choice, saturated
+search, or stalled target, record this compact residual card in the scratch's
+`NOTES.md`:
+
+```text
+Residual signature
+- target/candidate instructions and CFG/control shape:
+- target/candidate stack-frame allocation:
+- references ok/unresolved/mismatched:
+- consistent register or stack-slot mappings:
+- regions made exact by globally neutral or degrading variants:
+- conclusions and the source/profile assumptions held fixed for each:
+- untested lifetime, expression, and repeated-site interactions:
+```
+
+Then apply this escape protocol:
+
+1. Inspect regions and assembly before pruning by score. If instruction counts
+   and control shape agree, look for a consistent operand substitution such as
+   two stack homes being exchanged across every aligned loop.
+2. Keep native facts separate from source explanations. Write "shared counters
+   separate these spills under the current row-value spelling," not "shared
+   counters are required."
+3. Preserve diagnostic regressions. A variant that makes the target region
+   exact is a seed for the next experiment even when an allocator change makes
+   earlier regions worse. The conservative `--write-best` refusal is not a
+   reason to discard that source.
+4. When native code repeats one pattern, create one mutation site per homologous
+   source region. Propagate a promising lifetime or expression change across
+   every site and test interactions, not only the region containing the first
+   mismatch.
+5. For at most five binary sites, exhaust the full non-empty power set (31
+   variants) with `--max-changes` covering every site. Do not rely on
+   single-site hill climbing: allocator thresholds often require several
+   individually neutral or degrading changes before the stack coloring flips.
+6. Split coupled hypotheses into independent axes. At minimum test outer-counter
+   lifetime, inner-counter lifetime, cursor lifetime, and hoisted versus direct
+   invariant expressions separately before crossing them.
+7. After repeated non-improving sweeps, explicitly negate the two strongest
+   conclusions inherited from earlier notes. A negative sweep closes only the
+   tested source/profile Cartesian product; list the fixed and untested axes.
+
+`grim_state_init` is the reference case. A native-looking final atlas cursor
+fell to 64.71%, but retained the 425-instruction control shape; aligned assembly
+showed that the outer and inner conversion spills had exchanged stack homes.
+Keeping the outer `y` shared, making only the final inner column local, and
+writing the row value directly from `y` made that tail byte-exact while the
+whole-function score remained only 97.18%. Propagating the same lifetime and
+expression shape across the five homologous atlas loops and evaluating all 31
+combinations produced four exact variants. See
+[`grim_state_init/NOTES.md`](scratches/grim_state_init/NOTES.md#exact-atlas-counter-lifetime-recovery).
+
+This case demonstrates the required evidence boundary: a collapsed score can
+hide a native control shape, a locally exact regression can identify the causal
+source lifetime, and an apparent local residual can require a coherent
+whole-function interaction sweep.
 
 Sweep one scratch across installed compilers and one or more flag sets. Options
 are repeatable and the result is ranked with exact, reference-clean matches
