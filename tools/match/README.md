@@ -1034,6 +1034,12 @@ all aligned masked references are proven equal. A 100% instruction score with
 unresolved or different references is `audit`, so it is excluded from matched
 function and byte totals. The `refs` column is `ok/unresolved/mismatch`.
 
+Normalized memory operands canonicalize scale-one SIB encodings when both
+registers use the DS default segment. In that bounded case, x86 computes the
+same `base + index` address whichever register occupies the SIB base field.
+Other EBP/ESP forms stay distinct because exchanging the architectural base
+can change the default segment; non-unit scales stay distinct as well.
+
 The function manifest is overlaid by exact program/address entries from
 `analysis/ghidra/maps/name_map.json`. This lets newly recovered function names
 participate in scratch selection and reference auditing immediately, without

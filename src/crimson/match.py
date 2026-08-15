@@ -2285,10 +2285,24 @@ def _image_vc6_unwind_only_key(
 def _format_memory_operand(insn, operand, masked_disp: bool) -> str:
     mem = operand.mem
     parts: list[str] = []
-    if mem.base != 0:
-        parts.append(insn.reg_name(mem.base))
-    if mem.index != 0:
-        parts.append(f"{insn.reg_name(mem.index)}*{mem.scale}")
+    base_name = insn.reg_name(mem.base) if mem.base != 0 else None
+    index_name = insn.reg_name(mem.index) if mem.index != 0 else None
+    frame_registers = {"ebp", "esp"}
+    if (
+        base_name is not None
+        and index_name is not None
+        and mem.scale == 1
+        and base_name not in frame_registers
+        and index_name not in frame_registers
+    ):
+        # A scale-one SIB computes base + index regardless of which register
+        # occupies either encoding field. Preserve EBP/ESP roles because
+        # swapping the architectural base can change the default segment.
+        base_name, index_name = sorted((base_name, index_name))
+    if base_name is not None:
+        parts.append(base_name)
+    if index_name is not None:
+        parts.append(f"{index_name}*{mem.scale}")
     if masked_disp:
         parts.append("ADDR")
     elif mem.disp != 0 or not parts:
@@ -8188,25 +8202,33 @@ def collect_image_totals(
             scope=scope,
         )
         image = load_image(image_path, manifest.image_base)
-        byte_total = sum(len(image.function_bytes(function.address, function.end)) for function in manifest.functions)
+        function_sizes = {
+            function.address: len(image.function_bytes(function.address, function.end))
+            for function in manifest.functions
+        }
+        byte_total = sum(function_sizes.values())
         image_statuses = [status for status in statuses if status.config.image == image_name]
         matched_by_function: dict[int, int] = {}
         fuzzy_bytes_by_function: dict[int, float] = {}
         candidate_by_function: dict[int, int] = {}
         for status in image_statuses:
+            manifest_size = function_sizes.get(status.address)
+            if manifest_size is None:
+                continue
+            covered_size = min(status.target_size, manifest_size)
             if status.ratio is not None:
                 fuzzy_bytes_by_function[status.address] = max(
                     fuzzy_bytes_by_function.get(status.address, 0.0),
-                    status.fuzzy_weighted_bytes,
+                    covered_size * status.ratio,
                 )
                 candidate_by_function[status.address] = max(
                     candidate_by_function.get(status.address, 0),
-                    status.target_size,
+                    covered_size,
                 )
             if status.state == "match":
                 matched_by_function[status.address] = max(
                     matched_by_function.get(status.address, 0),
-                    status.target_size,
+                    covered_size,
                 )
         totals.append(
             ImageTotals(
@@ -8294,14 +8316,23 @@ def collect_triage_rows(
             usable = [status for status in function_statuses if status.ratio is not None]
             best_status = max(function_statuses, key=_status_rank) if function_statuses else None
             exact_bytes = max(
-                (status.target_size for status in function_statuses if status.state == "match"),
+                (
+                    min(status.target_size, target_size)
+                    for status in function_statuses
+                    if status.state == "match"
+                ),
                 default=0,
             )
             fuzzy_weighted_bytes = max(
-                (status.fuzzy_weighted_bytes for status in usable),
+                (
+                    min(status.target_size, target_size)
+                    * (status.ratio if status.ratio is not None else 0.0)
+                    for status in usable
+                ),
                 default=0.0,
             )
             candidate_bytes = max((status.target_size for status in usable), default=0)
+            candidate_bytes = min(candidate_bytes, target_size)
             states = {status.state for status in function_statuses}
             if "match" in states:
                 state = "match"

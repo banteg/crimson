@@ -144,6 +144,15 @@ LRESULT CALLBACK grim_window_proc(
             PostQuitMessage(0);
             return 0;
 
+        case WM_ENTERSIZEMOVE:
+            grim_timing_frozen = 1;
+            grim_device_ready = 0;
+            return 0;
+
+        case WM_EXITSIZEMOVE:
+            grim_timing_frozen = 0;
+            return 0;
+
         case WM_CREATE:
             SendMessageA(
                 grim_main_window_hwnd,
@@ -167,37 +176,6 @@ LRESULT CALLBACK grim_window_proc(
                 grim_timing_frozen = 0;
             }
             break;
-
-        case WM_ACTIVATE:
-            if (LOWORD(wparam) != WA_INACTIVE && HIWORD(wparam) == 0) {
-                grim_noop("WM_ACTIVATE active", 0);
-                if (!grim_device_ready) {
-                    grim_noop("d3d not ready!", 0);
-                }
-                if (grim_device_ready) {
-                    grim_restore_textures();
-                    grim_apply_render_state();
-                    grim_on_device_restore();
-                    grim_device_restore_callback_pending = 0;
-                } else {
-                    grim_device_restore_callback_pending = 1;
-                }
-                grim_timing_frozen = 0;
-            } else {
-                grim_noop("WM_ACTIVATE inactive", 0);
-                if (!grim_device_ready) {
-                    grim_noop("d3d not ready!", 0);
-                }
-                if (grim_d3d_device != 0) {
-                    grim_backup_textures();
-                    grim_on_device_lost();
-                }
-                grim_keyboard_device->Unacquire();
-                grim_mouse_device->Unacquire();
-                grim_timing_frozen = 1;
-                grim_device_ready = 0;
-            }
-            return 0;
 
         case WM_ACTIVATEAPP:
             if (wparam == 0) {
@@ -230,13 +208,35 @@ LRESULT CALLBACK grim_window_proc(
             }
             return 0;
 
-        case WM_ENTERSIZEMOVE:
-            grim_timing_frozen = 1;
-            grim_device_ready = 0;
-            return 0;
-
-        case WM_EXITSIZEMOVE:
-            grim_timing_frozen = 0;
+        case WM_ACTIVATE:
+            if (LOWORD(wparam) != WA_INACTIVE && HIWORD(wparam) == 0) {
+                grim_noop("WM_ACTIVATE active", 0);
+                if (!grim_device_ready) {
+                    grim_noop("d3d not ready!", 0);
+                }
+                if (grim_device_ready) {
+                    grim_restore_textures();
+                    grim_apply_render_state();
+                    grim_on_device_restore();
+                    grim_device_restore_callback_pending = 0;
+                } else {
+                    grim_device_restore_callback_pending = 1;
+                }
+                grim_timing_frozen = 0;
+            } else {
+                grim_noop("WM_ACTIVATE inactive", 0);
+                if (!grim_device_ready) {
+                    grim_noop("d3d not ready!", 0);
+                }
+                if (grim_d3d_device != 0) {
+                    grim_backup_textures();
+                    grim_on_device_lost();
+                }
+                grim_keyboard_device->Unacquire();
+                grim_mouse_device->Unacquire();
+                grim_timing_frozen = 1;
+                grim_device_ready = 0;
+            }
             return 0;
 
         case WM_CHAR:

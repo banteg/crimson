@@ -1261,6 +1261,34 @@ def test_normalize_masks_relocated_and_absolute_operands() -> None:
     assert normalize_function(code)[0] == "mov eax, dword [0x4a1234]"
 
 
+def test_normalize_canonicalizes_commutative_scale_one_sib() -> None:
+    # Both encodings load from eax + ecx + 0xc; only the SIB field roles differ.
+    eax_base = bytes.fromhex("8b44080cc3")
+    ecx_base = bytes.fromhex("8b44010cc3")
+
+    assert normalize_function(eax_base) == normalize_function(ecx_base)
+    assert normalize_function(eax_base)[0] == "mov eax, dword [eax+ecx*1+0xc]"
+
+
+def test_normalize_preserves_scale_one_sib_default_segment_difference() -> None:
+    # EBP as a base defaults to SS; EBP as an index under EAX defaults to DS.
+    ebp_base = bytes.fromhex("8b44050cc3")
+    eax_base = bytes.fromhex("8b44280cc3")
+
+    assert normalize_function(ebp_base) != normalize_function(eax_base)
+    assert normalize_function(ebp_base)[0] == "mov eax, dword [ebp+eax*1+0xc]"
+    assert normalize_function(eax_base)[0] == "mov eax, dword [eax+ebp*1+0xc]"
+
+
+def test_normalize_preserves_noncommutative_scaled_sib() -> None:
+    eax_base = bytes.fromhex("8b44480cc3")
+    ecx_base = bytes.fromhex("8b44410cc3")
+
+    assert normalize_function(eax_base) != normalize_function(ecx_base)
+    assert normalize_function(eax_base)[0] == "mov eax, dword [eax+ecx*2+0xc]"
+    assert normalize_function(ecx_base)[0] == "mov eax, dword [ecx+eax*2+0xc]"
+
+
 def test_normalize_resolves_vc_exception_chain_relocation_to_fs_zero() -> None:
     function = ObjectFunction(
         name="_probe",
@@ -5139,7 +5167,7 @@ def test_collect_triage_rows_joins_scratches_by_address(monkeypatch: pytest.Monk
         ScratchStatus(
             config=replace(config, directory=Path("scratches/stale_name"), function="old_foo"),
             address=0x401000,
-            target_size=3,
+            target_size=5,
             ratio=0.8,
             prefix_instructions=1,
             target_instructions=2,
@@ -5164,6 +5192,7 @@ def test_collect_triage_rows_joins_scratches_by_address(monkeypatch: pytest.Monk
     assert rows[0].best_status is statuses[1]
     assert rows[0].fuzzy_weighted_bytes == pytest.approx(2.4)
     assert rows[0].fuzzy_gap_bytes == pytest.approx(0.6)
+    assert rows[0].candidate_bytes == 3
     assert triage_row_payload(rows[0])["best_scratch"]["function"] == "old_foo"
     assert render_triage_rows(rows)[0][2] == "recovered_foo"
     assert sort_triage_rows(rows, sort_by="fuzzy-gap")[0].function == "bar"
@@ -6603,6 +6632,16 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
             candidate_instructions=1,
             error=None,
         ),
+        ScratchStatus(
+            config=replace(config, function="expanded_foo"),
+            address=0x401000,
+            target_size=5,
+            ratio=1.0,
+            prefix_instructions=1,
+            target_instructions=1,
+            candidate_instructions=1,
+            error=None,
+        ),
     ]
 
     monkeypatch.setattr("crimson.match.load_function_manifest", fake_load_manifest)
@@ -6620,8 +6659,8 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
             fuzzy_weighted_bytes=4.5,
             candidate_functions=2,
             candidate_bytes=6,
-            scratch_count=3,
-            matched_scratches=2,
+            scratch_count=4,
+            matched_scratches=3,
         ),
         ImageTotals(
             image="grim.dll",
