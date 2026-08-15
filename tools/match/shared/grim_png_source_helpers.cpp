@@ -11,6 +11,10 @@
 #define PNG_INTERNAL
 #include "../../../third_party/headers/png.h"
 
+extern "C" void d3dx_png_error(png_structp png_ptr, png_const_charp message);
+extern "C" png_voidp d3dx_png_malloc(
+    png_structp png_ptr, png_uint_32 size);
+
 struct grim_png_source_t {
     png_byte fields_000[0x58];
     png_uint_32 mode;
