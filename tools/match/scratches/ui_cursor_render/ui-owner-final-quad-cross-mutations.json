@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ui-runtime-owner",
+      "find": "#include \"crimsonland_gameplay.h\"\n#include \"grim2d_cpp.h\"",
+      "replacements": [
+        {
+          "name": "authenticated-ui-aggregate",
+          "text": "#include \"crimsonland_gameplay.h\"\n#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER\n#include \"crimsonland_ui_state_owner.h\"\n#include \"grim2d_cpp.h\""
+        }
+      ]
+    },
+    {
+      "name": "final-quad-source-shape",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 2.0f, ui_mouse_y - 2.0f, 32.0f, 32.0f);\n",
+      "replacements": [
+        {
+          "name": "named-y-coordinate",
+          "text": "    float cursor_y = ui_mouse_y - 2.0f;\n    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 2.0f, cursor_y, 32.0f, 32.0f);\n"
+        },
+        {
+          "name": "named-y-then-x",
+          "text": "    float cursor_y = ui_mouse_y - 2.0f;\n    float cursor_x = ui_mouse_x - 2.0f;\n    grim_interface_ptr->grim_draw_quad(\n        cursor_x, cursor_y, 32.0f, 32.0f);\n"
+        },
+        {
+          "name": "y-then-local-receiver",
+          "text": "    float cursor_y = ui_mouse_y - 2.0f;\n    IGrim2D_cpp *cursor_grim = grim_interface_ptr;\n    cursor_grim->grim_draw_quad(\n        ui_mouse_x - 2.0f, cursor_y, 32.0f, 32.0f);\n"
+        },
+        {
+          "name": "compound-y-coordinate",
+          "text": "    float cursor_y = ui_mouse_y;\n    cursor_y -= 2.0f;\n    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 2.0f, cursor_y, 32.0f, 32.0f);\n"
+        }
+      ]
+    }
+  ]
+}

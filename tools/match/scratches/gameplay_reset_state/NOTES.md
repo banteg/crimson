@@ -140,3 +140,12 @@ weighted bytes, +54 prefix instructions, two additional resolved references,
 and no instruction or reference tradeoff. The same authenticated owner is
 byte-neutral in nine other state-heavy consumers, which bounds the win to the
 reset's global scheduling rather than a broad matching artifice.
+
+## Authenticated UI-state owner replay (2026-08-14)
+
+`original-ui-owner-mutations.json` tests the independently authenticated
+`ui_state_original_t` aggregate against the complete reset. The opt-in owner is
+byte-identical to the canonical source at 99.67%, 307/307 instructions, prefix
+219, and `215/0/0` references. This closes the UI ownership hypothesis without
+changing the retained reset source. The complete one-variant spec SHA-256 is
+`1aacd4cd99d6c35760d897a287f4f5d9a4c440e9e74a23f192569b3cdbf5d178`.

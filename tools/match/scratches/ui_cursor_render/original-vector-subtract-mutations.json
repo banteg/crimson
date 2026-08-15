@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "original-cursor-vector-type",
+      "find": "extern IGrim2D_cpp *grim_interface_ptr;\n\n",
+      "replacements": [
+        {
+          "name": "sdk-layout-and-operators",
+          "text": "extern IGrim2D_cpp *grim_interface_ptr;\n\nstruct ui_cursor_vec2_t {\n    union {\n        struct { float x, y; };\n        float v[2];\n    };\n\n    ui_cursor_vec2_t() {}\n\n    ui_cursor_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    ui_cursor_vec2_t operator-(const ui_cursor_vec2_t &other)\n    {\n        return ui_cursor_vec2_t(x - other.x, y - other.y);\n    }\n\n    ui_cursor_vec2_t &operator-=(const ui_cursor_vec2_t &other)\n    {\n        x -= other.x;\n        y -= other.y;\n        return *this;\n    }\n};\n\n"
+        }
+      ]
+    },
+    {
+      "name": "final-cursor-vector-expression",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 2.0f, ui_mouse_y - 2.0f, 32.0f, 32.0f);\n",
+      "replacements": [
+        {
+          "name": "owner-minus-literal",
+          "text": "    ui_cursor_vec2_t cursor_position =\n        *(ui_cursor_vec2_t *)&ui_mouse_x\n        - ui_cursor_vec2_t(2.0f, 2.0f);\n    grim_interface_ptr->grim_draw_quad(\n        cursor_position.x, cursor_position.y, 32.0f, 32.0f);\n",
+          "requires": [
+            "original-cursor-vector-type/sdk-layout-and-operators"
+          ]
+        },
+        {
+          "name": "constructed-minus-literal",
+          "text": "    ui_cursor_vec2_t cursor_position =\n        ui_cursor_vec2_t(ui_mouse_x, ui_mouse_y)\n        - ui_cursor_vec2_t(2.0f, 2.0f);\n    grim_interface_ptr->grim_draw_quad(\n        cursor_position.x, cursor_position.y, 32.0f, 32.0f);\n",
+          "requires": [
+            "original-cursor-vector-type/sdk-layout-and-operators"
+          ]
+        },
+        {
+          "name": "owner-minus-equals-literal",
+          "text": "    ui_cursor_vec2_t cursor_position =\n        *(ui_cursor_vec2_t *)&ui_mouse_x;\n    cursor_position -= ui_cursor_vec2_t(2.0f, 2.0f);\n    grim_interface_ptr->grim_draw_quad(\n        cursor_position.x, cursor_position.y, 32.0f, 32.0f);\n",
+          "requires": [
+            "original-cursor-vector-type/sdk-layout-and-operators"
+          ]
+        },
+        {
+          "name": "constructed-minus-equals-literal",
+          "text": "    ui_cursor_vec2_t cursor_position(ui_mouse_x, ui_mouse_y);\n    cursor_position -= ui_cursor_vec2_t(2.0f, 2.0f);\n    grim_interface_ptr->grim_draw_quad(\n        cursor_position.x, cursor_position.y, 32.0f, 32.0f);\n",
+          "requires": [
+            "original-cursor-vector-type/sdk-layout-and-operators"
+          ]
+        }
+      ]
+    }
+  ]
+}

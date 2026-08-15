@@ -71,3 +71,25 @@ complete helper uses are byte-identical at 98.87%, 177/177, prefix 158, and
 continues to inline the helpers into the same constant-push/vtable-load
 schedule. The helper boundary is therefore another recorded compiler-only
 negative.
+
+## Authenticated owner and SDK-vector replay (2026-08-14)
+
+The canonical source now names `ui_cursor_texture` through the authenticated
+2003 `textures_t` aggregate. `texture_handles.ui_cursor_texture` compiles
+byte-identically to the former standalone global at 98.87%, 177/177
+instructions, prefix 158, and `57/0/0` references.
+
+`ui-owner-final-quad-cross-mutations.json` then crosses the authenticated UI
+state owner with four ordinary closing-quad coordinate/receiver lifetimes.
+All nine single and paired variants are byte-identical, so aggregate ownership
+does not expose a hidden source interaction at the final scheduler inversion.
+The spec SHA-256 is
+`2343821479aa5c2e8ebeda42a2d4f96c755aed160daa589243d79f23efac6900`.
+
+`original-vector-subtract-mutations.json` tests the MOD SDK's authenticated
+`vec2_t` union, constructor, subtraction, and compound-subtraction idioms. The
+type definition alone is neutral. Materializing any of the four vector
+expressions loses 40.96 to 48.85 weighted bytes, adds two to six instructions,
+and moves the exact prefix from 158 to zero; two forms also add a mismatched
+reference. No vector rewrite is retained. The spec SHA-256 is
+`8311eaf4967644267646dd80b065c878c436a1be727c723f34da060fe0dbc6ab`.

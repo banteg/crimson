@@ -14,6 +14,8 @@ extern int ui_cursor_texture;
 void effect_select_texture(int effect_id);
 }
 
+#include "crimsonland_textures_owner.h"
+
 extern "C" void ui_cursor_render(void)
 {
     ui_cursor_anim_timer += frame_dt;
@@ -48,7 +50,8 @@ extern "C" void ui_cursor_render(void)
 
     grim_interface_ptr->grim_set_config_var(0x13, 5u);
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
-    grim_interface_ptr->grim_bind_texture(ui_cursor_texture, 0);
+    grim_interface_ptr->grim_bind_texture(
+        texture_handles.ui_cursor_texture, 0);
     grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     grim_interface_ptr->grim_set_rotation(0.0f);
