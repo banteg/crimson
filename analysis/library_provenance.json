@@ -475,8 +475,8 @@
     {
       "id": "grim-recovered-platform-vc6-provider",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "size": 100246,
-      "sha256": "192b49592a7671b265dd43f481d4965071abb2306cf0be099b39b3c03b799fe3",
+      "size": 111148,
+      "sha256": "55d3ac8ca98efb0423bc7daae1c2579ca74dd852707425e6ae2444ee65796621",
       "recipe": "scripts/build_native_recovered_providers.py",
       "source_artifacts": [
         "visual-cpp-6-sp6-media"
@@ -519,12 +519,13 @@
         "tools/match/scratches/grim_save_texture/scratch.cpp",
         "tools/match/scratches/grim_window_create/scratch.cpp",
         "tools/match/scratches/grim_window_destroy/scratch.cpp",
+        "tools/match/scratches/grim_window_proc/scratch.cpp",
         "tools/match/scratches/grim_run_loop/scratch.cpp",
         "tools/match/scratches/grim_try_reset_device/scratch.cpp",
         "tools/native/providers/sources/grim_app_on_tick/scratch.cpp",
         "tools/native/data_definitions/grim.dll.json"
       ],
-      "validation": "Every function member must remain an exact all-scope instruction and reference match; provider-only data dependencies must be fully specified and disjoint from the primary native data object.",
+      "validation": "Every function member must remain an exact all-scope instruction and reference match; every member is raw-byte exact except grim_window_proc's documented scale-one SIB base/index equivalence, whose archived bytes must equal the verified compiled object; provider-only data dependencies must be fully specified and disjoint from the primary native data object.",
       "normalization": [
         "zero archive member timestamps",
         "zero COFF TimeDateStamp fields"

@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "192b49592a7671b265dd43f481d4965071abb2306cf0be099b39b3c03b799fe3",
+      "sha256": "55d3ac8ca98efb0423bc7daae1c2579ca74dd852707425e6ae2444ee65796621",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"
@@ -404,21 +404,32 @@
       ]
     },
     {
-      "name": "recovered-platform-callback-frontier",
+      "name": "recovered-platform-window-proc",
       "scope": "link-dependency",
       "kind": "static-library",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "archive": "grim-recovered-platform-vc6",
       "evidence": [
         {
-          "path": "analysis/ida/raw/grim.dll/functions.json",
-          "note": "The sole remaining recovered-platform reference is a bounded native callback with a known address and signature but no matching scratch yet."
+          "path": "tools/match/scratches/grim_window_proc/NOTES.md",
+          "note": "The recovered callback matches all 472 normalized instructions with all 148 references resolved; its sole raw difference is a documented scale-one SIB base/index equivalence."
         },
         {
-          "path": "tools/match/scratches/grim_window_create/scratch.cpp",
-          "note": "The exact window creator references the native window callback."
+          "path": "analysis/library_provenance.json",
+          "note": "The deterministic recovered-platform recipe preserves the verified callback object and records its bounded normalized-equivalence allowance."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_grim_noop_value",
+          "target": "_grim_noop"
         }
       ],
       "symbols": [
+        {
+          "name": "_grim_noop_value",
+          "binding": "function"
+        },
         {
           "name": "?grim_window_proc@@YGJPAUHWND__@@IIJ@Z",
           "binding": "function"
@@ -533,8 +544,16 @@
           "target": "__imp__AdjustWindowRectEx"
         },
         {
+          "alias": "__imp__BeginPaint@8",
+          "target": "__imp__BeginPaint"
+        },
+        {
           "alias": "__imp__CreateWindowExA@48",
           "target": "__imp__CreateWindowExA"
+        },
+        {
+          "alias": "__imp__DefWindowProcA@16",
+          "target": "__imp__DefWindowProcA"
         },
         {
           "alias": "__imp__DestroyWindow@4",
@@ -551,6 +570,10 @@
         {
           "alias": "__imp__EndDialog@8",
           "target": "__imp__EndDialog"
+        },
+        {
+          "alias": "__imp__EndPaint@8",
+          "target": "__imp__EndPaint"
         },
         {
           "alias": "__imp__GetClientRect@8",
@@ -636,9 +659,19 @@
           "export": "AdjustWindowRectEx"
         },
         {
+          "name": "__imp__BeginPaint@8",
+          "link_name": "BeginPaint",
+          "export": "BeginPaint"
+        },
+        {
           "name": "__imp__CreateWindowExA@48",
           "link_name": "CreateWindowExA",
           "export": "CreateWindowExA"
+        },
+        {
+          "name": "__imp__DefWindowProcA@16",
+          "link_name": "DefWindowProcA",
+          "export": "DefWindowProcA"
         },
         {
           "name": "__imp__DestroyWindow@4",
@@ -659,6 +692,11 @@
           "name": "__imp__EndDialog@8",
           "link_name": "EndDialog",
           "export": "EndDialog"
+        },
+        {
+          "name": "__imp__EndPaint@8",
+          "link_name": "EndPaint",
+          "export": "EndPaint"
         },
         {
           "name": "__imp__GetClientRect@8",

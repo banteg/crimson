@@ -1750,6 +1750,8 @@
         ["0x1005a470", "grim_timing_frozen"],
         ["0x1005b280", "grim_config_dialog_windowed_selected"],
         ["0x1005b2b8", "grim_config_dialog_bpp16_selected"],
+        ["0x1005bc00", "grim_window_proc_dc_flag"],
+        ["0x1005bc01", "grim_window_proc_paint_flag"],
         ["0x1005bc14", "grim_lookup_blob_loaded"],
         ["0x1005befc", "grim_config_dialog_has_supported_adapter"],
         ["0x1005cc08", "grim_windowed_mode_enabled"],

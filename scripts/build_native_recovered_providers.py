@@ -13,7 +13,7 @@ from typing import Any, cast
 
 from crimson import match as matchlib
 from crimson import native_link
-from crimson.library_match import match_coff_archive
+from crimson.library_match import match_coff_archive, parse_coff_archive
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROVENANCE_PATH = REPO_ROOT / "analysis/library_provenance.json"
@@ -28,6 +28,7 @@ class RecoveredProviderRecipe:
     scratches: tuple[str, ...]
     supplemental_scratches: tuple[Path, ...] = ()
     external_data_symbols: frozenset[str] = frozenset()
+    normalized_equivalent_scratches: frozenset[str] = frozenset()
 
 
 RECIPES = {
@@ -88,6 +89,7 @@ RECIPES = {
             "grim_save_texture",
             "grim_window_create",
             "grim_window_destroy",
+            "grim_window_proc",
             "grim_run_loop",
             "grim_try_reset_device",
         ),
@@ -102,6 +104,7 @@ RECIPES = {
                 "_c_dfDIMouse2",
             },
         ),
+        normalized_equivalent_scratches=frozenset({"grim_window_proc"}),
     ),
 }
 
@@ -322,9 +325,31 @@ def _require_archive_match(
         for candidate in match.candidates
         if candidate.symbol == expected_symbol and candidate.member == f"{name}.obj"
     ]
-    if len(candidates) != 1:
+    if len(candidates) == 1:
+        return
+    if name not in recipe.normalized_equivalent_scratches:
         raise ValueError(
             f"{archive.name}: no unique {name} match at 0x{function.address:08x}",
+        )
+
+    # A named normalized-equivalence allowance is intentionally narrower than
+    # weakening the provider's raw-byte gate. The scratch matcher has already
+    # proven instruction identity and reference closure; also require LIB.EXE
+    # to have archived exactly that compiled object, modulo the deterministic
+    # COFF timestamp normalization applied above.
+    members = [
+        member
+        for member in parse_coff_archive(archive.read_bytes())
+        if member.name == f"{name}.obj"
+    ]
+    expected_data = bytearray(object_path.read_bytes())
+    if len(expected_data) < 8:
+        raise ValueError(f"{name}: compiled object is truncated")
+    expected_data[4:8] = b"\x00" * 4
+    if len(members) != 1 or members[0].data != bytes(expected_data):
+        raise ValueError(
+            f"{archive.name}: normalized-equivalent member {name!r} "
+            "does not preserve the verified compiled object",
         )
 
 

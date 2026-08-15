@@ -161,23 +161,27 @@ just native-link grim.dll
 `tools/native/providers/grim.dll.json` must cover the unresolved-symbol set
 exactly. It distinguishes 20 exports that the reference PE really imports
 from `MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll`. The original
-VC6 SP6 `MSVCRT.LIB` now supplies 15 of those imports plus the exact
-`atonexit.obj` runtime adapter and `dllsupp.obj` toolchain absolutes: 18
-closure symbols total. The original DirectX 8.1 `d3dx8.lib` supplies another
-six closure symbols, including byte-proven aliases from the recovered
-`d3dx_copy_texture_filtered` name to the archive's
-`D3DXComputeNormalMap` and from `jpeg_std_error` to the archive's namespaced
-IJG body. Deterministic VC6 builds from the pinned IJG 6a and zlib 1.1.3
-sources supply eight more closure symbols. Five closure imports still use
-generated import libraries, and 16 host-replaced symbols remain explicit
-placeholders.
+VC6 SP6 `MSVCRT.LIB` supplies 15 of those imports plus the exact
+`atonexit.obj` runtime adapter and `dllsupp.obj` toolchain absolutes. The
+original DirectX 8.1 `d3dx8.lib` supplies six closure symbols, including
+byte-proven aliases from the recovered `d3dx_copy_texture_filtered` name to
+the archive's `D3DXComputeNormalMap` and from `jpeg_std_error` to the archive's
+namespaced IJG body. Deterministic VC6 builds from the pinned IJG 6a and zlib
+1.1.3 sources supply eight more closure symbols. Five closure imports use
+generated import libraries, and the recovered platform archive supplies all
+16 host-replaced closure functions.
 
-The D3DX archive also needs 24 decorated platform symbols while the linker
-selects and prunes its members. These are modeled as `link-dependency`
-providers, not counted as closure coverage. `/OPT:REF` retains 17 imports in
-the output and discards seven unused edges, including `FindResourceW`; every
-retained output import is required to exist in the pinned reference PE table.
-Every provider group cites repository evidence.
+The recovered platform and D3DX archives also need 70 transitive symbols while
+the linker selects and prunes their members. These are modeled as
+`link-dependency` providers, not counted as closure coverage. The exact
+`grim_window_proc` callback is retained through this boundary together with a
+weak alias from its matcher-only `grim_noop_value` spelling to the native
+`grim_noop`. Its archive recipe preserves the compiled object under the one
+documented scale-one SIB base/index equivalence; every other recovered-platform
+member remains raw-byte exact. `/OPT:REF` retains 59 link-dependency imports in
+the output and discards `FindResourceW`; every retained output import is
+required to exist in the pinned reference PE table. Every provider group cites
+repository evidence.
 
 All provider archives are ignored inputs pinned by size and SHA-256 to
 `analysis/library_provenance.json`. Extract the proprietary historical
@@ -220,14 +224,14 @@ log, and provider outputs remain ignored. Generated archive, object, PE
 header, and PE export-directory timestamps are normalized, so identical
 inputs produce the same linked-image hash.
 
-This is a structural linker milestone, not a runnable DLL or a byte-match
-claim. `link.json.runnable` stays false while any placeholder COMDAT is
-retained. The canonical Grim link proves that all 16 configured placeholders
-survive `/OPT:REF`; its closure report also keeps those 16 references
-unresolved, so
-`all_references_closed` cannot pass merely because a generated stub made the
-linker accept the image. Replacing each placeholder group with its actual
-provider object is the path from a structural image to a runnable one.
+This remains a structural linker milestone, not a runtime test or whole-image
+byte-match claim. No placeholder COMDAT remains, so the canonical Grim receipt
+now reports `runnable=true`. It validates 99 output imports against the
+reference PE and emits a deterministic 385,024-byte image with entry RVA
+`0x62d0`, image size `0x5e000`, and a normalized zero timestamp. The separate
+closure report still classifies imports, toolchain symbols, and deliberately
+excluded functions at the port boundary; the provider-backed link is what
+proves those required edges are concretely linkable.
 
 ## Structural executable link
 
