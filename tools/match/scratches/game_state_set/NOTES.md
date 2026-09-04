@@ -151,3 +151,24 @@ as expected. All four Controls scalar store orders still regress to 84.12%,
 The recovered shared types therefore do not reopen the older source-shape
 hypotheses. The aggregate Controls assignment remains canonical, and the final
 mode arms remain bounded tail-folding debt without an honest source change.
+
+## Exact counter and Controls sequencing recovery (2026-09-05)
+
+Current result: **100%**, 399/399 instructions, full prefix, and references
+**169 resolved / 0 unresolved / 0 mismatched**. The compiler-residual conclusions
+above are superseded by `direct-counter-controls-mutations.json`.
+
+The four non-quest modes now increment their persisted counters directly before
+setting the render and transition latches. The previous reconstruction split
+those increments into local loads, increments, and stores interleaved with the
+latches. That spelling caused the six-instruction final-branch tail fold; the
+ordinary direct increment reproduces the native load/store sequence and raises
+matching to 99.75%. Applying it only to the final two modes gives identical
+bytes. Moving the increment between latches is a negative reference-audit control.
+
+The Controls arm activates the sign before assigning the panel's position
+aggregate. This independently restores the remaining interleaved store order;
+combined with the direct counters it matches the complete native function.
+No compiler flags, types, branch-layout directives, or artificial dependencies
+were changed. All five recorded variants compile and the retained combination
+has no reference debt.

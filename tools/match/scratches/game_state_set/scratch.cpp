@@ -189,29 +189,21 @@ extern "C" void game_state_set(game_state_id_t state_id)
                 render_pass_mode = 1;
                 gameplay_transition_latch = 1;
             } else if (config_game_mode == GAME_MODE_RUSH) {
-                unsigned int play_count = game_status_blob.mode_play_rush;
+                ++game_status_blob.mode_play_rush;
                 render_pass_mode = 1;
-                ++play_count;
                 gameplay_transition_latch = 1;
-                game_status_blob.mode_play_rush = play_count;
             } else if (config_game_mode == GAME_MODE_SURVIVAL) {
-                unsigned int play_count = game_status_blob.mode_play_survival;
+                ++game_status_blob.mode_play_survival;
                 render_pass_mode = 1;
-                ++play_count;
                 gameplay_transition_latch = 1;
-                game_status_blob.mode_play_survival = play_count;
             } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
-                unsigned int play_count = game_status_blob.mode_play_typo;
+                ++game_status_blob.mode_play_typo;
                 render_pass_mode = 1;
-                ++play_count;
                 gameplay_transition_latch = 1;
-                game_status_blob.mode_play_typo = play_count;
             } else {
-                unsigned int play_count = game_status_blob.mode_play_other;
+                ++game_status_blob.mode_play_other;
                 render_pass_mode = 1;
-                ++play_count;
                 gameplay_transition_latch = 1;
-                game_status_blob.mode_play_other = play_count;
             }
         }
     } else if (state_id == GAME_STATE_TYPO_GAMEPLAY) {
@@ -256,9 +248,9 @@ extern "C" void game_state_set(game_state_id_t state_id)
     } else if (state_id == GAME_STATE_CONTROLS_MENU) {
         float screen_scale =
             (float)config_blob.screen_width * 0.00156250002f;
+        ui_sign_crimson.active = 1;
         *(game_state_vec2_t *)&ui_element_slot_13.pos =
             game_state_vec2_t(-180.0f, 139.0f);
-        ui_sign_crimson.active = 1;
         ui_element_slot_14.active = 1;
         ui_element_slot_18_layout_b.active = 1;
         ui_element_slot_40.active = 1;
