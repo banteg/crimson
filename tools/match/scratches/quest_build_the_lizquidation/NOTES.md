@@ -8,6 +8,16 @@ trigger `wave * 8000 + 1500`. Wave four also emits one template `0x2b` alien
 at `(terrain_width + 128, terrain_width / 2)`, trigger 1500, count 2. The
 result contains 21 entries.
 
+## Current status (2026-09-04)
+
+Exact under canonical MSVC 6.5 `/O2 /GB /W3 /GR-`: 100%, 245/245
+weighted bytes, 79/79 instructions, full prefix 79, and `5/0/0` references.
+The metadata value and member-wise assignment recovery below supersede the
+historical compiler-residual classification. The earlier entries document
+previous candidates and do not establish a compiler limitation.
+
+## Initial recovery (historical)
+
 The candidate preserves the native base-plus-count record builder, integer to
 float coordinate conversions, 24-byte record stride, loop arithmetic, branch,
 and output count. VC6 6.5 `/O2 /G6` compiles to the same 79 instructions with
@@ -188,3 +198,28 @@ prefix seven, and `5/0/0` references. Removing the stale override therefore
 recovers 3.1012658227848 weighted bytes without an instruction, prefix, or
 reference tradeoff and restores the executable's provenance-backed default
 profile.
+
+## Metadata value publication recovery (2026-09-04)
+
+Native computes the first entry's trigger and count before selecting its
+record, but publishes the metadata after its position stores. The retained
+source previously called `set_spawn` before writing the position, conflating
+value construction with publication. Keeping those operations separate in
+an ordinary three-field metadata value recovers the missing source shape.
+Its explicit member-wise assignment operator publishes the three fields
+without the implicit aggregate-copy pointer bias. The entry remains 24 bytes,
+with metadata at offset 12 and the heading untouched. The ten paired waves,
+wave-four alien, and 21-entry result remain unchanged.
+
+`metadata-publication-mutations.json` records three complete source controls
+against the previous canonical 91.14% candidate. Implicit assignment reaches
+90.00% with 81 instructions; direct scalar publication reaches 97.47% with
+79 instructions and prefix 22; explicit member-wise assignment reaches
+100.00% with 79 instructions and prefix 79. All three retain `5/0/0`
+references. The exact candidate improves weighted bytes from
+223.2911392405063 to 245 without any metric or reference tradeoff.
+
+This establishes a source-level recovery under the existing compiler profile,
+not proof of the original class names or abstraction boundaries. The earlier
+claim that matching required artificial dependencies or register constraints
+was too strong: this candidate uses neither.
