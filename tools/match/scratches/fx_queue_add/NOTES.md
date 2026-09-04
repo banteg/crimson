@@ -108,3 +108,27 @@ profiles stamp product 48/49 build 9044, and those records are absent from
 alias disproven so the default corpus scan no longer reports this known
 source-shape lead as an actionable exact compiler candidate. The canonical
 build-9782 result remains 97.44%, 39/39 instructions, and `9/0/0` references.
+
+## Focused follow-up (2026-09-05)
+
+Six boolean/byte return and position/color class-copy forms were tested
+against 97.44%. All are byte-neutral with 39/39 instructions and 9/0/0
+references; none changes the count-publication interleave.
+
+The complete bounded matrix is recorded in
+`boolean-and-copy-owner-followup-mutations.json`. No source change is
+retained; this result bounds these specific hypotheses only.
+
+## Exact indexed queue publication (2026-09-05)
+
+The remaining count-publication schedule was a source ownership issue. All six
+fields now index the queue directly, and the final effect-id assignment advances
+the global count with a post-increment. This removes the manually scaled byte
+offset, cached destination pointer, and early local increment. VC6 recovers the
+native count publication between loading and storing the color alpha on its own.
+
+`indexed-final-field-publication-mutations.json` records seven complete controls.
+Both fully indexed forms (local and global count) reach 100%; partial indexing
+does not. Removing the unused declarations is byte-neutral. The retained clean
+global form matches all 39 instructions and has 10/0/0 references, superseding
+the earlier compiler-residual classification and its narrower publication probes.

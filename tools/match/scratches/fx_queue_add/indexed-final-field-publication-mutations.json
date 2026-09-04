@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "indexed-final-field-publication",
+      "find": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n",
+      "replacements": [
+        {
+          "name": "global-metadata",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    fx_queue[fx_queue_count].width = width;\n    fx_queue[fx_queue_count].height = height;\n    fx_queue[fx_queue_count].rotation = rotation;\n    fx_queue[fx_queue_count++].effect_id = effect_id;\n\n    if (fx_queue_count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "global-all",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    fx_queue[fx_queue_count].position = *pos;\n    fx_queue[fx_queue_count].color = *color;\n    fx_queue[fx_queue_count].width = width;\n    fx_queue[fx_queue_count].height = height;\n    fx_queue[fx_queue_count].rotation = rotation;\n    fx_queue[fx_queue_count++].effect_id = effect_id;\n\n    if (fx_queue_count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "global-last",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    fx_queue[fx_queue_count++].effect_id = effect_id;\n\n    if (fx_queue_count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "local-metadata",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    fx_queue[count].width = width;\n    fx_queue[count].height = height;\n    fx_queue[count].rotation = rotation;\n    fx_queue[count++].effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "local-all",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    fx_queue[count].position = *pos;\n    fx_queue[count].color = *color;\n    fx_queue[count].width = width;\n    fx_queue[count].height = height;\n    fx_queue[count].rotation = rotation;\n    fx_queue[count++].effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "local-last",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    fx_queue[count++].effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "clean-global-indexed",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    fx_queue[fx_queue_count].position = *pos;\n    fx_queue[fx_queue_count].color = *color;\n    fx_queue[fx_queue_count].width = width;\n    fx_queue[fx_queue_count].height = height;\n    fx_queue[fx_queue_count].rotation = rotation;\n    fx_queue[fx_queue_count++].effect_id = effect_id;\n\n    if (fx_queue_count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        }
+      ]
+    }
+  ]
+}

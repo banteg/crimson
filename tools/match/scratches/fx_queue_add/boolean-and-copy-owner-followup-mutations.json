@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "boolean-and-copy-owner-followup",
+      "find": "#include \"crimsonland_gameplay.h\"\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n",
+      "replacements": [
+        {
+          "name": "return_bool",
+          "text": "#define fx_queue_add fx_queue_add_pointer_abi\n#include \"crimsonland_gameplay.h\"\n#undef fx_queue_add\n\nextern \"C\" bool fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "return_char",
+          "text": "#define fx_queue_add fx_queue_add_pointer_abi\n#include \"crimsonland_gameplay.h\"\n#undef fx_queue_add\n\nextern \"C\" char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "return_signed_char",
+          "text": "#define fx_queue_add fx_queue_add_pointer_abi\n#include \"crimsonland_gameplay.h\"\n#undef fx_queue_add\n\nextern \"C\" signed char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "copy_position",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nstruct queue_vec { float x,y; };\nstruct queue_color { float r,g,b,a; };\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    *(queue_vec *)&entry->position = *(queue_vec *)pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "copy_color",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nstruct queue_vec { float x,y; };\nstruct queue_color { float r,g,b,a; };\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    *(queue_color *)&entry->color = *(queue_color *)color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        },
+        {
+          "name": "copy_both",
+          "text": "#include \"crimsonland_gameplay.h\"\n\nstruct queue_vec { float x,y; };\nstruct queue_color { float r,g,b,a; };\n\nextern \"C\" unsigned char fx_queue_add(\n    int effect_id,\n    vec2f_t *pos,\n    float width,\n    float height,\n    float rotation,\n    effect_color_t *color)\n{\n    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    *(queue_vec *)&entry->position = *(queue_vec *)pos;\n    *(queue_color *)&entry->color = *(queue_color *)color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n        fx_queue_count = 0x7f;\n        return 0;\n    }\n    return 1;\n}\n"
+        }
+      ]
+    }
+  ]
+}

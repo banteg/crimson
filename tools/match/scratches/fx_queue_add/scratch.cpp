@@ -8,20 +8,14 @@ extern "C" unsigned char fx_queue_add(
     float rotation,
     effect_color_t *color)
 {
-    int count = fx_queue_count;
-    int offset = count * sizeof(fx_queue_entry_t);
-    ++count;
-    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);
+    fx_queue[fx_queue_count].position = *pos;
+    fx_queue[fx_queue_count].color = *color;
+    fx_queue[fx_queue_count].width = width;
+    fx_queue[fx_queue_count].height = height;
+    fx_queue[fx_queue_count].rotation = rotation;
+    fx_queue[fx_queue_count++].effect_id = effect_id;
 
-    entry->position = *pos;
-    entry->color = *color;
-    entry->width = width;
-    entry->height = height;
-    entry->rotation = rotation;
-    entry->effect_id = effect_id;
-    fx_queue_count = count;
-
-    if (count >= 0x80) {
+    if (fx_queue_count >= 0x80) {
         fx_queue_count = 0x7f;
         return 0;
     }
