@@ -334,11 +334,7 @@ extern "C" void demo_purchase_screen_update(void)
             render_pass_mode = 0;
             demo_mode_start();
         }
-        if (demo_purchase_screen_active != 0) {
-            ui_elements_update_and_render();
-            ui_cursor_render();
-            return;
-        }
+
     } else {
         int message_index = demo_upsell_message_index;
         if (quest_spawn_timeline == 0) {
@@ -359,7 +355,9 @@ extern "C" void demo_purchase_screen_update(void)
         }
     }
 
-    demo_purchase_render_message(message, position_y, alpha);
+    if (demo_purchase_screen_active == 0) {
+        demo_purchase_render_message(message, position_y, alpha);
+    }
 
     ui_elements_update_and_render();
     ui_cursor_render();

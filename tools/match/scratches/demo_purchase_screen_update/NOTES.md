@@ -144,3 +144,16 @@ finds declaration, assignment, qualifier, and early-X-publication spellings
 byte-neutral. Reversing the final component publications loses **26.629230
 weighted bytes** and two references, confirming that the retained X-then-Y
 publication boundary is material rather than a name-only score accident.
+
+## Exact shared UI tail (2026-09-05)
+
+Sharing the UI update and cursor tail, and guarding message rendering with the
+live screen-active flag, recovers the native cold message branch and eliminates
+the duplicated cleanup path. The flag is checked after the active branch because
+starting the demo can change it. Existing purchase and dismissal returns retain
+their original behavior.
+
+`shared-ui-tail-mutations.json` records four source controls: the live global
+guard reaches 100% (691/691 instructions, 198/0/0 references, 2642 bytes); local
+flag variants and duplicated branch-local rendering do not. This supersedes the
+previous compiler-residual classification.
