@@ -73,10 +73,8 @@ extern "C" void quest_start_selected(int tier, int index)
     }
 
     int entry_count = quest_spawn_count;
-    int total_creatures;
-    int last_spawn_time_ms;
-    quest_spawn_total_creatures = total_creatures = 0;
-    quest_spawn_last_time_ms = last_spawn_time_ms = 0;
+    quest_spawn_total_creatures = 0;
+    quest_spawn_last_time_ms = 0;
     if (entry_count <= 0) {
         return;
     }
@@ -98,16 +96,13 @@ extern "C" void quest_start_selected(int tier, int index)
             }
         }
 
-        total_creatures += count_cursor[0];
+        quest_spawn_total_creatures += count_cursor[0];
         int trigger_time_ms = count_cursor[-1];
-        if (last_spawn_time_ms < trigger_time_ms) {
-            last_spawn_time_ms = trigger_time_ms;
+        if (quest_spawn_last_time_ms < trigger_time_ms) {
+            quest_spawn_last_time_ms = trigger_time_ms;
         }
 
         count_cursor += sizeof(quest_spawn_entry_t) / sizeof(int);
         --entries_left;
     } while (entries_left != 0);
-
-    quest_spawn_last_time_ms = last_spawn_time_ms;
-    quest_spawn_total_creatures = total_creatures;
 }

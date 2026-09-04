@@ -113,3 +113,22 @@ interaction retain 98.28%, 116/116 instructions, prefix 80, and `47/0/0`
 references; the non-neutral variants only regress. This closes loop-local
 lifetime interaction as a route to the two native store operands. Spec SHA-256:
 `3041715fe3f9259de5aac7fc90a8cdb2c6064a7663dcc583119aaaf8d8d701ef`.
+
+## Exact global aggregation ownership (2026-09-05)
+
+The earlier accumulator-residual conclusion is superseded. Updating
+`quest_spawn_total_creatures` and `quest_spawn_last_time_ms` directly inside
+the spawn-table pass recovers the native register ownership and initial zero
+stores. VC6 promotes both globals across the loop and publishes their final
+values once. The previously explicit local accumulators obscured that source
+relationship. No calls occur during the pass, and the count and trigger fields
+of the distinct spawn table cannot alias these globals. Empty tables retain
+both zero values; the hardcore count rules are unchanged.
+
+The retained source is **100% exact**, 116/116 instructions, full prefix 116,
+and references **49/0/0**, up from 98.2759%, prefix 80, and 47/0/0.
+`global-aggregation-ownership-mutations.json` records ten controls: each
+individual global replacement, both together, shared final-publication forms,
+and their original-game-owner counterparts. Both global accumulators together
+are exact with or without the aggregate owner; the simpler existing declarations
+are retained. No compiler flags, masks, or matching scope changed.
