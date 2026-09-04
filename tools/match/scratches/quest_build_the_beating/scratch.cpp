@@ -51,20 +51,19 @@ extern "C" void quest_build_the_beating(
     ++entry_count;
 
     int trigger_time_ms = 10000;
-    int x_offset = 64;
-    int remaining = 8;
+    int wave = 0;
     do {
-        x_offset += 32;
+        int x_offset = wave * 32 + 64;
+        trigger_time_ms = wave * 100 + 10000;
         spawns[entry_count].pos = quest_vec2_t(
-            (float)(terrain_texture_width + x_offset - 32),
+            (float)(terrain_texture_width + x_offset),
             (float)(terrain_texture_height / 2));
         spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count].count = 8;
         ++entry_count;
-        trigger_time_ms += 100;
-        --remaining;
-    } while (remaining != 0);
+        ++wave;
+    } while (wave < 8);
 
     spawns[entry_count].pos = quest_vec2_t(
         -32.0f,
@@ -76,8 +75,10 @@ extern "C" void quest_build_the_beating(
     ++entry_count;
 
     trigger_time_ms = 20000;
-    int x = -64;
+    wave = 0;
     do {
+        int x = -64 - wave * 32;
+        trigger_time_ms = 20000 + wave * 100;
         spawns[entry_count].pos = quest_vec2_t(
             (float)x,
             (float)(terrain_texture_height / 2));
@@ -85,13 +86,14 @@ extern "C" void quest_build_the_beating(
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count].count = 8;
         ++entry_count;
-        trigger_time_ms += 100;
-        x -= 32;
-    } while (x > -320);
+        ++wave;
+    } while (wave < 8);
 
-    int y = -64;
+    wave = 0;
     trigger_time_ms = 40000;
     do {
+        int y = -64 - wave * 42;
+        trigger_time_ms = 40000 + wave * 100;
         spawns[entry_count].pos = quest_vec2_t(
             (float)(terrain_texture_width / 2),
             (float)y);
@@ -99,9 +101,8 @@ extern "C" void quest_build_the_beating(
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count].count = 4;
         ++entry_count;
-        trigger_time_ms += 100;
-        y -= 42;
-    } while (y > -316);
+        ++wave;
+    } while (wave < 6);
 
     int y_offset = 0;
     trigger_time_ms = 40000;

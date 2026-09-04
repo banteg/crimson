@@ -1,5 +1,24 @@
 # `quest_build_the_beating`
 
+## Current result: exact (2026-09-04)
+
+The first three repeated phases now use a zero-based wave index to derive
+positions. The first phase also derives trigger time from that index. Canonical
+MSVC 6.5 `/O2 /GB /W3 /GR-` produces 100%, 649/649 weighted bytes,
+166/166 instructions, prefix 166, and `8/0/0` references, up from 95.78%.
+This removes the one-step-ahead X workaround and recovers both later phase-entry
+cursor/conversion schedules. Spawn positions, times, and phase lengths remain
+unchanged: eight right waves, eight left waves, and six ghost waves.
+
+`wave-induction-recovery-mutations.json` records nine controls. Ordinary X
+postincrement alone regresses; deriving the first phase's position and time
+reaches 98.80%. Recovering either later phase reaches 99.40%, and combining
+them reaches 100%. Deriving the later trigger times too is byte-neutral. The
+historical compiler-residual conclusion below did not account for this source
+induction structure and is superseded by the exact result.
+
+## Historical investigations
+
 Native target: `crimsonland.exe` at `0x00435610` (649 bytes).
 
 Live Binary Ninja evidence recovers 31 entries in seven phases:
