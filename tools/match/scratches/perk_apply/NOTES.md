@@ -194,3 +194,22 @@ dispatcher. VC6 coalesces it byte identically, preserving the same opening
 ordinary expression spelling, block locality, and a semantic parameter alias
 do not control the remaining register-color choice; the nested Bandage form
 is actively incompatible with the recovered callback-count allocation graph.
+
+## Configured-player loop ownership (2026-09-05)
+
+The previous EBP/EDI compiler-residual conclusion was too broad. Replacing the
+manual player-count cache and callback publications with direct configured-count
+loop conditions recovers the native allocation across the dispatcher. The
+Thick Skinned, Breathing Room, Ammo Maniac, Death Clock, and My Favourite Weapon
+walks are now ordinary indexed player loops. Bandage retains a health cursor,
+with its index and pointer advanced together after each effect callback. Direct
+configuration reads preserve callback-driven count changes; the compiler derives
+the native cached count and reloads itself.
+
+The 13 complete controls in `configured-player-loop-ownership-mutations.json`
+raise the result from 77.18% to 99.59%, retain 241/241 instructions, advance the
+prefix from 8 to 193, and improve clean reference alignment from 56 to 75.
+Only Bandage's initial cursor materialization remains scheduled before the
+count guard instead of after it. Nesting that guard explicitly reproduces the
+old register rotation. The cleaned source is byte-identical to both winning
+increment spellings; no register constraints or synthetic uses are present.

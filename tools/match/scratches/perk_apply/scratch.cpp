@@ -21,11 +21,8 @@ extern "C" void perk_apply(int perk_id)
 {
     float value;
     int i;
-    int player_count;
-    int count;
     int weapon_id;
     int experience;
-    int *weapon_cursor;
     float *cursor;
     creature_t *creature;
 
@@ -34,14 +31,12 @@ extern "C" void perk_apply(int perk_id)
 
     if (perk_id == perk_id_instant_winner) {
         player_state_table[0].experience += 2500;
-        player_count = config_player_count;
     } else if (perk_id == perk_id_fatal_lottery) {
         if ((crt_rand() & 1) == 0) {
             player_state_table[0].experience += 10000;
         } else {
             player_state_table[0].health = -1.0f;
         }
-        player_count = config_player_count;
     } else if (perk_id == perk_id_lifeline_50_50) {
         i = 0;
         creature = creature_pool;
@@ -58,33 +53,19 @@ extern "C" void perk_apply(int perk_id)
             ++creature;
             ++i;
         } while ((int)creature < (int)&creature_pool[384]);
-        player_count = config_player_count;
     } else if (perk_id == perk_id_thick_skinned) {
-        player_count = config_player_count;
-        if (player_count > 0) {
-            cursor = &player_state_table[0].health;
-            count = player_count;
-            do {
-                if (*cursor > 0.0f) {
-                    *cursor -= *cursor * 0.33333334f;
-                    if (*cursor <= 0.0f) {
-                        *cursor = 1.0f;
-                    }
+        for (i = 0; i < config_player_count; ++i) {
+            if (player_state_table[i].health > 0.0f) {
+                player_state_table[i].health -=
+                    player_state_table[i].health * 0.33333334f;
+                if (player_state_table[i].health <= 0.0f) {
+                    player_state_table[i].health = 1.0f;
                 }
-                cursor += sizeof(player_state_t) / sizeof(*cursor);
-                --count;
-            } while (count != 0);
+            }
         }
     } else if (perk_id == perk_id_breathing_room) {
-        player_count = config_player_count;
-        if (player_count > 0) {
-            cursor = &player_state_table[0].health;
-            count = player_count;
-            do {
-                *cursor -= *cursor * 0.6666667f;
-                cursor += sizeof(player_state_t) / sizeof(*cursor);
-                --count;
-            } while (count != 0);
+        for (i = 0; i < config_player_count; ++i) {
+            player_state_table[i].health -= player_state_table[i].health * 0.6666667f;
         }
 
         cursor = &creature_pool[0].lifecycle_stage;
@@ -111,7 +92,7 @@ extern "C" void perk_apply(int perk_id)
             } while (i < 100);
             weapon_assign_player(0, weapon_id);
         }
-        player_count = config_player_count;
+
     }
 
     if (perk_id == perk_id_infernal_contract) {
@@ -132,39 +113,26 @@ extern "C" void perk_apply(int perk_id)
     }
 
     if (perk_id == perk_id_ammo_maniac) {
-        i = 0;
-        if (player_count > 0) {
-            weapon_cursor = &player_state_table[0].weapon_id;
-            do {
-                weapon_assign_player(i, *weapon_cursor);
-                count = config_player_count;
-                ++i;
-                weapon_cursor += sizeof(player_state_t) / sizeof(*weapon_cursor);
-            } while (i < count);
-            player_count = count;
+        for (i = 0; i < config_player_count; ++i) {
+            weapon_assign_player(i, player_state_table[i].weapon_id);
+
         }
     }
 
     if (perk_id == perk_id_death_clock) {
         player_state_table[0].perk_counts[perk_id_greater_regeneration] = 0;
         player_state_table[0].perk_counts[perk_id_regeneration] = 0;
-        if (player_count > 0) {
-            cursor = &player_state_table[0].health;
-            count = player_count;
-            do {
-                if (*cursor > 0.0f) {
-                    *cursor = 100.0f;
-                }
-                cursor += sizeof(player_state_t) / sizeof(*cursor);
-                --count;
-            } while (count != 0);
+        for (i = 0; i < config_player_count; ++i) {
+            if (player_state_table[i].health > 0.0f) {
+                player_state_table[i].health = 100.0f;
+            }
         }
     }
 
-    if (perk_id == perk_id_bandage && player_count > 0) {
+    if (perk_id == perk_id_bandage) {
         cursor = &player_state_table[0].health;
-        i = 0;
-        do {
+        for (i = 0; i < config_player_count;
+             ++i, cursor += sizeof(player_state_t) / sizeof(*cursor)) {
             value = (float)(crt_rand() % 50) + 1.0f;
             value *= *cursor;
             *cursor = value;
@@ -176,19 +144,13 @@ extern "C" void perk_apply(int perk_id)
             effect_spawn_burst(
                 &player->position,
                 8);
-            player_count = config_player_count;
-            ++i;
-            cursor += sizeof(player_state_t) / sizeof(*cursor);
-        } while (i < player_count);
+        }
     }
 
-    if (perk_id == perk_id_my_favourite_weapon && player_count > 0) {
-        cursor = &player_state_table[0].clip_size;
-        do {
-            *cursor += 2.0f;
-            cursor += sizeof(player_state_t) / sizeof(*cursor);
-            --player_count;
-        } while (player_count != 0);
+    if (perk_id == perk_id_my_favourite_weapon) {
+        for (i = 0; i < config_player_count; ++i) {
+            player_state_table[i].clip_size += 2.0f;
+        }
     }
 
     if (perk_id == perk_id_plaguebearer) {
