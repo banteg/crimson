@@ -149,3 +149,23 @@ byte-identical to the canonical source at 99.67%, 307/307 instructions, prefix
 219, and `215/0/0` references. This closes the UI ownership hypothesis without
 changing the retained reset source. The complete one-variant spec SHA-256 is
 `1aacd4cd99d6c35760d897a287f4f5d9a4c440e9e74a23f192569b3cdbf5d178`.
+
+## Exact per-player auxiliary reset recovery (2026-09-04)
+
+The historical compiler-residual conclusion above is superseded. The two
+auxiliary timers belong to the same two players visited by the existing reset
+loop. Clearing `player_aux_timer[player_index]` inside that loop, alongside the
+move target and health/fire timers, restores the native interleaving of the
+zero stores with construction of the first move-target vector. The separate
+bulk `memset` had hidden this relationship from VC6.
+
+The retained source is **100% exact**, with 307/307 instructions, a full
+307-instruction prefix, and references **216/0/0**, up from 99.6743%, prefix
+219, and 215/0/0. Both player slots still receive positive floating-point zero;
+there are no intervening calls or reads of these fields in the reset loop.
+
+`player-auxiliary-reset-mutations.json` records six complete controls. Each of
+the four placements inside the player loop is exact; sharing one move-target
+vector outside the loop regresses to 98.6971%. The retained form places the
+auxiliary clear first in each iteration. No compiler flags, types, masks, or
+matching scope changed.

@@ -273,9 +273,9 @@ void gameplay_reset_state(void)
     perk_prompt_timer = 0;
     projectile_reset_pools();
     player_reset_all();
-    memset(player_aux_timer, 0, sizeof(player_aux_timer));
 
     for (int player_index = 0; player_index < 2; ++player_index) {
+        player_aux_timer[player_index] = 0.0f;
         player_state_t *player = &player_state_table[player_index];
         *(reset_vec2_t *)&player->move_target =
             reset_vec2_t(-1.0f, -1.0f);
