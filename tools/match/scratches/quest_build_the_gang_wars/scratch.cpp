@@ -56,9 +56,10 @@ extern "C" void quest_build_the_gang_wars(
     spawns[spawn_index].count = one;
     ++spawn_index;
 
-    int trigger_time_ms = 5500;
-    int waves_remaining = 10;
+    int trigger_time_ms;
+    int wave_index = 0;
     do {
+        trigger_time_ms = wave_index * 4000 + 5500;
         spawns[spawn_index].pos = quest_vec2_t(
             1174.0f,
             (float)terrain_texture_height * 0.5f);
@@ -67,8 +68,7 @@ extern "C" void quest_build_the_gang_wars(
         spawns[spawn_index].trigger_time_ms = trigger_time_ms;
         spawns[spawn_index].count = 2;
         ++spawn_index;
-        trigger_time_ms += 4000;
-    } while (--waves_remaining != 0);
+    } while (++wave_index < 10);
 
     spawns[12].pos = quest_vec2_t(512.0f, 1152.0f);
     spawns[12].template_id = SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13;

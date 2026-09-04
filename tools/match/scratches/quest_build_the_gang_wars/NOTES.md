@@ -1,5 +1,21 @@
 # `quest_build_the_gang_wars`
 
+## Current result: exact (2026-09-04)
+
+The first repeated wave uses a zero-based wave index, with trigger derived as
+`wave_index * 4000 + 5500`. Under canonical MSVC 6.5 `/O2 /GB /W3 /GR-`,
+this produces 100%, 92/92 instructions, prefix 92, and `8/0/0` references:
+424/424 weighted bytes, up from 419.3913043478261. The ten first-loop waves
+retain their trigger sequence and spawn records.
+
+`wave-induction-recovery-mutations.json` records three controls. Deriving time
+from the wave index matches exactly; deriving it from remaining waves regresses
+to 90.71%; deriving it from the entry index is neutral at 98.91%. This recovers
+the native cursor/trigger order through ordinary compiler strength reduction.
+The historical claim below that source recovery was exhausted was too strong.
+
+## Historical investigations
+
 Native target: `crimsonland.exe` at `0x00435120` (424 bytes).
 
 Live Binary Ninja evidence recovers 24 entries. Two opening template-`0x12`
