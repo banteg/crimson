@@ -104,3 +104,20 @@ The complete one-variant sweep regresses from 51 to 50 instructions and from
 `4/0/0`. VC6 coalesces a later count load without changing the underlying
 count/cursor register choice. No source change is retained. The spec SHA-256 is
 `607c71b0269e0e063863c66eb64eeec1fbbb2eff97c72d5e802313689e22e27e`.
+
+## Exact shared fallback recovery (2026-09-04)
+
+The earlier register-allocation residual conclusion is superseded. The three
+mode-specific scans now share their `return highscore_table_count` fallback,
+while each successful comparison still returns its index immediately. This
+ordinary `if` / `else if` / `else` structure recovers the native allocation
+throughout all three loops without changing their signed comparisons or
+negative/zero-count behavior. No table or count writes occur during the scans.
+
+The result is **100% exact**, 51/51 instructions, a full 51-instruction prefix,
+and references **10/0/0**, versus 58.8235%, prefix 4, and 4/0/0 previously.
+`shared-rank-fallback-mutations.json` records all nine control-flow variants.
+Sharing only the fallback is exact in both structured and labeled forms;
+sharing the successful-index return as well reaches only 88.2353%, and sharing
+only the successful return regresses. The structured fallback is retained.
+No register hints, compiler changes, reference masks, or scope changes are used.
