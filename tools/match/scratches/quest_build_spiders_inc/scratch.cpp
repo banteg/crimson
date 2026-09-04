@@ -72,13 +72,12 @@ extern "C" void quest_build_spiders_inc(
          ++step_count, trigger_time_ms += 6000) {
         quest_entry_original_t *wave_spawn =
             &builder.spawns[builder.count];
-        int wave_count = step_count / 2 + 3;
+        int wave_count =
+            wave_spawn->count = step_count / 2 + 3;
         wave_spawn->pos.y = (float)(terrain_texture_width + 64);
         wave_spawn->pos.x = (float)(terrain_texture_width / 2);
-        builder.spawns[builder.count].set_spawn(
-            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
-            trigger_time_ms,
-            wave_count);
+        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;
+        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;
         ++builder.count;
 
         quest_entry_original_t *second_wave_spawn =

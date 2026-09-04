@@ -145,3 +145,20 @@ Recorded spec SHA-256 values:
   and
 - `current-loop-publication-boundary-mutations.json`:
   `2d9ddb0e9b5cefdad063069265aa74a37fbcc366488faca35919fa5422568218`.
+
+## Shared paired-wave count recovery (2026-09-05)
+
+Publishing the first wave's count and caching that assigned value for its paired
+wave recovers the native `EBX` trigger / `EBP` count allocation and removes the
+extra half-step copy. Both records still receive `step_count / 2 + 3`; no
+intervening calls can observe the order of field initialization. The result
+improves from **89.0995% to 95.2381%**, 106 to **105/105 instructions**, and
+prefix 17 to **54**, while retaining all **8/0/0** references.
+
+The complete 20-variant `shared-wave-count-mutations.json` records the controls.
+The retained `first-field-cached` form has no metric or reference tradeoff. The
+96.1905% indexed-before-pointer form loses one aligned reference and is rejected.
+The remaining native difference is confined to the first loop record: native
+computes the count before constructing its pointer but publishes the count
+after the coordinates and other metadata. Historical claims that the register
+swap and extra instruction were unavoidable are superseded by this recovery.
