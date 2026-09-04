@@ -20,12 +20,36 @@ while reloading and dividing by the global count twice. The four edge entries
 recompute the signed integer width midpoint for every coordinate and use
 `width + 64` and -64 as the outer bounds. Heading is left untouched throughout.
 
-The candidate reproduces the exact 182-instruction body, the complete prologue
-and hardcore restore paths, and all 26 audited references, scoring 98.35% with
-a 120-instruction exact prefix. Separate indexed record expressions recover the
-native x87/store schedule throughout all three phases. The only residual is the
-middle wave's loop comparison: native and candidate compute the same two values
-in the same order but exchange EAX and EBP for three instructions.
+The candidate now matches all 182 instructions and all 26 audited references
+exactly under the canonical MSVC 6.5 `/O2 /GB /W3 /GR-` profile. Separate
+indexed record expressions recover the native x87/store schedule throughout
+all three phases. The edge waves use a zero-based wave index, with spawn count
+`wave_index + 2` and trigger time `wave_index * 5500 + 4000`.
+
+## Wave-induction recovery (2026-09-04)
+
+The former compiler-residual conclusion below was incorrect. The three
+register differences came from treating the compiler's strength-reduced spawn
+count as the source loop counter. Native uses that value to publish counts,
+but subtracts two again for the wave-bound comparison. Reconstructing a
+zero-based wave index recovers the comparison's register allocation.
+
+Deriving the count alone reaches 99.45%, but swaps the count/time initializers
+at the loop entrance and shortens the exact prefix. Deriving the trigger time
+alone regresses to 97.80%. Deriving both from the same wave index produces the
+exact native body: VC6 strength-reduces the time expression back to an initial
+4000 and a per-wave 5500 increment, and the count expression back to an initial
+2 and a per-wave increment. No compiler override or register constraint is
+needed.
+
+`wave-derived-values-mutations.json` records all three controls against the
+98.35% baseline. The combined reconstruction reaches 100%, extends the exact
+prefix from 120 to 182 instructions, preserves the 182-instruction extent,
+and keeps references at `26/0/0`. It preserves each wave's four positions,
+template, count, trigger, and the hardcore player-count adjustment.
+
+The following sections document historical attempts, not an exhaustion claim
+for the recovered source.
 
 ## Recovery classification audit
 

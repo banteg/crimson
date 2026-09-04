@@ -65,9 +65,9 @@ extern "C" void quest_build_gauntlet(
     }
 
     if (config_blob.player_count + 9 > 0) {
-        int spawn_count = 2;
-        int trigger_time_ms = 4000;
+        int wave_index = 0;
         do {
+            int trigger_time_ms = wave_index * 5500 + 4000;
             spawns[entry_count].pos.x =
                 (float)(terrain_texture_width + 64);
             spawns[entry_count].pos.y =
@@ -75,7 +75,7 @@ extern "C" void quest_build_gauntlet(
             spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
-                spawn_count);
+                wave_index + 2);
             ++entry_count;
 
             spawns[entry_count].pos.x = -64.0f;
@@ -84,7 +84,7 @@ extern "C" void quest_build_gauntlet(
             spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
-                spawn_count);
+                wave_index + 2);
             ++entry_count;
 
             spawns[entry_count].pos.x =
@@ -94,7 +94,7 @@ extern "C" void quest_build_gauntlet(
             spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
-                spawn_count);
+                wave_index + 2);
             ++entry_count;
 
             spawns[entry_count].pos.x =
@@ -103,12 +103,11 @@ extern "C" void quest_build_gauntlet(
             spawns[entry_count].set_spawn(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms,
-                spawn_count);
+                wave_index + 2);
             ++entry_count;
 
-            trigger_time_ms += 5500;
-            ++spawn_count;
-        } while (spawn_count - 2 < config_blob.player_count + 9);
+            ++wave_index;
+        } while (wave_index < config_blob.player_count + 9);
     }
 
     int ring_index = 0;
