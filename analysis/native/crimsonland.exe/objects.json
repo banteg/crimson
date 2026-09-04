@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "7b035cef08b6d20145a9bb8ab63771d600fe528f980cfc668f899977eedd01bf",
+  "audit_digest": "5ca468eec602b1c48687721d17c93716c4eb6bf3dfd9a134eee05e5637cc371c",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -61684,7 +61684,7 @@
             "masked_ok": 8,
             "masked_unresolved": 0,
             "prefix_instructions": 39,
-            "ratio": 0.9518072289156626,
+            "ratio": 0.9578313253012049,
             "state": "wip",
             "target_instructions": 166
           },
@@ -61698,7 +61698,7 @@
         "masked_ok": 8,
         "masked_unresolved": 0,
         "prefix_instructions": 39,
-        "ratio": 0.9518072289156626,
+        "ratio": 0.9578313253012049,
         "state": "wip",
         "target_instructions": 166
       },
@@ -63126,12 +63126,12 @@
         {
           "path": "tools/match/scratches/quest_build_gauntlet/scratch.cpp",
           "repository_relative": true,
-          "sha256": "ba4ac9d72f3b40cb7690ace9060c9919c21ad3d0d6f7002ba5e8bb38b6f5d717"
+          "sha256": "c15df0e59f139c40450213a26015f4796e20f2fa171d10df60a037184ecd79aa"
         },
         {
           "path": "tools/match/scratches/quest_build_gauntlet/scratch.conf",
           "repository_relative": true,
-          "sha256": "50469d6eb716eab516a806c9887b4f1e9a3b9684c94b364b2c63d83dc4e3bba7"
+          "sha256": "1cde6283f4cdd92d0d08379780b97665065373660685a5ebedaed0a325f1a37c"
         },
         {
           "path": "tools/match/cl.sh",
@@ -63171,7 +63171,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_gauntlet/scratch.conf",
-      "config_sha256": "50469d6eb716eab516a806c9887b4f1e9a3b9684c94b364b2c63d83dc4e3bba7",
+      "config_sha256": "1cde6283f4cdd92d0d08379780b97665065373660685a5ebedaed0a325f1a37c",
       "effective_end": 4418566,
       "end": 4418566,
       "function": "quest_build_gauntlet",
@@ -63179,10 +63179,10 @@
         {
           "address": 4417952,
           "canonical_config": "tools/match/scratches/quest_build_gauntlet/scratch.conf",
-          "canonical_config_sha256": "50469d6eb716eab516a806c9887b4f1e9a3b9684c94b364b2c63d83dc4e3bba7",
+          "canonical_config_sha256": "1cde6283f4cdd92d0d08379780b97665065373660685a5ebedaed0a325f1a37c",
           "canonical_scratch": "tools/match/scratches/quest_build_gauntlet",
           "canonical_source": "tools/match/scratches/quest_build_gauntlet/scratch.cpp",
-          "canonical_source_sha256": "ba4ac9d72f3b40cb7690ace9060c9919c21ad3d0d6f7002ba5e8bb38b6f5d717",
+          "canonical_source_sha256": "c15df0e59f139c40450213a26015f4796e20f2fa171d10df60a037184ecd79aa",
           "effective_end": 4418566,
           "end": 4418566,
           "function": "quest_build_gauntlet",
@@ -63191,9 +63191,9 @@
             "masked_mismatches": 0,
             "masked_ok": 26,
             "masked_unresolved": 0,
-            "prefix_instructions": 120,
-            "ratio": 0.9835164835164835,
-            "state": "wip",
+            "prefix_instructions": 182,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 182
           },
           "object_function_symbol": "_quest_build_gauntlet",
@@ -63205,17 +63205,17 @@
         "masked_mismatches": 0,
         "masked_ok": 26,
         "masked_unresolved": 0,
-        "prefix_instructions": 120,
-        "ratio": 0.9835164835164835,
-        "state": "wip",
+        "prefix_instructions": 182,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 182
       },
       "object": "tools/match/scratches/quest_build_gauntlet/build/msvc6.5/115baeebc1cd1b7e/scratch.obj",
       "object_function_symbol": "_quest_build_gauntlet",
-      "object_sha256": "5e3439cc654d8b64355f7549d175bbe78581963e1e6944049e00b31d15f155f5",
+      "object_sha256": "c90c1af8f168d486b1ec4c9f7c29c8daf5fd3bce2f5b5c281907b9d6bec7bd03",
       "scratch": "tools/match/scratches/quest_build_gauntlet",
       "source": "tools/match/scratches/quest_build_gauntlet/scratch.cpp",
-      "source_sha256": "ba4ac9d72f3b40cb7690ace9060c9919c21ad3d0d6f7002ba5e8bb38b6f5d717",
+      "source_sha256": "c15df0e59f139c40450213a26015f4796e20f2fa171d10df60a037184ecd79aa",
       "target_size": 614,
       "translation_unit": {
         "kind": "isolated",
@@ -64634,12 +64634,12 @@
         {
           "path": "tools/match/scratches/quest_build_the_lizquidation/scratch.cpp",
           "repository_relative": true,
-          "sha256": "32d4b058847212f25f56234c5cfe46d98f52d3f4f93d2ea753cb2553cab981ce"
+          "sha256": "4efb91fe1ca372c754da77306f365441b37ab9cc53faae5a07e7b963b6deba6b"
         },
         {
           "path": "tools/match/scratches/quest_build_the_lizquidation/scratch.conf",
           "repository_relative": true,
-          "sha256": "37838e4319164c2794d425892478e28fa1e6c280f39065813c63b60eb4919e01"
+          "sha256": "f0f7ddbd4f4fd18e8b1eacd0ed5398dbe206dfde2369a60f4a53cfa3d359bf37"
         },
         {
           "path": "tools/match/cl.sh",
@@ -64669,7 +64669,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_build_the_lizquidation/scratch.conf",
-      "config_sha256": "37838e4319164c2794d425892478e28fa1e6c280f39065813c63b60eb4919e01",
+      "config_sha256": "f0f7ddbd4f4fd18e8b1eacd0ed5398dbe206dfde2369a60f4a53cfa3d359bf37",
       "effective_end": 4423013,
       "end": 4423013,
       "function": "quest_build_the_lizquidation",
@@ -64677,10 +64677,10 @@
         {
           "address": 4422768,
           "canonical_config": "tools/match/scratches/quest_build_the_lizquidation/scratch.conf",
-          "canonical_config_sha256": "37838e4319164c2794d425892478e28fa1e6c280f39065813c63b60eb4919e01",
+          "canonical_config_sha256": "f0f7ddbd4f4fd18e8b1eacd0ed5398dbe206dfde2369a60f4a53cfa3d359bf37",
           "canonical_scratch": "tools/match/scratches/quest_build_the_lizquidation",
           "canonical_source": "tools/match/scratches/quest_build_the_lizquidation/scratch.cpp",
-          "canonical_source_sha256": "32d4b058847212f25f56234c5cfe46d98f52d3f4f93d2ea753cb2553cab981ce",
+          "canonical_source_sha256": "4efb91fe1ca372c754da77306f365441b37ab9cc53faae5a07e7b963b6deba6b",
           "effective_end": 4423013,
           "end": 4423013,
           "function": "quest_build_the_lizquidation",
@@ -64689,9 +64689,9 @@
             "masked_mismatches": 0,
             "masked_ok": 5,
             "masked_unresolved": 0,
-            "prefix_instructions": 7,
-            "ratio": 0.9113924050632911,
-            "state": "wip",
+            "prefix_instructions": 79,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 79
           },
           "object_function_symbol": "_quest_build_the_lizquidation",
@@ -64703,17 +64703,17 @@
         "masked_mismatches": 0,
         "masked_ok": 5,
         "masked_unresolved": 0,
-        "prefix_instructions": 7,
-        "ratio": 0.9113924050632911,
-        "state": "wip",
+        "prefix_instructions": 79,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 79
       },
       "object": "tools/match/scratches/quest_build_the_lizquidation/build/msvc6.5/60103a357171fa77/scratch.obj",
       "object_function_symbol": "_quest_build_the_lizquidation",
-      "object_sha256": "8e9f1d6fd5cfb621fff2e65cfda3327f9efc6d73ac1f9a5e8f217b6516f334f3",
+      "object_sha256": "8c636fec73fc09420039992ed4982c9fba94a12ca2ea48698b128dadaf7b05ee",
       "scratch": "tools/match/scratches/quest_build_the_lizquidation",
       "source": "tools/match/scratches/quest_build_the_lizquidation/scratch.cpp",
-      "source_sha256": "32d4b058847212f25f56234c5cfe46d98f52d3f4f93d2ea753cb2553cab981ce",
+      "source_sha256": "4efb91fe1ca372c754da77306f365441b37ab9cc53faae5a07e7b963b6deba6b",
       "target_size": 245,
       "translation_unit": {
         "kind": "isolated",
@@ -86278,8 +86278,8 @@
             "masked_mismatches": 0,
             "masked_ok": 528,
             "masked_unresolved": 0,
-            "prefix_instructions": 370,
-            "ratio": 0.9392226148409893,
+            "prefix_instructions": 467,
+            "ratio": 0.9519434628975265,
             "state": "wip",
             "target_instructions": 1422
           },
@@ -86292,8 +86292,8 @@
         "masked_mismatches": 0,
         "masked_ok": 528,
         "masked_unresolved": 0,
-        "prefix_instructions": 370,
-        "ratio": 0.9392226148409893,
+        "prefix_instructions": 467,
+        "ratio": 0.9519434628975265,
         "state": "wip",
         "target_instructions": 1422
       },
@@ -87018,8 +87018,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 612,
-    "wip": 59
+    "match": 614,
+    "wip": 57
   },
   "translation_units": {
     "cluster_count": 3,
