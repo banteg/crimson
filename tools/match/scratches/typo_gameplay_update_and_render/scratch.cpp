@@ -255,10 +255,12 @@ extern "C" void typo_gameplay_update_and_render(void)
     grim_interface_ptr->grim_set_config_var(0x15, (unsigned int)2);
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
 
-    panel_position.y += 1.0f;
+    typo_vec2_t text_position;
+    text_position.x = 6.0f;
+    text_position.y = panel_position.y + 1.0f;
     grim_interface_ptr->grim_draw_text_small_fmt(
-        6.0f,
-        panel_position.y,
+        text_position.x,
+        text_position.y,
         console_prompt_format,
         typo_input_buffer);
 
@@ -271,7 +273,7 @@ extern "C" void typo_gameplay_update_and_render(void)
     grim_interface_ptr->grim_draw_text_small_fmt(
         (float)grim_interface_ptr->grim_measure_text_width(typo_input_buffer)
             + 14.0f,
-        panel_position.y,
+        text_position.y,
         console_caret_string);
 
     highscore_active_record.shots_hit = typo_match_count;

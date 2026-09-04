@@ -128,3 +128,23 @@ prefix-33, `194/0/0` baseline. The remaining panel/spawn slot permutation is
 not hidden in either authenticated type distinction, so the current source is
 retained. The spec SHA-256 is
 `5f0706e3b25d87ed8107e2a7b7ccda10eb715affd8187d402c9dd92c2d8b1aa8`.
+
+## Exact prompt-coordinate lifetime recovery (2026-09-05)
+
+Current result: **100%**, 508/508 instructions, full prefix, and references
+**194 resolved / 0 unresolved / 0 mismatched**. The earlier exhausted-slot
+conclusions are superseded by the two prompt-position mutation matrices.
+
+The panel's framebuffer anchor remains unchanged through rendering. A separate
+`text_position` owns the prompt and caret coordinates: x is initialized to six
+and y to the panel's y plus one. Both text calls consume that object. This
+ordinary UI ownership distinction gives VC6 the native long-lived panel and
+short-lived spawn slots, removing all eight instruction mismatches.
+
+The initial six-form lifetime matrix found an exact whole-vector copy, but that
+form would read the unused, uninitialized panel x member and is not retained.
+The three-form initialization matrix instead checks fully defined prompt
+coordinates. Explicit component initialization is exact; the two constructor
+forms reach 99.80% with one remaining store-order difference. The retained source
+initializes every copied or consumed member, with no artificial layout owner,
+unused padding object, or compiler override.
