@@ -221,3 +221,24 @@ The current source remains `844.2275/975` weighted bytes (`86.59%`), 298/291
 instructions, prefix 40, and `0/0/0` references. Batch ownership, aggregate
 shape, direct publication, and interior-cursor hypotheses are now current and
 bounded; the repeated folded-displacement choice remains compiler residual.
+
+## Exact per-record wave publication (2026-09-05)
+
+Current result: **100%**, 291/291 instructions, full prefix, and no unresolved
+or mismatched references. This function has no masked external references.
+The previous 86.59% compiler-residual result is superseded by
+`per-record-count-and-metadata-mutations.json`.
+
+The seven later perimeter loops now index the current `entry_count` directly
+and advance it when each entry's count field is published. VC6 folds the known
+ten-entry advances into the loop setup itself. Replacing the earlier manually
+reserved count and separate indexed base removes all seven extra pointer-offset
+instructions. Moving the count advance to the completed record improves the
+result further to 92.44%.
+
+Publishing template and trigger fields directly in the four two-field-helper
+loops restores the native metadata order and completes the match. The unused
+helper and seven obsolete cursor assignments are removed; the cleanup is also
+exact. The eight recorded controls isolate those steps. All eight ten-entry
+perimeters, alternating templates, signed coordinate division, trigger cadence,
+central entry, and final count of 81 are preserved.
