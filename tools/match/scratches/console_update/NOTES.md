@@ -108,3 +108,21 @@ Ordinary neighboring function order and same-translation-unit optimizer context
 therefore do not reproduce the native paired `ESI`/`EDI` shrink-wrap region.
 The probe is retained as a reproducible negative bound; canonical source remains
 unchanged.
+
+## Exact shared Enter-poll recovery (2026-09-05)
+
+Current result: **100%**, 296/296 instructions, full prefix, and references
+**65 resolved / 0 unresolved / 0 mismatched**. The earlier register-save
+compiler-residual conclusions are superseded by `shared-enter-poll-mutations.json`.
+
+The submitted-line and non-submission paths now share their final Enter-key
+poll. The submission body clears input; the alternate body still calls the
+observed input-buffer accessor. Both then reach one poll and the function's
+normal return. Removing the duplicated poll and early return gives VC6 the
+native delayed ESI/EDI saves and keeps both saved registers through submission,
+removing the extra instruction and all downstream differences.
+
+The complete seven-variant matrix records this recovery alongside cursor-length
+and completion-buffer consumer controls. Only the shared-poll source matches;
+no call is removed from either runtime path, and no artificial register lifetime
+or compiler setting is introduced.

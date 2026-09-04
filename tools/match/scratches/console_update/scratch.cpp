@@ -108,11 +108,9 @@ void console_queue_t::update(void)
                 &console_log_queue, "> %s\n", console_input_buffer());
             exec_line(console_input_buffer());
             console_input_clear();
-            grim_interface_ptr->grim_was_key_pressed(0x1c);
-            return;
+        } else {
+            console_input_buffer();
         }
-
-        console_input_buffer();
         grim_interface_ptr->grim_was_key_pressed(0x1c);
     } else {
         console_open_anim_t += frame_dt_copy * 3.5f;
