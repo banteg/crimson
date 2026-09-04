@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**753/810** functions matched exactly (**93.0%**), **168289/341992** code bytes (**49.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**759/810** functions matched exactly (**93.7%**), **172152/341992** code bytes (**50.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **309791/341992** code bytes (**90.6%**).
+Fuzzy-weighted alignment is **309959/341992** code bytes (**90.6%**).
 
-Remaining exact-match debt is **57 functions**, **173703 code bytes**, and **32201 fuzzy-gap bytes**.
+Remaining exact-match debt is **51 functions**, **169840 code bytes**, and **32033 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -28,9 +28,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**57** non-exact scratch-backed functions hold **32201 fuzzy-gap bytes**. The top 5 hold **63.6%** of that gap; the top 10 hold **80.6%**.
+**51** non-exact scratch-backed functions hold **32033 fuzzy-gap bytes**. The top 5 hold **63.9%** of that gap; the top 10 hold **81.0%**.
 
-Current-baseline experiments cover **26 functions / 5148 gap bytes**; **31 / 27053** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **23 functions / 5040 gap bytes**; **28 / 26992** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -69,30 +69,24 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 31 | crimsonland.exe | creature_apply_damage | 98 | semantic-complete | compiler | historical-only | 0/5 | 0 | historical-only |
 | 32 | crimsonland.exe | console_update | 90 | semantic-complete | compiler | historical-only | 0/4 | 0 | historical-only |
 | 33 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-inconclusive | 7/15 | 0 | repeated-variants,repeated-specs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 34 | crimsonland.exe | highscore_rank_index | 55 | semantic-complete | compiler | current-stalled | 3/8 | 3 | stalled,variant-errors |
-| 35 | crimsonland.exe | sfx_update_mute_fades | 51 | semantic-complete | compiler | current-active | 1/4 | 1 | repeated-variants,repeated-specs |
-| 36 | crimsonland.exe | player_reset_all | 48 | semantic-complete | compiler,references | current-active | 2/10 | 2 | repeated-variants,variant-errors |
-| 37 | crimsonland.exe | quest_build_nagolipoli | 46 | semantic-complete | compiler | current-active | 2/18 | 1 | repeated-variants,repeated-specs,variant-errors |
-| 38 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | historical-only | 0/19 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 39 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 4/12 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 40 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | current-active | 2/18 | 2 | repeated-variants,repeated-specs,variant-errors |
-| 41 | crimsonland.exe | quest_build_spiders_inc | 38 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-variants,repeated-specs,variant-errors,historical-only |
-| 42 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
-| 43 | crimsonland.exe | typo_gameplay_update_and_render | 33 | semantic-complete | compiler | historical-only | 0/4 | 0 | variant-errors,historical-only |
-| 44 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
-| 45 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 1/13 | 0 | metric-tradeoffs |
-| 46 | crimsonland.exe | quest_build_the_beating | 27 | semantic-complete | compiler | historical-only | 0/16 | 0 | repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 47 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | current-stalled | 6/25 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-probe-errors |
-| 48 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | historical-only | 0/15 | 0 | repeated-variants,variant-errors,historical-only |
-| 49 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | historical-only | 0/30 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 50 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-active | 2/10 | 2 | variant-errors |
-| 51 | crimsonland.exe | quest_start_selected | 7 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-variants,metric-tradeoffs,historical-only |
-| 52 | crimsonland.exe | gameplay_reset_state | 5 | semantic-complete | compiler | current-active | 1/13 | 1 | repeated-variants,variant-errors |
-| 53 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | current-stalled | 5/11 | 3 | repeated-variants,stalled |
-| 54 | crimsonland.exe | quest_build_the_gang_wars | 5 | semantic-complete | compiler | historical-only | 0/11 | 0 | historical-only |
-| 55 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 4/29 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
-| 56 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | historical-only | 0/23 | 0 | metric-tradeoffs,historical-only |
-| 57 | crimsonland.exe | fx_queue_add | 4 | semantic-complete | compiler | current-active | 1/6 | 1 | repeated-variants,variant-errors |
+| 34 | crimsonland.exe | sfx_update_mute_fades | 51 | semantic-complete | compiler | current-active | 1/4 | 1 | repeated-variants,repeated-specs |
+| 35 | crimsonland.exe | quest_build_nagolipoli | 46 | semantic-complete | compiler | current-active | 2/18 | 1 | repeated-variants,repeated-specs,variant-errors |
+| 36 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | historical-only | 0/19 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
+| 37 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 4/12 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 38 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | current-active | 2/18 | 2 | repeated-variants,repeated-specs,variant-errors |
+| 39 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
+| 40 | crimsonland.exe | typo_gameplay_update_and_render | 33 | semantic-complete | compiler | historical-only | 0/4 | 0 | variant-errors,historical-only |
+| 41 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/5 | 0 | variant-errors,historical-only |
+| 42 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 1/13 | 0 | metric-tradeoffs |
+| 43 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | current-stalled | 6/25 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-probe-errors |
+| 44 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | historical-only | 0/17 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 45 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | historical-only | 0/15 | 0 | repeated-variants,variant-errors,historical-only |
+| 46 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | historical-only | 0/30 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 47 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-active | 2/10 | 2 | variant-errors |
+| 48 | crimsonland.exe | quest_build_alien_squads | 5 | semantic-complete | compiler | current-stalled | 5/11 | 3 | repeated-variants,stalled |
+| 49 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 4/29 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
+| 50 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | historical-only | 0/23 | 0 | metric-tradeoffs,historical-only |
+| 51 | crimsonland.exe | fx_queue_add | 4 | semantic-complete | compiler | current-active | 1/6 | 1 | repeated-variants,variant-errors |
 
 ## Function dispositions
 
@@ -162,12 +156,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 614/671 | 147124/320827 | 45.9% | 288626/320827 | 90.0% | 671/671 | 320827/320827 | 100.0% | 614/671 |
+| crimsonland.exe | 620/671 | 150987/320827 | 47.1% | 288794/320827 | 90.0% | 671/671 | 320827/320827 | 100.0% | 620/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**614/671** functions (**91.5%**), **147124/320827** bytes (**45.9%**), **288626/320827** fuzzy-weighted bytes (**90.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **614/671** scratches verified.
+**620/671** functions (**92.4%**), **150987/320827** bytes (**47.1%**), **288794/320827** fuzzy-weighted bytes (**90.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **620/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -381,7 +375,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | play_time_load | 0x00412a10 | 101 | 101/101 | 0 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-play-time-registry-load |
 | match | game_save_status | 0x00412a80 | 399 | 399/399 | 0 | 123/123 | 100.00% | 123/123 | 36/0/0 |  | game-status-save-transform |
 | match | game_load_status | 0x00412c10 | 420 | 420/420 | 0 | 134/134 | 100.00% | 134/134 | 43/0/0 |  | game-status-load-transform |
-| wip | gameplay_reset_state | 0x00412dc0 | 1639 | 1634/1639 | 5 | 307/307 | 99.67% | 219/307 | 215/0/0 |  | gameplay-session-state-reset |
+| match | gameplay_reset_state | 0x00412dc0 | 1639 | 1639/1639 | 0 | 307/307 | 100.00% | 307/307 | 216/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
 | wip | player_update | 0x004136b0 | 16257 | 10408/16257 | 5849 | 4066/4206 | 64.02% | 7/4206 | 805/0/2 |  | core-player-simulation |
@@ -499,7 +493,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | bonus_try_spawn_on_kill | 0x0041f8d0 | 730 | 730/730 | 0 | 207/207 | 100.00% | 207/207 | 47/0/0 |  | gameplay-bonus-drop |
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 175/175 | 0 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 19/19 | 0 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
-| wip | player_reset_all | 0x0041fc80 | 584 | 536/584 | 48 | 130/127 | 91.83% | 94/127 | 57/0/1 | msvc6.5 /O2 /GB /W3 /GR- /TP | gameplay-player-reset |
+| match | player_reset_all | 0x0041fc80 | 584 | 584/584 | 0 | 127/127 | 100.00% | 127/127 | 61/0/0 | msvc6.5 /O2 /GB /W3 /GR- /TP | gameplay-player-reset |
 | match | effect_uv_tables_init | 0x0041fed0 | 356 | 356/356 | 0 | 109/109 | 100.00% | 109/109 | 15/0/0 |  | gameplay-effect-atlas-uv-init |
 | match | creature_find_nearest | 0x00420040 | 225 | 225/225 | 0 | 89/89 | 100.00% | 89/89 | 5/0/0 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 264/264 | 0 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
@@ -593,10 +587,10 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | quest_build_the_gathering | 0x004349c0 | 725 | 725/725 | 0 | 134/134 | 100.00% | 134/134 | 0/0/0 |  | quest-the-gathering-append-publication |
 | match | quest_build_army_of_three | 0x00434ca0 | 608 | 608/608 | 0 | 116/116 | 100.00% | 116/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |
 | match | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 541/541 | 0 | 141/141 | 100.00% | 141/141 | 18/0/0 |  | quest-knee-deep-persistent-position-shifted-base |
-| wip | quest_build_the_gang_wars | 0x00435120 | 424 | 419/424 | 5 | 92/92 | 98.91% | 33/92 | 8/0/0 |  | quest-gang-wars-append-prefix |
+| match | quest_build_the_gang_wars | 0x00435120 | 424 | 424/424 | 0 | 92/92 | 100.00% | 92/92 | 8/0/0 |  | quest-gang-wars-append-prefix |
 | match | quest_build_the_fortress | 0x004352d0 | 429 | 429/429 | 0 | 102/102 | 100.00% | 102/102 | 8/0/0 |  | quest-fortress-field-cursor-grid |
 | match | quest_build_cross_fire | 0x00435480 | 390 | 390/390 | 0 | 76/76 | 100.00% | 76/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
-| wip | quest_build_the_beating | 0x00435610 | 649 | 622/649 | 27 | 166/166 | 95.78% | 39/166 | 8/0/0 |  | quest-the-beating-first-wave-publication |
+| match | quest_build_the_beating | 0x00435610 | 649 | 649/649 | 0 | 166/166 | 100.00% | 166/166 | 8/0/0 |  | quest-the-beating-first-wave-publication |
 | match | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 391/391 | 0 | 94/94 | 100.00% | 94/94 | 5/0/0 |  | quest-spanking-of-the-dead-staged-tail |
 | match | quest_build_hidden_evil | 0x00435a30 | 407 | 407/407 | 0 | 101/101 | 100.00% | 101/101 | 10/0/0 |  | quest-hidden-evil-append-count |
 | match | quest_build_land_hostile | 0x00435bd0 | 239 | 239/239 | 0 | 53/53 | 100.00% | 53/53 | 2/0/0 |  | quest-land-hostile-append-helper-boundary |
@@ -637,9 +631,9 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 242/242 | 0 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
 | wip | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 844/975 | 131 | 298/291 | 86.59% | 40/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
 | match | quest_build_the_end_of_all | 0x00438e10 | 692 | 692/692 | 0 | 174/174 | 100.00% | 174/174 | 18/0/0 |  | quest-the-end-of-all-append-count |
-| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 308/346 | 38 | 106/105 | 89.10% | 17/105 | 8/0/0 |  | quest-spiders-inc-staged-publication |
+| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 330/346 | 16 | 105/105 | 95.24% | 54/105 | 8/0/0 |  | quest-spiders-inc-staged-publication |
 | match | quest_database_init | 0x00439230 | 5466 | 5466/5466 | 0 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |
-| wip | quest_start_selected | 0x0043a790 | 434 | 427/434 | 7 | 116/116 | 98.28% | 80/116 | 47/0/0 |  | quest-start-state-and-spawn-table |
+| match | quest_start_selected | 0x0043a790 | 434 | 434/434 | 0 | 116/116 | 100.00% | 116/116 | 49/0/0 |  | quest-start-state-and-spawn-table |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 262/262 | 0 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 38/38 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 113/113 | 0 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
@@ -654,7 +648,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | highscore_load_table | 0x0043afa0 | 1198 | 1198/1198 | 0 | 354/354 | 100.00% | 354/354 | 59/0/0 |  | highscore-table-load-filter-sort |
 | match | highscore_save_record | 0x0043b450 | 182 | 182/182 | 0 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
 | match | highscore_save_active | 0x0043b510 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
-| wip | highscore_rank_index | 0x0043b520 | 133 | 78/133 | 55 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
+| match | highscore_rank_index | 0x0043b520 | 133 | 133/133 | 0 | 51/51 | 100.00% | 51/51 | 10/0/0 |  | highscore-rank-lookup |
 | match | highscore_build_path | 0x0043b5b0 | 402 | 402/402 | 0 | 104/104 | 100.00% | 104/104 | 54/0/0 | msvc6.5 /O2 /GB /W3 /GR- /TP | highscore-mode-path-builder |
 | match | highscore_record_init | 0x0043b750 | 165 | 165/165 | 0 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
 | match | highscore_load_table_thunk | 0x0043b800 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-loader |
