@@ -144,3 +144,25 @@ native `CL`/`EAX` allocation. Recorded spec SHA-256 values:
 `95d5b22ab96e75233b8f6034198dce0a5d61ae6a4b3787c9baf2ed2808619e86`,
 and
 `72539289a4a3ad903354d91563078590943efdd380c3d0b4f67ab2b99f70da26`.
+
+## Exact indexed perk clear recovery (2026-09-05)
+
+The earlier compiler-residual and owner-lifetime conclusions are superseded.
+Clearing the perk counters with an ordinary forward indexed loop inside the
+existing cached `reset_index` scope restores the native player-offset lifetime.
+VC6 recognizes the clear and emits the exact native `rep stosd`; the demo flag
+now occupies `CL`, preserving the scaled offset in `EAX` through the mouse
+reset. The three extra address-recomputation instructions disappear, along with
+the mouse-reference alignment mismatch.
+
+The result is **100% exact**, 127/127 instructions, a full 127-instruction
+prefix, and references **61/0/0**, versus 91.8288%, 130/127, prefix 94, and
+57/0/1 previously. Every perk counter is still zeroed once per player after
+the same demo/mouse branch; the global player index does not change during the
+cached scope. The loop bound derives from the canonical perk-array extent.
+
+`indexed-perk-clear-mutations.json` records five complete controls. The forward
+loop using `reset_index` is exact; a forward loop using the global index,
+pointer/end traversal, and both descending-loop forms regress. The native
+compiler remains unchanged, and no register hints, masks, or scope exclusions
+are introduced.

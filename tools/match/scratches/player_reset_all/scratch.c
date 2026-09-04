@@ -89,12 +89,12 @@ void player_reset_all(void)
                 reset_vec2_t mouse_pos(320.0f, 140.0f);
                 *(reset_vec2_t *)&ui_mouse_x = mouse_pos;
             }
+            for (int perk_index = 0;
+                 perk_index < sizeof(player_state_table[0].perk_counts) / sizeof(int);
+                 ++perk_index) {
+                player_state_table[reset_index].perk_counts[perk_index] = 0;
+            }
         }
-
-        memset(
-            player_state_table[render_overlay_player_index].perk_counts,
-            0,
-            sizeof(player_state_table[0].perk_counts));
 
         {
             unsigned char *collision_flag = &creature_pool[0].collision_flag;
