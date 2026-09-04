@@ -126,3 +126,22 @@ evaluable candidate. The only x87 lifetime regions are still the two computed
 volume spill/reload sites already covered by the complete 24-variant sweep.
 No new semantic state-machine or call-boundary hypothesis appears, so the
 retained source and recorded mutation set remain unchanged.
+
+## Exact stored-volume consumer recovery (2026-09-05)
+
+Current result: **100%**, 118/118 instructions, full prefix, and references
+**27 resolved / 0 unresolved / 0 mismatched**. The previous compiler-residual
+conclusions are superseded by `stored-volume-consumers-mutations.json`.
+
+Both fade branches update `sfx_volume_table[i]` directly, then use that stored
+float for the clamp comparison and the playback-volume argument. The previous
+reconstruction instead tested and passed a local expression result, which kept
+an x87 value live across the table store. Replacing both consumers recovers the
+native store/pop/reload sequence in both branches. Changing only the comparison
+regresses and changing only the argument is neutral; their interaction is exact.
+
+The complete seven-variant matrix also confirms that direct assignment, compound
+assignment, and shared or branch-local computation temporaries all give the same
+exact bytes once both consumers use the table. The retained compound assignments
+remove the unnecessary temporary entirely. No compiler settings or float barriers
+were introduced, and all seven controls preserve the reference audit.

@@ -3,7 +3,6 @@
 extern "C" void sfx_update_mute_fades(void)
 {
     int i;
-    float volume;
     DWORD status;
 
     if (audio_suspend_flag || !sfx_unmuted_flag) {
@@ -33,24 +32,22 @@ extern "C" void sfx_update_mute_fades(void)
 
         if (sfx_mute_flags[i]) {
             if (sfx_volume_table[i] > 0.0f) {
-                sfx_volume_table[i] =
-                    (volume = sfx_volume_table[i] - frame_dt * 0.5f);
-                if (volume <= 0.0f) {
+                sfx_volume_table[i] -= frame_dt * 0.5f;
+                if (sfx_volume_table[i] <= 0.0f) {
                     sfx_entry_stop(entry);
                 } else {
-                    sfx_entry_set_volume(entry, volume);
+                    sfx_entry_set_volume(entry, sfx_volume_table[i]);
                 }
             }
             if (sfx_volume_table[i] < 0.0f) {
                 sfx_volume_table[i] = 0.0f;
             }
         } else if (sfx_volume_table[i] < config_blob.music_volume) {
-            sfx_volume_table[i] =
-                (volume = sfx_volume_table[i] + frame_dt);
-            if (volume >= config_blob.music_volume) {
+            sfx_volume_table[i] += frame_dt;
+            if (sfx_volume_table[i] >= config_blob.music_volume) {
                 sfx_entry_set_volume(entry, config_blob.music_volume);
             } else {
-                sfx_entry_set_volume(entry, volume);
+                sfx_entry_set_volume(entry, sfx_volume_table[i]);
             }
         } else if (sfx_volume_table[i] > config_blob.music_volume) {
             sfx_volume_table[i] = config_blob.music_volume;
