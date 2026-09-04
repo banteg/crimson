@@ -182,42 +182,38 @@ extern "C" void quest_build_nagolipoli(
         trigger_time_ms += 100;
     }
 
-    spawn = &spawns[entry_count];
-    spawn->set_position_and_template(
+    spawns[entry_count].set_position_and_template(
         quest_vec2_t(512.0f, 256.0f),
         SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
     trigger_time_ms = (wave * 5 + 175) * 160;
-    spawn->heading = 3.14159274f;
-    spawn->trigger_time_ms = trigger_time_ms;
-    spawn->count = 1;
+    spawns[entry_count].heading = 3.14159274f;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = 1;
     ++entry_count;
 
-    spawn = &spawns[entry_count];
-    spawn->set_position_and_template(
+    spawns[entry_count].set_position_and_template(
         quest_vec2_t(512.0f, 768.0f),
         SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
-    spawn->heading = 3.14159274f;
-    spawn->trigger_time_ms = trigger_time_ms;
-    spawn->count = 1;
+    spawns[entry_count].heading = 3.14159274f;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = 1;
     ++entry_count;
 
-    spawn = &spawns[entry_count];
-    spawn->set_position_and_template(
+    spawns[entry_count].set_position_and_template(
         quest_vec2_t(512.0f, 1088.0f),
         SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
     trigger_time_ms = wave * 800 + 0x6f54;
-    spawn->heading = 3.926991f;
-    spawn->trigger_time_ms = trigger_time_ms;
-    spawn->count = 8;
+    spawns[entry_count].heading = 3.926991f;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = 8;
     ++entry_count;
 
-    spawn = &spawns[entry_count];
-    spawn->set_position_and_template(
+    spawns[entry_count].set_position_and_template(
         quest_vec2_t(512.0f, -64.0f),
         SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
-    spawn->heading = 3.926991f;
-    spawn->trigger_time_ms = trigger_time_ms;
-    spawn->count = 8;
+    spawns[entry_count].heading = 3.926991f;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = 8;
     ++entry_count;
 
     *count = entry_count;

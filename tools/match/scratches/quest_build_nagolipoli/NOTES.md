@@ -317,3 +317,21 @@ forms. All three regress by 49.53100775193798 weighted bytes to
 887.7480620155039/983 (90.310078%) and move the exact prefix back to 191.
 The four short-lived constructor temporaries therefore remain the strongest
 evidenced source shape for the compiler-scheduled tail.
+
+## Exact indexed tail-record recovery (2026-09-05)
+
+Current result: **100%**, 258/258 instructions, full prefix, and references
+**14 resolved / 0 unresolved / 0 mismatched**. The earlier tail-scheduling
+bounds are superseded by `indexed-tail-records-mutations.json`.
+
+The final four fixed entries now publish through `spawns[entry_count]` instead
+of refreshing and retaining a pointer to each current entry. This removes all
+12 scheduled-position differences while preserving the exact preceding 202
+instructions. Direct versus helper metadata and separate versus field-local
+count advances all produce the same exact bytes with indexed ownership. Their
+pointer-owned controls remain at 95.35%.
+
+The retained form changes only the owning expression and removes the four
+obsolete pointer assignments. The ring, corner, line, and tail entries retain
+all positions, headings, templates, triggers, and counts. No compiler settings,
+layout-only object, or artificial dependency was introduced.
