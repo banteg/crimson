@@ -114,3 +114,27 @@ weighted bytes, while preserving 314/314 instructions. The prefix increases
 from 0 to 15 and clean references improve from 117 to 119. Values, selection
 logic, and callback order are unchanged. Opening temporary slots, the native
 early line-height store, and the Cancel coordinate lifetime remain non-exact.
+
+## Exact panel, row, and Cancel value lifetimes (2026-09-05)
+
+The 94.585987% source was missing an interaction between the opening values
+and the later Cancel button. Three complete plans record 24 compiling controls:
+`cancel-line-height-interaction-mutations.json`,
+`cancel-panel-temporary-interaction-mutations.json`, and
+`cancel-horizontal-offset-ownership-mutations.json`.
+
+Early line-height initialization alone regresses. Pairing it with a short
+Cancel-button scope instead reaches 98.726115%: every instruction agrees except
+the frame size and two opening temporary references. The button can reuse the
+dead line-height area once its lifetime ends before the prompt/cursor calls.
+Expressing the panel offset as a value sum rather than compound assignment
+then preserves the native intermediate vector and the correct 0x28-byte frame,
+reaching 99.363057%. Finally, a separate horizontal-offset scalar preserves the
+native load/add order at the two remaining instructions.
+
+Together these ordinary value lifetimes reproduce **100%**: 314/314 normalized
+instructions, prefix 314, and 119/0/0 aligned references. No padding, volatile
+spill, register directive, compiler change, or reference alias change is used.
+The explicit scalar intermediate also preserves the native float-store boundary.
+The former broad compiler-residual conclusion did not account for this joint
+source reconstruction. Canonical source and configuration now record exactness.

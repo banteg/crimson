@@ -124,13 +124,15 @@ extern "C" void perk_selection_screen_update(void)
         *(perk_selection_vec2_t *)&ui_element_slot_27.pos
         + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;
 
+    float line_height = 19.0f;
     bool any_hovered = false;
     int choice_count = 5;
 
-    panel_position += perk_selection_vec2_t(180.0f, 40.0f);
+    panel_position = panel_position + perk_selection_vec2_t(180.0f, 40.0f);
     perk_selection_vec2_t choice_position = panel_position;
-    choice_position.x =
-        ui_element_slot_27.render_offset_x + choice_position.x + 44.0f;
+    float offset_x = ui_element_slot_27.render_offset_x;
+    offset_x += choice_position.x;
+    choice_position.x = offset_x + 44.0f;
     perk_selection_vec2_t anchor_position = choice_position;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -156,7 +158,6 @@ extern "C" void perk_selection_screen_update(void)
         choice_count = 6;
     }
 
-    float line_height = 19.0f;
     if (player_state_table[0].perk_counts[perk_id_perk_expert] > 0) {
         float choice_y = choice_position.y + 40.0f;
         line_height = 18.0f;
@@ -205,14 +206,16 @@ extern "C" void perk_selection_screen_update(void)
     static perk_selection_button_t select_button;
     select_button.label = "Select";
 
-    perk_selection_vec2_t button_position(
-        anchor_position.x + 162.0f,
-        anchor_position.y + 276.0f);
-    if (ui_button_update(
-            (float *)&button_position,
-            (ui_button_t *)&cancel_button)) {
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_GAMEPLAY;
+    {
+        perk_selection_vec2_t button_position(
+            anchor_position.x + 162.0f,
+            anchor_position.y + 276.0f);
+        if (ui_button_update(
+                (float *)&button_position,
+                (ui_button_t *)&cancel_button)) {
+            ui_transition_direction = 0;
+            game_state_pending = GAME_STATE_GAMEPLAY;
+        }
     }
 
     perk_prompt_update_and_render();
