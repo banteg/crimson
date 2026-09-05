@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import math
-
 from grim.sfx_map import SfxId
 
-from ...math_parity import f32, x87_pc24_add, x87_pc24_sub
+from ...math_parity import NATIVE_QUARTER_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
@@ -31,10 +29,13 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
                 if type_id is ProjectileTemplateId.ION_MINIGUN
                 else RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE
             )
-            angle = (
-                (float(ctx.state.rng.rand_tagged(caller) % 50) * 0.01)
-                + float(idx) * (math.pi / 4.0)
-                - 0.25
+            # player_update 0x41394d: PC24 multiply, multiply, add, subtract.
+            angle = x87_pc24_sub(
+                x87_pc24_add(
+                    x87_pc24_mul(float(ctx.state.rng.rand_tagged(caller) % 50), f32(0.01)),
+                    x87_pc24_mul(float(idx), NATIVE_QUARTER_PI),
+                ),
+                0.25,
             )
             ctx.projectile_spawn(
                 ctx.state,

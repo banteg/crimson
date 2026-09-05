@@ -1840,3 +1840,16 @@ def test_player_update_held_reload_key_starts_reload_without_edge() -> None:
 
     assert player.weapon.reload_active is True
     assert player.weapon.reload_timer > 0.0
+
+
+@pytest.mark.parametrize(("jitter", "expected_bits"), [
+    (0, [0xBE800000, 0x3F090FDB, 0x3FA90FDB, 0x4006CBE4, 0x40390FDB, 0x406B53D2, 0x408ECBE4, 0x40A7EDE0]),
+    (1, [0xBE75C28F, 0x3F0B9F37, 0x3FAA5789, 0x40076FBB, 0x4039B3B2, 0x406BF7A9, 0x408F1DD0, 0x40A83FCC]),
+    (49, [0x3E75C28E, 0x3F83403F, 0x3FE7C82C, 0x4026280D, 0x40586C04, 0x408557FD, 0x409E79F8, 0x40B79BF4]),
+])
+def test_man_bomb_stores_native_pc24_angles(jitter: int, expected_bits: list[int]) -> None:
+    state = GameplayState(rng=ScriptedCrand(jitter, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    player = PlayerState(index=0, pos=Vec2(100, 100), man_bomb_timer=3.9)
+    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    player_update(player, PlayerInput(aim=Vec2(101, 100)), 0.2, state)
+    assert [struct.unpack("<I", struct.pack("<f", p.angle))[0] for p in state.projectiles.iter_active()] == expected_bits
