@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from contextlib import ExitStack
 from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Final, cast
@@ -246,9 +247,17 @@ def _select_texture_asset(entries: dict[str, bytes], rel_path: str) -> tuple[str
 
 def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture:
     image = rl.load_image_from_memory(fmt, cast(str, data), len(data))
-    texture = rl.load_texture_from_image(image)
-    rl.unload_image(image)
-    rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    try:
+        texture = rl.load_texture_from_image(image)
+    finally:
+        rl.unload_image(image)
+    if int(texture.id) <= 0:
+        raise RuntimeError("Could not upload runtime texture")
+    try:
+        rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    except Exception:
+        rl.unload_texture(texture)
+        raise
     return texture
 
 
@@ -289,25 +298,29 @@ def _build_small_font(textures: dict[TextureId, rl.Texture], widths_data: bytes)
 
 def load_runtime_resources(assets_dir: Path) -> RuntimeResources:
     entries = load_paq_entries(Path(assets_dir))
-    textures: dict[TextureId, rl.Texture] = {}
-    for texture_id, spec in TEXTURE_SPECS.items():
-        asset_path, payload = _select_texture_asset(entries, spec.rel_path)
-        texture = _load_texture_asset_from_bytes(asset_path, payload)
-        if texture is None:
-            raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")
-        _apply_texture_settings(texture, clamp=bool(spec.clamp), point_filter=bool(spec.point_filter))
-        textures[texture_id] = texture
-
     widths_data = entries.get("load/smallFnt.dat")
     if widths_data is None:
         raise FileNotFoundError("Missing runtime font widths: load/smallFnt.dat")
+    if len(widths_data) != 256:
+        raise ValueError(f"Runtime font widths must contain 256 entries, got {len(widths_data)}")
+    with ExitStack() as cleanup:
+        textures: dict[TextureId, rl.Texture] = {}
+        for texture_id, spec in TEXTURE_SPECS.items():
+            asset_path, payload = _select_texture_asset(entries, spec.rel_path)
+            texture = _load_texture_asset_from_bytes(asset_path, payload)
+            if texture is None:
+                raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")
+            cleanup.callback(rl.unload_texture, texture)
+            _apply_texture_settings(texture, clamp=bool(spec.clamp), point_filter=bool(spec.point_filter))
+            textures[texture_id] = texture
 
-    resources = RuntimeResources(
-        assets_dir=Path(assets_dir),
-        textures=textures,
-        small_font=_build_small_font(textures, widths_data),
-    )
-    register_runtime_resources(resources)
+        resources = RuntimeResources(
+            assets_dir=Path(assets_dir),
+            textures=textures,
+            small_font=_build_small_font(textures, widths_data),
+        )
+        register_runtime_resources(resources)
+        cleanup.pop_all()
     return resources
 
 
