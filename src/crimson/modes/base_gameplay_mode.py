@@ -890,8 +890,8 @@ class BaseGameplayMode:
             self._presentation_plan_ms += session.last_presentation_plan_ms
             if recorder is not None:
                 result.replay_tick_index = recorder.record_tick(
-                    list(result.source_tick.inputs),
-                    commands=list(result.source_tick.commands),
+                    result.source_tick.inputs,
+                    commands=result.source_tick.commands,
                 )
             outputs.append(
                 apply_sim_metadata_tick_result(

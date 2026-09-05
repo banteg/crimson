@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import cast
 
 import msgspec
@@ -305,7 +305,7 @@ class WorldState(msgspec.Struct):
         apply_world_dt_steps: bool = True,
         defer_camera_shake_update: bool = False,
         mid_step_runtime: WorldMidStepRuntime | None = None,
-        inputs: list[PlayerInput] | None,
+        inputs: Sequence[PlayerInput] | None,
         world_size: float,
         damage_scale_by_type: dict[int, float],
         detail_preset: int,
@@ -321,7 +321,7 @@ class WorldState(msgspec.Struct):
         if apply_world_dt_steps:
             dt = self.world_dt_after_perk_steps(dt)
         frame_dt_ms = ftol_ms_i32(dt)
-        inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
+        inputs = normalize_input_frame(inputs, player_count=len(self.players))
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)

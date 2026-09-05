@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import pytest
 
 from crimson.game_modes import GameMode
@@ -72,7 +74,7 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
         world: WorldState
         seen_typing_text: list[str]
 
-        def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+        def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
             _ = inputs
             self.seen_typing_text.append(str(self.world.state.typo.typing.text))
             raise _StopAfterTransform

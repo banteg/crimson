@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Sequence
 
 import msgspec
 
@@ -25,7 +26,6 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapon_runtime.availability import prepare_weapon_availability
 from ..weapons import WeaponId
 from .input import PlayerInput
-from .input_frame import normalize_input_frame
 from .input_providers import (
     GameCommand,
     GameFrameRngAdvanceOperation,
@@ -210,7 +210,7 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
     spawn.play_completion_music = bool(play_completion_music)
 
 
-def rush_input_transform(inputs: list[PlayerInput]) -> list[PlayerInput]:
+def rush_input_transform(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
     return [msgspec.structs.replace(inp, reload_pressed=False) if inp.reload_pressed else inp for inp in inputs]
 
 
@@ -221,7 +221,7 @@ class SessionModeRuntime(msgspec.Struct):
     def needs_mid_step(self) -> bool:
         return False
 
-    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
         return inputs
 
     def mid_step(self, ctx: MidStepContext) -> None:
@@ -251,7 +251,7 @@ class RushSessionRuntime(SessionModeRuntime):
     def needs_mid_step(self) -> bool:
         return True
 
-    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
         return rush_input_transform(inputs)
 
     def mid_step(self, ctx: MidStepContext) -> None:
@@ -277,7 +277,7 @@ class TypoSessionRuntime(SessionModeRuntime):
     def needs_mid_step(self) -> bool:
         return True
 
-    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
         return typo_input_transform(self.world, inputs)
 
     def mid_step(self, ctx: MidStepContext) -> None:
@@ -293,7 +293,7 @@ class TutorialSessionRuntime(SessionModeRuntime):
     def before_step(self) -> None:
         tutorial_before_step(self.world)
 
-    def transform_inputs(self, inputs: list[PlayerInput]) -> list[PlayerInput]:
+    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
         return tutorial_input_transform(self.world, inputs)
 
     def post_step(self, ctx: PostStepContext) -> None:
@@ -445,9 +445,9 @@ class DeterministicSession(msgspec.Struct):
         self,
         *,
         dt: float,
-        inputs: list[PlayerInput] | None,
+        inputs: Sequence[PlayerInput] | None,
         trace_rng: bool = False,
-        commands: list[GameCommand] | None = None,
+        commands: Sequence[GameCommand] | None = None,
         prelude_post_apply_sfx: list[SfxId] | None = None,
     ) -> DeterministicSessionTick:
         timing = self.timing_for_dt(dt)
@@ -519,7 +519,6 @@ class DeterministicSession(msgspec.Struct):
         else:
             presentation_rng = state.rng
 
-        normalized_inputs = normalize_input_frame(tick_inputs, player_count=len(self.world.players)).as_list()
         state.game_mode = self.game_mode
         state.demo_mode_active = self.demo_mode_active
 
@@ -535,7 +534,7 @@ class DeterministicSession(msgspec.Struct):
             apply_world_dt_steps=False,
             defer_camera_shake_update=self.defer_camera_shake_update,
             mid_step_runtime=mid_step_runtime,
-            inputs=normalized_inputs,
+            inputs=tick_inputs,
             world_size=self.world_size,
             damage_scale_by_type=self.damage_scale_by_type,
             detail_preset=self.detail_preset,

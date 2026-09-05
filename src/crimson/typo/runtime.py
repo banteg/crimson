@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -137,7 +138,7 @@ def typo_post_step(ctx: PostStepContext) -> None:
     state.bonus_pool.reset()
 
 
-def typo_input_transform(world: WorldState, inputs: list[PlayerInput]) -> list[PlayerInput]:
+def typo_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
     if not inputs:
         world.state.typo.pending_fire_target = None
         world.state.typo.pending_reload = False

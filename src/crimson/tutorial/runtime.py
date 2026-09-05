@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from grim.sfx_map import SfxId
 
 from ..creatures.runtime import CreatureFlags
@@ -22,7 +24,7 @@ def tutorial_before_step(world: WorldState) -> None:
     tutorial.hint_bonus_alive_before_tick = bool(entry.active and entry.hp > 0.0)
 
 
-def tutorial_input_transform(world: WorldState, inputs: list[PlayerInput]) -> list[PlayerInput]:
+def tutorial_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
     tutorial = world.state.tutorial
     if inputs:
         primary = inputs[0]
@@ -31,7 +33,7 @@ def tutorial_input_transform(world: WorldState, inputs: list[PlayerInput]) -> li
     else:
         tutorial.move_active_this_tick = False
         tutorial.fire_active_this_tick = False
-    return list(inputs)
+    return inputs
 
 
 def _tutorial_overlay_from_actions(actions: TutorialFrameActions) -> TutorialOverlayState:

@@ -23,17 +23,17 @@ def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
         player_count=2,
     )
 
-    assert len(frame.players) == 2
-    assert_float_close(frame.players[0].move.x, 1.0)
-    assert frame.players[0].fire_down is True
-    assert_float_close(frame.players[1].move.x, -1.0)
-    assert frame.players[1].reload_pressed is True
+    assert len(frame) == 2
+    assert_float_close(frame[0].move.x, 1.0)
+    assert frame[0].fire_down is True
+    assert_float_close(frame[1].move.x, -1.0)
+    assert frame[1].reload_pressed is True
 
     padded = normalize_input_frame([PlayerInput(fire_pressed=True)], player_count=3)
-    assert len(padded.players) == 3
-    assert padded.players[0].fire_pressed is True
-    assert padded.players[1] == PlayerInput()
-    assert padded.players[2] == PlayerInput()
+    assert len(padded) == 3
+    assert padded[0].fire_pressed is True
+    assert padded[1] == PlayerInput()
+    assert padded[2] == PlayerInput()
 
 
 def test_world_step_applies_per_player_inputs_by_index() -> None:

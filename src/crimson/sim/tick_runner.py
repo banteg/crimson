@@ -83,14 +83,12 @@ class TickRunner:
                 break
 
             source_tick = self._validated_source_tick(tick_supply=tick_supply, expected_tick_index=tick_index)
-            tick_inputs = list(source_tick.inputs)
-            commands = list(source_tick.commands)
 
             tick = self._session.step_tick(
                 dt=float(source_tick.dt_seconds),
-                inputs=tick_inputs,
+                inputs=source_tick.inputs,
                 trace_rng=self._config.trace_rng,
-                commands=commands,
+                commands=source_tick.commands,
             )
             result = TickResult(
                 source_tick=source_tick,
@@ -105,7 +103,7 @@ class TickRunner:
             ticks_completed=ticks_completed,
             batch_status=batch_status,
             next_tick_index=int(start_tick) + int(ticks_completed),
-            completed_results=list(completed_results),
+            completed_results=completed_results,
         )
 
     @staticmethod
