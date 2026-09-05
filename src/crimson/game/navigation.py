@@ -4,7 +4,6 @@ from functools import partial
 
 from crimson.screens.chrome import ensure_menu_ground
 from grim.audio import stop_music
-from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..demo import DemoView
@@ -190,8 +189,7 @@ class ScreenNavigator:
         if ground is None:
             return
         previous = self.state.menu_ground
-        if previous is not ground and previous is not None and previous.render_target is not None:
-            rl.unload_render_texture(previous.render_target)
-            previous.render_target = None
+        if previous is not ground and previous is not None:
+            previous.close()
         self.state.menu_ground = ground
         self.state.menu_ground_camera = camera

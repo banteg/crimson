@@ -11,7 +11,6 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
-from grim.terrain_render import _maybe_alpha_test
 
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
@@ -80,7 +79,7 @@ def draw_world(
     if entity_alpha <= 1e-3:
         return
 
-    with _maybe_alpha_test():
+    with render_ctx.frame.resources.alpha_test.scope():
         draw_ctx = build_draw_context(
             render_ctx,
             entity_alpha=entity_alpha,

@@ -206,8 +206,8 @@ pub const GroundRenderer = struct {
 
         if (self.alpha_test_shader) |shader| {
             shader.activate();
-            defer shader.deactivate();
         }
+        defer if (self.alpha_test_shader) |shader| shader.deactivate();
 
         beginTerrainRenderTargetBlendWithFactors(rl.gl.rl_src_alpha, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
         defer endTerrainRenderTargetBlend();
@@ -248,8 +248,8 @@ pub const GroundRenderer = struct {
 
         if (self.alpha_test_shader) |shader| {
             shader.activate();
-            defer shader.deactivate();
         }
+        defer if (self.alpha_test_shader) |shader| shader.deactivate();
 
         drawCorpseShadowPass(bodyset_texture, decals, inv_scale, offset);
         drawCorpseColorPass(bodyset_texture, decals, inv_scale, offset);
@@ -309,8 +309,8 @@ pub const GroundRenderer = struct {
         rl.clearBackground(terrain_clear_color);
         if (self.alpha_test_shader) |shader| {
             shader.activate();
-            defer shader.deactivate();
         }
+        defer if (self.alpha_test_shader) |shader| shader.deactivate();
 
         beginTerrainRenderTargetBlend();
         defer endTerrainRenderTargetBlend();

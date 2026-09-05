@@ -212,8 +212,7 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
 
         # Always save the generated output for easy visual inspection.
         _export_render_target(renderer.render_target, actual_out)
-        rl.unload_render_texture(renderer.render_target)
-        renderer.render_target = None
+        renderer.close()
 
         expected = Image.open(fixture_path).convert("RGB")
         actual = Image.open(actual_out).convert("RGB")

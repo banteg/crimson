@@ -121,9 +121,8 @@ class RenderResources(msgspec.Struct):
         )
 
     def close(self) -> None:
-        if self.ground is not None and self.ground.render_target is not None:
-            rl.unload_render_texture(self.ground.render_target)
-            self.ground.render_target = None
+        if self.ground is not None:
+            self.ground.close()
         self.ground = None
 
         self._resources = None

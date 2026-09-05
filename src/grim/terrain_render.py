@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from functools import cache
 
 import msgspec
 
@@ -12,6 +11,7 @@ from grim.raylib_api import rd, rl
 
 from .geom import Vec2
 from .rand import CrtRand
+from .shaders import AlphaTestShader
 
 TERRAIN_TEXTURE_SIZE = 1024
 TERRAIN_PATCH_SIZE = 128.0
@@ -70,54 +70,6 @@ _EXPLICIT_TERRAIN_CALLERS: tuple[tuple[int, int, int], ...] = (
 # discard shader for stamping into the terrain render target. This shim is
 # required for parity; if it fails to compile, rendering should stop rather than
 # silently drift away from the native cutoff behavior.
-_ALPHA_TEST_VS_330 = r"""
-#version 330
-
-in vec3 vertexPosition;
-in vec2 vertexTexCoord;
-in vec4 vertexColor;
-
-out vec2 fragTexCoord;
-out vec4 fragColor;
-
-uniform mat4 mvp;
-
-void main() {
-    fragTexCoord = vertexTexCoord;
-    fragColor = vertexColor;
-    gl_Position = mvp * vec4(vertexPosition, 1.0);
-}
-"""
-
-_ALPHA_TEST_FS_330 = r"""
-#version 330
-
-in vec2 fragTexCoord;
-in vec4 fragColor;
-
-uniform sampler2D texture0;
-uniform vec4 colDiffuse;
-
-out vec4 finalColor;
-
-void main() {
-    // Emulate DX8 fixed-function alpha test after stage-0 modulation:
-    // stage output = texture * diffuse, then discard when alpha <= 4/255.
-    vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
-    if (texel.a <= 0.0156862745) discard;
-    finalColor = texel;
-}
-"""
-
-
-@cache
-def _get_alpha_test_shader() -> rl.Shader:
-    shader = rl.load_shader_from_memory(_ALPHA_TEST_VS_330, _ALPHA_TEST_FS_330)
-    if shader.id <= 0:
-        raise RuntimeError("terrain alpha-test shader compilation returned an invalid shader id")
-    return shader
-
-
 @contextmanager
 def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
     # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
@@ -152,13 +104,12 @@ def _terrain_rt_blend(
 
 
 @contextmanager
-def _maybe_alpha_test() -> Iterator[None]:
-    shader = _get_alpha_test_shader()
-    rl.begin_shader_mode(shader)
+def _texture_target(target: rl.RenderTexture) -> Iterator[None]:
+    rl.begin_texture_mode(target)
     try:
         yield
     finally:
-        rl.end_shader_mode()
+        rl.end_texture_mode()
 
 class GroundDecal(msgspec.Struct):
     texture: rl.Texture
@@ -187,9 +138,18 @@ class GroundRenderer(msgspec.Struct):
     texture_scale: float = 1.0
     texture_failed: bool = False
     render_target: rl.RenderTexture | None = None
+    alpha_test: AlphaTestShader = msgspec.field(default_factory=AlphaTestShader)
     _render_target_ready: bool = False
     _scheduled_seed: int | None = None
     _scheduled_generation_kind: str = "explicit"
+
+    def close(self) -> None:
+        if self.render_target is not None:
+            rl.unload_render_texture(self.render_target)
+            self.render_target = None
+        self.alpha_test.close()
+        self._render_target_ready = False
+        self._scheduled_seed = None
 
     def generation_pending(self) -> bool:
         """True while a scheduled terrain generate is still pending."""
@@ -204,8 +164,8 @@ class GroundRenderer(msgspec.Struct):
         if seed is None:
             return
         generation_kind = self._scheduled_generation_kind
-        self._scheduled_seed = None
         self._generate_texture(seed=seed, generation_kind=generation_kind)
+        self._scheduled_seed = None
 
     def _ensure_render_target(self) -> None:
         scale = min(max(self.texture_scale, 0.5), 4.0)
@@ -230,46 +190,46 @@ class GroundRenderer(msgspec.Struct):
         self._ensure_render_target()
         if self.render_target is None:
             return
+        self._render_target_ready = False
         rng = CrtRand(seed)
         caller_sets = (
             _UNLOCK_RANDOM_TERRAIN_CALLERS
             if generation_kind == "unlock_random"
             else _EXPLICIT_TERRAIN_CALLERS
         )
-        rl.begin_texture_mode(self.render_target)
-        rl.clear_background(TERRAIN_CLEAR_COLOR)
-        # Intentional rewrite deviation: the classic game appears to point-sample
-        # terrain stamps while rotating them into the RT, but bilinear sampling
-        # reads better in the port and still stays within current fixture tolerances.
-        # Keep the ground RT alpha opaque like the original exe's XRGB-style RT.
-        # The port does that by masking out alpha writes while stamping.
-        with _maybe_alpha_test(), _terrain_rt_blend(
-            rd.RL_SRC_ALPHA,
-            rd.RL_ONE_MINUS_SRC_ALPHA,
-            rd.RL_FUNC_ADD,
-        ):
-            self._scatter_texture(
-                self.texture,
-                TERRAIN_BASE_TINT,
-                rng,
-                TERRAIN_DENSITY_BASE,
-                callers=caller_sets[0],
-            )
-            self._scatter_texture(
-                self.overlay,
-                TERRAIN_OVERLAY_TINT,
-                rng,
-                TERRAIN_DENSITY_OVERLAY,
-                callers=caller_sets[1],
-            )
-            self._scatter_texture(
-                self.overlay_detail,
-                TERRAIN_DETAIL_TINT,
-                rng,
-                TERRAIN_DENSITY_DETAIL,
-                callers=caller_sets[2],
-            )
-        rl.end_texture_mode()
+        with _texture_target(self.render_target):
+            rl.clear_background(TERRAIN_CLEAR_COLOR)
+            # Intentional rewrite deviation: the classic game appears to point-sample
+            # terrain stamps while rotating them into the RT, but bilinear sampling
+            # reads better in the port and still stays within current fixture tolerances.
+            # Keep the ground RT alpha opaque like the original exe's XRGB-style RT.
+            # The port does that by masking out alpha writes while stamping.
+            with self.alpha_test.scope(), _terrain_rt_blend(
+                rd.RL_SRC_ALPHA,
+                rd.RL_ONE_MINUS_SRC_ALPHA,
+                rd.RL_FUNC_ADD,
+            ):
+                self._scatter_texture(
+                    self.texture,
+                    TERRAIN_BASE_TINT,
+                    rng,
+                    TERRAIN_DENSITY_BASE,
+                    callers=caller_sets[0],
+                )
+                self._scatter_texture(
+                    self.overlay,
+                    TERRAIN_OVERLAY_TINT,
+                    rng,
+                    TERRAIN_DENSITY_OVERLAY,
+                    callers=caller_sets[1],
+                )
+                self._scatter_texture(
+                    self.overlay_detail,
+                    TERRAIN_DETAIL_TINT,
+                    rng,
+                    TERRAIN_DENSITY_DETAIL,
+                    callers=caller_sets[2],
+                )
         self._render_target_ready = True
 
     def bake_decals(self, decals: Sequence[GroundDecal]) -> bool:
@@ -280,8 +240,7 @@ class GroundRenderer(msgspec.Struct):
             return False
 
         inv_scale = 1.0 / self._normalized_texture_scale()
-        rl.begin_texture_mode(self.render_target)
-        with _maybe_alpha_test(), _terrain_rt_blend(
+        with _texture_target(self.render_target), self.alpha_test.scope(), _terrain_rt_blend(
             rd.RL_SRC_ALPHA,
             rd.RL_ONE_MINUS_SRC_ALPHA,
             rd.RL_FUNC_ADD,
@@ -299,7 +258,6 @@ class GroundRenderer(msgspec.Struct):
                     math.degrees(decal.rotation_rad),
                     decal.tint,
                 )
-        rl.end_texture_mode()
 
         self._render_target_ready = True
         return True
@@ -318,14 +276,10 @@ class GroundRenderer(msgspec.Struct):
         scale = self._normalized_texture_scale()
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
-        rl.begin_texture_mode(self.render_target)
-        # Intentional rewrite deviation: the classic game appears to point-sample
-        # corpse atlas frames while baking, but bilinear sampling reads better in
-        # the port at modern output scales.
-        with _maybe_alpha_test():
+        # Intentional deviation: bilinear sampling reads better at modern output scales.
+        with _texture_target(self.render_target), self.alpha_test.scope():
             self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
             self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
-        rl.end_texture_mode()
 
         self._render_target_ready = True
         return True
@@ -463,10 +417,14 @@ class GroundRenderer(msgspec.Struct):
             rl.unload_render_texture(candidate)
             return False
 
+        try:
+            rl.set_texture_filter(candidate.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+            rl.set_texture_wrap(candidate.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
+        except Exception:
+            rl.unload_render_texture(candidate)
+            raise
         self.render_target = candidate
         self._render_target_ready = False
-        rl.set_texture_filter(self.render_target.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-        rl.set_texture_wrap(self.render_target.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
         return True
 
     def _render_pixel_ratio(self) -> float:

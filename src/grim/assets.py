@@ -12,6 +12,7 @@ from PIL import Image
 from grim.raylib_api import rl
 
 from . import jaz, paq
+from .shaders import AlphaTestShader
 
 if TYPE_CHECKING:
     from grim.fonts.small import SmallFontData
@@ -175,6 +176,7 @@ class RuntimeResources(msgspec.Struct):
     assets_dir: Path
     textures: dict[TextureId, rl.Texture]
     small_font: SmallFontData
+    alpha_test: AlphaTestShader = msgspec.field(default_factory=AlphaTestShader)
 
     def texture(self, texture_id: TextureId) -> rl.Texture:
         texture = self.textures.get(texture_id)
@@ -184,6 +186,7 @@ class RuntimeResources(msgspec.Struct):
         return texture
 
     def unload(self) -> None:
+        self.alpha_test.close()
         seen: set[int] = set()
         for texture in self.textures.values():
             texture_id = int(texture.id)

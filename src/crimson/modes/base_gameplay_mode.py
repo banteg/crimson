@@ -781,9 +781,8 @@ class BaseGameplayMode:
         if ground is None:
             return
         current = self.render_resources.ground
-        if current is not None and current is not ground and current.render_target is not None:
-            rl.unload_render_texture(current.render_target)
-            current.render_target = None
+        if current is not None and current is not ground:
+            current.close()
         self.render_resources.ground = ground
 
     def menu_ground_camera(self) -> Vec2:

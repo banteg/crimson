@@ -4,9 +4,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 import crimson.render.world.draw as world_draw_module
-from crimson.render.world import WorldDrawContext
 from crimson.render.world.context import WorldRenderCtx
-from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
+from crimson.render.world.draw import WorldDrawContext, draw_aim_enhancements, draw_aim_indicators
 from crimson.sim.state_types import PlayerState
 from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2

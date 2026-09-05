@@ -362,9 +362,8 @@ class GameLoopView:
             if self._demo_trial_overlay is not None:
                 self._demo_trial_overlay.close()
             ground = self.state.menu_ground
-            if ground is not None and ground.render_target is not None:
-                rl.unload_render_texture(ground.render_target)
-                ground.render_target = None
+            if ground is not None:
+                ground.close()
         finally:
             self.resources.close()
             self.state.console.close()

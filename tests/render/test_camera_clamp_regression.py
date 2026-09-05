@@ -284,7 +284,7 @@ def test_scheduled_generation_uses_overlay_detail_for_third_pass(mocker) -> None
         yield
 
     mocker.patch.object(terrain_render, "_terrain_rt_blend", side_effect=_noop_blend)
-    alpha_test = mocker.patch.object(terrain_render, "_maybe_alpha_test", side_effect=_noop_blend)
+    alpha_test = mocker.patch.object(terrain_render.AlphaTestShader, "scope", side_effect=_noop_blend)
 
     ground.schedule_generate(seed=1337)
     ground.process_pending()
@@ -322,9 +322,8 @@ def test_terrain_rt_blend_mask_alpha_writes_uses_color_mask(mocker) -> None:
 
 def test_alpha_test_shader_failure_raises(mocker) -> None:
     mocker.patch.object(terrain_render.rl, "load_shader_from_memory", side_effect=RuntimeError("compile failed"))
-    terrain_render._get_alpha_test_shader.cache_clear()
 
-    with pytest.raises(RuntimeError, match="compile failed"), terrain_render._maybe_alpha_test():
+    with pytest.raises(RuntimeError, match="compile failed"), _ground().alpha_test.scope():
         pass
 
 
@@ -437,7 +436,7 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
     def _noop_blend(*_args, **_kwargs):
         yield
 
-    alpha_test = mocker.patch.object(terrain_render, "_maybe_alpha_test", side_effect=_noop_blend)
+    alpha_test = mocker.patch.object(terrain_render.AlphaTestShader, "scope", side_effect=_noop_blend)
     mocker.patch.object(terrain_render, "_terrain_rt_blend", side_effect=_noop_blend)
 
     assert ground.bake_decals((decal,)) is True
@@ -478,7 +477,7 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
     def _noop_alpha(*_args, **_kwargs):
         yield
 
-    mocker.patch.object(terrain_render, "_maybe_alpha_test", side_effect=_noop_alpha)
+    mocker.patch.object(terrain_render.AlphaTestShader, "scope", side_effect=_noop_alpha)
 
     assert ground.bake_corpse_decals(bodyset_texture, (decal,)) is True
 
@@ -502,3 +501,57 @@ def test_ground_draw_without_render_target_clears_background(mocker) -> None:
 
     draw_rectangle.assert_called_once()
     draw_texture_pro.assert_not_called()
+
+
+def test_generation_failure_unbinds_target_and_retains_pending_seed(mocker) -> None:
+    ground = _ground()
+    ground.render_target = _as_render_texture(_RenderTextureStub())
+    ground._render_target_ready = True
+    mocker.patch.object(GroundRenderer, "_ensure_render_target")
+    mocker.patch.object(terrain_render.rl, "begin_texture_mode")
+    end_target = mocker.patch.object(terrain_render.rl, "end_texture_mode")
+    mocker.patch.object(terrain_render.rl, "clear_background")
+    mocker.patch.object(terrain_render.rl, "load_shader_from_memory", side_effect=RuntimeError("compile failed"))
+    ground.schedule_generate(seed=123)
+    with pytest.raises(RuntimeError, match="compile failed"):
+        ground.process_pending()
+    end_target.assert_called_once()
+    assert not ground.render_target_ready()
+    assert ground.generation_pending()
+    assert ground._scheduled_seed == 123
+
+
+def test_alpha_shader_scope_reuses_handle_and_close_allows_reload(mocker) -> None:
+    shader = terrain_render.rl.Shader()
+    shader.id = 7
+    load = mocker.patch.object(terrain_render.rl, "load_shader_from_memory", return_value=shader)
+    mocker.patch.object(terrain_render.rl, "begin_shader_mode")
+    end = mocker.patch.object(terrain_render.rl, "end_shader_mode")
+    unload = mocker.patch.object(terrain_render.rl, "unload_shader")
+    owner = terrain_render.AlphaTestShader()
+    with pytest.raises(RuntimeError, match="draw failed"), owner.scope():
+        raise RuntimeError("draw failed")
+    with owner.scope():
+        pass
+    assert load.call_count == 1
+    assert end.call_count == 2
+    owner.close()
+    owner.close()
+    unload.assert_called_once_with(shader)
+    with owner.scope():
+        pass
+    assert load.call_count == 2
+    owner.close()
+
+
+def test_render_target_setup_failure_releases_candidate(mocker) -> None:
+    ground = _ground()
+    candidate = _as_render_texture(_RenderTextureStub())
+    mocker.patch.object(terrain_render.rl, "load_render_texture", return_value=candidate)
+    mocker.patch.object(terrain_render.rl, "rl_framebuffer_complete", return_value=True)
+    mocker.patch.object(terrain_render.rl, "set_texture_filter", side_effect=RuntimeError("setup failed"))
+    unload = mocker.patch.object(terrain_render.rl, "unload_render_texture")
+    with pytest.raises(RuntimeError, match="setup failed"):
+        ground._load_render_target(1024, 1024)
+    unload.assert_called_once_with(candidate)
+    assert ground.render_target is None
