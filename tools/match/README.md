@@ -6,6 +6,10 @@ original-era MSVC toolchain, then diff normalized x86 assembly against the
 function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 `grim.dll`.
 
+See [Matching Status](STATUS.md) for generated progress and
+[Remaining EXE batches](BATCHES.md) for the 630-exact checkpoint's complete
+function map, focused hypotheses, and suggested campaign order.
+
 ## Matching Scope
 
 The default `port` scope is defined in `analysis/matching_scope.json`. It
