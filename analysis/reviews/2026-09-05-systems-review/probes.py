@@ -14,10 +14,10 @@ from crimson.math_parity import f32
 from crimson.modes import base_gameplay_mode
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.perks import PerkId
-from crimson.replay import ReplayHeader, ReplayRecorder
-from crimson.replay.driver.playback_driver import PlaybackDriver
-from crimson.replay.checkpoints import build_checkpoint
 from crimson.persistence.highscores import HighScoreRecord, read_highscore_records, write_highscore_records
+from crimson.replay import ReplayHeader, ReplayRecorder
+from crimson.replay.checkpoints import build_checkpoint
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.sim.batch_apply import PresentationTickOutput, apply_presentation_outputs
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -53,19 +53,19 @@ def tutorial_startup():
 
     def weapon(world):
         p = world.players[0]
-        return dict(
-            ammo=p.weapon.ammo, clip_size=p.weapon.clip_size, cooldown=p.weapon.shot_cooldown, shot_seq=p.shot_seq
-        )
+        return {
+            "ammo": p.weapon.ammo, "clip_size": p.weapon.clip_size, "cooldown": p.weapon.shot_cooldown, "shot_seq": p.shot_seq,
+        }
 
-    before = dict(live=weapon(live.world), replay=weapon(replay.world))
+    before = {"live": weapon(live.world), "replay": weapon(replay.world)}
     a = live.step_tick(dt=1 / 60, inputs=(inp,))
     b = replay.step_tick(0)
-    return dict(
-        before=before,
-        after=dict(live=weapon(live.world), replay=weapon(replay.world)),
-        rng=dict(live=live.world.state.rng.state, replay=replay.world.state.rng.state),
-        sfx=dict(live=[str(v) for v in a.presentation.sfx], replay=[str(v) for v in b.payload.presentation.sfx]),
-    )
+    return {
+        "before": before,
+        "after": {"live": weapon(live.world), "replay": weapon(replay.world)},
+        "rng": {"live": live.world.state.rng.state, "replay": replay.world.state.rng.state},
+        "sfx": {"live": [str(v) for v in a.presentation.sfx], "replay": [str(v) for v in b.payload.presentation.sfx]},
+    }
 
 
 def audio_partition(batch: bool):
@@ -98,11 +98,11 @@ def audio_partition(batch: bool):
                 apply_presentation_outputs(outputs=[output], runtime=runtime, apply_audio=True, update_camera=False)
         if batch:
             apply_presentation_outputs(outputs=outputs, runtime=runtime, apply_audio=True, update_camera=False)
-        return dict(
-            timers=timers,
-            sound_timers=[call.kwargs["reflex_boost_timer"] for call in play.call_args_list],
-            rng=world.state.rng.state,
-        )
+        return {
+            "timers": timers,
+            "sound_timers": [call.kwargs["reflex_boost_timer"] for call in play.call_args_list],
+            "rng": world.state.rng.state,
+        }
 
 
 def camera_latch():
@@ -112,12 +112,12 @@ def camera_latch():
     state.camera_shake_timer = f32(0.01)
     state.camera_shake_pulses = 5
     camera_shake_update(state, f32(0.01))
-    return dict(
-        time_scale_active=state.time_scale_active,
-        bonus_timer=state.bonuses.reflex_boost,
-        python_interval=state.camera_shake_timer,
-        recovered_native_interval=f32(0.06),
-    )
+    return {
+        "time_scale_active": state.time_scale_active,
+        "bonus_timer": state.bonuses.reflex_boost,
+        "python_interval": state.camera_shake_timer,
+        "recovered_native_interval": f32(0.06),
+    }
 
 
 def camera_latch_reachable():
@@ -136,19 +136,19 @@ def camera_latch_reachable():
     )
     rows = []
     for tick in range(2):
-        before = dict(
-            latch=world.state.time_scale_active,
-            bonus=world.state.bonuses.reflex_boost,
-            shake_timer=world.state.camera_shake_timer,
-        )
+        before = {
+            "latch": world.state.time_scale_active,
+            "bonus": world.state.bonuses.reflex_boost,
+            "shake_timer": world.state.camera_shake_timer,
+        }
         session.step_tick(dt=1 / 60, inputs=(PlayerInput(),))
         rows.append(
-            dict(
-                tick=tick,
-                before=before,
-                shake_timer_after=world.state.camera_shake_timer,
-                pulses_after=world.state.camera_shake_pulses,
-            )
+            {
+                "tick": tick,
+                "before": before,
+                "shake_timer_after": world.state.camera_shake_timer,
+                "pulses_after": world.state.camera_shake_pulses,
+            },
         )
     return rows
 
@@ -162,11 +162,11 @@ def checkpoint_blind_spot():
     world.state.camera_shake_pulses = 20
     world.creatures.entries[0].hp = 17
     after = build_checkpoint(tick_index=0, world=world, elapsed_ms=0)
-    return dict(
-        changed=["shot_cooldown", "camera_shake_timer", "camera_shake_pulses", "inactive_creature_hp"],
-        checkpoints_equal=before == after,
-        verifier_ok=compare_checkpoints([before], [after]).ok,
-    )
+    return {
+        "changed": ["shot_cooldown", "camera_shake_timer", "camera_shake_pulses", "inactive_creature_hp"],
+        "checkpoints_equal": before == after,
+        "verifier_ok": compare_checkpoints([before], [after]).ok,
+    }
 
 
 def interrupted_score_save():
@@ -179,18 +179,18 @@ def interrupted_score_save():
         # A serializer failure demonstrates that the previous valid file has
         # already been destroyed, even before the first write is attempted.
         with patch(
-            "crimson.persistence.highscores.encode_record_payload", side_effect=ValueError("injected encoding failure")
+            "crimson.persistence.highscores.encode_record_payload", side_effect=ValueError("injected encoding failure"),
         ):
             try:
                 write_highscore_records(path, [record])
             except ValueError:
                 pass
-        return dict(
-            records_before=before,
-            bytes_before=size,
-            records_after=len(read_highscore_records(path)),
-            bytes_after=path.stat().st_size,
-        )
+        return {
+            "records_before": before,
+            "bytes_before": size,
+            "records_after": len(read_highscore_records(path)),
+            "bytes_after": path.stat().st_size,
+        }
 
 
 def perk_command_timing():
@@ -208,28 +208,28 @@ def perk_command_timing():
         selection.choices = [PerkId.REFLEX_BOOSTED] * 7
     live_tick = live.session.step_tick(dt=1 / 60, inputs=(inp,), commands=(command,))
     replay_tick = playback.step_tick(0).payload
-    return dict(
-        live_dt_sim=live_tick.dt_sim,
-        replay_dt_sim=replay_tick.dt_sim,
-        live_x=live.world.players[0].pos.x,
-        replay_x=playback.world.players[0].pos.x,
-        live_elapsed_ms=live.session.elapsed_ms,
-        replay_elapsed_ms=playback.session.elapsed_ms,
-    )
+    return {
+        "live_dt_sim": live_tick.dt_sim,
+        "replay_dt_sim": replay_tick.dt_sim,
+        "live_x": live.world.players[0].pos.x,
+        "replay_x": playback.world.players[0].pos.x,
+        "live_elapsed_ms": live.session.elapsed_ms,
+        "replay_elapsed_ms": playback.session.elapsed_ms,
+    }
 
 
 if __name__ == "__main__":
     payload = json.dumps(
-        dict(
-            tutorial_startup=tutorial_startup(),
-            audio_serial=audio_partition(False),
-            audio_batch=audio_partition(True),
-            camera_latch=camera_latch(),
-            camera_latch_reachable=camera_latch_reachable(),
-            checkpoint_blind_spot=checkpoint_blind_spot(),
-            interrupted_score_save=interrupted_score_save(),
-            perk_command_timing=perk_command_timing(),
-        ),
+        {
+            "tutorial_startup": tutorial_startup(),
+            "audio_serial": audio_partition(False),
+            "audio_batch": audio_partition(True),
+            "camera_latch": camera_latch(),
+            "camera_latch_reachable": camera_latch_reachable(),
+            "checkpoint_blind_spot": checkpoint_blind_spot(),
+            "interrupted_score_save": interrupted_score_save(),
+            "perk_command_timing": perk_command_timing(),
+        },
         indent=2,
     )
     if len(sys.argv) > 1:

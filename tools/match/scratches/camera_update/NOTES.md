@@ -35,7 +35,10 @@ store, producing the native common tail exactly.
 
 The Python and Zig deterministic shake models already preserve the native
 strict timer comparisons, last-pulse lifetime, six RNG calls, amplitude, sign,
-and reflex interval. Their presentation camera code intentionally generalizes
+and reflex interval. The interval must use the latched `time_scale_active`
+flag: the bonus timer can expire after that flag is refreshed. Both ports now
+test disagreement between the latch and the current bonus timer. Their
+presentation camera code intentionally generalizes
 the fixed 1-or-2-player native focus and configured-resolution clamp to the
 current player list and runtime viewport; this scratch records the exact native
 edge behavior for future parity work without changing that presentation policy.

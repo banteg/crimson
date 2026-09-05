@@ -781,7 +781,7 @@ fn cameraShakeUpdate(
         return;
     }
 
-    state.camera_shake_timer = if (state.bonuses.reflex_boost > 0.0) 0.06 else 0.1;
+    state.camera_shake_timer = if (state.time_scale_active) 0.06 else 0.1;
     const max_amp = state.camera_shake_pulses * 3;
     if (max_amp <= 0) {
         state.camera_shake_offset = .{};
@@ -912,6 +912,19 @@ fn testHeader() replay_codec.ReplayHeader {
         .claimed_stats = .{},
         .input_quantization = @constCast("f32"),
     };
+}
+
+test "camera shake uses latched scaling across bonus expiry and pickup" {
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(testHeader(), .{});
+    for ([_]bool{ true, false }) |latched| {
+        context.state.time_scale_active = latched;
+        context.state.bonuses.reflex_boost = if (latched) -0.01 else 1.0;
+        context.state.camera_shake_timer = 0.01;
+        context.state.camera_shake_pulses = 5;
+        cameraShakeUpdate(&context.state, 0.01);
+        try std.testing.expectEqual(@as(f32, if (latched) 0.06 else 0.1), context.state.camera_shake_timer);
+        try std.testing.expectEqual(@as(i32, 4), context.state.camera_shake_pulses);
+    }
 }
 
 test "step tick applies counters and emits trace snapshot" {

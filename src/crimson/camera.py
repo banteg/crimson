@@ -53,8 +53,9 @@ def camera_shake_update(state: GameplayState, dt: float) -> None:
         state.camera_shake_timer = 0.0
         return
 
-    time_scale_active = state.bonuses.reflex_boost > 0.0
-    state.camera_shake_timer = 0.06 if time_scale_active else 0.1
+    # The bonus timer may have expired after the previous frame latched this
+    # flag. Native camera_update uses the latch until its next late refresh.
+    state.camera_shake_timer = 0.06 if state.time_scale_active else 0.1
 
     # Decompiled logic:
     #   iVar4 = camera_shake_pulses * 0x3c;

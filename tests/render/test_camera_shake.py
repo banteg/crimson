@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
@@ -73,6 +75,7 @@ def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
     rng = RecordingCrand(Crand(0xBEEF))
     state = GameplayState(rng=rng)
     state.bonuses.reflex_boost = 1.0
+    state.time_scale_active = True
     state.camera_shake_pulses = 5
     state.camera_shake_timer = 0.01
 
@@ -88,6 +91,20 @@ def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
         RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SPREAD,
         RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SIGN,
     ]
+
+
+@pytest.mark.parametrize(("latched", "bonus_timer", "interval"), [(True, -0.01, 0.06), (False, 1.0, 0.1)])
+def test_camera_shake_interval_uses_latched_scaling(latched: bool, bonus_timer: float, interval: float) -> None:
+    state = GameplayState()
+    state.time_scale_active = latched
+    state.bonuses.reflex_boost = bonus_timer
+    state.camera_shake_timer = 0.01
+    state.camera_shake_pulses = 5
+
+    camera_shake_update(state, 0.01)
+
+    assert_float_close(state.camera_shake_timer, interval)
+    assert state.camera_shake_pulses == 4
 
 
 def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None:
