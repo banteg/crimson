@@ -1,0 +1,70 @@
+{
+  "zero_volume": {
+    "active_track": "gt1_ingame",
+    "game_tune_started": true,
+    "playback_count_after_restore": 0,
+    "backend_playing_after_restore": false,
+    "play_calls_including_initial_start": 1,
+    "retrigger_result": null
+  },
+  "sound_planning": {
+    "six_same_tick_hits": {
+      "rng_calls": 6,
+      "backend_starts": 6,
+      "native_starts": 1
+    },
+    "five_distinct_event_ids": {
+      "input": [
+        "sfx_zombie_die_01",
+        "sfx_alien_die_01",
+        "sfx_lizard_die_01",
+        "sfx_spider_die_01",
+        "sfx_trooper_die_01"
+      ],
+      "output": [
+        "sfx_zombie_die_01",
+        "sfx_alien_die_01",
+        "sfx_lizard_die_01",
+        "sfx_spider_die_01"
+      ]
+    },
+    "left_right_plans_identical": true,
+    "demo_and_normal_plans_identical": true,
+    "backend_pan_calls": 0,
+    "native_pan_at_width_1024_camera_x_0": {
+      "x_256": -425,
+      "x_768": 425
+    }
+  },
+  "invalid_music": {
+    "load_result": [
+      "corrupt",
+      0
+    ],
+    "raylib_is_music_valid": false,
+    "null_audio_buffer": true,
+    "console_messages": [
+      "SFX Tune 0 <- 'corrupt.ogg' ok"
+    ],
+    "trigger_result": "corrupt",
+    "game_tune_started": true,
+    "backend_playing": false
+  },
+  "failed_audio_initialization": {
+    "exception": "audio: missing music entry for track 'shortie_monk' in music.paq",
+    "device_initializations": 1,
+    "device_closes": 0,
+    "sound_sources_created": 70,
+    "sound_sources_unloaded": 0,
+    "aliases_created": 210,
+    "aliases_unloaded": 0,
+    "music_streams_created": 1,
+    "music_streams_unloaded": 0
+  },
+  "failed_voice_acquisition": {
+    "exception": "second alias failed",
+    "source_unloads": 0,
+    "alias_unloads": 0,
+    "published_samples": 0
+  }
+}

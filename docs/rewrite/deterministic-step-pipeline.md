@@ -53,6 +53,19 @@ terrain output, then calls `AudioBridge.apply_post_plan` for bonus/quest sounds
 and completion music. Consumers do not reconstruct reactions from current quest
 state. Replay fast-forward can suppress audio without changing simulation RNG.
 
+Sound requests carry their ID, event position (or `None` for centered UI audio),
+and gain. Their plan captures demo attenuation and the Reflex Boost pitch timer.
+The consumer uses the viewport before each tick's camera update, so deferred
+sounds never read a later player's or creature's position.
+
+SFX cooldowns advance after each consumed tick's sound requests, using
+`FrameTiming.dt_audio`: the native frame delta after Reflex Boosted perk scaling
+but before Reflex Boost slow motion. Music streams are serviced every render
+frame; gameplay passes `advance_sfx=False` to that service to avoid advancing
+cooldowns twice. Screens without simulation ticks advance cooldowns with their
+audio update. Headless runs still consume sound-selection RNG, but do not own
+device playback or cooldown state.
+
 Native hit audio and terrain effects consume authoritative RNG, so headless
 verification still builds the presentation plan even without rendering or audio.
 

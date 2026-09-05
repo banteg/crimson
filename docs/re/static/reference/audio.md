@@ -8,6 +8,48 @@ tags:
 This page documents the audio system: SFX IDs, usage hotspots, data labels, and
 the runtime entry struct shared by SFX and music.
 
+## Playback rules
+
+Recovered `sfx_play` and `sfx_play_panned` reject a sound while that native ID's
+cooldown is positive: 0.05 seconds normally, 0.44 seconds for either flamer ID.
+`audio_update` subtracts `frame_dt_copy` after playback requests, retaining a
+negative zero-crossing remainder. Sound selection has already consumed RNG
+before this admission check. There is no global four-event cutoff.
+
+Panned playback computes `((camera_x + position_x) / screen_width - 0.5) * 1700`,
+truncates to an integer, and clamps to ±10000 DirectSound hundredths of a dB.
+Positive values attenuate the left channel; negative values attenuate the right.
+Demo playback multiplies the requested volume by 0.7. The volume setter maps
+the scalar through `(volume + 2) * (1 / 3)` before converting it to DirectSound
+attenuation. These operations use native float32 constants and x87 PC=24;
+`__ftol` at `0x00461054` sets truncation mode before converting, including the
+Reflex Boost playback frequency calculation.
+
+The Python backend converts channel attenuation to raylib 5.5's pan law in
+`src/grim/audio_math.py`. It retains the port's explicit zero-volume mute and
+per-voice gain state. Decoded sample ownership is shared by asset, while
+cooldowns remain separate for distinct native IDs. The port keeps its bounded
+voice pool rather than reproducing DirectSound's 16 buffers per native entry.
+
+Music keeps selection and mute/fade intent even at zero master volume. The
+Python backend pauses streams at zero and resumes them without choosing a new
+tune. Stopped unmuted streams are started explicitly. Game-over and quest-failed
+screens repeatedly request `shortie_monk` while active; quest completion starts
+`crimsonquest` with a fade-in. A previously muted track must finish fading before
+an exclusive-play request can unmute it.
+
+Python resource loading validates every decoded handle before publication and
+rolls back partial acquisition. An owned sample releases aliases before its
+source; a music entry retains encoded bytes until decoder teardown. Audio
+shutdown closes the device only when that state opened it.
+
+See the [deterministic session](../../../rewrite/deterministic-step-pipeline.md)
+for deferred sound requests and cooldown timing. The backend conversion follows
+[raylib 5.5 `MixAudioFrames`](https://github.com/raysan5/raylib/blob/5.5/src/raudio.c)
+and the DirectSound [pan](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418148%28v%3Dvs.85%29)
+and [volume](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/mt708939%28v%3Dvs.85%29)
+contracts.
+
 ## Entry struct (audio_entry_t)
 
 SFX and music tracks share the same 0x84-byte entry layout. The runtime uses
