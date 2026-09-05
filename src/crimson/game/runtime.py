@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import faulthandler
+import math
 import time
 import webbrowser
 from pathlib import Path
@@ -51,13 +52,6 @@ def _require_runtime_assets(assets_dir: Path) -> None:
         raise FileNotFoundError(f"assets: missing required archives: {joined}")
 
 
-def _parse_float_arg(value: str) -> float:
-    try:
-        return float(value)
-    except ValueError:
-        return 0.0
-
-
 def _apply_debug_console_defaults(console: ConsoleState, *, debug: bool) -> None:
     if not bool(debug):
         return
@@ -72,7 +66,13 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             console.log.log("setGammaRamp <scalar > 0>")
             console.log.log("Command adjusts gamma ramp linearly by multiplying with given scalar")
             return
-        value = _parse_float_arg(args[0])
+        try:
+            value = float(args[0])
+        except ValueError:
+            value = 0.0
+        if not math.isfinite(value) or value <= 0.0:
+            console.log.log("setGammaRamp requires a finite scalar greater than zero.")
+            return
         state.gamma_ramp = value
         console.log.log(f"Gamma ramp regenerated and multiplied with {value:.6f}")
 
@@ -137,9 +137,10 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             return
         try:
             value = int(float(args[0]))
-        except ValueError:
-            value = 0
-        state.status.play_time_ms = max(0, value)
+        except (ValueError, OverflowError):
+            console.log.log("demoTrialSetPlaytime requires a finite number of milliseconds.")
+            return
+        state.status.play_time_ms = max(0, min(value, 0xFFFFFFFF))
         state.status.save_if_dirty()
         console.log.log(f"demo trial: playtime={state.status.play_time_ms}ms (total {DEMO_TOTAL_PLAY_TIME_MS}ms)")
 
@@ -149,8 +150,9 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             return
         try:
             value = int(float(args[0]))
-        except ValueError:
-            value = 0
+        except (ValueError, OverflowError):
+            console.log.log("demoTrialSetGrace requires a finite number of milliseconds.")
+            return
         state.demo_trial_elapsed_ms = max(0, value)
         console.log.log(f"demo trial: quest grace={state.demo_trial_elapsed_ms}ms (total {DEMO_QUEST_GRACE_TIME_MS}ms)")
 

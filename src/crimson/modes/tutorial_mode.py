@@ -262,8 +262,6 @@ class TutorialMode(BaseGameplayMode):
             session = self._sim_session
             if session is not None:
                 elapsed_before_ms = float(session.elapsed_ms)
-                session.detail_preset = int(self._deterministic_detail_preset())
-                session.violence_disabled = int(self._deterministic_violence_disabled())
                 self._frame_input_state = input_state
                 try:
                     self._run_deterministic_session_ticks(

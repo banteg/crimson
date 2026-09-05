@@ -314,6 +314,8 @@ class OptionsMenuView(PanelMenuView):
             tint=rl.WHITE,
         )
 
+        draw_small_text(font, "Effect density applies next game.", base_pos.offset(dy=195.0 * scale), text_color)
+
         y_offsets = (47.0, 67.0, 87.0, 107.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
             draw_small_text(font, label, label_pos.offset(dy=offset * scale), text_color)

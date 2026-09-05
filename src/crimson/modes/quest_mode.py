@@ -399,9 +399,6 @@ class QuestMode(BaseGameplayMode):
                 self._close_failed_run()
             return
 
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.violence_disabled = int(self._deterministic_violence_disabled())
-
         self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:
             self.render_resources.ground.process_pending()

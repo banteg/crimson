@@ -19,10 +19,6 @@ from .navigation import ScreenNavigator
 from .resources import GameResources
 from .types import GameplayScreen, GameState
 
-_GAMMA_RAMP_SHADER: rl.Shader | None = None
-_GAMMA_RAMP_SHADER_GAIN_LOC: int = -1
-_GAMMA_RAMP_SHADER_TRIED = False
-
 _GAMMA_RAMP_VS_330 = r"""
 #version 330
 
@@ -62,42 +58,6 @@ void main() {
 """
 
 
-def _get_gamma_ramp_shader() -> tuple[rl.Shader | None, int]:
-    global _GAMMA_RAMP_SHADER, _GAMMA_RAMP_SHADER_GAIN_LOC, _GAMMA_RAMP_SHADER_TRIED
-    if _GAMMA_RAMP_SHADER_TRIED:
-        shader = _GAMMA_RAMP_SHADER
-        if shader is None:
-            return None, -1
-        if int(shader.id) <= 0:
-            return None, -1
-        if _GAMMA_RAMP_SHADER_GAIN_LOC < 0:
-            return None, -1
-        return shader, _GAMMA_RAMP_SHADER_GAIN_LOC
-
-    _GAMMA_RAMP_SHADER_TRIED = True
-    try:
-        shader = rl.load_shader_from_memory(_GAMMA_RAMP_VS_330, _GAMMA_RAMP_FS_330)
-    except (RuntimeError, OSError, ValueError):
-        _GAMMA_RAMP_SHADER = None
-        _GAMMA_RAMP_SHADER_GAIN_LOC = -1
-        return None, -1
-
-    if int(shader.id) <= 0:
-        _GAMMA_RAMP_SHADER = None
-        _GAMMA_RAMP_SHADER_GAIN_LOC = -1
-        return None, -1
-
-    gain_loc = int(rl.get_shader_location(shader, "u_gamma_gain"))
-    if gain_loc < 0:
-        _GAMMA_RAMP_SHADER = None
-        _GAMMA_RAMP_SHADER_GAIN_LOC = -1
-        return None, -1
-
-    _GAMMA_RAMP_SHADER = shader
-    _GAMMA_RAMP_SHADER_GAIN_LOC = gain_loc
-    return _GAMMA_RAMP_SHADER, _GAMMA_RAMP_SHADER_GAIN_LOC
-
-
 def _set_gamma_ramp_gain(shader: rl.Shader, gain_loc: int, gain: float) -> None:
     rl.set_shader_value(
         shader,
@@ -116,6 +76,9 @@ class GameLoopView:
         self._demo_trial_info: DemoTrialOverlayInfo | None = None
         self._screenshot_requested = False
         self._runtime_updates_per_frame = 0
+        self._gamma_shader: rl.Shader | None = None
+        self._gamma_gain_loc = -1
+        self._gamma_target: rl.RenderTexture | None = None
 
     def open(self) -> None:
         rl.hide_cursor()
@@ -335,21 +298,76 @@ class GameLoopView:
         self.state.console.draw()
         self.state.console.draw_fps_counter()
 
+    def _ensure_gamma_resources(self, width: int, height: int) -> None:
+        if self._gamma_shader is None:
+            shader = rl.load_shader_from_memory(_GAMMA_RAMP_VS_330, _GAMMA_RAMP_FS_330)
+            if shader.id <= 0:
+                raise RuntimeError("gamma shader compilation returned an invalid shader id")
+            try:
+                gain_loc = rl.get_shader_location(shader, "u_gamma_gain")
+                if gain_loc < 0:
+                    raise RuntimeError("gamma shader is missing its gain uniform")
+            except Exception:
+                rl.unload_shader(shader)
+                raise
+            self._gamma_shader = shader
+            self._gamma_gain_loc = gain_loc
+        target = self._gamma_target
+        if target is not None and target.texture.width == width and target.texture.height == height:
+            return
+        candidate = rl.load_render_texture(width, height)
+        if candidate.id <= 0 or not rl.rl_framebuffer_complete(candidate.id):
+            rl.unload_render_texture(candidate)
+            raise RuntimeError("gamma render target is incomplete")
+        if target is not None:
+            rl.unload_render_texture(target)
+        self._gamma_target = candidate
+
+    def _close_gamma_resources(self) -> None:
+        if self._gamma_target is not None:
+            rl.unload_render_texture(self._gamma_target)
+            self._gamma_target = None
+        if self._gamma_shader is not None:
+            rl.unload_shader(self._gamma_shader)
+            self._gamma_shader = None
+        self._gamma_gain_loc = -1
+
     def _draw_with_gamma(self) -> None:
         gamma_gain = max(0.0, float(self.state.gamma_ramp))
         if abs(gamma_gain - 1.0) <= 1e-6:
             self._draw_scene_layers()
             return
 
-        shader, gain_loc = _get_gamma_ramp_shader()
-        if shader is None or gain_loc < 0:
-            self._draw_scene_layers()
+        screen_w, screen_h = rl.get_screen_width(), rl.get_screen_height()
+        render_w, render_h = rl.get_render_width(), rl.get_render_height()
+        if min(screen_w, screen_h, render_w, render_h) <= 0:
             return
-
-        _set_gamma_ramp_gain(shader, gain_loc, gamma_gain)
+        self._ensure_gamma_resources(render_w, render_h)
+        target, shader = self._gamma_target, self._gamma_shader
+        assert target is not None and shader is not None
+        # Inner world/UI shaders may change the shader binding. Capture their
+        # completed frame first, then apply the native linear gamma multiplier.
+        # Scale logical drawing coordinates into the full DPI-sized framebuffer.
+        rl.begin_texture_mode(target)
+        try:
+            rl.clear_background(rl.BLACK)
+            rl.rl_push_matrix()
+            try:
+                rl.rl_scalef(render_w / screen_w, render_h / screen_h, 1.0)
+                self._draw_scene_layers()
+            finally:
+                rl.rl_pop_matrix()
+        finally:
+            rl.end_texture_mode()
+        _set_gamma_ramp_gain(shader, self._gamma_gain_loc, gamma_gain)
         rl.begin_shader_mode(shader)
         try:
-            self._draw_scene_layers()
+            rl.draw_texture_pro(
+                target.texture,
+                rl.Rectangle(0.0, 0.0, float(render_w), -float(render_h)),
+                rl.Rectangle(0.0, 0.0, float(screen_w), float(screen_h)),
+                rl.Vector2(0.0, 0.0), 0.0, rl.WHITE,
+            )
         finally:
             rl.end_shader_mode()
 
@@ -365,6 +383,7 @@ class GameLoopView:
             if ground is not None:
                 ground.close()
         finally:
+            self._close_gamma_resources()
             self.resources.close()
             self.state.console.close()
             rl.show_cursor()

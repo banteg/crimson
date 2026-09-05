@@ -631,12 +631,6 @@ class BaseGameplayMode:
     def _runtime_player_count(self) -> int:
         return self.config.gameplay.player_count
 
-    def _deterministic_detail_preset(self) -> int:
-        return self.config.display.detail_preset
-
-    def _deterministic_violence_disabled(self) -> int:
-        return self.config.display.violence_disabled
-
     def update(self, dt: float) -> None:
         raise NotImplementedError(f"{self.__class__.__name__}.update() must be implemented by gameplay mode")
 
@@ -691,8 +685,8 @@ class BaseGameplayMode:
             quest_fail_retry_count=self.quest_fail_retry_count,
             hardcore=self.hardcore,
             preserve_bugs=self.state.preserve_bugs,
-            detail_preset=self._deterministic_detail_preset(),
-            violence_disabled=self._deterministic_violence_disabled(),
+            detail_preset=self.config.display.detail_preset,
+            violence_disabled=self.config.display.violence_disabled,
             world_size=self.world_size,
             player_count=self._runtime_player_count(),
             status=GameStatusData() if status is None else status.as_data(),
@@ -919,8 +913,7 @@ class BaseGameplayMode:
         if float(dt_frame) <= 0.0:
             return
         self._sync_audio_and_ground()
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.violence_disabled = int(self._deterministic_violence_disabled())
+        # RNG-affecting settings stay with the RunSpec recorded at startup.
         runner, _provider = self._ensure_tick_runner(
             session=session,
         )
