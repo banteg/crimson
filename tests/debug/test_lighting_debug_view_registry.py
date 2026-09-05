@@ -27,6 +27,11 @@ def test_lighting_debug_factory_constructs_without_window() -> None:
     assert entry is not None
 
     ctx = ViewContext(assets_dir=Path(".") / "artifacts" / "assets")
-    view = entry.factory(ctx)
+    instance = entry.factory(ctx)
+    view = instance.view
     assert isinstance(view, LightingDebugView)
     assert view._auto_emit_enabled is False
+
+    assert not instance.hooks.should_close()
+    view.close_requested = True
+    assert instance.hooks.should_close()

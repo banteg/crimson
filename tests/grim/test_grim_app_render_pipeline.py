@@ -132,27 +132,27 @@ def test_run_view_uses_render_pipeline(monkeypatch) -> None:
     assert fake_rl.close_calls == 1
 
 
-def test_view_run_hooks_read_view_runtime_methods_and_flags() -> None:
-    class _ViewWithMethods:
-        def __init__(self) -> None:
-            self.screenshots = 1
-
-        def should_close(self) -> bool:
-            return True
-
-        def consume_screenshot_request(self) -> bool:
-            self.screenshots -= 1
-            return self.screenshots >= 0
-
-    method_hooks = grim_app.ViewRunHooks(_ViewWithMethods())
-    assert method_hooks.should_close() is True
-    assert method_hooks.consume_screenshot_request() is True
-    assert method_hooks.consume_screenshot_request() is False
-
-    class _FlagView:
-        close_requested = True
-
-    flag_view = _FlagView()
-    flag_hooks = grim_app.ViewRunHooks(flag_view)
-    assert flag_hooks.should_close() is True
-    assert flag_hooks.consume_screenshot_request() is False
+def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) -> None:
+    fake_rl = _FakeRl()
+    view = _ViewSpy()
+    mocker.patch.object(grim_app, "rl", fake_rl)
+    mocker.patch.object(grim_app, "SCREENSHOT_DIR", tmp_path)
+    mocker.patch.object(grim_app, "WindowSink")
+    mocker.patch.object(grim_app, "RaylibDrawScope")
+    mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
+    mocker.patch.object(fake_rl, "window_should_close", return_value=False)
+    screenshot = mocker.spy(fake_rl, "take_screenshot")
+    quit_requested = mocker.Mock(side_effect=[False, True])
+    screenshot_requested = mocker.Mock(side_effect=[True, False])
+    grim_app.run_view(
+        view,
+        hooks=grim_app.RunViewHooks(
+            should_close=quit_requested,
+            consume_screenshot_request=screenshot_requested,
+        ),
+    )
+    assert view.draw_calls == 2
+    assert len(view.update_dts) == 2
+    screenshot.assert_called_once_with("00001.png")
+    assert quit_requested.call_count == screenshot_requested.call_count == 2
+    assert view.close_calls == fake_rl.close_calls == 1

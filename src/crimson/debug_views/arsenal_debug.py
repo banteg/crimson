@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from grim.app import RunViewHooks
 from grim.assets import TextureId
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
@@ -9,7 +10,7 @@ from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
-from grim.view import View, ViewContext
+from grim.view import ViewContext
 
 from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
@@ -37,7 +38,7 @@ from ..weapons import (
 from ..world import WorldRuntime
 from ..world.standalone_tick_harness import StandaloneTickHarness
 from ._ui_helpers import draw_ui_text, ui_line_height
-from .registry import register_view
+from .registry import ViewInstance, register_view
 
 WORLD_SIZE = 1024.0
 
@@ -63,6 +64,7 @@ DEFAULT_SPAWN_IDS = (
     SpawnId.SPIDER_SP1_CONST_WHITE_FAST_3E,
     SpawnId.SPIDER_SP2_RANDOM_35,
 )
+
 
 def _fmt_float(value: float | None, *, digits: int = 3) -> str:
     if value is None:
@@ -192,7 +194,10 @@ class ArsenalDebugView:
             spawn_id = self._spawn_ids[idx % len(self._spawn_ids)]
             angle = float(idx) / float(count) * math.tau
             spawn_pos = (player_pos + Vec2.from_angle(angle) * self._spawn_ring_radius).clamp_rect(
-                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
+                48.0,
+                48.0,
+                WORLD_SIZE - 48.0,
+                WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
             self._runtime.sim_world.creatures.spawn_template(
@@ -455,5 +460,12 @@ class ArsenalDebugView:
 
 
 @register_view("arsenal", "Arsenal")
-def build_arsenal_debug_view(ctx: ViewContext) -> View:
-    return ArsenalDebugView(ctx)
+def build_arsenal_debug_view(ctx: ViewContext) -> ViewInstance:
+    view = ArsenalDebugView(ctx)
+    return ViewInstance(
+        view,
+        RunViewHooks(
+            should_close=lambda: view.close_requested,
+            consume_screenshot_request=view.consume_screenshot_request,
+        ),
+    )

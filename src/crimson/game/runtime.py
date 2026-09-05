@@ -7,7 +7,7 @@ import webbrowser
 from pathlib import Path
 
 from grim import music
-from grim.app import ViewRunHooks, run_view
+from grim.app import RunViewHooks, run_view
 from grim.config import ensure_crimson_cfg
 from grim.console import (
     CommandHandler,
@@ -18,7 +18,6 @@ from grim.console import (
 )
 from grim.rand import Crand
 from grim.raylib_api import rl
-from grim.view import View
 
 from ..assets_fetch import download_missing_paqs
 from ..debug import set_debug_enabled
@@ -289,7 +288,7 @@ def run_game(config: GameConfig) -> None:
         config_flags = 0
         if not cfg.display.windowed:
             config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
-        view: View = GameLoopView(state)
+        view = GameLoopView(state)
         run_view(
             view,
             width=width,
@@ -298,7 +297,9 @@ def run_game(config: GameConfig) -> None:
             fps=config.fps,
             config_flags=config_flags,
             exit_key=rl.KeyboardKey.KEY_NULL,
-            hooks=ViewRunHooks(view),
+            hooks=RunViewHooks(
+                should_close=view.should_close, consume_screenshot_request=view.consume_screenshot_request,
+            ),
         )
         if state is not None:
             state.status.save_if_dirty()

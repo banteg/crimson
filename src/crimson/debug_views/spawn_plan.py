@@ -8,7 +8,7 @@ from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
-from grim.view import View, ViewContext
+from grim.view import ViewContext
 
 from ..creatures.spawn import (
     SPAWN_TEMPLATES,
@@ -21,7 +21,7 @@ from ..creatures.spawn import (
     tick_spawn_slot,
 )
 from ._ui_helpers import draw_ui_text, ui_line_height
-from .registry import register_view
+from .registry import ViewInstance, register_view
 
 BASE_POS = Vec2(512.0, 512.0)
 
@@ -326,7 +326,10 @@ class SpawnPlanView:
                 OFFSET_COLOR,
             )
             rl.draw_circle_lines(
-                int(target_screen.x), int(target_screen.y), max(2.0, 4.0 * self._world_scale), OFFSET_COLOR,
+                int(target_screen.x),
+                int(target_screen.y),
+                max(2.0, 4.0 * self._world_scale),
+                OFFSET_COLOR,
             )
 
         # Creature dots.
@@ -354,5 +357,5 @@ class SpawnPlanView:
 
 
 @register_view("spawn-plan", "Spawn plan")
-def view_spawn_plan(*, ctx: ViewContext) -> View:
-    return SpawnPlanView(ctx)
+def view_spawn_plan(ctx: ViewContext) -> ViewInstance:
+    return ViewInstance(SpawnPlanView(ctx))

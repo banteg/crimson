@@ -8,6 +8,8 @@ from typer.testing import CliRunner
 import crimson.debug_views as views
 import grim.app as grim_app
 from crimson.cli import app
+from crimson.debug_views.registry import ViewInstance
+from tests.support.screens import ScreenStub
 
 
 def test_view_autotune_requires_lighting_debug() -> None:
@@ -30,7 +32,7 @@ def test_view_autotune_and_dump_flags_are_mutually_exclusive(mocker) -> None:
     view_def = SimpleNamespace(
         name="lighting-debug",
         title="Lighting Debug",
-        factory=lambda ctx: SimpleNamespace(),
+        factory=lambda ctx: ViewInstance(ScreenStub()),
     )
     mocker.patch.object(views, "view_by_name", side_effect=lambda name: view_def if name == "lighting-debug" else None)
     mocker.patch.object(views, "all_views", side_effect=lambda: [view_def])
@@ -55,7 +57,7 @@ def test_view_autotune_sets_env_and_invokes_run_view(mocker) -> None:
     view_def = SimpleNamespace(
         name="lighting-debug",
         title="Lighting Debug",
-        factory=lambda ctx: SimpleNamespace(),
+        factory=lambda ctx: ViewInstance(ScreenStub()),
     )
 
     mocker.patch.object(views, "view_by_name", side_effect=lambda name: view_def if name == "lighting-debug" else None)

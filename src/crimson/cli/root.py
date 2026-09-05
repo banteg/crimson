@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import io
 import json
 import os
@@ -31,6 +30,7 @@ def _quest_defs() -> dict[str, QuestDefinition]:
     from ..quests import all_quests
 
     return {quest.level.text: quest for quest in all_quests()}
+
 
 _SEP_RE = re.compile(r"[\\/]+")
 
@@ -213,7 +213,7 @@ def cmd_view(
     assets_dir: Path = typer.Option(Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"),
 ) -> None:
     """Launch a Raylib debug view."""
-    from grim.app import ViewRunHooks, run_view
+    from grim.app import run_view
     from grim.view import ViewContext
 
     from ..debug_views import all_views, view_by_name
@@ -242,19 +242,15 @@ def cmd_view(
             raise typer.Exit(code=1)
         os.environ["CRIMSON_LIGHTING_DEBUG_AUTO_TUNE"] = str(int(autotune_shadow_frames))
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=bool(preserve_bugs))
-    params = inspect.signature(view_def.factory).parameters
-    if "ctx" in params:
-        view = view_def.factory(ctx=ctx)
-    else:
-        view = view_def.factory()
+    instance = view_def.factory(ctx)
     title = f"{view_def.title} — Crimsonland"
     run_view(
-        RuntimeResourcesView(view, assets_dir=assets_dir),
+        RuntimeResourcesView(instance.view, assets_dir=assets_dir),
         width=width,
         height=height,
         title=title,
         fps=fps,
-        hooks=ViewRunHooks(view),
+        hooks=instance.hooks,
     )
 
 

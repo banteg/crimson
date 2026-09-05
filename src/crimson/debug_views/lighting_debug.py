@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim.app import RunViewHooks
 from grim.assets import TextureId
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
@@ -14,7 +15,7 @@ from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
-from grim.view import View, ViewContext
+from grim.view import ViewContext
 
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
@@ -29,7 +30,7 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world import WorldRuntime
 from ..world.standalone_tick_harness import StandaloneTickHarness
 from ._ui_helpers import draw_ui_text, ui_line_height
-from .registry import register_view
+from .registry import ViewInstance, register_view
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
@@ -1462,8 +1463,7 @@ class LightingDebugView:
             self._auto_emit_enabled = False
             self._spawn_preset_ring()
             print(
-                "[lighting-debug] autodiag start "
-                f"frames={self._autodiag_total_frames} seg={AUTODIAG_SEGMENT_FRAMES}",
+                f"[lighting-debug] autodiag start frames={self._autodiag_total_frames} seg={AUTODIAG_SEGMENT_FRAMES}",
             )
 
         segment = max(0, self._autodiag_frame // AUTODIAG_SEGMENT_FRAMES)
@@ -1973,18 +1973,28 @@ class LightingDebugView:
         kind = drag.kind
         if kind == "move":
             next_pos = self._clamp_world_pos(mouse_world + drag.pos_offset)
-            self._set_static_emitter(index, StaticEmitter(next_pos, emitter.angle, emitter.radius, emitter.strength, emitter.focus, emitter.stretch))
+            self._set_static_emitter(
+                index,
+                StaticEmitter(
+                    next_pos, emitter.angle, emitter.radius, emitter.strength, emitter.focus, emitter.stretch,
+                ),
+            )
             return
         if kind == "radius":
             radius = _clampf((mouse_world - emitter.pos).length(), STATIC_LIGHT_RADIUS_MIN, STATIC_LIGHT_RADIUS_MAX)
-            self._set_static_emitter(index, StaticEmitter(emitter.pos, emitter.angle, radius, emitter.strength, emitter.focus, emitter.stretch))
+            self._set_static_emitter(
+                index,
+                StaticEmitter(emitter.pos, emitter.angle, radius, emitter.strength, emitter.focus, emitter.stretch),
+            )
             return
         if kind == "direction":
             delta = mouse_world - emitter.pos
             length = delta.length()
             if length > 1e-4:
                 angle = float(delta.to_heading())
-                focus = _clampf(length / max(1.0, float(emitter.radius) * 0.55), STATIC_LIGHT_FOCUS_MIN, STATIC_LIGHT_FOCUS_MAX)
+                focus = _clampf(
+                    length / max(1.0, float(emitter.radius) * 0.55), STATIC_LIGHT_FOCUS_MIN, STATIC_LIGHT_FOCUS_MAX,
+                )
                 self._set_static_emitter(
                     index,
                     StaticEmitter(emitter.pos, angle, emitter.radius, emitter.strength, focus, emitter.stretch),
@@ -1997,7 +2007,10 @@ class LightingDebugView:
                 STATIC_LIGHT_STRENGTH_MIN,
                 STATIC_LIGHT_STRENGTH_MAX,
             )
-            self._set_static_emitter(index, StaticEmitter(emitter.pos, emitter.angle, emitter.radius, strength, emitter.focus, emitter.stretch))
+            self._set_static_emitter(
+                index,
+                StaticEmitter(emitter.pos, emitter.angle, emitter.radius, strength, emitter.focus, emitter.stretch),
+            )
             return
         if kind == "stretch":
             delta_x = float(mouse_screen.x - drag.mouse_start_screen.x)
@@ -2006,7 +2019,10 @@ class LightingDebugView:
                 STATIC_LIGHT_STRETCH_MIN,
                 STATIC_LIGHT_STRETCH_MAX,
             )
-            self._set_static_emitter(index, StaticEmitter(emitter.pos, emitter.angle, emitter.radius, emitter.strength, emitter.focus, stretch))
+            self._set_static_emitter(
+                index,
+                StaticEmitter(emitter.pos, emitter.angle, emitter.radius, emitter.strength, emitter.focus, stretch),
+            )
             return
 
         self._static_drag = None
@@ -2040,7 +2056,9 @@ class LightingDebugView:
 
     def _collect_static_shadow_state(self) -> None:
         occluders = self._static_occluders[:MAX_OCCLUDERS]
-        self._last_occluders = [CircleOccluder(pos=Vec2(float(occ.pos.x), float(occ.pos.y)), radius=float(occ.radius)) for occ in occluders]
+        self._last_occluders = [
+            CircleOccluder(pos=Vec2(float(occ.pos.x), float(occ.pos.y)), radius=float(occ.radius)) for occ in occluders
+        ]
 
         lights: list[ShadowLight] = []
         for emitter in self._static_emitters:
@@ -2118,12 +2136,18 @@ class LightingDebugView:
             aim_dir = Vec2(1.0, 0.0)
         heading = aim_dir.to_heading()
         muzzle_pos = (player.pos + aim_dir * float(profile.spawn_distance)).clamp_rect(
-            8.0, 8.0, WORLD_SIZE - 8.0, WORLD_SIZE - 8.0,
+            8.0,
+            8.0,
+            WORLD_SIZE - 8.0,
+            WORLD_SIZE - 8.0,
         )
 
         if profile.secondary_type_id == SecondaryProjectileTypeId.DETONATION:
             impact = (player.pos + aim_dir * float(profile.explosion_distance)).clamp_rect(
-                16.0, 16.0, WORLD_SIZE - 16.0, WORLD_SIZE - 16.0,
+                16.0,
+                16.0,
+                WORLD_SIZE - 16.0,
+                WORLD_SIZE - 16.0,
             )
             self._runtime.sim_world.state.secondary_projectiles.spawn_from_spec(
                 SecondarySpawnSpec(
@@ -2199,7 +2223,10 @@ class LightingDebugView:
         for idx in range(count):
             angle = float(idx) / float(count) * math.tau
             pos = (player.pos + Vec2.from_angle(angle) * ENEMY_RING_RADIUS).clamp_rect(
-                48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
+                48.0,
+                48.0,
+                WORLD_SIZE - 48.0,
+                WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
             self._runtime.sim_world.creatures.spawn_template(
@@ -2995,11 +3022,21 @@ class LightingDebugView:
             )
 
             handle_radius = STATIC_HANDLE_DRAW_RADIUS_PX + (2.0 if selected else 0.0)
-            rl.draw_circle_v(rl.Vector2(float(center_screen.x), float(center_screen.y)), handle_radius, LIGHT_HANDLE_MOVE)
-            rl.draw_circle_v(rl.Vector2(float(radius_screen.x), float(radius_screen.y)), handle_radius, LIGHT_HANDLE_RADIUS)
-            rl.draw_circle_v(rl.Vector2(float(direction_screen.x), float(direction_screen.y)), handle_radius, LIGHT_HANDLE_DIR)
-            rl.draw_circle_v(rl.Vector2(float(strength_screen.x), float(strength_screen.y)), handle_radius, LIGHT_HANDLE_STRENGTH)
-            rl.draw_circle_v(rl.Vector2(float(stretch_screen.x), float(stretch_screen.y)), handle_radius, LIGHT_HANDLE_STRETCH)
+            rl.draw_circle_v(
+                rl.Vector2(float(center_screen.x), float(center_screen.y)), handle_radius, LIGHT_HANDLE_MOVE,
+            )
+            rl.draw_circle_v(
+                rl.Vector2(float(radius_screen.x), float(radius_screen.y)), handle_radius, LIGHT_HANDLE_RADIUS,
+            )
+            rl.draw_circle_v(
+                rl.Vector2(float(direction_screen.x), float(direction_screen.y)), handle_radius, LIGHT_HANDLE_DIR,
+            )
+            rl.draw_circle_v(
+                rl.Vector2(float(strength_screen.x), float(strength_screen.y)), handle_radius, LIGHT_HANDLE_STRENGTH,
+            )
+            rl.draw_circle_v(
+                rl.Vector2(float(stretch_screen.x), float(stretch_screen.y)), handle_radius, LIGHT_HANDLE_STRETCH,
+            )
 
             if selected and self._small is not None:
                 draw_ui_text(
@@ -3106,9 +3143,13 @@ class LightingDebugView:
 
         profile = self._selected_profile()
         preset = self._selected_spawn_preset()
-        creatures_alive = sum(1 for creature in self._runtime.sim_world.creatures.entries if creature.active and creature.hp > 0.0)
+        creatures_alive = sum(
+            1 for creature in self._runtime.sim_world.creatures.entries if creature.active and creature.hp > 0.0
+        )
         primary_count = sum(1 for entry in self._runtime.sim_world.state.projectiles.entries if entry.active)
-        secondary_count = sum(1 for entry in self._runtime.sim_world.state.secondary_projectiles.entries if entry.active)
+        secondary_count = sum(
+            1 for entry in self._runtime.sim_world.state.secondary_projectiles.entries if entry.active
+        )
 
         draw_ui_text(self._small, "Lighting debug: 2D SDF soft shadows", Vec2(x, y), color=UI_TEXT)
         y += line
@@ -3122,8 +3163,7 @@ class LightingDebugView:
         draw_ui_text(
             self._small,
             (
-                f"profile {self._profile_index + 1}/{len(EMISSIVE_PROFILES)}: {profile.name}  "
-                f"new-light defaults"
+                f"profile {self._profile_index + 1}/{len(EMISSIVE_PROFILES)}: {profile.name}  new-light defaults"
                 if self._static_scene_enabled
                 else f"profile {self._profile_index + 1}/{len(EMISSIVE_PROFILES)}: {profile.name}  "
                 f"auto {'on' if self._auto_emit_enabled else 'off'} ({self._profile_auto_interval(profile):.3f}s)"
@@ -3297,5 +3337,12 @@ class LightingDebugView:
 
 
 @register_view("lighting-debug", "Lighting debug")
-def build_lighting_debug_view(ctx: ViewContext) -> View:
-    return LightingDebugView(ctx)
+def build_lighting_debug_view(ctx: ViewContext) -> ViewInstance:
+    view = LightingDebugView(ctx)
+    return ViewInstance(
+        view,
+        RunViewHooks(
+            should_close=lambda: view.close_requested,
+            consume_screenshot_request=view.consume_screenshot_request,
+        ),
+    )
