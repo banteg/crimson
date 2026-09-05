@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "1eefa915da9df37f9eebcda407aec1bd63f069bea0b7da925cf9a3d86b0f0c3d",
+  "audit_digest": "17c56f7f9b03b6c38d4c74538225ecb257d09d94a57c9654921665e12f17b0a4",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -34392,7 +34392,7 @@
         {
           "path": "tools/match/scratches/mods_menu_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "8e43e2e0c58fac41585c44cd059fff456aa7a6fd16e602015d1d59a4dd9257b4"
+          "sha256": "45536d00e52db303cc044a98cca7cb5cf340d55d9224ead29ba70325b005daaa"
         },
         {
           "path": "tools/match/scratches/mods_menu_update/scratch.conf",
@@ -34448,7 +34448,7 @@
           "canonical_config_sha256": "9e8ec180a15fb030eb48b5d3d0fbc12a5cd5893ab1e21e19d3ced8643731bda5",
           "canonical_scratch": "tools/match/scratches/mods_menu_update",
           "canonical_source": "tools/match/scratches/mods_menu_update/scratch.cpp",
-          "canonical_source_sha256": "8e43e2e0c58fac41585c44cd059fff456aa7a6fd16e602015d1d59a4dd9257b4",
+          "canonical_source_sha256": "45536d00e52db303cc044a98cca7cb5cf340d55d9224ead29ba70325b005daaa",
           "effective_end": 4256719,
           "end": 4256719,
           "function": "mods_menu_update",
@@ -34458,7 +34458,7 @@
             "masked_ok": 184,
             "masked_unresolved": 0,
             "prefix_instructions": 0,
-            "ratio": 0.9444444444444444,
+            "ratio": 0.9891975308641975,
             "state": "wip",
             "target_instructions": 648
           },
@@ -34472,16 +34472,16 @@
         "masked_ok": 184,
         "masked_unresolved": 0,
         "prefix_instructions": 0,
-        "ratio": 0.9444444444444444,
+        "ratio": 0.9891975308641975,
         "state": "wip",
         "target_instructions": 648
       },
       "object": "tools/match/scratches/mods_menu_update/build/msvc6.5/ab3f2eecd596f1b6/scratch.obj",
       "object_function_symbol": "_mods_menu_update",
-      "object_sha256": "24651c269020bae4b92d8667865f481f0a6e3f5f6dd795276efdb8a75e833e69",
+      "object_sha256": "071ac6e0d079be592cfce870a8517bcc99b3aa912ef5f3cbbc646f6cfde0eb93",
       "scratch": "tools/match/scratches/mods_menu_update",
       "source": "tools/match/scratches/mods_menu_update/scratch.cpp",
-      "source_sha256": "8e43e2e0c58fac41585c44cd059fff456aa7a6fd16e602015d1d59a4dd9257b4",
+      "source_sha256": "45536d00e52db303cc044a98cca7cb5cf340d55d9224ead29ba70325b005daaa",
       "target_size": 2607,
       "translation_unit": {
         "kind": "isolated",

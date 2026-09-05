@@ -1,13 +1,14 @@
 # Remaining EXE matching batches
 
-Snapshot: `52ed2a9d2` (633-exact source checkpoint), refreshed on 2026-09-05. The native audit
+Snapshot: `5ab2935e2` (633-exact source checkpoint), refreshed on 2026-09-05. The native audit
 and matching checkpoint reproduce all 671 EXE candidates, including the 38 remaining functions.
-The [latest exact-match follow-up](EXACT-FOLLOWUP-2026-09-05.md) recovered the perk selection and
-credits screens after the [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
+The [latest UI storage follow-up](UI-STORAGE-FOLLOWUP-2026-09-05.md) improved the mods menu to
+98.92% after the [two exact UI recoveries](EXACT-FOLLOWUP-2026-09-05.md) and the
+[32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
 **EXE: 633/671 exact; Grim: 139/139 exact.** The EXE frontier is 38 functions spanning 153,591
-code bytes, with 30,148 fuzzy-gap bytes. The top five functions hold 67.9% of that gap, and the
-top ten hold 85.9%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
+code bytes, with 30,031 fuzzy-gap bytes. The top five functions hold 68.2% of that gap, and the
+top ten hold 86.2%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
 
@@ -33,7 +34,7 @@ successful siblings as controls rather than templates to copy mechanically.
 | [03](#batch-03) | WinInet request and response workers | 2 | 750 |
 | [04](#batch-04) | Short coordinate lifetimes | 4 | 103 |
 | [05](#batch-05) | UI call scheduling and vector primitives | 4 | 54 |
-| [06](#batch-06) | Menu object and aggregate lifetimes | 3 | 598 |
+| [06](#batch-06) | Menu object and aggregate lifetimes | 3 | 481 |
 | [07](#batch-07) | UI loops, formatting, and board state | 3 | 926 |
 | [08](#batch-08) | HUD and effect rendering | 4 | 2,053 |
 | [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 3 | 2,834 |
@@ -46,8 +47,8 @@ successful siblings as controls rather than templates to copy mechanically.
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 10 H
-functions and 28 with current records. Retained source changes start a new baseline epoch, so H
+**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 11 H
+functions and 27 with current records. Retained source changes start a new baseline epoch, so H
 can include a function improved in this pass; the campaign report preserves the gain evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
@@ -93,7 +94,7 @@ changing syntax.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [perk_apply](scratches/perk_apply/NOTES.md) | 99.59% | 241/241 | 4 | 0 | A |
+| [perk_apply](scratches/perk_apply/NOTES.md) | 99.59% | 241/241 | 4 | 0 | S |
 | [sfx_entry_start_playback](scratches/sfx_entry_start_playback/NOTES.md) | 87.10% | 93/93 | 28 | 0 | A |
 | [bonus_pick_random_type](scratches/bonus_pick_random_type/NOTES.md) | 75.93% | 162/162 | 117 | 0 | A |
 | [creature_handle_death](scratches/creature_handle_death/NOTES.md) | 89.49% | 205/204 | 88 | 0 | I |
@@ -252,14 +253,15 @@ local until a common owner is demonstrated.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 94.44% | 648/648 | 145 | 0 | S |
+| [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 98.92% | 648/648 | 28 | 0 | H |
 | [quest_select_menu_update](scratches/quest_select_menu_update/NOTES.md) | 95.89% | 803/803 | 141 | 0 | A |
 | [ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md) | 95.69% | 1408/1422 | 312 | 0 | H |
 
-- **mods_menu_update:** Native frame is 0x144 versus candidate 0x160; _finddata_t starts at 0x3c
-  versus 0x58. Reconstruct file-refresh, version text, separator color, and button-origin scopes
-  together. This pass tested four short value-lifetime controls without a gain; its current ledger
-  now records ten non-improving sweeps.
+- **mods_menu_update:** Short separator and independent button lifetimes recovered all opening,
+  selected-mod rendering, and button instructions, reaching 98.92%. Seven differences remain:
+  the 0x154 versus 0x144 frame and five enumeration-buffer addresses. Version rendering now agrees.
+  Narrow enumeration scopes, buffer declaration placement, and inline helpers are neutral on this
+  improved source; recover the remaining storage ownership without inventing buffer sizes.
 - **quest_select_menu_update:** Both frames are 48 bytes. Opening panel-Y/hover stores and the
   Back-button x87 reload remain locally reordered, with further row/register differences. Inspect
   the interaction between the recovered checkbox and surrounding row/Back scopes. Opening-store

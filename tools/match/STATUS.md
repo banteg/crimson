@@ -6,9 +6,9 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **772/810** functions matched exactly (**95.3%**), **188401/341992** code bytes (**55.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **311844/341992** code bytes (**91.2%**).
+Fuzzy-weighted alignment is **311961/341992** code bytes (**91.2%**).
 
-Remaining exact-match debt is **38 functions**, **153591 code bytes**, and **30148 fuzzy-gap bytes**.
+Remaining exact-match debt is **38 functions**, **153591 code bytes**, and **30031 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -28,9 +28,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**38** non-exact scratch-backed functions hold **30148 fuzzy-gap bytes**. The top 5 hold **67.9%** of that gap; the top 10 hold **85.9%**.
+**38** non-exact scratch-backed functions hold **30031 fuzzy-gap bytes**. The top 5 hold **68.2%** of that gap; the top 10 hold **86.2%**.
 
-Current-baseline experiments cover **28 functions / 6679 gap bytes**; **10 / 23469** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **27 functions / 6534 gap bytes**; **11 / 23497** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -56,24 +56,24 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 18 | crimsonland.exe | statistics_update_check_worker | 297 | semantic-complete | compiler | current-stalled | 3/14 | 3 | repeated-variants,stalled,metric-tradeoffs,variant-errors |
 | 19 | crimsonland.exe | statistics_menu_update | 194 | semantic-complete | compiler | current-active | 1/16 | 1 | repeated-variants,metric-tradeoffs |
 | 20 | crimsonland.exe | quest_build_survival_of_the_fastest | 177 | semantic-complete | compiler | historical-only | 0/13 | 0 | repeated-variants,repeated-specs,historical-only |
-| 21 | crimsonland.exe | mods_menu_update | 145 | semantic-complete | compiler | current-stalled | 10/24 | 10 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
-| 22 | crimsonland.exe | quest_select_menu_update | 141 | semantic-complete | compiler | current-active | 1/53 | 1 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 23 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 3/8 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
-| 24 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | current-stalled | 6/10 | 6 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
-| 25 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-inconclusive | 8/16 | 1 | repeated-variants,repeated-specs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 26 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | current-active | 1/20 | 1 | repeated-variants,metric-tradeoffs,variant-errors |
-| 27 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 5/14 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 28 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | current-stalled | 3/19 | 3 | repeated-variants,repeated-specs,stalled,variant-errors |
-| 29 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 1/6 | 1 | variant-errors |
-| 30 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 2/7 | 2 | variant-errors |
+| 21 | crimsonland.exe | quest_select_menu_update | 141 | semantic-complete | compiler | current-active | 2/54 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
+| 22 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 3/8 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
+| 23 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | current-stalled | 6/10 | 6 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
+| 24 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-inconclusive | 8/16 | 1 | repeated-variants,repeated-specs,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 25 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | current-active | 2/21 | 2 | repeated-variants,metric-tradeoffs,variant-errors |
+| 26 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 5/14 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 27 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | current-stalled | 3/19 | 3 | repeated-variants,repeated-specs,stalled,variant-errors |
+| 28 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 2/7 | 2 | repeated-variants,variant-errors |
+| 29 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 2/7 | 2 | variant-errors |
+| 30 | crimsonland.exe | mods_menu_update | 28 | semantic-complete | compiler | historical-only | 0/25 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,historical-only |
 | 31 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 2/14 | 1 | metric-tradeoffs |
 | 32 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | current-stalled | 3/20 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
-| 33 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-active | 1/16 | 1 | repeated-variants,variant-errors |
+| 33 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-active | 2/17 | 2 | repeated-variants,variant-errors |
 | 34 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | current-stalled | 3/33 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
 | 35 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-stalled | 3/11 | 3 | stalled,variant-errors |
-| 36 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 6/31 | 5 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
+| 36 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 7/32 | 6 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
 | 37 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | current-active | 1/24 | 1 | metric-tradeoffs |
-| 38 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | current-active | 2/10 | 2 | repeated-specs,metric-tradeoffs |
+| 38 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | current-stalled | 3/11 | 3 | repeated-specs,stalled,metric-tradeoffs |
 
 ## Function dispositions
 
@@ -143,12 +143,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 633/671 | 167236/320827 | 52.1% | 290679/320827 | 90.6% | 671/671 | 320827/320827 | 100.0% | 633/671 |
+| crimsonland.exe | 633/671 | 167236/320827 | 52.1% | 290796/320827 | 90.6% | 671/671 | 320827/320827 | 100.0% | 633/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**633/671** functions (**94.3%**), **167236/320827** bytes (**52.1%**), **290679/320827** fuzzy-weighted bytes (**90.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **633/671** scratches verified.
+**633/671** functions (**94.3%**), **167236/320827** bytes (**52.1%**), **290796/320827** fuzzy-weighted bytes (**90.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **633/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -303,7 +303,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | mod_info_destroy | 0x0040e850 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-mod-info-destroy |
 | match | mod_load_mod | 0x0040e860 | 219 | 219/219 | 0 | 61/61 | 100.00% | 61/61 | 24/0/0 |  | mod-interface-dll-loader |
 | match | mods_any_available | 0x0040e940 | 87 | 87/87 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
-| wip | mods_menu_update | 0x0040e9a0 | 2607 | 2462/2607 | 145 | 648/648 | 94.44% | 0/648 | 184/0/0 |  | mods-browser-metadata-and-plugin-launch |
+| wip | mods_menu_update | 0x0040e9a0 | 2607 | 2579/2607 | 28 | 648/648 | 98.92% | 0/648 | 184/0/0 |  | mods-browser-metadata-and-plugin-launch |
 | match | mods_menu_launch_button_destroy | 0x0040f3d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-launch-button-empty-destructor |
 | match | mods_menu_main_menu_button_destroy | 0x0040f3e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-main-menu-button-empty-destructor |
 | match | mods_menu_scrollbar_destroy | 0x0040f3f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-scrollbar-empty-destructor |
