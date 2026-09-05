@@ -141,17 +141,11 @@ def _aim_pov_right_active(*, player_index: int, preserve_bugs: bool) -> bool:
 
 def clear_input_edges(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
     return [
-        PlayerInput(
-            move=inp.move,
-            aim=inp.aim,
-            fire_down=inp.fire_down,
+        msgspec.structs.replace(
+            inp,
             fire_pressed=False,
             reload_pressed=False,
             move_to_cursor_pressed=False,
-            move_forward_pressed=inp.move_forward_pressed,
-            move_backward_pressed=inp.move_backward_pressed,
-            turn_left_pressed=inp.turn_left_pressed,
-            turn_right_pressed=inp.turn_right_pressed,
         )
         for inp in inputs
     ]

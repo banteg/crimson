@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import msgspec
 import pytest
 
+from crimson.aim_schemes import AimScheme
+from crimson.movement_controls import MovementControlType
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     FrameContext,
@@ -14,6 +17,7 @@ from crimson.sim.input_providers import (
     TickSupply,
 )
 from crimson.sim.tick_runner import TickRunner, TickRunnerConfig
+from grim.geom import Vec2
 from tests.support.builders.input_providers import (
     ReadyTickInputProvider,
     StalledInputProvider,
@@ -178,3 +182,50 @@ def test_runner_rejects_mismatched_resolved_tick_index() -> None:
 
     with pytest.raises(RuntimeError, match="resolved tick index mismatch"):
         runner.advance_ticks(start_tick=0, ticks_requested=1, tick_dt=1.0 / 60.0)
+
+
+@pytest.mark.parametrize("move_mode", list(MovementControlType))
+@pytest.mark.parametrize("aim_scheme", list(AimScheme))
+def test_additional_ticks_preserve_control_modes_and_held_buttons(
+    move_mode: MovementControlType, aim_scheme: AimScheme,
+) -> None:
+    original = PlayerInput(
+        move_mode=move_mode,
+        aim_scheme=aim_scheme,
+        fire_down=True,
+        fire_pressed=True,
+        reload_down=True,
+        reload_pressed=True,
+        move_to_cursor_pressed=True,
+        move_forward_pressed=True,
+        move_backward_pressed=False,
+        turn_left_pressed=True,
+        turn_right_pressed=False,
+    )
+    provider = LocalInputProvider(player_count=1, runtime=StaticLocalInputRuntime(inputs=(original,)))
+    provider.begin_frame(_FRAME_CTX)
+    first = provider.pull_tick(0, 1 / 60).tick
+    second = provider.pull_tick(1, 1 / 60).tick
+    assert first is not None and second is not None
+    assert first.inputs == (original,)
+    assert second.inputs == (msgspec.structs.replace(
+        original, fire_pressed=False, reload_pressed=False, move_to_cursor_pressed=False,
+    ),)
+
+
+@pytest.mark.parametrize("zero_tick_frames", [1, 3, 10])
+def test_pending_edges_survive_until_a_tick_and_use_latest_held_state(zero_tick_frames: int) -> None:
+    runtime = StaticLocalInputRuntime(inputs=(PlayerInput(fire_pressed=True, fire_down=True),))
+    provider = LocalInputProvider(player_count=1, runtime=runtime)
+    provider.submit_command(PerkMenuOpenCommand(player_index=0))
+    for frame in range(zero_tick_frames):
+        provider.begin_frame(msgspec.structs.replace(_FRAME_CTX, frame_index=frame, candidate_ticks=0))
+        runtime.inputs = (PlayerInput(reload_pressed=True, aim=Vec2(123, 456)),)
+    provider.begin_frame(_FRAME_CTX)
+    first = provider.pull_tick(0, 1 / 60).tick
+    second = provider.pull_tick(1, 1 / 60).tick
+    assert first is not None and second is not None
+    assert first.inputs == (PlayerInput(fire_pressed=True, reload_pressed=True, aim=Vec2(123, 456)),)
+    assert first.commands == (PerkMenuOpenCommand(player_index=0),)
+    assert second.inputs == (PlayerInput(aim=Vec2(123, 456)),)
+    assert second.commands == ()

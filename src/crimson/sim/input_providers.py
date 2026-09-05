@@ -111,45 +111,37 @@ class LocalInputProvider:
         self._player_count = max(0, player_count)
         self._runtime = runtime
         self._pending_commands: list[GameCommand] = []
-        self._commands_for_next_tick: list[GameCommand] = []
         self._frame_inputs: list[PlayerInput] = []
-        self._edge_inputs: list[PlayerInput] = []
-        self._first_tick_pending = False
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
-        frame_inputs = list(self._runtime.capture_frame_inputs(frame_ctx))
-        self._frame_inputs = list(frame_inputs)
-        self._edge_inputs = clear_input_edges(self._frame_inputs)
-        self._first_tick_pending = True
-        if self._pending_commands:
-            self._commands_for_next_tick.extend(self._pending_commands)
-            self._pending_commands.clear()
-
-    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
-        tick_index = int(tick_index)
-        dt_seconds = float(default_dt_seconds)
-        if self._first_tick_pending:
-            self._first_tick_pending = False
-            inputs = [] if self._player_count <= 0 else list(self._frame_inputs)
-            commands = list(self._commands_for_next_tick)
-            self._commands_for_next_tick.clear()
-            return TickSupply(
-                status=InputStatus.READY,
-                tick=ResolvedTick(
-                    tick_index=tick_index,
-                    dt_seconds=dt_seconds,
-                    inputs=tuple(inputs),
-                    commands=tuple(commands),
+        # Retain unconsumed edges across zero-tick frames while refreshing held
+        # controls and aim. pull_tick clears only the edges it actually delivers.
+        frame_inputs = self._runtime.capture_frame_inputs(frame_ctx)
+        pending = self._frame_inputs
+        self._frame_inputs = []
+        for index, current in enumerate(frame_inputs):
+            previous = pending[index] if index < len(pending) else PlayerInput()
+            self._frame_inputs.append(
+                msgspec.structs.replace(
+                    current,
+                    fire_pressed=current.fire_pressed or previous.fire_pressed,
+                    reload_pressed=current.reload_pressed or previous.reload_pressed,
+                    move_to_cursor_pressed=current.move_to_cursor_pressed or previous.move_to_cursor_pressed,
                 ),
             )
-        inputs = [] if self._player_count <= 0 else list(self._edge_inputs)
+
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
+        inputs = () if self._player_count <= 0 else tuple(self._frame_inputs)
+        commands = tuple(self._pending_commands)
+        self._pending_commands.clear()
+        self._frame_inputs = clear_input_edges(self._frame_inputs)
         return TickSupply(
             status=InputStatus.READY,
             tick=ResolvedTick(
                 tick_index=tick_index,
-                dt_seconds=dt_seconds,
-                inputs=tuple(inputs),
-                commands=(),
+                dt_seconds=default_dt_seconds,
+                inputs=inputs,
+                commands=commands,
             ),
         )
 
