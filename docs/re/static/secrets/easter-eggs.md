@@ -5,17 +5,12 @@ tags:
 
 # Easter eggs and puzzles
 
-This page tracks hidden unlock conditions and Easter eggs (Secret Path, AlienZooKeeper, etc.) so we can
-wire save editing and runtime validation around concrete logic instead of rumor or string hints alone.
-
-## Current status
-
-- We have a cluster of secret-hint strings and a single code path that prints them.
-- We have two additional date-gated easter-egg paths mapped in native code:
-  - statistics-menu March-3 text gate ("Orbes Volantes Exstare")
-  - startup prelude date gate for `balloon.tga` (preload-only in v1.9.93)
-- We have not yet mapped the *actual* unlock logic or any persistent flags.
-- No save-file fields are confirmed to drive these secrets.
+The credits puzzle, its AlienZooKeeper transition, and the two Survival weapon
+handouts are mapped. The puzzle's line flags are runtime state; Shrinkifier and
+Blade Gun grants last for the run. Splitter Gun availability comes from hardcore
+quest progression. See [secret weapons](../../../mechanics/secret-weapons.md).
+The relationship between the decoded riddle and the Blade Gun gate is an
+interpretation; the gate itself is established independently in native code.
 
 ## Evidence: secret-hint string cluster
 
@@ -24,8 +19,8 @@ inside `crimsonland_main` at `0x0042c450`.
 
 ### Strings (static addresses)
 
-- `0x00472e88` — "credits" (menu/label text; not referenced in decompiled code yet).
-- `0x00472e90` — "Secret" (menu/label text; not referenced in decompiled code yet).
+- `0x00472e88` — "credits" (label used by `credits_screen_update`).
+- `0x00472e90` — "Secret" (button label used by `credits_screen_update`).
 - `0x00473a8c` — "Brave little haxx0r aren't you?"
 - `0x00473b14` — `:D` line about "Wonder what he's up to now..."
 - `0x00473b38` — "This is all about fixing city walls with Magic Paint. To stop sinking, you know?"
@@ -46,9 +41,8 @@ The decompiler shows the guard as:
 This condition is nonsensical as written (always false), so treat it as a **decompiler artifact** or
 an intentional debug/anti-tamper check that needs disassembly confirmation.
 
-**Implication:** right now, the only *verified* logic around the hints is “print the hint block if the
-guard condition passes.” The actual gameplay unlock logic (Secret Path, secret weapons, etc.) is still
-unmapped.
+This guarded output is separate from the gameplay paths below. It is evidence
+for the embedded hints, not evidence that the credits or weapon gates are unknown.
 
 ## Credits screen code (verified)
 
@@ -66,9 +60,8 @@ labels and consumes the credits line table.
 
 - `credits_line_set` (`0x0040d000`): stores a single line + flags in the credits line table.
 
-These functions provide a concrete anchor for the **credits click puzzle** logic, but we still have not
-located any code that branches into the **Secret Path** or unlocks secret weapons based on the click
-pattern. That logic remains to be found.
+The click scan and Secret-button transition are described below; both are
+mapped to the credits routine.
 
 ## Date-gated easter eggs (verified)
 
@@ -88,7 +81,7 @@ Evidence anchor: `game_frame_update` at `0x0040c1c0`, instruction
 
 ### Startup prelude: date-gated `balloon.tga`
 
-`game_startup_init_prelude` (`0x0042b070`) checks local date and conditionally
+`game_startup_init_prelude` (`0x0042b090`) checks local date and conditionally
 loads a hidden texture pair:
 
 - accepted month/day pairs:
@@ -111,7 +104,7 @@ texture lookup key.
 Interpretation: this path is a one-shot startup preload gate in the main exe,
 not a mapped in-binary runtime draw/use path.
 
-## Preconditions and logic (what we do / do not know)
+## Puzzle and unlock logic
 
 ### Secret Path (credits click puzzle)
 
@@ -200,8 +193,10 @@ Final decoded message:
 ### Secret weapons
 
 - **Hinted precondition (string)**: there are “few secret weapons” hidden in the game.
-- **Verified code**: the hint string is printed in the startup secret block only. No weapon table flags
-  or save fields mapped to secret unlocks yet.
+- **Verified code**: `survival_update` grants Shrinkifier 5k and Blade Gun through
+  runtime gates; they are not persistent save unlocks. Splitter Gun uses hardcore
+  quest progression. See [Survival handouts](survival-weapon-handouts.md) and
+  [secret weapons](../../../mechanics/secret-weapons.md).
 
 ### AlienZooKeeper combination puzzle
 
@@ -251,26 +246,8 @@ Final decoded message:
 
 - **Verified code**: only the startup print path; the guard condition needs disassembly confirmation.
 
-## Verified code per hint (current)
-
-All of the hint strings in the cluster are printed from a single guarded block inside `crimsonland_main`
-(`0x0042c450`). We have **not** found any other decompiled references yet. Use this list as the definitive
-“verified code” map until further xrefs are available:
-
-- `0x00473a8c` — printed in startup secret-hint block.
-- `0x00473b14` — printed in startup secret-hint block.
-- `0x00473b38` — printed in startup secret-hint block.
-- `0x00473b8c` — printed in startup secret-hint block.
-- `0x00473c3c` — printed in startup secret-hint block.
-- `0x00473ce8` — printed in startup secret-hint block.
-- `0x00473d50` — printed in startup secret-hint block.
-- `0x00473e34` — printed in startup secret-hint block.
-- `0x00472e88` — **no decompiled Xrefs yet** (menu label).
-- `0x00472e90` — **no decompiled Xrefs yet** (menu label).
-
 ## Open questions
 
-- **Resolved**: The Secret Path transition is gated by `credits_screen_update` skipping the Secret button update until all 'o' lines are flagged.
 - **Partially resolved (inference)**: the decoded line strongly matches the
   Blade Gun Survival handout gate (centroid of first 3 death points + low HP).
   See [Survival weapon handouts](survival-weapon-handouts.md#decoded-blade-hint-mapping-inference).
@@ -278,8 +255,6 @@ All of the hint strings in the cluster are printed from a single guarded block i
     `survival_update`.
   - "First Blood" is still interpretive wording; runtime logic is
     `survival_recent_death_count == 3` using the first three stored positions.
-- Are secret weapon unlocks stored in `game.cfg`, or derived from other state (weapon table flags, globals)?
-  - **Partial Answer:** `quest_database_init` initializes the `quest_unlock_weapon_id` array with static values (e.g., `quest_unlock_weapon_id = 2` for the shotgun). A "secret weapon" unlock would likely require writing to this array (`0x00484754`) or the `weapon_table` availability flags directly.
 - Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
 - Are there any **out-of-main-exe** consumers (e.g., other modules/builds) for the startup `balloon.tga` preload gate?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?

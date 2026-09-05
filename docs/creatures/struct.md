@@ -84,11 +84,11 @@ Field map (medium confidence):
 
 | Offset | Field | Symbol | Evidence |
 | --- | --- | --- | --- |
-| `0x00` | active (byte) | `creature_pool` | checked for zero in most loops; set to `1` on spawn, cleared on death. |
+| `0x00` | active (byte) | `creature_pool` | set on allocation; dying/corpse entries can remain active until lifecycle completion. |
 | `0x04` | phase seed | `creature_phase_seed` | randomized on spawn; used to offset orbit/aim timing. |
 | `0x08` | state flag | `creature_state_flag` | set to `1` in spawners and during AI transitions; exact meaning TBD. |
-| `0x09` | collision flag | `creature_collision_flag` | set when two creatures are within 45 units; drives periodic contact damage ticks. |
-| `0x0c` | collision timer | `creature_collision_timer` | decremented when collision flag is set; when it wraps, applies damage. |
+| `0x09` | collision flag | `creature_collision_flag` | Plaguebearer infection flag; propagates between nearby creatures and drives creature health loss. |
+| `0x0c` | collision timer | `creature_collision_timer` | shared timer for infection and Radioactive health effects; player attacks use `attack_cooldown`. |
 | `0x10` | lifecycle stage | `creature_lifecycle_stage` | set to `16.0` on spawn, decremented through death/corpse rendering, and used as the AoE eligibility gate (`lifecycle_stage > 5.0`). |
 | `0x14` | pos_x | `creature_pos_x` | written by `creature_spawn` (`0x00428240`); used in distance tests/targeting. |
 | `0x18` | pos_y | `creature_pos_y` | written by `creature_spawn` (`0x00428240`); used in distance tests/targeting. |

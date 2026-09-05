@@ -168,4 +168,4 @@ The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branc
 - Dedicated fire branch in `player_update` at `0x004136b0` (branch body starts at `0x00415d13`).
 - Fallback constants in `weapon_table_init` at `0x004519b0` (stores at `0x00451b6a` and `0x00451b7e`).
 - Pellet count field: `docs/re/static/reference/weapon-table.md:102`
-- Projectile hit damage formula: `src/crimson/projectiles.py:1183`, `1199`
+- Projectile hit damage formula: `src/crimson/projectiles/runtime/projectile_pool.py`

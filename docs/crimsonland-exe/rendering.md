@@ -143,9 +143,12 @@ Recoil is driven by `player_state.muzzle_flash_alpha`:
 - On fire: `muzzle_flash_alpha += weapon_table[weapon_id].spread_heat`, then clamped
   (`<= 1.0` immediately, and `<= 0.8` at the end of `player_fire_weapon`).
 
-TODO (runtime): confirm the **effective** decay rate and update order.
-The decompile shows the same decay expression in both `player_update` and `player_fire_weapon`;
-depending on call order and early returns, the value may decay once or twice per frame.
+These are separate mode paths. Ordinary gameplay calls `player_update`, whose
+weapon-fire logic is inline; it does not call `player_fire_weapon`. Typ-o calls
+`player_fire_weapon` instead, after its console/dead-player gates. Each reached
+path applies the decay once. See
+`tools/match/scratches/gameplay_update_and_render/scratch.cpp` and
+`tools/match/scratches/typo_gameplay_update_and_render/scratch.cpp`.
 
 During `player_render_overlays`, the **torso quad** is offset by a recoil vector computed from aim heading:
 

@@ -35,5 +35,5 @@ Related references:
 - [Creature pool struct](../creatures/struct.md)
 - [Projectile struct](../structs/projectile.md)
 - [Effects pools](../structs/effects.md)
-- [Detangling notes](../re/static/detangling.md)
+- [Source recovery references](../re/static/detangling.md)
 - [Entrypoint trace](../re/static/entrypoint.md)

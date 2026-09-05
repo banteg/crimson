@@ -102,7 +102,8 @@ Selection logic:
 
 - Iterates the high score table (`DAT_00482b54` flags, `highscore_table_count` count).
 - Skips entries where flag bit 0 is set and bit 1 is not set. (Flags live at
-  record offset `0x44`; see `docs/re/static/detangling.md` for meaning.)
+  record offset `0x44`: bit 0 gates submission/update; bit 1 marks replacement
+  records and bypasses that gate.)
 
 - Calls `highscore_submit_full_version_guard` (illegal-score guard) per entry; on failure, logs
   "Detected a potential illegal score" and does not include that entry.

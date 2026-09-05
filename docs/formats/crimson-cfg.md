@@ -124,7 +124,7 @@ Hardcoded defaults (from `config_sync_from_grim` when `grim_config_invoked` is s
 
 ## Load / write behavior
 
-From the decompile (see `docs/re/static/detangling.md`):
+From `config_init_defaults` (`0x004028f0`) and `config_sync_from_grim` (`0x0041ec60`):
 
 - `config_load_presets` reads the 0x480-byte blob into `config_blob`.
 - `config_sync_from_grim`:
@@ -229,11 +229,19 @@ The values map to DirectInput key codes (scancodes).
 | `11` | Axis Move Y | `0x153` | `0x17e` | Analog axis. |
 | `12` | Axis Move X | `0x17e` | `0x17e` | Analog axis. |
 
-**P3/P4 Note:** The game loop in `config_load_presets` iterates only twice (for P1 and P2). The large gap after P2 suggests P3/P4 slots might have been planned but are not loaded by this version of the executable.
+The blob contains ten 64-byte binding slots beginning at `0x1c8`, along with
+ten movement/aim scheme slots. Native gameplay loads two player bindings; the
+Python port uses four slots for its local co-op extension. The remaining space
+is structured slot storage, not an unexplained gap. See `src/grim/config.py`
+for the wire layout and [local controls](../crimsonland-exe/local-multiplayer-controls.md)
+for native consumers.
 
 ## Notes
 
-- The blob is always written at full size; unknown fields should be preserved
-  when round-tripping.
+- Native writes use the full blob. A forensic byte-preserving editor should
+  retain unmodified bytes. The Python game codec instead builds a canonical
+  wire image from its typed config: unsupported fields/padding and unused
+  player slots are reset to defaults by `encode_crimson_cfg`. It is not a
+  lossless editor for arbitrary native configuration bytes.
 
 - `game.cfg` is a different file (save/status) and does **not** share this layout.

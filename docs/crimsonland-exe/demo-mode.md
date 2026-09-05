@@ -35,9 +35,12 @@ See: `docs/re/static/boot-sequence.md` (handoff section).
 
 ### Runtime entry: trial/attract trigger
 
-The main loop (`game_frame_update`) contains a shareware-only path that
-starts `demo_mode_start()` and switches music to `shortie_monk` (exact trigger
-still TBD; see decompile around `0x0040cf06`).
+The main loop (`game_frame_update`) intercepts the first quit request in a
+shareware build while `shareware_offer_seen_latch` is clear. It saves config,
+starts `demo_mode_start`, mutes the existing music, plays `shortie_monk`, clears
+the quit request and sets the latch. A later quit exits. This is the quit-offer
+path, separate from menu idle entry; see
+`tools/match/scratches/game_frame_update/scratch.cpp`.
 
 ## Core loop model
 
@@ -130,7 +133,9 @@ The variants are small, deterministic setup functions that:
 - Spawns template `0x38` in two columns (x≈128/192 and x≈798/862), y=256..1632 step 80.
 - Player positions: P1 `(448,384)`, P2 `(546,654)`.
 - Weapon: `0x0b` (Rocket Launcher) for both.
-- Uses `heading = -100.0` for spawns (likely a sentinel; exact semantics TBD).
+- Uses `heading = -100.0`, the random-heading sentinel.
+  `creature_spawn_template` replaces it with `(rand() % 628) * 0.01f` after
+  allocating the root slot; see `tools/match/scratches/creature_spawn_template/scratch.cpp`.
 
 ### Variant 1 — `demo_setup_variant_1` (`0x004030f0`)
 

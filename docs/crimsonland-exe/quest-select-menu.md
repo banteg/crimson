@@ -110,9 +110,14 @@ Values are read from `game.cfg` (the in-memory `game_status_blob`) using an inde
 - games: `game_status_blob + 0xDC + idx * 4`
 - completed: `game_status_blob + 0x17C + idx * 4`
 
-Note: the stage-5 indices do not fit cleanly in the 0x268-byte saved blob; this likely implies either
-a missing/incorrectly-sized stats region in the classic build, or that the stats are only meaningful
-for stages 1..4.
+The saved payload is confirmed as `0x268` bytes. Its 91-word quest counter
+region gives dedicated attempt/completion slots only to quests 1.1–4.10.
+Stage-5 attempt indices alias earlier completion counters; stage-5 completion
+indices spill into the following mode/time/seed fields and beyond the payload.
+The native menu uses those unchecked indices, as recovered in
+`tools/match/scratches/quest_select_menu_update/scratch.cpp`. The port uses
+`src/crimson/quests/status.py` to restrict persisted quest counters to the
+40 dedicated slots. See [save layout](../formats/save-status-format.md).
 
 ## Back button
 

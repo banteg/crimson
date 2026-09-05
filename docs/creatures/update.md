@@ -3,160 +3,92 @@ tags:
   - status-analysis
 ---
 
-# Creature runtime contract (creature_update_all)
+# Creature update and death lifecycle
 
-This page defines the **minimum runtime contract** we need from `creature_update_all`
-(`crimsonland.exe` `creature_update_all`) to unblock **Survival** in the rewrite.
+Native behavior is anchored to `creature_update_all` (`0x00426220`),
+`creature_apply_damage` (`0x004207c0`) and `creature_handle_death` (`0x0041e910`).
+Their recovered bodies are in `tools/match/scratches/creature_update_all/scratch.cpp`,
+`tools/match/scratches/creature_apply_damage/scratch.cpp` and
+`tools/match/scratches/creature_handle_death/scratch.c`. Consult address-keyed
+binary analysis when changing behavior; the Python implementation is a port.
 
-**Source of truth:** the decompiles (Ghidra/IDA/Binary Ninja). Code under `src/` is our
-reimplementation and may be wrong; use it as a porting aid, not an authority.
+## Update ownership and order
 
-The rewrite already contains several **pure** (unit-testable) building blocks:
+The native loop visits 384 pool slots in index order. For each active slot it
+counts the entry and reduces hit flash. Freeze gates the subsequent ordinary
+update. That update handles self-damage and link timers, targeting, living AI,
+movement/animation/spawner work, then proximity effects and attacks. Death and
+corpse phases use the same pool, rather than a separate collection.
 
-- AI target selection: `docs/creatures/ai.md` + `src/crimson/creatures/ai.py`
-- Animation phase + frame selection: `docs/creatures/animations.md` + `src/crimson/creatures/anim.py`
-- Spawning (templates + spawn slots): `docs/creatures/spawning.md` + `src/crimson/creatures/spawn.py`
-  - Spawn-slot tick behavior is tested in `tests/creatures/test_spawn_slots.py`.
+The living branch is selected by `lifecycle_stage == 16.0`. Health and `active`
+are separate gates used by different consumers. In particular, an active entry
+can already be dying, collidable, fading, or awaiting corpse baking. Do not
+replace those tests with one generic `alive` predicate. See [struct](struct.md),
+[AI](ai.md), [animation](animations.md) and [spawning](spawning.md) for details.
 
-What is *missing* is the “glue”: the per-tick order, state mutation, and event emission that
-ties these pieces into a realtime loop.
+## Infection and attack timers
 
-## Data model (what the loop owns)
+The historical symbols `collision_flag` and `collision_timer` do not describe the
+player attack cooldown:
 
-The source-of-truth layout is the native `creature_t` pool; see
-[`docs/creatures/struct.md`](struct.md).
+- Plaguebearer sets the flag on eligible nearby creatures. In the living branch,
+  the flagged timer loses `frame_dt`; a negative timer gains `0.5` once and the
+  creature loses 15 health. A lethal infection calls death handling inline.
+- Radioactive also uses `collision_timer`: within 100 units it loses
+  `frame_dt * 1.5`; when negative with positive health it resets to `0.5` and
+  applies `(100 - distance) * 0.3` health loss, with its own lethal branch.
+- `attack_cooldown` loses `frame_dt` when positive, otherwise it is set to zero.
+  Melee requires creature size greater than 16, distance below 30, a living
+  target and no Energizer. At cooldown `<= 0`, the native loop plays attack SFX,
+  applies Mr. Melee retaliation and poison effects, calls `player_take_damage`,
+  queues impact FX, then adds `1.0` to the cooldown.
+- At distance greater than 64, flag `0x10` fires projectile type 9 and adds
+  `1.0`; flag `0x100` fires the type stored in the orbit-radius union and adds
+  `(rand() & 3) * 0.1 + orbit_angle`. Both share `attack_cooldown`.
 
-For Survival parity, the runtime update loop must at least track:
+Spawn-slot timers run in the owning creature's update: subtract `dt`, add the
+interval once if negative, and spawn/increment only while below the count limit.
+The timer still advances at the limit. See `tests/creatures/test_spawn_slots.py`.
 
-- Per-creature motion state: `pos_xy`, `vel_xy`, `heading`, `target_heading`
-- Per-creature targeting state: `target_x/target_y`, `target_player`, `force_target`, `ai_mode`,
-  plus link/orbit fields (`link_index`, `target_offset_x/y`, `orbit_angle/radius`)
+## Synchronous death handling
 
-- Per-creature timers: `attack_cooldown`, `collision_timer`, hit flash timer
-- Per-creature “alive” state: `active` + `health` (and a one-shot “death handled” latch)
-- Per-creature presentation state: `anim_phase` + `tint_rgba`
-- Spawn-slot state (global arrays / pool), indexed via `link_index` for slot-owning creatures
+A lethal damage path calls `creature_handle_death` immediately. Moving death to
+an end-of-tick queue changes which bonus state, child slots and RNG draws later
+operations see. Direct health writes, such as Radioactive's branch, have their
+own side effects and do not automatically inherit every death-handler action.
 
-## Referenced tables (renderer + SFX)
+The handler's order is:
 
-`creature_update_all` (and helpers) consult the creature **type table**
-(`docs/creatures/animations.md`):
+1. Emit a forced bonus for flag `0x400`, then update the recent-death positions
+   and Survival reward gates. These occur before the inactive-entry return.
+2. For an active creature, release its spawn-slot ownership and create splitter
+   children when required. Children copy the native creature record and then
+   overwrite their phase, heading, health, size, speed, damage and reward fields.
+3. With `keep_corpse`, decrement lifecycle by `frame_dt` and retain `active`.
+   Otherwise clear `active` immediately.
+4. Award player 0 XP. Quick Learner adds `int(reward * 1.3f)`; the ordinary branch
+   converts the floating sum of existing XP plus reward back to an integer.
+   Double XP repeats the corresponding operation.
+5. Attempt an ordinary bonus drop unless the bonus-spawn guard is set.
+6. Read the current Freeze timer. If positive, emit freeze shards/shatter,
+   increment kills, deactivate the slot and queue a terrain mark. A bonus created
+   earlier in this same handler can affect this decision.
 
-- Animation rate (advances `anim_phase`)
-- Atlas base frame and corpse frame (render/death)
-- Per-type SFX “banks” (damage/death/contact variants)
+The first three death positions are stored; the counter saturates at six. On
+reaching three, the fire and handout gates are cleared. See
+[Survival handouts](../re/static/secrets/survival-weapon-handouts.md).
 
-## Per-tick order (Survival subset)
+## Corpse completion
 
-This is the “contract” part: **the order matters** because it defines which state is visible to
-subsystems in the same tick (e.g. collision uses post-move position; death should run after all
-damage sources have been applied).
+For a dying entry with positive lifecycle, the update subtracts `dt * 28`.
+Crossing zero queues the corpse decal unless violence is disabled. If the queue
+is full, lifecycle becomes `0.001` so baking can retry. Successful completion
+increments the kill counter; body-fade configuration determines immediate
+release versus a fading entry. The negative-lifecycle path subtracts `dt * 20`;
+render/post-render cleanup completes the remaining lifecycle.
 
-Observed high-level structure inside `creature_update_all` (mirrors `docs/crimsonland-exe/frame-loop.md`):
-
-1) **AI target selection**
-   - AI7 link-index timer behavior (flag `0x80`) is ticked early and can force `ai_mode = 7`.
-   - Target selection computes:
-     - `target_x/target_y`, `target_heading`, `force_target`
-     - `move_scale` (local speed reduction in some modes)
-     - optional self-damage when a required link is dead (modes `4/5` apply `creature_apply_damage(..., 1000.0, ...)`)
-
-   - Reference port: `src/crimson/creatures/ai.py` (derived from decompilation).
-
-2) **Heading integration**
-   - Move `heading` toward `target_heading` with a per-frame turn rate clamp (native eases rather
-     than snapping).
-
-3) **Velocity integration**
-   - Compute velocity from `heading` and `move_speed` (scaled by `move_scale` from AI).
-   - Integrate position: `pos += vel * dt`.
-
-4) **Bounds clamp**
-   - Clamp `pos_xy` to terrain bounds.
-   - The native clamp is size-aware; for Survival we can start with a simple `[0, w] x [0, h]`
-     clamp and refine when we port the exact margin rule.
-
-5) **Collision + contact damage**
-   - Contact damage to players is driven by per-creature `collision_flag` +
-     `collision_timer` (see `docs/creatures/struct.md`).
-
-   - Contract:
-     - When in contact range, set/keep `collision_flag` and decrement `collision_timer` by `dt`.
-     - When the timer crosses below zero, apply `player_take_damage(contact_damage)` and reset the
-       timer to its period (native adds `0.5` seconds).
-     - When not in contact range, clear the flag and reset/relax the timer (native behavior TBD).
-
-6) **Ranged attacks**
-   - If the creature is a ranged variant (`creature_flags` indicates ranged mode), decrement
-     `attack_cooldown` and, when it elapses, spawn a projectile and reset the cooldown.
-
-   - Observed ranged-variant gates:
-     - `0x10`: spawns projectile type `9` and adds `1.0` to `attack_cooldown` (plays `sfx_shock_fire`).
-     - `0x100`: spawns a projectile whose type id is stored in `orbit_radius` (also plays a fire SFX).
-
-   - Note: animation strip selection also uses `0x10` as a render-strip offset; see
-     `docs/creatures/animations.md`.
-
-7) **Spawn-slot ticking**
-   - Some spawner templates allocate a **spawn slot** and store the slot index in
-     `creature_link_index` (these creatures also use flag `0x4`, which doubles as the short-strip
-     animation flag; see the `HAS_SPAWN_SLOT` alias in `src/crimson/creatures/spawn.py`).
-
-   - Contract:
-     - For each active spawn slot, call `tick_spawn_slot(slot, dt_seconds)`.
-     - If it returns a `child_template_id`, call `creature_spawn_template(child_template_id, ...)`
-       (or the rewrite equivalent: `build_spawn_plan(...)` then materialize it).
-
-   - The tested semantics (`tests/creatures/test_spawn_slots.py`):
-     - Timer always decrements: `timer -= dt`
-     - When `timer < 0`, it is incremented by `interval` **exactly once** (no loop).
-     - `count` increments and a spawn triggers only if `count < limit`.
-     - Even when at limit, the timer still resets by `interval`.
-
-## “Death contract” (what happens when HP crosses `<= 0`)
-
-When a creature transitions from alive to dead (`health <= 0`), the runtime must perform a
-one-shot death handler.
-
-In the native code this is handled by `creature_handle_death` (`0x0041e910`) and is invoked from
-inside `creature_update_all`.
-
-Minimum side effects needed by Survival:
-
-1) **Deactivate** the creature (`active = 0`) and update creature counters:
-   - `creature_kill_count` (HUD and scoring)
-   - `creature_active_count` (recomputed each update pass in native)
-
-2) **Award XP** to the primary player:
-   - `creature_handle_death` adds `int(creature_reward_value)` to `player_experience`
-     (`player_health + 0x88`).
-
-   - If the “Bloody Mess / Quick Learner” perk is active (`perk_id_bloody_mess_quick_learner`),
-     it adds `int(reward_value * 1.3)` instead.
-
-   - If `bonus_double_xp_timer > 0`, it adds the same amount **again** (effectively doubling XP).
-
-3) **Attempt bonus drop**
-   - Native uses a per-kill gate (`bonus_try_spawn_on_kill`, `0x41f8d0`), then selects a type using
-     `bonus_pick_random_type` (`docs/re/static/reference/bonus-drop-rates.md`).
-
-   - Forced bonus-on-death uses flag `0x400` (`BONUS_ON_DEATH`) and calls `bonus_spawn_at(pos, id, duration)`
-     using `link_index` low/high 16-bit fields.
-
-4) **Queue FX + SFX**
-   - FX: blood, corpse decals, sprite bursts (see `docs/structs/effects.md` and terrain baking notes).
-   - SFX: per-type death sounds use the type table SFX banks (`docs/creatures/animations.md`).
-
-5) **Survival bookkeeping**
-   - Survival tracks recent death positions and a handout gate via globals listed in
-     `docs/creatures/struct.md` (used by `survival_update`).
-
-   - The rewrite should carry equivalent state (even if the reward logic is initially stubbed).
-
-Notes:
-
-- Some flags add death behavior:
-  - `SPLIT_ON_DEATH` spawns smaller child creatures (max_health scaling is documented in
-    `docs/creatures/struct.md`).
-
-  - `BONUS_ON_DEATH` (`0x400`) forces a specific bonus id/duration (encoded via `link_index` in native).
+The Python owners are `src/crimson/creatures/runtime.py`,
+`src/crimson/creatures/damage.py`, `src/crimson/creatures/damage_runtime.py` and
+`src/crimson/creatures/lifecycle.py`. Session post-render finalization preserves
+the native boundary for headless replay; see the
+[session contract](../rewrite/deterministic-step-pipeline.md).

@@ -31,8 +31,9 @@ Captured with `scripts/frida/crimsonland_probe.js` after fixing pointer-based re
 - The unknown-field tracker flagged offsets **0x2BC / 0x2C4 / 0x2D0** as frequently changing; these
   correspond to the **alt-weapon** block already listed below (good cross-check).
 
-- The tracker also flagged offsets **0x34C / 0x350 / 0x354** near the tail of the struct
-  (observed values included `16.0` and `432.0`). These are likely real fields; add candidates below.
+- Offsets **0x34C / 0x350 / 0x354** are player 2's pre-health fields:
+  death timer, X and Y at stride `0x360` minus `0x14/0x10/0x0c`. They do not
+  represent additional tail fields in player 1.
 
 - The 2026-02-06 gameplay-state capture (`analysis/frida/gameplay_state_capture_summary.json`)
   confirms `player_clip_size` / `player_ammo` are float slots in memory:
@@ -107,13 +108,6 @@ High-confidence fields (partial):
 | `0x334` | move axis x binding | `player_axis_move_x` | Axis binding read via input API for movement stick. |
 | `0x338` | move axis y binding | `player_axis_move_y` | Axis binding read via input API for movement stick. |
 
-## Candidate / unknown offsets
-
-The runtime probe flagged offsets `0x34c/0x350/0x354` as frequently changing.
-Those line up with player 2's *pre-base* fields (`player2_death_timer`,
-`player2_pos_x`, `player2_pos_y`) at `player_health + 0x360 - 0x14/0x10/0x0c`, so
-they are no longer considered unknown.
-
 ## Defense state (summary)
 
 - **Health gate:** `player_health` at the table base is decremented by `player_take_damage`; `<= 0`
@@ -125,8 +119,8 @@ they are no longer considered unknown.
 - **Reload mitigation:** `player_reload_active` is set when a reload starts; with Tough Reloader
   active, incoming damage is halved while this flag is set.
 
-- **Low-health warning:** `player_low_health_timer` is reset when HP dips below 20 and is used to
-  drive warning effects/SFX while it counts down.
+- **Low-health warning:** accepted hits at HP `<= 20` have a 1/8 chance to reset
+  `player_low_health_timer`; see [player damage](../crimsonland-exe/player-damage.md).
 
 ## Control schemes (summary)
 

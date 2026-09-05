@@ -10,12 +10,11 @@ msgspec wire types.
 
 ## Canonical shape
 
-Use [`QuestLevel`](/Users/banteg/.codex/worktrees/1c4c/crimson/src/crimson/quests/level.py)
+Use `QuestLevel` in `src/crimson/quests/level.py`
 for:
 
 - gameplay/runtime state
 - replay headers
-- network session settings and protocol structs
 - quest definitions and quest registry lookups
 - UI/view state after text input has been parsed
 
@@ -51,14 +50,14 @@ Those boundaries should convert to or from `QuestLevel` exactly once.
 - Use `level.text` only for text I/O.
 - Use `level.global_index` only for ordered quest-table traversal.
 - Keep quest counter math out of `QuestLevel`; it lives in
-  [`quests/status.py`](/Users/banteg/.codex/worktrees/1c4c/crimson/src/crimson/quests/status.py).
+  `src/crimson/quests/status.py`.
 
 ## Boundary map
 
 ```mermaid
 flowchart LR
     A["CLI / text input ('1.1')"] --> B["QuestLevel.parse(...)"]
-    B --> C["Runtime state / replay / net / quest defs"]
+    B --> C["Runtime state / replay / quest defs"]
     C --> D["level.text for labels and filenames"]
     C --> E["level.global_index for menu ordering"]
     C --> F["split major/minor only at native-shaped persistence edges"]

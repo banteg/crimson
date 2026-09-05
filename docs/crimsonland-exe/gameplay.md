@@ -156,7 +156,8 @@ timer crosses its threshold:
   ring of projectiles (`0xb` and `9`).
 
 - **Living Fortress** (`perk_id_living_fortress`): increments `player_living_fortress_timer` (`0x00490954`) while stationary
-  (clamped to ~30s); likely consumed by damage scaling elsewhere.
+  (clamped to 30s). For damage type 1, `creature_apply_damage` multiplies damage
+  by `1 + timer * 0.05` for each living player when Living Fortress is active.
 
 ### Weapon spread ("heat") and accuracy recovery
 
@@ -167,9 +168,10 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   - When Reflex Boost time scaling is active, `frame_dt` is pre-scaled by
     `frame_dt *= time_scale_factor * 1.6666666` before applying the decay. [static]
 
-  - Sharpshooter alters the decay path; the current decompile output has
-    conflicting constants (`0.25` and `0.02`), so treat it as **unconfirmed**
-    until we validate it at runtime. [static]
+  - Sharpshooter subtracts `2 * frame_dt`, clamps to `0.25`, then
+    unconditionally writes `0.02`. The final value is therefore `0.02`; these
+    are sequential writes, not conflicting candidate constants. See
+    `tools/match/scratches/player_update/scratch.cpp`. [static]
 
 - **Gain on fire:** if Sharpshooter is **not** active,
   `player_spread_heat += weapon_table[weapon_id].spread_heat * 1.3`. [static]

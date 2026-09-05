@@ -1,5 +1,10 @@
 # WinDbg sessions
 
+These dated logs preserve observations and hypotheses from their original
+probes. They are not the current work queue. For established results, use
+[secrets](../re/static/secrets/easter-eggs.md), [player layout](../structs/player.md)
+and [Grim API evidence](../grim2d/api-evidence.md).
+
 ## Session 1 (2026-01-18) - credits secret
 
 ### Wishlist

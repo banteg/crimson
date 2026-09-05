@@ -118,17 +118,18 @@ The engine uses **two patterns**:
   - Several projectile/beam effects draw **repeated quads** along a vector
     using a single frame (segment tiling instead of unique frames).
 
-  - One beam path calls `set_atlas_frame(4,2,<dir>,<dir>)` with extra vector
-    pointers; this likely orients the UVs for directional beam segments.
+  - Beam segments use `grim_set_atlas_frame(4, 2)`. Direction is computed
+    separately and used to place the quads; it is not an extra argument to the
+    atlas setter. See `tools/match/scratches/projectile_render/scratch.cpp`.
 
 - `artifacts/assets/crimson/game/bonuses.png` (bonus_texture)
-  - Uses **sprite table index 0x10** (call at `:18550`), which maps to **grid=4**.
+  - Uses **sprite table index 0x10**, which maps to **grid=4**.
   - Sheet is 128×128 → 32×32 cells.
 
 - `artifacts/assets/crimson/game/particles.png` (particles_texture)
-  - Uses **grid=8** for the main particle system (see `+0x104(8, …)` at `:9704`).
+  - Uses **grid=8** for the main particle system.
   - Uses **sprite table indices 0x10, 0x0e, 0x0d, 0x0c** for UI/overlay effects
-    (calls at `:996?`, `:16217`, `:16854`, `:18788`, `:18824`). These indices map to **grid=4**.
+    in UI/overlay draws. These indices map to **grid=4**.
 
   - Effects pool binds `particles.png` and uses the effect_id table above
     (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`
@@ -153,17 +154,19 @@ Known `projs.png` frame selections:
 | `0x15` | 4 | 2 | Ion Rifle | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
 | `0x16` | 4 | 2 | Ion Minigun | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
 | `0x17` | 4 | 2 | Ion Cannon | Repeated along a vector to build beam/trail segments. |
-| `0x18` | 4 | 2 | Shrinkifier 5k | Repeated along a vector to build beam/trail segments. |
+| `0x18` | — | — | Shrinkifier 5k | Separate plasma glow path; not a `projs.png` Ion trail. |
 | `0x2d` | 4 | 2 | Fire Bullets bonus + Fire Cough perk | Used by the Fire Bullets bonus (bonus id 14) and the Fire Cough perk (perk id 54). The bonus path spawns `weapon_projectile_pellet_count[weapon_id]` pellets per shot. |
 
-The same path also calls `grim_set_atlas_frame(2, …)` for these beam types, but
-the exact grid2 index is still unclear from the decompile.
+The Ion/Fire Bullets trail path first selects `grim_set_atlas_frame(2, 2)`,
+then overwrites it with `(4, 2)` before drawing its segments. The initial
+selection does not change the segment UVs. Shrinkifier uses the separate plasma
+glow path, not this Ion trail branch.
 
 - Enemy sheets (`artifacts/assets/crimson/game/zombie.png`, `artifacts/assets/crimson/game/lizard.png`,
   `artifacts/assets/crimson/game/alien.png`, `artifacts/assets/crimson/game/spider_sp1.png`,
   `artifacts/assets/crimson/game/spider_sp2.png`, `artifacts/assets/crimson/game/trooper.png`)
 
-  - Drawn via **grid=8** (`+0x104(8, …)` in the enemy render path around `:9704`).
+  - Drawn via **grid=8** in the creature render path.
   - Per‑enemy base frame offsets are stored in the enemy data struct
     (e.g. `creature_type_base_frame = 0x20`, `_DAT_004827a4 = 0x10`, etc).
 ## Replicating the atlas cutting

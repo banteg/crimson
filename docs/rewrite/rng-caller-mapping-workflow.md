@@ -7,7 +7,14 @@ tags:
 
 # RNG Caller Mapping Workflow
 
-Goal: recover exact native `caller_static` values for Python RNG draw sites.
+Native return-address tags live in `src/crimson/rng_caller_static.py` and are
+used at the Python draw sites. The Zig runtime mirrors the relevant tags. This
+workflow is for adding or checking attribution against the native executable;
+it is not a list of unmapped functions.
+
+Caller tags explain RNG draws. Matching tags do not prove matching behavior, and
+differing tags alone are diagnostic when values and states agree; see
+[trace contracts](trace-format-alignment.md).
 
 ## Key Rule
 
@@ -17,21 +24,6 @@ For x86 PE code in Crimsonland:
 
 - `call_addr` is the instruction that calls `crt_rand`
 - `caller_static` is `call_addr + instruction_length`
-
-## Trial Functions
-
-Start with small ports where the Python draw structure still matches native closely.
-
-Good first targets:
-
-- `bonus_pick_random_type`
-- `fx_queue_add_random`
-
-Avoid large ownership-mixed functions first:
-
-- `player_update`
-- `projectile_update`
-- `creature_spawn_template`
 
 ## BN Workflow
 
@@ -83,20 +75,20 @@ PY
 4. Open the Python port and map each draw site by semantics and order.
 
 ```bash
-nl -ba src/crimson/bonuses/selection.py | sed -n '56,75p'
+rg -n "rand_tagged|RngCallerStatic" src/crimson/bonuses/selection.py
 ```
 
 5. Record the mapping as a table before changing code.
 
 Use:
 
-- Python file and line
+- Python module and draw-site symbol
 - native function
 - native `call_addr`
 - exact `caller_static`
 - semantic meaning of the draw
 
-## Trial Mapping: `bonus_pick_random_type`
+## Example mapping: `bonus_pick_random_type`
 
 Native function:
 
@@ -106,16 +98,10 @@ Recovered callsites:
 
 | Python | Meaning | Native call | `caller_static` |
 | --- | --- | --- | --- |
-| `src/crimson/bonuses/selection.py:60` | main roll `rand() % 162 + 1` | `0x4124a0` | `0x4124a5` |
-| `src/crimson/bonuses/selection.py:70` | energizer branch `rand() & 0x3F` | `0x4124d1` | `0x4124d6` |
+| `src/crimson/bonuses/selection.py` | main roll `rand() % 162 + 1` | `0x4124a0` | `0x4124a5` |
+| `src/crimson/bonuses/selection.py` | energizer branch `rand() & 0x3F` | `0x4124d1` | `0x4124d6` |
 
-Why this is a good trial:
-
-- only two draws
-- branch structure is obvious
-- Python port still mirrors native control flow closely
-
-## Trial Mapping: `fx_queue_add_random`
+## Example mapping: `fx_queue_add_random`
 
 Native function:
 
@@ -125,16 +111,10 @@ Recovered callsites:
 
 | Python | Meaning | Native call | `caller_static` |
 | --- | --- | --- | --- |
-| `src/crimson/effects.py:532` | grayscale `rand() & 0xF` | `0x42775b` | `0x427760` |
-| `src/crimson/effects.py:533` | width `rand() % 24 - 12` | `0x427789` | `0x42778e` |
-| `src/crimson/effects.py:534` | rotation `rand() % 628` | `0x4277ab` | `0x4277b0` |
-| `src/crimson/effects.py:535` | `effect_id` `rand() % 5 + 3` | `0x427806` | `0x42780b` |
-
-Why this is a good second trial:
-
-- multiple sequential draws
-- draw meanings are explicit in both native and Python
-- no helper ownership ambiguity inside the function
+| `src/crimson/effects.py` | grayscale `rand() & 0xF` | `0x42775b` | `0x427760` |
+| `src/crimson/effects.py` | width `rand() % 24 - 12` | `0x427789` | `0x42778e` |
+| `src/crimson/effects.py` | rotation `rand() % 628` | `0x4277ab` | `0x4277b0` |
+| `src/crimson/effects.py` | `effect_id` `rand() % 5 + 3` | `0x427806` | `0x42780b` |
 
 ## Practical Rules
 
@@ -146,15 +126,3 @@ Only map exact callers when all of these are true:
 - the draw is not being delegated to a helper that should really be parent-owned
 
 If ownership is split, fix ownership first, then map callers.
-
-## Next Good Targets
-
-- `weapon_pick_random_available`
-- `perk_select_random`
-- `bonus_try_spawn_on_kill`
-
-These should be easier than:
-
-- `player_fire_weapon`
-- `player_update`
-- `projectile_update`

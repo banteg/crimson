@@ -70,14 +70,13 @@ exact draw calls for the splash/loading screen at 800x600. Key facts:
 - Band frame alpha = `logo_alpha * 0.7`.
 
 > **Note:** The capture only logs splash draws in frame 0, so timing/duration
-> of the fade remains unknown; this is a geometry + layering reference.
+> cannot be inferred from this capture alone; the static timing model below
+> supplies the fade schedule.
 
 ## 4. Splash Render Routine (Static + Runtime)
 
-The draw calls above map to a single render routine located between
-`load_textures_step` and `crimsonland_main` (addresses around `0x0042be90` to
-`0x0042c1e2`). It is not named in the decompiler output but the assembly is
-clear. The routine:
+The draw calls above are inside `game_startup_init` (`0x0042b290`), with the
+loading-screen draw block around `0x0042be90`–`0x0042c1e2`. The routine:
 
 ### State / fade
 
@@ -225,29 +224,13 @@ sequence.
 The game enters the main loop with `game_state_id = 0` (Main Menu). The per-frame
 input/hotkey pass here is `game_frame_update` (`0x0040c1c0`).
 
-## Decompile Notes: Post-logo render setup (early draw pipeline)
+## Post-logo render setup
 
-Immediately after the splash textures are loaded in `crimsonland_main`
-(`texture_get_or_load` calls for backplasma/mockup/logo_esrb/loading/cl_logo),
-the decompiler shows a short block of Grim2D vtable calls before input setup:
+The early `grim_clear_color` calls clear the target; config ID `0x36` invokes
+`IDirect3DDevice8::Present`. The subsequent loading and logo draw loop is
+`game_startup_init`, described above. See the [Grim config API](../../grim2d/api.md)
+and `tools/native/recovered/grim/config/set_var.cpp` for state-ID semantics.
 
-- `grim_clear_color` (`vtable +0x2c`) called twice.
-- `grim_set_config_var` (`vtable +0x20`) called with several id/value pairs:
-  - id `0x36`, value `1` (exact meaning TBD).
-  - another call with `value = 1.0f` (seen on stack as `0x3f800000`).
-
-This block likely clears the screen and sets basic render/config state (blend, filtering,
-or color) before the first visible splash draw. The exact per-frame draw loop
-is still not obvious from the decompile; we need a callsite that renders
-`logo_esrb` / `loading` / `cl_logo` (or the texture manager drawing by name).
-
-**Next step:** locate the draw function that consumes the splash textures by
-finding callsites that reference their texture IDs (or texture manager lookup),
-and map the Grim2D calls to the runtime draw order.
-
-## Verification
-
-To verify the "Loading" screen behavior:
-
-- Check if `load\loading.jaz` is displayed fullscreen during the asset loading phase.
-- Ensure the loop processes all 10 steps of `load_textures_step`.
+For visual verification, compare logo/loading/ESRB geometry, layering and fades
+at the target resolution. `load\loading.jaz` is the 128×32 loading label shown
+above, not a fullscreen background.
