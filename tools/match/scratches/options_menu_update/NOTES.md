@@ -207,3 +207,34 @@ spec SHA-256 is
 `d147e9d9f6a61fa804fc7db7ed2093c83e4858b73b79623eeeffe244b95e3088`;
 the experiment ledger SHA-256 is
 `5857d76a639bf6b36b86df969516e986a108244f3334ef2eaa7ef68c6500b72c`.
+
+## Exact checkbox and slider value boundaries (2026-09-05)
+
+The options screen is exact with the ordinary VC6.5 profile: 377/377 normalized
+instructions, prefix 377, and 168/0/0 references. It improves from 76.291391%,
+378/377 instructions, prefix 10, and 153/0/1 references without changing any
+menu behavior, callback order, float expression, or static object identity.
+
+Three related source boundaries explain the old broad residual. The checkbox
+owns a short-lived coordinate value; the slider column retains only its X
+scalar across callbacks. Returning the vector addition value directly removes
+the named result lifetime and recovers the opening native schedule. Together
+these reach 99.469496%, prefix 220. The remaining music and mouse coordinate
+calls need the vector setter's argument-value boundary: each setter alone
+reaches 99.734748%, and both reach exactness. Either field order in the setter
+is exact; assigning a constructed vector instead adds incorrect operations.
+
+The extra checkbox scope changes VC6 local-static ordinals, not the objects.
+COFF inspection and native operand addresses prove the SFX, music, and graphics
+slider bindings (native bases 0x004d77f8, 0x004d75e8, and 0x004d7590); their
+old scope-1 aliases caused all 26 preliminary unresolved references. The
+canonical aliases now name scope 2 for those sliders, scope 9 for mouse
+sensitivity, and scope BB for Controls, matching the emitted COFF names.
+No reference rule or native address was relaxed. Both old and new spellings
+were admitted only while recording the source controls against the old source;
+canonical configuration retains the emitted names only.
+
+`checkbox-slider-value-boundaries-mutations.json` records the complete valid
+source controls, including the earlier call scopes, scalar ownership, direct
+return, scheduling alternatives, and independent/combined setter ablations.
+The formatted retained setter reproduces the exact normalized result.

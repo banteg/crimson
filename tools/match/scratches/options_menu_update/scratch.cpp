@@ -12,10 +12,15 @@ struct options_vec2_t {
     options_vec2_t(float x_value, float y_value)
         : x(x_value), y(y_value) {}
 
+    void set(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
+
     options_vec2_t operator+(const options_vec2_t &other) const
     {
-        options_vec2_t result(x + other.x, other.y + y);
-        return result;
+        return options_vec2_t(x + other.x, other.y + y);
     }
 };
 
@@ -149,11 +154,12 @@ extern "C" void options_menu_update(void)
 
     static options_checkbox_t info_checkbox;
     unsigned char ui_info_texts = config_blob.ui_info_texts;
-    xy.x = panel_position.x;
     info_checkbox.label = "UI Info texts";
     info_checkbox.checked = ui_info_texts;
-    xy.y = panel_position.y + 133.0f;
-    ui_checkbox_update((float *)&xy, (ui_checkbox_t *)&info_checkbox);
+    {
+        options_vec2_t checkbox_position(panel_position.x, panel_position.y + 133.0f);
+        ui_checkbox_update((float *)&checkbox_position, (ui_checkbox_t *)&info_checkbox);
+    }
     config_blob.ui_info_texts = info_checkbox.checked;
 
     panel_position.x -= 18.0f;
@@ -161,9 +167,9 @@ extern "C" void options_menu_update(void)
 
     static options_slider_t sfx_volume_slider;
     sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);
-    xy.x = panel_position.x + 148.0f;
+    float slider_x = panel_position.x + 148.0f;
     options_vec2_t slider_position;
-    slider_position.x = xy.x;
+    slider_position.x = slider_x;
     slider_position.y = panel_position.y + 47.0f;
     ui_segmented_slider_update(
         (float *)&slider_position,
@@ -172,8 +178,7 @@ extern "C" void options_menu_update(void)
 
     static options_slider_t music_volume_slider;
     music_volume_slider.value = (int)(config_blob.music_volume * 10.0f);
-    slider_position.x = xy.x;
-    slider_position.y = panel_position.y + 67.0f;
+    slider_position.set(slider_x, panel_position.y + 67.0f);
     ui_segmented_slider_update(
         (float *)&slider_position,
         (ui_segmented_slider_t *)&music_volume_slider);
@@ -185,7 +190,7 @@ extern "C" void options_menu_update(void)
     graphics_detail_slider.max = detail_max;
     graphics_detail_slider.min = 1;
     graphics_detail_slider.value = config_blob.detail_preset;
-    slider_position.x = xy.x;
+    slider_position.x = slider_x;
     slider_position.y = panel_position.y + 87.0f;
     ui_segmented_slider_update(
         (float *)&slider_position,
@@ -203,8 +208,7 @@ extern "C" void options_menu_update(void)
     mouse_sensitivity_slider.min = 1;
     mouse_sensitivity_slider.value =
         (int)(config_blob.mouse_sensitivity * 10.0f + 0.5f);
-    slider_position.x = xy.x;
-    slider_position.y = panel_position.y + 107.0f;
+    slider_position.set(slider_x, panel_position.y + 107.0f);
     ui_segmented_slider_update(
         (float *)&slider_position,
         (ui_segmented_slider_t *)&mouse_sensitivity_slider);
