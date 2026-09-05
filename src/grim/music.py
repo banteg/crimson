@@ -32,6 +32,11 @@ class MusicTrack(msgspec.Struct):
     volume: float = 0.0
     muted: bool = True
 
+    def close(self) -> None:
+        # Memory-backed Vorbis streams borrow source_data until decoder teardown.
+        rl.unload_music_stream(self.stream)
+        self.source_data = None
+
 
 class MusicState(msgspec.Struct):
     ready: bool
@@ -65,7 +70,7 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
     for name, data in paq.iter_entries(paq_path):
         entries[name.replace("\\", "/")] = data
 
-    loaded = 0
+    payloads: dict[str, bytes] = {}
     for track_name, candidates in MUSIC_TRACKS.items():
         data = None
         for candidate in candidates:
@@ -74,13 +79,25 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
                 break
         if data is None:
             raise FileNotFoundError(f"audio: missing music entry for track '{track_name}' in {MUSIC_PAK_NAME}")
-        music = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
-        rl.set_music_volume(music, state.volume)
-        state.tracks[track_name] = MusicTrack(stream=music, track_id=state.next_track_id, source_data=data)
-        loaded += 1
+        payloads[track_name] = data
+
+    with ExitStack() as cleanup:
+        tracks: dict[str, MusicTrack] = {}
+        for track_name, data in payloads.items():
+            if track_name in state.tracks:
+                continue
+            stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
+            track = MusicTrack(stream=stream, track_id=state.next_track_id + len(tracks), source_data=data)
+            cleanup.callback(track.close)
+            if not rl.is_music_valid(stream):
+                raise ValueError(f"audio: failed to decode music track '{track_name}' in {MUSIC_PAK_NAME}")
+            rl.set_music_volume(stream, state.volume)
+            tracks[track_name] = track
+        state.tracks.update(tracks)
+        cleanup.pop_all()
     state.paq_entries = entries
 
-    console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from {paq_path}")
+    console.log.log(f"audio: music tracks loaded {len(payloads)}/{len(MUSIC_TRACKS)} from {paq_path}")
     console.log.flush()
 
 
@@ -135,13 +152,19 @@ def load_music_track(
                 data = entries.get(Path(normalized).name)
             if data is not None:
                 music_stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
-    if music_stream is None:
+    if music_stream is None or not rl.is_music_valid(music_stream):
+        if music_stream is not None:
+            rl.unload_music_stream(music_stream)
         if console is not None:
             console.log.log(f"SFX Tune {state.next_track_id} <- '{normalized}' FAILED")
         return None
     track_id = state.next_track_id
-    rl.set_music_volume(music_stream, state.volume)
-    state.tracks[key] = MusicTrack(stream=music_stream, track_id=track_id, source_data=data)
+    track = MusicTrack(stream=music_stream, track_id=track_id, source_data=data)
+    with ExitStack() as cleanup:
+        cleanup.callback(track.close)
+        rl.set_music_volume(music_stream, state.volume)
+        state.tracks[key] = track
+        cleanup.pop_all()
     if console is not None:
         console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
     return key, int(track_id)
@@ -248,7 +271,7 @@ def set_music_volume(state: MusicState, volume: float) -> None:
 def shutdown_music(state: MusicState) -> None:
     with ExitStack() as cleanup:
         for track in state.tracks.values():
-            cleanup.callback(rl.unload_music_stream, track.stream)
+            cleanup.callback(track.close)
         state.tracks.clear()
         state.queue.clear()
         state.paq_entries = None

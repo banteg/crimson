@@ -64,6 +64,7 @@ def test_load_music_track_loads_unpacked_file_on_demand(mocker, tmp_path: Path) 
     track_path.write_bytes(b"OggS")
 
     load_music_stream = mocker.patch.object(music.rl, "load_music_stream", return_value=track)
+    mocker.patch.object(music.rl, "is_music_valid", return_value=True)
     load_music_stream_from_memory = mocker.patch.object(music.rl, "load_music_stream_from_memory")
     set_music_volume = mocker.patch.object(music.rl, "set_music_volume")
 
@@ -85,6 +86,7 @@ def test_load_music_track_loads_paq_entry_on_demand(mocker, tmp_path: Path) -> N
     grim_paq.write_paq(tmp_path / music.MUSIC_PAK_NAME, [("music/custom.ogg", payload)])
 
     load_music_stream = mocker.patch.object(music.rl, "load_music_stream")
+    mocker.patch.object(music.rl, "is_music_valid", return_value=True)
     load_music_stream_from_memory = mocker.patch.object(
         music.rl,
         "load_music_stream_from_memory",

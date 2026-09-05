@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import ExitStack
 from pathlib import Path
 
 import msgspec
@@ -17,6 +18,7 @@ class AudioState(msgspec.Struct):
     ready: bool
     music: music.MusicState
     sfx: sfx.SfxState
+    owns_device: bool = False
 
 
 def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleState) -> AudioState:
@@ -36,7 +38,8 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
             sfx=sfx.init_sfx_state(ready=False, enabled=False, volume=sfx_volume),
         )
 
-    if not rl.is_audio_device_ready():
+    owns_device = not rl.is_audio_device_ready()
+    if owns_device:
         rl.init_audio_device()
     ready = rl.is_audio_device_ready()
     if not ready:
@@ -52,9 +55,13 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
         ready=True,
         music=music.init_music_state(ready=True, enabled=music_enabled, volume=music_volume),
         sfx=sfx.init_sfx_state(ready=True, enabled=sfx_enabled, volume=sfx_volume),
+        owns_device=owns_device,
     )
-    sfx.load_sfx_index(state.sfx, assets_dir, console)
-    music.load_music_tracks(state.music, assets_dir, console)
+    with ExitStack() as cleanup:
+        cleanup.callback(shutdown_audio, state)
+        sfx.load_sfx_index(state.sfx, assets_dir, console)
+        music.load_music_tracks(state.music, assets_dir, console)
+        cleanup.pop_all()
     return state
 
 
@@ -100,8 +107,10 @@ def update_audio(state: AudioState, dt: float) -> None:
 
 
 def shutdown_audio(state: AudioState) -> None:
-    if not state.ready:
-        return
-    sfx.shutdown_sfx(state.sfx)
-    music.shutdown_music(state.music)
-    rl.close_audio_device()
+    with ExitStack() as cleanup:
+        if state.owns_device:
+            cleanup.callback(rl.close_audio_device)
+            state.owns_device = False
+        cleanup.callback(music.shutdown_music, state.music)
+        cleanup.callback(sfx.shutdown_sfx, state.sfx)
+        state.ready = False
