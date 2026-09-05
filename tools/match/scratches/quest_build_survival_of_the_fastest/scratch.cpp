@@ -72,12 +72,10 @@ extern "C" void quest_build_survival_of_the_fastest(
     while (path_index < 16) {
         x = 1552 - path_index * 72;
         trigger_time_ms = path_index * 900 + 500;
-        quest_entry_original_t *spawn = &builder.spawns[entry_count];
-        spawn->pos = quest_vec2_t((float)x, 688.0f);
-        spawn->set_spawn(
-            SPAWN_ID_DEN_SPIDER_WEAK_10,
-            trigger_time_ms,
-            1);
+        builder.spawns[entry_count].pos = quest_vec2_t((float)x, 688.0f);
+        builder.spawns[entry_count].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;
+        builder.spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        builder.spawns[entry_count].count = 1;
         ++entry_count;
         ++path_index;
     }
@@ -85,12 +83,10 @@ extern "C" void quest_build_survival_of_the_fastest(
     while (path_index < 20) {
         y = 1840 - path_index * 72;
         trigger_time_ms = path_index * 900 + 500;
-        quest_entry_original_t *spawn = &builder.spawns[entry_count];
-        spawn->pos = quest_vec2_t(400.0f, (float)y);
-        spawn->set_spawn(
-            SPAWN_ID_DEN_SPIDER_WEAK_10,
-            trigger_time_ms,
-            1);
+        builder.spawns[entry_count].pos = quest_vec2_t(400.0f, (float)y);
+        builder.spawns[entry_count].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;
+        builder.spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        builder.spawns[entry_count].count = 1;
         ++entry_count;
         ++path_index;
     }
@@ -98,12 +94,10 @@ extern "C" void quest_build_survival_of_the_fastest(
     while (path_index < 22) {
         x = path_index * 72 - 1040;
         trigger_time_ms = path_index * 900 + 500;
-        quest_entry_original_t *spawn = &builder.spawns[entry_count];
-        spawn->pos = quest_vec2_t((float)x, 400.0f);
-        spawn->set_spawn(
-            SPAWN_ID_DEN_SPIDER_WEAK_10,
-            trigger_time_ms,
-            1);
+        builder.spawns[entry_count].pos = quest_vec2_t((float)x, 400.0f);
+        builder.spawns[entry_count].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;
+        builder.spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        builder.spawns[entry_count].count = 1;
         ++entry_count;
         ++path_index;
     }

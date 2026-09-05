@@ -207,3 +207,23 @@ Across 56 current-baseline evaluations, no variant improves the 76.32%,
 The scratch source is unchanged. The complete 10-line experiment log now has
 SHA-256
 `4ac494a819db93fbd4157354a1945f9ab1e6a233fe437b47641f58cc50d96542`.
+
+## Indexed late-edge ownership (2026-09-05)
+
+The three late path loops publish position and metadata directly through
+`builder.spawns[entry_count]` instead of a cached record pointer and member
+setter. Each individual edge improves native alignment without an instruction,
+prefix, or reference tradeoff; all seven nonempty combinations are additive.
+The first two edges contribute 7.552632 weighted bytes apiece and the third
+11.328947, for a combined gain of 26.434211 weighted bytes. The retained result
+is 79.385965% (683.513158/861), 228/228 instructions, prefix 5, and 0/0/0
+references. Field values, publication order, and path/count increments are
+unchanged. The native loop bodies provide the instruction-level control.
+
+The nine complete controls in `indexed-late-edge-ownership-mutations.json`
+also test folding the final count increments into the stores (byte-neutral)
+and extending indexed ownership to the first edge (regresses to 71.93%).
+Only the three supported late edges are retained. A separate named late range
+and second-edge pointer publication probe regress; neither justifies changing
+the early dynamic-counter reconstruction. This is a source-ownership gain,
+not evidence that the remaining loop and corner schedules are exhausted.
