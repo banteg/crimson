@@ -107,3 +107,14 @@ controls against the 98.214286% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## UI storage follow-up (2026-09-05)
+
+Crossed first-stage/call-local coordinates with centroid sum, scale, and distance value
+forms. Shorter stage owners rotate the surrounding stack layout; the original compound
+scale is neutral. No form preserves the exact prefix while recovering the first three
+native spawn slots.
+
+ui-storage-followup-controls-mutations.json records 16 complete, compiling controls.
+These results bound the tested source forms and inputs; they do not establish that
+matching is impossible.

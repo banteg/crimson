@@ -173,3 +173,14 @@ controls against the 99.206349% baseline. The source forms are `effect-motion-pa
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## UI storage follow-up (2026-09-05)
+
+Tested class-value and POD-return ownership of the pellet coordinate, including
+references and a call-site temporary. All regress. The direct call-site temporary also
+changes argument-evaluation scheduling and is not accepted as an equivalent source
+reconstruction.
+
+ui-storage-followup-controls-mutations.json records 5 complete, compiling controls.
+These results bound the tested source forms and inputs; they do not establish that
+matching is impossible.

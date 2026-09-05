@@ -365,6 +365,6 @@ extern "C" void mods_menu_update(void)
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_MAIN_MENU;
             mods_menu_refresh_pending = 1;
-        }    }
-
+        }
+    }
 }

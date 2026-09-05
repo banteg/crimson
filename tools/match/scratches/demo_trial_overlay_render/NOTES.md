@@ -162,3 +162,14 @@ controls against the 98.113208% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## UI storage follow-up (2026-09-05)
+
+Crossed the real Purchase/Maybe Later coordinate owners with panel-color scopes and
+temporaries, then tested Purchase declaration lifetimes. Some combinations repair later
+coordinates but regress the opening panel or frame; the expired suffix also remains. No
+trial is retained.
+
+ui-storage-followup-controls-mutations.json records 24 complete, compiling controls.
+These results bound the tested source forms and inputs; they do not establish that
+matching is impossible.

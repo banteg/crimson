@@ -219,3 +219,13 @@ conversion inversion.
 exact-followup-value-interactions-mutations.json records all 6 complete, compiling
 controls. No source change is retained. These outcomes bound the tested inputs and
 interactions, not the function's matchability.
+
+## UI storage follow-up (2026-09-05)
+
+The historical Grim interface declares pure virtual operations. Replayed the outline
+slot alone and all virtual slots as pure declarations in isolated embedded-header
+controls. Both are byte-identical; the shared header remains unchanged.
+
+ui-storage-followup-controls-mutations.json records 2 complete, compiling controls.
+These results bound the tested source forms and inputs; they do not establish that
+matching is impossible.

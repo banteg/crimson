@@ -324,3 +324,14 @@ controls against the 95.890411% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## UI storage follow-up (2026-09-05)
+
+Tested branch-owned quest-index calculation, the loop termination variable, controls
+construction, Back construction, and hover initialization alone and together. The
+branch-owned index adds one clean reference but regresses instruction alignment; no
+control improves the retained metrics.
+
+ui-storage-followup-controls-mutations.json records 6 complete, compiling controls.
+These results bound the tested source forms and inputs; they do not establish that
+matching is impossible.

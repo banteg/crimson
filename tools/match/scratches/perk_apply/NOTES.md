@@ -234,3 +234,13 @@ cursor-condition form adds two instructions. Health-cursor helpers tie the basel
 exact-followup-value-interactions-mutations.json records all 17 complete, compiling
 controls. No source change is retained. These outcomes bound the tested inputs and
 interactions, not the function's matchability.
+
+## UI storage follow-up (2026-09-05)
+
+Crossed a delayed Bandage guard with independent player, creature, and random-attempt
+induction variables at their actual loops. All seven variants reproduce the old
+77.178423% register rotation. The 99.585062% source remains unchanged.
+
+ui-storage-followup-controls-mutations.json records 7 complete, compiling controls.
+These results bound the tested source forms and inputs; they do not establish that
+matching is impossible.
