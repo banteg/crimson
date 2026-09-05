@@ -105,7 +105,7 @@ def test_shared_audio_sink_applies_post_tick_sfx_and_quest_music(mocker) -> None
     play_music.assert_not_called()
     bridge.apply_post_plan(plan=plan)
     assert [call.args[0] for call in play_sfx.call_args_list] == [SfxId.UI_BONUS, SfxId.QUESTHIT]
-    play_music.assert_called_once_with(audio, "crimsonquest")
+    play_music.assert_called_once_with(audio, "crimsonquest", fade_in=True)
 
 
 def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
@@ -120,7 +120,10 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
     rng = Crand(1)
     bridge = AudioBridge(audio_rng=rng, audio=audio, reflex_boost_timer=lambda: -1.0)
     plan = DeterministicPresentationPlan(
-        trigger_game_tune=True, sfx=(SfxId.UI_BONUS,), post_apply_sfx=(SfxId.UI_LEVELUP,), reflex_boost_timer=0.5,
+        trigger_game_tune=True,
+        sfx=(SfxId.UI_BONUS,),
+        post_apply_sfx=(SfxId.UI_LEVELUP,),
+        reflex_boost_timer=0.5,
     )
     bridge.apply_plan(plan=plan, apply_audio=False)
     bridge.apply_post_plan(plan=plan, apply_audio=False)
@@ -158,8 +161,11 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
         world.players[0].weapon.shot_cooldown = 0
         world.state.camera_shake_timer = 10.0
         session = DeterministicSession(
-            world=world, world_size=1024, damage_scale_by_type=runtime.sim_world.damage_scale_by_type,
-            game_mode=GameMode.SURVIVAL, perk_progression_enabled=False,
+            world=world,
+            world_size=1024,
+            damage_scale_by_type=runtime.sim_world.damage_scale_by_type,
+            game_mode=GameMode.SURVIVAL,
+            perk_progression_enabled=False,
         )
         tick = 0
         for count in counts:
@@ -171,7 +177,9 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
                     world.players[0].health = 0.0
                 world.state.camera_shake_offset = Vec2(3, 4) if tick == 0 else Vec2(-5, 2)
                 step = session.step_tick(dt=1 / 60, inputs=(PlayerInput(aim=Vec2(600, 512), fire_down=tick == 0),))
-                outputs.append(PresentationTickOutput(tick_index=tick, dt_sim=step.dt_sim, presentation=step.presentation))
+                outputs.append(
+                    PresentationTickOutput(tick_index=tick, dt_sim=step.dt_sim, presentation=step.presentation),
+                )
                 tick += 1
             apply_presentation_outputs(outputs=outputs, runtime=runtime, apply_audio=True)
         sounds = [(call.args[1], call.kwargs["reflex_boost_timer"]) for call in play.call_args_list]
@@ -180,7 +188,6 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
     expected = run((1, 1))
     assert expected[1] and expected[1][0][1] > 0.0
     assert run(partition) == expected
-
 
 
 def test_audio_plan_captures_typo_post_step_bonus_reset() -> None:

@@ -6,7 +6,7 @@ from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
 from crimson.ui.layout import menu_widescreen_y_shift
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
+from grim.audio import play_music, play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -90,6 +90,8 @@ class QuestFailedView:
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
+            if not self._closing:
+                play_music(self.state.audio, "shortie_monk")
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()

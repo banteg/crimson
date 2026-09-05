@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import ExitStack
 from pathlib import Path
 from typing import cast
 
@@ -22,37 +23,34 @@ MUSIC_TRACKS: dict[str, tuple[str, ...]] = {
 }
 
 
+class MusicTrack(msgspec.Struct):
+    """One owned stream and its native exclusive-playback state."""
+
+    stream: rl.Music
+    track_id: int
+    source_data: bytes | None = None
+    volume: float = 0.0
+    muted: bool = True
+
+
 class MusicState(msgspec.Struct):
     ready: bool
     enabled: bool
     volume: float
-    tracks: dict[str, rl.Music]
-    active_track: str | None
-    playbacks: dict[str, TrackPlayback] = msgspec.field(default_factory=dict)
+    tracks: dict[str, MusicTrack] = msgspec.field(default_factory=dict)
+    active_track: str | None = None
     queue: list[str] = msgspec.field(default_factory=list)
     # Mirrors the original game's "start a random game tune on first hit" gate.
     game_tune_started: bool = False
-    game_tune_track: str | None = None
-    track_ids: dict[str, int] = msgspec.field(default_factory=dict)
-    next_track_id: int = 0
     paq_entries: dict[str, bytes] | None = None
+
+    @property
+    def next_track_id(self) -> int:
+        return len(self.tracks)
 
 
 def init_music_state(*, ready: bool, enabled: bool, volume: float) -> MusicState:
-    return MusicState(
-        ready=ready,
-        enabled=enabled,
-        volume=float(volume),
-        tracks={},
-        active_track=None,
-        playbacks={},
-        queue=[],
-        game_tune_started=False,
-        game_tune_track=None,
-        track_ids={},
-        next_track_id=0,
-        paq_entries=None,
-    )
+    return MusicState(ready=ready, enabled=enabled, volume=float(volume))
 
 
 def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState) -> None:
@@ -78,10 +76,8 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
             raise FileNotFoundError(f"audio: missing music entry for track '{track_name}' in {MUSIC_PAK_NAME}")
         music = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
         rl.set_music_volume(music, state.volume)
-        state.tracks[track_name] = music
+        state.tracks[track_name] = MusicTrack(stream=music, track_id=state.next_track_id, source_data=data)
         loaded += 1
-    state.track_ids = {name: idx for idx, name in enumerate(state.tracks.keys())}
-    state.next_track_id = len(state.track_ids)
     state.paq_entries = entries
 
     console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from {paq_path}")
@@ -121,18 +117,12 @@ def load_music_track(
             console.log.log(f"SFX Tune {state.next_track_id} <- '{normalized}' FAILED")
         return None
     key = _normalize_track_key(normalized)
-    track_id = state.track_ids.get(key)
-    if track_id is not None:
+    track = state.tracks.get(key)
+    if track is not None:
         if console is not None:
-            console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
-        return key, int(track_id)
-    if key in state.tracks:
-        track_id = state.next_track_id
-        state.next_track_id += 1
-        state.track_ids[key] = track_id
-        if console is not None:
-            console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
-        return key, track_id
+            console.log.log(f"SFX Tune {track.track_id} <- '{normalized}' ok")
+        return key, track.track_id
+    data = None
     music_stream = None
     file_path = assets_dir / normalized
     if file_path.is_file():
@@ -150,10 +140,8 @@ def load_music_track(
             console.log.log(f"SFX Tune {state.next_track_id} <- '{normalized}' FAILED")
         return None
     track_id = state.next_track_id
-    state.next_track_id += 1
     rl.set_music_volume(music_stream, state.volume)
-    state.tracks[key] = music_stream
-    state.track_ids[key] = track_id
+    state.tracks[key] = MusicTrack(stream=music_stream, track_id=track_id, source_data=data)
     if console is not None:
         console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
     return key, int(track_id)
@@ -165,217 +153,105 @@ def queue_track(state: MusicState, track_key: str) -> None:
     state.queue.append(track_key)
 
 
-class TrackPlayback(msgspec.Struct):
-    """Runtime playback state for a loaded music stream."""
-
-    music: rl.Music
-    volume: float
-    muted: bool
-
-
 _MUSIC_MAX_DT = 0.1
 _MUSIC_FADE_IN_PER_SEC = 1.0
 _MUSIC_FADE_OUT_PER_SEC = 0.5
-_MUSIC_RUNTIME_EXCEPTIONS = (RuntimeError, OSError, ValueError)
 
 
-def _set_music_volume_safe(music: rl.Music, volume: float) -> bool:
-    try:
-        rl.set_music_volume(music, volume)
-        return True
-    except _MUSIC_RUNTIME_EXCEPTIONS:
-        return False
-
-
-def _play_music_stream_safe(music: rl.Music) -> bool:
-    try:
-        rl.play_music_stream(music)
-        return True
-    except _MUSIC_RUNTIME_EXCEPTIONS:
-        return False
-
-
-def _stop_music_stream_safe(music: rl.Music) -> bool:
-    try:
-        rl.stop_music_stream(music)
-        return True
-    except _MUSIC_RUNTIME_EXCEPTIONS:
-        return False
-
-
-def _update_music_stream_safe(music: rl.Music) -> bool:
-    try:
-        rl.update_music_stream(music)
-        return True
-    except _MUSIC_RUNTIME_EXCEPTIONS:
-        return False
-
-
-def _is_music_stream_playing_safe(music: rl.Music) -> bool:
-    try:
-        return rl.is_music_stream_playing(music)
-    except _MUSIC_RUNTIME_EXCEPTIONS:
-        return False
-
-
-def _unload_music_stream_safe(music: rl.Music) -> bool:
-    try:
-        rl.unload_music_stream(music)
-        return True
-    except _MUSIC_RUNTIME_EXCEPTIONS:
-        return False
-
-
-def play_music(state: MusicState, track_name: str) -> None:
+def play_music(state: MusicState, track_name: str, *, fade_in: bool = False) -> None:
     if not state.ready or not state.enabled:
         return
-    music = state.tracks.get(track_name)
-    if music is None:
+    track = state.tracks.get(track_name)
+    if track is None:
         return
 
-    # Original behavior uses an "exclusive" music channel: requesting a track
-    # mutes (fades out) any other currently-unmuted music ids.
-    for key, pb in state.playbacks.items():
-        if key != track_name and (not pb.muted):
-            pb.muted = True
+    state.game_tune_started = False
+    for key, other in state.tracks.items():
+        if key != track_name:
+            other.muted = True
 
-    pb = state.playbacks.get(track_name)
-    if pb is None:
-        pb = TrackPlayback(music=music, volume=0.0, muted=True)
-        state.playbacks[track_name] = pb
-
-    # Mirror `sfx_play_exclusive`: only arm/unmute the requested track when its
-    # tracked volume has already faded to silence.
-    if pb.volume <= 0.0:
-        pb.muted = False
-        pb.volume = state.volume
-        _set_music_volume_safe(music, pb.volume)
-        _play_music_stream_safe(music)
-
+    # Native sfx_play_exclusive only unmutes a requested track at silence.
+    # Callers that request a fading track keep retrying until it reaches zero.
+    if track.volume <= 0.0:
+        rl.stop_music_stream(track.stream)
+        rl.set_music_volume(track.stream, 0.0 if fade_in else state.volume)
+        rl.play_music_stream(track.stream)
+        track.muted = False
+        track.volume = state.volume
+    if fade_in:
+        track.volume = 0.0
+        rl.set_music_volume(track.stream, 0.0)
     state.active_track = track_name
 
 
 def stop_music(state: MusicState) -> None:
     if not state.ready or not state.enabled:
         return
-    # Mirror `sfx_mute_all`: mark everything muted and let `update_music` ramp it down.
-    for pb in state.playbacks.values():
-        pb.muted = True
+    for track in state.tracks.values():
+        track.muted = True
     state.active_track = None
     state.game_tune_started = False
-    state.game_tune_track = None
 
 
 def trigger_game_tune(state: MusicState, *, rng: CrandLike) -> str | None:
-    """Start a random queued game tune, if it hasn't been triggered yet.
-
-    Returns the track key if playback started, otherwise None.
-    """
-    if not state.ready or not state.enabled:
+    """Select a queued tune once per run, retaining intent even at zero volume."""
+    if not state.ready or not state.enabled or state.game_tune_started or not state.queue:
         return None
-    if state.game_tune_started:
-        return None
-    if not state.queue:
-        return None
-
-    idx = rng.rand() % len(state.queue)
-    track_key = state.queue[idx]
-
-    if track_key not in state.tracks:
-        return None
-
+    track_key = state.queue[rng.rand() % len(state.queue)]
     play_music(state, track_key)
     state.game_tune_started = True
-    state.game_tune_track = track_key
     return track_key
 
 
 def update_music(state: MusicState, dt: float) -> None:
-    if not state.ready or not state.enabled:
+    if not state.ready or not state.enabled or dt <= 0.0:
         return
-    frame_dt = float(dt)
-    if frame_dt <= 0.0:
-        return
-    if frame_dt > _MUSIC_MAX_DT:
-        frame_dt = _MUSIC_MAX_DT
+    frame_dt = min(float(dt), _MUSIC_MAX_DT)
+    target_volume = state.volume
+    for track in state.tracks.values():
+        stream = track.stream
+        playing = rl.is_music_stream_playing(stream)
+        if playing:
+            rl.update_music_stream(stream)
+        if target_volume <= 0.0:
+            # Native stops the buffer without seeking or forgetting its unmuted
+            # state. Raylib Pause/Resume preserves the stream cursor likewise.
+            if playing:
+                rl.pause_music_stream(stream)
+        elif not track.muted and not playing:
+            rl.resume_music_stream(stream)
 
-    target_volume = float(state.volume)
-    if target_volume <= 0.0:
-        # Original behavior: global music volume at 0 stops playback immediately.
-        for track_key in list(state.playbacks.keys()):
-            pb = state.playbacks.pop(track_key, None)
-            if pb is None:
-                continue
-            _set_music_volume_safe(pb.music, 0.0)
-            _stop_music_stream_safe(pb.music)
-        return
-
-    for track_key in list(state.playbacks.keys()):
-        pb = state.playbacks.get(track_key)
-        if pb is None:
-            continue
-        music = pb.music
-
-        # Keep streams serviced while they play.
-        if _is_music_stream_playing_safe(music):
-            _update_music_stream_safe(music)
-
-        muted = pb.muted or target_volume <= 0.0
-        if muted:
-            pb.volume -= frame_dt * _MUSIC_FADE_OUT_PER_SEC
-            if pb.volume <= 0.0:
-                pb.volume = 0.0
-                _set_music_volume_safe(music, 0.0)
-                _stop_music_stream_safe(music)
-                state.playbacks.pop(track_key, None)
-                continue
-            _set_music_volume_safe(music, pb.volume)
-            continue
-
-        # Unmuted track: ensure it stays playing and ramp toward target volume.
-        if not _is_music_stream_playing_safe(music):
-            _play_music_stream_safe(music)
-
-        if pb.volume > target_volume:
-            pb.volume = target_volume
-        elif pb.volume < target_volume:
-            pb.volume = min(target_volume, pb.volume + frame_dt * _MUSIC_FADE_IN_PER_SEC)
-
-        _set_music_volume_safe(music, pb.volume)
+        if track.muted:
+            if track.volume > 0.0:
+                track.volume = max(0.0, track.volume - frame_dt * _MUSIC_FADE_OUT_PER_SEC)
+                if track.volume == 0.0:
+                    rl.stop_music_stream(stream)
+                rl.set_music_volume(stream, track.volume)
+        else:
+            if track.volume > target_volume:
+                track.volume = target_volume
+            elif track.volume < target_volume:
+                track.volume = min(target_volume, track.volume + frame_dt * _MUSIC_FADE_IN_PER_SEC)
+            rl.set_music_volume(stream, track.volume)
 
 
 def set_music_volume(state: MusicState, volume: float) -> None:
-    volume = float(volume)
-    if volume < 0.0:
-        volume = 0.0
-    if volume > 1.0:
-        volume = 1.0
-    state.volume = volume
+    state.volume = min(1.0, max(0.0, float(volume)))
     if not state.ready or not state.enabled:
         return
-    # Mirror original: volume decreases take effect immediately; increases are ramped
-    # by `update_music`.
-    for pb in state.playbacks.values():
-        if pb.muted:
-            continue
-        if pb.volume > state.volume:
-            pb.volume = state.volume
-        _set_music_volume_safe(pb.music, pb.volume)
+    for track in state.tracks.values():
+        if not track.muted:
+            track.volume = min(track.volume, state.volume)
+            rl.set_music_volume(track.stream, track.volume)
 
 
 def shutdown_music(state: MusicState) -> None:
-    if not state.ready:
-        return
-    for pb in list(state.playbacks.values()):
-        _stop_music_stream_safe(pb.music)
-    state.playbacks.clear()
-    for music in state.tracks.values():
-        _stop_music_stream_safe(music)
-        _unload_music_stream_safe(music)
-    state.tracks.clear()
-    state.track_ids.clear()
-    state.next_track_id = 0
-    state.paq_entries = None
-    state.active_track = None
-    state.game_tune_started = False
-    state.game_tune_track = None
+    with ExitStack() as cleanup:
+        for track in state.tracks.values():
+            cleanup.callback(rl.unload_music_stream, track.stream)
+        state.tracks.clear()
+        state.queue.clear()
+        state.paq_entries = None
+        state.active_track = None
+        state.game_tune_started = False
+        state.ready = False

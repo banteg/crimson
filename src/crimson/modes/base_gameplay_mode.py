@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ScreenAction, ShowScores
-from grim.audio import AudioState, stop_music, update_audio
+from grim.audio import AudioState, play_music, stop_music, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -732,6 +732,8 @@ class BaseGameplayMode:
         raise NotImplementedError
 
     def _update_game_over_ui(self, dt: float) -> None:
+        if self.audio is not None and not self._game_over_ui.closing:
+            play_music(self.audio, "shortie_monk")
         record = self._game_over_record
         if record is None:
             self._enter_game_over()

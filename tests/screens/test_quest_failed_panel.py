@@ -190,6 +190,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     state.quest_fail_retry_count = 4
 
     play_sfx = mocker.Mock()
+    play_music = mocker.patch.object(quest_failed_module, "play_music")
     mocker.patch.object(quest_failed_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(quest_failed_module, "play_sfx", side_effect=play_sfx)
     mocker.patch.object(
@@ -212,6 +213,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
         if action is not None:
             break
     assert action == Route.MENU
+    play_music.assert_called_once_with(state.audio, "shortie_monk")
 
 
 def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_failed_state, mocker) -> None:

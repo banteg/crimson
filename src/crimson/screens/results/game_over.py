@@ -167,6 +167,10 @@ class GameOverUi(msgspec.Struct):
             return True
         return False
 
+    @property
+    def closing(self) -> bool:
+        return self._closing
+
     def world_entity_alpha(self) -> float:
         if not self._closing:
             return 1.0

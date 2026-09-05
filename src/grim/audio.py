@@ -58,8 +58,8 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
     return state
 
 
-def play_music(state: AudioState, track_name: str) -> None:
-    music.play_music(state.music, track_name)
+def play_music(state: AudioState, track_name: str, *, fade_in: bool = False) -> None:
+    music.play_music(state.music, track_name, fade_in=fade_in)
 
 
 def stop_music(state: AudioState | None) -> None:

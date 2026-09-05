@@ -4,7 +4,6 @@ from collections.abc import Callable
 
 from grim.audio import AudioState, play_music, play_sfx, trigger_game_tune
 from grim.rand import CrandLike
-from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
 from ..sim.presentation_step import DeterministicPresentationPlan
@@ -48,11 +47,4 @@ class AudioBridge:
         for sfx in plan.post_apply_sfx:
             self.play_sfx(sfx, reflex_boost_timer=plan.reflex_boost_timer)
         if plan.play_quest_completion_music and self.audio is not None:
-            play_music(self.audio, "crimsonquest")
-            playback = self.audio.music.playbacks.get("crimsonquest")
-            if playback is not None:
-                playback.volume = 0.0
-                try:
-                    rl.set_music_volume(playback.music, 0.0)
-                except RuntimeError:
-                    playback.volume = 0.0
+            play_music(self.audio, "crimsonquest", fade_in=True)

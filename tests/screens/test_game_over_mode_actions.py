@@ -37,9 +37,28 @@ def test_update_game_over_ui_routes_high_scores(mocker, make_mode_config) -> Non
     mode._update_game_over_ui(0.1)
 
     assert mode.take_action() == ShowScores(
-        ScoreQuery(mode.default_game_mode_id), ScoreReturnContext.capture(mode.config),
+        ScoreQuery(mode.default_game_mode_id),
+        ScoreReturnContext.capture(mode.config),
     )
     assert mode.close_requested is False
+
+
+def test_game_over_requests_result_music_until_the_exit_transition(mocker, make_mode_config) -> None:
+    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
+    mode.audio = AudioState(
+        ready=False,
+        music=init_music_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+    )
+    play_music = mocker.patch.object(base_gameplay_mode, "play_music")
+    mocker.patch.object(GameOverUi, "update", return_value=None)
+    mode._update_game_over_ui(0.1)
+    mode._update_game_over_ui(0.1)
+    assert play_music.call_count == 2
+    play_music.assert_called_with(mode.audio, "shortie_monk")
+    mode._game_over_ui._begin_close_transition(ResultAction.MAIN_MENU)
+    mode._update_game_over_ui(0.1)
+    assert play_music.call_count == 2
 
 
 def test_update_game_over_ui_routes_main_menu(mocker, make_mode_config) -> None:
