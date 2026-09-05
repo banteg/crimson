@@ -107,6 +107,12 @@ Every `ReplayTick` carries:
   tick RNG tracing remains active
 - `commands`: Typ-o commands applied as part of the tick
 
+Live perk commands use the same ordered handler as the recorded prelude.
+Simulation timing is calculated after those commands, so a Reflex Boosted pick
+affects the same tick in live play and playback. Each pick's immediate effects
+see the timing established by earlier picks. These corrections retain format
+16's existing prelude semantics; there is no alternate legacy execution path.
+
 Frida capture format 22 writes the same five values in each raw tick's
 `channels.replay_step`. Finalization uses that channel to build the CRD sidecar,
 and CDT schema 15 preserves it for direct comparison with replay-recorded

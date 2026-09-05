@@ -375,6 +375,39 @@ class DeterministicSession(msgspec.Struct):
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
         )
 
+    def _apply_command(self, command: GameCommand, *, dt: float) -> SfxId | None:
+        match command:
+            case PerkPickCommand(choice_index=choice_index):
+                # Each pick sees any timing changes made by earlier picks.
+                timing = self.timing_for_dt(dt)
+                picked = perk_selection_pick(
+                    self.world.state,
+                    self.world.players,
+                    self.world.state.perk_selection,
+                    choice_index,
+                    game_mode=self.game_mode,
+                    player_count=len(self.world.players),
+                    dt=timing.dt_sim,
+                    creatures=self.world.creatures.entries,
+                    refresh_choices=False,
+                )
+                return SfxId.UI_BONUS if picked is not None else None
+            case PerkMenuOpenCommand():
+                perk_selection_open_choices(
+                    self.world.state,
+                    self.world.players,
+                    self.world.state.perk_selection,
+                    game_mode=self.game_mode,
+                    player_count=len(self.world.players),
+                )
+            case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
+                if self.game_mode != GameMode.TYPO:
+                    raise RuntimeError(f"Typ-o command in non-Typo session: {type(command).__name__}")
+                apply_typo_command(self.world, command)
+            case _:
+                raise RuntimeError(f"unhandled command type: {type(command).__name__}")
+        return None
+
     def apply_replay_prelude(
         self,
         *,
@@ -395,32 +428,10 @@ class DeterministicSession(msgspec.Struct):
                         self.world.state.rng.rand_tagged(
                             RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED,
                         )
-                case PerkPickCommand(choice_index=choice_index):
-                    # Earlier prelude operations may change time scaling, so
-                    # derive the native apply delta at this exact position in
-                    # the ordered stream.
-                    timing = self.timing_for_dt(dt)
-                    picked = perk_selection_pick(
-                        self.world.state,
-                        self.world.players,
-                        self.world.state.perk_selection,
-                        choice_index,
-                        game_mode=self.game_mode,
-                        player_count=len(self.world.players),
-                        dt=timing.dt_sim,
-                        creatures=self.world.creatures.entries,
-                        refresh_choices=False,
-                    )
-                    if picked is not None:
-                        post_apply_sfx.append(SfxId.UI_BONUS)
-                case PerkMenuOpenCommand():
-                    perk_selection_open_choices(
-                        self.world.state,
-                        self.world.players,
-                        self.world.state.perk_selection,
-                        game_mode=self.game_mode,
-                        player_count=len(self.world.players),
-                    )
+                case PerkPickCommand() | PerkMenuOpenCommand():
+                    sfx = self._apply_command(operation, dt=dt)
+                    if sfx is not None:
+                        post_apply_sfx.append(sfx)
                 case _:
                     raise RuntimeError(f"unhandled replay prelude operation: {type(operation).__name__}")
         return post_apply_sfx
@@ -450,41 +461,17 @@ class DeterministicSession(msgspec.Struct):
         commands: Sequence[GameCommand] | None = None,
         prelude_post_apply_sfx: list[SfxId] | None = None,
     ) -> DeterministicSessionTick:
+        post_apply_sfx = list(prelude_post_apply_sfx or ())
+        for command in commands or ():
+            sfx = self._apply_command(command, dt=dt)
+            if sfx is not None:
+                post_apply_sfx.append(sfx)
+
+        # Port recordings place these same commands in the between-tick
+        # prelude. Derive timing only after every command has taken effect.
         timing = self.timing_for_dt(dt)
         mode_runtime = self.mode_runtime
         mode_runtime.before_step()
-
-        post_apply_sfx = list(prelude_post_apply_sfx or ())
-        for cmd in commands or ():
-            match cmd:
-                case PerkPickCommand(choice_index=ci):
-                    picked = perk_selection_pick(
-                        self.world.state,
-                        self.world.players,
-                        self.world.state.perk_selection,
-                        ci,
-                        game_mode=self.game_mode,
-                        player_count=len(self.world.players),
-                        dt=timing.dt_sim,
-                        creatures=self.world.creatures.entries,
-                        refresh_choices=False,
-                    )
-                    if picked is not None:
-                        post_apply_sfx.append(SfxId.UI_BONUS)
-                case PerkMenuOpenCommand():
-                    perk_selection_open_choices(
-                        self.world.state,
-                        self.world.players,
-                        self.world.state.perk_selection,
-                        game_mode=self.game_mode,
-                        player_count=len(self.world.players),
-                    )
-                case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
-                    if self.game_mode != GameMode.TYPO:
-                        raise RuntimeError(f"Typ-o command in non-Typo session: {type(cmd).__name__}")
-                    apply_typo_command(self.world, cmd)
-                case _:
-                    raise RuntimeError(f"unhandled command type: {type(cmd).__name__}")
 
         tick_inputs = inputs
         if tick_inputs is not None:
