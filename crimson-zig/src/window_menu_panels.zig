@@ -273,7 +273,7 @@ fn playGameEntries(config: *const formats.crimson_cfg.CrimsonCfg, status: format
 
 fn playGameEntriesFromPlayerCount(player_count_raw: u32, status: formats.game_cfg.Status, demo_enabled: bool) []const PlayGameEntry {
     const player_count = std.math.clamp(player_count_raw, @as(u32, 1), @as(u32, 4));
-    const main_total = questTotalPlayed(status) + status.mode_play_rush + status.mode_play_survival;
+    const main_total = questTotalPlayed(status) +% status.mode_play_rush +% status.mode_play_survival;
     const quest_unlock_index = visibleQuestUnlockIndex(status, demo_enabled);
     const has_typo = !demo_enabled and player_count == 1 and quest_unlock_index >= quest_hardcore_unlock_index;
     const tutorial_first = player_count == 1 and main_total == 0;

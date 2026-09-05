@@ -134,7 +134,7 @@ class GameStatus(GameStatusData, kw_only=True):
 
     def increment_mode_play_count_for_mode(self, game_mode: GameMode, delta: int = 1) -> int:
         field = _mode_count_field_for_mode(game_mode)
-        value = getattr(self, field) + int(delta)
+        value = (getattr(self, field) + int(delta)) & 0xFFFFFFFF
         setattr(self, field, value)
         return value
 
@@ -145,7 +145,7 @@ class GameStatus(GameStatusData, kw_only=True):
     def increment_weapon_usage_slot(self, slot: int, delta: int = 1) -> int:
         slot_idx = _require_index(slot, size=WEAPON_USAGE_COUNT, field="weapon_usage_slot")
         counts = list(self.weapon_usage_counts)
-        counts[slot_idx] = counts[slot_idx] + int(delta)
+        counts[slot_idx] = (counts[slot_idx] + int(delta)) & 0xFFFFFFFF
         self.weapon_usage_counts = tuple(counts)
         return counts[slot_idx]
 
@@ -168,7 +168,7 @@ class GameStatus(GameStatusData, kw_only=True):
     def increment_quest_play_count(self, index: int, delta: int = 1) -> int:
         quest_idx = _require_index(index, size=QUEST_PLAY_COUNT, field="quest_play_count")
         counts = list(self.quest_play_counts)
-        counts[quest_idx] = counts[quest_idx] + int(delta)
+        counts[quest_idx] = (counts[quest_idx] + int(delta)) & 0xFFFFFFFF
         self.quest_play_counts = tuple(counts)
         return counts[quest_idx]
 

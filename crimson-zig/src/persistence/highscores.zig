@@ -20,9 +20,14 @@ pub const DateStamp = struct {
     day: u8,
 };
 
+pub const TableOptions = struct {
+    date_mode: u8 = 0,
+    now: ?DateStamp = null,
+};
+
 pub const HighScoreError = error{
     InvalidSize,
-} || std.mem.Allocator.Error || std.Io.Dir.ReadFileAllocError || std.Io.Dir.WriteFileError || std.Io.Dir.CreateDirPathError;
+} || std.mem.Allocator.Error || std.Io.Dir.ReadFileAllocError || std.Io.Dir.WriteFileError || std.Io.Dir.CreateDirPathError || std.Io.Dir.CreateFileAtomicError || std.Io.File.Atomic.ReplaceError || std.Io.File.Writer.Error;
 
 pub const RecordList = struct {
     items: []HighScoreRecord,
@@ -85,7 +90,7 @@ pub const HighScoreRecord = struct {
         const raw = self.data[0..name_size];
         const end = std.mem.indexOfScalar(u8, raw, 0) orelse raw.len;
         var i = end;
-        while (i > 0 and raw[i - 1] == 0x20) : (i -= 1) {
+        while (i > 1 and raw[i - 1] == 0x20) : (i -= 1) {
             raw[i - 1] = 0;
         }
     }
@@ -321,95 +326,97 @@ pub fn writeHighscoreRecords(
         try appendU32(allocator, &bytes, checksum);
     }
 
-    try std.Io.Dir.cwd().writeFile(io, .{
-        .sub_path = path,
-        .data = bytes.items,
-    });
+    var atomic = try std.Io.Dir.cwd().createFileAtomic(io, path, .{ .replace = true });
+    defer atomic.deinit(io);
+    var writer = atomic.file.writer(io, &.{});
+    writer.interface.writeAll(bytes.items) catch return writer.err.?;
+    try writer.flush();
+    try atomic.replace(io);
+}
+
+pub fn passesDateFilter(record: HighScoreRecord, options: TableOptions) bool {
+    if (options.date_mode == 0) return true;
+    const stamp = options.now orelse currentDateStamp();
+    const day = record.data[0x40];
+    const month = record.data[0x42];
+    const year = 2000 + @as(i32, record.data[0x43]);
+    if (day == 0 or month == 0 or year != stamp.year) return false;
+    return switch (options.date_mode) {
+        1 => month == stamp.month,
+        2 => record.dateWeek() == @as(u8, @intCast(highscoreDateWeek(stamp.year, stamp.month, stamp.day) & 0xFF)),
+        3 => day == stamp.day and month == stamp.month,
+        else => false,
+    };
+}
+
+fn selectHighscoreTable(
+    allocator: std.mem.Allocator,
+    records: []const HighScoreRecord,
+    game_mode_id_raw: i32,
+    options: TableOptions,
+) std.mem.Allocator.Error!RecordList {
+    var filtered: std.ArrayList(HighScoreRecord) = .empty;
+    defer filtered.deinit(allocator);
+    const dated_options: TableOptions = .{ .date_mode = options.date_mode, .now = options.now orelse currentDateStamp() };
+    for (records) |record| {
+        if (record.gameModeRaw() != game_mode_id_raw or !passesDateFilter(record, dated_options)) continue;
+        try filtered.append(allocator, record);
+    }
+    sortHighscores(filtered.items, game_mode_id_raw);
+    if (filtered.items.len > table_max) filtered.shrinkRetainingCapacity(table_max);
+    return .{ .items = try filtered.toOwnedSlice(allocator) };
 }
 
 pub fn readHighscoreTable(
     allocator: std.mem.Allocator,
     path: []const u8,
     game_mode_id_raw: i32,
+    options: TableOptions,
 ) HighScoreError!RecordList {
     const records = try readHighscoreRecords(allocator, path);
     defer records.deinit(allocator);
-
-    var filtered: std.ArrayList(HighScoreRecord) = .empty;
-    defer filtered.deinit(allocator);
-
-    for (records.items) |record| {
-        if (record.gameModeRaw() != game_mode_id_raw) continue;
-        try filtered.append(allocator, record);
-    }
-
-    sortHighscores(filtered.items, game_mode_id_raw);
-    if (filtered.items.len > table_max) {
-        filtered.shrinkRetainingCapacity(table_max);
-    }
-
-    return .{ .items = try filtered.toOwnedSlice(allocator) };
+    return selectHighscoreTable(allocator, records.items, game_mode_id_raw, options);
 }
 
 pub fn rankIndex(records_sorted: []const HighScoreRecord, record: HighScoreRecord) usize {
-    const mode = normalizeGameMode(record.gameModeRaw());
-    return switch (mode orelse .survival) {
-        .rush => blk: {
-            const score = record.survivalElapsedMs();
-            for (records_sorted, 0..) |entry, idx| {
-                if (score > entry.survivalElapsedMs()) break :blk idx;
-            }
-            break :blk records_sorted.len;
-        },
-        .quests => blk: {
-            const score = record.survivalElapsedMs();
-            for (records_sorted, 0..) |entry, idx| {
-                const other = entry.survivalElapsedMs();
-                if (other == 0) break :blk idx;
-                if (score < other) break :blk idx;
-            }
-            break :blk records_sorted.len;
-        },
-        else => blk: {
-            const score = record.scoreXp();
-            for (records_sorted, 0..) |entry, idx| {
-                if (score > entry.scoreXp()) break :blk idx;
-            }
-            break :blk records_sorted.len;
-        },
-    };
+    for (records_sorted, 0..) |entry, idx| {
+        if (highscoreLessThan(record.gameModeRaw(), record, entry)) return idx;
+    }
+    return records_sorted.len;
 }
 
 pub fn upsertHighscoreRecord(
     allocator: std.mem.Allocator,
     path: []const u8,
     record: HighScoreRecord,
-    now: ?DateStamp,
+    options: TableOptions,
 ) HighScoreError!UpsertResult {
-    var records_sorted = try readHighscoreTable(allocator, path, record.gameModeRaw());
-
-    const idx = rankIndex(records_sorted.items, record);
-    if (idx >= table_max) {
-        return .{ .records = records_sorted.items, .rank_index = idx };
+    const records = try readHighscoreRecords(allocator, path);
+    var history = std.ArrayList(HighScoreRecord).fromOwnedSlice(records.items);
+    defer history.deinit(allocator);
+    const table = try selectHighscoreTable(allocator, history.items, record.gameModeRaw(), options);
+    var updated = std.ArrayList(HighScoreRecord).fromOwnedSlice(table.items);
+    defer updated.deinit(allocator);
+    const idx = rankIndex(updated.items, record);
+    if (idx < table_max) {
+        var candidate = record;
+        candidate.trimTrailingSpaces();
+        candidate.ensureDateFields(options.now);
+        try history.append(allocator, candidate);
+        try updated.insert(allocator, idx, candidate);
+        if (updated.items.len > table_max) updated.shrinkRetainingCapacity(table_max);
+        // Allocate the returned table before publishing the write, so an allocation
+        // failure cannot report a failed save after the record has been stored.
+        const result = try updated.toOwnedSlice(allocator);
+        errdefer allocator.free(result);
+        try writeHighscoreRecords(allocator, path, history.items, options.now);
+        return .{ .records = result, .rank_index = idx };
     }
-
-    var updated = std.ArrayList(HighScoreRecord).fromOwnedSlice(records_sorted.items);
-    records_sorted.items = &.{};
-    errdefer updated.deinit(allocator);
-    try updated.insert(allocator, idx, record.copy());
-    if (updated.items.len > table_max) {
-        updated.shrinkRetainingCapacity(table_max);
-    }
-
-    try writeHighscoreRecords(allocator, path, updated.items, now);
-    return .{
-        .records = try updated.toOwnedSlice(allocator),
-        .rank_index = idx,
-    };
+    return .{ .records = try updated.toOwnedSlice(allocator), .rank_index = idx };
 }
 
 pub fn sortHighscores(records: []HighScoreRecord, game_mode_id_raw: i32) void {
-    std.sort.heap(HighScoreRecord, records, game_mode_id_raw, highscoreLessThan);
+    std.mem.sort(HighScoreRecord, records, game_mode_id_raw, highscoreLessThan);
 }
 
 fn normalizeGameMode(game_mode_id_raw: i32) ?game_ids.GameModeId {
@@ -419,15 +426,15 @@ fn normalizeGameMode(game_mode_id_raw: i32) ?game_ids.GameModeId {
 fn highscoreLessThan(game_mode_id_raw: i32, lhs: HighScoreRecord, rhs: HighScoreRecord) bool {
     const mode = normalizeGameMode(game_mode_id_raw);
     return switch (mode orelse .survival) {
-        .rush => lhs.survivalElapsedMs() > rhs.survivalElapsedMs(),
+        .rush => @as(i32, @bitCast(lhs.survivalElapsedMs())) > @as(i32, @bitCast(rhs.survivalElapsedMs())),
         .quests => blk: {
-            const lhs_time = lhs.survivalElapsedMs();
-            const rhs_time = rhs.survivalElapsedMs();
+            const lhs_time: i32 = @bitCast(lhs.survivalElapsedMs());
+            const rhs_time: i32 = @bitCast(rhs.survivalElapsedMs());
             if (lhs_time == 0 and rhs_time != 0) break :blk false;
             if (lhs_time != 0 and rhs_time == 0) break :blk true;
             break :blk lhs_time < rhs_time;
         },
-        else => lhs.scoreXp() > rhs.scoreXp(),
+        else => @as(i32, @bitCast(lhs.scoreXp())) > @as(i32, @bitCast(rhs.scoreXp())),
     };
 }
 
@@ -526,7 +533,7 @@ fn dateStampUtcFromEpochSeconds(seconds: u64) DateStamp {
 
     return .{
         .year = year_day.year,
-        .month = @intCast(@intFromEnum(month_day.month) + 1),
+        .month = @intCast(@intFromEnum(month_day.month)),
         .day = @intCast(month_day.day_index + 1),
     };
 }
@@ -602,8 +609,8 @@ test "date fields use native dateWeek byte" {
 }
 
 test "date stamp utc conversion uses calendar day" {
-    try std.testing.expectEqual(.{ .year = 1970, .month = 1, .day = 1 }, dateStampUtcFromEpochSeconds(0));
-    try std.testing.expectEqual(.{ .year = 2026, .month = 3, .day = 3 }, dateStampUtcFromEpochSeconds(1772496000));
+    try std.testing.expectEqual(@as(DateStamp, .{ .year = 1970, .month = 1, .day = 1 }), dateStampUtcFromEpochSeconds(0));
+    try std.testing.expectEqual(@as(DateStamp, .{ .year = 2026, .month = 3, .day = 3 }), dateStampUtcFromEpochSeconds(1772496000));
 }
 
 test "date stamp local conversion uses tm calendar fields" {
@@ -620,7 +627,7 @@ test "date stamp local conversion uses tm calendar fields" {
         .tm_gmtoff = 0,
         .tm_zone = null,
     };
-    try std.testing.expectEqual(.{ .year = 2026, .month = 3, .day = 3 }, dateStampFromLocalTm(tm));
+    try std.testing.expectEqual(@as(DateStamp, .{ .year = 2026, .month = 3, .day = 3 }), dateStampFromLocalTm(tm));
 }
 
 test "scores path builder mirrors Python naming rules" {
@@ -766,19 +773,69 @@ test "upsert keeps quest tables sorted ascending with zero times last" {
         var record = HighScoreRecord.blank();
         record.setGameModeId(.quests);
         record.setSurvivalElapsedMs(time_ms);
-        var result = try upsertHighscoreRecord(allocator, path, record, .{
+        var result = try upsertHighscoreRecord(allocator, path, record, .{ .now = .{
             .year = 2026,
             .month = 4,
             .day = 11,
-        });
+        } });
         result.deinit(allocator);
     }
 
-    const table = try readHighscoreTable(allocator, path, @intFromEnum(game_ids.GameModeId.quests));
+    const table = try readHighscoreTable(allocator, path, @intFromEnum(game_ids.GameModeId.quests), .{});
     defer table.deinit(allocator);
 
     try std.testing.expectEqual(@as(usize, 3), table.items.len);
     try std.testing.expectEqual(@as(u32, 2000), table.items[0].survivalElapsedMs());
     try std.testing.expectEqual(@as(u32, 5000), table.items[1].survivalElapsedMs());
     try std.testing.expectEqual(@as(u32, 0), table.items[2].survivalElapsedMs());
+}
+
+test "date selection precedes table limit and saves retain history" {
+    const allocator = std.testing.allocator;
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const path = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path, "scores.hi" });
+    defer allocator.free(path);
+    const today: DateStamp = .{ .year = 2026, .month = 9, .day = 6 };
+    var old = HighScoreRecord.blankWithRandValue(0);
+    old.setGameModeId(.survival);
+    old.setScoreXp(1000);
+    old.ensureDateFields(.{ .year = 2025, .month = 1, .day = 1 });
+    var history = [_]HighScoreRecord{old} ** 106;
+    history[105] = HighScoreRecord.blankWithRandValue(1);
+    history[105].setGameModeId(.survival);
+    history[105].setScoreXp(10);
+    history[105].ensureDateFields(today);
+    try writeHighscoreRecords(allocator, path, &history, today);
+    const options: TableOptions = .{ .date_mode = 3, .now = today };
+    const table = try readHighscoreTable(allocator, path, @intFromEnum(game_ids.GameModeId.survival), options);
+    defer table.deinit(allocator);
+    try std.testing.expectEqual(@as(usize, 1), table.items.len);
+    var candidate = HighScoreRecord.blankWithRandValue(2);
+    candidate.setGameModeId(.survival);
+    candidate.setScoreXp(20);
+    const result = try upsertHighscoreRecord(allocator, path, candidate, options);
+    defer result.deinit(allocator);
+    try std.testing.expectEqual(@as(usize, 0), result.rank_index);
+    try std.testing.expectEqual(@as(usize, 2), result.records.len);
+    const saved = try readHighscoreRecords(allocator, path);
+    defer saved.deinit(allocator);
+    try std.testing.expectEqual(@as(usize, 107), saved.items.len);
+}
+
+test "quest ranking uses signed times and zero ranks last" {
+    var records: [3]HighScoreRecord = undefined;
+    for ([_]i32{ 1000, 0, -500 }, &records) |time, *record| {
+        record.* = HighScoreRecord.blankWithRandValue(0);
+        record.setGameModeId(.quests);
+        record.setSurvivalElapsedMs(@bitCast(time));
+    }
+    sortHighscores(&records, @intFromEnum(game_ids.GameModeId.quests));
+    try std.testing.expectEqual(@as(i32, -500), @as(i32, @bitCast(records[0].survivalElapsedMs())));
+    try std.testing.expectEqual(@as(u32, 0), records[2].survivalElapsedMs());
+    try std.testing.expectEqual(@as(usize, 2), rankIndex(records[0..2], records[2]));
+    var name = HighScoreRecord.blankWithRandValue(0);
+    name.setName("   ");
+    name.trimTrailingSpaces();
+    try std.testing.expectEqualStrings(" ", name.name());
 }

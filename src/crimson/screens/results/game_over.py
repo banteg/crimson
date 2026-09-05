@@ -106,6 +106,7 @@ class GameOverUi(msgspec.Struct):
     config: CrimsonConfig
     preserve_bugs: bool = False
 
+    save_error: str | None = None
     input_text: str = ""
     input_caret: int = 0
     phase: int = -1  # -1 init, 0 name entry (if qualifies), 1 results/buttons
@@ -153,6 +154,7 @@ class GameOverUi(msgspec.Struct):
         self._panel_open_sfx_played = False
         self._closing = False
         self._close_action = None
+        self.save_error = None
         self.input_text = ""
         self.input_caret = 0
         self._consume_enter = True
@@ -263,7 +265,9 @@ class GameOverUi(msgspec.Struct):
             self._candidate_record = candidate
 
             path = scores_path_for_config(self.base_dir, self.config)
-            records = read_highscore_table(path, game_mode_id=game_mode_id)
+            records = read_highscore_table(
+                path, game_mode_id=game_mode_id, date_mode=self.config.profile.score_date_mode,
+            )
             idx = rank_index(records, candidate)
             self.rank = int(idx)
             flush_text_input_events()
@@ -313,12 +317,19 @@ class GameOverUi(msgspec.Struct):
                         play_sfx(SfxId.UI_TYPEENTER)
                     candidate = (self._candidate_record or record).copy()
                     candidate.set_name(self.input_text)
-                    self.config.profile.set_player_name_input(self.input_text)
-                    self.config.save()
-                    path = scores_path_for_config(self.base_dir, self.config)
-                    if not self._saved:
-                        upsert_highscore_record(path, candidate)
-                        self._saved = True
+                    try:
+                        self.config.profile.set_player_name_input(self.input_text)
+                        self.config.save()
+                        if not self._saved:
+                            path = scores_path_for_config(self.base_dir, self.config)
+                            upsert_highscore_record(
+                                path, candidate, date_mode=self.config.profile.score_date_mode,
+                            )
+                            self._saved = True
+                    except OSError:
+                        self.save_error = "Could not save. Press OK to retry."
+                        return None
+                    self.save_error = None
                     self.phase = 1
                     return None
                 if play_sfx is not None:
@@ -691,6 +702,11 @@ class GameOverUi(msgspec.Struct):
                 scale=1.0 * scale,
                 color=COLOR_TEXT_MUTED,
             )
+            if self.save_error is not None:
+                draw_ui_text(
+                    resources, self.save_error, input_pos + Vec2(0.0, 22.0 * scale),
+                    scale=scale, color=COLOR_TEXT_MUTED,
+                )
             caret_alpha = 1.0
             if math.sin(float(rl.get_time()) * 4.0) > 0.0:
                 caret_alpha = 0.4

@@ -212,6 +212,7 @@ pub fn build(b: *std.Build) void {
     const run_mod_tests = b.addRunArtifact(mod_tests);
 
     const root_lib_test_module = b.createModule(.{
+        .link_libc = true,
         .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,

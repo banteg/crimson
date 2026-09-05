@@ -33,11 +33,15 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
     ("demo_enabled", "is_gameplay", "dt", "start_value", "expected_value"),
     [
         (False, True, 0.0169, 10, 26),
+        (False, True, 0.016, 0xFFFFFFFF, 15),
+        (False, True, 0.0289999999, 0, 29),
         (False, False, 0.5, 123, 123),
         (True, True, 0.5, 123, 123),
     ],
     ids=[
         "accumulates-for-non-demo-gameplay",
+        "wraps-native-u32-counter",
+        "rounds-frame-time-to-f32-before-truncation",
         "skips-non-gameplay-views",
         "skips-demo-builds",
     ],

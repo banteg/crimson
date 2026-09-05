@@ -256,3 +256,28 @@ def test_quest_results_name_entry_uses_shared_ui_text_input_typeclick_caller(tmp
     assert poll_text.call_count == 1
     assert [call.args[0] for call in play_sfx.call_args_list] == [SfxId.UI_TYPECLICK_01]
     assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK]
+
+
+def test_score_write_failure_stays_on_name_entry_and_can_retry(tmp_path: Path, mocker) -> None:
+    from crimson.persistence.highscores import read_highscore_records, upsert_highscore_record
+
+    ui = _build_ui(tmp_path, phase=1)
+    ui.config = default_crimson_cfg(tmp_path / "crimson.cfg")
+    ui._scores_path = tmp_path / "scores.hi"
+    ui._consume_enter = False
+    _patch_draw_environment(mocker)
+    mocker.patch.object(quest_results_module, "update_name_entry_text", return_value=("Player", 6))
+    mocker.patch.object(quest_results_module, "button_update", return_value=True)
+    mocker.patch.object(quest_results_module.rl, "is_mouse_button_pressed", return_value=False)
+    mocker.patch.object(quest_results_module.rl, "is_key_pressed", return_value=False)
+    failed_save = mocker.patch.object(quest_results_module, "upsert_highscore_record", side_effect=OSError("disk full"))
+    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    assert ui.phase == 1
+    assert not ui._saved
+    assert ui.save_error is not None
+    failed_save.side_effect = upsert_highscore_record
+    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    assert ui.phase == 2
+    assert ui._saved
+    assert ui.save_error is None
+    assert len(read_highscore_records(ui._scores_path)) == 1

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime as dt
 from typing import TYPE_CHECKING
 
 from crimson.screens.actions import ScoreQuery
@@ -9,36 +8,6 @@ from ...game.types import GameState
 
 if TYPE_CHECKING:
     from ...persistence.highscores import HighScoreRecord
-
-
-def _passes_date_filter(entry: HighScoreRecord, *, date_mode: int, now: dt.date) -> bool:
-    # Native `config_highscore_date_mode` values (see highscore_screen_update):
-    #   0 = Best of all time (no filter)
-    #   1 = Best of month
-    #   2 = Best of week
-    #   3 = Best of day
-    mode = int(date_mode)
-    if mode <= 0:
-        return True
-
-    day = int(entry.day)
-    month = int(entry.month)
-    year_off = int(entry.year_offset)
-    if day <= 0 or month <= 0:
-        return False
-    year = 2000 + year_off
-    if mode == 1:
-        return int(month) == int(now.month) and int(year) == int(now.year)
-    if mode == 3:
-        return int(day) == int(now.day) and int(month) == int(now.month) and int(year) == int(now.year)
-    if mode == 2:
-        # Native `dateWeek`: week-of-year checksum stored at record byte 0x41.
-        from ...persistence.highscores import highscore_date_week
-
-        stored = int(entry.date_week)
-        checksum = int(highscore_date_week(now.year, now.month, now.day))
-        return int(stored) == int(checksum) and int(year) == int(now.year)
-    return True
 
 
 def load_records(state: GameState, request: ScoreQuery) -> list[HighScoreRecord]:
@@ -53,14 +22,11 @@ def load_records(state: GameState, request: ScoreQuery) -> list[HighScoreRecord]
         player_count=state.config.gameplay.player_count,
     )
     try:
-        records = read_highscore_table(path, game_mode_id=request.game_mode_id)
+        return read_highscore_table(
+            path, game_mode_id=request.game_mode_id, date_mode=state.config.profile.score_date_mode,
+        )
     except (OSError, ValueError):
         return []
-    date_mode = int(state.config.profile.score_date_mode)
-    if date_mode > 0:
-        now = dt.datetime.now(tz=dt.UTC).astimezone().date()
-        records = [entry for entry in records if _passes_date_filter(entry, date_mode=date_mode, now=now)]
-    return records
 
 
 __all__ = ["load_records"]

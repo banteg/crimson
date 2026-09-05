@@ -2107,27 +2107,13 @@ fn loadHighScores(
         allocator,
         score_path,
         @intFromEnum(state.mode),
+        .{ .date_mode = config.highscore_date_mode },
     ) catch |err| {
         state.load_error = highScoreReadErrorDetail(err);
         return;
     };
 
-    var filtered: std.ArrayList(persistence.highscores.HighScoreRecord) = .empty;
-    defer filtered.deinit(allocator);
-    for (records.items) |record| {
-        if (!passesDateFilter(record, config.highscore_date_mode)) continue;
-        filtered.append(allocator, record) catch {
-            state.load_error = highScoreAllocationErrorDetail(error.OutOfMemory);
-            records.deinit(allocator);
-            return;
-        };
-    }
-    records.deinit(allocator);
-
-    state.records = filtered.toOwnedSlice(allocator) catch {
-        state.load_error = highScoreAllocationErrorDetail(error.OutOfMemory);
-        return;
-    };
+    state.records = records.items;
     state.records_owned = true;
     if (state.highlight_rank) |rank| {
         state.scroll = highScoreScrollForHighlight(state.records.len, rank);
@@ -2156,23 +2142,6 @@ fn highScoreAllocationErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.OutOfMemory => "Unable to load high scores: out of memory.",
         else => @errorName(err),
-    };
-}
-
-fn passesDateFilter(record: persistence.highscores.HighScoreRecord, date_mode_raw: u8) bool {
-    const mode = @min(date_mode_raw, 3);
-    if (mode == 0) return true;
-    const stamp = persistence.highscores.currentDateStamp();
-    const day = record.data[0x40];
-    const checksum = record.dateWeek();
-    const month = record.data[0x42];
-    const year = 2000 + @as(i32, record.data[0x43]);
-    if (day == 0 or month == 0) return false;
-    return switch (mode) {
-        1 => month == stamp.month and year == stamp.year,
-        2 => checksum == @as(u8, @intCast(persistence.highscores.highscoreDateWeek(stamp.year, stamp.month, stamp.day) & 0xFF)) and year == stamp.year,
-        3 => day == stamp.day and month == stamp.month and year == stamp.year,
-        else => true,
     };
 }
 
@@ -2374,9 +2343,9 @@ test "high score date filter matches current month and day semantics" {
     record.data[0x42] = stamp.month;
     record.data[0x43] = @intCast(@mod(stamp.year - 2000, 256));
     record.setDateWeek(@intCast(persistence.highscores.highscoreDateWeek(stamp.year, stamp.month, stamp.day) & 0xFF));
-    try std.testing.expect(passesDateFilter(record, 1));
-    try std.testing.expect(passesDateFilter(record, 2));
-    try std.testing.expect(passesDateFilter(record, 3));
+    try std.testing.expect(persistence.highscores.passesDateFilter(record, .{ .date_mode = 1 }));
+    try std.testing.expect(persistence.highscores.passesDateFilter(record, .{ .date_mode = 2 }));
+    try std.testing.expect(persistence.highscores.passesDateFilter(record, .{ .date_mode = 3 }));
 }
 
 test "high score list scrolling does not move footer button selection" {

@@ -13,6 +13,7 @@ from ..modes.quest_mode import QuestMode
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.actions import Route, ScreenAction, ShowQuestOutcome
 from ..screens.transitions import _update_screen_fade
+from ..sim.timing import ftol_ms_i32
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .navigation import ScreenNavigator
 from .resources import GameResources
@@ -204,10 +205,10 @@ class GameLoopView:
             return
         if self.state.screens.active_gameplay is None:
             return
-        delta_ms = int(float(dt) * 1000.0)
+        delta_ms = ftol_ms_i32(dt)
         if delta_ms <= 0:
             return
-        self.state.status.play_time_ms = int(self.state.status.play_time_ms + delta_ms)
+        self.state.status.play_time_ms = (self.state.status.play_time_ms + delta_ms) & 0xFFFFFFFF
 
     def _sync_console_elapsed_ms(self) -> None:
         gameplay = self.state.screens.gameplay

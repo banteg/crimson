@@ -1469,11 +1469,16 @@ const App = struct {
         };
         defer self.allocator.free(score_path);
 
+        self.runtime.saveConfigIfDirty() catch |err| {
+            highscore.save_error = resultsConfigSaveErrorDetail(err);
+            return;
+        };
+
         var upsert = persistence.highscores.upsertHighscoreRecord(
             self.allocator,
             score_path,
             highscore.record,
-            null,
+            .{ .date_mode = self.runtime.config.highscore_date_mode },
         ) catch |err| {
             highscore.save_error = resultsHighscoreSaveErrorDetail(err);
             return;
@@ -1481,11 +1486,6 @@ const App = struct {
         defer upsert.deinit(self.allocator);
         highscore.rank_index = upsert.rank_index;
         highscore.highlight_rank = if (scoreTooLowForTop100(upsert.rank_index)) null else upsert.rank_index;
-
-        self.runtime.saveConfigIfDirty() catch |err| {
-            highscore.save_error = resultsConfigSaveErrorDetail(err);
-            return;
-        };
 
         highscore.saved = true;
         highscore.save_error = null;
@@ -1829,6 +1829,7 @@ const App = struct {
             self.allocator,
             score_path,
             @intFromEnum(runner.session.game_mode),
+            .{ .date_mode = self.runtime.config.highscore_date_mode },
         ) catch return .{};
         defer table.deinit(self.allocator);
 
@@ -3600,6 +3601,7 @@ fn collectTypoHighscoreNames(
         allocator,
         score_path,
         @intFromEnum(game_ids.GameModeId.typo),
+        .{},
     );
     defer table.deinit(allocator);
 

@@ -8,7 +8,7 @@ import msgspec
 
 from crimson.quests.level import QuestLevel
 from grim.atomic_write import atomic_write_bytes
-from grim.config import CrimsonConfig
+from grim.config import CrimsonConfig, HighScoreDateMode
 from grim.rand import Crand, CrandLike
 
 from ..game_modes import GameMode
@@ -116,7 +116,7 @@ class HighScoreRecord(msgspec.Struct):
             end = NAME_SIZE
         i = end - 1
         while i > 0 and raw[i] == 0x20:
-            raw[i] = 0
+            self.data[i] = 0
             i -= 1
 
     @property
@@ -423,64 +423,75 @@ def write_highscore_records(path: Path, records: list[HighScoreRecord]) -> None:
     atomic_write_bytes(path, bytes(payload))
 
 
-def read_highscore_table(path: Path, *, game_mode_id: GameMode) -> list[HighScoreRecord]:
-    records = read_highscore_records(path)
-    records = [r for r in records if int(r.game_mode_id) == int(game_mode_id)]
-    return sort_highscores(records, game_mode_id=game_mode_id)[:TABLE_MAX]
+def _passes_date_filter(entry: HighScoreRecord, date_mode: HighScoreDateMode, now: dt.date) -> bool:
+    if date_mode == HighScoreDateMode.ALL_TIME:
+        return True
+    if entry.day == 0 or entry.month == 0 or 2000 + entry.year_offset != now.year:
+        return False
+    match date_mode:
+        case HighScoreDateMode.MONTH:
+            return entry.month == now.month
+        case HighScoreDateMode.WEEK:
+            return entry.date_week == highscore_date_week(now.year, now.month, now.day)
+        case HighScoreDateMode.DAY:
+            return entry.day == now.day and entry.month == now.month
+    return False
+
+
+def _select_highscore_table(
+    records: list[HighScoreRecord], *, game_mode_id: GameMode, date_mode: HighScoreDateMode, now: dt.date,
+) -> list[HighScoreRecord]:
+    eligible = [r for r in records if r.game_mode_id == game_mode_id and _passes_date_filter(r, date_mode, now)]
+    return sort_highscores(eligible, game_mode_id=game_mode_id)[:TABLE_MAX]
+
+
+def read_highscore_table(
+    path: Path, *, game_mode_id: GameMode, date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
+    now: dt.date | None = None,
+) -> list[HighScoreRecord]:
+    return _select_highscore_table(
+        read_highscore_records(path), game_mode_id=game_mode_id, date_mode=date_mode,
+        now=now or dt.datetime.now(tz=dt.UTC).astimezone().date(),
+    )
+
+
+def _score_key(record: HighScoreRecord, game_mode_id: GameMode) -> tuple[bool, int]:
+    # Native comparators interpret both wire fields as signed ints. Quest bonuses
+    # can legitimately produce a negative final time; zero is an empty entry.
+    offset = 0x20 if game_mode_id in (GameMode.RUSH, GameMode.QUESTS) else 0x24
+    value = struct.unpack_from("<i", record.data, offset)[0]
+    if game_mode_id == GameMode.QUESTS:
+        return value == 0, value
+    return False, -value
 
 
 def sort_highscores(records: list[HighScoreRecord], *, game_mode_id: GameMode) -> list[HighScoreRecord]:
-    mode = _known_game_mode(int(game_mode_id))
-    match mode:
-        case GameMode.RUSH:
-            return sorted(records, key=lambda r: int(r.survival_elapsed_ms), reverse=True)
-        case GameMode.QUESTS:
-
-            def _quest_key(r: HighScoreRecord) -> tuple[int, int]:
-                value = int(r.survival_elapsed_ms)
-                if value == 0:
-                    return (1, 0)
-                return (0, value)
-
-            return sorted(records, key=_quest_key)
-        case _:
-            return sorted(records, key=lambda r: int(r.score_xp), reverse=True)
+    return sorted(records, key=lambda record: _score_key(record, game_mode_id))
 
 
 def rank_index(records_sorted: list[HighScoreRecord], record: HighScoreRecord) -> int:
-    mode = _known_game_mode(int(record.game_mode_id))
-    match mode:
-        case GameMode.RUSH:
-            score = int(record.survival_elapsed_ms)
-            for idx, entry in enumerate(records_sorted):
-                if score > int(entry.survival_elapsed_ms):
-                    return idx
-            return len(records_sorted)
-        case GameMode.QUESTS:
-            score = int(record.survival_elapsed_ms)
-            for idx, entry in enumerate(records_sorted):
-                other = int(entry.survival_elapsed_ms)
-                if other == 0:
-                    return idx
-                if score < other:
-                    return idx
-            return len(records_sorted)
-        case _:
-            score = int(record.score_xp)
-            for idx, entry in enumerate(records_sorted):
-                if score > int(entry.score_xp):
-                    return idx
-            return len(records_sorted)
+    key = _score_key(record, record.game_mode_id)
+    for idx, entry in enumerate(records_sorted):
+        if key < _score_key(entry, record.game_mode_id):
+            return idx
+    return len(records_sorted)
 
 
-def upsert_highscore_record(path: Path, record: HighScoreRecord) -> tuple[list[HighScoreRecord], int]:
-    """Save `record` into the mode table, returning (sorted_records, rank_index)."""
-    records_sorted = read_highscore_table(path, game_mode_id=record.game_mode_id)
-    idx = rank_index(records_sorted, record)
+def upsert_highscore_record(
+    path: Path, record: HighScoreRecord, *, date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
+    now: dt.date | None = None,
+) -> tuple[list[HighScoreRecord], int]:
+    """Save a qualifying score without discarding history outside the displayed table."""
+    now = now or dt.datetime.now(tz=dt.UTC).astimezone().date()
+    history = read_highscore_records(path)
+    table = _select_highscore_table(history, game_mode_id=record.game_mode_id, date_mode=date_mode, now=now)
+    idx = rank_index(table, record)
     if idx >= TABLE_MAX:
-        return records_sorted, idx
-    updated = list(records_sorted)
-    updated.insert(idx, record.copy())
-    updated = updated[:TABLE_MAX]
-    write_highscore_records(path, updated)
-    return updated, idx
+        return table, idx
+    candidate = record.copy()
+    candidate.trim_trailing_spaces()
+    candidate.ensure_date_fields(now)
+    history.append(candidate)
+    write_highscore_records(path, history)
+    table.insert(idx, candidate)
+    return table[:TABLE_MAX], idx

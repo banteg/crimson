@@ -123,6 +123,7 @@ class QuestResultsUi(msgspec.Struct):
     _breakdown_anim: QuestResultsBreakdownAnim | None = None
     _scores_path: Path | None = None
 
+    save_error: str | None = None
     input_text: str = ""
     input_caret: int = 0
     _saved: bool = False
@@ -191,12 +192,15 @@ class QuestResultsUi(msgspec.Struct):
         )
 
         try:
-            records = read_highscore_table(self._scores_path, game_mode_id=GameMode.QUESTS)
+            records = read_highscore_table(
+                self._scores_path, game_mode_id=GameMode.QUESTS, date_mode=self.config.profile.score_date_mode,
+            )
             self.rank = int(rank_index(records, self.record))
         except (OSError, ValueError):
             self.rank = TABLE_MAX
 
         self.input_text = str(player_name_default or "")[:NAME_MAX_EDIT]
+        self.save_error = None
         self.input_caret = len(self.input_text)
 
         self._intro_ms = 0.0
@@ -481,19 +485,23 @@ class QuestResultsUi(msgspec.Struct):
                 if self.input_text.strip():
                     if play_sfx is not None:
                         play_sfx(SfxId.UI_TYPEENTER)
-                    if (not self._saved) and self._scores_path is not None:
-                        candidate = self.record.copy()
-                        candidate.set_name(self.input_text)
-                        try:
-                            _table, idx = upsert_highscore_record(self._scores_path, candidate)
-                            self.highlight_rank = int(idx) if int(idx) < TABLE_MAX else None
-                            if int(idx) < TABLE_MAX:
-                                self.rank = int(idx)
-                        except (OSError, ValueError):
-                            self.highlight_rank = None
-                        self._saved = True
-                    self.config.profile.set_player_name_input(self.input_text)
-                    self.config.save()
+                    try:
+                        self.config.profile.set_player_name_input(self.input_text)
+                        self.config.save()
+                        if not self._saved:
+                            assert self._scores_path is not None
+                            candidate = self.record.copy()
+                            candidate.set_name(self.input_text)
+                            _table, idx = upsert_highscore_record(
+                                self._scores_path, candidate, date_mode=self.config.profile.score_date_mode,
+                            )
+                            self.highlight_rank = idx if idx < TABLE_MAX else None
+                            self.rank = idx
+                            self._saved = True
+                    except OSError:
+                        self.save_error = "Could not save. Press OK to retry."
+                        return None
+                    self.save_error = None
                     self.phase = 2
                     return None
                 if play_sfx is not None:
@@ -744,6 +752,11 @@ class QuestResultsUi(msgspec.Struct):
                 scale=1.0 * scale,
                 color=COLOR_TEXT_MUTED,
             )
+            if self.save_error is not None:
+                draw_ui_text(
+                    resources, self.save_error, input_pos + Vec2(0.0, 22.0 * scale),
+                    scale=scale, color=COLOR_TEXT_MUTED,
+                )
             caret_alpha = 1.0
             if math.sin(float(rl.get_time()) * 4.0) > 0.0:
                 caret_alpha = 0.4
