@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.gameplay import (
-    GameplayState,
-    player_update,
-)
+from crimson.gameplay import player_update
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.replay.driver.setup import reset_players
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import init_default_alt_weapon, weapon_assign_player

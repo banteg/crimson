@@ -4,12 +4,12 @@ from pathlib import Path
 
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import (
-    GameplayState,
     gameplay_enforce_weapon_guards,
     survival_enforce_reward_weapon_guard,
     survival_update_weapon_handouts,
 )
 from crimson.persistence.save_status import GameStatus
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import prepare_weapon_availability, weapon_assign_player
 from crimson.weapons import WeaponId

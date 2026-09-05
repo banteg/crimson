@@ -3,10 +3,10 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.runtime import CreatureState
-from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, f32, native_fire_muzzle_pos
 from crimson.owner_ref import OwnerRef
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (

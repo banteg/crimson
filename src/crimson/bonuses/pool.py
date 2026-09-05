@@ -12,7 +12,7 @@ from ..game_modes import GameMode
 from ..math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ..perks.helpers import perk_active
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
+from ..sim.state_types import BonusPickupEvent, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
@@ -20,6 +20,8 @@ from .ids import BONUS_BY_ID, BonusId, bonus_display_name
 from .selection import bonus_pick_random_type
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..creatures.runtime import CreatureState
 
 BONUS_POOL_SIZE = 16

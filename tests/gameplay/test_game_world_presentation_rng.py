@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.effects import FxQueue
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import queue_projectile_decals
 from grim.geom import Vec2
 from tests.support.world_runtime import WorldRuntimeHost
@@ -39,7 +40,6 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
 
 
 def test_projectile_decals_skip_splatter_rands_when_violence_disabled() -> None:
-    from crimson.gameplay import GameplayState
     from crimson.sim.presentation_step import queue_projectile_decals_pre_hit
     from crimson.sim.state_types import PlayerState
     from tests.support.helpers import ScriptedCrand
@@ -70,7 +70,6 @@ def test_projectile_decals_skip_splatter_rands_when_violence_disabled() -> None:
 
 
 def test_projectile_decals_bloody_mess_keeps_decal_loop_when_violence_disabled() -> None:
-    from crimson.gameplay import GameplayState
     from crimson.perks import PerkId
     from crimson.rng_caller_static import RngCallerStatic
     from crimson.sim.presentation_step import queue_projectile_decals_pre_hit

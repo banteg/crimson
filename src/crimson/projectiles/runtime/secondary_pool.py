@@ -44,8 +44,9 @@ from .secondary_rules import (
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
-    from ...gameplay import GameplayState
 
 
 _SECONDARY_PRE_HIT_DECAL_CALLERS = (

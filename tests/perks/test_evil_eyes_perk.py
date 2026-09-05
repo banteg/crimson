@@ -3,9 +3,9 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState

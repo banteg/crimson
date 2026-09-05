@@ -9,7 +9,6 @@ import crimson.projectiles.runtime.projectile_pool as projectile_pool_runtime
 from crimson.collision_math import native_find_size_margin
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
-from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import (
@@ -28,6 +27,7 @@ from crimson.projectiles.types import (
     SecondaryProjectileTypeId,
 )
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from tests.support.factories import RecordingCreatureDamageRuntime, make_projectile_update_options
 from tests.support.factories import make_creature_state as _creature

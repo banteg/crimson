@@ -26,7 +26,7 @@ from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .fire_recipes import (
@@ -46,6 +46,8 @@ from .fire_recipes import (
 from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, travel_budget_for_type_id
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..creatures.runtime import CreatureState
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from crimson.gameplay import GameplayState, gameplay_accumulate_weapon_usage_time
+from crimson.gameplay import gameplay_accumulate_weapon_usage_time
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (

@@ -4,9 +4,9 @@ import math
 
 import pytest
 
-from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_sub
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (

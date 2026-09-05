@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.gameplay import GameplayState
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.typo.player import TYPO_WEAPON_ID, build_typo_player_input, enforce_typo_player_frame
 from crimson.weapon_runtime import weapon_assign_player

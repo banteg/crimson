@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from crimson.gameplay import (
-    GameplayState,
-    player_update,
-)
+from crimson.gameplay import player_update
 from crimson.math_parity import f32
 from crimson.perks import PerkId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId

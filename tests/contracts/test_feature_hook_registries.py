@@ -5,7 +5,6 @@ from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.perks.impl.final_revenge import apply_final_revenge_on_player_death
 from crimson.perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from crimson.perks.runtime.manifest import (
@@ -18,6 +17,7 @@ from crimson.perks.runtime.manifest import (
 )
 from crimson.perks.runtime.player_bonus_timers import update_player_bonus_timers
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import plan_world_presentation_step, queue_projectile_decals
 from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState

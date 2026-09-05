@@ -8,7 +8,7 @@ from grim.geom import Vec2
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from .apply_context import BonusApplyCtx, BonusApplyHandler
 from .double_experience import apply_double_experience
 from .energizer import apply_energizer
@@ -27,6 +27,8 @@ from .weapon import apply_weapon
 from .weapon_power_up import apply_weapon_power_up
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..creatures.runtime import CreatureState
 
 _BONUS_APPLY_HANDLERS: dict[BonusId, BonusApplyHandler] = {

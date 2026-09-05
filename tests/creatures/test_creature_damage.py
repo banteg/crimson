@@ -12,10 +12,10 @@ from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects_atlas import EffectId
-from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId

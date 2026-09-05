@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from ..weapons import WeaponId
 from .availability import perk_can_offer
 from .helpers import perk_active
@@ -15,6 +15,8 @@ from .runtime.apply import perk_apply
 from .state import PerkSelectionState
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..creatures.runtime import CreatureState
 
 PERK_ID_MAX = max(int(perk_id) for perk_id in PERK_BY_ID)

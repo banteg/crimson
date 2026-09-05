@@ -4,8 +4,8 @@ import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 

@@ -6,8 +6,8 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.bonuses.update import bonus_telekinetic_update
 from crimson.creatures.runtime import CreaturePool
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import assert_float_close

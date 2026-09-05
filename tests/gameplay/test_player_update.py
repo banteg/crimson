@@ -11,7 +11,6 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
-    GameplayState,
     _direction_from_heading_native,
     _player_heading_approach_target_with_delta,
     _player_turn_aligned_velocity_native,
@@ -36,6 +35,7 @@ from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (

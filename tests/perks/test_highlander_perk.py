@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand

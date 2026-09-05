@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import msgspec
 
 from grim.geom import Vec2
@@ -75,8 +73,3 @@ class BonusPickupEvent(msgspec.Struct, frozen=True):
     amount: int
     pos: Vec2
 
-
-if TYPE_CHECKING:
-    from ..gameplay import GameplayState
-else:
-    type GameplayState = object

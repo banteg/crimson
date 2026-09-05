@@ -6,9 +6,9 @@ from typing import Any
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.persistence import save_status
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.weapon_runtime import (
     prepare_weapon_availability,
     weapon_pick_random_available,

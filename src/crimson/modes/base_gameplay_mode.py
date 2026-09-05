@@ -68,9 +68,10 @@ from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..creatures.runtime import CreatureDeath, CreaturePool
     from ..game.types import GameState
-    from ..gameplay import GameplayState
     from ..persistence.save_status import GameStatus
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState

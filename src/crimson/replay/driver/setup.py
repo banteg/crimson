@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -10,11 +11,15 @@ from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
 from ...math_parity import f32
 from ...persistence.save_status import GameStatus, GameStatusData
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
 from ...sim.step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 from ...weapon_runtime import most_used_weapon_id_for_player
 from ...weapons import WEAPON_TABLE, WeaponId
 from ...world.sim_world_state import reset_world_players
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 class ReplayRunnerError(ValueError):

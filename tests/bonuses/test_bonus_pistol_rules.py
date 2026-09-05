@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
-from crimson.gameplay import GameplayState
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime.availability import prepare_weapon_availability
 from crimson.weapons import WeaponId

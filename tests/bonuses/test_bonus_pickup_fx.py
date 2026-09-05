@@ -4,8 +4,8 @@ from pathlib import Path
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
-from crimson.gameplay import GameplayState
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand

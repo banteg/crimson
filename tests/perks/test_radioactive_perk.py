@@ -5,9 +5,9 @@ import pytest
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_update_options

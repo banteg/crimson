@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 """Reflex Boost pickup presentation behavior."""
 
 from grim.color import RGBA
 
 from ..math_parity import f32
-from ..sim.state_types import BonusPickupEvent, GameplayState
+from ..sim.state_types import BonusPickupEvent
 from .apply_context import BonusApplyCtx
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 def apply_reflex_boost(ctx: BonusApplyCtx) -> None:

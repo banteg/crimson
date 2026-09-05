@@ -137,7 +137,6 @@ pub const DeterministicSession = struct {
     quest_start_weapon_id_for_reset: i32,
     reset_quest_spawn_entries_len: usize = 0,
     quest_spawn_entries_storage: [max_sim_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined,
-    quest_spawn_entries: []spawn_mod.QuestSpawnEntry,
 
     tick_index: usize = 0,
     event_index: usize = 0,
@@ -200,10 +199,7 @@ pub const DeterministicSession = struct {
             .apply_world_dt_steps = options.apply_world_dt_steps,
             .capture_spawn_events_authoritative = options.capture_spawn_events_authoritative,
             .quest_start_weapon_id_for_reset = options.quest_start_weapon_id_for_reset,
-            .quest_spawn_entries = undefined,
         };
-
-        session.quest_spawn_entries = session.quest_spawn_entries_storage[0..0];
 
         session.state.gore_disabled = config.violence_disabled;
         session.state.game_mode = config.game_mode;
@@ -250,7 +246,6 @@ pub const DeterministicSession = struct {
         }
         if (options.capture_spawn_events_authoritative) {
             session.reset_quest_spawn_entries_len = 0;
-            session.quest_spawn_entries = session.quest_spawn_entries_storage[0..0];
         }
 
         return session;
@@ -263,12 +258,11 @@ pub const DeterministicSession = struct {
         return init(try SessionConfig.fromReplayHeader(header), options);
     }
 
-    pub fn rebindQuestSpawnEntries(self: *DeterministicSession) void {
-        self.quest_spawn_entries = self.quest_spawn_entries_storage[0..self.reset_quest_spawn_entries_len];
+    pub fn questSpawnEntries(self: *DeterministicSession) []spawn_mod.QuestSpawnEntry {
+        return self.quest_spawn_entries_storage[0..self.reset_quest_spawn_entries_len];
     }
 
     pub fn rebindInternalPointers(self: *DeterministicSession) void {
-        self.rebindQuestSpawnEntries();
         self.creatures.effects = &self.effects;
     }
 
@@ -324,7 +318,6 @@ pub const DeterministicSession = struct {
         }
         @memcpy(self.quest_spawn_entries_storage[0..entries.len], entries);
         self.reset_quest_spawn_entries_len = entries.len;
-        self.quest_spawn_entries = self.quest_spawn_entries_storage[0..entries.len];
     }
 };
 
@@ -352,7 +345,6 @@ fn testHeader(game_mode: game_ids.GameModeId) replay_codec.ReplayHeader {
 test "deterministic session init from header seeds mutable loop state" {
     const header = testHeader(.quests);
     var session = try DeterministicSession.initFromReplayHeader(header, .{});
-    session.rebindQuestSpawnEntries();
 
     try std.testing.expectEqual(@as(usize, 1), session.players().len);
     try std.testing.expectEqual(@as(i32, 1), session.player_count);
@@ -373,8 +365,7 @@ test "deterministic session init advances survival terrain bootstrap rng" {
     header.status.quest_unlock_index = 0;
     header.world_size = 1024.0;
 
-    var session = try DeterministicSession.initFromReplayHeader(header, .{});
-    session.rebindQuestSpawnEntries();
+    const session = try DeterministicSession.initFromReplayHeader(header, .{});
 
     try std.testing.expectEqual(@as(u32, 623756981), session.state.rng.state);
 }
@@ -383,8 +374,7 @@ test "deterministic session init round robins native creature targets" {
     var header = testHeader(.survival);
     header.player_count = 2;
 
-    var session = try DeterministicSession.initFromReplayHeader(header, .{});
-    session.rebindQuestSpawnEntries();
+    const session = try DeterministicSession.initFromReplayHeader(header, .{});
 
     try std.testing.expectEqual(@as(i32, 0), session.creatures.entries[0].target_player);
     try std.testing.expectEqual(@as(i32, 1), session.creatures.entries[1].target_player);

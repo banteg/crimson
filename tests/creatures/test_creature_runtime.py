@@ -24,12 +24,12 @@ from crimson.creatures.spawn import (
 )
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import prepare_weapon_availability
 from crimson.weapons import WeaponId

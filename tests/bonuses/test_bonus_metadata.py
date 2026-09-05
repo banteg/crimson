@@ -4,7 +4,7 @@ import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
-from crimson.gameplay import GameplayState
+from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 
 

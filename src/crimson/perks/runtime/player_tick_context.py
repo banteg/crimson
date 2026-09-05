@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import msgspec
 
 from grim.geom import Vec2
 
 from ...owner_ref import OwnerRef
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 ProjectileSpawnFn = Callable[..., int]
 OwnerRefForPlayerFn = Callable[[int], OwnerRef]
-OwnerRefForPlayerProjectilesFn = Callable[[GameplayState, int], OwnerRef]
+type OwnerRefForPlayerProjectilesFn = Callable[[GameplayState, int], OwnerRef]
 
 
 class PlayerPerkTickCtx(msgspec.Struct):

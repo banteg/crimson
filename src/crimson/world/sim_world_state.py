@@ -2,17 +2,15 @@ from __future__ import annotations
 
 import struct
 from collections.abc import Sequence
-from typing import cast
+from dataclasses import dataclass, field
 
-import msgspec
-
+from crimson.sim.gameplay_state import GameplayState
 from grim.color import RGBA
 from grim.geom import Vec2
 
 from ..creatures.runtime import CreatureAiMode, CreaturePool, CreatureState, CreatureTypeId
 from ..creatures.spawn import SpawnEnv
 from ..creatures.spawn_ids import CreatureFlags
-from ..gameplay import GameplayState
 from ..math_parity import f32
 from ..replay.types import ReplayCreatureSlotResidue
 from ..sim.presentation_step import DeterministicPresentationPlan
@@ -159,27 +157,40 @@ def reset_world_players(
         players.append(player)
 
 
-class SimWorldState(msgspec.Struct):
+@dataclass(slots=True)
+class SimWorldState:
     world_size: float = 1024.0
     demo_mode_active: bool = False
     quest_fail_retry_count: int = 0
     hardcore: bool = False
     preserve_bugs: bool = False
 
-    world_state: WorldState = cast(WorldState, None)
-    spawn_env: SpawnEnv = cast(SpawnEnv, None)
-    state: GameplayState = cast(GameplayState, None)
-    players: list[PlayerState] = msgspec.field(default_factory=list)
-    creatures: CreaturePool = cast(CreaturePool, None)
+    world_state: WorldState = field(init=False)
 
-    damage_scale_by_type: dict[int, float] = msgspec.field(default_factory=_weapon_damage_scale_map)
+    damage_scale_by_type: dict[int, float] = field(default_factory=_weapon_damage_scale_map)
     presentation_elapsed_ms: float = 0.0
     bonus_anim_phase: float = 0.0
     game_tune_started: bool = False
-    last_events: WorldEvents = msgspec.field(
+    last_events: WorldEvents = field(
         default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
     )
-    last_presentation: DeterministicPresentationPlan = msgspec.field(default_factory=DeterministicPresentationPlan)
+    last_presentation: DeterministicPresentationPlan = field(default_factory=DeterministicPresentationPlan)
+
+    @property
+    def spawn_env(self) -> SpawnEnv:
+        return self.world_state.spawn_env
+
+    @property
+    def state(self) -> GameplayState:
+        return self.world_state.state
+
+    @property
+    def players(self) -> list[PlayerState]:
+        return self.world_state.players
+
+    @property
+    def creatures(self) -> CreaturePool:
+        return self.world_state.creatures
 
     def __post_init__(self) -> None:
         self.reset(seed=0xBEEF, player_count=1)
@@ -198,10 +209,6 @@ class SimWorldState(msgspec.Struct):
             quest_fail_retry_count=int(self.quest_fail_retry_count),
             preserve_bugs=bool(self.preserve_bugs),
         )
-        self.spawn_env = self.world_state.spawn_env
-        self.state = self.world_state.state
-        self.players = self.world_state.players
-        self.creatures = self.world_state.creatures
         self.state.rng.srand(int(seed))
 
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
@@ -222,10 +229,6 @@ class SimWorldState(msgspec.Struct):
 
     def load_world_state(self, world_state: WorldState) -> None:
         self.world_state = world_state
-        self.spawn_env = self.world_state.spawn_env
-        self.state = self.world_state.state
-        self.players = self.world_state.players
-        self.creatures = self.world_state.creatures
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = DeterministicPresentationPlan()
 

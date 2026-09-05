@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import msgspec
 
 from grim.assets import RuntimeResources
@@ -8,9 +10,12 @@ from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 
 from ..creatures.runtime import CreaturePool
-from ..gameplay import GameplayState
 from ..sim.state_types import PlayerState
 from .rtx.mode import RtxRenderMode
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 class RenderFrame(msgspec.Struct, frozen=True):

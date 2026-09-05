@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -13,12 +14,15 @@ from grim.terrain_render import GroundRenderer
 
 from ..creatures.anim import creature_corpse_frame_for_type
 from ..creatures.runtime import CreaturePool
-from ..gameplay import GameplayState
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..sim.state_types import PlayerState
 from ..sim.terrain_fx import TerrainFxBatch
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 class RenderResources(msgspec.Struct):

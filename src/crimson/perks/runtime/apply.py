@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
 from ..ids import PerkId
 from ..state import PerkSelectionState
 from .apply_context import PerkApplyCtx
@@ -11,6 +11,8 @@ from .counts import adjust_perk_count
 from .manifest import PERK_APPLY_HANDLERS
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
 
 

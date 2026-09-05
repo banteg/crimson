@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.gameplay import GameplayState
 from crimson.persistence import save_status
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId

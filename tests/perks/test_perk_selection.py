@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import crimson.perks.selection as perk_selection_module
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.perks.selection import (
@@ -15,6 +14,7 @@ from crimson.perks.selection import (
 )
 from crimson.perks.state import PerkSelectionState
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close

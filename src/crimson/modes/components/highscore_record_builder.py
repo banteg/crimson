@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from ...game_modes import GameMode
-from ...gameplay import GameplayState
 from ...persistence.highscores import HighScoreRecord
 from ...sim.state_types import PlayerState
 from ...weapon_runtime import most_used_weapon_id_for_player
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 def clamp_shots(fired: int, hit: int) -> tuple[int, int]:

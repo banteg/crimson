@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.player_damage import player_take_damage, player_take_projectile_damage
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close

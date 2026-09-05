@@ -6,13 +6,15 @@ from typing import TYPE_CHECKING
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..math_parity import f32, x87_pc24_sub
 from ..perks.helpers import perk_active
-from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
+from ..sim.state_types import BonusPickupEvent, PlayerState
 from .apply import bonus_apply
 from .hud import bonus_hud_update
 from .ids import BonusId
 from .pool import BONUS_PICKUP_LINGER, BONUS_TELEKINETIC_PICKUP_MS, bonus_find_aim_hover_entry
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..creatures.runtime import CreatureState
 
 

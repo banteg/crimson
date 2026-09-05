@@ -4,11 +4,13 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from ...effects import FxQueue
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
 from .effects_context import PerksUpdateEffectsCtx, creature_find_in_radius
 from .manifest import PERKS_UPDATE_EFFECT_STEPS
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
 
 # Backward-compatible re-export used by HUD target hover wiring.

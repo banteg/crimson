@@ -34,8 +34,9 @@ from .collision import (
 )
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
-    from ...gameplay import GameplayState
     from .projectile_pool import ProjectilePool
 
 

@@ -21,7 +21,6 @@ pub const ParsedQuestLevel = runtime_bootstrap.ParsedQuestLevel;
 
 const ai7_link_timer_rollover_min: i32 = -1723;
 const ai7_link_timer_rollover_max: i32 = -700;
-const max_test_quest_spawn_entries: usize = 1024;
 
 pub const CaptureStateError = error{
     InvalidCaptureEnumValue,
@@ -327,9 +326,6 @@ pub fn applyCaptureStateReset(
     quest_start_weapon_id: i32,
     gore_disabled: i32,
     capture_spawn_events_authoritative: bool,
-    quest_spawn_entries_storage: []spawn_mod.QuestSpawnEntry,
-    reset_quest_spawn_entries_len: usize,
-    quest_spawn_entries: *[]spawn_mod.QuestSpawnEntry,
     quest_spawn_timeline_ms: *f32,
     quest_no_creatures_timer_ms: *f32,
     quest_completion_transition_ms: *f32,
@@ -399,7 +395,6 @@ pub fn applyCaptureStateReset(
     secondary_projectiles.reset();
     bonuses.reset();
     creatures.capture_spawn_events_authoritative = capture_spawn_events_authoritative;
-    quest_spawn_entries.* = quest_spawn_entries_storage[0..reset_quest_spawn_entries_len];
     quest_spawn_timeline_ms.* = 0.0;
     quest_no_creatures_timer_ms.* = 0.0;
     quest_completion_transition_ms.* = -1.0;
@@ -464,8 +459,6 @@ test "capture state reset clears transient pools and restores header fx toggle" 
     bonuses.entries[0].bonus_id = .weapon;
     bonuses.entries[0].amount = 12;
 
-    var quest_spawn_entries_storage: [max_test_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
-    var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = &.{};
     var quest_spawn_timeline_ms: f32 = 100.0;
     var quest_no_creatures_timer_ms: f32 = 50.0;
     var quest_completion_transition_ms: f32 = 42.0;
@@ -484,9 +477,6 @@ test "capture state reset clears transient pools and restores header fx toggle" 
         @intFromEnum(game_ids.WeaponId.pistol),
         0,
         true,
-        quest_spawn_entries_storage[0..],
-        0,
-        &quest_spawn_entries,
         &quest_spawn_timeline_ms,
         &quest_no_creatures_timer_ms,
         &quest_completion_transition_ms,

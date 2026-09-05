@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -19,9 +20,13 @@ from ..perks.helpers import perk_active
 from ..projectiles.types import ProjectileHit, ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
-from .state_types import BonusPickupEvent, GameplayState, PlayerState
+from .state_types import BonusPickupEvent, PlayerState
 from .terrain_fx import TerrainFxBatch
 from .world_defs import BEAM_TYPES
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 _BULLET_HIT_SFX = (
     SfxId.BULLET_HIT_01,

@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from ..game_modes import GameMode
 from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import GameplayState
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_TABLE, WeaponId
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 WEAPON_DROP_ID_COUNT = 0x21  # weapon ids 1..33
 WEAPON_AVAILABLE_COUNT = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1

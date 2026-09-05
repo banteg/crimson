@@ -5,9 +5,9 @@ import pytest
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.impl.final_revenge import apply_final_revenge_on_player_death
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.sim.world_state import WorldState

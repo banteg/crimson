@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close

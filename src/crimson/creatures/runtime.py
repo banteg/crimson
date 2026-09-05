@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 """Creature realtime simulation glue.
 
 This module materializes pure spawn plans (`creatures.spawn`) into a fixed-size
@@ -49,7 +51,7 @@ from ..perks.helpers import perk_active
 from ..player_damage import PlayerDeathRuntime, player_take_damage
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
@@ -77,6 +79,10 @@ from .spawn import (
     resolve_tint,
     tick_spawn_slot,
 )
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 __all__ = [
     "CONTACT_DAMAGE_PERIOD",

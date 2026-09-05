@@ -221,9 +221,6 @@ pub fn stepTick(
             context.quest_start_weapon_id_for_reset,
             context.gore_disabled,
             context.capture_spawn_events_authoritative,
-            context.quest_spawn_entries_storage[0..],
-            context.reset_quest_spawn_entries_len,
-            &context.quest_spawn_entries,
             &context.quest_spawn_timeline_ms,
             &context.quest_no_creatures_timer_ms,
             &context.quest_completion_transition_ms,
@@ -529,7 +526,7 @@ pub fn stepTick(
         .quests => {
             context.quest_creatures_none_active = context.creatures.activeCount() == 0;
             const quest_spawns = spawn_mod.tickQuestModeSpawns(
-                context.quest_spawn_entries,
+                context.questSpawnEntries(),
                 context.quest_spawn_timeline_ms,
                 dt_sim_ms,
                 @floatFromInt(context.terrain_size),
@@ -549,7 +546,7 @@ pub fn stepTick(
                 );
             }
 
-            const spawn_table_empty_now = spawn_mod.questSpawnTableEmpty(context.quest_spawn_entries);
+            const spawn_table_empty_now = spawn_mod.questSpawnTableEmpty(context.questSpawnEntries());
             if (context.quest_creatures_none_active and spawn_table_empty_now) {
                 context.state.bonuses.reflex_boost = 0.0;
                 context.state.time_scale_active = false;
@@ -920,7 +917,6 @@ fn testHeader() replay_codec.ReplayHeader {
 test "step tick applies counters and emits trace snapshot" {
     const header = testHeader();
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const before_speed = context.players()[0].move_speed;
 
@@ -973,7 +969,6 @@ test "step tick treats held replay reload as active without counting a press" {
     header.seed = 1;
     header.player_count = 1;
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const input: player_runtime.GameInput = .{
         .move_x = 0.0,
@@ -1009,7 +1004,7 @@ test "step tick accepts preserve bugs and keeps player zero perk targeting" {
     header.preserve_bugs = true;
 
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
+
     context.state.rng.srand(1);
 
     const players = context.players();
@@ -1045,7 +1040,6 @@ test "step tick accepts preserve bugs and keeps player zero perk targeting" {
 test "direct death clock drain does not trigger final revenge" {
     const header = testHeader();
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const players = context.players();
     players[0].health = 0.1;
@@ -1071,7 +1065,6 @@ test "direct death clock drain does not trigger final revenge" {
 test "ammunition within triggers final revenge inline with frame dt" {
     const header = testHeader();
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const players = context.players();
     players[0].health = 0.1;
@@ -1114,7 +1107,6 @@ test "ammunition within triggers final revenge inline with frame dt" {
 test "step tick applies freeze corpse effects when freeze is not last pickup" {
     const header = testHeader();
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const player_pos = context.players()[0].pos;
     context.creatures.entries[0] = .{
@@ -1172,7 +1164,6 @@ test "step tick applies freeze corpse effects when freeze is not last pickup" {
 test "weapon guard runs before same-frame locked splitter pickup" {
     const header = testHeader();
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const players = context.players();
     player_runtime.weaponAssignPlayer(&players[0], .pistol);
@@ -1213,7 +1204,6 @@ test "weapon guard runs before same-frame locked splitter pickup" {
 test "weapon usage time precedes same-frame weapon pickup" {
     const header = testHeader();
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const players = context.players();
     player_runtime.weaponAssignPlayer(&players[0], .pistol);
@@ -1256,7 +1246,6 @@ test "weapon usage time precedes same-frame weapon pickup" {
 test "highscore score stages before same-frame points pickup" {
     const header = testHeader();
     var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
-    context.rebindQuestSpawnEntries();
 
     const players = context.players();
     players[0].experience = 10;

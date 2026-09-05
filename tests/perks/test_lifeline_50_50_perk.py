@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand

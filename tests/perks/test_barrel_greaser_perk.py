@@ -6,11 +6,11 @@ import pytest
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
-from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import weapon_entry_for_projectile_type_id
 from grim.geom import Vec2

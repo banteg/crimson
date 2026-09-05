@@ -8,11 +8,13 @@ import msgspec
 from grim.geom import Vec2
 
 from ..creatures.damage_runtime import CreatureDamageRuntime
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from .hud import _TimerRef
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..creatures.runtime import CreatureState
 
 

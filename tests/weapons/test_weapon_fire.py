@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime.fire import WeaponFireCtx, fire_weapon

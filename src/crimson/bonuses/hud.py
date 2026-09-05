@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import msgspec
 
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from .ids import BonusId
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 class _TimerRef(msgspec.Struct, frozen=True):

@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from grim.geom import Vec2
 
 from ..sim.input import PlayerInput
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 TYPO_WEAPON_ID = WeaponId.SHOTGUN
 

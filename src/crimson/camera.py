@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 """Camera helpers recovered from the original crimsonland.exe.
 
 This module currently models the `camera_update` screen shake logic, which is
@@ -8,8 +10,11 @@ global state in the original game.
 
 from grim.geom import Vec2
 
-from .gameplay import GameplayState
 from .rng_caller_static import RngCallerStatic
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 def camera_shake_start(state: GameplayState, *, pulses: int, timer: float) -> None:

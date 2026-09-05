@@ -11,9 +11,11 @@ from .effects_context import PerksUpdateEffectsCtx
 from .player_tick_context import PlayerPerkTickCtx
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureDeath, CreaturePool
     from ...effects import FxQueue
-    from ...sim.state_types import GameplayState, PlayerState
+    from ...sim.state_types import PlayerState
 
 
 class WorldDtStep(Protocol):

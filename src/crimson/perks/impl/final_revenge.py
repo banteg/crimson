@@ -11,12 +11,14 @@ from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
 from ...math_parity import x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureDeath, CreaturePool
 
 

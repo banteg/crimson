@@ -9,12 +9,12 @@ import pytest
 
 import crimson.render.world.draw as world_draw
 from crimson.creatures.spawn import CreatureTypeId
-from crimson.gameplay import GameplayState
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.draw import WorldDrawContext
 from crimson.render.world.renderer import WorldRenderer
+from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_state
 

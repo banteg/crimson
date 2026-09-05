@@ -5,6 +5,7 @@ from typing import cast
 
 import msgspec
 
+from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
@@ -19,7 +20,6 @@ from ..creatures.spawn import SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
-    build_gameplay_state,
     gameplay_accumulate_weapon_usage_time,
     gameplay_enforce_weapon_guards,
     player_frame_dt_after_roundtrip,
@@ -43,7 +43,7 @@ from .presentation_step import (
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
 )
-from .state_types import BonusPickupEvent, GameplayState, PlayerState
+from .state_types import BonusPickupEvent, PlayerState
 from .timing import ftol_ms_i32
 from .world_defs import CREATURE_ANIM
 
@@ -279,7 +279,7 @@ class WorldState(msgspec.Struct):
             hardcore=hardcore,
             quest_fail_retry_count=int(quest_fail_retry_count),
         )
-        state = build_gameplay_state()
+        state = GameplayState()
         state.demo_mode_active = demo_mode_active
         state.hardcore = hardcore
         state.preserve_bugs = preserve_bugs

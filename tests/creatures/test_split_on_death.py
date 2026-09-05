@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
-from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 """Bonus pickup presentation hook registry."""
 
 from collections.abc import Callable
@@ -7,12 +9,16 @@ from collections.abc import Callable
 from grim.color import RGBA
 
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import BonusPickupEvent, GameplayState
+from ..sim.state_types import BonusPickupEvent
 from .freeze import apply_freeze_pickup_fx
 from .ids import BonusId
 from .reflex_boost import apply_reflex_boost_pickup_fx
 
-BonusPickupFxHook = Callable[[GameplayState, BonusPickupEvent, int], None]
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
+
+type BonusPickupFxHook = Callable[[GameplayState, BonusPickupEvent, int], None]
 
 
 def _apply_default_pickup_burst(*, state: GameplayState, pickup: BonusPickupEvent, detail_preset: int) -> None:

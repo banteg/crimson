@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 """Player damage intake helpers.
 
 This is a minimal, rewrite-focused port of `player_take_damage` (0x00425e50).
@@ -16,7 +18,11 @@ from .math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from .perks import PerkId
 from .perks.helpers import perk_active
 from .rng_caller_static import RngCallerStatic
-from .sim.state_types import GameplayState, PlayerState
+from .sim.state_types import PlayerState
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 __all__ = ["PlayerDeathRuntime", "player_take_damage", "player_take_projectile_damage"]
 _PLAYER_PAIN_SFX: tuple[SfxId, ...] = (

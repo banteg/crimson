@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from functools import partial
 
-from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec, SecondaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (

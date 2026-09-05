@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from crimson.bonuses.pool import BonusPool
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2

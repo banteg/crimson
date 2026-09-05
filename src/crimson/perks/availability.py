@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from ..game_modes import GameMode
 from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
-from ..sim.state_types import PERK_COUNT_SIZE, GameplayState, PlayerState
+from ..sim.state_types import PERK_COUNT_SIZE, PlayerState
 from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 _PERK_BASE_AVAILABLE_MAX_ID = int(PerkId.BONUS_MAGNET)
 _PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (

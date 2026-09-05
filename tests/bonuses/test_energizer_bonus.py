@@ -5,9 +5,9 @@ import math
 from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId

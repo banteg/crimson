@@ -44,8 +44,9 @@ from .primary_rules import primary_rule_for_type_id
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
-    from ...gameplay import GameplayState
     from ...sim.state_types import PlayerState
 
 type ProjectileHitPresentation = object

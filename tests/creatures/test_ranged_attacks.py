@@ -4,12 +4,12 @@ import math
 
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId

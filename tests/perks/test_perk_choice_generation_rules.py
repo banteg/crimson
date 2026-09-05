@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import Any
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.availability import prepare_perk_availability
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 from crimson.persistence import save_status
 from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2

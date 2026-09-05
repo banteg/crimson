@@ -9,7 +9,8 @@ from ..rng_caller_static import RngCallerStatic
 from .ids import BONUS_BY_ID, BonusId
 
 if TYPE_CHECKING:
-    from ..gameplay import GameplayState
+    from crimson.sim.gameplay_state import GameplayState
+
     from ..sim.state_types import PlayerState
     from .pool import BonusPool
 

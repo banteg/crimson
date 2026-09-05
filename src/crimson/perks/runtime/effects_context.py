@@ -10,9 +10,11 @@ from grim.geom import Vec2
 from ...collision_math import within_native_find_radius
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import FxQueue
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
 
 

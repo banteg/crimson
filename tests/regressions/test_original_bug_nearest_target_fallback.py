@@ -6,7 +6,6 @@ import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
@@ -16,6 +15,7 @@ from crimson.projectiles.runtime import (
     SecondaryStepCtx,
 )
 from crimson.projectiles.types import SecondaryProjectileTypeId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId

@@ -3,10 +3,10 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import (
     DeterministicPresentationPlan,
     PresentationPlanRuntime,

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.modes.components.highscore_record_builder import (
     build_highscore_record_for_game_over,
     clamp_shots,
     shots_from_state,
 )
 from crimson.persistence.highscores import UNI_NUM_MASK
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2

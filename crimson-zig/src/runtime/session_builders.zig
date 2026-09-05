@@ -88,7 +88,6 @@ pub fn buildQuestSession(
     session_options.quest_spawn_entries = options.quest_spawn_entries;
 
     var session = try runtime_session.DeterministicSession.init(config, session_options);
-    session.rebindQuestSpawnEntries();
 
     const weapon_id = @max(1, options.quest_start_weapon_id);
     for (session.players()) |*player| {
@@ -253,8 +252,14 @@ test "build quest session assigns requested start weapon and spawn table" {
     );
     const player = session.players()[0];
     try std.testing.expectEqual(game_ids.WeaponId.shotgun, player.weapon.weapon_id);
-    try std.testing.expectEqual(@as(usize, 1), session.quest_spawn_entries.len);
-    try std.testing.expectEqual(entries[0].spawn_id, session.quest_spawn_entries[0].spawn_id);
+    try std.testing.expectEqual(@as(usize, 1), session.questSpawnEntries().len);
+    try std.testing.expectEqual(entries[0].spawn_id, session.questSpawnEntries()[0].spawn_id);
+    const copy = try std.testing.allocator.create(runtime_session.DeterministicSession);
+    defer std.testing.allocator.destroy(copy);
+    copy.* = session;
+    copy.questSpawnEntries()[0].count = 7;
+    try std.testing.expectEqual(@as(i32, 2), session.questSpawnEntries()[0].count);
+    try std.testing.expectEqual(@as(i32, 7), copy.questSpawnEntries()[0].count);
 }
 
 test "build typo session copies replay dictionary sources" {

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from grim.geom import Vec2
 
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
 from .manifest import PLAYER_PERK_TICK_STEPS
 from .player_tick_context import (
     OwnerRefForPlayerFn,
@@ -10,6 +12,10 @@ from .player_tick_context import (
     PlayerPerkTickCtx,
     ProjectileSpawnFn,
 )
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 _PLAYER_PERK_TICK_STEPS = PLAYER_PERK_TICK_STEPS
 

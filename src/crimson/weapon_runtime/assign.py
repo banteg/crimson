@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from ..math_parity import f32, x87_pc24_mul
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..sim.state_types import GameplayState, PlayerState, WeaponSlot
+from ..sim.state_types import PlayerState, WeaponSlot
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 def weapon_entry(weapon_id: WeaponId) -> Weapon:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 """Freeze bonus behavior shared by sim, apply, and presentation steps."""
 
 
@@ -8,8 +10,12 @@ from grim.sfx_map import SfxId
 
 from ..math_parity import f32
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import BonusPickupEvent, GameplayState
+from ..sim.state_types import BonusPickupEvent
 from .apply_context import BonusApplyCtx
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 def apply_freeze(ctx: BonusApplyCtx) -> None:

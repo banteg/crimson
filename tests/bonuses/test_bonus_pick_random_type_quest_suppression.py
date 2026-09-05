@@ -5,10 +5,10 @@ import pytest
 from crimson.bonuses import BonusId
 from crimson.bonuses.selection import bonus_pick_random_type
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand

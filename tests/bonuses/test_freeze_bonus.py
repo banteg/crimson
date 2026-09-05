@@ -6,8 +6,8 @@ from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2

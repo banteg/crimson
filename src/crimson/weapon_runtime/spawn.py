@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
 from ..math_parity import f32
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
-from ..sim.state_types import GameplayState, PlayerState
+from ..sim.state_types import PlayerState
 from ..weapons import weapon_entry_for_projectile_type_id
+
+if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
 
 
 def owner_ref_for_player(player_index: int) -> OwnerRef:

@@ -8,6 +8,29 @@ from crimson.world.sim_world_state import SimWorldState, reset_world_players
 from grim.geom import Vec2
 
 
+def test_world_children_follow_the_authoritative_world_across_load_and_reset() -> None:
+    sim = SimWorldState()
+    first = sim.world_state
+    replacement = WorldState.build(world_size=1024.0, demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    replacement.players.append(PlayerState(index=0, pos=Vec2(10.0, 20.0), health=17.0))
+    sim.load_world_state(replacement)
+    assert sim.state is replacement.state
+    assert sim.players is replacement.players
+    assert sim.creatures is replacement.creatures
+    assert sim.spawn_env is replacement.spawn_env
+    assert sim.players[0].health == 17.0
+
+    sim.reset(seed=123, player_count=2)
+    assert sim.world_state is not first and sim.world_state is not replacement
+    assert sim.state is sim.world_state.state
+    assert sim.players is sim.world_state.players
+    assert sim.creatures is sim.world_state.creatures
+    assert sim.spawn_env is sim.world_state.spawn_env
+    assert sim.state.rng.state == 123
+    assert len(sim.players) == 2
+    assert replacement.players[0].health == 17.0
+
+
 def test_reset_world_players_uses_native_alternating_layout() -> None:
     world = WorldState.build(
         world_size=1024.0,

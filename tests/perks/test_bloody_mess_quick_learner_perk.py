@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
-from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId, perk_display_description, perk_display_name
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 

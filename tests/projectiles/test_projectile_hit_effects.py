@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.effects import _spawn_ion_hit_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId

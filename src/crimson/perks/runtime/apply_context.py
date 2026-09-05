@@ -5,11 +5,13 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
-from ...sim.state_types import GameplayState, PlayerState
+from ...sim.state_types import PlayerState
 from ..ids import PerkId
 from ..state import PerkSelectionState
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
 
 

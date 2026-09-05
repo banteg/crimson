@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.gameplay import GameplayState
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId

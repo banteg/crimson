@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.gameplay import GameplayState
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
