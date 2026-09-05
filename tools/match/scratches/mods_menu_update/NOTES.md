@@ -308,3 +308,27 @@ controls against the 94.444444% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Separator and button storage interaction (2026-09-05)
+
+The exact credits/perk-selection recoveries suggested testing joint coordinate
+lifetimes rather than treating earlier single-site failures as compiler limits.
+`separator-button-storage-interactions-mutations.json` records all 28 complete,
+compiling controls across separator/color/version scopes, Launch/Main Menu
+coordinates, enumeration declarations, and inline enumeration/version helpers.
+
+A short separator scope alone raises alignment to 95.679012%. Splitting Launch
+and Main Menu coordinates then reaches 97.993827%; giving the final Main Menu
+coordinate its own call scope reaches **98.919753%**, up from 94.444444%.
+All 648 instructions remain present, prefix stays zero, and aligned references
+remain 184/0/0. The gain is 116.67 fuzzy-weighted code bytes without a metric
+tradeoff. No helper extraction or unrelated source-form control is retained.
+
+The opening vector, selected-mod rendering, and both button regions now agree
+with native. Seven differences remain: the prologue/epilogue frame allocation
+and five enumeration-buffer addresses. The candidate frame has shrunk from
+0x160 to 0x154; native uses 0x144. Narrow enumeration scopes, hoisted buffer
+declarations, and inlined resource/render helpers are byte-neutral on this
+improved form. The 16-byte difference remains unproven source-storage debt;
+no array size, padding, union, forced stack address, or compiler option was
+changed to hide it.

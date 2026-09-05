@@ -223,10 +223,13 @@ extern "C" void mods_menu_update(void)
         position.y += 14.0f;
         grim_interface_ptr->grim_set_color_ptr(
             (float *)&separator_color);
-        mods_vec2_t separator_position(
-            position.x - 4.0f, position.y);
-        grim_interface_ptr->grim_draw_rect_outline(
-            (float *)&separator_position, 200.0f, 1.0f);
+        {
+            mods_vec2_t separator_position(
+                position.x - 4.0f, position.y);
+            grim_interface_ptr->grim_draw_rect_outline(
+                (float *)&separator_position, 200.0f, 1.0f);
+
+        }
 
         position.y -= 2.0f;
         grim_interface_ptr->grim_set_color(
@@ -298,9 +301,9 @@ extern "C" void mods_menu_update(void)
     static mods_button_t launch_button;
     launch_button.label = "Launch";
 
-    mods_vec2_t button_position;
     if (mods_menu_selected_info != 0
         && mods_menu_selected_info->usesApiVersion == 3) {
+        mods_vec2_t button_position;
         button_position.x = button_origin.x + 58.0f;
         button_position.y = button_origin.y + 232.0f;
         if (ui_button_update(
@@ -352,13 +355,16 @@ extern "C" void mods_menu_update(void)
         }
     }
 
-    button_position.x = button_origin.x + 58.0f;
-    button_position.y = button_origin.y + 266.0f;
-    if (ui_button_update(
-            (float *)&button_position,
-            (ui_button_t *)&main_menu_button)) {
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_MAIN_MENU;
-        mods_menu_refresh_pending = 1;
-    }
+    {
+        mods_vec2_t button_position;
+        button_position.x = button_origin.x + 58.0f;
+        button_position.y = button_origin.y + 266.0f;
+        if (ui_button_update(
+                (float *)&button_position,
+                (ui_button_t *)&main_menu_button)) {
+            ui_transition_direction = 0;
+            game_state_pending = GAME_STATE_MAIN_MENU;
+            mods_menu_refresh_pending = 1;
+        }    }
+
 }
