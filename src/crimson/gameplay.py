@@ -536,39 +536,7 @@ def _player_update_aim_by_scheme(
         player.aim_heading = _aim_heading_from_aim_point_native(player.pos, player.aim)
 
 
-def player_update(
-    player: PlayerState,
-    input_state: PlayerInput,
-    dt: float,
-    state: GameplayState,
-    *,
-    detail_preset: int = 5,
-    world_size: float = 1024.0,
-    players: list[PlayerState] | None = None,
-    creatures: Sequence[CreatureState] | None = None,
-    spawn_slots: Sequence[SpawnSlotInit] | None = None,
-    player_death_runtime: PlayerDeathRuntime | None = None,
-    reload_active_any: bool | None = None,
-) -> None:
-    """Port of `player_update` (0x004136b0) for the rewrite runtime."""
-
-    dt = float(f32(float(dt)))
-    if dt <= 0.0:
-        return
-
-    prev_pos = player.pos
-
-    if player.health <= 0.0:
-        player.death_timer = x87_pc24_sub(
-            player.death_timer,
-            x87_pc24_mul(dt, f32(20.0)),
-        )
-        return
-
-    # Native's player_update perk queries all read the global slot-zero table,
-    # even while the overlay-selected player's fields are being updated.
-    perk_player = players[0] if state.preserve_bugs and players else player
-
+def _player_tick_low_health(player: PlayerState, state: GameplayState, dt: float, detail_preset: int) -> None:
     # Native low-health warning pulse (`player_update` @ 0x004136b0): once
     # `player_take_damage` has armed `low_health_timer` (!= 100.0), count down
     # while HP < 20 and emit a 3x blood splatter + bloodspill SFX burst.
@@ -606,65 +574,14 @@ def player_update(
             state.sfx_queue.append(bloodspill_sfx)
             player.low_health_timer = 1.0
 
-    damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
-    if float(state.player_spread_damping_gate) <= 0.0:
-        damping_scalar = float(f32(float(damping_scalar) + float(f32(float(dt) * 0.8))))
-        if damping_scalar > 1.0:
-            damping_scalar = 1.0
-    else:
-        damping_scalar = float(f32(float(damping_scalar) - float(dt)))
-        if damping_scalar < 0.3:
-            damping_scalar = 0.3
-    state.player_spread_damping_scalar = float(damping_scalar)
 
-    player.muzzle_flash_alpha = max(
-        0.0,
-        x87_pc24_sub(
-            player.muzzle_flash_alpha,
-            x87_pc24_mul(dt, f32(2.0)),
-        ),
-    )
-    cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
-    next_shot_cooldown = float(f32(float(player.weapon.shot_cooldown) - float(cooldown_decay)))
-    player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
 
-    speed_bonus_active = player.speed_bonus_timer > 0.0
-    if player.aux_timer > 0.0:
-        aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
-        player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
-
-    move_mode = _resolve_move_mode_for_update(input_state, state)
-    aim_scheme = _resolve_aim_scheme_for_update(input_state, state)
-
-    speed_multiplier = float(player.speed_multiplier)
-    if speed_bonus_active:
-        speed_multiplier += 1.0
-
-    movement_dt = float(dt)
-    if state.time_scale_active and movement_dt > 0.0:
-        time_scale_factor = reflex_boost_time_scale_factor(
-            reflex_boost_timer=state.bonuses.reflex_boost,
-            time_scale_active=True,
-        )
-        if time_scale_factor > 0.0:
-            # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
-            # and stores back to float before movement/heading logic.
-            movement_dt = x87_pc24_mul(
-                x87_pc24_div(f32(0.6), time_scale_factor),
-                movement_dt,
-            )
-
-    apply_player_perk_ticks(
-        player=player,
-        player_pos_before_move=prev_pos,
-        dt=dt,
-        state=state,
-        players=players,
-        owner_ref_for_player=_owner_ref_for_player,
-        owner_ref_for_player_projectiles=_owner_ref_for_player_projectiles,
-        projectile_spawn=_projectile_spawn,
-    )
-
+def _player_move(
+    player: PlayerState, perk_player: PlayerState, input_state: PlayerInput,
+    state: GameplayState, movement_dt: float, move_mode: MovementControlType,
+    speed_multiplier: float, spawn_slots: Sequence[SpawnSlotInit] | None,
+    creatures: Sequence[CreatureState] | None,
+) -> None:
     # Movement.
     raw_move = input_state.move
     raw_mag = raw_move.length()
@@ -865,6 +782,13 @@ def player_update(
     phase_step = f32(float(phase_speed_dt) * 19.0)
     player.move_phase = f32(float(player.move_phase) + float(phase_sign) * float(phase_step))
 
+
+
+def _player_tick_reload(
+    player: PlayerState, perk_player: PlayerState, input_state: PlayerInput,
+    state: GameplayState, dt: float, prev_pos: Vec2, move_mode: MovementControlType,
+    players: list[PlayerState] | None,
+) -> bool:
     move_delta = player.pos - prev_pos
     reload_stationary = move_delta.x == 0.0 and move_delta.y == 0.0
     if not reload_stationary:
@@ -953,6 +877,112 @@ def player_update(
     )
     if manual_reload_allowed:
         _player_start_reload(player, state, players=players)
+
+    return has_alt_weapon_perk
+
+
+def player_update(
+    player: PlayerState,
+    input_state: PlayerInput,
+    dt: float,
+    state: GameplayState,
+    *,
+    detail_preset: int = 5,
+    world_size: float = 1024.0,
+    players: list[PlayerState] | None = None,
+    creatures: Sequence[CreatureState] | None = None,
+    spawn_slots: Sequence[SpawnSlotInit] | None = None,
+    player_death_runtime: PlayerDeathRuntime | None = None,
+    reload_active_any: bool | None = None,
+) -> None:
+    """Port of `player_update` (0x004136b0) for the rewrite runtime."""
+
+    dt = float(f32(float(dt)))
+    if dt <= 0.0:
+        return
+
+    prev_pos = player.pos
+
+    if player.health <= 0.0:
+        player.death_timer = x87_pc24_sub(
+            player.death_timer,
+            x87_pc24_mul(dt, f32(20.0)),
+        )
+        return
+
+    # Native's player_update perk queries all read the global slot-zero table,
+    # even while the overlay-selected player's fields are being updated.
+    perk_player = players[0] if state.preserve_bugs and players else player
+
+    _player_tick_low_health(player, state, dt, detail_preset)
+
+    damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
+    if float(state.player_spread_damping_gate) <= 0.0:
+        damping_scalar = float(f32(float(damping_scalar) + float(f32(float(dt) * 0.8))))
+        if damping_scalar > 1.0:
+            damping_scalar = 1.0
+    else:
+        damping_scalar = float(f32(float(damping_scalar) - float(dt)))
+        if damping_scalar < 0.3:
+            damping_scalar = 0.3
+    state.player_spread_damping_scalar = float(damping_scalar)
+
+    player.muzzle_flash_alpha = max(
+        0.0,
+        x87_pc24_sub(
+            player.muzzle_flash_alpha,
+            x87_pc24_mul(dt, f32(2.0)),
+        ),
+    )
+    cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
+    next_shot_cooldown = float(f32(float(player.weapon.shot_cooldown) - float(cooldown_decay)))
+    player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
+
+    speed_bonus_active = player.speed_bonus_timer > 0.0
+    if player.aux_timer > 0.0:
+        aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
+        player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
+
+    move_mode = _resolve_move_mode_for_update(input_state, state)
+    aim_scheme = _resolve_aim_scheme_for_update(input_state, state)
+
+    speed_multiplier = float(player.speed_multiplier)
+    if speed_bonus_active:
+        speed_multiplier += 1.0
+
+    movement_dt = float(dt)
+    if state.time_scale_active and movement_dt > 0.0:
+        time_scale_factor = reflex_boost_time_scale_factor(
+            reflex_boost_timer=state.bonuses.reflex_boost,
+            time_scale_active=True,
+        )
+        if time_scale_factor > 0.0:
+            # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
+            # and stores back to float before movement/heading logic.
+            movement_dt = x87_pc24_mul(
+                x87_pc24_div(f32(0.6), time_scale_factor),
+                movement_dt,
+            )
+
+    apply_player_perk_ticks(
+        player=player,
+        player_pos_before_move=prev_pos,
+        dt=dt,
+        state=state,
+        players=players,
+        owner_ref_for_player=_owner_ref_for_player,
+        owner_ref_for_player_projectiles=_owner_ref_for_player_projectiles,
+        projectile_spawn=_projectile_spawn,
+    )
+
+    _player_move(
+        player, perk_player, input_state, state, movement_dt, move_mode,
+        speed_multiplier, spawn_slots, creatures,
+    )
+
+    has_alt_weapon_perk = _player_tick_reload(
+        player, perk_player, input_state, state, dt, prev_pos, move_mode, players,
+    )
 
     _player_update_aim_by_scheme(
         player=player,
