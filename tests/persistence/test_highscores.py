@@ -86,3 +86,12 @@ def test_date_tables_filter_before_cap_and_save_preserves_history(tmp_path: Path
     assert [r.score_xp for r in updated] == [20, 10]
     assert len(read_highscore_records(path)) == 107
     assert read_highscore_table(path, game_mode_id=GameMode.SURVIVAL, date_mode=date_mode, now=today) == updated
+
+
+def test_negative_quest_final_time_survives_saving_and_loading(tmp_path: Path) -> None:
+    path = tmp_path / "quest.hi"
+    record = HighScoreRecord.blank(rand_value=0)
+    record.game_mode_id = GameMode.QUESTS
+    record.survival_elapsed_ms = -500
+    upsert_highscore_record(path, record)
+    assert read_highscore_table(path, game_mode_id=GameMode.QUESTS)[0].survival_elapsed_ms == -500

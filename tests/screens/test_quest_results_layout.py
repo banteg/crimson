@@ -281,3 +281,12 @@ def test_score_write_failure_stays_on_name_entry_and_can_retry(tmp_path: Path, m
     assert ui._saved
     assert ui.save_error is None
     assert len(read_highscore_records(ui._scores_path)) == 1
+
+
+def test_negative_quest_score_displays_signed_seconds(tmp_path: Path, mocker) -> None:
+    ui = _build_ui(tmp_path, phase=1)
+    assert ui.record is not None
+    ui.record.survival_elapsed_ms = -500
+    draw_small, _draw_texture, _draw_line = _patch_draw_environment(mocker)
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
+    assert "-0.50 secs" in [str(call.args[2]) for call in draw_small.call_args_list]

@@ -95,12 +95,12 @@ pub const HighScoreRecord = struct {
         }
     }
 
-    pub fn survivalElapsedMs(self: *const HighScoreRecord) u32 {
-        return readU32(self.data[0x20..][0..4]);
+    pub fn survivalElapsedMs(self: *const HighScoreRecord) i32 {
+        return @bitCast(readU32(self.data[0x20..][0..4]));
     }
 
-    pub fn setSurvivalElapsedMs(self: *HighScoreRecord, value: u32) void {
-        writeU32(self.data[0x20..][0..4], value);
+    pub fn setSurvivalElapsedMs(self: *HighScoreRecord, value: i32) void {
+        writeU32(self.data[0x20..][0..4], @bitCast(value));
     }
 
     pub fn scoreXp(self: *const HighScoreRecord) u32 {
@@ -426,10 +426,10 @@ fn normalizeGameMode(game_mode_id_raw: i32) ?game_ids.GameModeId {
 fn highscoreLessThan(game_mode_id_raw: i32, lhs: HighScoreRecord, rhs: HighScoreRecord) bool {
     const mode = normalizeGameMode(game_mode_id_raw);
     return switch (mode orelse .survival) {
-        .rush => @as(i32, @bitCast(lhs.survivalElapsedMs())) > @as(i32, @bitCast(rhs.survivalElapsedMs())),
+        .rush => lhs.survivalElapsedMs() > rhs.survivalElapsedMs(),
         .quests => blk: {
-            const lhs_time: i32 = @bitCast(lhs.survivalElapsedMs());
-            const rhs_time: i32 = @bitCast(rhs.survivalElapsedMs());
+            const lhs_time: i32 = lhs.survivalElapsedMs();
+            const rhs_time: i32 = rhs.survivalElapsedMs();
             if (lhs_time == 0 and rhs_time != 0) break :blk false;
             if (lhs_time != 0 and rhs_time == 0) break :blk true;
             break :blk lhs_time < rhs_time;
@@ -592,7 +592,7 @@ test "record name and field accessors roundtrip" {
 
     try std.testing.expectEqualStrings("Alpha", record.name());
     try std.testing.expectEqual(@as(?game_ids.GameModeId, .survival), record.gameModeId());
-    try std.testing.expectEqual(@as(u32, 5000), record.survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 5000), record.survivalElapsedMs());
     try std.testing.expectEqual(@as(u32, 1234), record.scoreXp());
     try std.testing.expectEqual(game_ids.WeaponId.shotgun, record.mostUsedWeaponId());
     try std.testing.expectEqual(@as(u32, 20), record.shotsFired());
@@ -690,10 +690,10 @@ test "quest and rush sorting mirror Python leaderboard rules" {
         },
     };
     sortHighscores(quest_records[0..], @intFromEnum(game_ids.GameModeId.quests));
-    try std.testing.expectEqual(@as(u32, 1000), quest_records[0].survivalElapsedMs());
-    try std.testing.expectEqual(@as(u32, 2000), quest_records[1].survivalElapsedMs());
-    try std.testing.expectEqual(@as(u32, 5000), quest_records[2].survivalElapsedMs());
-    try std.testing.expectEqual(@as(u32, 0), quest_records[3].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 1000), quest_records[0].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 2000), quest_records[1].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 5000), quest_records[2].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 0), quest_records[3].survivalElapsedMs());
 
     var rush_records = [_]HighScoreRecord{
         blk: {
@@ -716,9 +716,9 @@ test "quest and rush sorting mirror Python leaderboard rules" {
         },
     };
     sortHighscores(rush_records[0..], @intFromEnum(game_ids.GameModeId.rush));
-    try std.testing.expectEqual(@as(u32, 5000), rush_records[0].survivalElapsedMs());
-    try std.testing.expectEqual(@as(u32, 2000), rush_records[1].survivalElapsedMs());
-    try std.testing.expectEqual(@as(u32, 1000), rush_records[2].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 5000), rush_records[0].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 2000), rush_records[1].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 1000), rush_records[2].survivalElapsedMs());
 }
 
 test "write and read highscore records preserve valid records" {
@@ -769,7 +769,7 @@ test "upsert keeps quest tables sorted ascending with zero times last" {
     });
     defer allocator.free(path);
 
-    inline for ([_]u32{ 5000, 2000, 0 }) |time_ms| {
+    inline for ([_]i32{ 5000, 2000, 0 }) |time_ms| {
         var record = HighScoreRecord.blank();
         record.setGameModeId(.quests);
         record.setSurvivalElapsedMs(time_ms);
@@ -785,9 +785,9 @@ test "upsert keeps quest tables sorted ascending with zero times last" {
     defer table.deinit(allocator);
 
     try std.testing.expectEqual(@as(usize, 3), table.items.len);
-    try std.testing.expectEqual(@as(u32, 2000), table.items[0].survivalElapsedMs());
-    try std.testing.expectEqual(@as(u32, 5000), table.items[1].survivalElapsedMs());
-    try std.testing.expectEqual(@as(u32, 0), table.items[2].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 2000), table.items[0].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 5000), table.items[1].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 0), table.items[2].survivalElapsedMs());
 }
 
 test "date selection precedes table limit and saves retain history" {
@@ -828,11 +828,11 @@ test "quest ranking uses signed times and zero ranks last" {
     for ([_]i32{ 1000, 0, -500 }, &records) |time, *record| {
         record.* = HighScoreRecord.blankWithRandValue(0);
         record.setGameModeId(.quests);
-        record.setSurvivalElapsedMs(@bitCast(time));
+        record.setSurvivalElapsedMs(time);
     }
     sortHighscores(&records, @intFromEnum(game_ids.GameModeId.quests));
-    try std.testing.expectEqual(@as(i32, -500), @as(i32, @bitCast(records[0].survivalElapsedMs())));
-    try std.testing.expectEqual(@as(u32, 0), records[2].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, -500), records[0].survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 0), records[2].survivalElapsedMs());
     try std.testing.expectEqual(@as(usize, 2), rankIndex(records[0..2], records[2]));
     var name = HighScoreRecord.blankWithRandValue(0);
     name.setName("   ");

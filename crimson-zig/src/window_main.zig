@@ -5936,9 +5936,8 @@ fn drawResultsScoreRecordCardAt(
     } else {
         drawSmallText(runtime_assets, "Game time", right_label_x + 6.0, pos.y, label_color);
         var time_buf: [16]u8 = undefined;
-        const elapsed_ms_u32 = record.survivalElapsedMs();
-        const elapsed_ms: i32 = @intCast(@min(elapsed_ms_u32, @as(u32, @intCast(std.math.maxInt(i32)))));
-        drawResultsNameEntryClock(runtime_assets, pos, elapsed_ms_u32);
+        const elapsed_ms = @max(0, record.survivalElapsedMs());
+        drawResultsNameEntryClock(runtime_assets, pos, @intCast(elapsed_ms));
         drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&time_buf, elapsed_ms), right_label_x + 40.0, pos.y + 19.0, label_color);
     }
 

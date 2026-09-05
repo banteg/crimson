@@ -1786,9 +1786,9 @@ fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record:
         },
         .survival, .typo, .tutorial => {
             window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 27.0, right_rect.y + 105.0, value_text);
-            drawClockGauge(assets, record.survivalElapsedMs(), right_rect.x + 194.0, right_rect.y + 103.0);
+            drawClockGauge(assets, @intCast(@max(0, record.survivalElapsedMs())), right_rect.x + 194.0, right_rect.y + 103.0);
             var time_buf: [32]u8 = undefined;
-            window_ui.drawSmallText(assets, formatElapsedMmSsBuf(&time_buf, record.survivalElapsedMs()), detail_x + 148.0, right_rect.y + 109.0, local_text);
+            window_ui.drawSmallText(assets, formatElapsedMmSsBuf(&time_buf, @intCast(@max(0, record.survivalElapsedMs()))), detail_x + 148.0, right_rect.y + 109.0, local_text);
         },
     }
     var rank_buf: [32]u8 = undefined;

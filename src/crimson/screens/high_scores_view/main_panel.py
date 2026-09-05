@@ -167,7 +167,7 @@ def draw_main_panel(
             match mode_id:
                 case GameMode.RUSH | GameMode.QUESTS:
                     elapsed_ms = int(entry.survival_elapsed_ms)
-                    value = f"{max(0, elapsed_ms) // 1000}"
+                    value = f"{int(elapsed_ms / 1000)}"
                 case _:
                     value = f"{int(entry.score_xp)}"
 

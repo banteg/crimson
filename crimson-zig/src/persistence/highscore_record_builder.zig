@@ -46,7 +46,7 @@ pub fn buildHighscoreRecordForGameOver(
     var record_rng = state.rng;
     var record = highscores.HighScoreRecord.blankWithRandValue(record_rng.rand());
     record.setScoreXp(@intCast(@max(0, state.highscore_score_xp)));
-    record.setSurvivalElapsedMs(@intCast(@max(0, survival_elapsed_ms)));
+    record.setSurvivalElapsedMs(if (game_mode_id == .quests) survival_elapsed_ms else @max(0, survival_elapsed_ms));
     record.setCreatureKillCount(@intCast(@max(0, creature_kill_count)));
     record.setMostUsedWeaponId(
         survival_progression.mostUsedWeaponIdForPlayer(
@@ -122,7 +122,7 @@ test "build highscore record uses weapon stats and shots" {
     );
 
     try std.testing.expectEqual(@as(u32, 1234), record.scoreXp());
-    try std.testing.expectEqual(@as(u32, 5000), record.survivalElapsedMs());
+    try std.testing.expectEqual(@as(i32, 5000), record.survivalElapsedMs());
     try std.testing.expectEqual(@as(u32, 7), record.creatureKillCount());
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, record.mostUsedWeaponId());
     try std.testing.expectEqual(@as(u32, 20), record.shotsFired());
@@ -173,4 +173,16 @@ test "build highscore record marks hardcore" {
     );
 
     try std.testing.expectEqual(@as(u8, 0x75), record.hardcoreMarker());
+}
+
+test "completed quest records preserve negative final times" {
+    const record = buildHighscoreRecordForGameOver(
+        state_mod.GameplayState.init(0),
+        .{ .index = 0, .pos = .{} },
+        -500,
+        1,
+        .quests,
+        .{},
+    );
+    try std.testing.expectEqual(@as(i32, -500), record.survivalElapsedMs());
 }

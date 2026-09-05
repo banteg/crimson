@@ -465,7 +465,7 @@ def _draw_right_panel_local_score(
     score_value_pos = Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale)
     match mode_id:
         case GameMode.RUSH | GameMode.QUESTS:
-            score_value = f"{max(0, elapsed_ms) * 0.001:.2f} secs"
+            score_value = f"{elapsed_ms * 0.001:.2f} secs"
             # Quest/Rush scores are variable-width second labels ("%.2f secs") and are
             # centered in the left score column in native.
             score_label_w = measure_small_text_width(font, "Score")
