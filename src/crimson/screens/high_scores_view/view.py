@@ -70,6 +70,7 @@ from ..panels.hit_test import mouse_inside_rect_with_padding
 from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
 from .records import load_records, resolve_request
+from .return_context import ScoreReturnContext
 from .right_panel import draw_right_panel
 
 
@@ -94,6 +95,7 @@ class HighScoresView:
         self._back_button = UiButtonState("Back", force_wide=False)
 
         self._request: HighScoresRequest | None = None
+        self._return_context: ScoreReturnContext | None = None
         self._records: list[HighScoreRecord] = []
         self._scroll_index = 0
         self._dirty = False
@@ -105,6 +107,7 @@ class HighScoresView:
         self._score_list_open = False
 
     def open(self) -> None:
+        self._return_context = ScoreReturnContext.capture(self.state.config) if self.state.pause_background is not None else None
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
         self._action = None
@@ -133,6 +136,7 @@ class HighScoresView:
         self._is_open = True
 
     def close(self) -> None:
+        self._return_context = None
         self._is_open = False
         self._request = None
         self._records = []
@@ -237,7 +241,7 @@ class HighScoresView:
                 # Reload scores from disk (no view transition).
                 if self.state.audio is not None:
                     play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-                self.open()
+                self._reload_records()
                 return
             w = button_width(resources, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
             if button_update(
@@ -248,7 +252,7 @@ class HighScoresView:
                 mouse=mouse,
                 click=click,
             ):
-                self._begin_close_transition("open_play_game")
+                self._start_selected_game()
                 return
             back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
             if button_update(
@@ -284,6 +288,10 @@ class HighScoresView:
                 self._scroll_index = max_scroll
 
     def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        if action == "back_to_previous" and self._return_context is not None:
+            self._return_context.restore(self.state.config)
         if self._dirty:
             try:
                 self.state.config.save()
@@ -291,8 +299,6 @@ class HighScoresView:
                 self.state.console.log.log(f"config: save failed: {exc}")
             else:
                 self._dirty = False
-        if self._closing:
-            return
         if action in FADE_TO_GAME_ACTIONS:
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
@@ -300,6 +306,27 @@ class HighScoresView:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._closing = True
         self._close_action = action
+
+    def _start_selected_game(self) -> None:
+        request = self._request
+        assert request is not None
+        if request.game_mode_id == GameMode.QUESTS:
+            level = request.quest_level
+            assert level is not None
+            unlock = self.state.status.quest_unlock_index_full if self.state.config.gameplay.hardcore else self.state.status.quest_unlock_index
+            if level.global_index > unlock:
+                return
+            self.state.pending_quest_level = level
+            self.state.config.gameplay.quest_level = level
+            action = "start_quest"
+        else:
+            action = {
+                GameMode.SURVIVAL: "start_survival",
+                GameMode.RUSH: "start_rush",
+                GameMode.TYPO: "start_typo",
+            }[request.game_mode_id]
+        self.state.config.gameplay.mode = request.game_mode_id
+        self._begin_close_transition(action)
 
     def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
         header_h = 16.0 * scale
