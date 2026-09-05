@@ -609,5 +609,6 @@ class DeterministicSession(msgspec.Struct):
         step.presentation = msgspec.structs.replace(
             step.presentation,
             camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
+            reflex_boost_timer=float(state.bonuses.reflex_boost),
         )
         return step

@@ -180,3 +180,17 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
     expected = run((1, 1))
     assert expected[1] and expected[1][0][1] > 0.0
     assert run(partition) == expected
+
+
+
+def test_audio_plan_captures_typo_post_step_bonus_reset() -> None:
+    from crimson.game_modes import GameMode
+    from crimson.sim.run_init import initialize_run
+    from crimson.sim.run_spec import RunSpec
+
+    session = initialize_run(RunSpec(game_mode_id=GameMode.TYPO, seed=1)).session
+    session.world.state.bonuses.reflex_boost = 1.0
+    tick = session.step_tick(dt=1 / 60, inputs=(PlayerInput(),))
+    assert tick.presentation.sfx  # Initial loadout enforcement requests reload audio.
+    assert session.world.state.bonuses.reflex_boost == 0.0
+    assert tick.presentation.reflex_boost_timer == 0.0
