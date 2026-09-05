@@ -63,3 +63,41 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
     pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, creature_damage_runtime=damage_runtime))
 
     assert [call[0] for call in damage_runtime.calls] == [0]
+
+
+def test_same_cell_size_growth_updates_query_margin() -> None:
+    creatures = [_creature(pos=Vec2(128.0, 0.0), hp=1.0, size=10.0)]
+    spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_is_collidable)
+    assert spatial.candidate_indices(pos=Vec2(), radius=1.0) == []
+    creatures[0].size = 1000.0
+    spatial.sync_index(0)
+    assert spatial.candidate_indices(pos=Vec2(), radius=1.0) == [0]
+
+
+def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
+    from crimson.creatures.spawn_ids import CreatureFlags
+    from crimson.effects import FxQueue
+    from crimson.game_modes import GameMode
+    from crimson.projectiles.runtime.secondary_pool import _step_detonation
+    from crimson.projectiles.types import SecondaryProjectile
+    from crimson.sim.world_state import WorldState, _WorldStepRuntime
+
+    world = WorldState.build(world_size=1024.0, demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    parent = world.creatures.entries[0]
+    parent.active = True
+    parent.flags = CreatureFlags.SPLIT_ON_DEATH
+    parent.pos = Vec2(100.0, 100.0)
+    parent.hp = 1.0
+    parent.max_hp = 400.0
+    parent.size = 40.0
+    fx_queue = FxQueue()
+    damage_runtime = _WorldStepRuntime(world=world, dt=0.1, world_size=1024.0, detail_preset=5,
+                                      violence_disabled=0, fx_queue=fx_queue, game_mode=GameMode.SURVIVAL,
+                                      hit_audio_game_tune_started=True, deaths=[], sfx=[])
+    spatial = CreatureSpatialHash(creatures=world.creatures.entries, is_collidable=_is_collidable)
+    explosion = SecondaryProjectile(active=True, pos=parent.pos, detonation_scale=1.0)
+    ctx = SecondaryStepCtx(creature_damage_runtime=damage_runtime, dt=0.1, creatures=world.creatures.entries)
+    _step_detonation(explosion, ctx, dt=0.1, creature_spatial=spatial, rng=world.state.rng)
+    children = [c for c in world.creatures.entries[1:] if c.active]
+    assert len(children) >= 2
+    assert all(c.hp < 100.0 for c in children)
