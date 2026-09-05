@@ -357,3 +357,14 @@ controls against the 99.742600% baseline. The source forms are
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Exact-match follow-up (2026-09-05)
+
+Panel result forms, saved list anchors, short list-call scopes, and label-array
+publication were tested in focused interactions. Explicit origin ownership moves the
+opening temporary but enlarges the frame and shifts the later labels array. Label
+declaration placement alone is neutral.
+
+exact-followup-value-interactions-mutations.json records all 30 complete, compiling
+controls. No source change is retained. These outcomes bound the tested inputs and
+interactions, not the function's matchability.

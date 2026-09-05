@@ -8,7 +8,8 @@ function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 
 See [Matching Status](STATUS.md) for generated progress and
 [Remaining EXE batches](BATCHES.md) for the current function map, focused hypotheses,
-and campaign order. [Batches 01–08 results](BATCHES-01-08-RESULTS.md) records the latest focused pass.
+and campaign order. See the [batches 01–08 results](BATCHES-01-08-RESULTS.md) and the
+[exact-match follow-up](EXACT-FOLLOWUP-2026-09-05.md) for the recent campaigns.
 
 ## Matching Scope
 

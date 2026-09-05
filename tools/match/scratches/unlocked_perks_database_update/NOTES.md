@@ -209,3 +209,13 @@ source shapes; any scope-generated static name changes must be verified against 
 before treating unresolved references as substantive debt. Canonical source and
 configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Exact-match follow-up (2026-09-05)
+
+Six ordinary vector-member and free-function separator helpers tested integer/float
+width and renderer ownership. All reproduce the same single dispatch-load/integer-
+conversion inversion.
+
+exact-followup-value-interactions-mutations.json records all 6 complete, compiling
+controls. No source change is retained. These outcomes bound the tested inputs and
+interactions, not the function's matchability.

@@ -54,7 +54,7 @@
     "source_sha256": "3c4cf85b8ef2671531b53fd8897afbeb1d813b4687f58b5920ef7547eefa348e",
     "status": "passed"
   },
-  "audit_digest": "76c05935f96db01fd89550d6b12da53b85ed3dba0c8614ab0e9041044bed919b",
+  "audit_digest": "1eefa915da9df37f9eebcda407aec1bd63f069bea0b7da925cf9a3d86b0f0c3d",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -25251,12 +25251,12 @@
         {
           "path": "tools/match/scratches/perk_selection_screen_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "bc371c1ce960876ab9ca17fdbe52e6045dd9edcf3f31e390ca16b9ab013a1a20"
+          "sha256": "b1ba798b5688ae4ebb5c97f4f63fbb4d89bb159256b572586b66af7e51338233"
         },
         {
           "path": "tools/match/scratches/perk_selection_screen_update/scratch.conf",
           "repository_relative": true,
-          "sha256": "ddb2cc05f3c34b0b2f1f49fd09908d62d824ec9428ee10a164cd2e465964cbdd"
+          "sha256": "1996e6707db610348a394430c242166fc0964c33415fe98a26b14153f966c82d"
         },
         {
           "path": "tools/match/cl.sh",
@@ -25301,7 +25301,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/perk_selection_screen_update/scratch.conf",
-      "config_sha256": "ddb2cc05f3c34b0b2f1f49fd09908d62d824ec9428ee10a164cd2e465964cbdd",
+      "config_sha256": "1996e6707db610348a394430c242166fc0964c33415fe98a26b14153f966c82d",
       "effective_end": 4219171,
       "end": 4219171,
       "function": "perk_selection_screen_update",
@@ -25309,10 +25309,10 @@
         {
           "address": 4217824,
           "canonical_config": "tools/match/scratches/perk_selection_screen_update/scratch.conf",
-          "canonical_config_sha256": "ddb2cc05f3c34b0b2f1f49fd09908d62d824ec9428ee10a164cd2e465964cbdd",
+          "canonical_config_sha256": "1996e6707db610348a394430c242166fc0964c33415fe98a26b14153f966c82d",
           "canonical_scratch": "tools/match/scratches/perk_selection_screen_update",
           "canonical_source": "tools/match/scratches/perk_selection_screen_update/scratch.cpp",
-          "canonical_source_sha256": "bc371c1ce960876ab9ca17fdbe52e6045dd9edcf3f31e390ca16b9ab013a1a20",
+          "canonical_source_sha256": "b1ba798b5688ae4ebb5c97f4f63fbb4d89bb159256b572586b66af7e51338233",
           "effective_end": 4219171,
           "end": 4219171,
           "function": "perk_selection_screen_update",
@@ -25321,9 +25321,9 @@
             "masked_mismatches": 0,
             "masked_ok": 119,
             "masked_unresolved": 0,
-            "prefix_instructions": 15,
-            "ratio": 0.945859872611465,
-            "state": "wip",
+            "prefix_instructions": 314,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 314
           },
           "object_function_symbol": "_perk_selection_screen_update",
@@ -25335,17 +25335,17 @@
         "masked_mismatches": 0,
         "masked_ok": 119,
         "masked_unresolved": 0,
-        "prefix_instructions": 15,
-        "ratio": 0.945859872611465,
-        "state": "wip",
+        "prefix_instructions": 314,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 314
       },
       "object": "tools/match/scratches/perk_selection_screen_update/build/msvc6.5/c02f9bee444c45ea/scratch.obj",
       "object_function_symbol": "_perk_selection_screen_update",
-      "object_sha256": "333829f82b00fc77390e3afa81544340440077fd2c0f98a7269cc5e6dd688521",
+      "object_sha256": "dda9c98de73f3b005727f2bc1976ba850b85ece79bdf296dd769d103d10d2f71",
       "scratch": "tools/match/scratches/perk_selection_screen_update",
       "source": "tools/match/scratches/perk_selection_screen_update/scratch.cpp",
-      "source_sha256": "bc371c1ce960876ab9ca17fdbe52e6045dd9edcf3f31e390ca16b9ab013a1a20",
+      "source_sha256": "b1ba798b5688ae4ebb5c97f4f63fbb4d89bb159256b572586b66af7e51338233",
       "target_size": 1347,
       "translation_unit": {
         "kind": "isolated",
@@ -29555,12 +29555,12 @@
         {
           "path": "tools/match/scratches/credits_screen_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "e2323767d1dcff79752005861555a4a427ee9568bbb38a6f7b70c847c24b0e70"
+          "sha256": "023e619e6465adb15e21b4cb4c09cd5e8a174055aeff46a15eeabf3419bc71da"
         },
         {
           "path": "tools/match/scratches/credits_screen_update/scratch.conf",
           "repository_relative": true,
-          "sha256": "386a34056d6b996780d2a07cae3827dff1ff1d89561882527c7f28ac41c4eac0"
+          "sha256": "6a52d2e8b3b502cb4d1e27f39b57f0c3f2f7557d586af0ef511cdd6130679c0f"
         },
         {
           "path": "tools/match/cl.sh",
@@ -29595,7 +29595,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/credits_screen_update/scratch.conf",
-      "config_sha256": "386a34056d6b996780d2a07cae3827dff1ff1d89561882527c7f28ac41c4eac0",
+      "config_sha256": "6a52d2e8b3b502cb4d1e27f39b57f0c3f2f7557d586af0ef511cdd6130679c0f",
       "effective_end": 4251457,
       "end": 4251457,
       "function": "credits_screen_update",
@@ -29603,21 +29603,21 @@
         {
           "address": 4249600,
           "canonical_config": "tools/match/scratches/credits_screen_update/scratch.conf",
-          "canonical_config_sha256": "386a34056d6b996780d2a07cae3827dff1ff1d89561882527c7f28ac41c4eac0",
+          "canonical_config_sha256": "6a52d2e8b3b502cb4d1e27f39b57f0c3f2f7557d586af0ef511cdd6130679c0f",
           "canonical_scratch": "tools/match/scratches/credits_screen_update",
           "canonical_source": "tools/match/scratches/credits_screen_update/scratch.cpp",
-          "canonical_source_sha256": "e2323767d1dcff79752005861555a4a427ee9568bbb38a6f7b70c847c24b0e70",
+          "canonical_source_sha256": "023e619e6465adb15e21b4cb4c09cd5e8a174055aeff46a15eeabf3419bc71da",
           "effective_end": 4251457,
           "end": 4251457,
           "function": "credits_screen_update",
           "match": {
             "candidate_instructions": 454,
             "masked_mismatches": 0,
-            "masked_ok": 175,
+            "masked_ok": 176,
             "masked_unresolved": 0,
-            "prefix_instructions": 48,
-            "ratio": 0.9889867841409692,
-            "state": "wip",
+            "prefix_instructions": 454,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 454
           },
           "object_function_symbol": "_credits_screen_update",
@@ -29627,19 +29627,19 @@
       "match": {
         "candidate_instructions": 454,
         "masked_mismatches": 0,
-        "masked_ok": 175,
+        "masked_ok": 176,
         "masked_unresolved": 0,
-        "prefix_instructions": 48,
-        "ratio": 0.9889867841409692,
-        "state": "wip",
+        "prefix_instructions": 454,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 454
       },
       "object": "tools/match/scratches/credits_screen_update/build/msvc6.5/7de52918eb6d8582/scratch.obj",
       "object_function_symbol": "_credits_screen_update",
-      "object_sha256": "5143eca08a413ea6c07e8c92993e771059b3a4b5ec2bb04510401c43164c114d",
+      "object_sha256": "7afaec80fdf8de82edbb0de9a1018dda1bc2f176c5da60d77271f6969411c79d",
       "scratch": "tools/match/scratches/credits_screen_update",
       "source": "tools/match/scratches/credits_screen_update/scratch.cpp",
-      "source_sha256": "e2323767d1dcff79752005861555a4a427ee9568bbb38a6f7b70c847c24b0e70",
+      "source_sha256": "023e619e6465adb15e21b4cb4c09cd5e8a174055aeff46a15eeabf3419bc71da",
       "target_size": 1857,
       "translation_unit": {
         "kind": "isolated",
@@ -87018,8 +87018,8 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 631,
-    "wip": 40
+    "match": 633,
+    "wip": 38
   },
   "translation_units": {
     "cluster_count": 3,

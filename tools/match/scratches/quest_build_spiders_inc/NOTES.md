@@ -184,3 +184,13 @@ controls against the 95.238095% baseline. The source forms are `indexed-count-la
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Exact-match follow-up (2026-09-05)
+
+Nine paired-wave controls crossed indexed, record, and metadata-call ownership with
+three wave-count calculation boundaries. Every form adds an instruction and regresses
+alignment.
+
+exact-followup-value-interactions-mutations.json records all 9 complete, compiling
+controls. No source change is retained. These outcomes bound the tested inputs and
+interactions, not the function's matchability.

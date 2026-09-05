@@ -224,3 +224,13 @@ controls against the 99.585062% baseline. The source forms are `body-index-healt
 No control improves the retained baseline without a metric tradeoff. Canonical source
 and configuration are unchanged. These results bound the recorded hypothesis, not the
 function's matchability.
+
+## Exact-match follow-up (2026-09-05)
+
+Explicit Bandage guards, indexed player owners, and player/health inline helpers were
+tested. Delayed cursor initialization still rotates the dispatcher allocation; the
+cursor-condition form adds two instructions. Health-cursor helpers tie the baseline.
+
+exact-followup-value-interactions-mutations.json records all 17 complete, compiling
+controls. No source change is retained. These outcomes bound the tested inputs and
+interactions, not the function's matchability.

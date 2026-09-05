@@ -1,13 +1,13 @@
 # Remaining EXE matching batches
 
-Snapshot: `470d9a4ca` (631-exact source checkpoint), refreshed on 2026-09-05. The native audit
-and matching checkpoint reproduce all 671 EXE candidates, including the 40 remaining functions
-below. [Batches 01–08 results](BATCHES-01-08-RESULTS.md) records the completed 32-function pass:
-one new exact match and five WIP improvements across 151 recorded controls.
+Snapshot: `52ed2a9d2` (633-exact source checkpoint), refreshed on 2026-09-05. The native audit
+and matching checkpoint reproduce all 671 EXE candidates, including the 38 remaining functions.
+The [latest exact-match follow-up](EXACT-FOLLOWUP-2026-09-05.md) recovered the perk selection and
+credits screens after the [32-function batches 01–08 pass](BATCHES-01-08-RESULTS.md).
 
-**EXE: 631/671 exact; Grim: 139/139 exact.** The EXE frontier is 40 functions spanning 156,795
-code bytes, with 30,241 fuzzy-gap bytes. The top five functions hold 67.7% of that gap, and the
-top ten hold 85.6%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
+**EXE: 633/671 exact; Grim: 139/139 exact.** The EXE frontier is 38 functions spanning 153,591
+code bytes, with 30,148 fuzzy-gap bytes. The top five functions hold 67.9% of that gap, and the
+top ten hold 85.9%. Fuzzy gap is size × (1 − alignment ratio), not a count of independently
 wrong executable bytes. Exact means normalized instruction identity with all masked references
 resolved and equal.
 
@@ -18,11 +18,11 @@ available as controls. Keep batch IDs stable as exact members leave the frontier
 membership describes related work, not an estimate that every member will become exact in one
 session.
 
-Recent wins invalidate a blanket “compiler residual” stop rule. This pass recovered exact
-options menu code through checkbox and slider value lifetimes, and improved worker string
-initialization, quest publication, and menu/scrollbar scheduling. Treat previous negative sweeps
-as bounds on their specific source forms and baseline, and use successful siblings as controls
-rather than templates to copy mechanically.
+Recent wins invalidate a blanket “compiler residual” stop rule. Options, perk selection, and
+credits now match exactly through interactions between opening values and later UI coordinate
+lifetimes. Worker initialization, quest publication, and menu/scrollbar scheduling also improved.
+Treat previous negative sweeps as bounds on their specific source forms and baseline, and use
+successful siblings as controls rather than templates to copy mechanically.
 
 ## Batch index
 
@@ -31,9 +31,9 @@ rather than templates to copy mechanically.
 | [01](#batch-01) | Scalar ownership and shared control flow | 4 | 236 |
 | [02](#batch-02) | Spawn records and quest induction | 5 | 378 |
 | [03](#batch-03) | WinInet request and response workers | 2 | 750 |
-| [04](#batch-04) | Short coordinate lifetimes | 5 | 124 |
+| [04](#batch-04) | Short coordinate lifetimes | 4 | 103 |
 | [05](#batch-05) | UI call scheduling and vector primitives | 4 | 54 |
-| [06](#batch-06) | Menu object and aggregate lifetimes | 4 | 671 |
+| [06](#batch-06) | Menu object and aggregate lifetimes | 3 | 598 |
 | [07](#batch-07) | UI loops, formatting, and board state | 3 | 926 |
 | [08](#batch-08) | HUD and effect rendering | 4 | 2,053 |
 | [09](#batch-09) | Creature templates, atlas passes, and tutorial stages | 3 | 2,834 |
@@ -46,8 +46,8 @@ rather than templates to copy mechanically.
 Individual and batch gaps are rounded independently. Each function appears in exactly one batch
 below. Tables show candidate/native instruction counts, mismatched aligned references (all
 unresolved counts are zero), and baseline-aware experiment evidence: **H** historical-only,
-**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 11 H
-functions and 29 with current records. Retained source changes start a new baseline epoch, so H
+**A** current-active, **S** current-stalled, **I** current-inconclusive. The checkpoint has 10 H
+functions and 28 with current records. Retained source changes start a new baseline epoch, so H
 can include a function improved in this pass; the campaign report preserves the gain evidence. H
 does not mean untouched; S means at least three complete, error-free, non-improving sweeps at
 that baseline, not an impossibility proof.
@@ -126,7 +126,7 @@ record-construction boundary at a time; the successful idiom may differ between 
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | A |
+| [quest_build_spiders_inc](scratches/quest_build_spiders_inc/NOTES.md) | 95.24% | 105/105 | 16 | 0 | S |
 | [quest_spawn_timeline_update](scratches/quest_spawn_timeline_update/NOTES.md) | 91.23% | 113/115 | 32 | 0 | A |
 | [quest_build_survival_of_the_fastest](scratches/quest_build_survival_of_the_fastest/NOTES.md) | 79.39% | 228/228 | 177 | 0 | H |
 | [creature_spawn](scratches/creature_spawn/NOTES.md) | 88.61% | 79/79 | 38 | 0 | I |
@@ -183,16 +183,15 @@ target extents already include their epilogues.
 
 ## 04 — Short coordinate lifetimes
 
-These five have equal instruction counts and clean references. Map where each vector is born,
-passed by address, and becomes dead, including later calls that can affect an earlier stack
-slot.
+These four remain after credits_screen_update became exact; all have equal instruction counts
+and clean references. Map where each vector is born, passed by address, and becomes dead,
+including later calls that can affect an earlier stack slot.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) | 99.21% | 378/378 | 12 | 0 | A |
 | [survival_update](scratches/survival_update/NOTES.md) | 98.21% | 504/504 | 38 | 0 | A |
-| [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | 99.74% | 777/777 | 8 | 0 | A |
-| [credits_screen_update](scratches/credits_screen_update/NOTES.md) | 98.90% | 454/454 | 20 | 0 | S |
+| [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | 99.74% | 777/777 | 8 | 0 | S |
 | [demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) | 98.11% | 636/636 | 46 | 0 | A |
 
 - **player_fire_weapon:** Only the pellet position stack operands remain: native uses the upper
@@ -206,9 +205,7 @@ slot.
 - **play_game_menu_update:** Two opening Y-sum operands use a different stack slot. Inspect the
   later button/row lifetime that could color this opening temporary. Opening declarations, row
   copies, and footer scopes have not recovered it; do not confine analysis to the first mismatch.
-- **credits_screen_update:** One opening mismatch region combines Y-slot placement, operand order,
-  and comparison scheduling. Recover the panel/title/button position lifetimes as a unit. Header
-  construction, panel scopes, and text/secret-coordinate copies have already failed.
+
 - **demo_trial_overlay_render:** Three regions remain around the expired suffix and complementary
   Purchase/Maybe Later coordinates; the quest suffix already matches. Compare branch-exclusive
   coordinate owners and the shared draw tail. Direct suffix reuse merges native operations;
@@ -249,21 +246,15 @@ and checks of its exact consumers.
 
 ## 06 — Menu object and aggregate lifetimes
 
-Four screens/initializers remain after options_menu_update became exact. Use existing
-authenticated UI declarations as evidence, while keeping changes local until a common owner is
-demonstrated.
+Three screens/initializers remain after options_menu_update and perk_selection_screen_update
+became exact. Use existing authenticated UI declarations as evidence, while keeping changes
+local until a common owner is demonstrated.
 
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
-| [perk_selection_screen_update](scratches/perk_selection_screen_update/NOTES.md) | 94.59% | 314/314 | 73 | 0 | H |
 | [mods_menu_update](scratches/mods_menu_update/NOTES.md) | 94.44% | 648/648 | 145 | 0 | S |
 | [quest_select_menu_update](scratches/quest_select_menu_update/NOTES.md) | 95.89% | 803/803 | 141 | 0 | A |
 | [ui_menu_layout_init](scratches/ui_menu_layout_init/NOTES.md) | 95.69% | 1408/1422 | 312 | 0 | H |
-
-- **perk_selection_screen_update:** Moving line-height initialization to its first use after the
-  title/sponsor calls raised alignment to 94.59%, prefix 15, and 119 clean references, with 314/314
-  instructions. A broader row scope regressed. Trace description, choice, and Cancel lifetimes
-  around this narrower retained boundary before changing frame or aggregate construction.
 
 - **mods_menu_update:** Native frame is 0x144 versus candidate 0x160; _finddata_t starts at 0x3c
   versus 0x58. Reconstruct file-refresh, version text, separator color, and button-origin scopes

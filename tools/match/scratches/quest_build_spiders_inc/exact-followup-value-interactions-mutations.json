@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "exact-followup-value-interactions",
+      "find": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count =\n            wave_spawn->count = step_count / 2 + 3;\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;\n        ++builder.count;\n\n        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n",
+      "replacements": [
+        {
+          "name": "spider-pair-indexed-before-pointer",
+          "text": "        int wave_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n        ++builder.count;\n\n        builder.spawns[builder.count].pos.y = -64.0f;\n        builder.spawns[builder.count].pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;\n        builder.spawns[builder.count].count = wave_count;\n"
+        },
+        {
+          "name": "spider-pair-indexed-after-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = step_count / 2 + 3;\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n        ++builder.count;\n\n        builder.spawns[builder.count].pos.y = -64.0f;\n        builder.spawns[builder.count].pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;\n        builder.spawns[builder.count].count = wave_count;\n"
+        },
+        {
+          "name": "spider-pair-indexed-after-coordinates",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        int wave_count = step_count / 2 + 3;\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n        ++builder.count;\n\n        builder.spawns[builder.count].pos.y = -64.0f;\n        builder.spawns[builder.count].pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        builder.spawns[builder.count].trigger_time_ms = trigger_time_ms;\n        builder.spawns[builder.count].count = wave_count;\n"
+        },
+        {
+          "name": "spider-pair-record-before-pointer",
+          "text": "        int wave_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        wave_spawn->template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        wave_spawn->trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n        ++builder.count;\n\n        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        second_wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "spider-pair-record-after-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = step_count / 2 + 3;\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        wave_spawn->template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        wave_spawn->trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n        ++builder.count;\n\n        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        second_wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "spider-pair-record-after-coordinates",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        int wave_count = step_count / 2 + 3;\n        wave_spawn->template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        wave_spawn->trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n        ++builder.count;\n\n        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        second_wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "spider-pair-metadata-call-before-pointer",
+          "text": "        int wave_count = step_count / 2 + 3;\n        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        wave_spawn->set_spawn(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms, wave_count);\n        ++builder.count;\n\n        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "spider-pair-metadata-call-after-pointer",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        int wave_count = step_count / 2 + 3;\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        wave_spawn->set_spawn(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms, wave_count);\n        ++builder.count;\n\n        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        },
+        {
+          "name": "spider-pair-metadata-call-after-coordinates",
+          "text": "        quest_entry_original_t *wave_spawn =\n            &builder.spawns[builder.count];\n        wave_spawn->pos.y = (float)(terrain_texture_width + 64);\n        wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        int wave_count = step_count / 2 + 3;\n        wave_spawn->set_spawn(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms, wave_count);\n        ++builder.count;\n\n        quest_entry_original_t *second_wave_spawn =\n            &builder.spawns[builder.count];\n        second_wave_spawn->pos.y = -64.0f;\n        second_wave_spawn->pos.x = (float)(terrain_texture_width / 2);\n        builder.spawns[builder.count].set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n"
+        }
+      ]
+    }
+  ]
+}

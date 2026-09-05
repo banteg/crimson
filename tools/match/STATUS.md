@@ -4,11 +4,11 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**770/810** functions matched exactly (**95.1%**), **185197/341992** code bytes (**54.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**772/810** functions matched exactly (**95.3%**), **188401/341992** code bytes (**55.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **311751/341992** code bytes (**91.2%**).
+Fuzzy-weighted alignment is **311844/341992** code bytes (**91.2%**).
 
-Remaining exact-match debt is **40 functions**, **156795 code bytes**, and **30241 fuzzy-gap bytes**.
+Remaining exact-match debt is **38 functions**, **153591 code bytes**, and **30148 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -28,9 +28,9 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**40** non-exact scratch-backed functions hold **30241 fuzzy-gap bytes**. The top 5 hold **67.7%** of that gap; the top 10 hold **85.6%**.
+**38** non-exact scratch-backed functions hold **30148 fuzzy-gap bytes**. The top 5 hold **67.9%** of that gap; the top 10 hold **85.9%**.
 
-Current-baseline experiments cover **29 functions / 6700 gap bytes**; **11 / 23542** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **28 functions / 6679 gap bytes**; **10 / 23469** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels describe the present source assessment; they do not prove that compiler search is exhausted.
 
@@ -61,21 +61,19 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | 23 | crimsonland.exe | bonus_pick_random_type | 117 | semantic-complete | compiler | current-active | 3/8 | 2 | repeated-variants,repeated-specs,metric-tradeoffs |
 | 24 | crimsonland.exe | projectile_spawn | 113 | semantic-complete | compiler | current-stalled | 6/10 | 6 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
 | 25 | crimsonland.exe | creature_handle_death | 88 | semantic-complete | compiler | current-inconclusive | 8/16 | 1 | repeated-variants,repeated-specs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 26 | crimsonland.exe | perk_selection_screen_update | 73 | semantic-complete | compiler | historical-only | 0/8 | 0 | repeated-variants,metric-tradeoffs,variant-errors,historical-only |
-| 27 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | current-active | 1/20 | 1 | repeated-variants,metric-tradeoffs,variant-errors |
-| 28 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 5/14 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
-| 29 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | current-stalled | 3/19 | 3 | repeated-variants,repeated-specs,stalled,variant-errors |
-| 30 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 1/6 | 1 | variant-errors |
-| 31 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 2/7 | 2 | variant-errors |
-| 32 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 2/14 | 1 | metric-tradeoffs |
-| 33 | crimsonland.exe | credits_screen_update | 20 | semantic-complete | compiler | current-stalled | 8/27 | 5 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-probe-errors |
-| 34 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | current-active | 2/19 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 35 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-active | 1/16 | 1 | repeated-variants,variant-errors |
-| 36 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | current-active | 2/32 | 2 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors |
-| 37 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-stalled | 3/11 | 3 | stalled,variant-errors |
-| 38 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 5/30 | 4 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
-| 39 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | current-active | 1/24 | 1 | metric-tradeoffs |
-| 40 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | current-active | 1/9 | 1 | repeated-specs,metric-tradeoffs |
+| 26 | crimsonland.exe | demo_trial_overlay_render | 46 | semantic-complete | compiler | current-active | 1/20 | 1 | repeated-variants,metric-tradeoffs,variant-errors |
+| 27 | crimsonland.exe | creature_spawn | 38 | semantic-complete | compiler | current-inconclusive | 5/14 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors,audited-plan-errors,inconclusive-sweeps |
+| 28 | crimsonland.exe | ui_element_render | 38 | semantic-complete | compiler | current-stalled | 3/19 | 3 | repeated-variants,repeated-specs,stalled,variant-errors |
+| 29 | crimsonland.exe | survival_update | 38 | semantic-complete | compiler | current-active | 1/6 | 1 | variant-errors |
+| 30 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | current-active | 2/7 | 2 | variant-errors |
+| 31 | crimsonland.exe | sfx_entry_start_playback | 28 | semantic-complete | compiler | current-active | 2/14 | 1 | metric-tradeoffs |
+| 32 | crimsonland.exe | quest_build_spiders_inc | 16 | semantic-complete | compiler | current-stalled | 3/20 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
+| 33 | crimsonland.exe | player_fire_weapon | 12 | semantic-complete | compiler | current-active | 1/16 | 1 | repeated-variants,variant-errors |
+| 34 | crimsonland.exe | play_game_menu_update | 8 | semantic-complete | compiler | current-stalled | 3/33 | 3 | repeated-variants,repeated-specs,stalled,metric-tradeoffs,variant-errors |
+| 35 | crimsonland.exe | ui_cursor_render | 8 | semantic-complete | compiler | current-stalled | 3/11 | 3 | stalled,variant-errors |
+| 36 | crimsonland.exe | unlocked_perks_database_update | 4 | semantic-complete | compiler | current-stalled | 6/31 | 5 | repeated-variants,repeated-specs,stalled,metric-tradeoffs |
+| 37 | crimsonland.exe | unlocked_weapons_database_update | 4 | semantic-complete | compiler | current-active | 1/24 | 1 | metric-tradeoffs |
+| 38 | crimsonland.exe | perk_apply | 4 | semantic-complete | compiler | current-active | 2/10 | 2 | repeated-specs,metric-tradeoffs |
 
 ## Function dispositions
 
@@ -145,12 +143,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 631/671 | 164032/320827 | 51.1% | 290586/320827 | 90.6% | 671/671 | 320827/320827 | 100.0% | 631/671 |
+| crimsonland.exe | 633/671 | 167236/320827 | 52.1% | 290679/320827 | 90.6% | 671/671 | 320827/320827 | 100.0% | 633/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**631/671** functions (**94.0%**), **164032/320827** bytes (**51.1%**), **290586/320827** fuzzy-weighted bytes (**90.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **631/671** scratches verified.
+**633/671** functions (**94.3%**), **167236/320827** bytes (**52.1%**), **290679/320827** fuzzy-weighted bytes (**90.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **633/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -217,7 +215,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | ui_render_keybind_help | 0x00405160 | 1142 | 1142/1142 | 0 | 324/324 | 100.00% | 324/324 | 80/0/0 |  | pause-keybind-help-panel |
 | wip | perk_apply | 0x004055e0 | 885 | 881/885 | 4 | 241/241 | 99.59% | 193/241 | 75/0/0 |  | perk-immediate-effect-dispatch |
 | match | gameplay_render_world | 0x00405960 | 625 | 625/625 | 0 | 184/184 | 100.00% | 184/184 | 56/0/0 |  | gameplay-world-render-coordinator |
-| wip | perk_selection_screen_update | 0x00405be0 | 1347 | 1274/1347 | 73 | 314/314 | 94.59% | 15/314 | 119/0/0 |  | perk-choice-menu-and-selection-flow |
+| match | perk_selection_screen_update | 0x00405be0 | 1347 | 1347/1347 | 0 | 314/314 | 100.00% | 314/314 | 119/0/0 |  | perk-choice-menu-and-selection-flow |
 | match | perk_selection_select_button_destroy | 0x00406130 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-select-button-empty-destructor |
 | match | perk_selection_cancel_button_destroy | 0x00406140 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-cancel-button-empty-destructor |
 | match | perk_selection_choice_items_destroy | 0x00406150 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-choice-array-empty-destructor |
@@ -259,7 +257,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | credits_line_set | 0x0040d000 | 64 | 64/64 | 0 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
 | match | credits_line_clear_flag | 0x0040d040 | 66 | 66/66 | 0 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | credits-secret-penalty |
 | match | credits_build_lines | 0x0040d090 | 1897 | 1897/1897 | 0 | 544/544 | 100.00% | 544/544 | 261/0/0 |  | credits-line-table-population |
-| wip | credits_screen_update | 0x0040d800 | 1857 | 1837/1857 | 20 | 454/454 | 98.90% | 48/454 | 175/0/0 |  | credits-scroll-and-secret-puzzle |
+| match | credits_screen_update | 0x0040d800 | 1857 | 1857/1857 | 0 | 454/454 | 100.00% | 454/454 | 176/0/0 |  | credits-scroll-and-secret-puzzle |
 | match | credits_secret_button_destroy | 0x0040df50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | credits-secret-button-empty-destructor |
 | match | credits_back_button_destroy | 0x0040df60 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | credits-back-button-empty-destructor |
 | match | crimson_crt_empty_initializer_slot_05_thunk | 0x0040df70 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-05-thunk |
