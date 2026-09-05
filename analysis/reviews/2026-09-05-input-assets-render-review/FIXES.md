@@ -11,7 +11,7 @@
 - `52dc640e8` — roll back partial runtime texture loads, including texture-setting
   failures. GPU-upload failures release the CPU image. Font widths are validated
   before GPU allocation. Resource ownership transfers only after loading succeeds.
-- Rendering — remove `WorldRenderer`, its viewport cache and synchronization calls,
+- `b4309e125` — remove `WorldRenderer`, its viewport cache and synchronization calls,
   the unused context back-reference, per-projectile context cloning, duplicate
   projection fields, and forwarding helpers. `ViewTransform` captures a draw's
   geometry; runtime coordinate conversions derive it from current camera and window
@@ -38,5 +38,17 @@
 Run the trace with `uv run --no-sync python analysis/reviews/2026-09-05-input-assets-render-review/render_trace.py`.
 For the baseline, extract `git archive 52dc640e8 src` into a temporary directory
 and set `PYTHONPATH` to its `src` directory when running the same script.
+
+## Final repository gate
+
+`UV_CACHE_DIR=/private/tmp/crimson-uv-cache ZIG_GLOBAL_CACHE_DIR=/private/tmp/crimson-review-zig-cache just check` passed:
+
+- 2,654 Python tests passed, 10 skipped; 135 snapshots passed.
+- 652 Zig tests passed; ReleaseFast and WASM builds passed.
+- Ruff, import boundaries, types, docs, structural rules and their fixtures passed.
+- Matching experiment validation, native artifact verification, and matching
+  regressions passed. These check repository evidence rather than executing a
+  fresh original-game capture.
+- `uv build` produced the source distribution and wheel successfully.
 
 No fresh original-game capture or interactive visual playtest was performed.
