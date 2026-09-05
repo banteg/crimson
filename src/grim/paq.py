@@ -12,9 +12,10 @@ File layout:
 """
 
 from collections.abc import Iterable, Iterator
+from io import BytesIO
 from pathlib import Path
 
-from construct import Bytes, Const, CString, GreedyRange, Int32ul, Struct
+from construct import Bytes, Const, ConstructError, CString, GreedyRange, Int32ul, Struct, Terminated
 
 MAGIC = b"paq\x00"
 
@@ -28,11 +29,16 @@ PAQ_ENTRY = Struct(
 PAQ = Struct(
     "magic" / Const(MAGIC),
     "entries" / GreedyRange(PAQ_ENTRY),
+    Terminated,
 )
 
 
 def iter_entries_bytes(data: bytes) -> Iterator[tuple[str, bytes]]:
-    parsed = PAQ.parse(data)
+    stream = BytesIO(data)
+    try:
+        parsed = PAQ.parse_stream(stream)
+    except ConstructError as exc:
+        raise ValueError(f"Invalid PAQ archive at offset {stream.tell()}: {exc}") from exc
     for entry in parsed.entries:
         yield entry.name, entry.payload
 
