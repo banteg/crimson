@@ -8,6 +8,8 @@ from typing import cast
 import msgspec
 import zstandard as zstd
 
+from grim.atomic_write import atomic_write_bytes
+
 from ..bonuses import BonusId
 from ..creatures.runtime import CreatureDeath
 from ..game_modes import GameMode
@@ -620,7 +622,7 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
 
 
 def dump_checkpoints_file(path: Path, checkpoints: ReplayCheckpoints) -> None:
-    Path(path).write_bytes(dump_checkpoints(checkpoints))
+    atomic_write_bytes(Path(path), dump_checkpoints(checkpoints))
 
 
 def load_checkpoints_file(path: Path) -> ReplayCheckpoints:

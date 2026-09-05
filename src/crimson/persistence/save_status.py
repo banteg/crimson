@@ -6,6 +6,8 @@ from typing import Annotated, Final
 import msgspec
 from construct import Array, Bytes, Int16ul, Int32ul, Struct
 
+from grim.atomic_write import atomic_write_bytes
+
 from ..game_modes import GameMode
 from ..weapon_usage import (
     WEAPON_USAGE_SLOT_COUNT,
@@ -305,7 +307,7 @@ def save_status(path: Path, status: GameStatusData | GameStatus) -> None:
     decoded = build_status_blob(status.as_data() if isinstance(status, GameStatus) else status)
     checksum = compute_checksum(decoded)
     encoded = encode_blob(decoded)
-    path.write_bytes(GAME_CFG_STRUCT.build({"encoded": encoded, "checksum": checksum}))
+    atomic_write_bytes(path, GAME_CFG_STRUCT.build({"encoded": encoded, "checksum": checksum}))
 
 
 def ensure_game_status(base_dir: Path) -> GameStatus:

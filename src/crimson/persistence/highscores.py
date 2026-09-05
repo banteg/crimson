@@ -7,6 +7,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.quests.level import QuestLevel
+from grim.atomic_write import atomic_write_bytes
 from grim.config import CrimsonConfig
 from grim.rand import Crand, CrandLike
 
@@ -410,15 +411,16 @@ def read_highscore_records(path: Path) -> list[HighScoreRecord]:
 
 def write_highscore_records(path: Path, records: list[HighScoreRecord]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("wb") as fp:
-        for record in records:
-            record = record.copy()
-            record.trim_trailing_spaces()
-            record.ensure_date_fields()
-            encoded = encode_record_payload(bytes(record.data))
-            checksum = _score_checksum(bytes(record.data))
-            fp.write(encoded)
-            fp.write(struct.pack("<I", checksum))
+    payload = bytearray()
+    for record in records:
+        record = record.copy()
+        record.trim_trailing_spaces()
+        record.ensure_date_fields()
+        encoded = encode_record_payload(bytes(record.data))
+        checksum = _score_checksum(bytes(record.data))
+        payload.extend(encoded)
+        payload.extend(struct.pack("<I", checksum))
+    atomic_write_bytes(path, bytes(payload))
 
 
 def read_highscore_table(path: Path, *, game_mode_id: GameMode) -> list[HighScoreRecord]:

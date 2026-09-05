@@ -8,6 +8,8 @@ from typing import cast
 import msgspec
 import zstandard as zstd
 
+from grim.atomic_write import atomic_write_bytes
+
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..persistence.save_status import GameStatusData
@@ -692,7 +694,7 @@ def load_replay(data: bytes) -> Replay:
 
 def dump_replay_file(path: Path, replay: Replay) -> None:
     path = Path(path)
-    path.write_bytes(dump_replay(replay))
+    atomic_write_bytes(path, dump_replay(replay))
 
 
 def load_replay_file(path: Path) -> Replay:

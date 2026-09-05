@@ -13,6 +13,8 @@ from crimson.game_modes import GameMode
 from crimson.movement_controls import MovementControlType
 from crimson.quests.level import QuestLevel
 
+from .atomic_write import atomic_write_bytes
+
 CRIMSON_CFG_NAME = "crimson.cfg"
 CRIMSON_CFG_SIZE = 0x480
 PLAYER_NAME_SIZE = 0x20
@@ -262,7 +264,7 @@ class CrimsonConfig(msgspec.Struct):
     controls: CrimsonControlsConfig
 
     def save(self) -> None:
-        self.path.write_bytes(encode_crimson_cfg(self))
+        atomic_write_bytes(self.path, encode_crimson_cfg(self))
 
 
 def _player_index(player_index: int) -> int:
