@@ -14,54 +14,11 @@ from .constants import _RAD_TO_DEG
 
 if TYPE_CHECKING:
     from ..frame import RenderFrame
-    from .renderer import WorldRenderer
 
 
-class WorldRenderCtx(msgspec.Struct):
-    renderer: WorldRenderer
+class WorldRenderCtx(msgspec.Struct, frozen=True):
     frame: RenderFrame
-    projection_camera: Vec2 | None = None
-    projection_view_scale: Vec2 | None = None
-
-    def _camera_screen_size(
-        self,
-        *,
-        runtime_w: float | None = None,
-        runtime_h: float | None = None,
-    ) -> Vec2:
-        out_w = runtime_w if runtime_w is not None else float(rl.get_screen_width())
-        out_h = runtime_h if runtime_h is not None else float(rl.get_screen_height())
-        return viewport.camera_screen_size(
-            world_size=self.frame.world_size,
-            config=self.frame.config,
-            runtime_w=out_w,
-            runtime_h=out_h,
-        )
-
-    def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
-        return viewport.clamp_camera(
-            world_size=self.frame.world_size,
-            camera=camera,
-            screen_size=screen_size,
-        )
-
-    def _world_params(self) -> tuple[Vec2, Vec2]:
-        out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
-        camera, view_scale, _screen_size = viewport.view_transform(
-            world_size=self.frame.world_size,
-            config=self.frame.config,
-            camera=self.frame.camera,
-            out_size=out_size,
-        )
-        return camera, view_scale
-
-    @staticmethod
-    def _world_to_screen_with(pos: Vec2, *, camera: Vec2, view_scale: Vec2) -> Vec2:
-        return viewport.world_to_screen_with(pos, camera=camera, view_scale=view_scale)
-
-    @staticmethod
-    def _view_scale_avg(view_scale: Vec2) -> float:
-        return viewport.view_scale_avg(view_scale)
+    view: viewport.ViewTransform
 
     def _draw_atlas_sprite(
         self,
@@ -87,73 +44,18 @@ class WorldRenderCtx(msgspec.Struct):
         origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
-    def with_projection(self, *, camera: Vec2, view_scale: Vec2) -> WorldRenderCtx:
-        return WorldRenderCtx(
-            renderer=self.renderer,
-            frame=self.frame,
-            projection_camera=camera,
-            projection_view_scale=view_scale,
-        )
-
-    @staticmethod
-    def _is_bullet_trail_type(type_id: int) -> bool:
-        return _is_bullet_trail_type(type_id)
-
-    @staticmethod
-    def _bullet_sprite_size(type_id: int, *, scale: float) -> float:
-        return _bullet_sprite_size(type_id, scale=scale)
-
-    def _draw_bullet_trail(
-        self,
-        start: Vec2,
-        end: Vec2,
-        *,
-        type_id: int,
-        alpha: int,
-        scale: float,
-        angle: float,
-    ) -> bool:
-        return _draw_bullet_trail(
-            self,
-            start,
-            end,
-            type_id=type_id,
-            alpha=alpha,
-            scale=scale,
-            angle=angle,
-        )
-
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        camera = self.projection_camera
-        view_scale = self.projection_view_scale
-        if camera is None or view_scale is None:
-            camera, view_scale = self._world_params()
-        return self._world_to_screen_with(pos, camera=camera, view_scale=view_scale)
+        return self.view.world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        camera = self.projection_camera
-        view_scale = self.projection_view_scale
-        if camera is None or view_scale is None:
-            camera, view_scale = self._world_params()
-        return viewport.screen_to_world_with(pos, camera=camera, view_scale=view_scale)
+        return self.view.screen_to_world(pos)
 
 
-def build_world_render_ctx(
-    renderer: WorldRenderer,
-    *,
-    render_frame: RenderFrame,
-) -> WorldRenderCtx:
-    return WorldRenderCtx(
-        renderer=renderer,
-        frame=render_frame,
-    )
-
-
-def _is_bullet_trail_type(type_id: int) -> bool:
+def is_bullet_trail_type(type_id: int) -> bool:
     return 0 <= type_id < 8 or type_id == ProjectileTemplateId.SPLITTER_GUN
 
 
-def _bullet_sprite_size(type_id: int, *, scale: float) -> float:
+def bullet_sprite_size(type_id: int, *, scale: float) -> float:
     base = 4.0
     if type_id == ProjectileTemplateId.ASSAULT_RIFLE:
         base = 6.0
@@ -162,7 +64,7 @@ def _bullet_sprite_size(type_id: int, *, scale: float) -> float:
     return max(2.0, base * scale)
 
 
-def _draw_bullet_trail(
+def draw_bullet_trail_quad(
     render_ctx: WorldRenderCtx,
     start: Vec2,
     end: Vec2,

@@ -60,7 +60,7 @@ Notes:
 ### Rewrite
 
 - Shot cooldown and spread behavior: `src/crimson/gameplay.py`: `player_fire_weapon()`, `player_update()`.
-- Laser rendering: `src/crimson/render/world_renderer.py`: `_draw_sharpshooter_laser_sight()`.
+- Laser rendering: `src/crimson/render/world/draw.py`: `_draw_sharpshooter_laser_sight()`.
 
 ## 3. Fastloader (`PerkId.FASTLOADER`)
 
@@ -195,7 +195,7 @@ Notes:
 ### Rewrite
 
 - Gameplay: `src/crimson/creatures/runtime.py`: `CreaturePool.update()` (Radioactive tick and kill handling).
-- Rendering: `src/crimson/render/world_renderer.py`: player aura in `_draw_player_trooper_sprite()`.
+- Rendering: `src/crimson/render/world/draw.py`: player aura in `_draw_player_trooper_sprite()`.
 
 ## 14. Fastshot (`PerkId.FASTSHOT`)
 
@@ -337,7 +337,7 @@ Notes:
 
 - Poison flagging: `src/crimson/projectiles.py`: `ProjectilePool.update()` hit logic.
 - Poison tick: `src/crimson/creatures/runtime.py`: `CreaturePool.update()` routes self-damage through `creature_apply_damage()`.
-- Aura render: `src/crimson/render/world_renderer.py`: creature overlay in `WorldRenderer.draw()`.
+- Aura render: `src/crimson/render/world/draw.py`: creature overlay in `draw_world()`.
 - Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()` hardcore quest gate.
 
 ## 26. Dodger (`PerkId.DODGER`)
@@ -394,7 +394,7 @@ Notes:
 
 - Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`.
 - Perk selection: `src/crimson/perks/selection.py`: `perk_generate_choices()`.
-- Rendering: `src/crimson/render/world_renderer.py`: `WorldRenderer.draw()` (Monster Vision overlay and shadow gating).
+- Rendering: `src/crimson/render/world/draw.py`: `draw_world()` (Monster Vision overlay and shadow gating).
 
 ## 31. Hot Tempered (`PerkId.HOT_TEMPERED`)
 

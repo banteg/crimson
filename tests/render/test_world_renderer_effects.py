@@ -9,9 +9,9 @@ from crimson.effects import EffectEntry
 from crimson.effects_atlas import EffectId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
-from crimson.render.world import WorldRenderer
-from crimson.render.world.context import build_world_render_ctx
+from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.effects import draw_effect_pool
+from crimson.render.world.viewport import view_transform
 from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -98,8 +98,12 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
     ]
     world = _WorldStub(entries)
     frame = world.build_render_frame()
-    renderer = WorldRenderer(world_size=frame.world_size, config=frame.config, camera=frame.camera)
-    render_ctx = build_world_render_ctx(renderer, render_frame=frame)
+    render_ctx = WorldRenderCtx(
+        frame=frame,
+        view=view_transform(
+            world_size=frame.world_size, config=frame.config, camera=frame.camera, out_size=Vec2(1024, 1024),
+        ),
+    )
 
     draw_effect_pool(
         render_ctx,

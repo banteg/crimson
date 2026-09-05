@@ -26,68 +26,40 @@ the main debug views.
 
 ```mermaid
 flowchart LR
-    A["Gameplay mode / Demo / Replay / Debug view"] --> B["render_resources.bake_fx_queues()"]
-    B --> C["world.build_render_frame()"]
-    C --> D["renderer.draw(render_frame=...)"]
-    D --> E["build_world_render_ctx(renderer, render_frame)"]
-    E --> F["draw_world(render_ctx, ...)"]
+    A["Gameplay / Demo / Replay / Debug"] --> B["WorldRuntime.draw()"]
+    B --> C["RenderFrame + ViewTransform"]
+    C --> D["WorldRenderCtx"]
+    D --> E["draw_world()"]
 ```
 
-Important detail:
-
-- decal baking happens outside `WorldRenderer`
-- `WorldRenderer` assumes the caller already baked pending FX into terrain
-- the frame passed into `draw()` already carries concrete `RuntimeResources`
+Terrain FX are baked before drawing. `RenderFrame` carries concrete resources
+and references to the current world; it does not copy simulation state.
 
 ## Runtime object graph
 
-```mermaid
-flowchart TD
-    WR["WorldRuntime"] --> RR["RenderResources"]
-    WR --> R["WorldRenderer"]
-    RR --> RF["RenderFrame"]
-    RF --> RC["WorldRenderCtx"]
-    R --> RC
-    RC --> DW["draw_world()"]
+- `WorldRuntime` owns the camera and world size. Coordinate conversion derives
+  a transform directly from those values and the current window dimensions.
+- `RenderResources` owns the ground render target and pending terrain FX batches,
+  borrows the application textures, and builds `RenderFrame`.
+- `ViewTransform` contains the clamped camera, view scale, logical screen size,
+  and output size. A draw computes it once and passes it through every pass.
+- `WorldRenderCtx` combines the frame and its transform. It has no back-reference
+  to a mutable renderer or per-projectile projection overrides.
+- `WorldDrawContext` contains pass-specific textures, alpha, and overlay flags;
+  projection data lives only in `ViewTransform`.
 
-    RR --> G["GroundRenderer"]
-    RR --> FX["FxQueue / FxQueueRotated"]
-    RR --> RES["RuntimeResources"]
-
-    RC --> VP["viewport.py"]
-    R --> VP
-    WR --> VP
-```
-
-Responsibilities:
-
-- `WorldRuntime`
-  - owns camera state, live world state, and the render/audio/terrain adapters
-- `RenderResources`
-  - binds the session-wide `RuntimeResources`
-  - owns mutable render-side state: `GroundRenderer`, FX queues, baked FX textures
-  - builds `RenderFrame`
-- `RenderFrame`
-  - per-frame snapshot of world references and concrete resources
-  - lightweight: it carries references, not deep copies
-- `WorldRenderer`
-  - owns current viewport inputs (`world_size`, `config`, `camera`)
-  - exposes helper transforms like `world_to_screen()`
-  - orchestrates `build_world_render_ctx()` and `draw_world()`
-- `WorldRenderCtx`
-  - draw-time context passed down the render tree
-  - combines frame data, resources, and projection-aware helpers
+Input coordinate conversion sees camera changes and window resizes immediately.
+An already prepared draw retains its captured transform.
 
 ## Pre-draw terrain and FX bake
 
 Before any world draw, callers run:
 
-- `RenderResources.bake_fx_queues()`
+- `RenderResources.consume_terrain_fx_batch()` and `process_ground_pending()`
 
 That step consumes:
 
-- `fx_queue`
-- `fx_queue_rotated`
+- `TerrainFxBatch`
 - `fx_textures`
 - `GroundRenderer`
 
@@ -96,9 +68,9 @@ render target.
 
 ```mermaid
 flowchart LR
-    A["Simulation / presentation outputs"] --> B["FxQueue + FxQueueRotated"]
-    B --> C["RenderResources.bake_fx_queues()"]
-    C --> D["bake_fx_queues(...)"]
+    A["Simulation / presentation outputs"] --> B["TerrainFxBatch"]
+    B --> C["consume_terrain_fx_batch()"]
+    C --> D["bake_terrain_fx_batch(...)"]
     D --> E["GroundRenderer render target"]
     E --> F["draw_background()"]
 ```
@@ -113,7 +85,7 @@ most decal-like work has already been folded into the ground texture.
 - world geometry: `world_size`, `camera`, `ground`
 - gameplay state: `state`, `players`, `creatures`
 - resources: concrete `RuntimeResources`
-- presentation toggles: elapsed time, bonus animation phase, LAN aim/ring flags
+- presentation toggles: elapsed time and bonus animation phase
 - render mode: `rtx_mode`
 
 `RenderFrame` is the contract between the live runtime and the render tree.
@@ -125,8 +97,7 @@ The main world pass lives in `draw_world()` in `src/crimson/render/world/draw.py
 
 ```mermaid
 flowchart TD
-    A["draw_world()"] --> B["compute_view_transform()"]
-    B --> C["draw_background()"]
+    A["draw_world(ctx with prepared transform)"] --> C["draw_background()"]
     C --> D{"entity_alpha > 0?"}
     D -- "no" --> Z["return"]
     D -- "yes" --> E["build_draw_context()"]
@@ -252,14 +223,14 @@ flowchart LR
     A["world_size + config + camera + framebuffer size"] --> B["camera_screen_size()"]
     B --> C["clamp_camera()"]
     C --> D["view_transform()"]
-    D --> E["camera + view_scale + screen_size"]
+    D --> E["ViewTransform"]
     E --> F["world_to_screen_with() / screen_to_world_with()"]
 ```
 
 Three places use the same math:
 
 - `WorldRuntime.update_camera()`
-- `WorldRenderer` helper transforms
+- `WorldRuntime` input coordinate conversions
 - `WorldRenderCtx` draw-time transforms
 
 That keeps pre-draw camera updates and live rendering on one consistent set of

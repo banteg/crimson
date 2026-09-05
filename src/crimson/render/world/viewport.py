@@ -6,10 +6,21 @@ from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
 
-class WorldViewportState(msgspec.Struct, frozen=True):
-    world_size: float
-    config: CrimsonConfig | None
+class ViewTransform(msgspec.Struct, frozen=True):
     camera: Vec2
+    view_scale: Vec2
+    screen_size: Vec2
+    out_size: Vec2
+
+    @property
+    def scale(self) -> float:
+        return view_scale_avg(self.view_scale)
+
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        return world_to_screen_with(pos, camera=self.camera, view_scale=self.view_scale)
+
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        return screen_to_world_with(pos, camera=self.camera, view_scale=self.view_scale)
 
 
 def camera_screen_size(
@@ -61,7 +72,7 @@ def view_transform(
     config: CrimsonConfig | None,
     camera: Vec2,
     out_size: Vec2,
-) -> tuple[Vec2, Vec2, Vec2]:
+) -> ViewTransform:
     screen_size = camera_screen_size(
         world_size=world_size,
         config=config,
@@ -71,7 +82,7 @@ def view_transform(
     clamped_camera = clamp_camera(world_size=world_size, camera=camera, screen_size=screen_size)
     scale_x = out_size.x / screen_size.x if screen_size.x > 0.0 else 1.0
     scale_y = out_size.y / screen_size.y if screen_size.y > 0.0 else 1.0
-    return clamped_camera, Vec2(scale_x, scale_y), screen_size
+    return ViewTransform(clamped_camera, Vec2(scale_x, scale_y), screen_size, out_size)
 
 
 def world_to_screen_with(pos: Vec2, *, camera: Vec2, view_scale: Vec2) -> Vec2:

@@ -10,6 +10,7 @@ from grim.raylib_api import rl
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
+from . import viewport
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -31,7 +32,7 @@ def draw_particle_pool(
     if not any(entry.active for entry in particles):
         return
 
-    scale = render_ctx._view_scale_avg(view_scale)
+    scale = viewport.view_scale_avg(view_scale)
 
     def src_rect(effect_id: int) -> rl.Rectangle | None:
         atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
@@ -73,7 +74,7 @@ def draw_particle_pool(
             size = max(0.0, radius * 2.0 * scale)
             if size <= 0.0:
                 continue
-            screen = render_ctx._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+            screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
@@ -88,7 +89,7 @@ def draw_particle_pool(
         size = max(0.0, radius * 2.0 * scale)
         if size <= 0.0:
             continue
-        screen = render_ctx._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+        screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(entry.spin) * _RAD_TO_DEG
@@ -106,7 +107,7 @@ def draw_particle_pool(
         h = max(0.0, half_h * 2.0 * scale)
         if w <= 0.0 or h <= 0.0:
             continue
-        screen = render_ctx._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+        screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
         tint = rl.Color(255, 255, 255, int(float(entry.age) * alpha_byte + 0.5))
@@ -146,7 +147,7 @@ def draw_sprite_effect_pool(
     cell_w = float(texture.width) / float(grid)
     cell_h = float(texture.height) / float(grid)
     src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
-    scale = render_ctx._view_scale_avg(view_scale)
+    scale = viewport.view_scale_avg(view_scale)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
     for entry in effects:
@@ -155,7 +156,7 @@ def draw_sprite_effect_pool(
         size = float(entry.scale) * scale
         if size <= 0.0:
             continue
-        screen = render_ctx._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+        screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
@@ -181,7 +182,7 @@ def draw_effect_pool(
     if not any(entry.flags and entry.age >= 0.0 for entry in effects):
         return
 
-    scale = render_ctx._view_scale_avg(view_scale)
+    scale = viewport.view_scale_avg(view_scale)
 
     src_cache: dict[int, rl.Rectangle] = {}
 
@@ -217,7 +218,7 @@ def draw_effect_pool(
         if src is None:
             return
 
-        screen = render_ctx._world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
+        screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
 
         half_w = float(entry.half_width)
         half_h = float(entry.half_height)

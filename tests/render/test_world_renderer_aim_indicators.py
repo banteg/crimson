@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, cast
 
 import crimson.render.world.draw as world_draw_module
 from crimson.render.world import WorldDrawContext
-from crimson.render.world.context import build_world_render_ctx
+from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
 from crimson.sim.state_types import PlayerState
 from grim.assets import RuntimeResources, TextureId
@@ -56,8 +56,7 @@ def _x_from_call_arg(call, *, key: str, arg_index: int) -> float:
 
 def test_aim_indicators_draw_all_local_players(mocker) -> None:
     world = _make_world(players=_make_players())
-    renderer = world.renderer
-    render_ctx = build_world_render_ctx(renderer, render_frame=world.build_render_frame())
+    render_ctx = WorldRenderCtx(frame=world.build_render_frame(), view=world.view_transform())
     ctx = _draw_ctx()
     draw_aim_cursor = mocker.patch.object(world_draw_module, "draw_aim_cursor")
     draw_aim_circle = mocker.Mock()

@@ -154,11 +154,7 @@ class DemoView:
         return int(self._runtime.sim_world.state.rng.state)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._runtime.renderer.draw(
-            render_frame=self._runtime.build_render_frame(),
-            draw_aim_indicators=draw_aim_indicators,
-            entity_alpha=entity_alpha,
-        )
+        self._runtime.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
 
     def open(self) -> None:
         self._finished = False

@@ -94,12 +94,6 @@ class WorldRuntimeHost(WorldRuntime):
             seed=int(seed),
         )
 
-    def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self.renderer.world_to_screen(pos)
-
-    def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self.renderer.screen_to_world(pos)
-
     def step_survival_frame(
         self,
         dt: float,

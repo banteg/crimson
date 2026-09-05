@@ -4,6 +4,7 @@ from grim.assets import TextureId
 from grim.math import clamp
 from grim.raylib_api import rl
 
+from ..world.context import bullet_sprite_size, draw_bullet_trail_quad, is_bullet_trail_type
 from .common import RAD_TO_DEG, proj_origin
 from .types import ProjectileDrawCtx
 
@@ -12,7 +13,7 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
     resources = renderer.frame.resources
     type_id = int(ctx.type_id)
-    if not renderer._is_bullet_trail_type(type_id):
+    if not is_bullet_trail_type(type_id):
         return False
 
     life_alpha = int(clamp(float(ctx.life), 0.0, 1.0) * 255.0)
@@ -23,7 +24,8 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     if bullet_trail is not None:
         origin = proj_origin(ctx.proj, ctx.pos)
         origin_screen = renderer.world_to_screen(origin)
-        drawn = renderer._draw_bullet_trail(
+        drawn = draw_bullet_trail_quad(
+            renderer,
             origin_screen,
             ctx.screen_pos,
             type_id=type_id,
@@ -34,7 +36,7 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
 
     bullet = resources.texture(TextureId.BULLET_I)
     if bullet is not None and float(ctx.life) >= 0.39:
-        size = renderer._bullet_sprite_size(type_id, scale=ctx.scale)
+        size = bullet_sprite_size(type_id, scale=ctx.scale)
         src = rl.Rectangle(0.0, 0.0, float(bullet.width), float(bullet.height))
         dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, float(size), float(size))
         origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)

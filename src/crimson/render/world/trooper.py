@@ -12,6 +12,7 @@ from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, Effect
 from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...weapons import WEAPON_BY_ID
+from . import viewport
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -46,7 +47,7 @@ def draw_player_trooper_sprite(
     if cell <= 0.0:
         return
 
-    screen_pos = render_ctx._world_to_screen_with(player.pos, camera=camera, view_scale=view_scale)
+    screen_pos = viewport.world_to_screen_with(player.pos, camera=camera, view_scale=view_scale)
     base_size = float(player.size) * scale
     base_scale = base_size / cell
 

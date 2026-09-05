@@ -137,17 +137,13 @@ class ArsenalDebugView:
         return self._runtime.render_resources.resources.texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._runtime.renderer.draw(
-            render_frame=self._runtime.build_render_frame(),
-            draw_aim_indicators=draw_aim_indicators,
-            entity_alpha=entity_alpha,
-        )
+        self._runtime.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self._runtime.renderer.world_to_screen(pos)
+        return self._runtime.world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self._runtime.renderer.screen_to_world(pos)
+        return self._runtime.screen_to_world(pos)
 
     def _apply_debug_player_cheats(self) -> None:
         player = self._player

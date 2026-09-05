@@ -17,6 +17,7 @@ from ..projectile_draw import (
     draw_secondary_projectile_from_registry,
 )
 from ..projectile_render_registry import known_proj_rgb
+from . import viewport
 from .context import WorldRenderCtx
 
 if TYPE_CHECKING:
@@ -28,25 +29,22 @@ def draw_projectile(
     proj: Projectile,
     *,
     proj_index: int = 0,
-    camera: Vec2,
-    view_scale: Vec2,
-    scale: float,
     alpha: float = 1.0,
 ) -> None:
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
 
-    projectile_render_ctx = render_ctx.with_projection(camera=camera, view_scale=view_scale)
-    texture = projectile_render_ctx.frame.resources.texture(TextureId.PROJS)
+    scale = render_ctx.view.scale
+    texture = render_ctx.frame.resources.texture(TextureId.PROJS)
     type_id = proj.type_id
     proj_pos = proj.pos
-    screen = projectile_render_ctx.world_to_screen(proj_pos)
+    screen = render_ctx.world_to_screen(proj_pos)
     life = float(proj.life_timer)
     angle = float(proj.angle)
 
     registry_ctx = ProjectileDrawCtx(
-        renderer=projectile_render_ctx,
+        renderer=render_ctx,
         proj=proj,
         proj_index=int(proj_index),
         texture=texture,
@@ -76,34 +74,6 @@ def draw_projectile(
         scale=0.6 * scale,
         rotation_rad=angle,
         tint=tint,
-    )
-
-
-def is_bullet_trail_type(type_id: int) -> bool:
-    return WorldRenderCtx._is_bullet_trail_type(type_id)
-
-
-def bullet_sprite_size(type_id: int, *, scale: float) -> float:
-    return WorldRenderCtx._bullet_sprite_size(type_id, scale=scale)
-
-
-def draw_bullet_trail(
-    render_ctx: WorldRenderCtx,
-    start: Vec2,
-    end: Vec2,
-    *,
-    type_id: int,
-    alpha: int,
-    scale: float,
-    angle: float,
-) -> bool:
-    return render_ctx._draw_bullet_trail(
-        start,
-        end,
-        type_id=type_id,
-        alpha=alpha,
-        scale=scale,
-        angle=angle,
     )
 
 
@@ -147,8 +117,8 @@ def draw_sharpshooter_laser_sight(
         start = player_pos + aim_dir * 15.0
         end = player_pos + aim_dir * 512.0
 
-        start_screen = render_ctx._world_to_screen_with(start, camera=camera, view_scale=view_scale)
-        end_screen = render_ctx._world_to_screen_with(end, camera=camera, view_scale=view_scale)
+        start_screen = viewport.world_to_screen_with(start, camera=camera, view_scale=view_scale)
+        end_screen = viewport.world_to_screen_with(end, camera=camera, view_scale=view_scale)
         segment = end_screen - start_screen
         direction, dist = segment.normalized_with_length()
         if dist <= 1e-3:
@@ -184,23 +154,20 @@ def draw_secondary_projectile(
     render_ctx: WorldRenderCtx,
     proj: SecondaryProjectile,
     *,
-    camera: Vec2,
-    view_scale: Vec2,
-    scale: float,
     alpha: float = 1.0,
 ) -> None:
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
 
-    projectile_render_ctx = render_ctx.with_projection(camera=camera, view_scale=view_scale)
+    scale = render_ctx.view.scale
     proj_pos = proj.pos
-    screen = projectile_render_ctx.world_to_screen(proj_pos)
+    screen = render_ctx.world_to_screen(proj_pos)
     proj_type = proj.type_id
     angle = float(proj.angle)
 
     registry_ctx = SecondaryProjectileDrawCtx(
-        renderer=projectile_render_ctx,
+        renderer=render_ctx,
         proj=proj,
         proj_type=proj_type,
         screen_pos=screen,

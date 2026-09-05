@@ -11,9 +11,9 @@ import crimson.render.world.draw as world_draw
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
-from crimson.render.world.context import build_world_render_ctx
+from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.draw import WorldDrawContext
-from crimson.render.world.renderer import WorldRenderer
+from crimson.render.world.viewport import view_transform
 from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_state
@@ -45,8 +45,12 @@ def _render_ctx_for_creatures(creatures: Sequence[object]):
         bonus_anim_phase=0.0,
         rtx_mode=RtxRenderMode.CLASSIC,
     )
-    renderer = WorldRenderer(world_size=frame.world_size, config=frame.config, camera=frame.camera)
-    return build_world_render_ctx(renderer, render_frame=frame)
+    return WorldRenderCtx(
+        frame=frame,
+        view=view_transform(
+            world_size=frame.world_size, config=frame.config, camera=frame.camera, out_size=Vec2(1024, 1024),
+        ),
+    )
 
 
 def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) -> None:
@@ -78,7 +82,7 @@ def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) ->
 
     world_draw.draw_creatures(
         render_ctx,
-        ctx=WorldDrawContext(camera=Vec2(), view_scale=Vec2(1.0, 1.0), scale=1.0, entity_alpha=1.0),
+        ctx=WorldDrawContext(entity_alpha=1.0),
     )
 
     assert call_order == [

@@ -1304,17 +1304,13 @@ class LightingDebugView:
         return self._runtime.render_resources.resources.texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._runtime.renderer.draw(
-            render_frame=self._runtime.build_render_frame(),
-            draw_aim_indicators=draw_aim_indicators,
-            entity_alpha=entity_alpha,
-        )
+        self._runtime.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self._runtime.renderer.world_to_screen(pos)
+        return self._runtime.world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self._runtime.renderer.screen_to_world(pos)
+        return self._runtime.screen_to_world(pos)
 
     @staticmethod
     def _autodiag_config_from_env() -> tuple[bool, int]:
@@ -2660,7 +2656,8 @@ class LightingDebugView:
         uniforms = self._shadow_uniforms
         shader = self._shadow_shader
 
-        camera, view_scale = self._runtime.renderer._world_params()
+        view = self._runtime.view_transform()
+        camera, view_scale = view.camera, view.view_scale
         rt_w, rt_h = self._shadow_rt_size
         screen_w = max(1.0, float(rl.get_screen_width()))
         screen_h = max(1.0, float(rl.get_screen_height()))
@@ -2953,8 +2950,7 @@ class LightingDebugView:
             update_audio(self._audio, sim_dt)
 
     def _world_scale(self) -> float:
-        _camera, view_scale = self._runtime.renderer._world_params()
-        return view_scale.avg_component()
+        return self._runtime.view_transform().scale
 
     def _draw_shadow_debug_geometry(self) -> None:
         scale = self._world_scale()

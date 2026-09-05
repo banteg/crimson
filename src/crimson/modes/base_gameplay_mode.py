@@ -167,7 +167,7 @@ class BaseGameplayMode:
         self.render_resources = self._world_runtime.render_resources
         self.audio_bridge = self._world_runtime.audio_bridge
         self.terrain_runtime = self._world_runtime.terrain_runtime
-        self.renderer = self._world_runtime.renderer
+
         self.camera = Vec2(-1.0, -1.0)
         self._sync_world_runtime_config()
         player_count = self._runtime_player_count()
@@ -242,10 +242,10 @@ class BaseGameplayMode:
         )
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self.renderer.world_to_screen(pos)
+        return self._world_runtime.world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self.renderer.screen_to_world(pos)
+        return self._world_runtime.screen_to_world(pos)
 
     def _cvar_float(self, name: str, default: float = 0.0) -> float:
         console = self._console

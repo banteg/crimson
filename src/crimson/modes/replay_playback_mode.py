@@ -580,7 +580,7 @@ class ReplayPlaybackMode:
         draw_typo_name_labels(
             creatures=runtime.sim_world.creatures.entries,
             names=runtime.sim_world.state.typo.names.names,
-            world_to_screen=runtime.renderer.world_to_screen,
+            world_to_screen=runtime.world_to_screen,
             draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
             measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
         )

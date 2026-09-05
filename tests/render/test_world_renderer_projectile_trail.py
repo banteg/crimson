@@ -6,9 +6,8 @@ import crimson.render.world.projectiles as world_projectiles
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
-from crimson.render.world import WorldRenderer
-from crimson.render.world.context import build_world_render_ctx
-from crimson.render.world.projectiles import draw_bullet_trail
+from crimson.render.world.context import WorldRenderCtx, draw_bullet_trail_quad
+from crimson.render.world.viewport import view_transform
 from grim.assets import TextureId
 from grim.geom import Vec2
 
@@ -55,10 +54,14 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
 
     world = _WorldStub()
     frame = world.build_render_frame()
-    renderer = WorldRenderer(world_size=frame.world_size, config=frame.config, camera=frame.camera)
-    render_ctx = build_world_render_ctx(renderer, render_frame=frame)
+    render_ctx = WorldRenderCtx(
+        frame=frame,
+        view=view_transform(
+            world_size=frame.world_size, config=frame.config, camera=frame.camera, out_size=Vec2(1024, 1024),
+        ),
+    )
 
-    drawn = draw_bullet_trail(
+    drawn = draw_bullet_trail_quad(
         render_ctx,
         Vec2(120.0, 90.0),
         Vec2(120.0, 90.0),

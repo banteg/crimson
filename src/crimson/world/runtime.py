@@ -12,7 +12,8 @@ from ..camera import CameraUpdate, camera_update_for_players
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
-from ..render.world.renderer import WorldRenderer
+from ..render.world.context import WorldRenderCtx
+from ..render.world.draw import draw_world
 from .audio_bridge import AudioBridge
 from .render_resources import RenderResources
 from .sim_world_state import SimWorldState
@@ -71,11 +72,6 @@ class WorldRuntime:
         )
 
         self.camera = Vec2(-1.0, -1.0)
-        self.renderer = WorldRenderer(
-            world_size=float(self.world_size),
-            config=self.config,
-            camera=self.camera,
-        )
 
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
@@ -92,11 +88,7 @@ class WorldRuntime:
         self.sim_world.world_size = world_size
         self.render_resources.world_size = world_size
         self.terrain_runtime.world_size = world_size
-        self.renderer.sync_viewport(
-            world_size=world_size,
-            config=self.config,
-            camera=self.camera,
-        )
+
         ground = self.render_resources.ground
         if ground is not None:
             side = max(0, int(world_size))
@@ -122,11 +114,7 @@ class WorldRuntime:
         )
         self.render_resources.clear_pending_terrain_fx()
         self.camera = Vec2(-1.0, -1.0)
-        self.renderer.sync_viewport(
-            world_size=self.world_size,
-            config=self.config,
-            camera=self.camera,
-        )
+
         if self.render_resources.ground is not None:
             terrain_seed = self.sim_world.state.rng.state
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed)
@@ -164,11 +152,6 @@ class WorldRuntime:
             camera=camera,
             screen_size=screen_size,
         )
-        self.renderer.sync_viewport(
-            world_size=self.world_size,
-            config=self.config,
-            camera=self.camera,
-        )
 
     def draw(
         self,
@@ -176,11 +159,23 @@ class WorldRuntime:
         draw_aim_indicators: bool = True,
         entity_alpha: float = 1.0,
     ) -> None:
-        self.renderer.draw(
-            render_frame=self.build_render_frame(),
+        draw_world(
+            WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform()),
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
+
+    def view_transform(self) -> viewport.ViewTransform:
+        return viewport.view_transform(
+            world_size=self.world_size, config=self.config, camera=self.camera,
+            out_size=Vec2(float(rl.get_screen_width()), float(rl.get_screen_height())),
+        )
+
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        return self.view_transform().world_to_screen(pos)
+
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        return self.view_transform().screen_to_world(pos)
 
     def build_render_frame(self) -> RenderFrame:
         return self.render_resources.build_render_frame(

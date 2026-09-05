@@ -54,9 +54,6 @@ _NATIVE_CREATURE_SPRITE_DRAW_ORDER: tuple[CreatureTypeId, ...] = (
 
 
 class WorldDrawContext(msgspec.Struct, frozen=True):
-    camera: Vec2 = Vec2()
-    view_scale: Vec2 = Vec2(1.0, 1.0)
-    scale: float = 1.0
     entity_alpha: float = 1.0
     trooper_texture: rl.Texture | None = None
     particles_texture: rl.Texture | None = None
@@ -77,18 +74,15 @@ def draw_world(
     entity_alpha: float = 1.0,
 ) -> None:
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
-    camera, view_scale, scale, screen_size, out_size = compute_view_transform(render_ctx)
+    view = render_ctx.view
     with profile_pass("background"):
-        draw_background(render_ctx, camera=camera, screen_size=screen_size, out_size=out_size)
+        draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size)
     if entity_alpha <= 1e-3:
         return
 
     with _maybe_alpha_test():
         draw_ctx = build_draw_context(
             render_ctx,
-            camera=camera,
-            view_scale=view_scale,
-            scale=scale,
             entity_alpha=entity_alpha,
         )
         with profile_pass("players_dead"):
@@ -103,21 +97,6 @@ def draw_world(
             draw_projectiles_and_effects(render_ctx, ctx=draw_ctx)
         with profile_pass("bonus_ui"):
             draw_bonus_and_ui(render_ctx, ctx=draw_ctx, draw_aim_indicators_enabled=draw_aim_indicators)
-
-
-def compute_view_transform(render_ctx: WorldRenderCtx) -> tuple[Vec2, Vec2, float, Vec2, Vec2]:
-    frame = render_ctx.frame
-    out_w = float(rl.get_screen_width())
-    out_h = float(rl.get_screen_height())
-    out_size = Vec2(out_w, out_h)
-    camera, view_scale, screen_size = viewport.view_transform(
-        world_size=frame.world_size,
-        config=frame.config,
-        camera=frame.camera,
-        out_size=out_size,
-    )
-    scale = viewport.view_scale_avg(view_scale)
-    return camera, view_scale, scale, screen_size, out_size
 
 
 def draw_background(
@@ -161,9 +140,6 @@ def effect_src_rect(texture: rl.Texture, effect_id: EffectId) -> rl.Rectangle | 
 def build_draw_context(
     render_ctx: WorldRenderCtx,
     *,
-    camera: Vec2,
-    view_scale: Vec2,
-    scale: float,
     entity_alpha: float,
 ) -> WorldDrawContext:
     frame = render_ctx.frame
@@ -182,9 +158,6 @@ def build_draw_context(
     poison_src = effect_src_rect(particles_texture, EffectId.AURA)
 
     return WorldDrawContext(
-        camera=camera,
-        view_scale=view_scale,
-        scale=scale,
         entity_alpha=entity_alpha,
         trooper_texture=trooper_texture,
         particles_texture=particles_texture,
@@ -200,16 +173,16 @@ def draw_player(render_ctx: WorldRenderCtx, player: PlayerState, *, ctx: WorldDr
             render_ctx,
             ctx.trooper_texture,
             player,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
-            scale=ctx.scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
+            scale=render_ctx.view.scale,
             alpha=ctx.entity_alpha,
         )
         return
 
-    screen = render_ctx._world_to_screen_with(player.pos, camera=ctx.camera, view_scale=ctx.view_scale)
+    screen = viewport.world_to_screen_with(player.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
     tint = rl.Color(90, 190, 120, int(255 * ctx.entity_alpha + 0.5))
-    rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 14.0 * ctx.scale), tint)
+    rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 14.0 * render_ctx.view.scale), tint)
 
 
 def draw_players(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, alive: bool) -> None:
@@ -246,7 +219,7 @@ def draw_creature_overlays(
     if ctx.monster_vision and ctx.particles_texture is not None and ctx.monster_vision_src is not None:
         mv_alpha = fade * ctx.entity_alpha
         if mv_alpha > 1e-3:
-            size = 90.0 * ctx.scale
+            size = 90.0 * render_ctx.view.scale
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
@@ -256,7 +229,7 @@ def draw_creature_overlays(
         # creature_render_all: collision_flag overlay (black 80x80 aura), drawn before red poison flag.
         plague_alpha = fade * ctx.entity_alpha
         if plague_alpha > 1e-3:
-            size = 80.0 * ctx.scale
+            size = 80.0 * render_ctx.view.scale
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             tint = rl.Color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
@@ -269,7 +242,7 @@ def draw_creature_overlays(
     ):
         poison_alpha = fade * ctx.entity_alpha
         if poison_alpha > 1e-3:
-            size = 60.0 * ctx.scale
+            size = 60.0 * render_ctx.view.scale
             dst = rl.Rectangle(screen.x, screen.y, size, size)
             origin = rl.Vector2(size * 0.5, size * 0.5)
             tint = rl.Color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
@@ -283,13 +256,13 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
     # Native `creature_render_all` batches all overlays across the active pool
     # before any species-specific sprite passes.
     for creature in iter_active_creature_overlay_pass(creature_entries):
-        screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
+        screen = viewport.world_to_screen_with(creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
         lifecycle_stage = float(creature.lifecycle_stage)
         draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
     resources = frame.resources
     for creature in iter_native_creature_sprite_pass(creature_entries):
-        screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
+        screen = viewport.world_to_screen_with(creature.pos, camera=render_ctx.view.camera, view_scale=render_ctx.view.view_scale)
         lifecycle_stage = float(creature.lifecycle_stage)
 
         type_id = creature.type_id
@@ -298,7 +271,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
 
         if texture is None:
             tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
-            rl.draw_circle(int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * ctx.scale), tint)
+            rl.draw_circle(int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * render_ctx.view.scale), tint)
             continue
 
         info = CREATURE_ANIM[type_id]
@@ -364,7 +337,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             pos=creature.pos,
             screen_pos=screen,
             rotation_rad=float(creature.heading) - math.pi / 2.0,
-            scale=ctx.scale,
+            scale=render_ctx.view.scale,
             size_scale=size_scale,
             tint=tint,
             shadow=shadow,
@@ -393,13 +366,13 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
     for idx, creature in enumerate(render_ctx.frame.creatures.entries):
         if not creature.active:
             continue
-        size = float(creature.size) * ctx.scale
+        size = float(creature.size) * render_ctx.view.scale
         if size <= 1e-3:
             continue
-        creature_screen = render_ctx._world_to_screen_with(
+        creature_screen = viewport.world_to_screen_with(
             creature.pos,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
         )
         dst = rl.Rectangle(creature_screen.x, creature_screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
@@ -413,9 +386,9 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
     with profile_pass("laser_sight"):
         draw_sharpshooter_laser_sight(
             render_ctx,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
-            scale=ctx.scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
+            scale=render_ctx.view.scale,
             alpha=ctx.entity_alpha,
         )
 
@@ -423,21 +396,13 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
         for proj_index, proj in enumerate(frame.state.projectiles.entries):
             if not proj.active:
                 continue
-            draw_projectile(
-                render_ctx,
-                proj,
-                proj_index=proj_index,
-                camera=ctx.camera,
-                view_scale=ctx.view_scale,
-                scale=ctx.scale,
-                alpha=ctx.entity_alpha,
-            )
+            draw_projectile(render_ctx, proj, proj_index=proj_index, alpha=ctx.entity_alpha)
 
     with profile_pass("particle_pool"):
         draw_particle_pool(
             render_ctx,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
             alpha=ctx.entity_alpha,
         )
 
@@ -445,27 +410,20 @@ def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawCo
         for proj in frame.state.secondary_projectiles.entries:
             if not proj.active:
                 continue
-            draw_secondary_projectile(
-                render_ctx,
-                proj,
-                camera=ctx.camera,
-                view_scale=ctx.view_scale,
-                scale=ctx.scale,
-                alpha=ctx.entity_alpha,
-            )
+            draw_secondary_projectile(render_ctx, proj, alpha=ctx.entity_alpha)
 
     with profile_pass("sprite_effect_pool"):
         draw_sprite_effect_pool(
             render_ctx,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
             alpha=ctx.entity_alpha,
         )
     with profile_pass("effect_pool"):
         draw_effect_pool(
             render_ctx,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
             alpha=ctx.entity_alpha,
         )
 
@@ -485,7 +443,7 @@ def draw_aim_indicators(
     transform = world_to_screen_with
     if transform is None:
         def transform(pos: Vec2, camera: Vec2, view_scale: Vec2) -> Vec2:
-            return render_ctx._world_to_screen_with(
+            return viewport.world_to_screen_with(
                 pos,
                 camera=camera,
                 view_scale=view_scale,
@@ -519,8 +477,8 @@ def draw_aim_indicators(
         aim = player.aim
         dist = player.pos.distance_to(player.aim)
         radius = max(6.0, dist * float(player.spread_heat) * 0.5)
-        aim_screen = transform(aim, ctx.camera, ctx.view_scale)
-        screen_radius = max(1.0, radius * ctx.scale)
+        aim_screen = transform(aim, render_ctx.view.camera, render_ctx.view.view_scale)
+        screen_radius = max(1.0, radius * render_ctx.view.scale)
         draw_circle(aim_screen, screen_radius, ctx.entity_alpha)
 
         reload_timer = float(player.weapon.reload_timer)
@@ -529,7 +487,7 @@ def draw_aim_indicators(
             progress = reload_timer / reload_max
             if progress > 0.0:
                 ms = int(progress * 60000.0)
-                draw_gauge(Vec2(int(aim_screen.x), int(aim_screen.y)), ms, ctx.scale, ctx.entity_alpha)
+                draw_gauge(Vec2(int(aim_screen.x), int(aim_screen.y)), ms, render_ctx.view.scale, ctx.entity_alpha)
 
 
 def draw_aim_enhancements(
@@ -541,7 +499,7 @@ def draw_aim_enhancements(
     transform = world_to_screen_with
     if transform is None:
         def transform(pos: Vec2, camera: Vec2, view_scale: Vec2) -> Vec2:
-            return render_ctx._world_to_screen_with(
+            return viewport.world_to_screen_with(
                 pos,
                 camera=camera,
                 view_scale=view_scale,
@@ -550,7 +508,7 @@ def draw_aim_enhancements(
     for player in iter_visible_aim_players(render_ctx):
         if player.health <= 0.0:
             continue
-        aim_screen = transform(player.aim, ctx.camera, ctx.view_scale)
+        aim_screen = transform(player.aim, render_ctx.view.camera, render_ctx.view.view_scale)
         draw_aim_cursor(ctx.particles_texture, render_ctx.frame.resources.texture(TextureId.UI_AIM), pos=aim_screen)
 
 
@@ -572,16 +530,16 @@ def draw_bonus_and_ui(
     with profile_pass("bonus_pickups"):
         draw_bonus_pickups(
             render_ctx,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
-            scale=ctx.scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
+            scale=render_ctx.view.scale,
             alpha=ctx.entity_alpha,
         )
     with profile_pass("bonus_labels"):
         draw_bonus_hover_labels(
             render_ctx,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
             alpha=ctx.entity_alpha,
         )
 
@@ -593,9 +551,9 @@ def draw_bonus_and_ui(
     with profile_pass("direction_arrows"):
         draw_direction_arrows(
             render_ctx,
-            camera=ctx.camera,
-            view_scale=ctx.view_scale,
-            scale=ctx.scale,
+            camera=render_ctx.view.camera,
+            view_scale=render_ctx.view.view_scale,
+            scale=render_ctx.view.scale,
             alpha=ctx.entity_alpha,
         )
 

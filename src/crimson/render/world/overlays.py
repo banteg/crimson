@@ -5,6 +5,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
 
+from . import viewport
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -132,7 +133,7 @@ def draw_direction_arrows(
 
         heading = float(player.heading)
         marker_pos = player.pos + Vec2.from_heading(heading) * 60.0
-        screen = render_ctx._world_to_screen_with(marker_pos, camera=camera, view_scale=view_scale)
+        screen = viewport.world_to_screen_with(marker_pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, width, height)
         tint = direction_arrow_tint(render_ctx, index, alpha=alpha)
         rl.draw_texture_pro(arrow, src, dst, origin, float(heading * _RAD_TO_DEG), tint)

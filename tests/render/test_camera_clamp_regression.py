@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import pytest
 
-from crimson.render.world import renderer as world_renderer
+from crimson.render.world import viewport
 from crimson.world import runtime as world_runtime
 from grim import terrain_render
 from grim.config import CrimsonConfig, default_crimson_cfg
@@ -101,44 +101,43 @@ def test_ground_clamp_is_stable_when_screen_matches_world_width() -> None:
 
 
 def test_world_clamp_is_stable_when_screen_matches_world_width() -> None:
-    renderer = _runtime_world(world_size=1024.0).renderer
-    clamped = renderer._clamp_camera(Vec2(-0.25, -5.0), Vec2(1024.0, 768.0))
+    clamped = viewport.clamp_camera(world_size=1024.0, camera=Vec2(-0.25, -5.0), screen_size=Vec2(1024.0, 768.0))
     assert clamped.x == 0.0
 
 
 def test_world_camera_screen_size_fits_widescreen_uniformly() -> None:
-    renderer = _runtime_world(
+    world = _runtime_world(
         world_size=1024.0,
         screen_width=1280,
         screen_height=720,
-    ).renderer
-    size = renderer._camera_screen_size(runtime_w=0.0, runtime_h=0.0)
+    )
+    size = viewport.camera_screen_size(world_size=world.world_size, config=world.config, runtime_w=0.0, runtime_h=0.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
 
 
 def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(mocker) -> None:
-    renderer = _runtime_world(
+    world = _runtime_world(
         world_size=1024.0,
         screen_width=1024,
         screen_height=768,
-    ).renderer
-    mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1280)
-    mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=720)
-    size = renderer._camera_screen_size()
+    )
+    mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
+    mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
+    size = world.view_transform().screen_size
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
 
 
 def test_world_camera_screen_size_uses_frame_snapshot_when_provided(mocker) -> None:
-    renderer = _runtime_world(
+    world = _runtime_world(
         world_size=1024.0,
         screen_width=1024,
         screen_height=768,
-    ).renderer
-    mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1024)
-    mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=768)
-    size = renderer._camera_screen_size(runtime_w=1280.0, runtime_h=720.0)
+    )
+    mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1024)
+    mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=768)
+    size = viewport.camera_screen_size(world_size=world.world_size, config=world.config, runtime_w=1280.0, runtime_h=720.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
 
@@ -154,8 +153,6 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
     player.pos = Vec2(512.0, 512.0)
     mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
     mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
-    mocker.patch.object(world_renderer.WorldRenderer, "_camera_screen_size", side_effect=AssertionError("unused"))
-    mocker.patch.object(world_renderer.WorldRenderer, "_clamp_camera", side_effect=AssertionError("unused"))
 
     world.update_camera()
 
@@ -163,32 +160,27 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
     assert_float_close(world.camera.y, -224.0)
 
 
-def test_renderer_viewport_helpers_are_frame_independent(mocker) -> None:
-    renderer = world_renderer.WorldRenderer(
-        world_size=1024.0,
-        config=None,
-        camera=Vec2(-32.0, -48.0),
-    )
-    mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1280)
-    mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=720)
+def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(mocker) -> None:
+    world = _runtime_world(world_size=1024.0)
+    world.camera = Vec2(-32.0, -48.0)
+    width = mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
+    height = mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
+    view = world.view_transform()
+    assert view.screen_size == Vec2(1024, 576)
+    assert view.camera == Vec2(0, -48)
+    assert view.view_scale == Vec2(1.25, 1.25)
+    screen = world.world_to_screen(Vec2(100, 200))
+    assert screen == Vec2(125, 190)
+    assert world.screen_to_world(screen) == Vec2(100, 200)
 
-    screen_size = renderer._camera_screen_size()
-    assert_float_close(screen_size.x, 1024.0)
-    assert_float_close(screen_size.y, 576.0)
-
-    camera, view_scale = renderer._world_params()
-    assert_float_close(camera.x, 0.0)
-    assert_float_close(camera.y, -48.0)
-    assert_float_close(view_scale.x, 1.25)
-    assert_float_close(view_scale.y, 1.25)
-
-    screen = renderer.world_to_screen(Vec2(100.0, 200.0))
-    assert_float_close(screen.x, 125.0)
-    assert_float_close(screen.y, 190.0)
-
-    world = renderer.screen_to_world(screen)
-    assert_float_close(world.x, 100.0)
-    assert_float_close(world.y, 200.0)
+    # A prepared draw retains its transform; input conversion sees resize and
+    # camera changes immediately, without a renderer synchronization call.
+    width.return_value = 800
+    height.return_value = 600
+    world.camera = Vec2(-100, -80)
+    assert view.world_to_screen(Vec2(100, 200)) == screen
+    assert world.world_to_screen(Vec2(100, 200)) == Vec2(0, 120)
+    assert world.screen_to_world(Vec2(0, 120)) == Vec2(100, 200)
 
 
 def test_runtime_build_render_frame_requires_bound_resources() -> None:

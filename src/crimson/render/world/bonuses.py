@@ -11,6 +11,7 @@ from grim.raylib_api import rl
 from ...bonuses import BONUS_BY_ID, BonusId
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
 from ...weapons import WEAPON_BY_ID, WeaponId
+from . import viewport
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -96,7 +97,7 @@ def draw_bonus_pickups(
         fade = bonus_fade(time_left, time_max)
         bubble_alpha = bonus_bubble_fade(time_left, time_max) * 0.9 * alpha
 
-        screen = render_ctx._world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
+        screen = viewport.world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
         bubble_dst = rl.Rectangle(screen.x, screen.y, bubble_size, bubble_size)
         bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
         bubble_tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
@@ -184,7 +185,7 @@ def draw_bonus_hover_labels(
             continue
 
         aim = player.aim
-        aim_screen = render_ctx._world_to_screen_with(aim, camera=camera, view_scale=view_scale)
+        aim_screen = viewport.world_to_screen_with(aim, camera=camera, view_scale=view_scale)
         x = aim_screen.x + 16.0
         y = aim_screen.y - 7.0
 
