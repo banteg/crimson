@@ -13,6 +13,15 @@ from crimson.quests.level import QuestLevel
 from crimson.screens.actions import StartRun
 
 
+@pytest.mark.parametrize("mode_id", [GameMode.QUESTS, GameMode.TUTORIAL])
+def test_lazy_demo_modes_construct_the_world_with_demo_settings(make_game_state, mode_id) -> None:
+    state = make_game_state(demo_enabled=True)
+    mode = GameLoopView(state).navigation._mode(mode_id)
+    assert mode.demo_mode_active
+    assert mode.sim_world.spawn_env.demo_mode_active
+    assert mode.state.demo_mode_active
+
+
 @pytest.mark.parametrize(
     ("mode_id", "mode_type"),
     [

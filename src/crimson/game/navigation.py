@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from functools import partial
+
 from crimson.screens.chrome import ensure_menu_ground
 from grim.audio import stop_music
 from grim.raylib_api import rl
@@ -133,11 +135,11 @@ class ScreenNavigator:
             return mode
         ctx = ViewContext(assets_dir=self.state.assets_dir, preserve_bugs=self.state.preserve_bugs)
         mode_type = {
-            GameMode.QUESTS: QuestMode,
+            GameMode.QUESTS: partial(QuestMode, demo_mode_active=self.state.demo_enabled),
             GameMode.SURVIVAL: SurvivalMode,
             GameMode.RUSH: RushMode,
             GameMode.TYPO: TypoShooterMode,
-            GameMode.TUTORIAL: TutorialMode,
+            GameMode.TUTORIAL: partial(TutorialMode, demo_mode_active=self.state.demo_enabled),
         }[mode_id]
         mode = mode_type(
             ctx,
@@ -146,7 +148,6 @@ class ScreenNavigator:
             audio=self.state.audio,
             audio_rng=self.state.rng,
         )
-        mode.demo_mode_active = self.state.demo_enabled if mode_id in {GameMode.QUESTS, GameMode.TUTORIAL} else False
         self._modes[mode_id] = mode
         return mode
 
