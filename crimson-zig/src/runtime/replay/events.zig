@@ -310,7 +310,7 @@ test "typo replay commands apply in typo mode and reject in other modes" {
     var creatures: creatures_mod.CreaturePool = .{};
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players = players_storage[0..1];
-    players[0] = .{};
+    players[0] = .{ .index = 0, .pos = .{ .x = 0.0, .y = 0.0 } };
     var quest_spawn_timeline_ms: f32 = 0.0;
     var quest_no_creatures_timer_ms: f32 = 0.0;
     var quest_completion_transition_ms: f32 = -1.0;

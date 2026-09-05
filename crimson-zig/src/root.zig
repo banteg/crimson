@@ -64,6 +64,8 @@ test {
     _ = @import("cdt_compare.zig");
     _ = @import("cdt_wire.zig");
     _ = @import("runtime/replay/diagnostic_trace.zig");
+    _ = session_builders;
+    _ = @import("runtime/replay/step.zig");
     _ = effects;
     _ = projectiles;
     _ = quest_level;

@@ -914,6 +914,14 @@ fn testHeader() replay_codec.ReplayHeader {
     };
 }
 
+const test_idle_input: player_runtime.GameInput = .{
+    .move_x = 0.0,
+    .move_y = 0.0,
+    .aim_x = 0.0,
+    .aim_y = 0.0,
+    .flags = .{ .fire_down = false, .fire_pressed = false, .reload_pressed = false },
+};
+
 test "camera shake uses latched scaling across bonus expiry and pickup" {
     var context = try session_mod.DeterministicSession.initFromReplayHeader(testHeader(), .{});
     for ([_]bool{ true, false }) |latched| {
@@ -1062,7 +1070,7 @@ test "direct death clock drain does not trigger final revenge" {
     const result = try stepTick(
         &context,
         0,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         0.05,
         .{},
@@ -1086,6 +1094,7 @@ test "ammunition within triggers final revenge inline with frame dt" {
     players[0].weapon.reload_active = true;
     players[0].weapon.reload_timer = 1.0;
     players[0].weapon.reload_timer_max = 1.0;
+    players[0].weapon.shot_cooldown = 0.0;
     players[0].perk_counts.set(perks.PerkId.ammunition_within, 1);
     players[0].perk_counts.set(perks.PerkId.final_revenge, 1);
 
@@ -1093,9 +1102,11 @@ test "ammunition within triggers final revenge inline with frame dt" {
         &context,
         0,
         &[_]player_runtime.GameInput{.{
+            .move_x = 0.0,
+            .move_y = 0.0,
             .aim_x = 700.0,
             .aim_y = 512.0,
-            .flags = .{ .fire_down = true },
+            .flags = .{ .fire_down = true, .fire_pressed = false, .reload_pressed = false },
         }},
         &.{},
         0.05,
@@ -1151,7 +1162,7 @@ test "step tick applies freeze corpse effects when freeze is not last pickup" {
     const result = try stepTick(
         &context,
         0,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         context.dt_nominal,
         .{},
@@ -1193,7 +1204,7 @@ test "weapon guard runs before same-frame locked splitter pickup" {
     const pickup_tick = try stepTick(
         &context,
         0,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         context.dt_nominal,
         .{},
@@ -1205,7 +1216,7 @@ test "weapon guard runs before same-frame locked splitter pickup" {
     _ = try stepTick(
         &context,
         1,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         context.dt_nominal,
         .{},
@@ -1232,7 +1243,7 @@ test "weapon usage time precedes same-frame weapon pickup" {
     const pickup_tick = try stepTick(
         &context,
         0,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         context.dt_nominal,
         .{},
@@ -1246,7 +1257,7 @@ test "weapon usage time precedes same-frame weapon pickup" {
     _ = try stepTick(
         &context,
         1,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         context.dt_nominal,
         .{},
@@ -1274,7 +1285,7 @@ test "highscore score stages before same-frame points pickup" {
     const pickup_tick = try stepTick(
         &context,
         0,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         context.dt_nominal,
         .{},
@@ -1287,7 +1298,7 @@ test "highscore score stages before same-frame points pickup" {
     _ = try stepTick(
         &context,
         1,
-        &[_]player_runtime.GameInput{.{}},
+        &.{test_idle_input},
         &.{},
         context.dt_nominal,
         .{},
